@@ -5,7 +5,7 @@
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfNavigationHistoryInstance" runat="server" Value="" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
@@ -21,13 +21,13 @@
                     <Rock:NotificationBox ID="nbCommunicationNotWizardCompatible" runat="server" NotificationBoxType="Info">
                         This communication uses a template that is not compatible with the email wizard. You can continue with the email wizard, but the main content of the email will be replaced when the Email Wizard compatible template is selected. To keep the content, click 'Use Simple Editor' to use the simple communication editor.
                     </Rock:NotificationBox>
-                    
+
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-warning" />
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
-                    
+
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
                         <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
@@ -37,19 +37,19 @@
                             <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
 
                             <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
-                            
+
                             <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
-                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" /> 
+                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
                             </asp:Panel>
                         </asp:Panel>
-                    </asp:Panel> 
-                    
+                    </asp:Panel>
+
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-                                
+
                                 <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm" Text="Show List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
-                                
+
                                 <p>
                                     <asp:Panel ID="pnlIndividualRecipientCount" runat="server" CssClass="label label-info">
                                         <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </asp:Panel>
 
                     <div class="actions margin-t-md">
@@ -122,8 +122,8 @@
                             </div>
                         </div>
                     </Rock:RockControlWrapper>
-                    
-                    
+
+
 
                     <div class="row margin-b-md">
                         <div class="col-md-6">
@@ -156,7 +156,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
@@ -190,13 +190,13 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    
+
                     <div class="row">
                         <div class="col-sm-8">
                             <h1 class="step-title">Email Editor</h1>
                         </div>
                         <div class="col-sm-4">
-                            
+
                             <%-- Put the email send test and preview button in an updatepanel to avoid flicker with the email editor --%>
                             <asp:UpdatePanel ID="upEmailSendTest" runat="server">
                                 <ContentTemplate>
@@ -205,17 +205,17 @@
                                         <a class="btn btn-xs btn-default js-email-sendtest" href="#">Send Test</a>
                                         <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
                                     </div>
-                                    
+
                                     <div class="js-email-sendtest-inputs" style="display: none">
-                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" />
+                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" Help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
 
-                                    
+
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-                        
+
                         </div>
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
@@ -224,7 +224,7 @@
 				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
 			                </div>
 			                <div id="emaileditor-properties">
-				
+
 				                <div class="emaileditor-propertypanels js-propertypanels">
 					                <!-- Text/Html Properties -->
                                     <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
@@ -241,7 +241,7 @@
 										                <span class="input-group-addon"><i></i></span>
 									                </div>
 								                </div>
-                                                
+
 							                </div>
 							                <div class="col-md-6">
                                                 <Rock:RockDropDownList Id="ddlLineHeight" CssClass="js-component-text-lineheight" ClientIDMode="Static" runat="server" Label="Line Height">
@@ -273,7 +273,7 @@
 								                </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -303,13 +303,13 @@
 							                        </div>
 								                </div>
                                             </div>
-                                        </div> 
+                                        </div>
 					                </div>
 
                                     <!-- Image Properties -->
                                     <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
 						                <h4 class="propertypanel-title">Image</h4>
-						                
+
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" DeleteFunctionClientScript="handleImageUpdate()" />
@@ -331,7 +331,7 @@
 										                <option value="right">Right</option>
 									                </select>
 								                </div>
-                                            
+
                                                 <div class="form-group">
 									                <label for="component-image-resizemode">Resize Mode</label>
 									                <select id="component-image-resizemode" class="form-control">
@@ -342,7 +342,7 @@
 								                </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="row">
 							                <div class="col-md-6">
                                                 <div class="form-group">
@@ -443,7 +443,7 @@
 							                            </div>
 								                    </div>
                                                 </div>
-                                            </div> 
+                                            </div>
                                         </div>
 
                                         <div id="component-section-column2">
@@ -498,7 +498,7 @@
                                         <div id="component-section-column3">
                                             <hr class="margin-all-sm">
                                             <span class="label label-default">Column 3</span>
-                                        
+
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
@@ -542,7 +542,7 @@
 								                    </div>
                                                 </div>
                                             </div>
-                                        </div>  
+                                        </div>
 					                </div>
 
                                     <!-- Divider Properties -->
@@ -587,7 +587,7 @@
 						                <h4 class="propertypanel-title">HTML</h4>
                                         <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error"  style="display:none"></div>
-						
+
 
                                         <div class="row">
                                             <div class="col-md-6">
@@ -745,19 +745,19 @@
 
 			                </div>
 		                </section>
-			
+
 		                <%-- the contents editor-controls-markup is copied into the iframe --%>
                         <div id="editor-controls-markup" style="display: none;">
                             <div id="editor-controls" class="editor-toolbar-container js-emaileditor-addon">
 			                    <div class="js-editor-toolbar-content">
-				                    
+
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
-				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' />" data-state="template">
+				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' alt='' />" data-state="template">
 					                    <i class="fa fa-picture-o"></i> <br /> Image
 				                    </div>
-				                
+
 				                    <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
 					                    <i class="fa fa-minus"></i> <br /> Divider
 				                    </div>
@@ -767,7 +767,7 @@
 				                    <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
 					                    <i class="fa fa-square-o"></i> <br /> Button
 				                    </div>
-			                        
+
                                     <div class="component-separator"></div>
                                 </div>
                                 <div class="js-editor-toolbar-structure">
@@ -775,32 +775,32 @@
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-6 small-6 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-6 last' width='50%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-6 small-12 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-12 last' width='50%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-4' width='34%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-12' width='34%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
                                     <!--
                                     <div class="component component-section" data-content="<table class='row' width='100%'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-four-column"></i> <br /> Four
 				                    </div> -->
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-4 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-8 last' width='67%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-12 last' width='67%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-8 small-8 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-4 last' width='33%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-8 small-12 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>
                             </div>
-		                </div>	
+		                </div>
                     </div>
 
                     <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
-                    
+
                 </asp:Panel>
 
                 <asp:UpdatePanel ID="upnlEmailPreview" runat="server" UpdateMode="Conditional" >
@@ -823,7 +823,7 @@
                         </asp:Panel>
                     </ContentTemplate>
                 </asp:UpdatePanel>
-                
+
 
                 <%-- Email Summary --%>
                 <asp:Panel ID="pnlEmailSummary" CssClass="js-navigation-panel" runat="server" Visible="false">
@@ -850,7 +850,7 @@
                                 <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" />
                             </div>
                             <div class="col-md-6">
-                                
+
                             </div>
                         </div>
                         <div class="well">
@@ -896,7 +896,7 @@
                     <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-validation" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." Required="true" ValidationGroup="vgMobileTextEditor"/>
+                            <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers)." Required="true" ValidationGroup="vgMobileTextEditor"/>
                             <Rock:RockControlWrapper ID="rcwSMSMessage" runat="server" Label="Message" Help="<span class='tip tip-lava'></span>">
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
@@ -906,7 +906,7 @@
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <div class="js-sms-sendtest-inputs" style="display:none">
-                                        <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" />
+                                        <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" Help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete." />
                                         <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-sms-sendtest-cancel" href="#">Cancel</a>
                                     </div>
@@ -930,7 +930,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
                     <div class="actions margin-t-md">
@@ -963,12 +963,12 @@
 
                         </div>
                     </div>
-                    
+
                     <div class="actions margin-b-lg">
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
                         <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
                     </div>
-                    
+
                     <div class="actions">
                         <asp:LinkButton ID="btnConfirmationPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
                     </div>
@@ -976,18 +976,19 @@
 
                 <%-- Result --%>
                 <asp:Panel ID="pnlResult" CssClass="js-navigation-panel" runat="server" Visible="false">
+                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
                 </asp:Panel>
 
             </div>
-        
+
         </asp:Panel>
 
 
         <script>
-            
+
             Sys.Application.add_load(function ()
             {
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
@@ -1017,7 +1018,7 @@
                         }
 
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
-                        
+
                         if ($previewModal.is(':visible')) {
                             // set opacity back to 1 now that it is loaded and sized
                             $previewModal.fadeTo(0, 1);
@@ -1099,13 +1100,13 @@
                     $('#<%=hfShowConfirmationDateTime.ClientID %>').val("true");
                     return false;
                 });
-                
+
                 // Ensure the visibility of of Send Date controls on the confirmation page if they clicked 'edit' and are navigating back and forth to it
                 if ($('#<%=hfShowConfirmationDateTime.ClientID %>').val() == "true") {
                     $('.js-confirmation-senddatetime-alert').hide()
                     $('.js-confirmation-datetime').show();
                 }
-                
+
                 var smsCharLimit = $('#<%=hfSMSCharLimit.ClientID%>').val();
                 if ( smsCharLimit && smsCharLimit > 0)
                 {
@@ -1128,7 +1129,7 @@
                     var $editorIframe = $('#<%=ifEmailDesigner.ClientID%>');
                     var $editorHtml = $editorIframe.contents().find('HTML').clone();
 
-                    // remove all the email editor stuff 
+                    // remove all the email editor stuff
                     $editorHtml.find('.js-emaileditor-addon').remove();
 
                     var emailHtmlContent = $editorHtml[0].outerHTML;
@@ -1180,7 +1181,7 @@
                 var $hf = $('#' + hf);
                 var fileIds = $hf.val().split(',');
 
-                // Remove the selected attachment 
+                // Remove the selected attachment
                 var removeAt = $.inArray(fileId, fileIds);
                 fileIds.splice(removeAt, 1);
                 $hf.val(fileIds.join());
@@ -1268,7 +1269,7 @@
                     Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
                 }
             }
-			
+
 			function loadPropertiesPage(componentType, $component)
 			{
 			    $currentComponent = $component;
@@ -1321,7 +1322,7 @@
 
 			    // hide any summernote popovers that might be hanging out
 			    $('.note-popover.popover').hide();
-				
+
 				if (e != null){
 					e.preventDefault();
 				}
@@ -1384,7 +1385,7 @@
 
 			    if (updatedText) {
 			        $('.js-sms-chatoutput').show();
-			        
+
 			        // only send to api/Lava/RenderTemplate if it has lava fields in it
 			        if (/.*\{.*\}.*/.test(updatedText))
 			        {
@@ -1441,7 +1442,7 @@
 			}
 
         </script>
-        
+
         <!-- Text Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/textComponentHelper.js", true)%>' ></script>
 

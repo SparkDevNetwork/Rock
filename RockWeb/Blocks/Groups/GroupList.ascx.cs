@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -60,6 +61,7 @@ namespace RockWeb.Blocks.Groups
         private bool _showGroupPath = false;
 
         private HashSet<int> _groupsWithGroupHistory = null;
+        private GridListGridMode _groupListGridMode = GridListGridMode.GroupList;
 
         public enum GridListGridMode
         {
@@ -70,7 +72,17 @@ namespace RockWeb.Blocks.Groups
             GroupList = 1
         }
 
-        public GridListGridMode GroupListGridMode = GridListGridMode.GroupList;
+        public GridListGridMode GroupListGridMode
+        {
+            get
+            {
+                return _groupListGridMode;
+            }
+            set
+            {
+                _groupListGridMode = value;
+            }
+        }
 
         #region Control Methods
 
@@ -279,7 +291,7 @@ namespace RockWeb.Blocks.Groups
                 gfSettings.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
             }
 
-            gfSettings.SaveUserPreference( "Group Type Purpose", ddlGroupTypePurpose.SelectedValue );
+            gfSettings.SaveUserPreference( "Group Type Purpose", dvpGroupTypePurpose.SelectedValue );
 
             BindGrid();
         }
@@ -416,11 +428,11 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
-						if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
-	                    {
-	                        mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
-	                        return;
-	                    }
+                        if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                        {
+                            mdGridWarning.Show( "You are not authorized to delete members from this group", ModalAlertType.Information );
+                            return;
+                        }
 
                         string errorMessage;
                         if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
@@ -524,21 +536,20 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            var personContext = ContextEntity<Person>();
-            var groupMemberService = new GroupMemberService( rockContext );
-
-            if ( groupMemberService.Queryable().Any( a => a.PersonId == personContext.Id && a.GroupId == group.Id ) )
+            var roleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
+            if (roleId == null )
             {
-                nbModalDetailsMessage.Title = "Member already added to selected Group";
+                nbModalDetailsMessage.Title = "Please select a role";
                 nbModalDetailsMessage.Visible = true;
                 return;
             }
 
-            var roleId = group.GroupType.DefaultGroupRoleId;
+            var personContext = ContextEntity<Person>();
+            var groupMemberService = new GroupMemberService( rockContext );
 
-            if ( roleId == null )
+            if ( groupMemberService.Queryable().Any( a => a.PersonId == personContext.Id && a.GroupId == group.Id && a.GroupRoleId == roleId ) )
             {
-                nbModalDetailsMessage.Title = "No default role for particular group is assigned";
+                nbModalDetailsMessage.Title = "Already added to the selected Group & Role";
                 nbModalDetailsMessage.Visible = true;
                 return;
             }
@@ -554,7 +565,7 @@ namespace RockWeb.Blocks.Groups
             GroupMember groupMember = new GroupMember { Id = 0 };
             groupMember.GroupId = group.Id;
             groupMember.PersonId = personContext.Id;
-            groupMember.GroupRoleId = roleId.Value;
+            groupMember.GroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
             groupMemberService.Add( groupMember );
@@ -591,8 +602,8 @@ namespace RockWeb.Blocks.Groups
                 gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
             }
 
-            ddlGroupTypePurpose.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ), true );
-            ddlGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
+            dvpGroupTypePurpose.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Id;
+            dvpGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
 
             // Set the Active Status
             var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
@@ -727,8 +738,8 @@ namespace RockWeb.Blocks.Groups
                                 DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
                                 IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
                                 IsArchived = m.Group.IsArchived || m.GroupMember.IsArchived,
-                                IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
-                                IsSynced = m.Group.GroupSyncs.Any(),
+                                IsActiveOrder = m.Group.IsActive && m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ? 1 : 2,
+                                IsSynced = m.Group.GroupSyncs.Where( s => s.GroupTypeRoleId == m.GroupMember.GroupRoleId ).Any(),
                                 MemberCount = 0
                             } )
                         .AsQueryable()
@@ -738,7 +749,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-				// Grid is in normal 'Group List' mode
+                // Grid is in normal 'Group List' mode
                 var roleGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                 int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : 0;
                 bool useRolePrefix = onlySecurityGroups || groupTypeIds.Contains( roleGroupTypeId );
@@ -767,7 +778,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         Id = g.Id,
                         Path = string.Empty,
-                        Name = ( ( useRolePrefix && g.GroupType.Id != roleGroupTypeId ) ? "GROUP - " : "" ) + g.Name,
+                        Name = ( ( useRolePrefix && g.GroupType.Id != roleGroupTypeId ) ? "GROUP - " : string.Empty ) + g.Name,
                         GroupType = GroupTypeCache.Get( g.GroupTypeId ),
                         GroupOrder = g.Order,
                         Description = g.Description,
@@ -885,51 +896,85 @@ namespace RockWeb.Blocks.Groups
         private void BindModelDropDown()
         {
             ddlGroup.Items.Clear();
-            ddlGroup.AutoPostBack = false;
             ddlGroup.Required = true;
 
-            #region groupquery
-
             var groupTypeIds = GetAvailableGroupTypes();
-
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-
+            var groupService = new GroupService( new RockContext() );
             bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
 
-            var qryGroups = groupService.Queryable()
+            var qryGroups = groupService
+                .Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
             string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
-
             if ( limitToActiveStatus == "active" )
             {
                 qryGroups = qryGroups.Where( a => a.IsActive );
             }
 
-            var personContext = ContextEntity<Person>();
-            qryGroups = qryGroups.Where( a => !a.Members.Any( m => m.PersonId == personContext.Id ) );
-
-            #endregion
-
             // only show groups that the current person is authorized to add members to
-            var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ).ToList();
+            var groupList = qryGroups
+                .OrderBy( a => a.Name )
+                .ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
+                .ToList();
 
             ddlGroup.DataSource = groupList;
             ddlGroup.DataBind();
+            ddlGroup.Items.Insert( 0, new ListItem() );
+            ddlGroupRole.Items.Clear();
         }
 
         #endregion
 
         private class GroupListRowInfo : DotLiquid.Drop
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group member identifier.
+            /// </summary>
+            /// <value>
+            /// The group member identifier.
+            /// </value>
             public int? GroupMemberId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the path.
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
             public string Path { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the group.
+            /// </summary>
+            /// <value>
+            /// The type of the group.
+            /// </value>
             public GroupTypeCache GroupType { get; set; }
 
+            /// <summary>
+            /// Gets the name of the group type.
+            /// </summary>
+            /// <value>
+            /// The name of the group type.
+            /// </value>
             public string GroupTypeName
             {
                 get
@@ -938,6 +983,12 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            /// <summary>
+            /// Gets the group type order.
+            /// </summary>
+            /// <value>
+            /// The group type order.
+            /// </value>
             public int GroupTypeOrder
             {
                 get
@@ -946,17 +997,128 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            /// <summary>
+            /// Gets or sets the group order.
+            /// </summary>
+            /// <value>
+            /// The group order.
+            /// </value>
             public int GroupOrder { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description.
+            /// </summary>
+            /// <value>
+            /// The description.
+            /// </value>
             public string Description { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is system.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+            /// </value>
             public bool IsSystem { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group role.
+            /// </summary>
+            /// <value>
+            /// The group role.
+            /// </value>
             public string GroupRole { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date added.
+            /// </summary>
+            /// <value>
+            /// The date added.
+            /// </value>
             public DateTime? DateAdded { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is active.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+            /// </value>
             public bool IsActive { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is archived.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is archived; otherwise, <c>false</c>.
+            /// </value>
             public bool IsArchived { get; set; }
+
+            /// <summary>
+            /// Gets or sets the is active order.
+            /// </summary>
+            /// <value>
+            /// The is active order.
+            /// </value>
             public int IsActiveOrder { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is synced.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is synced; otherwise, <c>false</c>.
+            /// </value>
             public bool IsSynced { get; set; }
+
+            /// <summary>
+            /// Gets or sets the member count.
+            /// </summary>
+            /// <value>
+            /// The member count.
+            /// </value>
             public int MemberCount { get; set; }
-            
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroup control to populate the ddlGroupRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroup_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlGroupRole.Items.Clear();
+
+            int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
+            if ( groupId == null )
+            {
+                return;
+            }
+
+            ddlGroupRole.Required = true;
+            var rockContext = new RockContext();
+
+            var groupSyncService = new GroupSyncService( rockContext );
+            var syncList = groupSyncService
+                .Queryable()
+                .AsNoTracking()
+                .Where( s => s.GroupId == groupId )
+                .Select( s => s.GroupTypeRoleId )
+                .ToList();
+
+            nbModalDetailSyncMessage.Visible = syncList.Count > 0 ? true : false;
+
+            var groupService = new GroupService( rockContext );
+            var selectedGroup = groupService.GetNoTracking( groupId.Value );
+
+            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            var qry = groupTypeRoleService
+                .Queryable()
+                .AsNoTracking()
+                .Where( r => r.GroupTypeId == selectedGroup.GroupTypeId )
+                .Where( r => !syncList.Contains( r.Id ) )
+                .ToList();
+
+            ddlGroupRole.DataSource = qry;
+            ddlGroupRole.DataBind();
         }
     }
 }

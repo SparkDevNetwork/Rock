@@ -200,7 +200,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
@@ -210,7 +210,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
         /// </summary>
         /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
         /// <returns></returns>
@@ -280,6 +280,15 @@ namespace Rock.Financial
         public abstract bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
+        /// Flag indicating if the gateway supports modifying an existing schedule's payment method.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsUpdatingSchedulePaymentMethodSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// Cancels the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
@@ -346,5 +355,71 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage );
+
+        /// <summary>
+        /// Gets the next payment date.
+        /// </summary>
+        /// <param name="scheduledTransaction">The transaction.</param>
+        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <returns></returns>
+        public virtual DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        {
+            return scheduledTransaction.NextPaymentDate;
+        }
+
+        /// <summary>
+        /// Calculates the next payment date based off of frequency and last transaction date.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <returns></returns>
+        protected DateTime? CalculateNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        {
+            // If scheduled transaction is null, just return null
+            if ( scheduledTransaction == null )
+            {
+                return null;
+            }
+
+            // If start date is today or in future, return that value
+            if ( scheduledTransaction.StartDate >= RockDateTime.Today.Date )
+            {
+                return scheduledTransaction.StartDate;
+            }
+
+            // If scheduled transaction does not have a frequency, just return null
+            if ( scheduledTransaction.TransactionFrequencyValue == null )
+            {
+                return null;
+            }
+
+            // Calculate the later of start date or last transaction date, and use that to calculate next payment
+            var startDate = scheduledTransaction.StartDate;
+            if ( lastTransactionDate.HasValue && lastTransactionDate > startDate )
+            {
+                startDate = lastTransactionDate.Value;
+            }
+
+            // Calculate the next payment date based on the frequency
+            DateTime? nextPayment = null;
+            switch ( scheduledTransaction.TransactionFrequencyValue.Guid.ToString().ToUpper() )
+            {
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY: nextPayment = startDate.AddDays( 7 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY: nextPayment = startDate.AddDays( 14 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY: nextPayment = startDate.AddDays( 15 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY: nextPayment = startDate.AddMonths( 1 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY: nextPayment = startDate.AddMonths( 3 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY: nextPayment = startDate.AddMonths( 6 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY: nextPayment = startDate.AddYears( 1 ); break;
+            }
+
+            // If a date was calculated and it is not in the past, return that value
+            if ( nextPayment.HasValue && nextPayment.Value >= RockDateTime.Now.Date )
+            {
+                return nextPayment;
+            }
+
+            return null;
+        }
     }
 }

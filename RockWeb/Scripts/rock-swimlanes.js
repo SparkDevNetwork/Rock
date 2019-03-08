@@ -378,7 +378,6 @@ class Bar {
     }
 
     prepare_values() {
-        console.log(this.task);
         this.invalid = this.task.invalid;
         this.height = this.gantt.options.bar_height;
         this.x = this.compute_x();
@@ -557,12 +556,6 @@ class Bar {
         // end_date = May 25 23:59:59
         date_utils.add(new_end_date, -1, 'second');
         return { new_start_date, new_end_date };
-    }
-
-    compute_progress() {
-        const progress =
-            this.$bar_progress.getWidth() / this.$bar.getWidth() * 100;
-        return parseInt(progress, 10);
     }
 
     compute_x() {
@@ -769,7 +762,7 @@ class Swimlanes {
         };
         this.options = Object.assign({}, default_options, options);
         self._starts = [];
-        
+
     }
 
     setup_groups(groups) {
@@ -796,7 +789,6 @@ class Swimlanes {
 
     setup_tasks(tasks) {
         // prepare tasks
-        //console.log(self._starts);
 
         this.tasks = self._starts.map((task, i) => {
             if (task.IsLeader){
@@ -837,11 +829,11 @@ class Swimlanes {
 
             // uids
             if (!task.id) {
-                task.id = generate_id(task);
+                task.id = this.generate_id(task);
             }
 
             if (!task.GroupId) {
-                task.GroupId = generate_id(task);
+                task.GroupId = this.generate_id(task);
             }
 
             // swimlanes
@@ -922,8 +914,10 @@ class Swimlanes {
             this.gantt_start = date_utils.start_of(this.gantt_start, 'year');
             this.gantt_end = date_utils.add(this.gantt_end, 3, 'month');
             var addMonths = Math.ceil(this.$container.clientWidth / this.options.column_width) - Math.ceil(-date_utils.diff(this.gantt_start, this.gantt_end, 'day') / 30 );
-            this.gantt_start = date_utils.add(this.gantt_start, -addMonths, 'month');
-            this.gantt_start = date_utils.start_of(this.gantt_start, 'year');
+            if (addMonths > 0) {
+                this.gantt_start = date_utils.add(this.gantt_start, -addMonths, 'month');
+                this.gantt_start = date_utils.start_of(this.gantt_start, 'year');
+            }
         } else {
             this.gantt_start = date_utils.add(this.gantt_start, -1, 'month');
             this.gantt_end = date_utils.add(this.gantt_end, 1, 'month');
@@ -1471,16 +1465,16 @@ class Swimlanes {
     clear() {
         this.$svg.innerHTML = '';
     }
-}
 
-function generate_id(task) {
-    return (
-        task.Name +
-        '_' +
-        Math.random()
-            .toString(36)
-            .slice(2, 12)
-    );
+    generate_id(task) {
+        return (
+            task.Name +
+            '_' +
+            Math.random()
+                .toString(36)
+                .slice(2, 12)
+        );
+    }
 }
 
 return Swimlanes;

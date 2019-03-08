@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class DatePicker : DataTextBox
     {
@@ -138,6 +138,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Controls whether or not the DatePicker enables javascript (default true). If set to false, date picker will be disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> (default); otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableJavascript
+        {
+            get
+            {
+                return ViewState["EnableJavascript"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["EnableJavascript"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -173,7 +192,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavascript();
+            if (EnableJavascript)
+            {
+                RegisterJavascript();
+            }
+
             base.RenderControl( writer );
         }
 
@@ -187,7 +210,7 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, showOnFocus: {2}, format: '{3}', todayHighlight: {4}, forceParse: {5}, {6} {7} }});", 
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, showOnFocus: {2}, format: '{3}', todayHighlight: {4}, forceParse: {5}, {6} {7} }});",
                 this.ClientID,                                  // {0}
                 this.StartView.ConvertToInt(),                  // {1}
                 this.ShowOnFocus.ToString().ToLower(),          // {2}
@@ -374,13 +397,16 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-date-picker-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 if (IsCurrentDateOffset)
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
 
                     // set textbox val to something instead of empty string so that validation doesn't complain
-                    this.Text = "current";
+                    this.Text = "Current";
                     _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
@@ -393,8 +419,18 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayCurrentOption )
             {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbCurrent.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag(); // form-row
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _nbDayOffset.RenderControl( writer );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
             }
         }

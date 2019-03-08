@@ -65,7 +65,7 @@ namespace Rock.Migrations
         AND ( [Value] = '{SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID}' OR [Value] = '{SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID}' )
 " );
 
-            // Job for Migrating Family Check-in Identifiers to the head-of-household
+            // Job for Migrating Family Check-in Identifiers to the head-of-household (schedule for 9pm to avoid conflict with AppPoolRecycle)
             Sql( $@"
     INSERT INTO [dbo].[ServiceJob]
            ([IsSystem]
@@ -82,7 +82,7 @@ namespace Rock.Migrations
          ,'Move Family Check-in Identifiers to Person'
          ,'Moves family check-in identifiers to Person alternate ids. All the family ids will be associated with the families head of houshold.'
          ,'Rock.Jobs.MigrateFamilyAlternateId'
-         ,'0 0 4 1/1 * ? *'
+         ,'0 0 21 1/1 * ? *'
          ,3
          ,'{ SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS }')" );
 

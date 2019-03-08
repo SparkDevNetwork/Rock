@@ -47,21 +47,6 @@ namespace Rock.Address
         }
 
         /// <summary>
-        /// Obsolete method for verifying a location. Derived classes should override Verify method instead
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
-        /// <param name="result">The result code unique to the service.</param>
-        /// <returns>
-        /// True/False value of whether the verification was successful or not
-        /// </returns>
-        [Obsolete("Use Verify method instead")]
-        public virtual bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
-        {
-            return Verify( location, out result ) != VerificationResult.None;
-        }
-
-        /// <summary>
         /// Verifies the specified location.
         /// </summary>
         /// <param name="location">The location.</param>

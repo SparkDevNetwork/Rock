@@ -33,17 +33,17 @@ namespace Rock.Rest.Controllers
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
-        [System.Web.Http.Route("api/Auth/Login")]
+        [System.Web.Http.Route( "api/Auth/Login" )]
         public void Login( [FromBody]LoginParameters loginParameters )
         {
             bool valid = false;
 
             var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.EntityType != null) 
+            if ( userLogin != null && userLogin.EntityType != null )
             {
-                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                if ( component != null && component.IsActive)
+                var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                if ( component != null && component.IsActive )
                 {
                     if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
@@ -58,70 +58,5 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
-
-        /// <summary>
-        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
-        /// </summary>
-        /// <param name="facebookUser">The facebook user.</param>
-        /// <exception cref="HttpResponseException"></exception>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [HttpPost]
-        [System.Web.Http.Route( "api/Auth/FacebookLogin" )]
-        public void FacebookLogin( [FromBody]Rock.Security.ExternalAuthentication.Facebook.FacebookUser facebookUser )
-        {
-            string userName = Rock.Security.ExternalAuthentication.Facebook.GetFacebookUserName( facebookUser );
-            if ( !string.IsNullOrWhiteSpace( userName ) )
-            {
-                Rock.Security.Authorization.SetAuthCookie( userName, false, false );
-            }
-            else
-            {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-        }
-
-        /// <summary>
-        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
-        /// </summary>
-        /// <param name="googleUser">The google user.</param>
-        /// <exception cref="HttpResponseException"></exception>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [HttpPost]
-        [System.Web.Http.Route("api/Auth/GoogleLogin")]
-        public void GoogleLogin( [FromBody]Rock.Security.ExternalAuthentication.Google.GoogleUser googleUser )
-        {
-            string userName = Rock.Security.ExternalAuthentication.Google.GetGoogleUser(googleUser);
-            if ( !string.IsNullOrWhiteSpace(userName) )
-            {
-                Rock.Security.Authorization.SetAuthCookie(userName, false, false);
-            }
-            else
-            {
-                throw new HttpResponseException(HttpStatusCode.Unauthorized);
-            }
-        }
-
-        /// <summary>
-        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
-        /// </summary>
-        /// <param name="twitterUser">The twitter user.</param>
-        /// <exception cref="HttpResponseException"></exception>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [HttpPost]
-        [System.Web.Http.Route( "api/Auth/TwitterLogin" )]
-        public void TwitterLogin( [FromBody]Rock.Security.ExternalAuthentication.Twitter.TwitterUser twitterUser )
-        {
-            string userName = Rock.Security.ExternalAuthentication.Twitter.GetTwitterUser( twitterUser );
-            if ( !string.IsNullOrWhiteSpace( userName ) )
-            {
-                Rock.Security.Authorization.SetAuthCookie( userName, false, false );
-            }
-            else
-            {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-        }
-
     }
-
 }

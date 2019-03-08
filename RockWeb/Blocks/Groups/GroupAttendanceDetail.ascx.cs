@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
@@ -31,7 +32,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Communication;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -50,9 +50,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 8 )]
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
-    [BooleanField( "Show Anonymous Count", "Should the anonymous count be displayed?", true, "", 11 )]
-    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 12 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 13, "AttendanceEmailTemplate" )]
+    [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
+    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Fields
@@ -80,7 +79,12 @@ namespace RockWeb.Blocks.Groups
             /// <summary>
             /// Individual Entering Attendance
             /// </summary>
-            IndividualEnteringAttendance = 4
+            IndividualEnteringAttendance = 4,
+
+            /// <summary>
+            /// Group Administrator
+            /// </summary>
+            GroupAdministrator = 5
         }
 
         #endregion
@@ -221,18 +225,20 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null && _occurrence != null )
             {
-                SaveAttendance();
-                EmailAttendanceSummary();
-
-                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
-
-                var groupTypeIds = PageParameter( "GroupTypeIds" );
-                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                if ( SaveAttendance() )
                 {
-                    qryParams.Add( "GroupTypeIds", groupTypeIds );
-                }
+                    EmailAttendanceSummary();
 
-                NavigateToParentPage( qryParams );
+                    var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                    var groupTypeIds = PageParameter( "GroupTypeIds" );
+                    if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                    {
+                        qryParams.Add( "GroupTypeIds", groupTypeIds );
+                    }
+
+                    NavigateToParentPage( qryParams );
+                }
             }
         }
 
@@ -288,18 +294,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( mergeTemplate == null )
             {
-                this.LogException( new Exception( "No Merge Template specified in block settings" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Unable to print Attendance Roster";
+                nbPrintRosterWarning.Text = "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
             MergeTemplateType mergeTemplateType = mergeTemplate.GetMergeTemplateType();
             if ( mergeTemplateType == null )
             {
-                this.LogException( new Exception( "Unable to determine Merge Template Type" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Error printing Attendance Roster";
+                nbPrintRosterWarning.Text = "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
@@ -375,24 +381,24 @@ namespace RockWeb.Blocks.Groups
                 if ( !_attendees.Any( a => a.PersonId == ppAddPerson.PersonId.Value ) )
                 {
                     var rockContext = new RockContext();
-                    var Person = new PersonService( rockContext ).Get( ppAddPerson.PersonId.Value );
-                    if ( Person != null )
+                    var person = new PersonService( rockContext ).Get( ppAddPerson.PersonId.Value );
+                    if ( person != null )
                     {
                         string addPersonAs = GetAttributeValue( "AddPersonAs" );
                         if ( !addPersonAs.IsNullOrWhiteSpace() && addPersonAs == "Group Member" )
                         {
-                            AddPersonAsGroupMember( Person, rockContext );
+                            AddPersonAsGroupMember( person, rockContext );
                         }
 
                         var attendee = new GroupAttendanceAttendee();
-                        attendee.PersonId = Person.Id;
-                        attendee.NickName = Person.NickName;
-                        attendee.LastName = Person.LastName;
+                        attendee.PersonId = person.Id;
+                        attendee.NickName = person.NickName;
+                        attendee.LastName = person.LastName;
                         attendee.Attended = true;
-                        attendee.CampusIds = Person.GetCampusIds();
+                        attendee.CampusIds = person.GetCampusIds();
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Person", Person );
+                        mergeFields.Add( "Person", person );
                         mergeFields.Add( "Attended", true );
                         attendee.MergedTemplate = template.ResolveMergeFields( mergeFields );
                         _attendees.Add( attendee );
@@ -444,13 +450,14 @@ namespace RockWeb.Blocks.Groups
                 // redirect to the add page provided
                 if ( _group != null && _occurrence != null )
                 {
-                    SaveAttendance();
-
-                    var queryParams = new Dictionary<string, string>();
-                    queryParams.Add( "GroupId", _group.Id.ToString() );
-                    queryParams.Add( "GroupName", _group.Name );
-                    queryParams.Add( "ReturnUrl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
-                    NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                    if ( SaveAttendance() )
+                    {
+                        var queryParams = new Dictionary<string, string>();
+                        queryParams.Add( "GroupId", _group.Id.ToString() );
+                        queryParams.Add( "GroupName", _group.Name );
+                        queryParams.Add( "ReturnUrl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
+                        NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                    }
                 }
             }
         }
@@ -517,6 +524,12 @@ namespace RockWeb.Blocks.Groups
             var locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
             var scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
 
+            if ( scheduleId == null )
+            {
+                // if no specific schedule was specified in the URL, use the group's scheduleId 
+                scheduleId = _group.ScheduleId;
+            }
+
             // If this is a postback, check to see if date/location/schedule were updated
             if ( Page.IsPostBack && _allowAdd )
             {
@@ -536,9 +549,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            if ( occurrence == null && occurrenceDate.HasValue )
+            {
+                // if no specific occurrenceId was specified, try to find a matching occurrence from Date, GroupId, Location, ScheduleId
+                occurrence = occurrenceService.Get( occurrenceDate.Value.Date, _group.Id, locationId, scheduleId );
+            }
+
             // If an occurrence date was included, but no occurrence was found with that date, and new 
             // occurrences can be added, create a new one
-            if ( _allowAdd )
+            if ( occurrence == null && _allowAdd )
             {
                 // Create a new occurrence record and return it
                 return new AttendanceOccurrence
@@ -551,7 +570,7 @@ namespace RockWeb.Blocks.Groups
                 };
             }
 
-            return null;
+            return occurrence;
 
         }
 
@@ -726,7 +745,8 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value )
+                            a.DidAttend.Value &&
+                            a.PersonAlias != null)
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
                         .ToList();
@@ -865,7 +885,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Method to save attendance for use in two separate areas.
         /// </summary>
-        protected void SaveAttendance()
+        protected bool SaveAttendance()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -891,7 +911,7 @@ namespace RockWeb.Blocks.Groups
                         nbNotice.NotificationBoxType = NotificationBoxType.Danger;
                         nbNotice.Visible = true;
 
-                        return;
+                        return false;
                     }
                     else
                     {
@@ -940,6 +960,15 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
+                        _occurrence.Schedule = _occurrence.Schedule == null && _occurrence.ScheduleId.HasValue ? new ScheduleService( rockContext ).Get( _occurrence.ScheduleId.Value ) : _occurrence.Schedule;
+
+                        cvAttendance.IsValid = _occurrence.IsValid;
+                        if ( !cvAttendance.IsValid )
+                        {
+                            cvAttendance.ErrorMessage = _occurrence.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
+
                         foreach ( var attendee in _attendees )
                         {
                             var attendance = existingAttendees
@@ -954,14 +983,14 @@ namespace RockWeb.Blocks.Groups
                                     attendance = new Attendance();
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
-                                    attendance.StartDateTime = _occurrence.OccurrenceDate;
+                                    attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
 
                                     // check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;
                                     if ( !cvAttendance.IsValid )
                                     {
                                         cvAttendance.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                                        return;
+                                        return false;
                                     }
 
                                     occurrence.Attendees.Add( attendance );
@@ -1006,7 +1035,10 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+                _occurrence.Id = occurrence.Id;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -1016,9 +1048,11 @@ namespace RockWeb.Blocks.Groups
         {
             try
             {
+                var rockContext = new RockContext();
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get(_occurrence.Id);
                 var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "Group", _group );
-                mergeObjects.Add( "AttendanceOccurrence", _occurrence );
+                mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
                 List<string> recipients = new List<string>();
@@ -1045,6 +1079,14 @@ namespace RockWeb.Blocks.Groups
                                 var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                 .Where( m => m.GroupId == _group.Id );
                                 recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                            }
+                            break;
+                        case SendSummaryEmailType.GroupAdministrator:
+                            {
+                                if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
+                                {
+                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
+                                }
                             }
                             break;
                         case SendSummaryEmailType.ParentGroupLeaders:

@@ -90,6 +90,8 @@
                     <Rock:BootstrapButton ID="btnDay" runat="server" CssClass="btn btn-default" Text="Day" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnWeek" runat="server" CssClass="btn btn-default" Text="Week" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnMonth" runat="server" CssClass="btn btn-default" Text="Month" OnClick="btnViewMode_Click" />
+                    <Rock:BootstrapButton ID="btnYear" runat="server" CssClass="btn btn-default" Text="Year" OnClick="btnViewMode_Click" />
+                    <Rock:BootstrapButton ID="btnAll" runat="server" CssClass="btn btn-default" Text="All" OnClick="btnViewMode_Click" />
                 </div>
 
                 <asp:Literal ID="lOutput" runat="server"></asp:Literal>

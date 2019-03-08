@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -25,6 +26,7 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
+using Rock.Jobs;
 
 namespace Rock.Utility.SparkDataApi
 {
@@ -33,7 +35,8 @@ namespace Rock.Utility.SparkDataApi
     /// </summary>
     public class NcoaApi
     {
-        private string NCOA_SERVER = "https://app.truencoa.com"; // "https://app.testing.truencoa.com";
+        private string NCOA_SERVER = "https://app.truencoa.com";
+        //private string NCOA_SERVER = "https://app.testing.truencoa.com";
         private int _batchsize = 150;
         private string _username;
         private string _password;
@@ -109,16 +112,22 @@ namespace Rock.Utility.SparkDataApi
         {
             try
             {
+                string directory = AppDomain.CurrentDomain.BaseDirectory;
+                directory = Path.Combine( directory, "App_Data", "Logs" );
+
+                if ( !Directory.Exists( directory ) )
+                {
+                    Directory.CreateDirectory( directory );
+                }
+
+                string filePath = Path.Combine( directory, "NcoaException.log" );
+                File.WriteAllText( filePath, string.Empty );
+
                 PersonAddressItem[] addressArray = addresses.Values.ToArray();
                 StringBuilder data = new StringBuilder();
                 for ( int i = 1; i <= addressArray.Length; i++ )
                 {
                     PersonAddressItem personAddressItem = addressArray[i - 1];
-                    if ( personAddressItem.Country.ToUpperInvariant() != "US" || personAddressItem.State.Length == 1 || personAddressItem.State.Length > 2 )
-                    {
-                        continue; // Only support US addresses
-                    }
-
                     data.AppendFormat( "{0}={1}&", "individual_id", $"{personAddressItem.PersonId}_{personAddressItem.PersonAliasId}_{personAddressItem.FamilyId}_{personAddressItem.LocationId}" );
                     data.AppendFormat( "{0}={1}&", "individual_first_name", personAddressItem.FirstName );
                     data.AppendFormat( "{0}={1}&", "individual_last_name", personAddressItem.LastName );
@@ -134,12 +143,16 @@ namespace Rock.Utility.SparkDataApi
                         var request = new RestRequest( $"api/files/{id}/records", Method.POST );
                         request.AddParameter( "application/x-www-form-urlencoded", data.ToString().TrimEnd( '&' ), ParameterType.RequestBody );
                         IRestResponse response = _client.Execute( request );
+
+                        try
+                        {
+                            File.AppendAllText( filePath, $"{data.ToString().TrimEnd( '&' )}{Environment.NewLine}Status Code: {response.StatusCode}{Environment.NewLine}Response: {response.Content.ToStringSafe()}{Environment.NewLine}" );
+                        }
+                        catch { }
+
                         if ( response.StatusCode != HttpStatusCode.OK )
                         {
-                            throw new HttpResponseException( new HttpResponseMessage( response.StatusCode )
-                            {
-                                Content = new StringContent( response.Content )
-                            } );
+                            throw new Exception( $"Failed to upload addresses to NCOA. Status Code: {response.StatusCode}, Response: {response.Content.ToStringSafe()}" );
                         }
 
                         data = new StringBuilder();
@@ -157,10 +170,7 @@ namespace Rock.Utility.SparkDataApi
                 IRestResponse response = _client.Execute( request );
                 if ( response.StatusCode != HttpStatusCode.OK )
                 {
-                    throw new HttpResponseException( new HttpResponseMessage( response.StatusCode )
-                    {
-                        Content = new StringContent( response.Content )
-                    } );
+                    throw new Exception( $"Failed to upload addresses to NCOA. Status Code: {response.StatusCode}, Response: {response.Content.ToStringSafe()}" );
                 }
 
                 NcoaResponse file;
@@ -317,6 +327,7 @@ namespace Rock.Utility.SparkDataApi
                 {
                     NcoaResponse file = JsonConvert.DeserializeObject<NcoaResponse>( response.Content );
                     return file.Status == "Exported" || file.Status == "Processed";
+
                 }
                 catch
                 {
@@ -325,7 +336,7 @@ namespace Rock.Utility.SparkDataApi
             }
             catch ( Exception ex )
             {
-                throw new AggregateException( "Communication with NCOA server failed: Could not check if the export is created. Possible cause is the NCOA API server is down.", ex );
+                throw new NoRetryAggregateException( "Communication with NCOA server failed: Could not check if the export is created. Possible cause is the NCOA API server is down.", ex );
             }
         }
 
@@ -340,49 +351,73 @@ namespace Rock.Utility.SparkDataApi
 
             try
             {
-                var request = new RestRequest( $"api/files/{exportfileid}/records", Method.GET );
-                request.AddParameter( "application/x-www-form-urlencoded", "status=submit", ParameterType.RequestBody );
-                IRestResponse response = _client.Execute( request );
-                if ( response.StatusCode != HttpStatusCode.OK )
+                DateTime dt = DateTime.Now;
+                int start = 1;
+                int end = 1000;
+                int step = 1000;
+                bool finished = false;
+                records = new List<NcoaReturnRecord>();
+                while ( !finished )
                 {
-                    throw new HttpResponseException( new HttpResponseMessage( response.StatusCode )
+                    var request = new RestRequest( $"api/files/{exportfileid}/records?start={start}&end={end}", Method.GET );
+                    IRestResponse response = _client.Execute( request );
+                    if ( response.StatusCode != HttpStatusCode.OK )
                     {
-                        Content = new StringContent( response.Content )
-                    } );
-                }
-
-                Dictionary<string, object> obj = null;
-                try
-                {
-                    obj = JObject.Parse( response.Content ).ToObject<Dictionary<string, object>>();
-
-                    var recordsjson = (string)obj["Records"].ToString();
-                    records = JsonConvert.DeserializeObject<List<NcoaReturnRecord>>( recordsjson, new JsonSerializerSettings
-                    {
-                        MissingMemberHandling = MissingMemberHandling.Error
-                    } );
-                    DateTime dt = DateTime.Now;
-                    records.ForEach( r => r.NcoaRunDateTime = dt );
-
-                    // NCOA return two entries for each move. One for the new address, and one for the previous address. Remove the old address because it is not required.
-                    var movedRecords = records.Where( r => r.RecordType == "C" && r.MatchFlag == "M" ).ToList(); // Find all the moved addresses with a current address
-                    records.RemoveAll( r => r.RecordType == "H" && movedRecords.Any( m => m.InputIndividualId == r.InputIndividualId ) ); // Delete all the moved addresses's previous addresses
-                }
-                catch ( Exception ex)
-                {
-                    if ( obj != null && obj.ContainsKey( "error" ) )
-                    {
-                        throw new AggregateException( $"NCOA error response: {obj["error"]}", ex );
+                        throw new HttpResponseException( new HttpResponseMessage( response.StatusCode )
+                        {
+                            Content = new StringContent( response.Content )
+                        } );
                     }
-                    else
+
+                    Dictionary<string, object> obj = null;
+                    try
                     {
-                        throw new AggregateException( $"Failed to deserialize NCOA response: {response.Content}", ex );
+                        obj = JObject.Parse( response.Content ).ToObject<Dictionary<string, object>>();
+
+                        var recordsjson = ( string ) obj["Records"].ToString();
+                        List<NcoaReturnRecord> instanceRecords = JsonConvert.DeserializeObject<List<NcoaReturnRecord>>( recordsjson, new JsonSerializerSettings
+                        {
+                            MissingMemberHandling = MissingMemberHandling.Error
+                        } );
+
+                        if ( instanceRecords == null )
+                        {
+                            instanceRecords = new List<NcoaReturnRecord>();
+                        }
+
+                        instanceRecords.ForEach( r => r.NcoaRunDateTime = dt );
+                        records.AddRange( instanceRecords );
+                        if ( instanceRecords.Count < step )
+                        {
+                            finished = true;
+                        }
+                        else
+                        {
+                            start += step;
+                            end += step;
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        if ( obj != null && obj.ContainsKey( "error" ) )
+                        {
+                            throw new Exception( $"NCOA error response: {obj["error"]}" );
+                        }
+                        else
+                        {
+                            throw new AggregateException( $"Failed to deserialize NCOA response: {response.Content}", ex );
+                        }
                     }
                 }
+
+                // NCOA return two entries for each move. One for the new address, and one for the previous address. Remove the old address because it is not required.
+                var movedRecords = records.Where( r => r.RecordType == "C" && r.MatchFlag == "M" ).ToList(); // Find all the moved addresses with a current address
+                records.RemoveAll( r => r.RecordType == "H" && movedRecords.Any( m => m.InputIndividualId == r.InputIndividualId ) ); // Delete all the moved addresses's previous addresses
+
             }
             catch ( Exception ex )
             {
-                throw new AggregateException( "Communication with NCOA server failed: Could not download export. Possible cause is the NCOA API server is down.", ex );
+                throw new NoRetryAggregateException( "Communication with NCOA server failed: Could not download export. Possible cause is the NCOA API server is down.", ex );
             }
         }
 

@@ -248,6 +248,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -282,7 +283,8 @@ namespace Rock.Model
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="changes">The changes.</param>
-        [Obsolete( "Use other SetFromPaymentInfo" )]
+        [RockObsolete( "1.7.1" )]
+        [Obsolete( "Use other SetFromPaymentInfo", true )]
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
         {
             this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );
@@ -357,6 +359,17 @@ namespace Rock.Model
                 {
                     ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
                 }
+            }
+            else
+            {
+                var newLocation = new LocationService( rockContext ).Get(
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+
+                if ( !BillingLocationId.HasValue && newLocation != null )
+                {
+                    BillingLocationId = newLocation.Id;
+                }
+
             }
         }
 

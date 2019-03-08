@@ -49,7 +49,7 @@ namespace Rock.Field.Types
             {
                 List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
                 List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
-                return dayNames.AsDelimited( "," );
+                return dayNames.AsDelimited( ", " );
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -81,9 +81,9 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
+            if ( daysOfWeekPicker != null )
             {
-                return daysOfWeekPicker.SelectedDaysOfWeek.Select( a => a.ConvertToInt().ToString()).ToList().AsDelimited( "," );
+                return daysOfWeekPicker.SelectedDaysOfWeek.Select( a => a.ConvertToInt().ToString() ).ToList().AsDelimited( "," );
             }
 
             return null;
@@ -98,9 +98,10 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var daysOfWeekPicker = control as DaysOfWeekPicker;
-            if (daysOfWeekPicker != null)
+            if ( daysOfWeekPicker != null )
             {
-                daysOfWeekPicker.SelectedDaysOfWeek = (value ?? string.Empty).Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
+                var selectedDaysOfWeek = ( value ?? string.Empty ).SplitDelimitedValues().AsIntegerList().Select( a => ( DayOfWeek ) a ).ToList();
+                daysOfWeekPicker.SelectedDaysOfWeek = selectedDaysOfWeek;
             }
         }
 
@@ -120,6 +121,26 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.ContainsFilterComparisonTypes;
             }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => ( DayOfWeek ) ( a.AsInteger() ) ).ToList();
+                List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
+                return AddQuotes( dayNames.AsDelimited( "' AND '" ) );
+            }
+
+            return string.Empty;
         }
 
         #endregion

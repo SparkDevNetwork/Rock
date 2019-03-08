@@ -178,7 +178,7 @@ namespace Rock.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
-                            if ( attribute != null )
+                            if ( attribute != null && attribute.IsActive )
                             {
                                 selectedAttributes.Add( columnIndex, attribute );
 
@@ -414,6 +414,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="phFilters">The ph filters.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete()]
         public static DataViewFilterOverrides GetFilterOverridesFromControls( PlaceHolder phFilters )
         {
@@ -552,7 +553,7 @@ namespace Rock.Reporting
         /// <param name="filterField">The filter field.</param>
         public static void RegisterJavascriptInclude( FilterField filterField )
         {
-            ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
+            //ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
         }
 
         #region FilterInfo Helpers

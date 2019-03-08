@@ -523,7 +523,8 @@ namespace Rock.Model
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
-        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead", true )]
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
             var group = new GroupService( this.Context as RockContext ).Get( groupId );
@@ -804,27 +805,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="street1">The street1.</param>
-        /// <param name="street2">The street2.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
-        /// <param name="country">The country.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete("Use AddNewGroupAddress instead.")]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, street1, street2, city, state, postalCode, country, moveExistingToPrevious );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -842,7 +823,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -862,7 +843,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -893,22 +874,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            int? locationId, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, locationId, moveExistingToPrevious );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -920,7 +886,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -935,7 +901,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -956,23 +922,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            Location location, bool moveExistingToPrevious = false )
-        {
-            var isMappedMailing = locationTypeGuid != SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS; // Mapped and Mailing = true unless location type is Previous
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious, "", isMappedMailing, isMappedMailing );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -984,7 +934,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -998,7 +948,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -1171,9 +1121,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
-            bool allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            return AllowsDuplicateMembers();
+        }
+
+        /// <summary>
+        /// Returns true if duplicate group members are allowed in groups
+        /// Normally this is false, but there is a web.config option to allow it
+        /// </summary>
+        /// <returns></returns>
+        public static bool AllowsDuplicateMembers()
+        {
+            var allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
             return allowDuplicateGroupMembers;
         }
 

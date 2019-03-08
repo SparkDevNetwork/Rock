@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,7 +53,8 @@ namespace Rock.Communication.Medium
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The GetCommunication now creates the HTML Preview directly", true )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
             throw new NotSupportedException();
@@ -64,19 +65,21 @@ namespace Rock.Communication.Medium
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
-        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The CommunicationDetail block now creates the details", true )]
         public override string GetMessageDetails( Model.Communication communication )
         {
             throw new NotSupportedException();
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether [supports bulk communication].
         /// </summary>
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "All mediums now support bulk communications" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "All mediums now support bulk communications", true )]
         public override bool SupportsBulkCommunication
         {
             get

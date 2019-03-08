@@ -175,14 +175,14 @@ namespace Rock.Extension
                 int order = 0;
 
                 string value = GetAttributeValue( "Order" );
-                if ( Int32.TryParse( value, out order ) )
+                if ( int.TryParse( value, out order ) )
                 {
                     return order;
                 }
 
                 if (Attributes.ContainsKey("Order"))
                 {
-                    if ( Int32.TryParse( Attributes["Order"].DefaultValue, out order ) )
+                    if ( int.TryParse( Attributes["Order"].DefaultValue, out order ) )
                     {
                         return order;
                     }

@@ -59,6 +59,14 @@ namespace Rock.Financial
         public DefinedValueCache InitialCreditCardTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the Gateway Person Identifier.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
         /// Gets the account number.
         /// </summary>
         public override string MaskedNumber

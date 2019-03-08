@@ -35,6 +35,15 @@ namespace Rock.Attribute
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public AttributeFieldAttribute( string name )
+            : this( "", name )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AttributeFieldAttribute" /> class.
         /// </summary>
         /// <param name="entityTypeGuid">The entity type GUID.</param>
@@ -135,6 +144,38 @@ namespace Rock.Attribute
             {
                 Key = Name.Replace( " ", string.Empty );
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the EntityType.Guid that the Attribute List should be limited to.
+        /// </summary>
+        /// <value>
+        /// The entity type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( value ) );
         }
     }
 }

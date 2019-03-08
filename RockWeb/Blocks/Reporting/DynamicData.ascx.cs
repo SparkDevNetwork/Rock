@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Reporting
 
     // Block Properties
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this dynamic data block.", false, "", "", 1 )]
 
     // Custom Settings
     [CodeEditorField( "Query", "The query to execute. Note that if you are providing SQL you can add items from the query string using Lava like {{ QueryParmName }}.", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "CustomSetting" )]
@@ -212,7 +213,7 @@ namespace RockWeb.Blocks.Reporting
                     page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
                     rockContext.SaveChanges();
-                    
+
                     pageCache = PageCache.Get( RockPage.PageId );
 
                     var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();
@@ -317,6 +318,7 @@ namespace RockWeb.Blocks.Reporting
             errorMessage = string.Empty;
 
             string query = GetAttributeValue( "Query" );
+            string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
             if ( !string.IsNullOrWhiteSpace( query ) )
             {
                 try
@@ -329,7 +331,7 @@ namespace RockWeb.Blocks.Reporting
                         mergeFields.AddOrReplace( pageParam.Key, pageParam.Value );
                     }
 
-                    query = query.ResolveMergeFields( mergeFields );
+                    query = query.ResolveMergeFields( mergeFields, enabledLavaCommands );
 
                     var parameters = GetParameters();
                     int timeout = GetAttributeValue( "Timeout" ).AsInteger();
@@ -434,6 +436,7 @@ namespace RockWeb.Blocks.Reporting
         private void BuildControls( bool setData )
         {
             var showGridFilterControls = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
+            string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
             string errorMessage = string.Empty;
 
             // get just the schema of the data until we actually need the data
@@ -460,9 +463,18 @@ namespace RockWeb.Blocks.Reporting
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         int i = 1;
-                        
+
                         // Formatted output needs all the rows, so get the data regardless of the setData parameter
                         var dataSet = GetData( out errorMessage);
+
+                        if ( dataSet == null || dataSet.Tables == null )
+                        {
+
+                            nbError.Text = errorMessage;
+                            nbError.Visible = true;
+                            return;
+                        }
+
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var dropRows = new List<DataRowDrop>();
@@ -488,7 +500,7 @@ namespace RockWeb.Blocks.Reporting
                     // set page title
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) )
                     {
-                        string title = GetAttributeValue( "PageTitleLava" ).ResolveMergeFields( mergeFields );
+                        string title = GetAttributeValue( "PageTitleLava" ).ResolveMergeFields( mergeFields, enabledLavaCommands );
 
                         RockPage.BrowserTitle = title;
                         RockPage.PageTitle = title;
@@ -517,7 +529,7 @@ namespace RockWeb.Blocks.Reporting
                             nbError.Visible = true;
                             return;
                         }
-                         
+
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var div = new HtmlGenericControl( "div" );
@@ -539,7 +551,7 @@ namespace RockWeb.Blocks.Reporting
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
                             GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
-               
+
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -573,7 +585,7 @@ namespace RockWeb.Blocks.Reporting
                                 FilterTable( grid, dataTable );
                                 SortTable( grid, dataTable );
                                 grid.DataSource = dataTable;
-                                
+
                                 if ( personReport )
                                 {
                                     grid.EntityTypeId = EntityTypeCache.GetId<Person>();
@@ -585,7 +597,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        phContent.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( mergeFields ) ) );
+                        phContent.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( mergeFields, enabledLavaCommands ) ) );
                     }
                 }
 
@@ -856,7 +868,7 @@ namespace RockWeb.Blocks.Reporting
                 dataView.RowFilter = null;
                 return;
             }
-            
+
             var query = new List<string>();
 
             foreach ( var control in GridFilter.Controls.OfType<Control>() )
@@ -866,7 +878,7 @@ namespace RockWeb.Blocks.Reporting
                     var dateRangePicker = control as DateRangePicker;
                     var minValue = dateRangePicker.LowerValue;
                     var maxValue = dateRangePicker.UpperValue;
-                    
+
                     var colName = GridFilterColumnLookup[control];
 
                     if ( minValue.HasValue )
@@ -895,7 +907,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     var textBox = control as RockTextBox;
                     var value = textBox.Text;
-                    var colName = GridFilterColumnLookup[control]; 
+                    var colName = GridFilterColumnLookup[control];
                     var colIndex = dataView.Table.Columns.IndexOf( colName );
 
                     if ( colIndex != -1 && !string.IsNullOrWhiteSpace( value ) )
@@ -904,7 +916,7 @@ namespace RockWeb.Blocks.Reporting
 
                         if ( col.DataType.Name == "String" )
                         {
-                            query.Add( string.Format( "[{0}] LIKE '%{1}%'", colName, value ) );
+                            query.Add( string.Format( "[{0}] LIKE '%{1}%'", colName, value.Replace( "'", "''" ) ) );
                         }
                         else if ( col.DataType.Name.StartsWith( "Int" ) )
                         {

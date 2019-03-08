@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +23,7 @@ using System.Threading.Tasks;
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 52, "1.8.0" )]
@@ -25,6 +41,7 @@ namespace Rock.Plugin.HotFixes
             //ERAFinancial();
             //AddDisplayNotes();
             //HomepageStylesheet();
+            //HomepageMatrix();
         }
 
         /// <summary>
@@ -32,7 +49,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-         
+
         }
 
         /// <summary>
@@ -76,7 +93,7 @@ namespace Rock.Plugin.HotFixes
             Sql( @"
                     DECLARE @SiblingRelationshipId int = (SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid]='1D92F0E1-E161-4160-9C63-2D0A901D3C38')
                     DECLARE @ParentRelationshipId int = (SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = '6F3FADC4-6320-4B54-9CF6-02EF9586A660') -- Person Pages
- 
+
                     DECLARE @ReplaceValue Varchar(max) = '""ParentRelationshipId"":'+convert(varchar,@ParentRelationshipId)+',""SiblingRelationshipId"":'+ Convert(varchar,@SiblingRelationshipId) +',""UseSameHomeAddress""'
                     UPDATE
                         [Attribute]
@@ -181,7 +198,7 @@ namespace Rock.Plugin.HotFixes
 
     <div class=""feature"">
 
-        <div class=""feature-image"" style="" background-image: url('/GetImage.ashx?Guid={{ Item | Attribute:'FeatureImage','RawValue' }}&w=2400&h=2400');""></div>
+        <div class=""feature-image"" style="" background-image: url('{{ '' | ResolveRockUrl }}/GetImage.ashx?Guid={{ Item | Attribute:'FeatureImage','RawValue' }}&w=2400&h=2400');""></div>
         <h1 class=""feature-title"">{{ Item | Attribute:'FeatureTitle' }}</h1>
         <p>
             {{ Item | Attribute:'FeatureText' }}
@@ -225,5 +242,32 @@ namespace Rock.Plugin.HotFixes
 
 </div>" );
         }
+
+        /// <summary>
+        /// GJ: Default Values IF move adult children is not enabled.
+        /// </summary>
+        private void HomepageMatrix()
+        {
+            Sql( @"
+            UPDATE [dbo].[AttributeMatrixTemplate] SET [FormattedLava] = N'{% if AttributeMatrixItems != empty %}
+<div class=""row"">
+{% for attributeMatrixItem in AttributeMatrixItems %}
+    <div class=""homepage-article col-md-4"">
+      <div class=""photo"" style=""background-image: url(''{{ '''' | ResolveRockUrl }}/GetImage.ashx?Guid={{ attributeMatrixItem | Attribute:''ArticleImage'',''RawValue'' }}'')"" alt=""{{ attributeMatrixItem | Attribute:''ArticleTitle'' }}""></div>
+      <div class=""body"">
+        <h5 class=""title"">{{ attributeMatrixItem | Attribute:''ArticleTitle'' }}</h5>
+        <div class=""body"">{{ attributeMatrixItem | Attribute:''ArticleContent'' }}</div>
+        {% assign articleLink = attributeMatrixItem | Attribute:''ArticleLink'',''RawValue'' -%}
+        {% if articleLink != empty -%}
+            <a class=""btn btn-xs btn-link"" href=""{{ articleLink }}"">More Info</a>
+        {% endif -%}
+     </div>
+    </div>
+    {% cycle '''', '''', ''</div><div class=""row"">'' %}
+{% endfor %}
+</div>
+{% endif %}' WHERE [Guid] = '1d24694e-445c-4852-b5bc-64cdea6f7175'" );
+        }
+
     }
 }

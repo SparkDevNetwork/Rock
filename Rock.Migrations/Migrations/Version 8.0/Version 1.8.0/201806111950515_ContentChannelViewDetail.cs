@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ namespace Rock.Migrations
     using Rock.SystemGuid;
 
     /// <summary>
-    ///
+    /// NOTE: ContentChannelViewDetail got renamed to ContentChannelItemView in v9.0
     /// </summary>
     public partial class ContentChannelViewDetail : Rock.Migrations.RockMigration
     {

@@ -126,7 +126,7 @@ namespace Rock.Model
         public int? AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the cost (if template is configured to allow cost on instance).
+        /// Gets or sets the cost (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
         /// </summary>
         /// <value>
         /// The cost.
@@ -135,13 +135,23 @@ namespace Rock.Model
         public decimal? Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum initial payment (if template is configured to allow cost on instance).
+        /// Gets or sets the minimum initial payment (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
         /// </summary>
         /// <value>
         /// The minimum initial payment.
         /// </value>
         [DataMember]
         public decimal? MinimumInitialPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default amount to pay per registrant (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
+        /// If this is null, the default payment will be the <see cref="Cost"/>
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        [DataMember]
+        public decimal? DefaultPayment { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

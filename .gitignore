@@ -23,6 +23,7 @@ StyleCop.Cache
 #specific folders
 [Oo]bj/
 RockWeb/Cache/*
+RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 /scaffolding.config
 *.sln.GhostDoc.xml
@@ -34,3 +35,7 @@ Packages/*
 # javascript deps
 node_modules
 *.map
+/packages/
+/Installers/CheckScannerInstall/UpgradeLog.htm
+/Installers/CheckScannerInstall/UpgradeLog2.htm
+/Installers/CheckScannerInstall_2017/CheckScannerInstall

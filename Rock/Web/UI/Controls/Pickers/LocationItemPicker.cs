@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentLocationIds.AsDelimited( "," );
-                ItemName = location.ToString();
+                ItemName = location.Name;
             }
             else
             {

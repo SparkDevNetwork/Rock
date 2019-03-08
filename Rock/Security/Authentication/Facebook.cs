@@ -336,6 +336,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public static string GetFacebookUserName( FacebookUser facebookUser, bool syncFriends = false, string accessToken = "" )
         {
+            // accessToken is required
+            if ( accessToken.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             string username = string.Empty;
             string facebookId = facebookUser.id;
             string facebookLink = facebookUser.link;
@@ -476,15 +482,6 @@ namespace Rock.Security.ExternalAuthentication
                                         }
                                     }
                                 }
-                            }
-
-                            // Save the facebook social media link
-                            var facebookAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid() );
-                            if ( facebookAttribute != null )
-                            {
-                                person.LoadAttributes( rockContext );
-                                person.SetAttributeValue( facebookAttribute.Key, facebookLink );
-                                person.SaveAttributeValues( rockContext );
                             }
 
                             if ( syncFriends && !string.IsNullOrWhiteSpace( accessToken ) )

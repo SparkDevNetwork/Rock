@@ -28,6 +28,7 @@ namespace Rock.Data
     /// <summary>
     /// Helper class to set view cache
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "Does nothing. No longer needed," )]
     public static class RockInteractiveViews
     {
@@ -35,6 +36,7 @@ namespace Rock.Data
         /// Sets the view factory.
         /// </summary>
         /// <param name="path">The path.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Does nothing. No longer needed,")]
         public static void SetViewFactory( string path )
         {
@@ -201,6 +203,14 @@ namespace Rock.Data
         /// The analytics source person historicals.
         /// </value>
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the asset storage providers.
+        /// </summary>
+        /// <value>
+        /// The asset storage providers.
+        /// </value>
+        public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
 
         /// <summary>
         /// Gets or sets the attendances.
@@ -417,6 +427,14 @@ namespace Rock.Data
         /// The communication recipients.
         /// </value>
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication responses.
+        /// </summary>
+        /// <value>
+        /// The communication responses.
+        /// </value>
+        public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
 
         /// <summary>
         /// Gets or sets the communication template attachment.
@@ -1115,22 +1133,6 @@ namespace Rock.Data
         public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
 
         /// <summary>
-        /// Gets or sets the meta personicx lifestage clusters.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage clusters.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageCluster> MetaPersonicxLifestageClusters { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage groups.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage groups.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageGroup> MetaPersonicxLifestageGroups { get; set; }
-
-        /// <summary>
         /// Gets or sets the metaphones.
         /// </summary>
         /// <value>
@@ -1419,6 +1421,14 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template fee items.
+        /// </summary>
+        /// <value>
+        /// The registration template fee items.
+        /// </value>
+        public DbSet<RegistrationTemplateFeeItem> RegistrationTemplateFeeItems { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration template forms.
         /// </summary>
         /// <value>
@@ -1481,6 +1491,14 @@ namespace Rock.Data
         /// The schedules.
         /// </value>
         public DbSet<Schedule> Schedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service job histories.
+        /// </summary>
+        /// <value>
+        /// The service job histories.
+        /// </value>
+        public DbSet<ServiceJobHistory> ServiceJobHistories { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.

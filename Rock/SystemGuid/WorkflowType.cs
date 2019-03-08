@@ -30,6 +30,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The Protect My Ministry workflow action.
         /// </summary>
-        public static readonly string PROTECTMYMINISTRY = "16D12EF7-C546-4039-9036-B73D118EDC90";
+        public const string PROTECTMYMINISTRY = "16D12EF7-C546-4039-9036-B73D118EDC90";
+
+        /// <summary>
+        /// Unattended Checkin Workflow Type
+        /// </summary>
+        public const string UNATTENDED_CHECKIN = "011E9F5A-60D4-4FF5-912A-290881E37EAF";
     }
 }

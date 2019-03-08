@@ -1,15 +1,11 @@
-﻿<style>
-
-</style>
-
-{% assign item = Items | First %}
-{% if item  %}
+﻿{% assign item = Items | First %}
+{% if item %}
 
 	{% assign videoLink = item | Attribute:'VideoLink','RawValue' %}
 	{% assign videoEmbed = item | Attribute:'VideoEmbed' %}
 	{% assign audioLink = item | Attribute:'AudioLink','RawValue' %}
 
-	<artcile class="message-detail">
+	<article class="message-detail">
 
 		{% if videoEmbed != '' %}
 			{{ videoEmbed }}
@@ -43,7 +39,7 @@
 					</div>
 				{% endif %}
 			</div>
-		</row>
+		</div>
 	</article>
 
 {% else %}

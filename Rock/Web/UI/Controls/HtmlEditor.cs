@@ -306,7 +306,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The custom on change press script.
         /// </value>
-        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead", true )]
         public string OnChangeScript
         {
             get
@@ -477,19 +478,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the additional configurations.
-        /// </summary>
-        /// <value>
-        /// The additional configurations.
-        /// </value>
-        [Obsolete( "Doesn't do anything anymore" )]
-        public string AdditionalConfigurations
-        {
-            get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
-            set { ViewState["AdditionalConfigurations"] = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [start in code editor mode].
         /// </summary>
         /// <value>
@@ -550,7 +538,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+                RockPage.AddScriptLink( Page, "~/Scripts/summernote/summernote.min.js" );
                 RockPage.AddScriptLink( Page, "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
             }
 
@@ -684,6 +672,7 @@ namespace Rock.Web.UI.Controls
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
@@ -768,7 +757,8 @@ $(document).ready( function() {{
             documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
             imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
-            fileTypeBlackList: '{fileTypeBlackList}'
+            fileTypeBlackList: '{fileTypeBlackList}',
+            fileTypeWhiteList: '{fileTypeWhiteList}'
         }},
 
         rockMergeFieldOptions: {{ 

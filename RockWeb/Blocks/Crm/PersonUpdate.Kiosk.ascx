@@ -8,37 +8,38 @@
             var isTouchDevice = 'ontouchstart' in document.documentElement;
 
             Sys.Application.add_load(function () {
+                $(document).ready(function() {
 
+                    //
+                    // search
+                    //
+                    if ($(".js-pnlsearch").is(":visible")) {
 
-                //
-                // search 
-                //
-                if ($(".js-pnlsearch").is(":visible")) {
+                        // setup digits buttons
+                        $('.js-pnlsearch .tenkey a.digit').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val($phoneNumber.val() + $(this).html());
+                            return false;
+                        });
+                        $('.js-pnlsearch .tenkey a.back').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val($phoneNumber.val().slice(0, -1));
+                            return false;
+                        });
+                        $('.js-pnlsearch .tenkey a.clear').click(function () {
+                            $phoneNumber = $("input[id$='tbPhone']");
+                            $phoneNumber.val('');
+                            return false;
+                        });
 
-                    // setup digits buttons
-                    $('.js-pnlsearch .tenkey a.digit').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val($phoneNumber.val() + $(this).html());
-                        return false;
-                    });
-                    $('.js-pnlsearch .tenkey a.back').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val($phoneNumber.val().slice(0, -1));
-                        return false;
-                    });
-                    $('.js-pnlsearch .tenkey a.clear').click(function () {
-                        $phoneNumber = $("input[id$='tbPhone']");
-                        $phoneNumber.val('');
-                        return false;
-                    });
-
-                    // set focus to the input unless on a touch device
-                    if (!isTouchDevice) {
-                        $('.kiosk-phoneentry').focus();
+                        // set focus to the input unless on a touch device
+                        if (!isTouchDevice) {
+                            $('.kiosk-phoneentry').focus();
+                        }
                     }
-                }
+                });
             });
-        
+
         </script>
 
         <Rock:NotificationBox ID="nbBlockConfigErrors" runat="server" NotificationBoxType="Danger" />
@@ -53,7 +54,7 @@
                 <div class="row">
                     <div class="col-md-8 margin-b-lg">
                         <Rock:NotificationBox ID="nbSearch" runat="server" NotificationBoxType="Warning"></Rock:NotificationBox>
-                    
+
                         <Rock:RockTextBox ID="tbPhone" type="number" CssClass="kiosk-phoneentry" runat="server" Label="Phone Number" />
 
                         <div class="tenkey kiosk-phone-keypad">
@@ -91,11 +92,11 @@
                         <div class="col-md-8">
                             <asp:LinkButton ID="lbSearchCancel" runat="server" OnClick="lbSearchCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
                         </div>
-                        
+
                     </div>
                 </div>
             </footer>
-            
+
         </asp:Panel>
 
         <asp:Panel ID="pnlPersonSelect" runat="server" Visible="false" CssClass="js-pnlpersonselect js-kioskscrollpanel">
@@ -135,7 +136,7 @@
                 <asp:HiddenField id="hfPersonId" runat="server" />
                 <div class="row">
                     <div class="col-md-8">
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFirstName" Label="First Name" runat="server"  Required="true" />
@@ -181,8 +182,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-8">
-                            <asp:LinkButton ID="lbProfileBack" runat="server" OnClick="lbProfileBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
-                            <asp:LinkButton ID="lbProfileCancel" runat="server" OnClick="lbProfileCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
+                            <asp:LinkButton ID="lbProfileBack" CausesValidation="false" runat="server" OnClick="lbProfileBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
+                            <asp:LinkButton ID="lbProfileCancel" CausesValidation="false" runat="server" OnClick="lbProfileCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
                         </div>
                     </div>
                 </div>

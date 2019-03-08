@@ -52,7 +52,7 @@ namespace Rock.Plugin.HotFixes
 //        ,'Get National Change of Address (NCOA)'
 //        ,'Job to get a National Change of Address (NCOA) report for all active people''s addresses.'
 //        ,'Rock.Jobs.GetNcoa'
-//        ,'0 0/10 0 ? * * *'
+//        ,'0 0/25 * 1/1 * ? *'
 //        ,1
 //        ,'{ServiceJob.GET_NCOA}');
 //END" );

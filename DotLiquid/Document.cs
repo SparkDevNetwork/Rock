@@ -1,5 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using DotLiquid.Exceptions;
 
 namespace DotLiquid
@@ -14,7 +16,24 @@ namespace DotLiquid
 		/// <param name="tokens"></param>
 		public override void Initialize(string tagName, string markup, List<string> tokens)
 		{
-			Parse(tokens);
+            var initialTokens = tokens.ToArray();
+            try
+            {
+                Parse( tokens );
+            }
+            catch (SyntaxException se)
+            {
+                var remainingTokens = tokens.ToArray();
+                var processedTokens = initialTokens.Take( initialTokens.Length - remainingTokens.Length ).ToList();
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var token in processedTokens)
+                {
+                    stringBuilder.Append( StandardFilters.Escape( token ) );
+                }
+
+                se.LavaStackTrace = stringBuilder.ToString() + " ^...";
+                throw;
+            }
 		}
 
 		/// <summary>

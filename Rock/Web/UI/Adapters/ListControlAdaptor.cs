@@ -84,6 +84,35 @@ namespace Rock.Web.UI.Adapters
         public abstract string GetInputName( ListControl listControl, int itemIndex );
 
         /// <summary>
+        /// Gets the label class.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="listItem">The list item.</param>
+        /// <returns></returns>
+        public virtual string GetLabelClass( ListControl listControl, ListItem listItem )
+        {
+            string labelClass;
+
+            if ( GetRepeatDirection( listControl ) == RepeatDirection.Horizontal )
+            {
+                // if Horizontal, put checkbox/radio-inline on the label tag, and don't create a <div class="checkbox/radio"> wrapper
+                labelClass = $"{GetInputTagType( listControl )}-inline";
+            }
+            else
+            {
+                // if Vertical, leave the label class empty, and create a <div class="checkbox/radio"> wrapper
+                labelClass = string.Empty;
+            }
+
+            if ( !listControl.Enabled )
+            {
+                labelClass += " text-muted";
+            }
+
+            return labelClass;
+        }
+
+        /// <summary>
         /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
@@ -111,76 +140,28 @@ namespace Rock.Web.UI.Adapters
                     postBackEventReference = Page.ClientScript.GetPostBackEventReference( postBackOption, true );
                 }
 
-                string labelClass;
+
                 bool createInputDivClass;
                 string inputTagType = GetInputTagType( listControl );
 
                 if ( GetRepeatDirection(listControl) == RepeatDirection.Horizontal )
                 {
-                    // if Horizontal, put checkbox/radio-inline on the label tag, and don't create a <div class="checkbox/radio"> wrapper
-                    labelClass = $"{inputTagType}-inline";
+                    // if Horizontal, don't create a <div class="checkbox/radio"> wrapper
                     createInputDivClass = false;
                 }
                 else
                 {
-                    // if Vertical, leave the label class empty, and create a <div class="checkbox/radio"> wrapper
-                    labelClass = string.Empty;
+                    // if Vertical, reate a <div class="checkbox/radio"> wrapper
                     createInputDivClass = true;
                 }
 
-                if ( !listControl.Enabled )
-                {
-                    labelClass += " text-muted";
-                }
-
                 int repeatColumns = GetRepeatColumns( listControl );
-                
+
                 bool wrapInRow = repeatColumns > 1;
-
-                if ( wrapInRow )
-                {
-                    // if there are multiple columns, RepeatDirection doesn't matter, either way we want it to Left To Right as A | B | C | D |.  
-                    writer.WriteLine();
-                    writer.Indent++;
-                    writer.AddAttribute( "class", "row" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                }
-
-                string columnClass = string.Empty;
-
-                if ( wrapInRow )
-                {
-                    switch ( repeatColumns )
-                    {
-                        case 2:
-                            columnClass = "col-md-6";
-                            break;
-                        case 3:
-                            columnClass = "col-sm-6 col-md-4";
-                            break;
-                        case 4:
-                            columnClass = "col-sm-6 col-md-3";
-                            break;
-                        case 6:
-                            columnClass = "col-sm-4 col-md-2";
-                            break;
-                        default:
-                            columnClass = "col-sm-4 col-md-2";
-                            break;
-                    }
-                }
 
                 int itemIndex = 0;
                 foreach ( ListItem li in listControl.Items )
                 {
-                    if ( wrapInRow )
-                    {
-                        writer.WriteLine();
-                        writer.Indent++;
-                        writer.AddAttribute( "class", columnClass );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    }
-
                     if ( createInputDivClass )
                     {
                         writer.WriteLine();
@@ -192,6 +173,7 @@ namespace Rock.Web.UI.Adapters
                     // render checkbox/radio label tag which will contain the input and label text
                     writer.WriteLine();
                     writer.Indent++;
+                    string labelClass = GetLabelClass( listControl, li );
                     writer.AddAttribute( "class", labelClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
@@ -207,7 +189,7 @@ namespace Rock.Web.UI.Adapters
                         writer.AddAttribute( "checked", "checked" );
                     }
 
-                    if ( !listControl.Enabled )
+                    if ( !listControl.Enabled || !li.Enabled )
                     {
                         writer.AddAttribute( "disabled", string.Empty );
                     }
@@ -249,23 +231,12 @@ namespace Rock.Web.UI.Adapters
                         writer.Indent--;
                     }
 
-                    if ( wrapInRow )
-                    {
-                        writer.RenderEndTag();   // col div
-                        writer.Indent--;
-                    }
-
                     if ( Page != null && Page.ClientScript != null )
                     {
                         Page.ClientScript.RegisterForEventValidation( listControl.UniqueID, li.Value );
                     }
                 }
 
-                if ( wrapInRow )
-                {
-                    writer.RenderEndTag();   // row div
-                    writer.Indent--;
-                }
 
                 if ( Page != null && Page.ClientScript != null )
                 {

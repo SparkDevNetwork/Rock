@@ -1,11 +1,16 @@
 set nocount on
 
+/* Change these settings to your liking*/
+declare
+	@yearsBack int = 10,
+	@maxPersonCount INT = 40000, /* limit to first X persons in the database */ 
+	@maxTransactionCount int = 200000, 
+	@maxBatchNumber INT = 1000
+
 declare
   @authorizedPersonAliasId int = 1,
   @transactionCounter int = 0,
-  @maxTransactionCount int = 200000, 
-  @MaxBatchNumber INT = 1000,
-  @maxPersonAliasIdForTransactions int = (select max(Id) from (select top 40000 Id from PersonAlias order by Id) x),  /* limit to first 40000 persons in the database */ 
+  @maxPersonAliasIdForTransactions int = (select max(Id) from (select top (@maxPersonCount) Id from PersonAlias order by Id) x),
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
   @transactionNote nvarchar(max),
@@ -21,8 +26,7 @@ declare
   @financialPaymentDetailId int,
   @checkMicrEncrypted nvarchar(max) = null,
   @checkMicrHash nvarchar(128) = null,
-  @checkMicrParts nvarchar(max) = null,
-  @yearsBack int = 10
+  @checkMicrParts nvarchar(max) = null
 
 declare
   @daysBack int = @yearsBack * 366
@@ -156,6 +160,10 @@ while @transactionCounter < @maxTransactionCount
 
         set @transactionCounter += 1;
         set @transactionDateTime = DATEADD(ss, (86000*@daysBack/@maxTransactionCount), @transactionDateTime);
+		if (@transactionCounter % 1000 = 0)
+		begin
+			print @transactionCounter
+		end
     end
 
 commit transaction

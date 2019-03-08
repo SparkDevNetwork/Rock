@@ -93,6 +93,14 @@ namespace RockWeb
             string allowedDomains = string.Empty;
 
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+
+            // We only care about protecting content served up through Rock, not the static
+            // content assets on the file system. Only Rock pages would have a site.
+            if ( !siteId.HasValue )
+            {
+                return;
+            }
+
             try
             {
                 if ( siteId.HasValue )
@@ -117,8 +125,7 @@ namespace RockWeb
             {
                 Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
-            }
-            
+            }            
         }
 
         /// <summary>
@@ -260,6 +267,19 @@ namespace RockWeb
                                 job.LastStatusMessage = message;
                                 job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
+
+                                var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                                var jobHistory = new ServiceJobHistory()
+                                {
+                                    ServiceJobId = job.Id,
+                                    StartDateTime = RockDateTime.Now,
+                                    StopDateTime = RockDateTime.Now,
+                                    Status = job.LastStatus,
+                                    StatusMessage = job.LastStatusMessage
+                                };
+                                jobHistoryService.Add( jobHistory );
+                                rockContext.SaveChanges();
+
                             }
                         }
 
@@ -340,8 +360,20 @@ namespace RockWeb
             new Thread( () =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                RockTheme.CompileAll();
-                
+                string messages = string.Empty;
+                RockTheme.CompileAll( out messages );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    if ( messages.IsNullOrWhiteSpace() )
+                    {
+                        System.Diagnostics.Debug.WriteLine( "Less files compiled successfully." );
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    }
+                }
+
             } ).Start();
             
         }
@@ -823,17 +855,12 @@ namespace RockWeb
             // Add ingore rule for asp.net ScriptManager files. 
             routes.Ignore("{resource}.axd/{*pathInfo}");
 
-            // Add page routes
-            foreach ( var route in pageRouteService 
-                .Queryable().AsNoTracking()
-                .GroupBy( r => r.Route )
-                .Select( s => new {
-                    Name = s.Key,
-                    Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList() 
-                } )
-                .ToList() )
+            //Add page routes
+            var pageRoutes = pageRouteService.Queryable().OrderBy( r => r.Route).ToList();
+
+            foreach ( var pageRoute in pageRoutes )
             {
-                routes.AddPageRoute( route.Name, route.Pages );
+                routes.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
             }
 
             // Add a default page route
@@ -851,8 +878,8 @@ namespace RockWeb
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
         {
-            // Flush the EntityAttributesCache just in case Migrations added attributes thru SQL
-            EntityAttributesCache.Remove();
+            // Flush the Cache just in case Migrations updated any cached items thru SQL
+            RockCache.ClearAllCachedItems( false );
 
             // Cache all the entity types
             foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )

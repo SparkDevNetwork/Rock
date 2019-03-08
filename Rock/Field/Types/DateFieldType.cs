@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -383,6 +384,10 @@ namespace Rock.Field.Types
                 {
                     return datePicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
             else if ( datePartsPicker != null )
             {
@@ -390,9 +395,13 @@ namespace Rock.Field.Types
                 {
                     return datePartsPicker.SelectedDate.Value.ToString( "o" );
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -574,22 +583,25 @@ namespace Rock.Field.Types
             var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
 
             var dateFiltersPanel = control as Panel;
-            var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
-            if ( datePicker != null && filterValues.Length > 0 )
+            if ( dateFiltersPanel != null )
             {
-                this.SetEditValue( datePicker, configurationValues, filterValues[0] );
-            }
+                var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
+                if ( datePicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePicker, configurationValues, filterValues[0] );
+                }
 
-            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
-            if ( datePartsPicker != null && filterValues.Length > 0 )
-            {
-                this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
-            }
+                var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
+                if ( datePartsPicker != null && filterValues.Length > 0 )
+                {
+                    this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
+                }
 
-            var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
-            if ( slidingDateRangePicker != null && filterValues.Length > 1 )
-            {
-                slidingDateRangePicker.DelimitedValues = filterValues[1];
+                var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
+                if ( slidingDateRangePicker != null && filterValues.Length > 1 )
+                {
+                    slidingDateRangePicker.DelimitedValues = filterValues[1];
+                }
             }
         }
         
@@ -630,7 +642,7 @@ namespace Rock.Field.Types
                     if ( comparisonType == ComparisonType.Between && filterValueValues.Length > 1 )
                     {
                         var dateRangeText = SlidingDateRangePicker.FormatDelimitedValues( filterValueValues[1] );
-                        return string.Format("during '{0}'", dateRangeText);
+                        return dateRangeText.IsNotNullOrWhiteSpace() ? string.Format( "During '{0}'", dateRangeText ) : null;
                     }
                     else
                     {
@@ -665,7 +677,7 @@ namespace Rock.Field.Types
                 filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
             
                 string comparisonValue = filterValues[0];
-                if ( comparisonValue != "0" )
+                if ( comparisonValue != "0" && comparisonValue.IsNotNullOrWhiteSpace() )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                     MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
@@ -674,19 +686,40 @@ namespace Rock.Field.Types
                         var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValueValues[1] );
                         ConstantExpression constantExpressionLower = dateRange.Start.HasValue 
                             ? Expression.Constant( dateRange.Start, typeof( DateTime ) )
-                            : Expression.Constant( null );
+                            : null;
 
                         ConstantExpression constantExpressionUpper = dateRange.End.HasValue
                             ? Expression.Constant( dateRange.End, typeof( DateTime ) )
-                            : Expression.Constant( null );
+                            : null;
 
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
+                        if ( constantExpressionLower == null && constantExpressionUpper == null )
+                        {
+                            return new NoAttributeFilterExpression();
+                        }
+                        else
+                        {
+                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpressionLower, constantExpressionUpper );
+                        }
                     }
                     else
                     {
-                        var dateTime = filterValueValues[0].AsDateTime() ?? DateTime.MinValue;
-                        ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
-                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        var dateTime = filterValueValues[0].AsDateTime();
+                        if ( dateTime.HasValue )
+                        {
+                            ConstantExpression constantExpression = Expression.Constant( dateTime, typeof( DateTime ) );
+                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        }
+                        else
+                        {
+                            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                            {
+                                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, null );
+                            }
+                            else
+                            {
+                                return new NoAttributeFilterExpression();
+                            }
+                        }
                     }
                 }
             }
@@ -703,7 +736,61 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
-            return PropertyFilterExpression( configurationValues, filterValues, parameterExpression, "ValueAsDateTime", typeof( DateTime? ) );
+            var comparison = PropertyFilterExpression( configurationValues, filterValues, parameterExpression, "ValueAsDateTime", typeof( DateTime? ) );
+
+            if ( comparison == null )
+            {
+                return new Rock.Data.NoAttributeFilterExpression();
+            }
+
+            return comparison;
+        }
+
+        /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsComparedToValue( List<string> filterValues, string value )
+        {
+            if ( filterValues == null || filterValues.Count < 2 )
+            {
+                return false;
+            }
+
+            ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+
+            if (filterComparisonType == null )
+            {
+                return false;
+            }
+
+            ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
+            DateTime? valueAsDateTime = value.AsDateTime();
+
+            // uses Tab Delimited since slidingDateRangePicker is | delimited
+            var filterValueValues = filterValues[1].Split( new string[] { "\t" }, StringSplitOptions.None );
+
+            // Parse for RelativeValue of DateTime (if specified)
+            filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
+            DateTime? filterValueAsDateTime1;
+            DateTime? filterValueAsDateTime2 = null;
+            if ( filterComparisonType == ComparisonType.Between )
+            {
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValueValues[1] );
+                filterValueAsDateTime1 = dateRange.Start;
+                filterValueAsDateTime2 = dateRange.End;
+            }
+            else
+            {
+                filterValueAsDateTime1 = filterValueValues[0].AsDateTime();
+                filterValueAsDateTime2 = null;
+            }
+
+            return ComparisonHelper.CompareNumericValues( filterComparisonType.Value, valueAsDateTime?.Ticks, filterValueAsDateTime1?.Ticks, filterValueAsDateTime2?.Ticks );
         }
 
         /// <summary>

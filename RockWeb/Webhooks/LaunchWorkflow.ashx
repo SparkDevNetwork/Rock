@@ -29,6 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Utility;
 
 /// <summary>
 /// A webhook for launching a workflow. Does basic decoding of FORM data
@@ -180,7 +181,7 @@ public class LaunchWorkflow : IHttpHandler
     protected Dictionary<string, object> RequestToDictionary( HttpContext httpContext )
     {
         var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
+        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
         // Set the standard values to be used.
         dictionary.Add( "Url", "/" + string.Join( "", httpContext.Request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
         dictionary.Add( "RawUrl", httpContext.Request.Url.AbsoluteUri );
@@ -188,7 +189,7 @@ public class LaunchWorkflow : IHttpHandler
         dictionary.Add( "QueryString", httpContext.Request.QueryString.Cast<string>().ToDictionary( q => q, q => httpContext.Request.QueryString[q] ) );
         dictionary.Add( "RemoteAddress", httpContext.Request.UserHostAddress );
         dictionary.Add( "RemoteName", httpContext.Request.UserHostName );
-        dictionary.Add( "ServerName", httpContext.Request.Url.Host );
+        dictionary.Add( "ServerName", host );
         dictionary.Add( "ContentType", httpContext.Request.ContentType );
 
         // Add in the raw body content.
@@ -204,9 +205,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 dictionary.Add( "Body", Newtonsoft.Json.JsonConvert.DeserializeObject( (string)dictionary["RawBody"] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( httpContext.Request.ContentType == "application/x-www-form-urlencoded" )
         {
@@ -214,9 +213,7 @@ public class LaunchWorkflow : IHttpHandler
             {
                 dictionary.Add( "Body", httpContext.Request.Form.Cast<string>().ToDictionary( q => q, q => httpContext.Request.Form[q] ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
         else if ( httpContext.Request.ContentType == "application/xml" )
         {
@@ -227,9 +224,7 @@ public class LaunchWorkflow : IHttpHandler
                 string jsonText = JsonConvert.SerializeXmlNode( doc );
                 dictionary.Add( "Body", Newtonsoft.Json.JsonConvert.DeserializeObject( ( jsonText ) ) );
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         // Add the headers

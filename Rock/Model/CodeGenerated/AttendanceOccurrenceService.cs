@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( AttendanceOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.OccurrenceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceOccurrence.FriendlyTypeName, Attendance.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Attendance,OccurrenceId 
             return true;
         }
     }

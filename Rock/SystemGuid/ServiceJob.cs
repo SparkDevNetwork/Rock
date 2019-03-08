@@ -44,9 +44,19 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_80 = "AF760EF9-66BD-4A4D-AF95-749AA789ACAA";
 
         /// <summary>
+        /// The Job to run Post v8.4 Data Migrations
+        /// </summary>
+        public const string DATA_MIGRATIONS_84 = "79FBDA04-ADFD-40D4-824F-E07D660F7858";
+
+        /// <summary>
         /// The Job to run Post v7.4 Data Migrations
         /// </summary>
         public const string DATA_MIGRATIONS_74 = "FF760EF9-66BD-4A4D-AF95-749AA789ACAF";
+
+        /// <summary>
+        /// The Job to run Post v9 Data Migrations for DISC data
+        /// </summary>
+        public const string DATA_MIGRATIONS_90_DISC = "A839DFEC-B1A3-499C-9BB3-03241E8E5305";
 
         /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data

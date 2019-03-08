@@ -109,6 +109,10 @@ namespace Rock.Field.Types
                 {
                     return selectedDay.ConvertToInt().ToString();
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
             return null;

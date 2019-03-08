@@ -119,13 +119,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         #endregion 
 

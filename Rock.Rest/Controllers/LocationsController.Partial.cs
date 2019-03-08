@@ -54,6 +54,19 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the mapCoordinate from postalcode.
+        /// </summary>
+        /// <param name="postalCode">The postalcode.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/locations/postalcodetomapcoordinate/{postalCode}" )]
+        public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
+        {
+            return ( ( LocationService ) Service ).GetMapCoordinateFromPostalCode( postalCode );
+        }
+
+        /// <summary>
         /// Gets the specified street.
         /// </summary>
         /// <param name="street">The street.</param>

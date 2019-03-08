@@ -32,7 +32,6 @@ namespace Rock.Field.Types
     /// </summary>
     public class ContentChannelFieldType : FieldType, IEntityFieldType
     {
-
         #region Formatting
 
         /// <summary>
@@ -50,10 +49,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var contentChannelName = new ContentChannelService( new RockContext() ).GetSelect( guid.Value, a => a.Name );
-                if ( contentChannelName != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = contentChannelName;
+                    var contentChannelName = new ContentChannelService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( contentChannelName != null )
+                    {
+                        formattedValue = contentChannelName;
+                    }
                 }
             }
 
@@ -77,12 +79,20 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var contentChannels = new ContentChannelService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            var contentChannels = new ContentChannelService( new RockContext() ).Queryable()
+                .Where( a => a.ContentChannelType.ShowInChannelList == true )
+                .OrderBy( d => d.Name )
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                } ).ToList();
+
             if ( contentChannels.Any() )
             {
                 foreach ( var contentChannel in contentChannels )
                 {
-                    editControl.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString().ToUpper() ) );
+                    editControl.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString() ) );
                 }
 
                 return editControl;
@@ -100,7 +110,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as DropDownList;
-            if (picker != null)
+            if ( picker != null )
             {
                 // picker has value as ContentChannel.Guid
                 return picker.SelectedValue;
@@ -126,7 +136,6 @@ namespace Rock.Field.Types
 
         #endregion
 
-
         #region Entity Methods
 
         /// <summary>
@@ -137,9 +146,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ContentChannelService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            Guid? guid = GetEditValue( control, configurationValues ).AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                return new ContentChannelService( new RockContext() ).GetId( guid.Value );
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -150,9 +165,20 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ContentChannelService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            Guid? itemGuid = null;
+            if ( id.HasValue && id > 0 )
+            {
+                itemGuid = new ContentChannelService( new RockContext() ).GetGuid( id.Value );
+            }
+
+            if ( itemGuid.HasValue )
+            {
+                SetEditValue( control, configurationValues, itemGuid.ToString() );
+            }
+            else
+            {
+                SetEditValue( control, configurationValues, string.Empty );
+            }
         }
 
         /// <summary>

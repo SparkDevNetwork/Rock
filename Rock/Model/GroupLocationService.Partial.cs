@@ -26,6 +26,28 @@ namespace Rock.Model
     public partial class GroupLocationService
     {
         /// <summary>
+        /// Deletes the specified GroupLocation and sets GroupLocationHistorical.GroupLocationId to NULL.
+        /// Will not delete the GroupLocation and return false if the GroupLocationHistorical.GroupLocationId fails to update.
+        /// Will try to determine current person alias from HttpContext.
+        /// Caller is responsible to save changes.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( GroupLocation item )
+        {
+            // Remove the ID from GroupLocationHistorical before deleting
+            var rockContext = this.Context as Rock.Data.RockContext;
+            bool isNulled = new GroupLocationHistoricalService( rockContext ).SetGroupLocationIdToNullForGroupLocationId( item.Id );
+            if (!isNulled)
+            {
+                return false;
+            }
+
+            // Delete the GroupLocation
+            return base.Delete( item );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their LocationId.
         /// </summary>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Location"/> to search by.</param>
@@ -45,8 +67,7 @@ namespace Rock.Model
             return Queryable()
                 .Where( g =>
                     g.LocationId == locationId &&
-                    g.Group.IsActive );
-
+                    g.Group.IsActive && !g.Group.IsArchived );
         }
 
         /// <summary>
@@ -58,7 +79,7 @@ namespace Rock.Model
         {
             return Queryable().Where( g =>
                     locationIds.Contains( g.LocationId ) &&
-                    g.Group.IsActive );
+                    g.Group.IsActive && !g.Group.IsArchived );
         }
 
         /// <summary>
@@ -68,11 +89,11 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )
         {
-            List<int> LocationIds = new List<int>();
+            List<int> locationIds = new List<int>();
 
             foreach ( var geofence in geofences )
             {
-                LocationIds.AddRange( Queryable()
+                locationIds.AddRange( Queryable()
                .Where( l =>
                    l.IsMappedLocation &&
                    l.Location != null &&
@@ -81,9 +102,9 @@ namespace Rock.Model
                )
                .Select( l => l.Id ) );
             }
-            if ( LocationIds.Count() < 10000 )
+            if ( locationIds.Count() < 10000 )
             {
-                return Queryable().Where( l => LocationIds.Contains( l.Id ) );
+                return Queryable().Where( l => locationIds.Contains( l.Id ) );
             }
             else
             {
@@ -97,8 +118,6 @@ namespace Rock.Model
                         )
                     );
             }
-
-
         }
     }
 }

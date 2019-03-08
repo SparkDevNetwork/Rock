@@ -30,7 +30,7 @@
 </style>
 
 {% assign item = Items | First %}
-{% if item  %}
+{% if item %}
 
 	<article class="series-detail">
 		{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}

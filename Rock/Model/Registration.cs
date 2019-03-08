@@ -291,6 +291,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the registration template identifier.
+        /// NOTE: this is needed so that Registration Attributes can have a RegistrationTemplateId qualifier
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual int? RegistrationTemplateId
+        {
+            get
+            {
+                if ( this.RegistrationInstance == null )
+                {
+                    return new RegistrationInstanceService( new RockContext() ).GetSelect( this.RegistrationInstanceId, a => a.RegistrationTemplateId );
+                }
+
+                return this.RegistrationInstance.RegistrationTemplateId;
+            }
+        }
+
+        /// <summary>
         /// Gets the payments.
         /// </summary>
         /// <value>
@@ -992,7 +1014,7 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, FieldValueObject> FieldValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the fee values.
+        /// Gets or sets a dictionary of FeeValues (key is RegistrationTemplateFeeId)
         /// </summary>
         /// <value>
         /// The fee values.
@@ -1293,7 +1315,7 @@ Registration By: {0} Total Cost/Fees:{1}
                                 break;
                             }
 
-                        case RegistrationFieldSource.RegistrationAttribute:
+                        case RegistrationFieldSource.RegistrantAttribute:
                             {
                                 if ( registrant != null )
                                 {
@@ -1320,7 +1342,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetFirstName( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.FirstName );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if FirstName isn't prompted for in a registration form, and using an existing Person, get the person's FirstName/NickName from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.NickName ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1331,7 +1366,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetLastName( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.LastName );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if LastName isn't prompted for in a registration form, and using an existing Person, get the person's lastname from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.LastName ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1342,7 +1390,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetEmail( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.Email );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if Email isn't prompted for in a registration form, and using an existing Person, get the person's email from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.Email ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1476,7 +1537,29 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <value>
         /// The option.
         /// </value>
-        public string Option { get; set; }
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use RegistrationTemplateFeeItemId + FeeLabel instead" )]
+        public string Option
+        {
+            get => this.FeeLabel;
+            set => this.FeeLabel = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the fee label.
+        /// </summary>
+        /// <value>
+        /// The fee label.
+        /// </value>
+        public string FeeLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template fee item identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template fee item identifier.
+        /// </value>
+        public int RegistrationTemplateFeeItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the quantity.
@@ -1551,10 +1634,27 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="option">The option.</param>
         /// <param name="quantity">The quantity.</param>
         /// <param name="cost">The cost.</param>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use other FeeInfo constructor" )]
         public FeeInfo( string option, int quantity, decimal cost )
             : this()
         {
             Option = option;
+            Quantity = quantity;
+            Cost = cost;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FeeInfo" /> class.
+        /// </summary>
+        /// <param name="feeItem">The fee item.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <param name="cost">The cost.</param>
+        public FeeInfo( RegistrationTemplateFeeItem feeItem, int quantity, decimal cost )
+            : this()
+        {
+            FeeLabel = feeItem.Name;
+            RegistrationTemplateFeeItemId = feeItem.Id;
             Quantity = quantity;
             Cost = cost;
         }
@@ -1566,7 +1666,8 @@ Registration By: {0} Total Cost/Fees:{1}
         public FeeInfo( RegistrationRegistrantFee fee )
             : this()
         {
-            Option = fee.Option;
+            FeeLabel = fee.RegistrationTemplateFeeItem.Name;
+            RegistrationTemplateFeeItemId = fee.RegistrationTemplateFeeItemId.Value;
             Quantity = fee.Quantity;
             Cost = fee.Cost;
             PreviousCost = fee.Cost;
@@ -1619,6 +1720,14 @@ Registration By: {0} Total Cost/Fees:{1}
         /// The minimum payment.
         /// </value>
         public decimal MinPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default payment.
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        public decimal? DefaultPayment { get; set; }
     }
 
     /// <summary>

@@ -61,15 +61,121 @@ namespace Rock.Web.UI.Controls
         public bool DisplayDescriptions { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether inactive DefinedValues should be included (defaults to False)
+        /// </summary> 
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IncludeInactive"] = value;
+                DefinedValuePicker.LoadDropDownItems( this, true );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected defined value identifier.
+        /// </summary>
+        /// <value>
+        /// The selected defined value identifier.
+        /// </value>
+        public int? SelectedDefinedValueId
+        {
+            get
+            {
+                return this.SelectedDefinedValuesId.FirstOrDefault();
+            }
+
+            set
+            {
+                if ( value != null )
+                {
+                    this.SelectedDefinedValuesId = new int[] { value.Value };
+                }
+                else
+                {
+                    this.SelectedDefinedValuesId = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected defined value Ids
+        /// </summary>
+        /// <value>
+        /// The selected defined values identifier.
+        /// </value>
+        public int[] SelectedDefinedValuesId
+        {
+            get
+            {
+                EnsureChildControls();
+                return this.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).AsIntegerList().ToArray();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                LoadDropDownItems( this, true );
+
+                // ensure that only that the only selected items are set.
+                foreach ( var item in this.Items.OfType<ListItem>() )
+                {
+                    item.Selected = false;
+                }
+
+                foreach ( int selectedValue in value )
+                {
+                    var item = this.Items.FindByValue( selectedValue.ToString() );
+                    if ( item != null )
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        // if the selectedValue is not in the list, it could be that it is an Inactive item that wasn't added. If so, add it to the list;
+                        var selectedDefinedValue = DefinedValueCache.Get( selectedValue );
+                        if ( selectedDefinedValue != null )
+                        {
+                            this.Items.Add( new ListItem( this.DisplayDescriptions ? selectedDefinedValue.Description : selectedDefinedValue.Value, selectedDefinedValue.Id.ToString() ) { Selected = true } );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the value of the selected item in the list control, or selects the item in the list control that contains the specified value.
+        /// </summary>
+        public override string SelectedValue
+        {
+            get
+            {
+                return base.SelectedValue;
+            }
+
+            set
+            {
+                this.SelectedDefinedValuesId = value?.SplitDelimitedValues().AsIntegerList().ToArray() ?? new int[0];
+                base.SelectedValue = value;
+            }
+        }
+
+        /// <summary>
         /// Loads the drop down items.
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
         internal static void LoadDropDownItems( IDefinedValuePicker picker, bool includeEmptyOption )
         {
-            var selectedItems = picker.Items.Cast<ListItem>()
-                .Where( i => i.Selected )
-                .Select( i => i.Value ).AsIntegerList();
+            var selectedItems = picker.SelectedDefinedValuesId;
 
             picker.Items.Clear();
 
@@ -82,9 +188,13 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dt = DefinedTypeCache.Get( picker.DefinedTypeId.Value );
-                if ( dt != null && dt.DefinedValues.Any() )
+                var definedValuesList = dt?.DefinedValues
+                    .Where( a => a.IsActive || picker.IncludeInactive || selectedItems.Contains( a.Id ) )
+                    .OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+
+                if ( definedValuesList != null && definedValuesList.Any() )
                 {
-                    foreach ( var definedValue in dt.DefinedValues.OrderBy( v => v.Order ).ThenBy( v => v.Value ) )
+                    foreach ( var definedValue in definedValuesList )
                     {
                         var li = new ListItem( picker.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() );
                         li.Selected = selectedItems.Contains( definedValue.Id );
@@ -98,7 +208,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IDefinedValuePicker 
+    public interface IDefinedValuePicker
     {
         /// <summary>
         /// Gets or sets the defined type identifier.
@@ -123,5 +233,21 @@ namespace Rock.Web.UI.Controls
         /// The items.
         /// </value>
         ListItemCollection Items { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether inactive DefinedValues should be included
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        bool IncludeInactive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected defined values identifier.
+        /// </summary>
+        /// <value>
+        /// The selected defined values identifier.
+        /// </value>
+        int[] SelectedDefinedValuesId { get; set;  }
     }
 }

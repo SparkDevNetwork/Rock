@@ -26,34 +26,20 @@ namespace Rock.Migrations
         /// <summary>
         /// The new Protect My Ministry workflow name
         /// </summary>
-        public static readonly string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
+        public const string NEW_PMM_WORKFLOW_TYPE_NAME = "Background Check (PMM)";
 
         /// <summary>
         /// Makes the Checkr the default workflow action in Bio block.
         /// </summary>
         public void MakeCheckrDefaultWorkflowAction()
         {
-            // Remove Checr background check workflow from bio
+            // Remove Checkr background check workflow from bio
             RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY );
 
             // Add PMM background check workflow to bio
             RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE, appendToExisting: true );
             // Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", NEW_PMM_WORKFLOW_TYPE_NAME, PMM_WORKFLOW_TYPE ) );
             Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", CheckrConstants.CHECKR_WORKFLOW_TYPE_NAME, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) );
-        }
-
-        /// <summary>
-        /// Makes the PMM the default workflow action.
-        /// </summary>
-        public void MakePMMDefaultWorkflowAction()
-        {
-            // Remove PMM background check workflow from bio
-            RockMigrationHelper.DeleteBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, WorkflowType.PROTECTMYMINISTRY );
-
-            // Add Checkr background check workflow to bio
-            RockMigrationHelper.AddBlockAttributeValue( Block.BIO, SystemGuid.Attribute.BIO_WORKFLOWACTION, CheckrSystemGuid.CHECKR_WORKFLOW_TYPE, appendToExisting: true );
-            Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", NEW_PMM_WORKFLOW_TYPE_NAME, WorkflowType.PROTECTMYMINISTRY ) );
-            Sql( string.Format( "UPDATE [dbo].[WorkflowType] SET [Name] = '{0}' WHERE [Guid] = '{1}'", "Background Check", CheckrSystemGuid.CHECKR_WORKFLOW_TYPE ) );
         }
 
         /// <summary>

@@ -46,20 +46,23 @@ namespace RockWeb.Blocks.Communication
     [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 4, null, 3, true )]
     [MemoField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ 'Global' | Attribute:'OrganizationName' }}.", "", 5, null, 3, true )]
     [MemoField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank You</h4>We have saved your email preference.", "", 6, null, 3, true )]
-    [CodeEditorField( "Unsubscribe Success Text", "Text to display after user unsubscribes from communication lists.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false,
-        @"<h4>Thank You</h4>
-We have saved your unsubscribed you from the following lists:
-<ul>
-{% for unsubscribedGroup in UnsubscribedGroups %}
-  <li>{{ unsubscribedGroup | Attribute:'PublicName' | Default:unsubscribedGroup.Name }}</li>
-{% endfor %}
-</ul>",
-        order: 7 )]
+    [CodeEditorField( "Unsubscribe Success Text", "Text to display after user unsubscribes from communication lists.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE, order: 7 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8 )]
     [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 9 )]
     [CustomCheckboxListField( "Available Options", "Select the options that should be available to a user when they are updating their email preference.", "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", true, "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", Order = 10 )]
     public partial class EmailPreferenceEntry : RockBlock
     {
+        #region Attribute Field Constants
+        private const string UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE = @"<h4>Thank You</h4>
+We have unsubscribed you from the following lists:
+<ul>
+{% for unsubscribedGroup in UnsubscribedGroups %}
+  <li>{{ unsubscribedGroup | Attribute:'PublicName' | Default:unsubscribedGroup.Name }}</li>
+{% endfor %}
+</ul>";
+
+        #endregion Attribute Field Constants
+
         #region Fields
 
         private const string UNSUBSCRIBE = "Unsubscribe";
@@ -94,13 +97,15 @@ We have saved your unsubscribed you from the following lists:
                 mergeFields.Add( "Communication", _communication );
             }
 
-            LoadDropdowns( mergeFields );
-
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
                 var service = new PersonService( rockContext );
-                _person = service.GetByUrlEncodedKey( key );
+                _person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
+                if ( _person == null )
+                {
+                    _person = new PersonService( rockContext ).GetByUrlEncodedKey( key );
+                }
             }
 
             if ( _person == null && CurrentPerson != null )
@@ -120,6 +125,8 @@ We have saved your unsubscribed you from the following lists:
                 nbEmailPreferenceSuccessMessage.Visible = true;
                 btnSubmit.Visible = false;
             }
+
+            LoadDropdowns( mergeFields );
         }
 
         /// <summary>
@@ -422,7 +429,7 @@ We have saved your unsubscribed you from the following lists:
         /// <param name="mergeObjects">The merge objects.</param>
         private void LoadDropdowns( Dictionary<string, object> mergeObjects )
         {
-            var availableOptions = GetAttributeValue( "AvailableOptions" ).SplitDelimitedValues(false);
+            var availableOptions = GetAttributeValue( "AvailableOptions" ).SplitDelimitedValues( false );
 
             rbUnsubscribe.Visible = availableOptions.Contains( UNSUBSCRIBE );
             rbUnsubscribe.Text = GetAttributeValue( "UnsubscribefromListsText" ).ResolveMergeFields( mergeObjects );
@@ -436,35 +443,38 @@ We have saved your unsubscribed you from the following lists:
 
                 int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
 
-                // Get a list of all the Active CommunicationLists that the person is an active member of
-                var communicationListQry = groupService.Queryable()
-                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == this.CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
-
-                var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
-
-                var communicationLists = communicationListQry.ToList();
                 var viewableCommunicationLists = new List<Group>();
-                foreach ( var communicationList in communicationLists )
+                if ( _person != null )
                 {
-                    communicationList.LoadAttributes( rockContext );
-                    if ( !categoryGuids.Any() )
+                    // Get a list of all the Active CommunicationLists that the person is an active member of
+                    var communicationListQry = groupService.Queryable()
+                        .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == _person.Id && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+
+                    var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
+
+                    var communicationLists = communicationListQry.ToList();
+                    
+                    foreach ( var communicationList in communicationLists )
                     {
-                        // if no categories where specified, only show lists that the person has VIEW auth
-                        if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        communicationList.LoadAttributes( rockContext );
+                        if ( !categoryGuids.Any() )
                         {
-                            viewableCommunicationLists.Add( communicationList );
+                            // if no categories where specified, only show lists that the person has VIEW auth
+                            if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                            {
+                                viewableCommunicationLists.Add( communicationList );
+                            }
                         }
-                    }
-                    else
-                    {
-                        Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
-                        if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
+                        else
                         {
-                            viewableCommunicationLists.Add( communicationList );
+                            Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
+                            if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
+                            {
+                                viewableCommunicationLists.Add( communicationList );
+                            }
                         }
                     }
                 }
-
                 viewableCommunicationLists = viewableCommunicationLists.OrderBy( a =>
                 {
                     var name = a.GetAttributeValue( "PublicName" );

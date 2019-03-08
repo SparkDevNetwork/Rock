@@ -102,9 +102,9 @@ namespace Rock.Reporting.DataFilter
             fieldIndex++;
 
             // render empty row for "none"
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag();  // "row field-criteria"
+            writer.RenderEndTag();  // "row form-row field-criteria"
 
             // render the controls for the selectedEntityField
             string controlId = string.Format( "{0}_{1}", propertyControlsPrefix, selectedEntityField );
@@ -324,117 +324,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
-            var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
-
-            var attributeValues = service.Queryable().Where( v =>
-                v.EntityId.HasValue );
-
-            if ( entityField.AttributeGuid.HasValue )
-            {
-                var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
-                var attributeId = attributeCache != null ? attributeCache.Id : 0;
-
-                attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );
-            }
-            else
-            {
-                attributeValues = attributeValues.Where( v => v.Attribute.Key == entityField.Name && v.Attribute.FieldTypeId == entityField.FieldType.Id );
-            }
-
-            ParameterExpression attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
-
-            // Determine the appropriate comparison type to use for this Expression.
-            // Attribute Value records only exist for Entities that have a value specified for the Attribute.
-            // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
-            // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
-            var comparisonType = ComparisonType.EqualTo;
-            ComparisonType evaluatedComparisonType = comparisonType;
-            string compareToValue = null;
-
-            if ( values.Count >= 2 )
-            {
-                comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                compareToValue = values[1];
-
-                switch ( comparisonType )
-                {
-                    case ComparisonType.DoesNotContain:
-                        evaluatedComparisonType = ComparisonType.Contains;
-                        break;
-                    case ComparisonType.IsBlank:
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                        break;
-                    case ComparisonType.LessThan:
-                        evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        evaluatedComparisonType = ComparisonType.GreaterThan;
-                        break;
-                    case ComparisonType.NotEqualTo:
-                        evaluatedComparisonType = ComparisonType.EqualTo;
-                        break;
-                    default:
-                        evaluatedComparisonType = comparisonType;
-                        break;
-                }
-
-                values[0] = evaluatedComparisonType.ToString();
-            }
-
-            var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
-            if ( filterExpression != null )
-            {
-                if ( filterExpression is ConstantExpression )
-                {
-                    // Special Case: If AttributeFilterExpression returns ConstantExpression (for example, Expression.Constant(true)), just return the ConstantExpression.
-                    // For example, If this is a CampusFieldType and they didn't pick any campus, we don't want to do any filtering for this datafilter.
-                    return filterExpression;
-                }
-                else
-                {
-                    attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
-                }
-            }
-            else
-            {
-                // AttributeFilterExpression returned NULL (the FieldType didn't specify any additional filter on AttributeValue),
-                // so just filter based on if the AttributeValue exists with a non-empty value
-                if ( entityField.FieldType.Field.FilterComparisonType.HasFlag( ComparisonType.IsBlank ) && string.IsNullOrEmpty( compareToValue )  )
-                {
-                    // in the case of EqualTo/NotEqualTo with a NULL compareToValue, filter this using an IsBlank/IsNotBlank filter ( if the fieldtype supports it )
-                    if ( comparisonType == ComparisonType.EqualTo )
-                    {
-                        // treat as IsBlank, but invert so that it ends being "NOT (people that *have* a value)"
-                        // this will make is so that the filter will return people that have a blank value or no AttributeValue record
-                        comparisonType = ComparisonType.IsBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                    else if ( comparisonType == ComparisonType.NotEqualTo )
-                    {
-                        // treat as IsNotBlank
-                        comparisonType = ComparisonType.IsNotBlank;
-                        evaluatedComparisonType = ComparisonType.IsNotBlank;
-                    }
-                }
-
-                attributeValues = attributeValues.Where( a => !string.IsNullOrEmpty( a.Value ) );
-            }
-
-            IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
-
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
-            ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
-            Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
-
-            // If we have used an inverted comparison type for the evaluation, invert the Expression so that it excludes the matching Entities.
-            if ( comparisonType != evaluatedComparisonType )
-            {
-                return Expression.Not( expression );
-            }
-            else
-            {
-                return expression;
-            }
+            return Rock.Utility.ExpressionHelper.GetAttributeExpression( serviceInstance, parameterExpression, entityField, values );
         }
 
         /// <summary>

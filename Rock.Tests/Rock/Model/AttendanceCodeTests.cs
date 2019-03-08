@@ -49,7 +49,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Deletes the test data added to the database for each tests.
         /// </summary>
-        public void Cleanup()
+        private void Cleanup()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -140,8 +140,8 @@ namespace Rock.Tests.Rock.Model
                 codeList.Add( code.Code );
             }
 
-            Assert.False( codeList.Any( s => s.Contains( "911" ) ) );
-            Assert.False( codeList.Any( s => s.Contains( "666" ) ) );
+            Assert.DoesNotContain( codeList, s => s == "911" );
+            Assert.DoesNotContain( codeList, s => s == "666" );
         }
 
         /// <summary>

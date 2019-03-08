@@ -23,6 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Rock.Model
 {
     [TestClass]
+    [Ignore()]
     public class PersonTests
     {
         /// <summary>

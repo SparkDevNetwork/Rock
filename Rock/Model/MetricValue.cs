@@ -153,23 +153,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the series identifier (obsolete)
-        /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
-        /// </summary>
-        /// <value>
-        /// The series identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
-        public string SeriesId
-        {
-            get
-            {
-                return this.MetricValuePartitionEntityIds;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
         /// </summary>
         /// <value>

@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             rptPeople.ItemDataBound += rptPeople_ItemDataBound;
             rptFamilies.ItemDataBound += rptFamilies_ItemDataBound;
@@ -526,6 +526,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     Id = p.Id,
                     RecordTypeValueId = p.RecordTypeValueId,
+                    AgeClassification = p.AgeClassification,
                     NickName = p.NickName,
                     LastName = p.LastName,
                     Email = p.Email,
@@ -834,6 +835,7 @@ namespace RockWeb.Blocks.Crm
         {
             public int Id { get; set; }
             public int? RecordTypeValueId { get; set; }
+            public AgeClassification AgeClassification { get; set; }
             public string NickName { get; set; }
             public string LastName { get; set; }
             public string Email { get; set; }
@@ -865,10 +867,10 @@ namespace RockWeb.Blocks.Crm
                         var recordType = DefinedValueCache.Get( RecordTypeValueId.Value );
                         if ( recordType != null )
                         {
-                            return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200 );
+                            return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, this.AgeClassification, 200, 200 );
                         }
                     }
-                    return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, 200, 200 );
+                    return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, this.AgeClassification, 200, 200 );
                 }
             }
 

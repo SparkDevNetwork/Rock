@@ -219,7 +219,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
 
-                if ( ( bool? ) Session["InvalidPersonToken"] == true )
+                if ( (bool?)Session["InvalidPersonToken"] == true )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     lInvalidPersonTokenText.Text = GetAttributeValue( "InvalidPersonTokenText" ).ResolveMergeFields( mergeFields );
@@ -340,7 +340,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             if ( sender is LinkButton )
             {
-                LinkButton lb = ( LinkButton ) sender;
+                LinkButton lb = (LinkButton)sender;
 
                 foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {
@@ -450,13 +450,14 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = Server.UrlDecode( returnUrl );
+                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                redirectUrl =  Server.UrlDecode( redirectUrl );
                 Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
             {
-                Response.Redirect( redirectUrlSetting );
+                Response.Redirect( redirectUrlSetting, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else

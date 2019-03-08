@@ -26,7 +26,7 @@
                     $(this).height(newHeight);
                 }
 
-                $('body').addClass('modal-open');
+                $('body').addClass('modal-open').css('padding-right', Rock.controls.util.getScrollbarWidth());
                 $('#modal-popup').modal('layout');
             });
 
@@ -41,11 +41,11 @@
                 attentionAnimation: '',
                 modalOverflow: true
             });
-        },
+        }
 
         // shows a non-IFrame modal dialog control
-        _showModalControl = function ($modalDialog, managerId) {
-            $('body').addClass('modal-open');
+        var _showModalControl = function ($modalDialog, managerId) {
+            $('body').addClass('modal-open').css('padding-right', Rock.controls.util.getScrollbarWidth());
             $modalDialog.modal({
                 show: true,
                 manager: managerId,
@@ -55,10 +55,15 @@
                 modalOverflow: true,
                 replace: true
             });
-        },
 
-        exports = {
-            // updates the side of the modal that the control is in.  
+            if ($('.modal-backdrop').length == 0) {
+                // ensure that there is a modal-backdrop and include its owner as an attribute so that we can remove it when this modal is closed
+                $('<div class="modal-backdrop" data-modal-id="' + $modalDialog.prop('id') + '" />').appendTo('body');
+            }
+        }
+
+        var exports = {
+            // updates the side of the modal that the control is in.
             // this function works for both the IFrame modal and ModalDialog control
             updateSize: function (controlId) {
                 var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
@@ -90,7 +95,7 @@
 
                 }, 0);
 
-                $('body').removeClass('modal-open');
+                $('body').removeClass('modal-open').css('padding-right', '');
 
                 if (msg && msg != '') {
 
@@ -103,16 +108,25 @@
                     }
                 }
             },
-            // closes a ModalDialog control (non-IFrame Modal) 
+            // closes a ModalDialog control (non-IFrame Modal)
             closeModalDialog: function ($modalDialog) {
                 if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
                     $modalDialog.modal('hide');
                 }
 
-                // if all modals are closed, remove all the modal-open class 
+                // if all modals are closed, remove all the modal-open class
                 if (!$('.modal').is(':visible')) {
                     {
-                        $('.modal-open').removeClass('modal-open');
+                        $('.modal-open').removeClass('modal-open').css('padding-right', '');
+                    }
+                }
+
+                // ensure the modalBackdrop is removed if its owner is no longer visible
+                var $modalBackdrop = $('.modal-backdrop');
+                if ($modalBackdrop.length) {
+                    var $modalBackdropOwner = $('#' + $modalBackdrop.attr('data-modal-id'));
+                    if (!$modalBackdropOwner.is(':visible')) {
+                        $('.modal-backdrop').remove();
                     }
                 }
             },
@@ -120,7 +134,7 @@
             show: function (sender, popupUrl, detailsId, postbackUrl) {
                 _showModalPopup(sender, popupUrl);
             },
-            // shows a ModalDialog control (non-IFrame Modal) 
+            // shows a ModalDialog control (non-IFrame Modal)
             showModalDialog: function ($modalDialog, managerId) {
                 _showModalControl($modalDialog, managerId);
             },

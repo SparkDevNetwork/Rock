@@ -40,14 +40,14 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.Campus, Rock" Label="URL" PropertyName="Url" />
                             <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
-                            <Rock:AddressControl ID="acAddress" runat="server" Label="Address" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            <Rock:LocationPicker ID="lpLocation" runat="server" AllowedPickerModes="Named" Required="true" Label="Location" Help="Select a Campus Location" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="attributes">
-                                <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                             </div>
                         </div>
                     </div>

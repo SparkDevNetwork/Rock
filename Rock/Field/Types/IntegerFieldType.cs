@@ -163,6 +163,29 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsComparedToValue( List<string> filterValues, string value )
+        {
+            if ( filterValues == null || filterValues.Count < 2 )
+            {
+                return false;
+            }
+
+            ComparisonType? filterComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+            ComparisonType? equalToCompareValue = GetEqualToCompareValue().ConvertToEnumOrNull<ComparisonType>();
+            var filterValueAsDecimal = filterValues[1].AsDecimalOrNull();
+            var valueAsDecimal = value.AsDecimalOrNull();
+
+            return ComparisonHelper.CompareNumericValues( filterComparisonType.Value, valueAsDecimal, filterValueAsDecimal, null );
+        }
+
+        /// <summary>
         /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>

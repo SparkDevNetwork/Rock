@@ -182,11 +182,11 @@ namespace Rock.Model
         /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
         /// <param name="includeChildPages">if set to <c>true</c> [include child pages].</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="isRootOfTheCopyOperation">Is this source page the root of the copy operation. Recursive calls to this method set this param as false.</param>
         /// <returns></returns>
-        private Rock.Model.Page GeneratePageCopy( Rock.Model.Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, bool includeChildPages, int? currentPersonAliasId = null )
+        private Page GeneratePageCopy( Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, bool includeChildPages, int? currentPersonAliasId = null, bool isRootOfTheCopyOperation = true )
         {
-            var targetPage = new Rock.Model.Page();
-            targetPage = sourcePage.Clone( false );
+            var targetPage = sourcePage.Clone( false );
             targetPage.CreatedByPersonAlias = null;
             targetPage.CreatedByPersonAliasId = currentPersonAliasId;
             targetPage.CreatedDateTime = RockDateTime.Now;
@@ -196,11 +196,13 @@ namespace Rock.Model
             targetPage.BodyCssClass = sourcePage.BodyCssClass;
             targetPage.Id = 0;
             targetPage.Guid = Guid.NewGuid();
-            targetPage.PageTitle = sourcePage.PageTitle + " - Copy";
-            targetPage.InternalName = sourcePage.InternalName + " - Copy";
-            targetPage.BrowserTitle = sourcePage.BrowserTitle + " - Copy";
             targetPage.IsSystem = false;
             pageGuidDictionary.Add( sourcePage.Guid, targetPage.Guid );
+
+            if ( isRootOfTheCopyOperation )
+            {
+                targetPage.InternalName = sourcePage.InternalName + " - Copy";
+            }
 
             foreach ( var block in sourcePage.Blocks )
             {
@@ -224,7 +226,7 @@ namespace Rock.Model
             {
                 foreach ( var oldchildPage in sourcePage.Pages )
                 {
-                    targetPage.Pages.Add( GeneratePageCopy( oldchildPage, pageGuidDictionary, blockGuidDictionary, includeChildPages, currentPersonAliasId ) );
+                    targetPage.Pages.Add( GeneratePageCopy( oldchildPage, pageGuidDictionary, blockGuidDictionary, includeChildPages, currentPersonAliasId, false ) );
                 }
             }
 

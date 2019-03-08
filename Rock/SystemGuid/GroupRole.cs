@@ -135,6 +135,7 @@ namespace Rock.SystemGuid
         /// <value>
         /// The role Guid.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GROUPROLE_PEER_NETWORK_OWNER instead.", false )]
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER= "CB9A0E14-6FCF-4C07-A49A-D7873F45E196";
 
@@ -149,6 +150,7 @@ namespace Rock.SystemGuid
         /// <value>
         /// The role Guid.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GROUPROLE_PEER_NETWORK_RELATED instead.", false )]
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED= "FEA75948-97CB-4DE9-8A0D-43FA2646F55B";
 

@@ -116,6 +116,8 @@ namespace Rock.Model
             target.Key = source.Key;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.PostHtml = source.PostHtml;
+            target.PreHtml = source.PreHtml;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

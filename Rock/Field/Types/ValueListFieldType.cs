@@ -84,7 +84,7 @@ namespace Rock.Field.Types
             tbCustomValues.AutoPostBack = true;
             tbCustomValues.TextChanged += OnQualifierUpdated;
             tbCustomValues.Label = "Custom Values";
-            tbCustomValues.Help = "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.";
+            tbCustomValues.Help = "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.";
 
             var cbAllowHtml = new RockCheckBox();
             controls.Add( cbAllowHtml );
@@ -107,7 +107,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
-            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", "" ) );
             configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow Html", "Allow Html content in values", "" ) );
 
             if ( controls != null )
@@ -175,17 +175,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray();
+            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
             {
-                for( int i = 0; i < values.Length; i++)
+                int definedTypeId = 0;
+                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
                 {
-                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
-                    if ( definedValue != null)
+                    for( int i = 0; i < values.Length; i++)
                     {
-                        values[i] = definedValue.Value;
+                        var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
+                        if ( definedValue != null)
+                        {
+                            values[i] = definedValue.Value;
+                        }
                     }
                 }
             }

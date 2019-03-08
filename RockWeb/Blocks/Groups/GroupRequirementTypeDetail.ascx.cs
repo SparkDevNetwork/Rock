@@ -193,8 +193,8 @@ The SQL can include Lava merge fields:";
 
             if (groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview)
             {
-                groupRequirementType.DataViewId = dpDataView.SelectedValue.AsIntegerOrNull();
-                groupRequirementType.WarningDataViewId = dpWarningDataView.SelectedValue.AsIntegerOrNull();
+                groupRequirementType.DataViewId = dpDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpDataView.SelectedValue.AsIntegerOrNull();
+                groupRequirementType.WarningDataViewId = dpWarningDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpWarningDataView.SelectedValue.AsIntegerOrNull();
             }
             else
             {

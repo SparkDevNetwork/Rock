@@ -173,6 +173,22 @@ namespace Rock.Field
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
         /// <summary>
+        /// Determines whether this FieldType supports doing PostBack for the editControl 
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <returns>
+        ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
+        /// </returns>
+        bool HasChangeHandler( Control editControl );
+
+        /// <summary>
+        /// Specifies an action to perform when the EditControl's Value is changed. See also <seealso cref="HasChangeHandler(Control)"/>
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <param name="action">The action.</param>
+        void AddChangeHandler( Control editControl, Action action );
+
+        /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
         /// <param name="value">The value.</param>
@@ -221,12 +237,20 @@ namespace Rock.Field
         List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
 
         /// <summary>
-        /// Gets the filter compare value.
+        /// Gets the filter compare value (int or string version of <seealso cref="Rock.Model.ComparisonType"/> as a string)
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="control">The control that has the comparison options (or null if this fieldtype doesn't have one).</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         string GetFilterCompareValue( Control control, FilterMode filterMode );
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The filter value control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
@@ -270,13 +294,25 @@ namespace Rock.Field
         Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType );
 
         /// <summary>
-        /// Gets a filter expression for an attribute value.
+        /// Gets a filter expression to be used as part of a AttributeValue Query or EntityAttributeQueryExpression
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
         Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
+
+        /// <summary>
+        /// Applies the attribute query filter based on the values configured in the filterControl
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        System.Linq.IQueryable<T> ApplyAttributeQueryFilter<T>( System.Linq.IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, Rock.Data.IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new();
 
         /// <summary>
         /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.
@@ -287,6 +323,16 @@ namespace Rock.Field
         ///   <c>true</c> if [is equal to value] [the specified filter values]; otherwise, <c>false</c>.
         /// </returns>
         bool IsEqualToValue(List<string> filterValues, string value);
+
+        /// <summary>
+        /// Determines whether the filter's comparison type and filter compare value(s) evaluates to true for the specified value
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is compared to value] [the specified filter values]; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsComparedToValue( List<string> filterValues, string value );
 
         /// <summary>
         /// Gets the name of the attribute value field.

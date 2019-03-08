@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
-    public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered
+    public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -167,6 +169,33 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual GroupType GroupType { get; set; }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            if ( this.GroupTypeId.HasValue )
+            {
+                GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
+            }
+        }
 
         #endregion
 

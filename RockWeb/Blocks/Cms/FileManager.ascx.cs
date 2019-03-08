@@ -30,7 +30,8 @@ namespace RockWeb.Blocks.Cms
     [Description( "Block that can be used to browse and manage files on the web server" )]
 
     [TextField( "Root Folder", "The Root folder to browse", true, "~/Content" )]
-    [CustomDropdownListField( "Browse Mode", "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.", "doc,image", true, "doc" )]
+    [CustomDropdownListField( "Browse Mode", "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.", "doc,image", true, "doc", order: 1 )]
+    [LinkedPage( "File Editor Page", "Page used to edit  the contents of a file.", false, "", "", 2 )]
     public partial class FileManager : RockBlock
     {
         /// <summary>
@@ -67,10 +68,12 @@ namespace RockWeb.Blocks.Cms
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
             string rootFolder = GetAttributeValue( "RootFolder" );
             string browseMode = GetAttributeValue( "BrowseMode" );
+            string url = LinkedPageUrl( "FileEditorPage" );
             if ( string.IsNullOrWhiteSpace( browseMode ) )
             {
                 browseMode = "doc";
@@ -79,6 +82,8 @@ namespace RockWeb.Blocks.Cms
             iframeUrl += "?rootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
             iframeUrl += "&browseMode=" + browseMode;
             iframeUrl += "&fileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
+            iframeUrl += "&fileTypeWhiteList=" + HttpUtility.UrlEncode( fileTypeWhiteList );
+            iframeUrl += "&editFilePage=" + HttpUtility.UrlEncode( url );
             if ( browseMode == "image" )
             {
                 iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );

@@ -50,6 +50,9 @@ namespace Rock.Client
         public string IPAddress { get; set; }
 
         /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -107,6 +110,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IPAddress = source.IPAddress;
+            this.IsActive = source.IsActive;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;

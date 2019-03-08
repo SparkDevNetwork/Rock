@@ -1279,8 +1279,22 @@ namespace RockWeb.Blocks.Reporting
                 var dataSelectComponent = GetDataSelectComponent( rockContext, fieldSelection.AsInteger() );
                 if ( dataSelectComponent != null )
                 {
-                    dataSelectComponent.CreateChildControls( phDataSelectControls );
+                    Control[] dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
+                    SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets the data select controls validation group.
+        /// </summary>
+        /// <param name="dataSelectControls">The data select controls.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        private void SetDataSelectControlsValidationGroup( Control[] dataSelectControls, string validationGroup )
+        {
+            if ( dataSelectControls != null && validationGroup != null )
+            {
+                this.SetValidationGroup( dataSelectControls, validationGroup );
             }
         }
 

@@ -176,9 +176,11 @@ namespace Rock.Field.Types
                         return campus.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -275,7 +277,7 @@ namespace Rock.Field.Types
             var campusGuids = value.SplitDelimitedValues().AsGuidList();
 
             var campuses = campusGuids.Select( a => CampusCache.Get( a ) ).Where( c => c != null );
-            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+            return AddQuotes( campuses.Select( a => a.Name ).ToList().AsDelimited( "' OR '" ) );
         }
 
         /// <summary>
@@ -368,8 +370,8 @@ namespace Rock.Field.Types
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 if ( valueCount == 0 )
                 {
-                    // No Value specified, so return Expression.Constant(true) ( which means don't filter )
-                    return Expression.Constant( true );
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
                 }
                 else if ( valueCount == 1 )
                 {

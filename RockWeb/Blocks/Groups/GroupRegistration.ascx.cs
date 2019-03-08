@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -189,8 +189,8 @@ namespace RockWeb.Blocks.Groups
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
                 {
-                    if ( CurrentPerson != null &&
-                        tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                    if ( CurrentPerson != null && CurrentPerson.NickName.IsNotNullOrWhiteSpace() && CurrentPerson.LastName.IsNotNullOrWhiteSpace() &&
+                        tbFirstName.Text.Trim().Equals( CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
@@ -201,7 +201,8 @@ namespace RockWeb.Blocks.Groups
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    person = personService.FindPerson( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), true );
+                    var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnCell.Text.Trim() );
+                    person = personService.FindPerson( personQuery, true );
                     if ( person != null )
                     {
                         isMatch = true;
@@ -304,7 +305,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // Check for the spouse
-                    if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
+                    if ( IsFullWithSpouse && tbSpouseFirstName.Text.IsNotNullOrWhiteSpace() && tbSpouseLastName.Text.IsNotNullOrWhiteSpace() )
                     {
                         spouse = person.GetSpouse( rockContext );
                         bool isSpouseMatch = true;
@@ -378,7 +379,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
 
-                // Will only redirect if a value is specified
+                // Will only redirect if a value is specifed
                 NavigateToLinkedPage( "ResultPage" );
             }
         }
@@ -420,6 +421,11 @@ namespace RockWeb.Blocks.Groups
                 pnlHomePhone.Visible = !IsSimple;
                 pnlCellPhone.Visible = !IsSimple;
                 acAddress.Visible = !IsSimple;
+
+                string phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+                phoneLabel = phoneLabel.Trim().EndsWith( "Phone" ) ? phoneLabel : phoneLabel + " Phone";
+                pnCell.Label = phoneLabel;
+                pnSpouseCell.Label = "Spouse " + phoneLabel;
 
                 if ( CurrentPersonId.HasValue && _autoFill )
                 {

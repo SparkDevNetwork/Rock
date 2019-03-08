@@ -102,7 +102,8 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return AttributeCache.Get( this.Id );
+            // doesn't apply
+            return null;
         }
 
         /// <summary>

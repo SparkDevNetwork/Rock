@@ -136,11 +136,11 @@ namespace Rock.Reporting.DataFilter.Person
                 var communicationIdText = selectionValues[0];
                 if ( communicationIdText.IsNotNullOrWhiteSpace() )
                 {
-                    result += $" on Communication Id '{communicationIdText}'";
+                    result = $"Communication Id: '{communicationIdText}'";
                 }
 
                 var communicationStatus = selectionValues[1].ConvertToEnum<CommunicationStatusType>();
-                result = $"With {communicationStatus.ToString()}";
+                result += $", with Status: {communicationStatus.ToString()}";
             }
 
             return result;

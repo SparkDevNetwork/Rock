@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Connection
                     string firstName = tbFirstName.Text.Trim();
                     string lastName = tbLastName.Text.Trim();
                     string email = tbEmail.Text.Trim();
+                    string mobilePhoneNumber = pnMobile.Text.Trim();
                     int? campusId = cpCampus.SelectedCampusId;
 
                     // if a person guid was passed in from the query string use that
@@ -158,7 +159,8 @@ namespace RockWeb.Blocks.Connection
                     else
                     {
                         // Try to find matching person
-                        person = personService.FindPerson( firstName, lastName, email, true );
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhoneNumber );
+                        person = personService.FindPerson( personQuery, true );
                     }
 
                     // If person was not found, create a new one
@@ -274,6 +276,13 @@ namespace RockWeb.Blocks.Connection
                 {
                     pnlSignup.Visible = false;
                     ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
+                    return;
+                }
+
+                if ( !opportunity.IsActive )
+                {
+                    pnlSignup.Visible = false;
+                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
                     return;
                 }
 
