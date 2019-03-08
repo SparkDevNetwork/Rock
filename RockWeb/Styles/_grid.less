@@ -1,0 +1,595 @@
+/*
+    Used to manage styles related to Rock's internal grid component
+
+    1. Bootstrap Overrides
+    2. Core Table
+    3. Filter
+    4. Column Header
+    5. Footer
+    6. Light Style - Used for small grids
+    7. Reusable classes
+    8. Column Types
+    9. Row Types
+    10. Responsive Columns
+    11. Components
+*/
+
+
+// 1. Bootstrap Overrides
+// -------------------------
+
+/* If th has a required class, render the required field indicator after the column heading */
+.table thead th.required::after {
+  margin-left: 4px;
+  font-family: @fa-font-face;
+  font-size: 6px;
+  font-weight: 900;
+  color: #eca9a7;
+  vertical-align: super;
+  content: "\f111";
+}
+
+.table > tbody > tr > td {
+  color: @grid-row-even-color;
+}
+
+.table-striped {
+  > tbody > tr:nth-of-type(odd) {
+    color: @grid-row-odd-color;
+    background-color: @grid-row-odd-bg;
+  }
+
+  > tbody > tr:nth-of-type(even) {
+    color: @grid-row-even-color;
+    background-color: @grid-row-even-bg;
+  }
+}
+
+.table.table-hover > tbody > tr:hover > td {
+  color: @grid-hover-color;
+  background-color: @grid-hover-bg;
+}
+
+td.grid-select-cell {
+  cursor: pointer;
+}
+
+td.wrap-contents {
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+
+  -ms-hyphens: auto;
+  hyphens: auto;
+  // keep cells from scrolling off screen
+  -ms-word-break: break-all;
+  word-break: break-all;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.grid {
+  margin-bottom: 15px;
+
+  .grid-table {
+    border: 1px solid @grid-border-color;
+  }
+
+  .grid-table.table-light {
+    border: 0;
+  }
+}
+
+.grid.grid-panel {
+  th:first-child,
+  td:first-child {
+    border-left: 0;
+  }
+
+  th:last-child,
+  td:last-child {
+    border-right: 0;
+  }
+  .grid-table {
+    border: 0 !important;
+  }
+}
+
+// rwd responsive table override
+
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+
+.table-responsive[data-pattern="priority-columns"] {
+  position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
+}
+
+
+// 2. Core Table
+// -------------------------
+.table-wrapper {
+  .btn-toolbar {
+    display: none;
+  }
+}
+
+
+// 3. Filter
+// -------------------------
+.grid-filter {
+  padding: 0;
+  color: @grid-filter-color;
+  background-color: @grid-filter-bg;
+  border-bottom: 1px solid @grid-border-color;
+  border-radius: @border-radius-base;
+
+  header {
+    position: absolute;
+    display: inline;
+    cursor: pointer;
+    border-radius: @border-radius-base @border-radius-base 0 0;
+
+    h3 {
+      display: inline;
+      margin: 0 2px 0 6px;
+      font-size: 12px;
+      font-weight: @font-weight-light;
+      line-height: 16px;
+    }
+
+    i {
+      color: lighten(@grid-filter-color, 20%);
+    }
+
+    fieldset {
+      margin-bottom: 0;
+    }
+  }
+
+  .btn-link {
+    position: absolute;
+    z-index: 100;
+    margin: @table-cell-padding;
+    color: @ui-5;
+    text-decoration: none;
+    background: @grid-footer-bg;
+
+    &.is-open {
+      background: @grid-filter-bg;
+    }
+  }
+
+  h4 {
+    padding-bottom: 8px;
+    margin: 12px 0 20px;
+    font-weight: @font-weight-light;
+  }
+
+  .grid-filter-entry {
+    padding: @panel-body-padding;
+    padding-top: 37px;
+    border-bottom: 1px solid darken(@grid-filter-bg, 10%);
+
+    h4 { display: none; }
+  }
+
+  // adjust the background color of pickers in the filters
+  .picker .picker-label {
+    color: @grid-filter-color;
+    background-color: @grid-filter-bg;
+    border-color: darken(@grid-filter-bg, 10%);
+  }
+}
+
+
+.grid-filter-entry legend + .control-group {
+  margin-top: 0;
+}
+
+.grid-filter-overview {
+  h4 {
+    margin: 0;
+  }
+
+  fieldset {
+    padding: 37px 16px 8px;
+  }
+}
+
+// 4. Column Header
+// -------------------------
+
+.table > thead > tr > th {
+  font-size: @grid-column-header-font-size;
+  font-weight: @grid-column-header-font-weight;
+  color: @grid-column-header-text-color;
+  background-color: @grid-column-header-bg;
+  border-color: @grid-column-header-border-color;
+
+  > a:not(.btn) {
+    display: inline;
+    color: @grid-column-header-text-color;
+    &::after{
+      display: inline;
+      width: 15px;
+      padding-left: 5px;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
+      color: #8c9ba5;
+      text-decoration: none;
+      content: @fa-var-caret-down;
+      opacity: 0;
+    }
+
+    &:active,
+    &:active::after {
+      color: @link-color;
+    }
+  }
+  &:hover a:not(.btn)::after{
+    content: @fa-var-caret-down;
+    opacity: 1;
+  }
+
+  // sorting
+  &.descending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
+    content: @fa-var-caret-down;
+    opacity: 1;
+  }
+
+  &.ascending a:not(.btn)::after {
+    color: @grid-column-header-text-color;
+    content: @fa-var-caret-up;
+    opacity: 1;
+  }
+}
+
+.table.table-light > thead > tr > th {
+  color: @text-color;
+  background-color: transparent;
+  border-color: lighten(@text-color, 40%);
+}
+
+// 5. Footer
+// -------------------------
+
+// pagination
+.grid-paging {
+  padding: 5px 0;
+
+  .grid-pager {
+    margin-top: 0;
+    margin-bottom: 0;
+
+    li {
+      > a {
+        min-width: 23px;
+        padding: 5px 12px;
+        margin: 0 8px 0 0;
+        color: @grid-pager-button-color;
+        text-align: center;
+        background-color: @grid-pager-button-bg;
+        border-color: @grid-pager-button-border;
+      }
+
+      &.disabled > a {
+        cursor: default;
+      }
+
+      &.active > a {
+        color: @grid-pager-button-active-color;
+        background-color: @grid-pager-button-active-bg;
+        border-color: @grid-pager-button-active-border;
+      }
+    }
+  }
+
+  .grid-pager {
+    float: right;
+  }
+
+  .grid-pagesize {
+    float: left;
+    margin: 0 (@padding-base-horizontal / 2) 0 0;
+  }
+
+  .pagination-text {
+    float: left;
+    font-size: 12px;
+  }
+
+  .grid-itemcount {
+    float: left;
+    margin-top: 7px;
+    margin-left: 10px;
+    font-size: 12px;
+  }
+}
+
+// columns
+td.grid-col-actions {
+  text-align: right;
+}
+
+// actions
+.grid-actions {
+  text-align: right;
+  background-color: @grid-footer-bg;
+
+  .btn {
+    margin-left: 8px;
+    color: @grid-footer-button-text-color;
+    background-color: @grid-footer-button-bg;
+    border-color: @grid-footer-button-border;
+  }
+}
+
+// 6. Light Style
+// -------------------------
+
+.table-light {
+  background-color: transparent;
+
+  thead th {
+    font-weight: @font-weight-bold;
+    color: @text-color;
+    background-color: inherit;
+  }
+
+  tfoot td {
+    background-color: inherit;
+
+    .grid-actions a {
+      border-color: none;
+      border-style: none;
+      border-width: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+
+  .grid-columncommand {
+    width: 42px;
+    min-width: 42px;
+  }
+}
+
+// 7. Reusable Styles
+// -------------------------
+
+.table-padded {
+  td,
+  th {
+    padding: 12px !important;
+  }
+}
+
+.table-empty {
+  opacity: .6;
+}
+
+// 8. Column Types
+// -------------------------
+.grid-select-field {
+  min-width: 40px;
+  // checkbox field
+  text-align: center;
+
+  .checkbox,
+  .radio {
+    padding-left: 0;
+    margin: 4px 0 0 0;
+
+    input {
+      float: none;
+      margin: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+      margin-left: -12px;
+    }
+
+    label {
+      padding: 0;
+    }
+  }
+  // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
+}
+
+//
+.table > tbody > tr > td.grid-select-field {
+  padding: 12px 12px 0 12px;
+}
+
+.table > thead > tr > th.grid-select-field {
+  padding: 14px 12px 10px 12px;
+}
+
+.grid .table > thead > tr > th,
+.grid .table > tbody > tr > td {
+  // get buttons and text columns to look good together
+  padding: 12px;
+
+  &.grid-columncommand {
+    min-width: 48px;
+  }
+
+  &.grid-columnreorder {
+    width: 48px;
+    min-width: 48px;
+    padding-top: 12px;
+
+    a {
+      color: lighten(@text-color, 20%);
+    }
+  }
+}
+
+.grid .table > tbody > tr > td.grid-columncommand {
+  padding: 6px;
+}
+
+.table .color-field {
+  width: 4px;
+  padding: 0;
+
+  & + th {
+    border-left-width: 0;
+  }
+}
+
+.table .grid-icon img {
+  width: 100%;
+  max-width: 120px;
+}
+
+.grid-select-cell {
+  .photo-icon {
+    display: inline-block;
+    width: @line-height-computed;
+    height: @line-height-computed;
+    vertical-align: top;
+  }
+}
+
+
+// 9. Row Types
+// -------------------------
+.table > tbody > tr.grid-section-header {
+  > td {
+    color: @grid-section-color;
+    background-color: @grid-section-bg;
+  }
+
+  &:hover > td {
+    background-color: @grid-section-bg !important;
+  }
+}
+
+tr.row-highlight {
+  td {
+    color: @grid-hover-color !important;
+    background-color: @grid-hover-bg !important;
+  }
+}
+
+.table > thead > tr.grid-header-bold {
+  th {
+    color: @grid-column-header-bold-color;
+    vertical-align: top !important;
+    background-color: @grid-column-header-bold-bg;
+    border-color: lighten(@grid-column-header-bold-bg, 5%);
+  }
+}
+
+.table > tbody > tr.grid-row-bold {
+  td {
+    color: @grid-column-header-bold-color;
+    vertical-align: top !important;
+    background-color: @grid-column-header-bold-bg;
+    border-color: lighten(@grid-column-header-bold-bg, 5%);
+  }
+
+  &:hover td {
+    color: @grid-column-header-bold-color !important;
+    background-color: lighten(@grid-column-header-bold-bg, 10%);
+  }
+}
+
+// inactive row
+.table > tbody > tr.is-inactive {
+  > td {
+    color: lighten(@grid-row-even-color, 30%);
+  }
+}
+
+.table > tbody > tr.is-inactive-person {
+  > td {
+    color: lighten(@grid-row-even-color, 30%);
+  }
+}
+
+.table > tbody > tr.is-deceased {
+  > td {
+    color: @brand-danger;
+  }
+}
+
+// 10. Responsive Columns
+// -------------------------
+
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+  //position: relative;  // commented out to get pop-ups from being trimmed JME 10/8/2015
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+// classes to show and hide columns based on their priority
+.table-responsive {
+  th[data-priority],
+  td[data-priority] {
+    display: none;
+  }
+
+  th[data-priority="1"],
+  td[data-priority="1"] {
+    display: table-cell;
+  }
+
+  @media screen and (min-width: 480px) {
+    th[data-priority="2"],
+    td[data-priority="2"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 640px) {
+    th[data-priority="3"],
+    td[data-priority="3"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 800px) {
+    th[data-priority="4"],
+    td[data-priority="4"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 960px) {
+    th[data-priority="5"],
+    td[data-priority="5"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 1120px) {
+    th[data-priority="6"],
+    td[data-priority="6"] {
+      display: table-cell;
+    }
+  }
+}
+
+// 10. Responsive Columns
+// -------------------------
+.alert.alert-grid {
+  margin-top: -15px;
+  margin-right: -15px;
+  margin-bottom: 15px;
+  margin-left: -15px;
+  border-radius: 0;
+}
+
+// 11. Components
+// -------------------------

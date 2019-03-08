@@ -1,0 +1,362 @@
+/*
+    Used to manage styles related to Rock's forms
+
+    1. Bootstrap Overrides / Additions
+    2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
+    5. Validation
+    6. Custom Controls
+    7. Static Control
+*/
+
+// 1. Bootstrap Overrides / Additions
+// -------------------------
+
+
+
+.input-xs {
+  .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+}
+
+// Prevent Toggle Arrows from Displaying on number inputs
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+// Prevent Text Areas from oversizing beyond 100%
+textarea {
+  resize: vertical;
+}
+
+legend {
+  font-weight: @font-weight-light;
+  color: @text-color;
+  border-width: 0;
+}
+
+.checkbox-inline:first-child,
+.radio-inline:first-child {
+  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
+  padding-left: 30px;
+}
+
+a.aspNetDisabled {
+  opacity: .5;
+}
+
+.form-group.rock-literal,
+.rock-control-wrapper {
+  /*label {
+        margin-bottom: 0;
+    }*/ // commented out to match default bootstrap behavior (Lanio group member filter) JME 1/18/2016
+
+  p.form-control-static {
+    padding-top: 0;
+  }
+}
+
+.form-group {
+  // used to fix the font sizes when a form is placed in a wrapping container that changes the default font size like a jumbotron
+  font-size: @font-size-base;
+  line-height: @line-height-base;
+}
+
+.form-group .checkbox:last-child {
+  // used to adjust checkboxes tolook better with labels above
+  margin-bottom: 30px;
+}
+
+.form-group > .form-group {
+  margin-top: 12px;
+}
+
+.form-inline {
+  // control groups break bootstraps form-inline https://stackoverflow.com/questions/21017542/bootstrap-form-inline-not-working
+  .control-wrapper {
+    display: inline-table;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .date-range-picker .input-group {
+    margin-bottom: 0;
+  }
+}
+
+.form-inline-all {
+  .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display: inline-block;
+  }
+}
+
+.form-group.captcha {
+  iframe {
+    border: 0;
+  }
+
+  &.has-error {
+    iframe {
+      border: 1px solid @state-danger-text;
+      border-radius: 4px;
+    }
+  }
+}
+
+
+// styling to get rock controls to layout horizontal
+.form-horizontal {
+  .form-group {
+    margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
+
+    .form-control-group,
+    .form-control {
+      float: left;
+    }
+  }
+
+  &[class*="label-"] {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: 15px;
+        padding-left: 15px;
+
+        .make-sm-column(2);
+
+        @media (min-width: @screen-sm-min) {
+          padding-top: 7px;
+          margin-bottom: 0;
+          text-align: right;
+        }
+      }
+
+      .control-wrapper {
+        .make-sm-column(10);
+      }
+    }
+  }
+
+  &.label-md {
+    .form-group {
+      label {
+        .make-sm-column(4);
+      }
+      .control-wrapper {
+        .make-sm-column(8);
+      }
+    }
+  }
+
+  &.label-lg {
+    .form-group {
+      label {
+        .make-sm-column(6);
+      }
+      .control-wrapper {
+        .make-sm-column(6);
+      }
+    }
+  }
+
+  &.label-xl {
+    .form-group {
+      label {
+        .make-sm-column(8);
+      }
+      .control-wrapper {
+        .make-sm-column(4);
+      }
+    }
+  }
+}
+
+
+.controls {
+  .checkbox:first-child {
+    margin-top: 0;
+  }
+}
+
+
+// highlight required fields
+.form-group.required {
+  .control-label::after {
+    margin-left: 4px;
+    font-family: @fa-font-face;
+    font-size: 6px;
+    font-weight: @fa-theme-weight;
+    color: @required-field-color;
+    vertical-align: super;
+    content: @fa-var-circle;
+  }
+}
+
+// 2. Data Lists
+// -------------------------
+
+dl:not(.dl-horizontal) {
+  dt {
+    margin-top: 16px;
+    margin-bottom: 2px;
+    font-weight: @font-weight-bold;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  dd {
+    margin-left: 0;
+  }
+}
+
+// 3. Input Sizing
+// -------------------------
+
+// form control sizing for bs3 - to be used only in specific cases
+// added on 9/27/13
+.form-control.input-width-xs,
+.input-group.input-width-xs,
+.form-control-group.input-width-xs input {
+  width: 60px;
+}
+
+.form-control.input-width-sm,
+.input-group.input-width-sm,
+.form-control-group.input-width-sm input {
+  width: 90px;
+}
+
+.form-control.input-width-md,
+.input-group.input-width-md,
+.form-control-group.input-width-md input {
+  width: 150px;
+}
+
+.form-control.input-width-lg,
+.input-group.input-width-lg,
+.form-control-group.input-width-lg input {
+  width: 210px;
+}
+
+.form-control.input-width-xl,
+.input-group.input-width-xl,
+.form-control-group.input-width-xl input {
+  width: 270px;
+}
+
+.form-control.input-width-xxl,
+.input-group.input-width-xxl,
+.form-control-group.input-width-xxl input {
+  width: 530px;
+}
+
+.form-control-group {
+  .clearfix();
+
+  .form-control,
+  .input-group {
+    float: left;
+    margin-right: 6px;
+  }
+
+  & > span {
+    float: left;
+    margin: 8px 6px 0 0;
+  }
+
+  & > label {
+    float: left;
+    margin-top: 8px;
+  }
+}
+
+// change margins in panel headings
+.panel-heading {
+  .input-group {
+    margin-top: -6px;
+    margin-bottom: -6px;
+  }
+}
+
+// 4. Control Specific Styling
+// -------------------------
+
+.input-group-edit {
+  .input-group-addon {
+    background-color: @brand-success;
+
+    a {
+      color: @btn-success-color;
+    }
+  }
+}
+
+.month-year-picker .separator,
+.month-day-picker .separator {
+  float: left;
+  margin: 4px 8px 0 -2px;
+  font-size: 20px;
+  color: lighten(@text-color, 35%);
+}
+
+.rock-check-box {
+  .checkbox {
+    margin-top: 0;
+  }
+}
+
+.form-control.ssn-part {
+  &.ssn-area {
+    width: 50px;
+  }
+  &.ssn-group {
+    width: 45px;
+  }
+  &.ssn-serial {
+    width: 60px;
+  }
+}
+
+// 5. validation
+// -------------------------
+
+.validation-error {
+  float: left;
+  font-weight: @font-weight-light;
+  color: @brand-danger;
+}
+
+// 6. Custom Controls
+// -------------------------
+.btn-controlaligned {
+  margin-top: 24px;
+}
+
+// 7. Static Controls
+// -------------------------
+.form-group.static-control {
+  label {
+    margin-bottom: 0;
+  }
+
+  .form-control-static {
+    padding-top: 0;
+  }
+}
