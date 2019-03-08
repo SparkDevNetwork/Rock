@@ -18,11 +18,11 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-
+    
     /// <summary>
     ///
     /// </summary>
-    public partial class FundraisingParticipantShowAmount : Rock.Migrations.RockMigration
+    public partial class FundraisingParticipantAddShowAmountSetting : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Attrib for BlockType: Fundraising Opportunity Participant:Show Amount
-            RockMigrationHelper.UpdateBlockTypeAttribute( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Amount", "ShowAmount", "", @"Determines if the Amount column should be displayed in the Contributions List.", 8, @"True", "47F89214-9A0D-4C83-B783-BBE09F3F1439" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Amount", "ShowAmount", "", @"Determines if the Amount column should be displayed in the Contributions List.", 8, @"False", "47F89214-9A0D-4C83-B783-BBE09F3F1439" );
         }
 
         /// <summary>
