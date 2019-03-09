@@ -524,6 +524,7 @@
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
     <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
     <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
