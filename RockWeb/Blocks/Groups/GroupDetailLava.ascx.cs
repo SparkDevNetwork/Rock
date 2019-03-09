@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 8 )]
     [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 9 )]
     [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 10 )]
-    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group.", false, "", 11 )]
+    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", false, "", 11 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 12 )]
     [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 13 )]
     [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 14 )]
