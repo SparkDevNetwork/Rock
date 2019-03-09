@@ -29,7 +29,7 @@ namespace Rock.Model
     public partial class FinancialBatchService
     {
         /// <summary>
-        /// Gets the specified name prefix.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
         /// <param name="currencyType">Type of the currency.</param>
@@ -45,7 +45,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified name prefix.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
         /// <param name="nameSuffix">The name suffix.</param>
@@ -81,7 +81,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by name and date.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="batchName">Name of the batch.</param>
         /// <param name="transactionDate">The transaction date.</param>
