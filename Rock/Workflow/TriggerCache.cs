@@ -17,9 +17,8 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Web.Cache;
-using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rock.Plugin.HotFixes
+﻿namespace Rock.Plugin.HotFixes
 {
     /// <summary>
     /// This hotfix update is to address security concerns in the file uploader and is being retroactivly applied to v7.6 and >.

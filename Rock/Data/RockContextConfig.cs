@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 
 namespace Rock.Data
 {

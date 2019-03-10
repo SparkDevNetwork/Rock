@@ -16,18 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Caching;
-using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Security;
 
 namespace Rock.Web.UI
 {
