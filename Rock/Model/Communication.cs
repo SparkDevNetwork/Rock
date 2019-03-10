@@ -19,18 +19,18 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Data;
 using Rock.Communication;
-using Rock.Web.Cache;
-using System.Data.Entity;
-using System.Linq.Expressions;
+using Rock.Data;
 using Rock.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

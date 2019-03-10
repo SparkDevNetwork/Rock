@@ -16,6 +16,7 @@
 //
 using System;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.PersonProfile;

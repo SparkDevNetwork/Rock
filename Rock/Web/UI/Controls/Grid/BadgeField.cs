@@ -15,12 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
-
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
