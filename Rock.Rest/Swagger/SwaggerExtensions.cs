@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Swashbuckle.Swagger;
 
 namespace Rock.Rest.Swagger
