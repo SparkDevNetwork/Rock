@@ -620,10 +620,12 @@ namespace Rock.Financial
             // Get an existing or new batch according to the name prefix and payment type
             var batch = _financialBatchService.Get(
                 _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
+                string.Empty,
                 _referencePaymentInfo.CurrencyTypeValue,
                 _referencePaymentInfo.CreditCardTypeValue,
                 financialTransaction.TransactionDateTime.Value,
-                _financialGateway.GetBatchTimeOffset() );
+                _financialGateway.GetBatchTimeOffset(),
+                _financialGateway.BatchDayOfWeek );
 
             var batchChanges = new History.HistoryChangeList();
             var isNewBatch = batch.Id == 0;
