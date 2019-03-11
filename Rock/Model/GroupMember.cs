@@ -547,7 +547,7 @@ namespace Rock.Model
             var groupService = new GroupService( rockContext );
             var group = this.Group ?? groupService.Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            if ( GroupService.AllowsDuplicateMembers() )
+            if ( !GroupService.AllowsDuplicateMembers() )
             {
                 var groupMember = new GroupMemberService( rockContext ).GetByGroupIdAndPersonIdAndGroupRoleId( this.GroupId, this.PersonId, this.GroupRoleId );
                 if ( groupMember != null && groupMember.Id != this.Id )
