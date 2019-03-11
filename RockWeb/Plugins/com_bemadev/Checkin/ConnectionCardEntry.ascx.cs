@@ -397,6 +397,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             bpBirthDay.SelectedDate = null;
 
             acAddress.SetValues( null );
+            lPreviousAddress.Text = string.Empty;
 
             AttendeeState = new List<AttendeeSummary>();
             BindChildrenGrid();
