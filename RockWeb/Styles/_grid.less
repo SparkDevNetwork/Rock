@@ -375,63 +375,61 @@ td.grid-col-actions {
 // 8. Column Types
 // -------------------------
 .grid-select-field {
-  min-width: 40px;
-  // checkbox field
-  text-align: center;
 
   .checkbox,
   .radio {
-    padding-left: 0;
-    margin: 4px 0 0 0;
+    padding-left: 0 !important;
+    margin: 0 !important;
+
+    label {
+      position: relative;
+      display: block;
+      width: @custom-control-indicator-size;
+      padding: 0;
+      margin: 0 auto;
+    }
 
     input {
       float: none;
+      height: 100%;
       margin: 0;
-    }
-
-    &:last-child {
-      margin-bottom: 0;
-      margin-left: -12px;
-    }
-
-    label {
-      padding: 0;
+      vertical-align: middle;
     }
   }
-  // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
 }
 
 //
+.table > thead > tr > th.grid-select-field,
 .table > tbody > tr > td.grid-select-field {
-  padding: 12px 12px 0 12px;
+  padding: 0 12px;
+  vertical-align: middle;
 }
 
-.table > thead > tr > th.grid-select-field {
-  padding: 14px 12px 10px 12px;
-}
 
-.grid .table > thead > tr > th,
-.grid .table > tbody > tr > td {
-  // get buttons and text columns to look good together
-  padding: 12px;
+.grid-table {
+  > thead > tr > th,
+  > tbody > tr > td {
+    // get buttons and text columns to look good together
+    padding: 12px;
 
-  &.grid-columncommand {
-    min-width: 48px;
-  }
+    &.grid-columncommand {
+      min-width: 48px;
+    }
 
-  &.grid-columnreorder {
-    width: 48px;
-    min-width: 48px;
-    padding-top: 12px;
+    &.grid-columnreorder {
+      width: 48px;
+      min-width: 48px;
+      padding-top: 12px;
 
-    a {
-      color: lighten(@text-color, 20%);
+      a {
+        color: lighten(@text-color, 20%);
+      }
     }
   }
-}
 
-.grid .table > tbody > tr > td.grid-columncommand {
-  padding: 6px;
+  > tbody > tr > td.grid-columncommand {
+    padding: 6px;
+  }
 }
 
 .table .color-field {

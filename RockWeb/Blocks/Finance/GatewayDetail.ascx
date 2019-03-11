@@ -56,8 +56,13 @@
                     <div class="row">
                         <div class="col-md-6"> 
                             <Rock:ComponentPicker ID="cpGatewayType" runat="server" Label="Gateway Type" Required="true" ContainerType="Rock.Financial.GatewayContainer" AutoPostBack="true" OnSelectedIndexChanged="cpGatewayType_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlBatchSchedule" runat="server" Label="Batch Schedule" AutoPostBack="true"
+                                Help="By default Rock creates batches for transactions on a daily basis. If you choose, you can make the batches weekly (rather than daily) such that a new batch is started at the designated day of the week and time every week."
+                                OnSelectedIndexChanged="ddlBatchSchedule_SelectedIndexChanged">
+                            </Rock:RockDropDownList>
                             <Rock:TimePicker ID="tpBatchTimeOffset" runat="server" Label="Batch Time Offset" 
                                 Help="By default online payments will be grouped into batches with a start time 12:00:00 AM. However if the payment gateway groups transactions into batches based on a different time, this offset can specified so that Rock will use the same time when creating batches for online transactions" />
+                            <Rock:DayOfWeekPicker ID="dowBatchStartDay" visible="false" runat="server" Label="Batch Start Day" Help="The day of the week that Rock will create new batches." />
                         </div>
                         <div class="col-md-6">                
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
