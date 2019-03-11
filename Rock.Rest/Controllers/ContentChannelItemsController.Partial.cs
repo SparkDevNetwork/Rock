@@ -33,7 +33,7 @@ namespace Rock.Rest.Controllers
     {
         #region ContentByDataViewGuids
         /// <summary>
-        /// Returns a list of content based on a dataview guid
+        /// Returns a list of content channel items based on a list of dataview guids
         /// </summary>
         /// <param name="guids"></param>
         /// <returns></returns>
@@ -51,21 +51,20 @@ namespace Rock.Rest.Controllers
             int contentChannelItemEntityTypeId = EntityTypeCache.Get( "Rock.Model.ContentChannelItem" ).Id;
 
             // Get the Field Type (Attribute Type) Id of the Data View Field Type.
-            int fieldTypeId = new FieldTypeService( rockContext ).GetByName( "Data Views" ).Select( ft => ft.Id ).FirstOrDefault();
+            int fieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.DATAVIEWS.AsGuid() ).Id;
 
-            // Get the list of attributes that are of the Rock.Model.ContentChannelItem entity type.
-            IQueryable<Model.Attribute> attributeQueryable = new AttributeService( rockContext ).GetByEntityTypeId( contentChannelItemEntityTypeId );
-
-            // Further refine the list of attributes by only returning attributes that are of the Data View field type.
-            List<int> attributeIdList = attributeQueryable.Where( item => item.FieldTypeId == fieldTypeId ).Select( a => a.Id ).ToList();
+            // Get the list of attributes that are of the Rock.Model.ContentChannelItem entity type
+            // and that are of the Data View field type.
+            List<int> attributeIdList = new AttributeService( rockContext )
+                .GetByEntityTypeId( contentChannelItemEntityTypeId )
+                .Where( item => item.FieldTypeId == fieldTypeId )
+                .Select( a => a.Id )
+                .ToList();
 
             // Get the list of attribute values that contain an attribute id from the attributeList.
-            IQueryable<AttributeValue> attributeValueList = new AttributeValueService( rockContext ).Queryable()
-                .Where( av => attributeIdList.Contains( av.AttributeId ) );
-
-            // Get a list of attribute values that contain a value that matches one of the data view guids that were passed in.
-            IQueryable<int?> attributeValueEntityIdList = attributeValueList.AsQueryable()
-                .Where( av => guidList.Contains( av.Value ) )
+            // and that contain a value that matches one of the data view guids that were passed in.
+            IQueryable<int?> attributeValueEntityIdList = new AttributeValueService( rockContext ).Queryable()
+                .Where( av => attributeIdList.Contains( av.AttributeId ) && guidList.Contains( av.Value ) )
                 .Select( av => av.EntityId );
 
             // Get a list of content channel items whose ids match one of the entity ids in the attributeValueEntityIdList.
