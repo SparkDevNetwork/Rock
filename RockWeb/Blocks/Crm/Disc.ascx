@@ -130,45 +130,45 @@
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
                         <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
-                        <table class="table table-condensed table-striped table-hover disc-assessment js-disc-questions margin-b-lg">
+                        <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
                                     <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
-                                    <th class="disc-answer disc-more">Most</th>
-                                    <th class="disc-answer disc-less">Least</th>
+                                    <th class="disc-answer grid-select-field disc-more">Most</th>
+                                    <th class="disc-answer grid-select-field disc-less">Least</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="disc-question">
                                         <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer disc-more">
+                                    <td class="disc-answer grid-select-field disc-more">
                                         <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
-                                    <td class="disc-answer disc-less">
+                                    <td class="disc-answer grid-select-field disc-less">
                                         <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
                                 </tr>
                                 <tr>
                                     <td class="disc-question">
                                         <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer disc-more">
+                                    <td class="disc-answer grid-select-field disc-more">
                                         <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
-                                    <td class="disc-answer disc-less">
+                                    <td class="disc-answer grid-select-field disc-less">
                                         <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
                                 </tr>
                                 <tr>
                                     <td class="disc-question">
                                         <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer disc-more">
+                                    <td class="disc-answer grid-select-field disc-more">
                                         <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
-                                    <td class="disc-answer disc-less">
+                                    <td class="disc-answer grid-select-field disc-less">
                                         <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
                                 </tr>
                                 <tr>
                                     <td class="disc-question">
                                         <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer disc-more">
+                                    <td class="disc-answer grid-select-field disc-more">
                                         <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
-                                    <td class="disc-answer disc-less">
+                                    <td class="disc-answer grid-select-field disc-less">
                                         <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
                                 </tr>
                             </tbody>
