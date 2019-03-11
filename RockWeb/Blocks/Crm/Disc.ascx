@@ -16,9 +16,9 @@
         var $checkedItem = $pRow.find('input[type=radio][id*="' + partialSelector + '"]:checked');
         //If both RBLs have a selected item
         if ($checkedItem.length > 0) {
-            var $nextPanel = $pRow.closest(".disc-assessment").next();
+            var $nextPanel = $pRow.closest(".disc-assessment").next(".disc-assessment");
             if ($nextPanel.length > 0) {
-                $("body").animate({ scrollTop: $nextPanel.offset().top - 20 }, 400);
+                $("html, body").animate({ scrollTop: $nextPanel.offset().top - 20 }, 400);
             }
         }
     }
@@ -57,10 +57,11 @@
             var selector = 'input[type=radio][id*="' + answerType + '"]';
             var $sameType = $parentTable.find(selector);
 
+            $(this).closest(".radio").removeClass('deselected');
             // uncheck each of the same type except the one that was just checked
             $sameType.each(function (index, element) {
                 if (!$(this).is("#" + selectedId)) {
-                    $(element).removeAttr('checked');
+                    $(element).removeAttr('checked').closest('.radio').addClass('deselected');
                 }
             });
 
@@ -71,10 +72,22 @@
             // if row 1 More was selected, the selector will be like: input[type=radio][id$="_rblLess1_0"]
             var selector = 'input[type=radio][id$="' + oppositeType + rowIdx + '_' + selectedIdx + '"]';
 
+            var oppositeSelector = 'input[type=radio][id*="' + oppositeType + '"]';
+            var $oppositeType = $parentTable.find(oppositeSelector);
+
             // uncheck the corresponding inverse variable
             var $correspondingItem = $parentTable.find(selector);
             if ($correspondingItem) {
-                $correspondingItem.removeAttr('checked');
+                if($correspondingItem.is(':checked')) {
+                    $oppositeType.each(function (index, element) {
+                        if (!$(this).is("#" + selectedId)) {
+                            console.log($(element).closest('.radio'));
+                            $(element).closest('.radio').removeClass('deselected');
+                        }
+                    });
+                    $correspondingItem.closest('.radio').siblings().removeClass('deselected');
+                    $correspondingItem.removeAttr('checked').closest('.radio').addClass('deselected');
+                }
             }
 
             $('[id$="divError"]').fadeOut();
@@ -126,14 +139,16 @@
                         <%=this.PercentComplete.ToString("F0") %>%
                     </div>
                 </div>
-                <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with Most and Least for each group.</Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
                         <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
-                                    <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
+                                    <th class="disc-question">
+                                        Question <%# Eval( "QuestionNumber") %>
+                                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
+                                    </th>
                                     <th class="disc-answer grid-select-field disc-more">Most</th>
                                     <th class="disc-answer grid-select-field disc-less">Least</th>
                                 </tr>
