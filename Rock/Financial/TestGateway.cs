@@ -161,7 +161,7 @@ namespace Rock.Financial
 
             var refundTransaction = new FinancialTransaction();
             refundTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-            return transaction;
+            return refundTransaction;
         }
 
         /// <summary>
