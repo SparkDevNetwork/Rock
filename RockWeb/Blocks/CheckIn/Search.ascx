@@ -67,7 +67,7 @@
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
-                <div class="checkin-search-body search-phone">
+                <div class="checkin-search-body <%= (CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == new Guid(Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER) ? "search-phone" : "search-name") %>">
 
                 <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
                     <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
