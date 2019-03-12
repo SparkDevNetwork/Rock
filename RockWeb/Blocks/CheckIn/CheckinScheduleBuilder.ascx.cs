@@ -461,16 +461,21 @@ namespace RockWeb.Blocks.CheckIn
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
             }
 
-            // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
-
             var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
             foreach ( var field in checkBoxEditableFields )
             {
                 gGroupLocationSchedule.Columns.Remove( field );
             }
 
-            foreach ( var item in scheduleList )
+            // clear out any existing schedule columns and add the ones that match the current filter setting
+            var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
+
+            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+
+            var sortedScheduleList = scheduleList.OrderBy( a => a.GetNextStartDateTime( occurrenceDate ) ).ToList();
+
+            foreach ( var item in sortedScheduleList )
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
