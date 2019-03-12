@@ -67,7 +67,7 @@
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
-                <div class="checkin-search-body">
+                <div class="checkin-search-body search-phone">
 
                 <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
                     <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
