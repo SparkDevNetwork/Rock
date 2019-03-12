@@ -633,48 +633,6 @@ namespace Rock.Data
             }
         }
 
-        /// <summary>
-        /// Gets the IEntity with the id value
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity IService.Get( int id )
-        {
-            return this.Get( id );
-        }
-
-        /// <summary>
-        /// Gets the IEntity with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity IService.GetNoTracking( int id )
-        {
-            return this.GetNoTracking( id );
-        }
-
-        /// <summary>
-        /// Gets the IEntity with the id value
-        /// </summary>
-        /// <param name="guid"></param>
-        /// <returns></returns>
-        IEntity IService.Get( Guid guid )
-        {
-            return this.Get( guid );
-        }
-
-        /// <summary>
-        /// Gets the IEntity with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
-        /// </summary>
-        /// <param name="guid"></param>
-        /// <returns></returns>
-        IEntity IService.GetNoTracking( Guid guid )
-        {
-            return this.GetNoTracking( guid );
-        }
-
         #endregion
 
         #endregion

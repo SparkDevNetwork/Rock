@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -48,35 +47,5 @@ namespace Rock.Data
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
         IQueryable<int> GetIds( ParameterExpression parameterExpression, Expression whereExpression );
-
-        /// <summary>
-        /// Gets the IEntity with the id value
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity Get( int id );
-
-        /// <summary>
-        /// Gets the IEntity with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity GetNoTracking( int id );
-
-        /// <summary>
-        /// Gets the IEntity with the id value
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity Get( Guid guid );
-
-        /// <summary>
-        /// Gets the IEntity with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
-        /// </summary>
-        /// <param name="id">id</param>
-        /// <returns></returns>
-        IEntity GetNoTracking( Guid guid );
     }
 }
