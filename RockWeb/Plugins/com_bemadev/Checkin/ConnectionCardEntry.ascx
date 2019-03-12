@@ -104,7 +104,7 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="BirthDate" HeaderText="Birth Date" />
-                                    <Rock:RockBoundField DataField="Grade" HeaderText="Grade" />
+                                    <Rock:RockBoundField DataField="Grade.Description" HeaderText="Grade" />
                                     <Rock:EditField OnClick="gChildren_Edit" />
                                 </Columns>
                             </Rock:Grid>
