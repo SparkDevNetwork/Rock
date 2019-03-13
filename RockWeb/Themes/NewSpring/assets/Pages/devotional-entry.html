@@ -1,0 +1,265 @@
+{% set browserTitle = "One practical way to unify your marriage today | Articles" %}
+{% set pageTitle = "Devotional" %}
+{% set pageBackgroundColorHex = "2a4930" %}
+{% set contentBackgroundHex = 'fff' %}
+
+{% set articles = [
+    {
+        "id": "1",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "What is stopping you from sharing your faith?",
+        "subtitle": "",
+        "copy": "<p>Recently, my husband was discussing why he believes the Bible with his sister. She is not a Christian and asked many hard questions.</p>",
+        "tags": {
+          "1": "evangelism",
+          "2": "spiritual gifts",
+          "3": "holy spirit"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/2x1.faith.gospel.evangelism_1700_850_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    },
+    {
+        "id": "2",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "How to help kids understand why modesty matters",
+        "subtitle": "",
+        "copy": "<p>I recently attended a concert where a young woman was sitting on the stage in a very short skirt. When I mentioned to my teenage daughter that the dress wasn’t appropriate to wear while sitting three feet higher than the audience, my daughter indignantly said people shouldn’t be looking there. </p>",
+        "tags": {
+          "1": "humility",
+          "2": "culture",
+          "3": "parenting"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/newspring-articles-modesty-how-to-help-kids-understand-why-modesty-matters_1700_850_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    },
+    {
+        "id": "3",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "How to give good advice",
+        "subtitle": "",
+        "copy": "<p>When a fellow believer is struggling with their in-laws, navigating a difficult work situation, or when I encounter a differing political view on social media, I arrogantly want to jump in and deliver clarity and truth.</p>",
+        "tags": {
+          "1": "bible",
+          "2": "friendship",
+          "3": "relationships",
+          "4": "prayer",
+          "5": "community"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/newspring-articles-how-to-give-good-advice_1700_850_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    },
+    {
+        "id": "4",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "Why it's important to care for your body, not idolize it",
+        "subtitle": "",
+        "copy": "<p>Ever since I was a teenager, I can remember worrying about my body. I don’t mean I worried about how my body functioned. I mean I was concerned with how my body looked.</p>",
+        "tags": {
+          "1": "body image",
+          "2": "eternity",
+          "3": "identity"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/newspring-articles-why-its-important-to-care-for-your-body-not-idolize-it_2000_1000_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    },
+    {
+        "id": "5",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "What it means to really be free",
+        "subtitle": "",
+        "copy": "<p>Long after our Fourth of July celebrations wind down, it will still be there. When conversations around the grill and picnic table end, we’ll still need it. The cheers of crowds under a firework-lit night sky will draw to a close, but <a href='#'>freedom</a> will remain part of our lives.</p>",
+        "tags": {
+          "1": "freedom"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/newspring.blog.hero.fireworksjulyfourth_1700_850_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    },
+    {
+        "id": "6",
+        "backgroundColorHex": '',
+        "linkColorHex": '',
+        "grayscale": '',
+        "titleSize": '',
+        "title": "How and why should I repent",
+        "subtitle": "",
+        "copy": "<p>Seven-year-old Jimmy snatches a toy car from 5-year-old Joey. Joey pinches him. Mom demands apologies and separates them. Jimmy and Joey both mutter, “Sorry,” and grumble as they stomp to their rooms. The next day, the same scenario plays out with blocks. Instinctively, we know neither Jimmy nor Joey is genuinely sorry. Neither their hearts nor their behavior has changed.</p>",
+        "tags": {
+          "1": "repentance"
+        },
+        "imageUrl": '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/newspring-blog-hero-repentance-how-and-why-should-we-repent_1700_850_90_c1.jpg',
+        "imageOpacity": '',
+        "linkUrl": '',
+        "linkText": ''
+    }
+] %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+<div class="soft-double-top xs-soft-top soft-sides text-constrained mx-auto">
+
+    <h1>One practical way to unify your marriage today</h1>
+
+    <p class="lead text-gray-light"><i>When a couple prays together they do it as a team.</i></p>
+
+    <p class="tag-list sans-serif">
+        <small>
+            <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> marriage</a>
+            <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> intimacy</a>
+            <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> prayer</a>
+        </small>
+    </p>
+
+    
+    <span class="wistia_embed wistia_async_aqhhtr97tw popover=true popoverContent=link clickable" style="display:inline;position:relative">
+        <div class="hero ratio-thin xs-ratio-landscape floating background-cover background-center rounded shadowed push-bottom xs-push-half-bottom hard" style="background-image:url('//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/editorial/articles/marriage_couple_1700_1129_90_c1.jpg');">
+
+            <div class="floating-item btn btn-play text-white shadowed"><i class="fas fa-fw fa-lg fa-play"></i></div>
+
+            <script src="https://fast.wistia.com/embed/medias/aqhhtr97tw.jsonp" async></script>
+            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+
+        </div>
+    </span>
+    
+    <p class="flush"><b><i class="fas fa-user-circle"></i> Janet Roberts <span class="pull-right">May 16, 2018</span></b></p>
+    
+    <br>
+
+    <div class="content-wrapper soft-ends position-relative">
+        
+        <p>I’m a fan of lists. I like knowing the expectations and being able to see my progress toward the end goal. But in my current role as a stay-at-home mom to four children, this desire to complete a list often leads to frustration.</p>
+
+        {% set blockData = { 
+            title: 'Take the spiritual gifts test to see your results',
+            imageUrl: '',
+            linkUrl: '/gifts'
+        } %}{% include "../Lava/call-to-action.html" %}
+        
+        <p>There are days where I work hard to check off every box. I get all the laundry done, clean each room in the house, and fix dinner. But by the time I go to bed, there are more dirty clothes in the hamper, toothpaste in the bathroom sink, and three more meals to prepare for the next day. My list is never-ending. Something always replaces what was just checked off.</p>
+
+        {% set blockData = { 
+            title: 'Financial Freedom Classes will teach you how to turn your dreams into a reality',
+            imageUrl: '//dg0ddngxdz549.cloudfront.net/all/heroes/newspringnetwork/FLE1-1.jpg',
+            linkUrl: '/financialfreedom'
+        } %}{% include "../Lava/call-to-action.html" %}
+
+        <p>Over time, God showed me I wasn’t just accomplishing a set of tasks each day. I was faithfully serving my family — a lifelong call He has placed on my life. So while I still go to bed with a growing list of things for the next day, I do my best to see those tasks as acts of love for my family rather than a to-do list.</p>
+
+        <h3>Does Your Faith Feel Like a To-Do List?</h3>
+
+        <p>If I’m not careful, I can start to see my relationship with God as a checklist as well. <a href="https://newspring.cc/articles/am-i-making-progress-if-im-not-perfect" target="_blank">And I don’t think I’m alone</a>. For a lot of us, following Jesus can feel like a list of things to do:</p>
+
+        <ul>
+            <li>Read the Bible.</li>
+            <li>Pray.</li>
+            <li>Go to church.</li>
+            <li>Join a small group.</li>
+            <li>And, if you have extra time or are extra spiritual, write in a journal.</li>
+        </ul>
+
+        <p>These are all good things! But they’re only beneficial when we see them as a means to grow more intimate in our relationship with God.</p>
+
+        <p>When God begins a good work in us, He will be faithful to complete it (<a class="scripturizer" target="_blank" href="http://www.bible.com/bible/Philippians.1.6.niv" title="You Version">Philippians 1:6</a>). This work begins the day we accept God’s gift of <a href="https://newspring.cc/articles/what-it-means-to-be-saved" target="_blank">salvation</a> and continues each day until we meet Jesus in heaven. When we surrender our lives to Jesus, God works in us to make us more like His Son so we can reflect His glory to those around us. In a letter to the church in Rome, the apostle Paul says, “But now that you have been set free from sin and have become slaves of God, the benefit you reap leads to holiness, and the result is eternal life” (<a class="scripturizer" target="_blank" href="http://www.bible.com/bible/Romans.6.22.niv" title="You Version">Romans 6:22</a>).</p>
+
+        <blockquote>
+        <p>Becoming holy isn’t something we can check off a list at the end of a productive day.</p>
+        </blockquote>
+
+        <p>God uses every circumstance, every conflict, every joy, and every pain to make us more holy. “Becoming holy” isn’t something we can check off a list at the end of a productive day. It’s a process that only happens when we’re in a relationship with God, and it changes our perspective on our to-do lists.</p>
+
+        {% include "../Lava/carousel.html" %}
+
+        <p>We <a href="https://newspring.cc/articles/10-reasons-to-read-the-bible" target="_blank">read the Bible</a> to learn about the God who loves and pursues us. We <a href="https://newspring.cc/articles/why-we-need-prayer" target="_blank">pray</a> because we want to talk to God about our circumstances and emotions, and we want to receive the Holy Spirit’s guidance. We go to church to be a <a href="https://newspring.cc/articles/4-reasons-christians-need-the-church" target="_blank">part of God’s community</a>, to use our spiritual gifts to <a href="https://newspring.cc/articles/8-blessings-we-get-from-serving" target="_blank">serve others</a>, to speak and receive <a href="https://newspring.cc/articles/what-happens-when-you-encourage-someone-else" target="_blank">words that build each other up</a>.</p>
+
+        <h3>Don’t Mistake Productivity for Intimacy</h3>
+
+        <p><a class="scripturizer" target="_blank" href="http://www.bible.com/bible/John.15.niv" title="You Version">John 15</a> is an incredible picture of what life as a follower of Jesus looks like. God is the vine and we are the branches. At no point does a branch detach itself from the vine because it’s done everything it’s supposed to do. If a branch becomes separated from the vine, it dies. Instead, a branch stays connected to the vine, receiving nutrients that in turn produce fruit.</p>
+
+        <blockquote>
+        <p>When we follow Jesus, we jump into a relationship that brings God glory, brings us joy, and does the world good.</p>
+        </blockquote>
+
+        <p>In the same way, we will never reach a point where we can separate ourselves from God because we’re done with everything on our spiritual to-do list. Instead, as we <a href="https://newspring.cc/articles/how-to-spend-time-with-jesus-in-every-season" target="_blank">stay connected to God</a> through His Word, prayer, and godly relationships, He gives us what we need. God equips us to meet each challenge and face each circumstance in a way that makes us holier and brings Him glory. The fruit His presence produces in us is love, joy, peace, patience, kindness, goodness, gentleness, and self-control (<a class="scripturizer" target="_blank" href="http://www.bible.com/bible/Galatians.5.22-23.niv" title="You Version">Galatians 5:22-23</a>).</p>
+
+        <p>When we follow Jesus into a relationship, we throw all to-do lists out the window and jump into a relationship that brings God glory, brings us joy, and does the world good.</p>
+
+        {% include "../Lava/share-buttons.html" %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extendedContent %}
+<div class="soft xs-soft-half hard-bottom clearfix bg-gray-lighter">
+
+    <div class="row text-center">
+        {% for article in articles %}{% if loop.index < 3 %}<div class="col-md-4 col-sm-6 col-xs-12 text-left">
+            {% set blockData = { 
+                id: '',
+                backgroundColorHex: '',
+                linkColorHex: '',
+                grayscale: '',
+                count: '',
+                label: '',
+                textAlignment: '',
+                titleSize: 'h4',
+                title: article.title, 
+                subtitle: "",
+                copy: article.copy,
+                trimCopy: 'y',
+                tags: article.tags,
+                imageShape: '',
+                imageUrl: article.imageUrl,
+                imageOpacity: '',
+                linkUrl: '#',
+                linkText: 'Read Article',
+                shares: 'y',
+                likes: 'y'
+            } %}{% include "../Lava/card.html" %}
+        </div>{% endif %}{% endfor %}
+    </div>
+
+</div>
+
+{% set blockData = { 
+    id: '5',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    title: "Subscribe",
+    copy: "<p>Subscribe to the articles feed to be notified when new content is published.</p>",
+    imageUrl: '',
+    imageOpacity: '',
+    linkUrl: '#',
+    linkText: 'Subscribe Now'
+} %}{% include "../Lava/ad-unit.html" %}
+
+{% endblock %}

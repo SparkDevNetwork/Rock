@@ -1,0 +1,260 @@
+{% set browserTitle = "Creative Team" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "2a4930" %}
+
+{% extends "FullWidth.html" %}
+
+{% set creativeTeam = [
+    {
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564197",
+	"firstName": "Tadd",
+	"lastName": "Tatum",
+	"title": "Creative Team Director",
+	"email": "tadd.tatum@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564390",
+	"firstName": "Katie Beth",
+	"lastName": "Knight",
+	"title": "Creative Team Director Assistant",
+	"email": "katiebeth.knight@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/Content/staff_nophoto.jpg",
+	"firstName": "Gio",
+	"lastName": "Arguello",
+	"title": "Filmmaker",
+	"email": "giovanna.arguello@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564173",
+	"firstName": "Lindsey",
+	"lastName": "Charles",
+	"title": "Designer",
+	"email": "lindsey.charles@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564185",
+	"firstName": "Andrew",
+	"lastName": "Copeland",
+	"title": "Film Producer",
+	"email": "andrew.copeland@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564195",
+	"firstName": "Daniel",
+	"lastName": "Crowe",
+	"title": "Lead Filmmaker",
+	"email": "daniel.crowe@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564198",
+	"firstName": "Tara",
+	"lastName": "Cummings",
+	"title": "Creative Team Project Manager",
+	"email": "tara.cummings@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564207",
+	"firstName": "Austin",
+	"lastName": "Deneroy",
+	"title": "Motion Designer",
+	"email": "austin.deneroy@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=576120",
+	"firstName": "Austin",
+	"lastName": "Duffey",
+	"title": "Creative Director",
+	"email": "austin.duffey@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564242",
+	"firstName": "David",
+	"lastName": "Foster",
+	"title": "Lead Motion Designer",
+	"email": "david.foster@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=576121",
+	"firstName": "Caleb",
+	"lastName": "Guest",
+	"title": "Filmmaker",
+	"email": "caleb.guest@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564417",
+	"firstName": "Chad",
+	"lastName": "McDonald",
+	"title": "Lead Creative Director",
+	"email": "chad.mcdonald@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564449",
+	"firstName": "Kenzi",
+	"lastName": "Quigg",
+	"title": "Lead Designer",
+	"email": "kenzi.quigg@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=594354",
+	"firstName": "Joel",
+	"lastName": "Reid",
+	"title": "Designer",
+	"email": "joel.reid@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564470",
+	"firstName": "Christian",
+	"lastName": "Sawyer",
+	"title": "Audio Engineer",
+	"email": "christian.sawyer@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564483",
+	"firstName": "Sam",
+	"lastName": "Shaw",
+	"title": "Photographer",
+	"email": "samantha.shaw@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564493",
+	"firstName": "Meribeth",
+	"lastName": "Singleton",
+	"title": "Creative Assets Coordinator",
+	"email": "meribeth.singleton@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564219",
+	"firstName": "Alex",
+	"lastName": "Street",
+	"title": "Creative Team Project Manager",
+	"email": "alex.street@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564166",
+	"firstName": "Carla",
+	"lastName": "Walpole",
+	"title": "Lead Film Producer",
+	"email": "carla.walpole@newspring.cc"
+	}
+] %}
+
+{% block content %}
+
+	{% set centralMinistries = [
+		{
+			"title": "Communications",
+			"linkUrl": ""
+		},
+		{
+			"title": "Creative",
+			"linkUrl": "/staff-creative.html"
+		},
+		{
+			"title": "Creative Arts",
+			"linkUrl": ""
+		},
+		{
+			"title": "Discover Year",
+			"linkUrl": ""
+		},
+		{
+			"title": "Events",
+			"linkUrl": ""
+		},
+		{
+			"title": "Facilities",
+			"linkUrl": ""
+		},
+		{
+			"title": "Finance",
+			"linkUrl": ""
+		},
+		{
+			"title": "Fuse",
+			"linkUrl": ""
+		},
+		{
+			"title": "Guest Services",
+			"linkUrl": ""
+		},
+		{
+			"title": "Human Resources",
+			"linkUrl": ""
+		},
+		{
+			"title": "Information Technology",
+			"linkUrl": ""
+		},
+		{
+			"title": "KidSpring",
+			"linkUrl": ""
+		},
+		{
+			"title": "NewSpring Academy",
+			"linkUrl": ""
+		},
+		{
+			"title": "NewSpring Network",
+			"linkUrl": ""
+		},
+		{
+			"title": "Next Steps",
+			"linkUrl": ""
+		},
+		{
+			"title": "Production",
+			"linkUrl": ""
+		},
+		{
+			"title": "Purchasing",
+			"linkUrl": ""
+		},
+		{
+			"title": "Rally",
+			"linkUrl": ""
+		},
+		{
+			"title": "Reception",
+			"linkUrl": ""
+		},
+		{
+			"title": "Safety",
+			"linkUrl": ""
+		},
+		{
+			"title": "Staff Health/Missions",
+			"linkUrl": ""
+		},
+		{
+			"title": "Stewardship",
+			"linkUrl": ""
+		},
+		{
+			"title": "Web",
+			"linkUrl": ""
+		},
+		{
+			"title": "Worship",
+			"linkUrl": ""
+		}
+	] %}
+
+	<div class="dropdown push-bottom xs-push-half-bottom">
+		<button class="btn btn-default no-border dropdown-toggle shadowed width-full" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Creative <span class="caret"></span></button>
+		<ul class="dropdown-menu width-full" aria-labelledby="dropdownMenu1">
+			{% for ministry in centralMinistries %}
+				<li><a href="#">{{ ministry.title }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
+
+	{% set blockData = { 
+	    id: '4',
+	    title: '',
+	    personObject: creativeTeam,
+	    sliderItemWidth: '300'
+	} %}{% include "../Lava/person-slider.html" %}
+
+{% endblock %}

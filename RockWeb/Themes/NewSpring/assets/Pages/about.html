@@ -1,0 +1,140 @@
+{% set browserTitle = "About" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+{% set blockData = { 
+    id: '1',
+    title: "We exist to connect people to Jesus and each other.",
+    copy: "<p><b>At NewSpring, you won't be met with shame, guilt, or condemnation.</b> No matter what you’ve been through or what questions you might have, our church is a place where you'll find the grace, mercy, and forgiveness Jesus gives to everyone. Come and be part of our family this Sunday.</p>",
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    fixed: '',
+    imageUrl: 'http://ns.images.s3.amazonaws.com/newspring/_fpo/newspring.hero.worship6.jpg',
+    imageOverlayUrl: '',
+    backgroundVideoUrl: '',
+    imageOpacity: '.8',
+    linkUrl: '',
+    linkText: '',
+    linkClasses: '',
+    videoId: ''
+} %}{% include "../Lava/hero.html" %}
+
+{% set blockData = { 
+    id: '2',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    label: '',
+    titleSize:'',
+    title: "Sunday Gatherings",
+    subtitle: "",
+    copy: "<p>Whether it's your first time at church or you've gone to church for years, our Sunday gatherings are a welcoming place for you to enjoy worshipping Jesus with others. Community makes life better and reminds us that we can't do life alone.</p>",
+    trimCopy: '',
+    tags: '',
+    videoId:'',
+    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/fpo/fpo.Music2_1700_850_90_c1.jpg',
+    imageOpacity: '',
+    imageAlignment: '',
+    linkUrl: '#',
+    linkText: 'Plan a Visit'
+} %}{% include "../Lava/side-by-side.html" %}
+
+{% set blockData = { 
+    id: '3',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    label: '',
+    titleSize:'',
+    title: "KidSpring",
+    subtitle: "",
+    copy: "<p>Your kids are important to us, so we’ve created a place for them to learn about Jesus on their level. Every Sunday, all children (babies through 5th grade) experience safe, age-appropriate environments where the Bible is taught in a creative and relevant way.</p>",
+    trimCopy: '',
+    tags: '',
+    videoId:'',
+    imageUrl: 'http://ns.images.s3.amazonaws.com/newspring/_fpo/fpo.KidSpringWagon.jpg',
+    imageOpacity: '',
+    imageAlignment: 'left',
+    linkUrl: '/kidspring.html',
+    linkText: 'Learn More'
+} %}{% include "../Lava/side-by-side.html" %}
+
+{% set blockData = { 
+    id: '4',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    label: '',
+    titleSize:'',
+    title: "Fuse",
+    subtitle: "",
+    copy: "<p>Fuse is where your student can belong. Our ministry for 6th-12th graders gives students a fun place to connect with God and others, so they will lead the next generation of the church and change the world.</p>",
+    trimCopy: '',
+    tags: '',
+    videoId:'',
+    imageUrl: 'http://ns.images.s3.amazonaws.com/newspring/_fpo/fpo.Fuse.Kid.jpg',
+    imageOpacity: '',
+    imageAlignment: '',
+    linkUrl: '/fuse.html',
+    linkText: 'Learn More'
+} %}{% include "../Lava/side-by-side.html" %}
+
+{% set blockData = { 
+    id: '5',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    label: '',
+    titleSize:'',
+    title: "Connect",
+    subtitle: "",
+    copy: "<p>Connect is an hour and a half event to help you connect with Jesus and others. During Connect, we’ll answer your questions about serving, groups, and what it means to follow Jesus. So whether you know your next step or just want to learn more about our church, Connect is the place for you!</p>",
+    trimCopy: '',
+    tags: '',
+    videoId:'',
+    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/connect/Connect_1000_667_90_c1.jpg',
+    imageOpacity: '',
+    imageAlignment: 'left',
+    linkUrl: '/connect.html',
+    linkText: 'Sign Up Now'
+} %}{% include "../Lava/side-by-side.html" %}
+
+{% set blockData = { 
+    id: '6',
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    label: '',
+    titleSize:'',
+    title: "NewSpring Worship",
+    subtitle: "",
+    copy: "<p>We make music to please God and to build others up. Colossians 3:16 says, “Sing psalms and hymns and spiritual songs to God with thankful hearts.” For us, that’s what making music is all about. Our songs are a celebration of who God is and what He is doing in our church.</p>",
+    trimCopy: '',
+    tags: '',
+    videoId:'',
+    imageUrl: 'http://ns.images.s3.amazonaws.com/newspring/_fpo/fpo.Music1a.jpg',
+    imageOpacity: '',
+    imageAlignment: '',
+    linkUrl: '/worship.html',
+    linkText: 'Learn More'
+} %}{% include "../Lava/side-by-side.html" %}
+
+{% set blockData = { 
+    id: '',
+    backgroundColorHex: '',
+    linkColorHex: '',
+    grayscale: '',
+    title: 'Changing the world through helping churches and developing leaders.', 
+    copy: "<p><b>The NewSpring Network is an online community</b> designed to equip churches reaching people far from God. We help develop and resource leaders with tools for Jesus-centered leadership and living.</p>",
+    imageUrl: '',
+    imageOpacity: '',
+    linkUrl: '/network.html',
+    linkText: 'Learn More'
+} %}{% include "../Lava/ad-unit.html" %}
+
+{% endblock %}

@@ -1,0 +1,269 @@
+{% set browserTitle = "Teaching Team" %}
+{% set pageTitle = "Teaching Team" %}
+{% set pageBackgroundColorHex = "2a4930" %}
+
+{% set centralMinistries = [
+	{
+		"title": "Communications",
+		"linkUrl": ""
+	},
+	{
+		"title": "Creative",
+		"linkUrl": "/staff-creative.html"
+	},
+	{
+		"title": "Creative Arts",
+		"linkUrl": ""
+	},
+	{
+		"title": "Discover Year",
+		"linkUrl": ""
+	},
+	{
+		"title": "Events",
+		"linkUrl": ""
+	},
+	{
+		"title": "Facilities",
+		"linkUrl": ""
+	},
+	{
+		"title": "Finance",
+		"linkUrl": ""
+	},
+	{
+		"title": "Fuse",
+		"linkUrl": ""
+	},
+	{
+		"title": "Guest Services",
+		"linkUrl": ""
+	},
+	{
+		"title": "Human Resources",
+		"linkUrl": ""
+	},
+	{
+		"title": "Information Technology",
+		"linkUrl": ""
+	},
+	{
+		"title": "KidSpring",
+		"linkUrl": ""
+	},
+	{
+		"title": "NewSpring Academy",
+		"linkUrl": ""
+	},
+	{
+		"title": "NewSpring Network",
+		"linkUrl": ""
+	},
+	{
+		"title": "Next Steps",
+		"linkUrl": ""
+	},
+	{
+		"title": "Production",
+		"linkUrl": ""
+	},
+	{
+		"title": "Purchasing",
+		"linkUrl": ""
+	},
+	{
+		"title": "Rally",
+		"linkUrl": ""
+	},
+	{
+		"title": "Reception",
+		"linkUrl": ""
+	},
+	{
+		"title": "Safety",
+		"linkUrl": ""
+	},
+	{
+		"title": "Staff Health/Missions",
+		"linkUrl": ""
+	},
+	{
+		"title": "Stewardship",
+		"linkUrl": ""
+	},
+	{
+		"title": "Web",
+		"linkUrl": ""
+	},
+	{
+		"title": "Worship",
+		"linkUrl": ""
+	}
+] %}
+
+{% set locations = [
+    {
+        "id": "1",
+        "title": "Aiken",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "2",
+        "title": "Anderson",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am, 11:15am & 5pm</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "lat": '34.595434',
+        "lon": '-82.6244131'
+    },
+    {
+        "id": "3",
+        "title": "Charleston",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "4",
+        "title": "Clemson",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "5",
+        "title": "Columbia",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "6",
+        "title": "Florence",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "7",
+        "title": "Greenville",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "8",
+        "title": "Greenwood",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "9",
+        "title": "Hilton Head",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "10",
+        "title": "Myrtle Beach",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "11",
+        "title": "Northeast Columbia",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "12",
+        "title": "Powdersville",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "13",
+        "title": "Rock Hill",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    }
+] %}
+
+{% set navPages = {
+    pages: {
+        'Lead Pastors': '/staff.html',
+        'Teaching Team': '/staff-teaching.html',
+        'Central Ministries': {
+            'Communications': '',
+            'Creative': '',
+            'Creative Arts': '',
+            'Discover Year': '',
+            'Events': '',
+            'Facilities': '',
+            'Finance': '',
+            'Fuse': '',
+            'Guest Services': '',
+            'Human Resources': '',
+            'Information Technology': '',
+            'KidSpring': '',
+            'NewSpring Academy': '',
+            'NewSpring Network': '',
+            'Next Steps': '',
+            'Production': '',
+            'Purchasing': '',
+            'Rally': '',
+            'Reception': '',
+            'Safety': '',
+            'Staff Health/Missions': '',
+            'Stewardship': '',
+            'Web': '',
+            'Worship': ''
+        },
+        'Campus Staff': '/staff-campus.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% set teachingTeam = [
+    {
+		"firstName": "Clayton",
+		"lastName": "King",
+		"title": "Teaching Pastor",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564388",
+		"email": "clayton.king@newspring.cc"
+	},
+	{
+		"firstName": "Brad",
+		"lastName": "Cooper",
+		"title": "Pastor of Culture & Direction",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564182",
+		"email": "brad.cooper@newspring.cc"
+	},
+	{
+		"firstName": "Dan",
+		"lastName": "Lian",
+		"title": "Associate Pastor",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564401",
+		"email": "dan.lian@newspring.cc"
+	}
+] %}
+
+{% block content %}
+
+	{% set blockData = { 
+	    id: '3',
+	    title: '',
+	    personObject: teachingTeam,
+	    sliderItemWidth: '300'
+	} %}{% include "../Lava/person-slider.html" %}
+
+{% endblock %}

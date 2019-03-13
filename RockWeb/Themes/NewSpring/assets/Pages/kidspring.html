@@ -1,0 +1,182 @@
+{% set browserTitle = "KidSpring" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "198AD3" %}
+{% set navPages = {
+    title: 'KidSpring',
+    titleLinkUrl: '/kidspring.html',
+    pages: {
+      'About KidSpring': '/kidspring.html',
+      'Apps': '/kidspring-apps.html'
+    }
+} %}
+
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+    {% set blockData = { 
+        title: '',
+        copy: "<p>KidSpring is the children’s ministry at <a href='/'>NewSpring</a>. Watch this short video to see why kids love KidSpring and how we make learning about Jesus fun!</p>",
+        linkColorHex: '',
+        backgroundColorHex: '0C60AF',
+        grayscale: 'y',
+        imageOverlayUrl: '//dg0ddngxdz549.cloudfront.net/kidspring/app/KS.app.logo.500.png',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/newspring/kidspring/UpdatedWeb_FirstTimer-13.jpg',
+        backgroundVideoUrl: '//s3.amazonaws.com/ns.video/newspring/promotions/Kidspring/KidspringWebAssets_V2',
+        imageOpacity: '.3',
+        linkUrl: '',
+        linkText: '',
+        linkClasses: '',
+        videoId: 'mr4jl09jbd'
+    } %}{% include "../Lava/hero.html" %}
+
+    <div class="soft-double xs-soft clearfix text-white text-constrained mx-auto">
+        <h2 class="jumbo">KidSpring is a place where kids learn about Jesus on their level.</h2>
+        <p class="lead">Every Sunday, babies through fifth-grade kids experience safe, age-appropriate environments where the Bible is taught in a creative and relevant way. We would love for you and your family to visit KidSpring this Sunday. Join the fun, and experience a world where kids meet Jesus on their level!</p>
+    </div>
+
+
+    <section class="shell bg-white rounded shadowed">
+        <div class="text-constrained mx-auto">
+            <div class="text-center">
+                <h2>Your First Visit</h2>
+                <p class="lead">From the moment you pull in the parking lot, you’ll notice lots of friendly faces eager to show you the way.</p>
+            </div>
+        </div>
+        <br>
+        <div class="text-constrained mx-auto">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>Your first stop when you arrive is the first-time check-in area.</h3>
+                    <p>We want to serve you and your child well, so we’ll take some time to get to know you. We’ll ask about allergies, make sure we know what your child likes to be called, and collect your contact information.</p>
+                </div><div class="col-md-6">
+                    <h3>Then, you and your child will both get a sticker with a matching code.</h3>
+                    <p>If for any reason we need to reach you during the gathering, you’ll see your child's code in the lower corner of the screen. This sticker is also what you’ll use to <span class='no-break'>pick-up</span> your child after gathering.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% set blockData = { 
+        id: '6',
+        linkColorHex: '',
+        backgroundColorHex: '',
+        grayscale: '',
+        title: "Get the KidSpring App!",
+        titleSize: 'h2',
+        copy: "<p>As a parent, you are the primary spiritual influence in your kid's life. We know that's a big responsibility and we're here to help! On the KidSpring App, you can find lots of free resources including music, music videos, and Bible story videos.</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/kidspring/3876.kidspring.cen.web.photos.2x1.app_1700_850_90_c1.jpg',
+        imageAlignment: 'left',
+        linkUrl: 'https://newspring.cc/kidspring/app',
+        linkText: 'Get the App'
+    } %}{% include "../Lava/side-by-side.html" %}
+
+    <section class="shell bg-white rounded shadowed">
+        <div class="text-constrained center-block text-center">
+
+            <h2 class="text-center">Frequently Asked Questions</h2>
+            <div class="panel-group" id="accordion-1" role="tablist" aria-multiselectable="true">
+
+                {% set blockData = { 
+                    parentIndex:"1",
+                    index: "1",
+                    title: "What should kids wear?", 
+                    copy: "<p>Play clothes are always welcome! KidSpring is a fun, active environment. Your kids will be playing, singing, and dancing as they learn about Jesus in small groups and large groups.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% set blockData = { 
+                    parentIndex:"1",
+                    index: "2",
+                    title: "Can I take a tour of KidSpring at my campus?", 
+                    copy: "<p>We'd love to have your family visit KidSpring during the week! If you're interested in a weekday tour or have any additional questions, please <a href='#'>let us know</a>.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="shell bg-white rounded shadowed">
+        <div class="text-constrained mx-auto">
+            <div class="text-center">
+                <h2>Special Environments</h2>
+            </div>
+        </div>
+        <br>
+        <div class="text-constrained mx-auto">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>Moms' Viewing Room</h3>
+                    <p>The moms' viewing room is a place where mothers with newborns (babies 12 weeks and younger) can watch the gathering together in a private environment.</p>
+                </div><div class="col-md-6">
+                    <h3>Special Needs Ministry</h3>
+                    <p>Every child matters to us and deserves to hear about Jesus on their level. In Spring Zone, children and young adults with special needs have buddies who meet them where they’re at and help them understand the good news that Jesus loves them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% set blockData = { 
+        id: '5',
+        linkColorHex: '',
+        backgroundColorHex: '',
+        grayscale: '',
+        title: "It's Time to Dance",
+        titleSize: 'h2',
+        copy: "<p>Ready for your kids to sing and dance to their favorite songs all week long? Get this two-disc album, featuring 27 songs including, “Full of Armor of God,” “Fruit of the Spirit,” “What’s Right,” and “Promise Keeper.” Whether your kids are in preschool or elementary, they’ll love learning about Jesus as they sing.</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/kidspring/TTD_App_1024x1024_1024_1024_90.jpg',
+        imageAlignment: 'left',
+        linkUrl: 'https://newspring.cc/music/time-to-dance',
+        linkText: 'Purchase Now'
+    } %}{% include "../Lava/side-by-side.html" %}
+
+    <section class="shell bg-white rounded shadowed">
+        <div class="text-constrained center-block text-center">
+            <h2 class="text-center">What We Value</h2>
+
+            <div class="panel-group" id="accordion-2" role="tablist" aria-multiselectable="true">
+
+                {% set blockData = { 
+                    parentIndex:"2",
+                    index: "3",
+                    title: "Creative Bible Teaching", 
+                    copy: "<p>The Bible is the most amazing book ever written! We bring Bible stories to life through activities and conversations that keep children engaged. We want all children to love God’s Word and understand its value in their lives.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% set blockData = { 
+                    parentIndex:"2",
+                    index: "4",
+                    title: "Relationships", 
+                    copy: "<p>We want kids to know there are people at church who care about them. As families commit to attending the same service each week, children are placed in a small group of familiar faces where relationships can grow.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% set blockData = { 
+                    parentIndex:"2",
+                    index: "5",
+                    title: "Age-Appropriateness", 
+                    copy: "<p>Everything from our environments, to the language we use in our lessons, to our small group materials are created with your child’s age and stage in mind.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% set blockData = { 
+                    parentIndex:"2",
+                    index: "6",
+                    title: "Safety", 
+                    copy: "<p>We take lots of steps before kids arrive to keep them safe. Every toy and environment gets cleaned and sanitized. And, every volunteer is screened with an interview and federal background check. Our whole team — from staff members to small group leaders to safety personnel — are trained to keep your kids safe.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% set blockData = { 
+                    parentIndex:"2",
+                    index: "7",
+                    title: "Fun", 
+                    copy: "<p>Kids love fun! We create fun ways for children to learn about Jesus, including games, activities, singing, and live acting. When children have fun at church, they can’t wait to come back.</p>"
+                } %}{% include "../Lava/accordion-panel.html" %}
+
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}

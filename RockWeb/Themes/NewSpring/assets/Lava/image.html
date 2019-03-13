@@ -1,0 +1,51 @@
+{%- assign id = uniqueid -%}
+
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture url %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign url = url | Trim %}
+
+{% if url != empty %}<a href="{{ url }}">{% endif %}
+	<div class="panel">
+	    <div style="{% if blockData.backgroundColorHex %}background-color: #{{ blockData.backgroundColorHex }};{% endif %}">
+	        <img src="{{ blockData.imageUrl }}" alt="" class="{% if blockData.grayscale %}grayscale{% endif %}" style="{% if blockData.imageOpacity %}opacity: {{ blockData.imageOpacity }};{% endif %}">
+	    </div>
+
+		{% if blockData.share or blockData.likes %}
+	    <div class="panel-footer">
+	        <div class="panel-actions">
+
+	            {% set buttonData = { 
+	                buttonSize: 'btn-sm',
+	                buttonColor: 'btn-primary',
+	                buttonIcon: '',
+	                linkUrl: blockData.linkUrl,
+	                linkText: blockData.linkText
+	            } %}{% include "button.html" %}
+
+	            <div class="pull-right">
+	                {% if blockData.share %}
+	                    <a href="#" class="btn btn-sm btn-default text-gray-dark text-decoration-none" data-share><i class="fas fa-share flush"></i> {{ [14,8,2,42,5,4,73,19,2] | random }}</a>
+	                {% endif %}
+
+	                {% if blockData.likes %}
+	                    <a href="#" class="btn btn-sm btn-default text-gray-dark text-decoration-none" data-like><i class="far fa-heart flush"></i> {{ [14,8,6,42,5,4,73,19,2] | random }}</a>
+	                {% endif %}
+
+	            </div>
+	        </div>
+	    </div>
+	    {% endif %}
+	    
+    </div>
+
+{% if url != empty %}</a>{% endif %}

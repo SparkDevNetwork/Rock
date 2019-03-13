@@ -1,0 +1,165 @@
+{% set browserTitle = "Fuse Devotionals | Fuse" %}
+{% set pageTitle = "Fuse Devotionals" %}
+{% set pageBackgroundColorHex = "7256bf" %}
+{% set navPages = {
+    title: 'Fuse',
+    titleLinkUrl: '/fuse.html',
+    pages: {
+      'About Fuse': '/fuse.html',
+      'Locations': '/fuse-locations.html',
+      'Fuse Groups': '/fuse-groups.html',
+      'Devotionals': '/fuse-devotionals.html',
+      'Sermons': '/fuse-sermons.html',
+      'Serve at Fuse': 'fuse-serving.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% set studies = [
+	{
+		"id": "1",
+		"title": "What is God Like?",
+		"subtitle": "A 21-Day Devotional",
+		"copy": "<p>What is God like?</p><p>It’s a big question, but an important one. What we understand about God will determine how we relate to Him. The more we know about God, the better our relationship will be.</p>",
+		"tags": {
+	      "1": "god",
+	      "2": "peace",
+	      "3": "mercy"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/WhatIsGodLike2x1.png"
+	},
+	{
+		"id": "2",
+		"title": "How To Be A Better Leader",
+		"subtitle": "A 7-Day Devotional",
+		"copy": "<p>Think about the last time you had a really bad boss.</p><p>Whether it was the business manager with more attitude than <a href='https://g.co/kgs/ktJtwU'>Miranda Priestly</a>, or the outspoken entrepreneur who made <a href='https://g.co/kgs/4JDSCr'>Michael Scott</a> look tame, it’s easy to identify the qualities of a bad leader. But what about a good one?  </p>",
+		"tags": {
+	      "1": "leadership",
+	      "2": "influence",
+	      "3": "humility"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/howtobeabetterleader2x1.jpg"
+	},
+	{
+		"id": "3",
+		"title": "Acts",
+		"subtitle": "A 28-Day Devotional",
+		"copy": "<p>How does one man’s life and death change the course of history?</p><p>One conversation at a time.</p><p>Acts is the story of the start and spread of the Christian church. It opens with Jesus returning to heaven and the Holy Spirit coming in His place. Jesus’ followers start following the Holy Spirit’s lead, and 28 chapters later, the Gospel was spreading across the known world.</p>",
+		"tags": {
+	      "1": "evangelism",
+	      "2": "church",
+	      "3": "holy spirit"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/2x1actsguide.png"
+	},
+	{
+		"id": "4",
+		"title": "2 Thessalonians",
+		"subtitle": "A 5-Day Devotional",
+		"copy": "<p>If you’ve ever told you ever told a toddler you’ll see them soon, you know that “soon” means different things to different people.</p>",
+		"tags": {
+	      "1": "perseverance",
+	      "2": "mission",
+	      "3": "holy spirit"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/2x1942.2thessalonians.png"
+	},
+	{
+		"id": "5",
+		"title": "Is the Enemy at Your Table?",
+		"subtitle": "A 5-Day Devotional",
+		"copy": "<p>When our lives are exploding, throwing a party is the last thing on our minds.</p>",
+		"tags": {
+	      "1": "perseverance",
+	      "2": "mission"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/enemyatyourtable2x1.jpg"
+	},
+	{
+		"id": "6",
+		"title": "The Two-Year Reading Plan",
+		"subtitle": "",
+		"copy": "<p>If you find yourself re-reading your favorite parts of the Bible over and over, it’s time to try a Bible reading plan.</p>",
+		"tags": {
+	      "1": "reading plan",
+	      "2": "devotional"
+	    },
+	    "imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/TwoYrReadingPlan2x1.jpg"
+	}
+] %}
+
+{% block content %}
+
+	{% set blockData = { 
+	    id: '',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    grayscale: '',
+	    label: "Today's Devotional",
+	    titleSize:'',
+	    title: "God Is Peace",
+	    subtitle: "What is God Like?",
+	    copy: "<p>In <a href='http://www.bible.com/bible/111/JDG.6.11-24.NIV'>Judges 6:11-24</a> Gideon’s hiding away, head down, working hard. Many of us could say the same about our day to day. How often do we toil away rarely lifting our eyes off our tasks to have an encounter with the Lord?</p>",
+	    trimCopy: '',
+	    tags: '',
+	    videoId:'',
+	    imageUrl: '//dg0ddngxdz549.cloudfront.net/newspring/collection/studies/WhatIsGodLike1x1.png',
+	    imageOpacity: '',
+	    imageAlignment: 'left',
+	    linkUrl: '/devotional-entry.html',
+	    linkText: 'Read Now'
+	} %}{% include "side-by-side.html" %}
+
+	<section id="devotionals" class="shell bg-gray-darker hard-sides soft-bottom rounded shadowed">
+		<div class="text-center">
+			<h2 class="text-white push-half-bottom">Studies</h2>
+			<p class="lead text-primary italic"><span class="hidden-xs hidden-sm">Drag</span><span class="hidden-md">Swipe</span> to Discover More</p>
+		</div>
+
+		<!-- Slider main container -->
+		<div class="swiper-container">
+			<!-- Additional required wrapper -->
+			<div class="swiper-wrapper">
+				<!-- Slides -->
+				{% for study in studies %}
+					<div class="swiper-slide">
+						{% set blockData = { 
+						    id: study.id,
+						    backgroundColorHex: '',
+						    linkColorHex: '',
+						    grayscale: '',
+						    count: '',
+						    type: 'Study',
+						    label: '',
+						    textAlignment: '',
+						    titleSize: 'h4',
+						    title: study.title, 
+						    subtitle: study.subtitle,
+						    copy: '',
+						    trimCopy: '',
+						    tags: '',
+						    imageShape: '',
+						    imageUrl: study.imageUrl,
+						    imageOpacity: '',
+						    linkUrl: '/study.html',
+						    linkText: 'Read Devotional'
+						} %}{% include "../Lava/card.html" %}
+					</div>
+				{% endfor %}
+			</div>
+
+			<!-- Add Arrows -->
+			<div class="hidden-sm hidden-xs">
+				<div class="swiper-next"><i class="fas fa-fw fa-2x fa-angle-right"></i></div>
+				<div class="swiper-prev"><i class="fas fa-fw fa-2x fa-angle-left"></i></div>
+			</div>
+
+			<!-- If we need pagination -->
+			<div class="swiper-pagination"></div>
+
+		</div>
+
+	</section>
+
+{% endblock %}

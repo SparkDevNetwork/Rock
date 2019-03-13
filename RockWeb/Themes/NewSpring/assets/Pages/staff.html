@@ -1,0 +1,477 @@
+{% set browserTitle = "Lead Pastors" %}
+{% set pageTitle = "Lead Pastors" %}
+{% set pageBackgroundColorHex = "2a4930" %}
+
+{% set centralMinistries = [
+	{
+		"title": "Communications",
+		"linkUrl": ""
+	},
+	{
+		"title": "Creative",
+		"linkUrl": "/staff-creative.html"
+	},
+	{
+		"title": "Creative Arts",
+		"linkUrl": ""
+	},
+	{
+		"title": "Discover Year",
+		"linkUrl": ""
+	},
+	{
+		"title": "Events",
+		"linkUrl": ""
+	},
+	{
+		"title": "Facilities",
+		"linkUrl": ""
+	},
+	{
+		"title": "Finance",
+		"linkUrl": ""
+	},
+	{
+		"title": "Fuse",
+		"linkUrl": ""
+	},
+	{
+		"title": "Guest Services",
+		"linkUrl": ""
+	},
+	{
+		"title": "Human Resources",
+		"linkUrl": ""
+	},
+	{
+		"title": "Information Technology",
+		"linkUrl": ""
+	},
+	{
+		"title": "KidSpring",
+		"linkUrl": ""
+	},
+	{
+		"title": "NewSpring Academy",
+		"linkUrl": ""
+	},
+	{
+		"title": "NewSpring Network",
+		"linkUrl": ""
+	},
+	{
+		"title": "Next Steps",
+		"linkUrl": ""
+	},
+	{
+		"title": "Production",
+		"linkUrl": ""
+	},
+	{
+		"title": "Purchasing",
+		"linkUrl": ""
+	},
+	{
+		"title": "Rally",
+		"linkUrl": ""
+	},
+	{
+		"title": "Reception",
+		"linkUrl": ""
+	},
+	{
+		"title": "Safety",
+		"linkUrl": ""
+	},
+	{
+		"title": "Staff Health/Missions",
+		"linkUrl": ""
+	},
+	{
+		"title": "Stewardship",
+		"linkUrl": ""
+	},
+	{
+		"title": "Web",
+		"linkUrl": ""
+	},
+	{
+		"title": "Worship",
+		"linkUrl": ""
+	}
+] %}
+
+{% set locations = [
+    {
+        "id": "1",
+        "title": "Aiken",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "2",
+        "title": "Anderson",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am, 11:15am & 5pm</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "lat": '34.595434',
+        "lon": '-82.6244131'
+    },
+    {
+        "id": "3",
+        "title": "Charleston",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "4",
+        "title": "Clemson",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "5",
+        "title": "Columbia",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "6",
+        "title": "Florence",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "7",
+        "title": "Greenville",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "8",
+        "title": "Greenwood",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "9",
+        "title": "Hilton Head",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "10",
+        "title": "Myrtle Beach",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "11",
+        "title": "Northeast Columbia",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "12",
+        "title": "Powdersville",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    },
+    {
+        "id": "13",
+        "title": "Rock Hill",
+        "subtitle": "",
+        "copy": "<p>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": ''
+    }
+] %}
+
+{% set navPages = {
+    pages: {
+        'Lead Pastors': '/staff.html',
+        'Teaching Team': '/staff-teaching.html',
+        'Central Ministries': {
+            'Communications': '',
+            'Creative': '',
+            'Creative Arts': '',
+            'Discover Year': '',
+            'Events': '',
+            'Facilities': '',
+            'Finance': '',
+            'Fuse': '',
+            'Guest Services': '',
+            'Human Resources': '',
+            'Information Technology': '',
+            'KidSpring': '',
+            'NewSpring Academy': '',
+            'NewSpring Network': '',
+            'Next Steps': '',
+            'Production': '',
+            'Purchasing': '',
+            'Rally': '',
+            'Reception': '',
+            'Safety': '',
+            'Staff Health/Missions': '',
+            'Stewardship': '',
+            'Web': '',
+            'Worship': ''
+        },
+        'Campus Staff': '/staff-campus.html'
+    }
+} %}
+
+
+
+{% extends "FullWidth.html" %}
+
+{% set leadTeam = [
+    {
+    	"id": "1",
+		"firstName": "Brad",
+		"lastName": "Cooper",
+		"title": "Pastor of Culture & Direction",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564182",
+		"email": "brad.cooper@newspring.cc",
+		"copy": "<p>Brad's primary role is to provide direction, so our church builds a culture we're excited to pass down to the next generation.</p><p>Brad has a passion for people of all ages and for seeing their lives changed by Jesus. Brad joined the staff in 2006. He served as the primary speaker at Fuse for many years and has led a number of ministries including Fuse, KidSpring, Guest Services, Next Steps, and NewSpring Leadership College.</p><p>Brad and his wife, Cory, have two daughters, Campbell and Mary Bradford. They enjoy Clemson football and spending time with family and friends.</p>"
+	},
+	{
+		"id": "2",
+		"firstName": "Shane",
+		"lastName": "Duffey",
+		"title": "Pastor of Ministries",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564224",
+		"email": "shane.duffey@newspring.cc",
+		"copy": "<p>Shane, his wife, Cherie, and their four sons started attending NewSpring in 2003. Shane joined the staff in 2005 and has held a number of leadership positions.</p><p>Shane oversees our Central Ministry teams which include Creative Arts, Fuse, KidSpring, Guest Services, Next Steps, Rally and Communications. His desire is to see everyone on staff at NewSpring living out their call to ministry and serving in the best place to use the gifts God gave them.</p>"
+	},
+	{
+		"id": "3",
+		"firstName": "Howard",
+		"lastName": "Frist",
+		"title": "Pastor of Campuses",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564065",
+		"email": "howard.frist@newspring.cc",
+		"copy": "<p>Howard is a former business owner who began working at NewSpring in 2006.</p><p>Howard came on staff as our Greenville Campus Pastor with a goal of figuring out how to make NewSpring work in multiple locations. Since then, Howard has served in several leadership and pastoral roles from campus launch and development to the NewSpring Network.</p><p>Currently, Howard oversees our campus pastors and is passionate about seeing God's vision for our church carried out at every campus.</p><p>Howard and his wife, Consie, live in Greenville and have five children: Christian, Caroline, Ryan, Immanuel, and Charity. They enjoy spending time together as a family and with their friends.</p>"
+	},
+	{
+		"id": "4",
+		"firstName": "Michael",
+		"lastName": "Mullikin",
+		"title": "Pastor of Operations",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564428",
+		"email": "michael.mullikin@newspring.cc",
+		"copy": "<p>Michael oversees the church’s finance, human resources, IT, web development, new construction, facilities, missions, and Campus Safety teams.</p><p>Michael and his wife, Lori, have three children. Michael loves spending time with his family, camping, and hiking. He is passionate about using technology, innovation, and efficient systems to help people meet Jesus and grow in their relationship with Him.</p>"
+	}
+] %}
+
+{% set leadTeamAssistants = [
+    {
+		"firstName": "Austin",
+		"lastName": "Blunt",
+		"title": "Lead Team Assistant",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564147",
+		"email": "austin.blunt@newspring.cc"
+	},
+	{
+		"firstName": "Jessie",
+		"lastName": "DeMare",
+		"title": "Lead Team Assistant",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564206",
+		"email": "jessie.demare@newspring.cc"
+	},
+	{
+		"firstName": "Craig",
+		"lastName": "Walker",
+		"title": "Lead Team Assistant",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564170",
+		"email": "craig.walker@newspring.cc"
+	}
+] %}
+
+{% set teachingTeam = [
+    {
+		"firstName": "Clayton",
+		"lastName": "King",
+		"title": "Teaching Pastor",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564388",
+		"email": "clayton.king@newspring.cc"
+	},
+	{
+		"firstName": "Brad",
+		"lastName": "Cooper",
+		"title": "Pastor of Culture & Direction",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564182",
+		"email": "brad.cooper@newspring.cc"
+	},
+	{
+		"firstName": "Dan",
+		"lastName": "Lian",
+		"title": "Associate Pastor",
+		"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564401",
+		"email": "dan.lian@newspring.cc"
+	}
+] %}
+
+{% set creativeTeam = [
+    {
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564197",
+	"firstName": "Tadd",
+	"lastName": "Tatum",
+	"title": "Creative Team Director",
+	"email": "tadd.tatum@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564390",
+	"firstName": "Katie Beth",
+	"lastName": "Knight",
+	"title": "Creative Team Director Assistant",
+	"email": "katiebeth.knight@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/Content/staff_nophoto.jpg",
+	"firstName": "Gio",
+	"lastName": "Arguello",
+	"title": "Filmmaker",
+	"email": "giovanna.arguello@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564173",
+	"firstName": "Lindsey",
+	"lastName": "Charles",
+	"title": "Designer",
+	"email": "lindsey.charles@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564185",
+	"firstName": "Andrew",
+	"lastName": "Copeland",
+	"title": "Film Producer",
+	"email": "andrew.copeland@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564195",
+	"firstName": "Daniel",
+	"lastName": "Crowe",
+	"title": "Lead Filmmaker",
+	"email": "daniel.crowe@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564198",
+	"firstName": "Tara",
+	"lastName": "Cummings",
+	"title": "Creative Team Project Manager",
+	"email": "tara.cummings@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564207",
+	"firstName": "Austin",
+	"lastName": "Deneroy",
+	"title": "Motion Designer",
+	"email": "austin.deneroy@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=576120",
+	"firstName": "Austin",
+	"lastName": "Duffey",
+	"title": "Creative Director",
+	"email": "austin.duffey@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564242",
+	"firstName": "David",
+	"lastName": "Foster",
+	"title": "Lead Motion Designer",
+	"email": "david.foster@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=576121",
+	"firstName": "Caleb",
+	"lastName": "Guest",
+	"title": "Filmmaker",
+	"email": "caleb.guest@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564417",
+	"firstName": "Chad",
+	"lastName": "McDonald",
+	"title": "Lead Creative Director",
+	"email": "chad.mcdonald@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564449",
+	"firstName": "Kenzi",
+	"lastName": "Quigg",
+	"title": "Lead Designer",
+	"email": "kenzi.quigg@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=594354",
+	"firstName": "Joel",
+	"lastName": "Reid",
+	"title": "Designer",
+	"email": "joel.reid@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564470",
+	"firstName": "Christian",
+	"lastName": "Sawyer",
+	"title": "Audio Engineer",
+	"email": "christian.sawyer@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564483",
+	"firstName": "Sam",
+	"lastName": "Shaw",
+	"title": "Photographer",
+	"email": "samantha.shaw@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564493",
+	"firstName": "Meribeth",
+	"lastName": "Singleton",
+	"title": "Creative Assets Coordinator",
+	"email": "meribeth.singleton@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564219",
+	"firstName": "Alex",
+	"lastName": "Street",
+	"title": "Creative Team Project Manager",
+	"email": "alex.street@newspring.cc"
+	},
+	{
+	"imageUrl": "https://rock.newspring.cc/GetImage.ashx?id=564166",
+	"firstName": "Carla",
+	"lastName": "Walpole",
+	"title": "Lead Film Producer",
+	"email": "carla.walpole@newspring.cc"
+	}
+] %}
+
+{% block content %}
+
+	{% set blockData = { 
+	    id: '2',
+	    title: '',
+	    personObject: leadTeam,
+	    sliderItemWidth: '300'
+	} %}{% include "../Lava/person-slider.html" %}
+
+	{% set blockData = { 
+	    id: '3',
+	    title: 'Lead Team Assistants',
+	    personObject: leadTeamAssistants,
+	    sliderItemWidth: '300'
+	} %}{% include "../Lava/person-slider.html" %}
+
+{% endblock %}

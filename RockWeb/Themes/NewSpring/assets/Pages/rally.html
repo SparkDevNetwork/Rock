@@ -1,0 +1,76 @@
+{% set browserTitle = "Rally" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "858585" %}
+
+{% set navPages = {
+    title: 'Rally',
+    titleLinkUrl: '/rally.html',
+    pages: {
+      'About Rally': '/rally.html',
+      'Locations': '/locations.html',
+      'Rally Groups': '/rally-groups.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+    {% set blockData = { 
+        id: '1',
+        title: '',
+        copy: "<p>We exist to rally a generation around Jesus and each other.<br>If you are 18 to 25, Rally is for you.</p>",
+        grayscale: '',
+        imageOverlayUrl: '//dg0ddngxdz549.cloudfront.net/newspring/Rally/rally.logo.white.png',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/newspring/Rally/Rally5_2x1_.jpg',
+        backgroundVideoUrl: '//ns.video.s3.amazonaws.com/newspring/promotions/Rally/3645_CEN_RAL_RALLYHeroVid_ForExport_h264_v4',
+        imageOpacity: '.8',
+        linkUrl: '',
+        linkText: '',
+        linkClasses: '',
+        videoId: '7oqie6rx26'
+    } %}{% include "../Lava/hero.html" %}
+
+    {% set blockData = { 
+        id: '2',
+        title: "Rally Classy Christmas",
+        titleSize: '',
+        copy: "<p class='lead'><b>Dec. 4<br>6:45pm<br>Free Food</b></p><p>NewSpring Anderson<br>2940 Concord Rd<br>Anderson, SC 29621</p><p>(Dress in your Christmas best)</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/Rally/RallyAgainPic_Square_1080_1080_90.jpg',
+        imageAlignment: 'right',
+        linkUrl: '#',
+        linkText: 'Get Directions'
+    } %}{% include "../Lava/side-by-side.html" %}
+
+    {% set blockData = { 
+        id: '4',
+        linkColorHex: '',
+        backgroundColorHex: '1c1c1c',
+        grayscale: 'y',
+        label: '',
+        titleSize:'',
+        title: 'Photos From Rally', 
+        subtitle: '',
+        copy: "<p>View photos from past Rally events.</p>",
+        trimCopy: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/Rally/Rally-Photos-Background_1705_1009_90_c1.jpg',
+        imageOpacity: '.5',
+        linkUrl: 'https://www.flickr.com/photos/newspringchurch/',
+        linkText: 'View Photos',
+        buttonIcon: ''
+    } %}{% include "../Lava/ad-unit.html" %}
+
+    {% set blockData = { 
+        id: '3',
+        title: "Lead a Rally Group",
+        titleSize: '',
+        copy: "<p>Officia do ad consequat amet nisi sint culpa sunt elit id dolore amet do voluptate quis.</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/newspring/Rally/Rally6_2x1_.jpg',
+        imageAlignment: 'left',
+        linkUrl: '#',
+        linkText: ''
+    } %}{% include "../Lava/side-by-side.html" %}
+
+{% endblock %}

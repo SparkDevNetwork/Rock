@@ -1,0 +1,271 @@
+{% set browserTitle = "Fuse Locations | Fuse" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "7256bf" %}
+{% set navPages = {
+    title: 'Fuse',
+    titleLinkUrl: '/fuse.html',
+    pages: {
+      'About Fuse': '/fuse.html',
+      'Locations': '/fuse-locations.html',
+      'Fuse Groups': '/fuse-groups.html',
+      'Devotionals': '/fuse-devotionals.html',
+      'Sermons': '/fuse-sermons.html',
+      'Serve at Fuse': 'fuse-serving.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% set locations = [
+    {
+        "id": "1",
+        "title": "Aiken",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 33.57248,
+        "longitude": -81.76644,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/aiken.location.2by1.jpg'
+    },
+    {
+        "id": "2",
+        "title": "Anderson",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am, 11:15am & 5pm</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.59778,
+        "longitude": -82.62259,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/Anderson2x1.jpg'
+    },
+    {
+        "id": "3",
+        "title": "Charleston",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 32.91902,
+        "longitude": -80.10129,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/campus.charleston.2x1.jpg'
+    },
+    {
+        "id": "4",
+        "title": "Clemson",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.68581,
+        "longitude": -82.89413,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/clemson/cle_campus_2x1.JPG'
+    },
+    {
+        "id": "5",
+        "title": "Columbia",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.03027,
+        "longitude": -81.09954,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/columbia/2x1lexcola.png'
+    },
+    {
+        "id": "6",
+        "title": "Florence",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.21774,
+        "longitude": -79.79691,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/florence/FLO2x1_-100.jpg'
+    },
+    {
+        "id": "7",
+        "title": "Greenville",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.8536,
+        "longitude": -82.35211,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/Greenville2x1.jpg'
+    },
+    {
+        "id": "8",
+        "title": "Greenwood",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.2135,
+        "longitude": -82.14539,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/Greenwood2x1.jpg'
+    },
+    {
+        "id": "9",
+        "title": "Hilton Head",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 32.27001,
+        "longitude": -80.93451,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/hhi.location2by1.jpg'
+    },
+    {
+        "id": "10",
+        "title": "Myrtle Beach",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 33.72763,
+        "longitude": -78.93229,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/locations_myr.2x1.jpg'
+    },
+    {
+        "id": "11",
+        "title": "Northeast Columbia",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.11428,
+        "longitude": -80.88364,
+        "imageUrl": 'http://ns.images.s3.amazonaws.com/all/heroes/newspring/campuses/eastcola.location.2by1.jpg'
+    },
+    {
+        "id": "12",
+        "title": "Powdersville",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.79488,
+        "longitude": -82.48753,
+        "imageUrl": '//s3.amazonaws.com/ns.images/all/heroes/newspring/campuses/powdersville/711103.marketing.cen.web.powcampus_2x1.jpg'
+    },
+    {
+        "id": "13",
+        "title": "Rock Hill",
+        "subtitle": "",
+        "copy": "<p class='push-half-bottom'>Sunday at 9:15am & 11:15am</p><p><a href='#'>Get Directions</a></p>",
+        "tags": '',
+        "latitude": 34.9521,
+        "longitude": -81.08619,
+        "imageUrl": 'http://ns.images.s3.amazonaws.com/all/heroes/newspring/campuses/rockhill.location.2by1.jpg'
+    }
+] %}
+
+{% block content %}
+    <script src="./scripts/get-distance.js" type="text/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_GkiqXmA25URYKrlKZeVnzl-_Q0NmrWk" type="text/javascript"></script>
+    
+    {% set blockData = { 
+        title: 'Find a Location',
+        copy: "<p>[FUSE] meets every week all across South Carolina. Find the location closest to you and plan a visit.</p><form class='form-inline' data-locations-search><div class='form-group'><input type='text' class='form-control form-control-static sans-serif strong push-half-bottom text-center no-border' placeholder='Enter Your Location'> <button type='submit' class='form-control form-control-static btn btn-primary push-half-bottom'>Find a Location</button></div></form>",
+        grayscale: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/_fpo/fpo.Parking_1700_850_90_c1.jpg',
+        backgroundVideoUrl: '//ns.video.s3.amazonaws.com/fuse/promotions/Fuse_Generic_hero_video_v3_copy',
+        imageOpacity: '.8',
+        linkUrl: '',
+        linkText: '',
+        linkClasses: ''
+    } %}{% include "../Lava/hero.html" %}
+
+    <section id="locations" class="shell bg-gray-darker hard-sides rounded shadowed">
+        <div class="text-center">
+            <h2 class="text-white">Fuse Locations</h2>
+        </div>
+
+        <!-- Slider main container -->
+        <div class="swiper-container">
+            <!-- Additional required wrapper -->
+            <div class="swiper-wrapper" data-locations>
+                <!-- Slides -->
+                {% for location in locations|sort(false, false, 'title') %}
+                    <div class="swiper-slide" data-latlon="{{ location.latitude }},{{ location.longitude }}">
+                        {% set blockData = { 
+                            id: location.id,
+                            backgroundColorHex: '',
+                            linkColorHex: '',
+                            grayscale: '',
+                            count: '',
+                            type: 'Location',
+                            label: '',
+                            textAlignment: '',
+                            titleSize: 'h4',
+                            title: location.title, 
+                            subtitle: '',
+                            copy: location.copy,
+                            trimCopy: '',
+                            tags: '',
+                            imageShape: '',
+                            imageUrl: location.imageUrl,
+                            imageOpacity: '',
+                            linkUrl: '/location-entry.html',
+                            linkText: 'Learn More'
+                        } %}{% include "../Lava/card.html" %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Add Arrows -->
+            <div class="hidden-sm hidden-xs">
+                <div class="swiper-next"><i class="fas fa-fw fa-2x fa-angle-right"></i></div>
+                <div class="swiper-prev"><i class="fas fa-fw fa-2x fa-angle-left"></i></div>
+            </div>
+
+            <!-- If we need pagination -->
+            <div class="swiper-pagination"></div>
+
+        </div>
+
+    </section>
+
+{% set questions = [
+    {
+        "id": "1",
+        "title": "Where do I go when I get there?",
+        "copy": "<p>Our parking team will direct you to the closest available spot. Just follow the smiling faces in the bright orange vests. We reserve parking spots for our first time guests, so if you're new to NewSpring, be sure to turn your flashers on when you enter the parking lot.</p><p>As you're walking to the building, our greeting team will meet you and show you where to find the auditorium, restrooms, and children's ministry. If you need anything throughout the day—mints, ear plugs, a Bible, or a pen—feel free to stop by the Guest Services desk. Or, just ask anyone with a NewSpring lanyard or name tag. We’re a friendly bunch, and we’d love to serve you.</p>"
+    },
+    {
+        "id": "2",
+        "title": "What do you do for kids?",
+        "copy": "<p>In KidSpring, children fifth grade and younger experience Jesus on their level. KidSpring is a safe, age-appropriate environment where kids have their own service with singing, a Bible lesson, and small group time. To see what our kids are learning, check out KidSpring’s <a href='https://www.youtube.com/channel/UCR3DeWGhdC_igCreHStybwA' target='_blank'>YouTube channel.</a></p><p>For nursing mothers, every campus also has a viewing room where moms and infants can watch the service together.</p>"
+    },
+    {
+        "id": "3",
+        "title": "How long is the service?",
+        "copy": "<p>Gatherings last about one hour and 10 minutes. We start by singing three to four songs. Then the speaker preaches. If you want to see our preaching style, check out our <a href='/sermons'>current series.</a></p><p>If you’re visiting for the first time, you’ll want to give yourself a few extra minutes to stop by the VIP Room after the service. You are a very important person to us! We’d love to meet you, answer any questions you may have, and give you a gift.</p>"
+    },
+    {
+        "id": "4",
+        "title": "What should I wear?",
+        "copy": "<p>Don't feel like you have to dress up. Most people wear casual attire, but you are welcome to wear whatever makes you comfortable.</p>"
+    },
+    {
+        "id": "5",
+        "title": "Can I attend if I'm _____________?",
+        "copy": "<p>Fill in the blank with whatever fear you have about not being accepted: divorced, single parent, broke, recovering addict, gay, transgender, atheist, skeptic, etc. Everyone is welcome at NewSpring. So come as you are, and we’ll see you on Sunday!</p>"
+    }
+] %}
+
+    <section class="shell bg-tertiary xs-soft-half-sides rounded shadowed push-bottom xs-push-half-bottom">
+        <div class="center-block text-constrained">
+            <div class="text-white text-center">
+                <h2>Plan a Visit</h2>
+                <p>If it's your first time at NewSpring, <b>you are our honored guest.</b> We do church a little differently than other places, so here are a few frequently asked questions to help you plan your trip.</p>
+                <br>
+            </div>
+
+            <div class="panel-group" id="accordion-1" role="tablist" aria-multiselectable="true">
+                {% for question in questions %}
+
+                    {% set blockData = { 
+                        parentIndex: '1',
+                        index: question.id,
+                        title: question.title, 
+                        copy: question.copy
+                    } %}{% include "../Lava/accordion-panel.html" %}
+
+                {% endfor %}
+                
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}

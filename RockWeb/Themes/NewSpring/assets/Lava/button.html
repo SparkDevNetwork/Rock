@@ -1,0 +1,12 @@
+{#
+
+{% set buttonData = { 
+    buttonSize: '',
+    buttonColor: '',
+    buttonIcon: '',
+    linkUrl: '',
+    linkText: '',
+} %}{% include "button.html" %}
+
+#}
+<a href="{{ buttonData.linkUrl }}" class="btn {{ buttonData.buttonSize }} {{ buttonData.buttonColor }}" role="button" data-scroll>{% if buttonData.linkText %}{{ buttonData.linkText }}{% else %}Learn More{% endif %} {% if buttonData.buttonIcon %}<i class="fas {{ buttonData.buttonIcon }}"></i>{% endif %}</a>

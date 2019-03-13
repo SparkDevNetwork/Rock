@@ -1,0 +1,58 @@
+{% set browserTitle = "My Account" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% set navPages = {
+    title: 'My Account',
+    pages: {
+      'My Account': '/my-account.html',
+      'My Groups': '/my-groups.html',
+      'My Training': '/my-training.html',
+      'My Giving': '/my-giving.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+  <section class="shell bg-white rounded shadowed">
+
+    <div class="row floating floating-left">
+      <div class="floating-item col-md-4 col-sm-12 col-xs-12">
+        <span class="text-center">
+          <p class="push-half-bottom"><img src="{{ userImage }}" alt="" class="img-circle" style="max-width: 140px;"></p>
+          <p class="push-half-bottom text-center"><span class="label label-primary sans-serif">{{ userCampus }}</span></p>
+        </span>
+      </div><div class="floating-item col-md-8 col-sm-12 col-xs-12">
+        
+        <h1 class="sm-text-center xs-text-center">Hello, {{ userFirstName }}.</h1>
+
+        <div class="row">
+          <div class="col-md-6 col-sm-6 col-xs-6">
+            <label for="" class="sans-serif text-uppercase text-gray-light">
+              <small>First Name</small>
+            </label>
+            <h2 class="h4">{{ userFirstName }}</h2>
+          </div><div class="col-md-6 col-sm-6 col-xs-6">
+            <label for="" class="sans-serif text-uppercase text-gray-light">
+              <small>Last Name</small>
+            </label>
+            <h2 class="h4">{{ userLastName }}</h2>
+          </div><div class="col-md-6 col-sm-6 col-xs-6">
+            <label for="" class="sans-serif text-uppercase text-gray-light">
+              <small>Email</small>
+            </label>
+            <p>{{ userEmail }}</p>
+          </div><div class="col-md-6 col-sm-6 col-xs-6">
+            <label for="" class="sans-serif text-uppercase text-gray-light">
+              <small>Phone</small>
+            </label>
+            <p>{{ userPhone }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% set browserTitle = "Connect" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+{% set blockData = { 
+    id: '1',
+    title: "Connect",
+    copy: "<p>We believe connecting to Jesus and others is the way to live your best life.</p>",
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    fixed: '',
+    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/connect/Connect_1000_667_90_c1.jpg',
+    imageOverlayUrl: '',
+    backgroundVideoUrl: '',
+    imageOpacity: '1',
+    linkUrl: '',
+    linkText: '',
+    linkClasses: '',
+    videoId: ''
+} %}{% include "../Lava/hero.html" %}
+
+
+{% set blockData = { 
+    id: '2',
+    backgroundColorHex: '',
+    linkColorHex: '',
+    grayscale: '',
+    titleSize: '',
+    title: "Let's Connect", 
+    copy: "<p>We want to help you grow your relationship with Jesus and build relationships with others. <b>New Connect classes are coming soon,</b> but you don’t have to wait for a class to ask a question or make a new friend.</p>",
+    imageUrl: '',
+    imageOpacity: '',
+    linkUrl: '#',
+    linkText: 'Contact Us'
+} %}{% include "../Lava/ad-unit.html" %}
+
+<section class="shell hard flush-bottom">
+<div class="row">
+	<div class="col-md-12 col-xs-12">
+		{% set blockData = { 
+		    id: '5',
+		    backgroundColorHex: '',
+		    grayscale: '',
+		    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/connect/connect-3_2x1_2000_1000_90.jpg',
+		    imageOpacity: '',
+		    linkUrl: ''
+		} %}{% include "../Lava/image.html" %}
+	</div>
+</div>
+</section>
+
+<section class="shell hard flush-bottom">
+<div class="row">
+	<div class="col-md-6 col-sm-12 col-xs-12">
+		{% set blockData = { 
+		    id: '3',
+		    backgroundColorHex: '',
+		    linkColorHex: '',
+		    grayscale: '',
+		    count: '',
+		    label: '',
+		    textAlignment: 'center',
+		    titleSize: 'h2',
+		    title: 'Serving', 
+		    subtitle: "",
+		    copy: "<p>You get closer to God and others when you serve. On a serving team, you'll get a front row seat to what God is doing, and you'll find family to laugh with, pray with, and do life with.</p>",
+		    trimCopy: '',
+		    tags: '',
+		    imageUrl: '',
+		    imageOpacity: '',
+		    linkUrl: '#',
+		    linkText: 'Learn More'
+		} %}{% include "../Lava/ad-unit.html" %}
+	</div><div class="col-md-6 col-sm-12 col-xs-12">
+		{% set blockData = { 
+		    id: '4',
+		    backgroundColorHex: '',
+		    linkColorHex: '',
+		    grayscale: '',
+		    count: '',
+		    label: '',
+		    textAlignment: 'center',
+		    titleSize: 'h2',
+		    title: 'Need to Know', 
+		    subtitle: "",
+		    copy: "<p>Sign up for our weekly Need To Know email. Stay up to date with what's happening in your no ordinary family, and discover how you can get involved.</p>",
+		    trimCopy: '',
+		    tags: '',
+		    imageUrl: '',
+		    imageOpacity: '',
+		    linkUrl: '#',
+		    linkText: 'Subscribe Now'
+		} %}{% include "../Lava/ad-unit.html" %}
+	</div>
+</div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% set browserTitle = "Help" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+	{% set blockData = { 
+        title: 'How Can We Help?',
+        copy: "<p>We want you to enjoy your online experience. If something is not working as expected, we would love to help.</p>",
+        grayscale: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/collection/2x1.computer_(2)_1700_850_90_c1.jpg',
+        backgroundVideoUrl: '',
+        imageOpacity: '.8',
+        linkUrl: '/help.html',
+        linkText: 'Request Help',
+        linkClasses: ''
+    } %}{% include "../Lava/hero.html" %}
+
+    {% set blockData = { 
+        id: '1',
+        title: "Texting Help",
+        titleSize: '',
+        copy: "<p>Text campaigns are an easy way to stay connected with what's happening at NewSpring.</p><p>You sign up for a campaign when you text a keyword to 30303. For example, if you text <b>“READ&nbsp;MY&nbsp;BIBLE”</b> to 30303, we’ll send you a devotional every morning.</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_images.newspring.cc/section/worship/iphone.pixel.mockup_2000_2000_90_2000_2000_90.jpg',
+        imageAlignment: 'right',
+        linkUrl: '#',
+        linkText: ''
+    } %}{% include "../Lava/side-by-side.html" %}
+
+    {% set blockData = { 
+        id: '2',
+        title: "Giving Help",
+        titleSize: '',
+        copy: "<p>If you're having trouble giving, our finance team is happy to help. They are the best people to troubleshoot any problems you may encounter while giving.</p>",
+        tags: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_images.newspring.cc/section/worship/1x1.phone_(1)_2000_2000_90.jpg',
+        imageAlignment: 'left',
+        linkUrl: 'https://rock.newspring.cc/workflows/152?Topic=Stewardship',
+        linkText: 'Contact Us'
+    } %}{% include "../Lava/side-by-side.html" %}
+
+{% endblock %}

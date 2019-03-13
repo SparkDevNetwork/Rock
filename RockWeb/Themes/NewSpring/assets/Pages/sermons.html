@@ -1,0 +1,129 @@
+{% set browserTitle = "Sermons" %}
+{% set pageTitle = "Sermons By Series" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% extends "FullWidth.html" %}
+
+{% set seriesItems = [
+	{
+		"id": "1",
+		"title": "Hear No Evil",
+		"subtitle": "5/20/18 – 6/10/18",
+		"copy": "<p>We have a heavenly Father that tells us the Truth because He loves us and a father that tells us lies because he hates and wants to destroy us.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/all/heroes/fuse/hearnoevil.commassets.1.jpg",
+		"linkUrl": "/series.html",
+		"likes": "0"
+	},
+	{
+		"id": "2",
+		"title": "Holy Spirit",
+		"subtitle": "4/7/18 – 5/13/18",
+		"copy": "<p>The tomb is empty, and Jesus is alive. But it's common for many to forget the Holy Spirit is Jesus in us and with us.</p><p>Who is Holy Spirit? What does He do? What are His gifts, and how do we experience Him? In this series, we remove the mystery that surrounds the third person of the Trinity. We are meant to know God the Holy Spirit as fully as we do God the Father and God the Son.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/series_newspring/HS1x1.jpg",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "3",
+		"title": "Easter at NewSpring",
+		"subtitle": "3/30/18 – 4/1/18",
+		"copy": "<p>How does the death of a man thousands of years ago give us hope today? Jesus was no ordinary man. When he died, a debt was paid and God's love was displayed. See why we celebrate Easter and how you, too, can find hope in an empty tomb.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/series_newspring/4325.sundays.cen.web.easter18.social1.jpg",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "4",
+		"title": "Tighten The Knot",
+		"subtitle": "2/18/18 – 3/18/18",
+		"copy": "<p>No matter how happy a couple is, everyone can think of something they want to be different.</p><p>Maybe you wish he would come home at 5 or she would spend less time on the phone. Maybe, your differences run so deep they seem irreconcilable.</p><p>But for all the reasons to break the knot, there's always a reason to tighten it.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/all/heroes/newspring/1x1TightenKnot.jpg",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "5",
+		"title": "Different",
+		"subtitle": "1/7/18 – 2/11/18",
+		"copy": "<p>We want to help you think different so that you can be different so that you can make a difference.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/all/heroes/newspring/3490.sundays.cen.different.1x1.jpg",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "6",
+		"title": "Do You See What I See?",
+		"subtitle": "12/3/17 – 12/24/17",
+		"copy": "<p>Where are you, God? Don’t you see what’s happening in my life?</p><p>“Merry Christmas” isn’t a holiday greeting. It’s an answer to your deepest questions. Every Sunday in December, join us on a journey through the Christmas story that will change your perspective.</p><p>The wise men, the shepherds — even Jesus’ family — were everyday people with the same questions. Just like you. And the birth of Jesus was the way God revealed everything good He had in mind. For them. For you. For the world.</p><p>Hear about God’s plan for your life this Christmas season at NewSpring.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/series_newspring/series.dyswis.1x1.jpg",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "7",
+		"title": "ThankFULL",
+		"subtitle": "11/5/17 – 11/26/17",
+		"copy": "<p>Fullness isn’t found in more appointments or bigger account balances, but in gratitude.</p><p>When we begin to see God’s goodness in the people, obstacles, and opportunities all around us, we discover what it means to be ThankFULL.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/all/heroes/newspring/1x1_promothankfull.marketing.png",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "8",
+		"title": "Slaying Giants",
+		"subtitle": "10/1/17 – 10/29/17",
+		"copy": "<p>We all want more out of life.</p><p>But too often, obstacles stand between us and the full life God promises. They loom over us like giants blocking our path.</p><p>Greed, fear, anxiety, bitterness, and comparison — these “giants” are real and they are ready to fight. We can either turn and run, or we can start slaying giants.</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/newspring/collection/series_fuse/2x1slayinggiants.png",
+		"linkUrl": "/series.html"
+	},
+	{
+		"id": "9",
+		"title": "Promised Land",
+		"subtitle": "8/20/17 – 9/24/17",
+		"copy": "<p>You've heard it your whole life:</p><p>Go to church.<br>Read the Bible.<br>Say your prayers.</p><p>These are all good things. But Jesus didn’t come to give us a to-do list. Jesus came so we could experience a full, abundant life.</p><p>In Jesus, every promise God makes to His people becomes true for us, too. Discover the promises that await us in “Promised Land.”</p>",
+		"imageUrl": "//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/collection/series_newspring/PL1X1_1700_1701_90_c1.jpg",
+		"linkUrl": "/series.html"
+	}
+] %}
+
+
+{% block content %}
+
+<div class="soft-sides xs-soft-half-sides">
+	<div class="row">
+		{% for series in seriesItems %}<div class="col-md-4 col-sm-6 col-xs-12">
+			{% set blockData = { 
+			    id: '',
+			    backgroundColorHex: '',
+			    linkColorHex: '',
+			    grayscale: '',
+			    count: '',
+			    type: 'Sermon Series',
+			    label: '',
+			    textAlignment: '',
+			    titleSize: 'h4',
+			    title: series.title, 
+			    subtitle: "9/9/18 – 10/7/18",
+			    copy: series.copy,
+			    trimCopy: 'y',
+			    tags: series.tags,
+			    imageShape: 'landscape',
+			    imageUrl: series.imageUrl,
+			    imageOpacity: '',
+			    linkUrl: '/series.html',
+			    linkText: 'Watch Series',
+			    shares: 'y',
+	            likes: 'y'
+			} %}{% include "../Lava/card.html" %}
+		</div>{% endfor %}
+	</div>
+</div>
+
+<div class="soft xs-soft-half hard-bottom clearfix">
+	{% include "../Lava/pagination.html" %}
+</div>
+
+{% set blockData = { 
+    title: "Subscribe", 
+    copy: "<p>Subscribe to the sermons feed to be notified when new content is published.</p>",
+    imageUrl: '',
+    imageOpacity: '',
+    linkUrl: '#',
+    linkText: 'Subscribe Now'
+} %}{% include "../Lava/ad-unit.html" %}
+
+{% endblock %}

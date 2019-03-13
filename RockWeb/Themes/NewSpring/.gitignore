@@ -1,0 +1,6 @@
+.DS_Store
+dest/
+node_modules/**
+/*.html
+/_compiled/
+/**/*.css

@@ -1,0 +1,15 @@
+{% extends "Global.html" %}
+
+{% block globalContent %}
+
+<div class="position-fixed top-zero right-zero bottom-zero left-zero" style="background-color: #{% if pageBackgroundColorHex %}{{ pageBackgroundColorHex }}{% else %}ececec{% endif %}; z-index: -1;"></div>
+
+<div class="soft-top xs-soft-half-top">
+    {% block content %}
+    {% endblock %}
+</div>
+
+{% block extendedContent %}
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% set browserTitle = "" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "" %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+{% set blockData = { 
+    id: '',
+    title: "He Ain’t In There",
+    copy: "<p class='lead'>(404 Error)</p><p class='lead'><b>Don’t be alarmed.</b> You are looking for /news/hilton-head. It is not here.</p>",
+    linkColorHex: '',
+    backgroundColorHex: '',
+    grayscale: '',
+    ratio: '',
+    imageUrl: '//dg0ddngxdz549.cloudfront.net/newspring/emptytomb/fpo.emptytomb.5.jpg',
+    imageOverlayUrl: '',
+    backgroundVideoUrl: '',
+    imageOpacity: '.7',
+    linkUrl: '#',
+    linkText: 'Search For It',
+    linkClasses: '',
+    buttonIcon: 'fa-search',
+    videoId: ''
+} %}{% include "hero.html" %}
+
+{% endblock %}

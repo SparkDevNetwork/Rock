@@ -1,0 +1,54 @@
+{% set browserTitle = "NewSpring Network" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "6bac43" %}
+
+{% set navPages = {
+    pages: {
+      'About the Network': '/network.html',
+      'Ministries': '/network-ministries.html',
+      'Tours': '/network-tours.html',
+      'Resources': '/network-resources.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+    
+
+    {% set blockData = { 
+        id: '1',
+        title: 'NewSpring Network',
+        copy: "<p>The NewSpring Network Exists to Serve, Equip and Connect Church Leaders so More People are Reached for the Gospel.</p>",
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/all/heroes/newspringnetwork/network.double.connecting.2014.2x1_1700_850_90_c1.jpg',
+        backgroundVideoUrl: '',
+        imageOpacity: '.6',
+        linkUrl: 'https://newspringnetwork.com',
+        linkText: 'Visit NewSpring Network',
+        linkClasses: ''
+    } %}{% include "../Lava/hero.html" %}
+
+
+    {% set blockData = { 
+        id: '2',
+        title: 'Free Resources', 
+        copy: "<p>NewSpring Network provides free resources for churches and church leaders, including children's ministry curriculum, series graphics and videos from our Sunday series, series graphics and videos from our student ministry series, chord charts from NewSpring Worship, and volunteer training tools.</p>", 
+        imageUrl: '',
+        imageOpacity: '',
+        linkUrl: 'https://newspringnetwork.com',
+        linkText: 'Get Free Resources'
+    } %}{% include "../Lava/ad-unit.html" %}
+
+
+    {% set blockData = { 
+        id: '3',
+        title: 'Who We Are', 
+        copy: "<p class='text-white'>In August 2014, NewSpring Network launched as a ministry to serve other churches. Today, NewSpring Network has served more than 45,000 church leaders around the world, and over 75,000 free resources have been downloaded from <a href='#'>NewSpringNetwork.com.</a></p>",
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/all/heroes/newspringnetwork/network.home.faq_1700_1133_90_c1.jpg',
+        imageOpacity: '.1',
+        linkUrl: 'https://newspringnetwork.com',
+        linkText: 'Visit NewSpring Network',
+        backgroundColorHex: '303030'
+    } %}{% include "../Lava/ad-unit.html" %}
+
+{% endblock %}

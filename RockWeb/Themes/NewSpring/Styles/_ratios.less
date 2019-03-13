@@ -1,0 +1,31 @@
+// Fixed Aspect Ratios
+.ratio-thin, .ratio-landscape, .ratio-shuare, .ratio-square, .ratio-portrait {
+	position: relative;
+    display: block;
+
+    .ratio-item {
+    	position: absolute;
+    	right: 0;
+    	bottom: 0;
+    	left: 0;
+    }
+
+	&:before{
+        content: "";
+        display: block;
+    }
+}
+
+.ratio-thin:before{ padding-top: 40%; }
+.ratio-landscape:before{ padding-top: 50%; }
+.ratio-shuare:before{ padding-top: 70%; }
+.ratio-square:before{ padding-top: 100%; }
+.ratio-portrait:before{ padding-top: 150%; }
+
+@media (max-width: @screen-sm-min) {
+	.xs-ratio-thin:before{ padding-top: 40%; }
+	.xs-ratio-landscape:before{ padding-top: 50%; }
+	.xs-ratio-shuare:before{ padding-top: 70%; }
+	.xs-ratio-square:before{ padding-top: 100%; }
+	.xs-ratio-portrait:before{ padding-top: 150%; }
+}

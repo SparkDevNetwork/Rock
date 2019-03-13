@@ -1,0 +1,132 @@
+{% set browserTitle = "KidSpring" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "198AD3" %}
+{% set navPages = {
+    title: 'KidSpring',
+    titleLinkUrl: '/kidspring.html',
+    pages: {
+      'About KidSpring': '/kidspring.html',
+      'Apps': '/kidspring-apps.html'
+    }
+} %}
+
+{% extends "FullWidth.html" %}
+
+{% block content %}
+
+	{% set blockData = { 
+        title: 'KidSpring Mobile App',
+        copy: "<p>Watch and read the latest from KidSpring right on your phone or tablet. Download the KidSpring App today or keep scrolling for even more ways to watch KidSpring at home!</p><p><a href='#' class='btn btn-primary xs-push-half-bottom'>Download For iOS</a> <a href='#' class='btn btn-primary xs-push-half-bottom'>Download For Android</a></p>",
+        linkColorHex: '',
+        backgroundColorHex: '198AD3',
+        grayscale: 'y',
+        imageOverlayUrl: '',
+        imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/fpo/NS_AppHeroStills_5_(1)_1700_956_90_c1.jpg',
+        backgroundVideoUrl: '',
+        imageOpacity: '.3',
+        linkUrl: '',
+        linkText: '',
+        linkClasses: '',
+        videoId: ''
+    } %}{% include "../Lava/hero.html" %}
+
+    {% set blockData = { 
+	    id: '2',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    grayscale: '',
+	    label: '',
+	    titleSize:'',
+	    title: "Watch",
+	    subtitle: "",
+	    copy: "<p>Kids can watch music videos for their favorite KidSpring songs as well as Bible stories from their age-specific series! Click any tab for your child to experience Jesus on their level.</p>",
+	    trimCopy: '',
+	    tags: '',
+	    videoId:'',
+	    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/remote/http_images.newspring.cc/section/worship/kidspring_1x1.png',
+	    imageOpacity: '',
+	    imageAlignment: '',
+	    linkUrl: '',
+	    linkText: ''
+	} %}{% include "side-by-side.html" %}
+
+	{% set blockData = { 
+	    id: '3',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    grayscale: '',
+	    label: '',
+	    titleSize:'',
+	    title: "Listen",
+	    subtitle: "",
+	    copy: "<p>Sing along to KidSpring worship albums on the KidSpring App! No matter where you are, you can stream age-appropriate songs under the Listen tab.</p>",
+	    trimCopy: '',
+	    tags: '',
+	    videoId:'',
+	    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_images.newspring.cc/section/worship/listen_1x1_1000_1000_90.jpg',
+	    imageOpacity: '',
+	    imageAlignment: 'left',
+	    linkUrl: '',
+	    linkText: ''
+	} %}{% include "side-by-side.html" %}
+
+	{% set blockData = { 
+	    id: '4',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    grayscale: '',
+	    label: '',
+	    titleSize:'',
+	    title: "AppleTV App",
+	    subtitle: "",
+	    copy: "<p>Hate missing KidSpring? Now you don’t have to. Whether you’re home sick or out of town, watch the teaching and music videos on your TV. Download our Apple TV app today!</p>",
+	    trimCopy: '',
+	    tags: '',
+	    videoId:'',
+	    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/remote/http_images.newspring.cc/section/worship/roku.appletv.1x1_(1).png',
+	    imageOpacity: '',
+	    imageAlignment: '',
+	    linkUrl: 'https://itunes.apple.com/us/app/kidspring/id1014180894?mt=8',
+	    linkText: 'Download Now'
+	} %}{% include "side-by-side.html" %}
+
+	{% set blockData = { 
+	    id: '5',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    grayscale: '',
+	    label: '',
+	    titleSize:'',
+	    title: "Roku App",
+	    subtitle: "",
+	    copy: "<p>Watch KidSpring teaching and music videos anytime on your TV. Add the KidSpring channel to your Roku today!</p>",
+	    trimCopy: '',
+	    tags: '',
+	    videoId:'',
+	    imageUrl: '//dg0ddngxdz549.cloudfront.net/images/cached/images/remote/http_s3.amazonaws.com/ns.images/newspring/collection/fpo.KidSpring.LargeGroup_2000_1000_90.jpg',
+	    imageOpacity: '',
+	    imageAlignment: 'left',
+	    linkUrl: 'https://channelstore.roku.com/details/143871/kidspring',
+	    linkText: 'Download Now'
+	} %}{% include "side-by-side.html" %}
+
+	{% set blockData = { 
+	    id: '6',
+	    linkColorHex: '',
+	    backgroundColorHex: '',
+	    alignment: '',
+	    grayscale: '',
+	    label: '',
+	    titleSize:'',
+	    title: 'Need Help?', 
+	    subtitle: '',
+	    copy: "<p>If you have questions or need help setting up an app, let us know and we’ll be in touch soon.</p>",
+	    trimCopy: '',
+	    imageUrl: '',
+	    imageOpacity: '',
+	    linkUrl: '/help.html',
+	    linkText: 'Get Help',
+	    buttonIcon: ''
+	} %}{% include "ad-unit.html" %}
+
+{% endblock %}

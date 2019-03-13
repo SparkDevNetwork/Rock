@@ -1,0 +1,119 @@
+{% set browserTitle = "Editorial Preview" %}
+{% set pageTitle = "" %}
+{% set pageBackgroundColorHex = "6bac43" %}
+
+{% extends "FullWidth.html" %}
+
+{% set sermons = [
+	{
+		"id": "1",
+		"title": "Fear vs. Faith",
+		"subtitle": "Oct 1, 2017 • Dan Lian",
+		"copy": "<p>When God’s people reached the Promised Land, it was full of abundance. It was also full of giants. The same is true for us. God has called us into abundance, but there are giants standing in our way. Don't allow these giants to steal one ounce of joy or hope from you. Know who they are and get ready to attack.</p>",
+		"tags": {
+	      "1": "bitterness",
+	      "2": "greed",
+	      "3": "promises",
+	      "4": "anxiety"
+	    },
+	    "imageUrl": "https://embed-ssl.wistia.com/deliveries/5d938a14905bf032634c444b89d86b87d7665a6e.jpg"
+	},
+	{
+		"id": "2",
+		"title": "Generosity vs. Greed",
+		"subtitle": "Oct 8, 2017 • Clayton King",
+		"copy": "<p>We all know greed is a problem — we just think it’s a problem for other people. Greed is sneaky like that. Don't let greed grab a hold of you. Learn to see greed for what it is, slay its hold on your life, and stay free from greed for good.</p>",
+		"tags": {
+	      "1": "greed",
+	      "2": "generosity",
+	      "3": "money"
+	    },
+	    "imageUrl": "https://embed-ssl.wistia.com/deliveries/fd7216326faea1bf5fbc605b40306a11c83f164a.jpg"
+	},
+	{
+		"id": "3",
+		"title": "Unforgiveness vs. Freedom",
+		"subtitle": "Oct 15, 2017 • Brad Cooper",
+		"copy": "<p>When someone hurts you, do you pretend it never happened or silently plot your revenge? Maybe you hold a grudge 'to teach 'em a lesson.'</p>",
+		"tags": {
+	      "1": "jealousy",
+	      "2": "bitterness",
+	      "3": "forgiveness"
+	    },
+	    "imageUrl": "https://embed-ssl.wistia.com/deliveries/2e84b8c54087be3c16fa4b2fed86cb0572caa252.jpg"
+	},
+	{
+		"id": "4",
+		"title": "Comparison vs. Contentment",
+		"subtitle": "Oct 22, 2017 • Stacey Tarrant",
+		"copy": "<p>Ever felt like someone else was living the life you were meant to have? That’s what comparison does. It convinces us that God plus something else — a spouse, a child, a house, a promotion — will be enough. Don't let comparison stop you from enjoying the life God has for you.</p>",
+		"tags": {
+	      "1": "comparison",
+	      "2": "jealousy",
+	      "3": "identity"
+	    },
+	    "imageUrl": "https://embed-ssl.wistia.com/deliveries/c7d91261002ed6681d47c5d4af24c1991591ea0d.jpg"
+	},
+	{
+		"id": "5",
+		"title": "Anxiety vs. Gratitude",
+		"subtitle": "Oct 29, 2017 • Lee McDerment",
+		"copy": "<p>Anxiety attacks everyone. When we go through difficult or stressful situations, our bodies remember and fear alerts us when danger presents itself again. Anxiety doesn’t mean we’re bad people or that we’re crazy. But it will tear us apart if we don’t face its cause.</p>",
+		"tags": {
+	      "1": "peace",
+	      "2": "freedom",
+	      "3": "anxiety"
+	    },
+	    "imageUrl": "https://embed-ssl.wistia.com/deliveries/cb7f225234cacdb8fc8106ab3c85759d7d4c3d14.jpg"
+	}
+] %}
+
+{% block content %}
+
+{% set blockData = { 
+    id: '1',
+    preTitle: '',
+    titleSize: '',
+    title: 'Editorial Preview',
+    tags: ''
+} %}{% include "../Lava/page-header.html" %}
+
+{% for sermon in sermons %}
+<section class="shell soft hard-bottom bg-white rounded shadowed clearfix">
+
+	<div class="row">
+		<div class="col-md-3 col-sm-5 col-xs-12">
+			<div class="ratio-landscape background-cover background-center rounded shadowed push-half-bottom xs-push-bottom" style="background-image:url('{{ sermon.imageUrl }}');"></div>
+			<p class="sans-serif"><span class="label label-primary">2x1</span>
+			<span class="label label-default">1x1</span>
+			<span class="label label-default">1x2</span></p>
+		</div><div class="col-md-9 col-sm-7 col-xs-12">
+
+			<h3 class="push-half-bottom"><a href="{{ sermon.linkUrl }}">{{ sermon.title }}</a></h3>
+
+			<p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>Sermon &middot; June 14, 2019 1:00PM</small></p>
+
+			{% set tagCount = sermon.tags | length %}
+	        {% if tagCount != 0 %}
+	            <p class="tag-list sans-serif push-half-bottom">
+	                <small>{% for id, title in sermon.tags %}
+	                    <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
+	                {% endfor %}</small>
+	            </p>
+	        {% endif %}
+
+			<form>
+				<div class="form-group">
+					<input type="email" class="form-control" id="exampleInputEmail1" placeholder="https://newspr.in/2stsJEj" value="https://newspr.in/2stsJEj">
+				</div>
+			</form>
+
+			<p><a href="#" class="btn btn-primary">View Entry</a></p>
+		</div>
+	</div>
+</section>
+{% endfor %}
+
+{% include "../Lava/pagination.html" %}
+
+{% endblock %}
