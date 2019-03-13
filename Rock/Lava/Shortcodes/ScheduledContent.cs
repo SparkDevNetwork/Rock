@@ -57,6 +57,8 @@ namespace Rock.Lava.Shortcodes
             <li><strong>lookaheaddays</strong> (30)- The number of days to look ahead to find the next occurrence.</li>
         </ul>
 
+        <p>The 'scheduleid' and 'schedulecategoryid' settings are meant to be either or. If you provide a value for one you don't need to provide a value for the other.</p>
+
         <p>The following merge fields are available to the contents of your shortcode to help empower your user experience.</p>
         <ul>
             <li><strong>IsLive</strong> - Determines if the schedule is currently live. This is helpful when you set the 'showwhen' to 'both' as you can now display a different message by using this merge field in a simple if statement.</li>

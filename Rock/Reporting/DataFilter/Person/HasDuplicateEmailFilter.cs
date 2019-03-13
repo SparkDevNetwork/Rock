@@ -158,15 +158,11 @@ namespace Rock.Reporting.DataFilter.Person
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable();
-            var qryDuplicateEmail = new PersonService( ( RockContext ) serviceInstance.Context )
+            var qryEmails = new PersonService( ( RockContext ) serviceInstance.Context )
                 .Queryable()
-                .AsNoTracking()
-                .Where( p => p.Email != null && p.Email != string.Empty )
-                .GroupBy( p => p.Email )
-                .Where( g => g.Count() > 1 )
-                .Select( g => g.Key );
+                .AsNoTracking();
 
-            qry = qry.Where( p => qryDuplicateEmail.Contains( p.Email ) );
+            qry = qry.Where( p => qryEmails.Any( p2 => ( p2.Email != null && p2.Email != "" && p.Email != null && p.Email != "" && p2.Email == p.Email ) && p2.Id != p.Id ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }

@@ -178,7 +178,7 @@ namespace Rock.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
-                            if ( attribute != null )
+                            if ( attribute != null && attribute.IsActive )
                             {
                                 selectedAttributes.Add( columnIndex, attribute );
 

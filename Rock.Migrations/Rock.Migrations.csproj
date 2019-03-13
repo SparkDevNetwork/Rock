@@ -216,6 +216,42 @@
     <Compile Include="Migrations\201902111543316_AddOldRawValueAndNewRawValueToHistory.Designer.cs">
       <DependentUpon>201902111543316_AddOldRawValueAndNewRawValueToHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201902192016143_Rollup_0219.cs" />
+    <Compile Include="Migrations\201902192016143_Rollup_0219.Designer.cs">
+      <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201902201848155_UpdateComponent.cs" />
+    <Compile Include="Migrations\201902201848155_UpdateComponent.Designer.cs">
+      <DependentUpon>201902201848155_UpdateComponent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.cs" />
+    <Compile Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.Designer.cs">
+      <DependentUpon>201902272058547_PersonGivingLeaderIdUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903051854099_Rollup_0305.cs" />
+    <Compile Include="Migrations\201903051854099_Rollup_0305.Designer.cs">
+      <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.cs" />
+    <Compile Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.Designer.cs">
+      <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.cs" />
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.Designer.cs">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.cs" />
+    <Compile Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.Designer.cs">
+      <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.cs" />
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.Designer.cs">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.cs" />
+    <Compile Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.Designer.cs">
+      <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -618,6 +654,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201902111543316_AddOldRawValueAndNewRawValueToHistory.resx">
       <DependentUpon>201902111543316_AddOldRawValueAndNewRawValueToHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902192016143_Rollup_0219.resx">
+      <DependentUpon>201902192016143_Rollup_0219.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902201848155_UpdateComponent.resx">
+      <DependentUpon>201902201848155_UpdateComponent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201902272058547_PersonGivingLeaderIdUpdate.resx">
+      <DependentUpon>201902272058547_PersonGivingLeaderIdUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903051854099_Rollup_0305.resx">
+      <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.resx">
+      <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.resx">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.resx">
+      <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.resx">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.resx">
+      <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

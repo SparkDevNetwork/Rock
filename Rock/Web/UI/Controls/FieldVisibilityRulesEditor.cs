@@ -129,6 +129,17 @@ namespace Rock.Web.UI.Controls
             Panel pnlRulesList = new Panel { CssClass = "filtervisibilityrules-ruleslist " };
             pnlContainer.Controls.Add( pnlRulesList );
 
+            // Filter Actions
+            _pnlFilterActions = new Panel { CssClass = "filter-actions" };
+            pnlContainer.Controls.Add( _pnlFilterActions );
+
+            _btnAddFilterFieldCriteria = new LinkButton();
+            _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
+            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action";
+            _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
+            _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
+            _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
+
             // Filter Type controls
             _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type form-inline form-inline-all pull-left" };
             pnlRulesHeaderRow.Controls.Add( _pnlFilterType );
@@ -156,17 +167,6 @@ namespace Rock.Web.UI.Controls
 
             _lblOfTheFollowingMatchSpan = new Label { Text = "of the following match:", CssClass = "form-control-static" };
             _pnlFilterType.Controls.Add( _lblOfTheFollowingMatchSpan );
-
-            // Filter Actions
-            _pnlFilterActions = new Panel { CssClass = "filter-actions pull-right" };
-            pnlRulesHeaderRow.Controls.Add( _pnlFilterActions );
-
-            _btnAddFilterFieldCriteria = new LinkButton();
-            _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
-            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action pull-right margin-l-sm";
-            _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
-            _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
-            _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
 
             _phFilterFieldRuleControls = new DynamicPlaceholder();
             _phFilterFieldRuleControls.ID = this.ID + "_phFilterFieldRuleControls";
@@ -215,9 +215,9 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             _phFilterFieldRuleControls.Controls.Clear();
 
-            if ( _fieldVisibilityRulesState?.Any() == true )
+            if ( _fieldVisibilityRulesState?.RuleList.Any() == true )
             {
-                foreach ( var fieldVisibilityRule in _fieldVisibilityRulesState )
+                foreach ( var fieldVisibilityRule in _fieldVisibilityRulesState.RuleList )
                 {
                     this.AddFilterRuleControl( fieldVisibilityRule, false );
                 }
@@ -287,7 +287,7 @@ namespace Rock.Web.UI.Controls
 
             this._fieldVisibilityRulesState = new FieldVisibilityRules();
             _phFilterFieldRuleControls.Controls.Clear();
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList )
             {
                 AddFilterRule( fieldVisibilityRule );
             }
@@ -325,7 +325,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules.ToList() )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList )
             {
                 var rockControlWrapper = _phFilterFieldRuleControls.FindControl( $"_rockControlWrapper_{fieldVisibilityRule.Guid.ToString( "N" )}" ) as RockControlWrapper;
                 if ( rockControlWrapper == null )
@@ -357,7 +357,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // no attribute selected, so delete the rule
-                    fieldVisibilityRules.Remove( fieldVisibilityRule );
+                    fieldVisibilityRules.RuleList.Remove( fieldVisibilityRule );
                 }
             }
 
@@ -372,7 +372,7 @@ namespace Rock.Web.UI.Controls
         {
             AddFilterRuleControl( fieldVisibilityRule, true );
 
-            this._fieldVisibilityRulesState.Add( fieldVisibilityRule );
+            this._fieldVisibilityRulesState.RuleList.Add( fieldVisibilityRule );
         }
 
         /// <summary>
@@ -436,8 +436,15 @@ namespace Rock.Web.UI.Controls
                 ValidationGroup = this.ValidationGroup
             };
 
-            ddlCompareField.Items.Add( new ListItem() );
-            foreach ( var attribute in GetSupportedComparableAttributes() )
+            var supportedComparableAttributes = GetSupportedComparableAttributes().ToList();
+
+            // if adding a new fieldVisibilityRule, default to the first supportedComparableAttribute
+            if ( fieldVisibilityRule.ComparedToAttributeGuid == null )
+            {
+                fieldVisibilityRule.ComparedToAttributeGuid = supportedComparableAttributes.Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+            }
+
+            foreach ( var attribute in supportedComparableAttributes )
             {
                 var listItem = new ListItem( attribute.Name, attribute.Guid.ToString() );
                 ddlCompareField.Items.Add( listItem );
@@ -500,13 +507,13 @@ namespace Rock.Web.UI.Controls
             var rockControlWrapper = btnDeleteRule.FirstParentControlOfType<RockControlWrapper>();
             var hiddenFieldRuleGuid = rockControlWrapper.ControlsOfTypeRecursive<HiddenFieldWithClass>().FirstOrDefault( a => a.CssClass == "js-rule-guid" );
             Guid fieldVisibilityRuleGuid = hiddenFieldRuleGuid.Value.AsGuid();
-            var fieldVisibilityRule = this._fieldVisibilityRulesState.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
+            var fieldVisibilityRule = this._fieldVisibilityRulesState.RuleList.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
             var updatedRules = this._fieldVisibilityRulesState.Clone();
-            updatedRules.Remove( fieldVisibilityRule );
+            updatedRules.RuleList.Remove( fieldVisibilityRule );
 
             SetFieldVisibilityRules( updatedRules );
 
-            this._fieldVisibilityRulesState.Remove( fieldVisibilityRule );
+            this._fieldVisibilityRulesState.RuleList.Remove( fieldVisibilityRule );
         }
 
         /// <summary>
@@ -521,7 +528,7 @@ namespace Rock.Web.UI.Controls
             var hiddenFieldRuleGuid = rockControlWrapper.ControlsOfTypeRecursive<HiddenFieldWithClass>().FirstOrDefault( a => a.CssClass == "js-rule-guid" );
             Guid fieldVisibilityRuleGuid = hiddenFieldRuleGuid.Value.AsGuid();
 
-            var fieldVisibilityRule = this._fieldVisibilityRulesState.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
+            var fieldVisibilityRule = this._fieldVisibilityRulesState.RuleList.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
 
             var selectedAttributeGuid = ddlCompareField.SelectedValue.AsGuidOrNull();
             fieldVisibilityRule.ComparedToAttributeGuid = selectedAttributeGuid;
@@ -547,7 +554,6 @@ namespace Rock.Web.UI.Controls
             {
                 var fieldType = FieldTypeCache.Get( selectedAttribute.FieldTypeId );
                 var qualifiers = selectedAttribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
-                // rockControlWrapper.Label = selectedAttribute.Name;
                 var filterControl = fieldType.Field.FilterControl( qualifiers, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
                 if ( filterControl != null )
                 {
@@ -556,16 +562,13 @@ namespace Rock.Web.UI.Controls
                     if ( setValues )
                     {
                         List<string> filterValues = new List<string>();
-                        filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
+
+                        filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToInt().ToString() );
                         filterValues.Add( fieldVisibilityRule.ComparedToValue );
                         fieldType.Field.SetFilterValues( filterControl, qualifiers, filterValues );
                     }
                 }
             }
-            // else
-            // {
-            //     rockControlWrapper.Label = "New Rule";
-            // }
         }
 
         #endregion Methods

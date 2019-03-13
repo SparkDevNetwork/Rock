@@ -35,7 +35,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DynamicPlaceholder ID="phContentChannelAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcContentChannelAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -69,12 +69,12 @@
                             <asp:HiddenField ID="hfContentChannelItemId" runat="server" />
                             <Rock:RockTextBox ID="tbContentChannelItemTitle" runat="server" Label="Title" Required="true" MaxLength="200" ValidationGroup="vgContentComponentEditContentChannelItem" />
                             <Rock:HtmlEditor ID="htmlContentChannelItemContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="300" ValidationGroup="vgContentComponentEditContentChannelItem" Toolbar="Full" />
-                            <Rock:DynamicPlaceholder ID="phContentChannelItemAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcContentChannelItemAttributes" runat="server" />
                         </asp:Panel>
                         <asp:Panel ID="pnlContentChannelItemsList" runat="server" CssClass="col-md-4">
                             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                             <Rock:RockControlWrapper ID="rcwContentChannelItems" runat="server" Label="Content Items">
-                                <Rock:Grid ID="gContentChannelItems" runat="server" DisplayType="Light" AllowSorting="false" RowItemText="Item" OnRowSelected="gContentChannelItems_RowSelected" ShowHeader="false">
+                                <Rock:Grid ID="gContentChannelItems" runat="server" DisplayType="Light" AllowSorting="false" RowItemText="Item" OnRowSelected="gContentChannelItems_RowSelected" OnRowDataBound="gContentChannelItems_RowDataBound" ShowHeader="false">
                                     <Columns>
                                         <Rock:ReorderField />
                                         <asp:BoundField DataField="Title" />

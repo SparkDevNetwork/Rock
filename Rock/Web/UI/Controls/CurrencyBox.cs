@@ -46,7 +46,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             var globalAttributes = GlobalAttributesCache.Get();
-            if (globalAttributes != null)
+            if ( globalAttributes != null )
             {
                 string symbol = globalAttributes.GetValue( "CurrencySymbol" );
                 this.PrependText = string.IsNullOrWhiteSpace( symbol ) ? "$" : symbol;

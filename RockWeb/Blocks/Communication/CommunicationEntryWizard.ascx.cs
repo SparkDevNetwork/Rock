@@ -32,7 +32,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1182,32 +1181,9 @@ namespace RockWeb.Blocks.Communication
             hfSelectedCommunicationTemplateId.Value = communicationTemplateId.ToString();
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
-            // If the template does not provide a default From Name and Address use the current person.
-            if ( communicationTemplate.FromName.IsNotNullOrWhiteSpace() )
-            {
-                tbFromName.Text = communicationTemplate.FromName;
-            }
-            else
-            {
-                // if FromName hasn't been set yet, and the template doesn't have a FromName, use CurrentPerson
-                if ( tbFromName.Text.IsNullOrWhiteSpace() )
-                {
-                    tbFromName.Text = CurrentPerson.FullName;
-                }
-            }
-
-            if ( communicationTemplate.FromEmail.IsNotNullOrWhiteSpace() )
-            {
-                ebFromAddress.Text = communicationTemplate.FromEmail;
-            }
-            else
-            {
-                // if FromAddress hasn't been set yet, and the template doesn't have a FromAddress, use CurrentPerson
-                if ( ebFromAddress.Text.IsNullOrWhiteSpace() )
-                {
-                    ebFromAddress.Text = CurrentPerson.Email;
-                }
-            }
+            //this change is being made explicitly as discussed in #3516
+            tbFromName.Text = communicationTemplate.FromName;
+            ebFromAddress.Text = communicationTemplate.FromEmail;
 
             // only set the ReplyToEmail, CCEMails, and BCCEmails if the template has one (just in case they already filled these in for this communication
             if ( communicationTemplate.ReplyToEmail.IsNotNullOrWhiteSpace() )
@@ -2256,17 +2232,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             SetNavigationHistory( pnlResult );
             pnlConfirmation.Visible = false;
             pnlResult.Visible = true;
-
-            var communicationDateTime = communication.FutureSendDateTime.HasValue ?
-                communication.FutureSendDateTime.Value :
-                communication.CreatedDateTime.Value;
-            DateTime? dndEndingTime = null;
-            var isCommunicationInsideDND = Rock.Model.Communication.CheckCommunicationForDND( communicationDateTime, out dndEndingTime );
-            nbWarning.Visible = isCommunicationInsideDND;
-            if ( isCommunicationInsideDND )
-            {
-                nbWarning.Text = "Do not disturb is active and it's falling inside the DND window. It will only be sent once the DND window has passed";
-            }
 
             nbResult.Text = message;
 

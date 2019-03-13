@@ -40,9 +40,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Displays person and details about recent check-ins." )]
 
-    [LinkedPage("Manager Page", "Page used to manage check-in locations", true, "", "", 0)]
-    [BooleanField("Show Related People", "Should anyone who is allowed to check-in the current person also be displayed with the family members?", false, "", 1)]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Send SMS From", "The phone number SMS messages should be sent from", false, false, order:2, key: SMS_FROM_KEY )]
+    [LinkedPage( "Manager Page", "Page used to manage check-in locations", true, "", "", 0 )]
+    [BooleanField( "Show Related People", "Should anyone who is allowed to check-in the current person also be displayed with the family members?", false, "", 1 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Send SMS From", "The phone number SMS messages should be sent from", false, false, order: 2, key: SMS_FROM_KEY )]
     [AttributeCategoryField( "Child Attribute Category", "The children Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "", "", 3 )]
     [AttributeCategoryField( "Adult Attribute Category", "The adult Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "", "", 4 )]
     public partial class Person : Rock.Web.UI.RockBlock
@@ -74,6 +74,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -117,7 +121,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid());
+            ShowDetail( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
         }
 
         /// <summary>
@@ -127,17 +131,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if (e.Row.RowType == DataControlRowType.DataRow)
+            if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var attendanceInfo = e.Row.DataItem as AttendanceInfo;
-                if ( attendanceInfo == null)
+                if ( attendanceInfo == null )
                 {
                     var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
                     if ( cell != null )
                     {
                         cell.Visible = false;
                     }
-                    
+
                 }
                 else
                 {
@@ -179,7 +183,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 dynamic familyMember = e.Item.DataItem as dynamic;
-                Literal lFamilyIcon = (Literal)e.Item.FindControl( "lFamilyIcon" );
+                Literal lFamilyIcon = ( Literal ) e.Item.FindControl( "lFamilyIcon" );
 
                 if ( familyMember.FamilyRole.ToString() == "Child" )
                 {
@@ -201,7 +205,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 dynamic relatedMember = e.Item.DataItem as dynamic;
-                Literal lRelationshipsIcon = (Literal)e.Item.FindControl( "lRelationshipsIcon" );
+                Literal lRelationshipsIcon = ( Literal ) e.Item.FindControl( "lRelationshipsIcon" );
 
                 if ( relatedMember.Gender == Gender.Female )
                 {
@@ -301,7 +305,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
-        private void ShowDetail(Guid personGuid)
+        private void ShowDetail( Guid personGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -314,10 +318,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     lName.Text = person.FullName;
 
-                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 120, 120 );
+                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
                     if ( person.PhotoId.HasValue )
                     {
-                        lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
+                        lPhoto.Text = string.Format( "<div class='photo'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
                     }
                     else
                     {
@@ -336,7 +340,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ConvertToString() : "";
-                    
+
                     if ( person.BirthDate.HasValue )
                     {
                         string ageText = ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ?
@@ -349,22 +353,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     lGrade.Text = person.GradeFormatted;
-                    
+
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
                     var adultCategoryGuid = GetAttributeValue( "AdultAttributeCategory" ).AsGuidOrNull();
                     var childCategoryGuid = GetAttributeValue( "ChildAttributeCategory" ).AsGuidOrNull();
-                    var isAdult = person.AgeClassification != AgeClassification.Child;
+                    var isAdult = person.AgeClassification == AgeClassification.Adult || person.AgeClassification == AgeClassification.Unknown;
+                    var isChild = person.AgeClassification == AgeClassification.Child || person.AgeClassification == AgeClassification.Unknown;
 
                     pnlAdultFields.Visible = isAdult && adultCategoryGuid.HasValue;
-                    pnlChildFields.Visible = !isAdult && childCategoryGuid.HasValue;
-                    if ( isAdult && adultCategoryGuid.HasValue)
+                    pnlChildFields.Visible = isChild && childCategoryGuid.HasValue;
+                    if ( isAdult && adultCategoryGuid.HasValue )
                     {
                         avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
                         avcAdultAttributes.AddDisplayControls( person );
                     }
-                    else
+
+                    if ( isChild && childCategoryGuid.HasValue )
                     {
                         avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
                         avcChildAttributes.AddDisplayControls( person );
@@ -418,7 +424,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     rptrFamily.DataBind();
 
                     rcwRelationships.Visible = false;
-                    if ( GetAttributeValue("ShowRelatedPeople").AsBoolean() )
+                    if ( GetAttributeValue( "ShowRelatedPeople" ).AsBoolean() )
                     {
                         var roles = new List<int>();
                         var krRoles = new GroupTypeRoleService( rockContext )
@@ -429,7 +435,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         foreach ( var role in krRoles )
                         {
                             role.LoadAttributes( rockContext );
-                            if ( role.GetAttributeValue( "CanCheckin").AsBoolean() &&
+                            if ( role.GetAttributeValue( "CanCheckin" ).AsBoolean() &&
                                 role.Attributes.ContainsKey( "InverseRelationship" ) )
                             {
                                 var inverseRoleGuid = role.GetAttributeValue( "InverseRelationship" ).AsGuidOrNull();
@@ -464,8 +470,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
 
-                    rptrPhones.DataSource = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                    var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
+                    rptrPhones.DataSource = phoneNumbers;
                     rptrPhones.DataBind();
+                    rcwPhone.Visible = phoneNumbers.Any();
 
                     var schedules = new ScheduleService( rockContext )
                         .Queryable().AsNoTracking()
@@ -501,7 +509,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList()
                         .Select( a =>
                             {
-                                var checkedInByPerson = a.CheckedInByPersonAliasId.HasValue ? personAliasService.GetPerson( a.CheckedInByPersonAliasId.Value ): null;
+                                var checkedInByPerson = a.CheckedInByPersonAliasId.HasValue ? personAliasService.GetPerson( a.CheckedInByPersonAliasId.Value ) : null;
 
                                 return new AttendanceInfo
                                 {
@@ -514,7 +522,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     Schedule = a.Occurrence.Schedule.Name,
                                     IsActive = a.IsCurrentlyCheckedIn,
                                     Code = a.AttendanceCode != null ? a.AttendanceCode.Code : "",
-                                    CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName: string.Empty,
+                                    CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName : string.Empty,
                                     CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null
                                 };
                             }

@@ -35,8 +35,8 @@ namespace Rock.Financial
         private RockContext _rockContext;
         private AutomatedPaymentArgs _automatedPaymentArgs;
         private int? _currentPersonAliasId;
-        private bool _ignoreRepeatChargeProtection;
-        private bool _ignoreScheduleAdherenceProtection;
+        private bool _enableDuplicateChecking;
+        private bool _enableScheduleAdherenceProtection;
 
         // Declared services
         private PersonAliasService _personAliasService;
@@ -68,15 +68,15 @@ namespace Rock.Financial
         /// <param name="currentPersonAliasId">The current user's person alias ID. Possibly the REST user.</param>
         /// <param name="automatedPaymentArgs">The arguments describing how toi charge the payment and store the resulting transaction</param>
         /// <param name="rockContext">The context to use for loading and saving entities</param>
-        /// <param name="ignoreRepeatChargeProtection">If true, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="ignoreScheduleAdherenceProtection">If true and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
-        public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool ignoreRepeatChargeProtection, bool ignoreScheduleAdherenceProtection )
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool enableDuplicateChecking = true, bool enableScheduleAdherenceProtection = true )
         {
             _rockContext = rockContext;
             _automatedPaymentArgs = automatedPaymentArgs;
             _currentPersonAliasId = currentPersonAliasId;
-            _ignoreRepeatChargeProtection = ignoreRepeatChargeProtection;
-            _ignoreScheduleAdherenceProtection = ignoreScheduleAdherenceProtection;
+            _enableDuplicateChecking = enableDuplicateChecking;
+            _enableScheduleAdherenceProtection = enableScheduleAdherenceProtection;
 
             _personAliasService = new PersonAliasService( rockContext );
             _financialGatewayService = new FinancialGatewayService( rockContext );
@@ -90,6 +90,27 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Allow access to the automated gateway's most recent exception property.
+        /// </summary>
+        /// <returns></returns>
+        public Exception GetMostRecentException()
+        {
+            if ( _automatedGatewayComponent == null )
+            {
+                return null;
+            }
+
+            var castedComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
+
+            if ( castedComponent == null )
+            {
+                return null;
+            }
+
+            return castedComponent.MostRecentException;
+        }
+
+        /// <summary>
         /// Validates that the args do not seem to be a repeat charge on the same person in a short timeframe.
         /// Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
         /// </summary>
@@ -99,13 +120,14 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            if ( _ignoreRepeatChargeProtection )
+            if ( !_enableDuplicateChecking )
             {
                 return false;
             }
 
             LoadEntities();
 
+            // Get all the person aliases in the giving group
             var personAliasIds = _personAliasService.Queryable()
                 .AsNoTracking()
                 .Where( a => a.Person.GivingId == _authorizedPerson.GivingId )
@@ -114,15 +136,25 @@ namespace Rock.Financial
 
             // Check to see if a transaction exists for the person aliases within the last 5 minutes. This should help eliminate accidental repeat charges.
             var minDateTime = RockDateTime.Now.AddMinutes( -5 );
-            var repeatTransaction = _financialTransactionService.Queryable()
+            var recentTransactions = _financialTransactionService.Queryable()
                 .AsNoTracking()
-                .Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) )
-                .Where( t => t.TransactionDateTime >= minDateTime )
-                .FirstOrDefault();
+                .Include( t => t.TransactionDetails )
+                .Where( t =>
+                    // Check for transactions in the giving group
+                    t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                    // Check for recent transactions
+                    t.TransactionDateTime >= minDateTime )
+                .ToList();
+
+            // Look for a recent transaction that has the same account/amount combinations
+            var repeatTransaction = recentTransactions.FirstOrDefault( t => t.TransactionDetails.All( d =>
+                _automatedPaymentArgs.AutomatedPaymentDetails.Any( ad =>
+                    ad.AccountId == d.AccountId &&
+                    ad.Amount == d.Amount ) ) );
 
             if ( repeatTransaction != null )
             {
-                errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Use IgnoreRepeatChargeProtection option to disable this protection.", repeatTransaction.Id );
+                errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Toggle EnableDuplicateChecking to disable this protection.", repeatTransaction.Id );
                 return true;
             }
 
@@ -138,13 +170,13 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            if ( _ignoreScheduleAdherenceProtection || !_automatedPaymentArgs.ScheduledTransactionId.HasValue )
+            if ( !_enableScheduleAdherenceProtection || !_automatedPaymentArgs.ScheduledTransactionId.HasValue )
             {
                 return true;
             }
 
             LoadEntities();
-            var instructionsToIgnore = "Use IgnoreScheduleAdherenceProtection option to disable this protection.";
+            var instructionsToIgnore = "Toggle EnableScheduleAdherenceProtection to disable this protection.";
 
             if ( _financialScheduledTransaction == null )
             {
@@ -585,36 +617,44 @@ namespace Rock.Financial
 
             financialTransaction.SetApportionedFeesOnDetails( _payment.FeeAmount );
 
+            // Get an existing or new batch according to the name prefix and payment type
             var batch = _financialBatchService.Get(
                 _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
+                string.Empty,
                 _referencePaymentInfo.CurrencyTypeValue,
                 _referencePaymentInfo.CreditCardTypeValue,
                 financialTransaction.TransactionDateTime.Value,
-                _financialGateway.GetBatchTimeOffset() );
+                _financialGateway.GetBatchTimeOffset(),
+                _financialGateway.BatchDayOfWeek );
 
             var batchChanges = new History.HistoryChangeList();
+            var isNewBatch = batch.Id == 0;
 
-            if ( batch.Id == 0 )
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id and also
+            // add history entries about the batch creation
+            if ( isNewBatch )
             {
                 batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                 History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+
+                _rockContext.SaveChanges();
             }
 
+            // Add the new transaction amount into the batch control amount
             var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
             History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
             batch.ControlAmount = newControlAmount;
 
+            // use the financialTransactionService to add the transaction instead of batch.Transactions
+            // to avoid lazy-loading the transactions already associated with the batch
             financialTransaction.BatchId = batch.Id;
-            financialTransaction.LoadAttributes( _rockContext );
-
-            batch.Transactions.Add( financialTransaction );
-
+            _financialTransactionService.Add( financialTransaction );
             _rockContext.SaveChanges();
-            financialTransaction.SaveAttributeValues();
 
+            // Save the changes history for the batch
             HistoryService.SaveChanges(
                 _rockContext,
                 typeof( FinancialBatch ),

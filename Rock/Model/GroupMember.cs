@@ -269,14 +269,6 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            string errorMessage = string.Empty;
-            if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
-            {
-                var ex = new GroupMemberValidationException( errorMessage );
-                ExceptionLogService.LogException( ex );
-                throw ex;
-            }
-
             var changeTransaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( changeTransaction );
 
@@ -494,6 +486,7 @@ namespace Rock.Model
                 {
                     PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
+                    PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
                 }
             }
         }
@@ -554,14 +547,14 @@ namespace Rock.Model
             var groupService = new GroupService( rockContext );
             var group = this.Group ?? groupService.Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            if ( !groupService.AllowsDuplicateMembers( group ) )
+            if ( !GroupService.AllowsDuplicateMembers() )
             {
                 var groupMember = new GroupMemberService( rockContext ).GetByGroupIdAndPersonIdAndGroupRoleId( this.GroupId, this.PersonId, this.GroupRoleId );
                 if ( groupMember != null && groupMember.Id != this.Id )
                 {
                     var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
 
-                    var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
+                    var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
                     errorMessage = string.Format(
                         "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
                         person,
@@ -584,15 +577,26 @@ namespace Rock.Model
         private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            var groupService = new GroupService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
-            var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
+            if ( groupType == null )
+            {
+                // For some reason we could not get a GroupType
+                errorMessage = $"The GroupTypeId {group.GroupTypeId} used by {this.Group.Name} does not exist.";
+                return false;
+            }
+
+            var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
+            if ( groupRole == null )
+            {
+                // For some reason we could not get a GroupTypeRole for the GroupRoleId for this GroupMember.
+                errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {this.Group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
+                return false;
+            }
 
             // Verify duplicate role/person
-            if ( !groupService.AllowsDuplicateMembers( group ) )
+            if ( !GroupService.AllowsDuplicateMembers() )
             {
                 if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
                 {

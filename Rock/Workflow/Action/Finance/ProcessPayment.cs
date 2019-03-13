@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person making the payment.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Amount", "Workflow attribute that contains the amount to charge.", true, "", "", 2, null, new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
     [WorkflowAttribute( "Account", "Workflow attribute that contains the target account.", true, "", "", 3, null, new string[] { "Rock.Field.Types.AccountFieldType" } )]
-    [BooleanField( "Ignore Repeat Charge Protection", "Should the processor charge the payment even if it looks like a repeat charge?", false, "", 4 )]
+    [BooleanField( "Enable Duplicate Checking", "Should the processor try to prevent repeat charges?", true, "", 4 )]
     [BooleanField( "Continue On Error", "Should processing continue even if processing errors occur?", false, "", 5 )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the result transaction ID.", false, "", "", 6, null, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
@@ -107,8 +107,8 @@ namespace Rock.Workflow.Action
                 AutomatedPaymentDetails = new List<AutomatedPaymentArgs.AutomatedPaymentDetailArgs> { detailArgs }
             };
 
-            var ignoreRepeatProtection = GetAttributeValue( action, "IgnoreRepeatChargeProtection" ).AsBoolean();
-            var automatedPaymentProcessor = new AutomatedPaymentProcessor( null, automatedPaymentArgs, rockContext, ignoreRepeatProtection, false );
+            var enableDuplicateChecking = GetAttributeValue( action, "EnableDuplicateChecking" ).AsBooleanOrNull() ?? true;
+            var automatedPaymentProcessor = new AutomatedPaymentProcessor( null, automatedPaymentArgs, rockContext, enableDuplicateChecking, true );
             var transaction = automatedPaymentProcessor.ProcessCharge( out var errorMessage );
 
             if ( !string.IsNullOrEmpty( errorMessage ) )

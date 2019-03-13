@@ -164,5 +164,18 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
+
+
+        /// <summary>
+        /// Gets or sets the EntityType.Guid that the Attribute List should be limited to.
+        /// </summary>
+        /// <value>
+        /// The entity type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( value ) );
+        }
     }
 }

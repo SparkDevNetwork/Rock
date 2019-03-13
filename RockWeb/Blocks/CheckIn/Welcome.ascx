@@ -294,7 +294,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="checkin-search-body">
-                                    <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" TextMode="Password" runat="server" Label="PIN" />
+                                    <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry input-lg" TextMode="Password" runat="server" Label="PIN" />
 
                                     <div class="tenkey checkin-phone-keypad">
                                         <div>
