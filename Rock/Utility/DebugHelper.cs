@@ -273,8 +273,9 @@ namespace Rock
             if ( _callCounts != 0 )
             {
                 Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
-                DbInterception.Remove( _debugLoggingDbCommandInterceptor );
             }
+
+            DbInterception.Remove( _debugLoggingDbCommandInterceptor );
         }
 
         /// <summary>
