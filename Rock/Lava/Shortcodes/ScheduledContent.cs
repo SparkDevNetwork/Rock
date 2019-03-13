@@ -64,6 +64,7 @@ namespace Rock.Lava.Shortcodes
             <li><strong>IsLive</strong> - Determines if the schedule is currently live. This is helpful when you set the 'showwhen' to 'both' as you can now display a different message by using this merge field in a simple if statement.</li>
             <li><strong>OccurrenceEndDateTime</strong> - When a schedule is live this field will provide the date/time when the schedule will no longer be active. This helps assist you in creating a countdown to finish counter.</li>
             <li><strong>NextOccurrenceDateTime</strong> - This is the date time of the next occurrence. This is provided to help you create a countdown to start counter. When a schedule is live this value will be the next active occurrence to help you craft messaging as to when you can see the next full occurrence.</li>
+            <li><strong>Schedule</strong> - This is the schedule object related to the request. If the event is live it will be the active schedule otherwise it will be the upcoming schedule.</li>
         </ul>",
         "scheduleid,showwhen,roleid",
         "" )]
@@ -283,6 +284,7 @@ namespace Rock.Lava.Shortcodes
                 var mergeFields = LoadBlockMergeFields( context );
                 mergeFields.Add( "NextOccurrenceDateTime", nextStartDateTime );
                 mergeFields.Add( "OccurrenceEndDateTime", occurrenceEndDateTime );
+                mergeFields.Add( "Schedule", nextSchedule );
                 mergeFields.Add( "IsLive", isLive );
 
                 var results = _blockMarkup.ToString().ResolveMergeFields( mergeFields, _enabledSecurityCommands );
