@@ -201,13 +201,11 @@ namespace Rockweb.Blocks.Crm
         /// </value>
         public decimal PercentComplete
         {
-            get
-            {
+            get {
                 return _percentComplete;
             }
 
-            set
-            {
+            set {
                 _percentComplete = value;
             }
         }
@@ -264,20 +262,6 @@ namespace Rockweb.Blocks.Crm
             {
                 _targetPerson = CurrentPerson;
             }
-
-
-            if ( _targetPerson == null )
-            {
-                pnlInstructions.Visible = false;
-                pnlQuestion.Visible = false;
-                pnlResult.Visible = false;
-                nbError.Visible = true;
-
-                if ( _isQuerystringPersonKey )
-                {
-                    nbError.Text = "There is an issue locating the person associated with the request.";
-                }
-            }
         }
 
         /// <summary>
@@ -302,6 +286,18 @@ namespace Rockweb.Blocks.Crm
                     else
                     {
                         ShowResult( savedScores );
+                    }
+                }
+                else
+                {
+                    pnlInstructions.Visible = false;
+                    pnlQuestion.Visible = false;
+                    pnlResult.Visible = false;
+                    nbError.Visible = true;
+
+                    if ( _isQuerystringPersonKey )
+                    {
+                        nbError.Text = "There is an issue locating the person associated with the request.";
                     }
                 }
             }
