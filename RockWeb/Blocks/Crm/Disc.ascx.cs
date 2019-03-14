@@ -143,6 +143,9 @@ namespace Rockweb.Blocks.Crm
             else
             {
                 nbError.Visible = true;
+                pnlInstructions.Visible = false;
+                pnlQuestions.Visible = false;
+                pnlResults.Visible = false;
             }
 
             if ( _targetPerson != null )
