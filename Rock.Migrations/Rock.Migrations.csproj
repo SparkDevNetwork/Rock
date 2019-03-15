@@ -252,6 +252,10 @@
     <Compile Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.Designer.cs">
       <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903151430332_FailedLoginTrackingAttributes.cs" />
+    <Compile Include="Migrations\201903151430332_FailedLoginTrackingAttributes.Designer.cs">
+      <DependentUpon>201903151430332_FailedLoginTrackingAttributes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -681,6 +685,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.resx">
       <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903151430332_FailedLoginTrackingAttributes.resx">
+      <DependentUpon>201903151430332_FailedLoginTrackingAttributes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
