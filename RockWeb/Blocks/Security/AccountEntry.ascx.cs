@@ -41,185 +41,185 @@ namespace RockWeb.Blocks.Security
 
     #region "Block Attributes"
     [BooleanField(
-        name: "Check For Duplicates",
-        description: "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
-        defaultValue: true,
-        order: 0,
-        key: AttributeKeys.Duplicates )]
+        "Check For Duplicates",
+        Key = AttributeKeys.Duplicates,
+        Description = "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
+        DefaultBooleanValue = true,
+        Order = 0 )]
 
     [TextField(
-        name: "Found Duplicate Caption",
-        required: false,
-        defaultValue:"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?",
-        category: "Captions",
-        order: 1,
-        key: AttributeKeys.FoundDuplicateCaption )]
+        "Found Duplicate Caption",
+        Key = AttributeKeys.FoundDuplicateCaption,
+        IsRequired = false,
+        DefaultValue = "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?",
+        Category = "Captions",
+        Order = 1 )]
 
     [TextField(
-        name: "Existing Account Caption",
-        required: false,
-        defaultValue: "{0}, you already have an existing account.  Would you like us to email you the username?",
-        category: "Captions",
-        order: 2,
-        key: AttributeKeys.ExistingAccountCaption )]
+        "Existing Account Caption",
+        Key = AttributeKeys.ExistingAccountCaption,
+        IsRequired = false,
+        DefaultValue = "{0}, you already have an existing account.  Would you like us to email you the username?",
+        Category = "Captions",
+        Order = 2 )]
 
     [TextField(
-        name: "Sent Login Caption",
-        required: false,
-        defaultValue: "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.",
-        category: "Captions",
-        order: 3,
-        key: AttributeKeys.SentLoginCaption )]
+        "Sent Login Caption",
+        IsRequired = false,
+        DefaultValue = "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.",
+        Category = "Captions",
+        Order = 3,
+        Key = AttributeKeys.SentLoginCaption )]
 
     [TextField(
-        name: "Confirm Caption",
-        required: false,
-        defaultValue: "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.",
-        category: "Captions",
-        order: 4,
-        key: AttributeKeys.ConfirmCaption )]
+        "Confirm Caption",
+        Key = AttributeKeys.ConfirmCaption,
+        IsRequired = false,
+        DefaultValue = "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.",
+        Category = "Captions",
+        Order = 4 )]
 
     [TextField(
-        name: "Success Caption",
-        required: false,
-        defaultValue: "{0}, Your account has been created",
-        category: "Captions",
-        order: 5,
-        key: AttributeKeys.SuccessCaption )]
+        "Success Caption",
+        Key = AttributeKeys.SuccessCaption,
+        IsRequired = false,
+        DefaultValue = "{0}, Your account has been created",
+        Category = "Captions",
+        Order = 5 )]
 
     [LinkedPage(
-        name: "Confirmation Page",
-        description: "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)",
-        required: false,
-        category: "Pages",
-        order: 6,
-        key: AttributeKeys.ConfirmationPage )]
+        "Confirmation Page",
+        Key = AttributeKeys.ConfirmationPage,
+        Description = "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)",
+        IsRequired = false,
+        Category = "Pages",
+        Order = 6 )]
 
     [LinkedPage(
-        name: "Login Page",
-        description: "Page to navigate to when user elects to login (if blank will use 'Login' page route)",
-        required: false,
-        category: "Pages",
-        order: 7,
-        key: AttributeKeys.LoginPage )]
+        "Login Page",
+        Key = AttributeKeys.LoginPage,
+        Description = "Page to navigate to when user elects to login (if blank will use 'Login' page route)",
+        IsRequired = false,
+        Category = "Pages",
+        Order = 7 )]
 
     [SystemEmailField(
-        name: "Forgot Username",
-        description: "Forgot Username Email Template",
-        required: false,
-        defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME,
-        category: "Email Templates",
-        order: 8,
-        key: AttributeKeys.ForgotUsernameTemplate )]
+        "Forgot Username",
+        Key = AttributeKeys.ForgotUsernameTemplate,
+        Description = "Forgot Username Email Template",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME,
+        Category = "Email Templates",
+        Order = 8 )]
 
     [SystemEmailField(
-        name: "Confirm Account",
-        description: "Confirm Account Email Template",
-        required: false,
-        defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
-        category: "Email Templates",
-        order: 9,
-        key: AttributeKeys.ConfirmAccountTemplate )]
+        "Confirm Account",
+        Key = AttributeKeys.ConfirmAccountTemplate,
+        Description = "Confirm Account Email Template",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
+        Category = "Email Templates",
+        Order = 9 )]
 
     [SystemEmailField(
-        name: "Account Created",
-        description: "Account Created Email Template",
-        required: false,
-        defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED,
-        category: "Email Templates",
-        order: 10,
-        key: AttributeKeys.AccountCreatedTemplate )]
+        "Account Created",
+        Key = AttributeKeys.AccountCreatedTemplate,
+        Description = "Account Created Email Template",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED,
+        Category = "Email Templates",
+        Order = 10 )]
 
     [DefinedValueField(
-        definedTypeGuid: "2E6540EA-63F0-40FE-BE50-F2A84735E600",
-        name: "Connection Status",
-        description: "The connection status to use for new individuals (default: 'Web Prospect'.)",
-        required: true,
-        allowMultiple: false,
-        defaultValue: "368DD475-242C-49C4-A42C-7278BE690CC2",
-        order: 11,
-        key: AttributeKeys.ConnectionStatus )]
+        "Connection Status",
+        Key = AttributeKeys.ConnectionStatus,
+        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2",
+        Order = 11 )]
 
     [DefinedValueField(
-        definedTypeGuid: "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
-        name: "Record Status",
-        description: "The record status to use for new individuals (default: 'Pending'.)",
-        required: true,
-        allowMultiple: false,
-        defaultValue: "283999EC-7346-42E3-B807-BCE9B2BABB49",
-        order: 12,
-        key: AttributeKeys.RecordStatus )]
+        "Record Status",
+        Key = AttributeKeys.RecordStatus,
+        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        Order = 12 )]
 
     [BooleanField(
-        name: "Show Address",
-        description: "Allows hiding the address field.",
-        defaultValue: false,
-        order: 13,
-        key: AttributeKeys.ShowAddress )]
+        "Show Address",
+        Key = AttributeKeys.ShowAddress,
+        Description = "Allows hiding the address field.",
+        DefaultBooleanValue = false,
+        Order = 13 )]
 
     [GroupLocationTypeField(
-        groupTypeGuid: Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
-        name: "Location Type",
-        description: "The type of location that address should use.",
-        required: false,
-        defaultValue: Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        order: 14,
-        key: AttributeKeys.LocationType )]
+        "Location Type",
+        Key = AttributeKeys.LocationType,
+        Description = "The type of location that address should use.",
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        Order = 14 )]
 
     [BooleanField(
-        name: "Address Required",
-        description: "Whether the address is required.",
-        defaultValue: false,
-        order: 15,
-        key: AttributeKeys.AddressRequired )]
+        "Address Required",
+        Key = AttributeKeys.AddressRequired,
+        Description = "Whether the address is required.",
+        DefaultBooleanValue = false,
+        Order = 15 )]
 
     [BooleanField(
-        name: "Show Phone Numbers",
-        description: "Allows hiding the phone numbers.",
-        defaultValue: false,
-        order: 16,
-        key: AttributeKeys.ShowPhoneNumbers )]
+        "Show Phone Numbers",
+        Key = AttributeKeys.ShowPhoneNumbers,
+        Description = "Allows hiding the phone numbers.",
+        DefaultBooleanValue = false,
+        Order = 16 )]
 
     [IntegerField(
-        name: "Minimum Age",
-        description: "The minimum age allowed to create an account. Warning: The Children's Online Privacy Protection Act disallows children under the age of 13 from giving out personal information without their parents' permission.",
-        required: false,
-        defaultValue: 13,
-        order: 17,
-        key: AttributeKeys.MinimumAge )]
+        "Minimum Age",
+        Key = AttributeKeys.MinimumAge,
+        Description = "The minimum age allowed to create an account. Warning = The Children's Online Privacy Protection Act disallows children under the age of 13 from giving out personal information without their parents' permission.",
+        IsRequired = false,
+        DefaultIntegerValue = 13,
+        Order = 17 )]
 
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
-        name: "Phone Types",
-        description: "The phone numbers to display for editing.",
-        required: false,
-        allowMultiple: true,
-        order: 18,
-        key: AttributeKeys.PhoneTypes )]
+        "Phone Types",
+        Key = AttributeKeys.PhoneTypes,
+        Description = "The phone numbers to display for editing.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 18 )]
 
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
-        name: "Phone Types Required",
-        description: "The phone numbers that are required.",
-        required: false,
-        allowMultiple: true,
-        order: 19,
-        key: AttributeKeys.PhoneTypesRequired )]
+        "Phone Types Required",
+        Key = AttributeKeys.PhoneTypesRequired,
+        Description = "The phone numbers that are required.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 19 )]
 
     [BooleanField(
-        name: "Show Campus Selector",
-        description: "Allows selection of primary campus.",
-        defaultValue: false,
-        order: 20,
-        key: AttributeKeys.ShowCampusSelector )]
+        "Show Campus Selector",
+        Key = AttributeKeys.ShowCampusSelector,
+        Description = "Allows selection of primary campus.",
+        DefaultBooleanValue = false,
+        Order = 20 )]
 
     [TextField(
-        name: "Campus Selector Label",
-        description: "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
-        required: false,
-        defaultValue: "Campus",
-        order: 21,
-        key: AttributeKeys.CampusSelectorLabel )]
+        "Campus Selector Label",
+        Key = AttributeKeys.CampusSelectorLabel,
+        Description = "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
+        IsRequired = false,
+        DefaultValue = "Campus",
+        Order = 21 )]
     #endregion
 
     public partial class AccountEntry : Rock.Web.UI.RockBlock
