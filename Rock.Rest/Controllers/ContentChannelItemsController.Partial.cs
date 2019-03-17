@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -38,9 +39,10 @@ namespace Rock.Rest.Controllers
         /// <param name="guids"></param>
         /// <returns></returns>
         [HttpGet]
+        [EnableQuery]
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelItems/GetFromPersonDataView" )]
-        public List<ContentChannelItem> GetFromPersonDataView( string guids )
+        public IQueryable<ContentChannelItem> GetFromPersonDataView( string guids )
         {
             RockContext rockContext = new RockContext();
 
@@ -61,15 +63,10 @@ namespace Rock.Rest.Controllers
                 .Select( a => a.Id )
                 .ToList();
 
-            // Get the list of attribute values that contain an attribute id from the attributeList.
-            // and that contain a value that matches one of the data view guids that were passed in.
-            IQueryable<int?> attributeValueEntityIdList = new AttributeValueService( rockContext ).Queryable()
-                .Where( av => attributeIdList.Contains( av.AttributeId ) && guidList.Contains( av.Value ) )
-                .Select( av => av.EntityId );
-
-            // Get a list of content channel items whose ids match one of the entity ids in the attributeValueEntityIdList.
-            List<ContentChannelItem> contentChannelItemList = new ContentChannelItemService( rockContext ).Queryable()
-                .Where( cci => attributeValueEntityIdList.Contains( cci.Id ) ).ToList();
+            // I want a list of content channel items whose ids match up to attribute values that represent entity ids
+            IQueryable<ContentChannelItem> contentChannelItemList = new ContentChannelItemService( rockContext )
+                .Queryable()
+                .WhereAttributeValue( rockContext, av => attributeIdList.Contains( av.AttributeId ) && guidList.Contains( av.Value ) );
 
             // Return this list
             return contentChannelItemList;
