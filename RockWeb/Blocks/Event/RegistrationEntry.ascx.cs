@@ -627,7 +627,7 @@ namespace RockWeb.Blocks.Event
             if ( _saveNavigationHistory )
             {
                 // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
-                hfAllowNavigate.Value = true.ToTrueFalse();
+                hfAllowNavigate.Value = ( CurrentPanel == 4 ? false : true ).ToTrueFalse();
                 try
                 {
                     if ( CurrentPanel != 1 )
@@ -706,6 +706,15 @@ namespace RockWeb.Blocks.Event
                             break;
                         }
                 }
+            }
+            else if ( CurrentPanel == 4 && !hfAllowNavigate.Value.AsBoolean() )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                if ( RegistrationInstanceState != null )
+                {
+                    qryParams.Add( REGISTRATION_INSTANCE_ID_PARAM_NAME, RegistrationInstanceState.Id.ToString() );
+                }
+                this.NavigateToCurrentPageReference( qryParams );
             }
             else
             {
@@ -2255,7 +2264,7 @@ namespace RockWeb.Blocks.Event
                                 case RegistrationPersonFieldType.Campus:
                                     campusId = fieldValue.ToString().AsIntegerOrNull();
                                     break;
-                                
+
                                 case RegistrationPersonFieldType.MiddleName:
                                     string middleName = fieldValue.ToString().Trim();
                                     History.EvaluateChange( personChanges, "Middle Name", person.MiddleName, middleName );
@@ -2911,7 +2920,7 @@ namespace RockWeb.Blocks.Event
                 var errorMessages = new List<string>();
                 if ( string.IsNullOrWhiteSpace( ccNum ) )
                 {
-                    errorMessages.Add("Card Number is required");
+                    errorMessages.Add( "Card Number is required" );
                     isValid = false;
                 }
 
@@ -3180,7 +3189,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private CreditCardPaymentInfo GetCCPaymentInfo( GatewayComponent gateway )
         {
-            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate != null ? mypExpiration.SelectedDate.Value : new DateTime());
+            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate != null ? mypExpiration.SelectedDate.Value : new DateTime() );
 
             ccPaymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             ccPaymentInfo.LastNameOnCard = txtCardLastName.Text;
@@ -3640,7 +3649,6 @@ namespace RockWeb.Blocks.Event
             {
                 ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
             }
-
             SetPanel( 4 );
         }
 
@@ -3652,7 +3660,7 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanel;
 
-            if ( CurrentPanel == 2 && !(RegistrationState.RegistrationId.HasValue &&  RegistrationState.DiscountCode.IsNotNullOrWhiteSpace()) )
+            if ( CurrentPanel == 2 && !( RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() ) )
             {
                 AutoApplyDiscounts();
             }
@@ -4284,7 +4292,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         SelectedDate = setValue && fieldValue != null ? fieldValue as DateTime? : null
                     };
-                    
+
                     phRegistrantControls.Controls.Add( dppAnniversaryDate );
                     break;
 
@@ -4303,7 +4311,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                    
+
                     var mobilePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppMobile.CountryCode = mobilePhoneNumber != null ? mobilePhoneNumber.CountryCode : string.Empty;
                     ppMobile.Number = mobilePhoneNumber != null ? mobilePhoneNumber.ToString() : string.Empty;
@@ -4326,7 +4334,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                        
+
                     var homePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppHome.CountryCode = homePhoneNumber != null ? homePhoneNumber.CountryCode : string.Empty;
                     ppHome.Number = homePhoneNumber != null ? homePhoneNumber.ToString() : string.Empty;
@@ -4349,7 +4357,7 @@ namespace RockWeb.Blocks.Event
                         ValidationGroup = BlockValidationGroup,
                         CountryCode = PhoneNumber.DefaultCountryCode()
                     };
-                    
+
                     var workPhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
                     ppWork.CountryCode = workPhoneNumber != null ? workPhoneNumber.CountryCode : string.Empty;
                     ppWork.Number = workPhoneNumber != null ? workPhoneNumber.ToString() : string.Empty;
@@ -4367,7 +4375,7 @@ namespace RockWeb.Blocks.Event
                     };
 
                     ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
-                    
+
                     if ( setValue && fieldValue != null )
                     {
                         var value = fieldValue.ToString().AsInteger();
@@ -4683,7 +4691,7 @@ namespace RockWeb.Blocks.Event
                     var tbLastName = phRegistrantControls.FindControl( "tbLastName" ) as RockTextBox;
                     string lastName = tbLastName != null ? tbLastName.Text : null;
                     return string.IsNullOrWhiteSpace( lastName ) ? null : lastName;
-                
+
                 case RegistrationPersonFieldType.MiddleName:
                     var tbMiddleName = phRegistrantControls.FindControl( "tbMiddleName" ) as RockTextBox;
                     string middleName = tbMiddleName != null ? tbMiddleName.Text : null;
@@ -4724,7 +4732,7 @@ namespace RockWeb.Blocks.Event
                 case RegistrationPersonFieldType.MaritalStatus:
                     var ddlMaritalStatus = phRegistrantControls.FindControl( "ddlMaritalStatus" ) as RockDropDownList;
                     return ddlMaritalStatus != null ? ddlMaritalStatus.SelectedValueAsInt() : null;
-                
+
                 case RegistrationPersonFieldType.AnniversaryDate:
                     var dppAnniversaryDate = phRegistrantControls.FindControl( "dppAnniversaryDate" ) as DatePartsPicker;
                     return dppAnniversaryDate != null ? dppAnniversaryDate.SelectedDate : null;
