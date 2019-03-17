@@ -55,7 +55,7 @@
 </script>
 <asp:UpdatePanel ID="upAssessment" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Warning">You have to be signed in to take the assessment.</Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
         <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>

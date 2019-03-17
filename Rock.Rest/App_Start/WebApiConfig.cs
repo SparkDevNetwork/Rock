@@ -137,6 +137,8 @@ namespace Rock.Rest
 
             // Add any custom api routes
             // OBSOLETE - this foreach block is targeted for removal for v9
+            // disable obsolete warning since we still have to support IHasCustomRoutes in plugins but don't want to see a compile warning
+#pragma warning disable 612, 618 
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ) ) )
             {
@@ -153,6 +155,7 @@ namespace Rock.Rest
                     // ignore, and skip adding routes if the controller raises an exception
                 }
             }
+#pragma warning restore 612, 618
 
             //// Add Default API Service routes
             //// Instead of being able to use one default route that gets action from http method, have to
