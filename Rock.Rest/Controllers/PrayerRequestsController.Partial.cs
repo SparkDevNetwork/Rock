@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -142,6 +144,59 @@ namespace Rock.Rest.Controllers
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
 
             Service.Context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Get the prayer requests of every member of groups of certain group types that a person belongs to.
+        /// </summary>
+        /// <param name="groupTypeIds">A list of group type ids</param>
+        /// <param name="personId">The id of the person</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PrayerRequests/GetByGroups/{personId}" )]
+        public IQueryable<PrayerRequest> GetByGroups( string groupTypeIds, int personId )
+        {
+            RockContext rockContext = new RockContext();
+            System.DateTime now = RockDateTime.Now;
+
+            // Turn the comma separated list of groupTypeIds into a list of strings.
+            List<string> groupTypeIdsList = ( groupTypeIds ?? "" ).Split( ',' ).ToList();
+
+            // Find the groups that the person is a member of.
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            List<int> personGroupMemberList = groupMemberService.GetByPersonId( personId )
+                .Select( gm => gm.GroupId )
+                .ToList();
+
+            // Filter these groups by the passed in group type ids            
+            GroupService groupService = new GroupService( rockContext );
+            IQueryable<int> groupQueryable = groupService.GetByIds( personGroupMemberList )
+                .AsQueryable()
+                .Where( g => groupTypeIdsList.Contains( g.GroupTypeId.ToString() ) )
+                .Select( g => g.Id );
+
+            // Get all the members of those groups (not including the passed in personId).
+            List<int> groupMemberList = groupMemberService.Queryable()
+                .Where( gm => groupQueryable.Contains( gm.GroupId ) && gm.PersonId != personId ).Select( gm => gm.PersonId ).ToList();
+
+            // Turn the list of PersonIds to PersonAliasIds
+            PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            List<int> groupMemberPersonAliasList = personAliasService.Queryable().Where( pa => groupMemberList.Contains( pa.PersonId ) ).Select( pa => pa.Id ).ToList();
+
+            // Get the prayers for the people.
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            IQueryable<PrayerRequest> prayerRequestList = prayerRequestService.Queryable()
+                .Where( pr =>
+                    ( groupMemberPersonAliasList.Contains( (int)pr.RequestedByPersonAliasId ) ) &&
+                    ( pr.IsActive.HasValue && pr.IsActive.Value == true ) &&
+                    ( pr.IsPublic.HasValue && pr.IsPublic.Value == true ) &&
+                    ( pr.IsApproved.HasValue && pr.IsApproved == true ) &&
+                    ( !pr.ExpirationDate.HasValue || pr.ExpirationDate.Value > now )
+                );
+
+            //Return this as a queryable.
+            return prayerRequestList;
         }
     }
 }
