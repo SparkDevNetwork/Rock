@@ -62,6 +62,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
+                ClearSelection();
+
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -89,15 +91,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 var isPagerOffered = group.Group.GetAttributeValue( "ArePagersOffered" ).AsBoolean();
                 if ( isPagerAllowed && isPagerOffered )
                 {
-                    if ( backingUp )
-                    {
-                        GoBack( true );
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -139,6 +133,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
+
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -169,7 +165,12 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     {
                         if ( UserBackedUp )
                         {
-                            GoBack();
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            var pagerNumberExists = person.StateParameters.Any( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value != null && sp.Key != pagerNumberKey );
+                            if ( pagerNumberExists )
+                            {
+                                GoBack();
+                            }
                         }
                         else
                         {
@@ -241,6 +242,16 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         {
             GoBack( true );
         }
+        private void ClearSelection()
+        {
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
+            {
+                var schedule = person.CurrentSchedule;
+                var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                person.StateParameters.Remove( pagerNumberKey );
+            }
+        }
 
         /// <summary>
         /// Handles the Click event of the lbCancel control.
@@ -269,6 +280,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
                 {
+                    ClearSelection();
                 }
                 else
                 {

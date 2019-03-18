@@ -62,6 +62,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
+                ClearSelection();
+
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -91,8 +93,18 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 {
                     if ( backingUp )
                     {
-                        GoBack( true );
-                        return false;
+                        var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                        var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                        if ( itemTagExists )
+                        {
+                            GoBack( true );
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+
                     }
                     else
                     {
@@ -139,6 +151,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
+
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -169,7 +183,17 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     {
                         if ( UserBackedUp )
                         {
-                            GoBack();
+                            var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                            var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                            if ( itemTagExists )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                rSelection.DataSource = new List<String> { "0", "1", "2", "3", "4", "5" };
+                                rSelection.DataBind();
+                            }
                         }
                         else
                         {
@@ -181,7 +205,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                             }
                             else
                             {
-                                rSelection.DataSource = new List<String> {"0","1","2","3","4","5"};
+                                rSelection.DataSource = new List<String> { "0", "1", "2", "3", "4", "5" };
                                 rSelection.DataBind();
                             }
                         }
@@ -222,7 +246,16 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
         }
 
-
+        private void ClearSelection()
+        {
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
+            {
+                var schedule = person.CurrentSchedule;
+                var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                person.StateParameters.Remove( itemTagKey );
+            }
+        }
 
         /// <summary>
         /// Handles the Click event of the lbBack control.
@@ -275,7 +308,9 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     () => false,
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
-                { }
+                {
+                    ClearSelection();
+                }
                 else
                 {
                     return true;
