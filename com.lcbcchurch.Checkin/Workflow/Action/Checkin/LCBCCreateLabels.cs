@@ -105,9 +105,20 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                             person.SetOptions( labelCache );
 
 
+                                            var parentLabelGuid = "50CFDC79-E5E1-459E-B7F9-9618B6A507A7".AsGuid();
+                                            if ( parentLabelGuid != null )
+                                            {
+                                                if ( personLabelsAdded.Contains( labelCache.Guid ) && labelCache.Guid == parentLabelGuid )
+                                                {
+                                                    continue;
+                                                }
+                                                else
+                                                {
+                                                    personLabelsAdded.Add( labelCache.Guid );
+                                                }
 
-                                            AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
-
+                                                AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
+                                            }
                                         }
 
                                         var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
