@@ -179,6 +179,11 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                             {
                                 NavigateToNextPage( false );
                             }
+                            else
+                            {
+                                rSelection.DataSource = new List<String> {"0","1","2","3","4","5"};
+                                rSelection.DataBind();
+                            }
                         }
                     }
                     else
@@ -201,37 +206,23 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person != null )
-                    if ( person != null )
-                    {
-                        var schedule = person.CurrentSchedule;
-
-                        var groupTypes = schedule == null ?
-                            person.GroupTypes.Where( t => t.Selected ).ToList() :
-                            person.GroupTypes.Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ).ToList();
-
-                        if ( groupTypes != null && groupTypes.Any() )
-                        {
-                            var group = schedule == null ?
-                                groupTypes.SelectMany( t => t.Groups.Where( g => g.Selected ) ).FirstOrDefault() :
-                                groupTypes.SelectMany( t => t.Groups.Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) ).FirstOrDefault();
-
-                            if ( group != null )
-                            {
-                                var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
-                                person.StateParameters.AddOrReplace( itemTagKey, nbItemTags.Value.ToString() );
-
-                                ProcessSelection( person, schedule );
-                            }
-                        }
-                    }
+                {
+                    var schedule = person.CurrentSchedule;
+                    int tagNumber = Int32.Parse( e.CommandArgument.ToString() );
+                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                    person.StateParameters.AddOrReplace( itemTagKey, tagNumber.ToString() );
+                    ProcessSelection( person, schedule );
+                }
             }
         }
+
+
 
         /// <summary>
         /// Handles the Click event of the lbBack control.
