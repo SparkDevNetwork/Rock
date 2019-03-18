@@ -893,11 +893,7 @@ namespace RockWeb.Plugins.com_bemadev.Care
                     var requests = new ConnectionRequestService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( r =>
-                            r.ConnectionOpportunityId == SelectedOpportunityId.Value &&
-                            (
-                                !opportunitySummary.CampusSpecificConnector ||
-                                ( r.CampusId.HasValue && opportunitySummary.ConnectorCampusIds.Contains( r.CampusId.Value ) )
-                            ) );
+                            r.ConnectionOpportunityId == SelectedOpportunityId.Value );
 
                     // Filter by Lst Activity Date.
                     var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpLastActivityDateRange.DelimitedValues );
