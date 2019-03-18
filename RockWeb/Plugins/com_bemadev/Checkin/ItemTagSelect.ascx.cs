@@ -33,6 +33,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     [Category( "com_bemadev > Check-in" )]
     [Description( "Displays a number box to enter how many item tags you would like printed." )]
 
+    [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 8 )]
+    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group name.", false, "{0}", "Text", 9 )]
+    [TextField( "Caption", "", false, "How many item tags would you like?", "Text", 10 )]
+
     [TextField( "No Option Message", "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.", false,
         "Sorry, there are currently not any available locations that {0} can check into at {1}.", "Text", 11 )]
     [TextField( "No Option After Select Message", "Message to display when there are not any options available after location is selected. Use {0} for person's name", false,
@@ -154,6 +158,10 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     {
                         GoBack();
                     }
+
+                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), GetPersonScheduleSubTitle() );
+                    lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle" ), group.ToString() );
+                    lCaption.Text = GetAttributeValue( "Caption" );
 
                     var areItemTagsAllowed = CurrentCheckInState.Kiosk.Device.GetAttributeValue( "AllowItemTags" ).AsBoolean();
                     var areItemTagsOffered = group.Group.GetAttributeValue( "AreItemTagsOffered" ).AsBoolean();

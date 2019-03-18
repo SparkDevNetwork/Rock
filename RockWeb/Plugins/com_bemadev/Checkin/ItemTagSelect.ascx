@@ -15,7 +15,9 @@
 
         <div class="checkin-header">
             <h1>
-                How many item tags would you like?
+                <asp:Literal ID="lTitle" runat="server" /><div class="checkin-sub-title">
+                    <asp:Literal ID="lSubTitle" runat="server"></asp:Literal>
+                </div>
             </h1>
         </div>
 
@@ -25,6 +27,8 @@
                 <div class="scroller">
 
                     <div class="control-group checkin-body-container">
+                        <label class="control-label">
+                            <asp:Literal ID="lCaption" runat="server" /></label>
                         <div class="controls">
                             <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                                 <ItemTemplate>
