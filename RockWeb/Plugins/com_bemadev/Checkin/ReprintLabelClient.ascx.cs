@@ -97,7 +97,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                     {
                         checkinPerson.Person = person;
                         var attendance = new AttendanceService( rockContext ).Queryable().Where( a => a.PersonAlias.PersonId == person.Id ).OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault();
-                        if ( attendance != null )
+                        if ( attendance != null && attendance.AttendanceCode != null )
                         {
                             checkinPerson.SecurityCode = attendance.AttendanceCode.Code;
                             try
@@ -172,72 +172,79 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
 
                                 if ( kioskDevice != null )
                                 {
-                                    foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
+                                    var childLabelGuid = "56FBDF5C-8E4C-43F5-9B22-B30D7A0E1067".AsGuid();
+                                    if ( childLabelGuid != null )
                                     {
-                                        checkinPerson.SetOptions( labelCache );
-
-                                        if ( labelCache.LabelType == KioskLabelType.Person )
+                                        foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
                                         {
-                                            if ( personLabelsAdded.Contains( labelCache.Guid ) )
+                                            if(labelCache.Guid == childLabelGuid )
                                             {
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                personLabelsAdded.Add( labelCache.Guid );
-                                            }
-                                        }
+                                                checkinPerson.SetOptions( labelCache );
 
-
-                                        var label = new CheckInLabel( labelCache, mergeObjects, person.Id );
-                                        label.FileGuid = labelCache.Guid;
-
-                                        label.PrintFrom = kioskDevice.PrintFrom;
-                                        label.PrintTo = kioskDevice.PrintToOverride;
-
-                                        if ( label.PrintTo == PrintTo.Default )
-                                        {
-                                            label.PrintTo = attendance.Occurrence.Group.GroupType.AttendancePrintTo;
-                                        }
-
-                                        if ( label.PrintTo == PrintTo.Kiosk )
-                                        {
-                                            var device = kioskDevice;
-                                            if ( device != null )
-                                            {
-                                                label.PrinterDeviceId = device.PrinterDeviceId;
-                                            }
-                                        }
-                                        else if ( label.PrintTo == PrintTo.Location )
-                                        {
-                                            var deviceId = attendance.Occurrence.Location.PrinterDeviceId;
-                                            if ( deviceId != null )
-                                            {
-                                                label.PrinterDeviceId = deviceId;
-                                            }
-                                        }
-
-                                        if ( label.PrinterDeviceId.HasValue )
-                                        {
-                                            if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
-                                            {
-                                                label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
-                                            }
-                                            else
-                                            {
-                                                var printerDevice = new DeviceService( rockContext ).Get( label.PrinterDeviceId.Value );
-                                                if ( printerDevice != null )
+                                                if ( labelCache.LabelType == KioskLabelType.Person )
                                                 {
-                                                    PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
-                                                    label.PrinterAddress = printerDevice.IPAddress;
+                                                    if ( personLabelsAdded.Contains( labelCache.Guid ) )
+                                                    {
+                                                        continue;
+                                                    }
+                                                    else
+                                                    {
+                                                        personLabelsAdded.Add( labelCache.Guid );
+                                                    }
                                                 }
-                                            }
-                                        }
 
-                                        checkinLabels.Add( label );
+
+                                                var label = new CheckInLabel( labelCache, mergeObjects, person.Id );
+                                                label.FileGuid = labelCache.Guid;
+
+                                                label.PrintFrom = kioskDevice.PrintFrom;
+                                                label.PrintTo = kioskDevice.PrintToOverride;
+
+                                                if ( label.PrintTo == PrintTo.Default )
+                                                {
+                                                    label.PrintTo = attendance.Occurrence.Group.GroupType.AttendancePrintTo;
+                                                }
+
+                                                if ( label.PrintTo == PrintTo.Kiosk )
+                                                {
+                                                    var device = kioskDevice;
+                                                    if ( device != null )
+                                                    {
+                                                        label.PrinterDeviceId = device.PrinterDeviceId;
+                                                    }
+                                                }
+                                                else if ( label.PrintTo == PrintTo.Location )
+                                                {
+                                                    var deviceId = attendance.Occurrence.Location.PrinterDeviceId;
+                                                    if ( deviceId != null )
+                                                    {
+                                                        label.PrinterDeviceId = deviceId;
+                                                    }
+                                                }
+
+                                                if ( label.PrinterDeviceId.HasValue )
+                                                {
+                                                    if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                                    {
+                                                        label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
+                                                    }
+                                                    else
+                                                    {
+                                                        var printerDevice = new DeviceService( rockContext ).Get( label.PrinterDeviceId.Value );
+                                                        if ( printerDevice != null )
+                                                        {
+                                                            PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
+                                                            label.PrinterAddress = printerDevice.IPAddress;
+                                                        }
+                                                    }
+                                                }
+
+                                                checkinLabels.Add( label );
+                                            }
+                                            
+                                        }
                                     }
                                 }
-
 
                                 // Print the labels                   
                                 if ( checkinLabels != null && checkinLabels.Any() )
@@ -245,7 +252,6 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                                     printFromClient.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
                                     printFromServer.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
                                 }
-
 
                                 if ( printFromClient.Any() )
                                 {
