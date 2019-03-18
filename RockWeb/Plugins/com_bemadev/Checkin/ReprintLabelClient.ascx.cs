@@ -63,6 +63,10 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         {
             base.OnInit( e );
 
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
