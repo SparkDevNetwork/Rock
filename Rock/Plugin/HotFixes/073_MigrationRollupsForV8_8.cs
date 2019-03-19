@@ -11,7 +11,7 @@
         /// </summary>
         public override void Up()
         {
-            RemoveWindowsJobSchedulerServiceValue();
+            //RemoveWindowsJobSchedulerServiceValue();
         }
 
         /// <summary>
