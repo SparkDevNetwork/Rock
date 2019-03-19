@@ -366,6 +366,8 @@ namespace Rock.Web
         /// Creates the or updates site cookie with the last_site value using the site ID of the page
         /// </summary>
         /// <param name="page">The page.</param>
+        /// <param name="routeRequestContext">The routeRequestContext.</param>
+        /// <param name="siteCookie">The siteCookie.</param>
         private void CreateOrUpdateSiteCookie( HttpCookie siteCookie, RequestContext routeRequestContext, PageCache page )
         {
             if ( siteCookie == null )
@@ -385,6 +387,9 @@ namespace Rock.Web
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="layoutPath">The layout path.</param>
+        /// <param name="routeHttpRequest">The routeHttpRequest.</param>
+        /// <param name="parms">The parms.</param>
+        /// /// <param name="routeId">The routeId.</param>
         /// <returns></returns>
         private Rock.Web.UI.RockPage CreateRockPage( PageCache page, string layoutPath, int routeId, Dictionary<string, string> parms, HttpRequestBase routeHttpRequest )
         {

@@ -18,11 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -38,6 +36,47 @@ namespace Rock.Financial
     [TextField( "Declined Card Numbers", "Enter partial card numbers that you wish to be declined separated by commas. Any card number that ends with a number matching a value entered here will be declined.", false, "", "", 0 )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent
     {
+        #region Automated Gateway Component
+
+        /// <summary>
+        /// The most recent exception thrown by the gateway's remote API
+        /// </summary>
+        public Exception MostRecentException { get; private set; }
+        
+        /// <summary>
+        /// Handle a payment from a REST endpoint or other automated means. This payment can only be made with a saved account.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="metadata">Optional. Metadata key value pairs to send to the gateway</param>
+        /// <returns></returns>
+        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
+        {
+            MostRecentException = null;
+            errorMessage = string.Empty;
+            var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
+
+            if ( !string.IsNullOrEmpty( errorMessage ) )
+            {
+                MostRecentException = new Exception( errorMessage );
+                return null;
+            }
+
+            if ( transaction == null )
+            {
+                errorMessage = "No error was indicated but the transaction was null";
+                MostRecentException = new Exception( errorMessage );
+                return null;
+            }
+
+            return new Payment
+            {
+                TransactionCode = transaction.TransactionCode
+            };
+        }
+
+        #endregion
 
         #region Gateway Component Implementation
 
@@ -88,30 +127,6 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Handle a payment from a REST endpoint or other automated means. This payment can only be made with a saved account.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <param name="metadata">Optional. Metadata key value pairs to send to the gateway</param>
-        /// <returns></returns>
-        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
-        {
-            errorMessage = string.Empty;
-            var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
-
-            if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
-            {
-                return null;
-            }
-
-            return new Payment
-            {
-                TransactionCode = transaction.TransactionCode
-            };
-        }
-
-        /// <summary>
         /// Charges the specified payment info.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
@@ -146,7 +161,7 @@ namespace Rock.Financial
 
             var refundTransaction = new FinancialTransaction();
             refundTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-            return transaction;
+            return refundTransaction;
         }
 
         /// <summary>

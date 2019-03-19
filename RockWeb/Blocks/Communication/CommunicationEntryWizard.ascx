@@ -976,7 +976,6 @@
 
                 <%-- Result --%>
                 <asp:Panel ID="pnlResult" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />

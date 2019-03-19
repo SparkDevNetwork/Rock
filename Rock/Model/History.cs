@@ -1422,7 +1422,7 @@ namespace Rock.Model
                 var service = new Service<T>( rockContext );
                 if ( service != null )
                 {
-                    entity = service.Get( id.Value );
+                    entity = service.GetNoTracking( id.Value );
                 }
             }
 
@@ -1495,7 +1495,7 @@ namespace Rock.Model
             }
             else if ( personAliasId.HasValue )
             {
-                person = new PersonAliasService( rockContext ).GetPerson( personAliasId.Value );
+                person = new PersonAliasService( rockContext ).GetPersonNoTracking( personAliasId.Value );
             }
 
             return person != null ? string.Format( "{0} [{1}]", person.FullName, person.Id ) : blankValue;

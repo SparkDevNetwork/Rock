@@ -95,7 +95,7 @@ namespace Rock.CheckIn
     }
 
     /// <summary>
-    /// 
+    ///Message Enumerations
     /// </summary>
     public enum MessageType
     {

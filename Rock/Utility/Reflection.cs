@@ -185,6 +185,44 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the type of the i entity for entity.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, int id )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { id } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the type of the i entity for entity.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, Guid guid )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { guid } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the appropriate Rock.Data.IService based on the entity type
         /// </summary>
         /// <param name="entityType">Type of the Entity.</param>
