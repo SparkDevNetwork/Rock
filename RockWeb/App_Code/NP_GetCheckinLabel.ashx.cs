@@ -225,7 +225,9 @@ namespace RockWeb
                     if ( (context.Request.QueryString["delaycut"] ?? "F").AsBoolean() )
                     {
                         labelData = labelData.Replace( "^PQ1,1,1,Y", "" );
+                        labelData = labelData.Replace( "^PQ1,0,1,Y", "" );
                         labelData = labelData.Replace( "^XZ", "^XB^XZ" );
+                        labelData = labelData.Replace( "^MMC", "^MMT" );
                     }
                     byte[] bytes = System.Text.Encoding.UTF8.GetBytes( labelData );
                     context.Response.AddHeader( "content-length", bytes.Length.ToString() );

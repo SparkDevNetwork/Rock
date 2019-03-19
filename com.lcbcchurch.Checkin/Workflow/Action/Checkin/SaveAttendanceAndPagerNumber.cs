@@ -130,9 +130,10 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                         attendance.DidAttend = true;
                                         attendance.Note = group.Notes;
 
-                                        if ( person.StateParameters.ContainsKey( "PagerNumber" ) )
+                                        var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                                        if ( person.StateParameters.ContainsKey( pagerNumberKey ) )
                                         {
-                                            var pagerNumber = person.StateParameters["PagerNumber"];
+                                            var pagerNumber = person.StateParameters[pagerNumberKey];
                                             if ( pagerNumber.IsNotNullOrWhiteSpace() )
                                             {
                                                 rockContext.SaveChanges();

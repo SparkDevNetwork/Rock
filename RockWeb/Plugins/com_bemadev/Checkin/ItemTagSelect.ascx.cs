@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
     [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 8 )]
     [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group name.", false, "{0}", "Text", 9 )]
-    [TextField( "Caption", "", false, "Select Location", "Text", 10 )]
+    [TextField( "Caption", "", false, "How many item tags would you like?", "Text", 10 )]
 
     [TextField( "No Option Message", "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.", false,
         "Sorry, there are currently not any available locations that {0} can check into at {1}.", "Text", 11 )]
@@ -62,6 +62,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
+                ClearSelection();
+
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -91,8 +93,18 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 {
                     if ( backingUp )
                     {
-                        GoBack( true );
-                        return false;
+                        var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                        var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                        if ( itemTagExists )
+                        {
+                            GoBack( true );
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+
                     }
                     else
                     {
@@ -139,6 +151,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
+
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -169,7 +183,31 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     {
                         if ( UserBackedUp )
                         {
-                            GoBack();
+                            var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                            var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                            if ( itemTagExists )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                rSelection.DataSource = new List<String> { "0", "1", "2", "3", "4", "5" };
+                                rSelection.DataBind();
+                            }
+                        }
+                        else
+                        {
+                            var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                            var itemTagExists = person.StateParameters.Any( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() && sp.Key != itemTagKey );
+                            if ( itemTagExists )
+                            {
+                                NavigateToNextPage( false );
+                            }
+                            else
+                            {
+                                rSelection.DataSource = new List<String> { "0", "1", "2", "3", "4", "5" };
+                                rSelection.DataBind();
+                            }
                         }
                     }
                     else
@@ -192,37 +230,30 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person != null )
-                    if ( person != null )
-                    {
-                        var schedule = person.CurrentSchedule;
+                {
+                    var schedule = person.CurrentSchedule;
+                    int tagNumber = Int32.Parse( e.CommandArgument.ToString() );
+                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                    person.StateParameters.AddOrReplace( itemTagKey, tagNumber.ToString() );
+                    ProcessSelection( person, schedule );
+                }
+            }
+        }
 
-                        var groupTypes = schedule == null ?
-                            person.GroupTypes.Where( t => t.Selected ).ToList() :
-                            person.GroupTypes.Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ).ToList();
-
-                        if ( groupTypes != null && groupTypes.Any() )
-                        {
-                            var group = schedule == null ?
-                                groupTypes.SelectMany( t => t.Groups.Where( g => g.Selected ) ).FirstOrDefault() :
-                                groupTypes.SelectMany( t => t.Groups.Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) ).FirstOrDefault();
-
-                            if ( group != null )
-                            {
-                                if ( nbItemTags.Value > 0 )
-                                {
-                                    person.StateParameters.AddOrReplace( "ItemTags", nbItemTags.Value.ToString() );
-                                }
-
-                                ProcessSelection( person, schedule );
-                            }
-                        }
-                    }
+        private void ClearSelection()
+        {
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
+            {
+                var schedule = person.CurrentSchedule;
+                var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                person.StateParameters.Remove( itemTagKey );
             }
         }
 
@@ -277,7 +308,9 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     () => false,
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
-                { }
+                {
+                    ClearSelection();
+                }
                 else
                 {
                     return true;
@@ -304,7 +337,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    currentPerson.StateParameters.Remove( "ItemTags" );
+                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", currentPerson.CurrentSchedule.Schedule.Id );
+                    currentPerson.StateParameters.Remove( itemTagKey );
 
                     var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
                     if ( lastSchedule != null )
