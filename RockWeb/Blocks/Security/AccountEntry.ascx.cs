@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -379,14 +380,20 @@ namespace RockWeb.Blocks.Security
         void rPhoneNumbers_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+            HtmlGenericControl phoneGroup = e.Item.FindControl( "PhoneGroup" ) as HtmlGenericControl;
             if ( pnbPhone != null )
             {
                 pnbPhone.ValidationGroup = BlockValidationGroup;
                 var phoneNumber = e.Item.DataItem as PhoneNumber;
                 if ( phoneNumber != null )
                 {
-                    pnbPhone.Required = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    var isRequired = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    pnbPhone.Required = isRequired;
                     pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
+                    if ( phoneGroup != null && isRequired )
+                    {
+                        phoneGroup.AddCssClass( "required" );
+                    }
                 }
             }
         }

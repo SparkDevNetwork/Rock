@@ -510,6 +510,14 @@ body.nav-open {
   overflow: hidden;
 }
 
+// Fixed Navbar #target fix
+:target:before {
+  content: "";
+  display: block;
+  height: @navbar-top-height;
+  margin-top: -@navbar-top-height;
+}
+
 .page-wrapper {
 
   @media (min-width: @screen-md-min) {

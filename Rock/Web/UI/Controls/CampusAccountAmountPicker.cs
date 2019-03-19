@@ -112,7 +112,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the accountIds of the selectable accounts (Required).
-        /// This will be the accounts that will be displayed, but only if the Account is <seealso cref="FinancialAccount.IsActive"/>, <seealso cref="FinancialAccount.Public"/>, and within the <seealso cref="FinancialAccount.StartDate"/> and <seealso cref="FinancialAccount.EndDate"/> of the Account
+        /// This will be the accounts that will be displayed, but only if the Account is <seealso cref="FinancialAccount.IsActive"/>, <seealso cref="FinancialAccount.IsPublic"/>, and within the <seealso cref="FinancialAccount.StartDate"/> and <seealso cref="FinancialAccount.EndDate"/> of the Account
         /// Note: This has special logic. See comments on <seealso cref="SelectedAccountIds"/>
         /// </summary>
         /// <value>
