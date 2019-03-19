@@ -54,8 +54,18 @@
                         <div class="col-md-6">
 
                             <div class="js-roster">
-                                <h4 class="js-members-label">
-                                    <asp:Literal ID="lMembers" runat="server" /></h4>
+                                <div class="panel-labels">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <h4 class="js-members-label">
+                                                <asp:Literal ID="lMembers" runat="server" />
+                                            </h4>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <Rock:Toggle ID="tglSort" runat="server" OnText="Last Name" OnCssClass="btn-primary" OffCssClass="btn-outline-primary" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OffText="First Name" AutoPostBack="true" OnCheckedChanged="tglSort_CheckedChanged" Checked="true" Label="Sort by:" />
+                                        </div>
+                                    </div>
+                                </div>
                                 <asp:ListView ID="lvMembers" runat="server">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("PersonId") %>' />
