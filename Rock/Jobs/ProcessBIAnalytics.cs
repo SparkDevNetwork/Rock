@@ -671,7 +671,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
             List<string> populatePersonValueFROMClauses = new List<string>( populatePersonValueSELECTClauses );
 
-            const int MaxAttributeValueLength = 250;
+            const int maxAttributeValueLength = 250;
 
             using ( var rockContext = new RockContext() )
             {
@@ -713,7 +713,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     }
 
                     string lengthCondition = personAttributeValueFieldName == "Value"
-                        ? $"AND len(av{personAttribute.Id}.Value) <= {MaxAttributeValueLength}"
+                        ? $"AND len(av{personAttribute.Id}.Value) <= {maxAttributeValueLength}"
                         : null;
 
                     string populateAttributeValueFROMClause =

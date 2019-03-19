@@ -230,7 +230,7 @@ namespace Rock.Model
             {
                 HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
 
-                var txn = new FinancialTransactionService( (RockContext)dbContext ).Get( this.TransactionId );
+                var txn = new FinancialTransactionService( (RockContext)dbContext ).GetSelect( this.TransactionId, s => new { s.Id, s.BatchId } );
                 if ( txn != null && txn.BatchId != null )
                 {
                     var batchHistory = new History.HistoryChangeList();

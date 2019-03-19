@@ -215,7 +215,7 @@ namespace Rock.Model
                             var note = new Note();
                             note.NoteTypeId = noteType.Id;
                             note.EntityId = scheduledTransaction.Id;
-                            note.Caption = "Cancelled Transaction";
+                            note.Caption = "Canceled Transaction";
                             noteService.Add( note );
                         }
 
@@ -499,10 +499,12 @@ namespace Rock.Model
                             // Get the batch
                             var batch = new FinancialBatchService( rockContext ).Get(
                                 batchNamePrefix,
+                                string.Empty,
                                 currencyTypeValue,
                                 creditCardTypevalue,
                                 transaction.TransactionDateTime.Value,
-                                gateway.GetBatchTimeOffset() );
+                                gateway.GetBatchTimeOffset(),
+                                gateway.BatchDayOfWeek );
 
                             var batchChanges = new List<string>();
                             if ( batch.Id != 0 )

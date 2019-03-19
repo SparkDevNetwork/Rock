@@ -69,6 +69,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
 
+                checkInState.Messages.Clear();
 
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
