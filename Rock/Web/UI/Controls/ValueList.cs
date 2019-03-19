@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ValueList : CompositeControl, IRockControl
     {
@@ -360,7 +360,7 @@ namespace Rock.Web.UI.Controls
                     .GetByDefinedTypeId( DefinedTypeId.Value )
                     .ToList()
                     .ForEach( v => definedValues.Add( v.Id.ToString(), v.Value ) );
-            } 
+            }
             else if ( CustomValues != null )
             {
                 definedValues = CustomValues;
@@ -391,7 +391,7 @@ namespace Rock.Web.UI.Controls
             {
                 valueHtml.AppendFormat( @"<input class=""form-control input-width-lg js-value-list-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger value-list-remove""><i class=""fa fa-times""></i></a></div>" );
+            valueHtml.Append( @"<a href=""#"" class=""btn btn-danger btn-square value-list-remove""><i class=""fa fa-times""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-list-html" );
@@ -467,7 +467,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
             writer.RenderBeginTag( HtmlTextWriterTag.I );
-            
+
             writer.RenderEndTag();
             writer.RenderEndTag();
             writer.RenderEndTag();

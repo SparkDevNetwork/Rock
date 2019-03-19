@@ -33,6 +33,18 @@ namespace Rock.Field.Types
     /// </summary>
     public class NoteTypesFieldType : CategoryFieldType
     {
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( REPEAT_COLUMNS );
+            return configKeys;
+        }
 
         #region Formatting
 
@@ -118,6 +130,11 @@ namespace Rock.Field.Types
 
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
+
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            {
+                ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+            }
 
             using ( var rockContext = new RockContext() )
             {

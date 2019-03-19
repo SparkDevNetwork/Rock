@@ -58,8 +58,9 @@ dt {
 input[type="text"],
 textarea,
 .form-control {
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
   box-shadow: none;
-  transition: @input-focus-transition;
 
   &:focus {
     border: 1px solid @input-border-focus;
@@ -292,9 +293,11 @@ textarea,
 .grid .table > thead > tr > th {
   padding: 18px 0 18px 12px;
   vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
+
+  // Remove padding offset on center
+  &[align="center"] {
+    padding: 18px 6px;
+  }
 }
 
 .grid .table > thead > tr.grid-header-bold > th {
@@ -333,10 +336,6 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
@@ -470,7 +469,12 @@ td.grid-actions {
 }
 
 .grid-select-field {
-  width: @custom-control-indicator-size;
+
+  .checkbox,
+  .radio {
+    display: inline;
+    padding-right: (@custom-control-indicator-size / 2);
+  }
 
   .checkbox:last-child,
   .radio:last-child {
@@ -481,10 +485,6 @@ td.grid-actions {
   .radio input[type="radio"] + span.label-text::before {
     margin: 0;
   }
-}
-
-td.grid-select-field {
-  width: auto;
 }
 
 .grid-actions {
@@ -594,6 +594,7 @@ td.grid-select-field {
 
   .navbar-brand-corner {
     position: fixed;
+    top: 0;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -604,7 +605,6 @@ td.grid-select-field {
     background-color: var(--navbarside-background-color);
     background-size: 45px;
     border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
-    top: 0;
 
     &.no-logo::after {
       position: absolute;
@@ -888,8 +888,8 @@ td.grid-select-field {
 .navbar-static-side {
   position: fixed;
   top: 0;
-  left: 0;
   bottom: 0;
+  left: 0;
   z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
@@ -1256,7 +1256,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .btn {
+    .login .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;
@@ -1346,15 +1346,6 @@ body.navbar-side-open {
 // 6. Components          */
 // -------------------------
 
-// Date Picker
-.picker-daterange {
-  .input-group-lower{
-    .input-group-addon {
-      display: none;
-    }
-  }
-}
-
 // radio buttons & checkboxes - fancy styling
 .radio,
 .checkbox {
@@ -1362,7 +1353,9 @@ body.navbar-side-open {
   display: block;
   min-height: 19px;
   padding-left: 28px;  // Not sure if needed
-  margin: 7px 16px 7px 0 !important;
+  margin-top: 7px;
+  margin-right: 16px;
+  margin-bottom: 7px;
 
   label { // Override forms.less
     padding-left: 0;
@@ -1485,9 +1478,11 @@ body.navbar-side-open {
   }
 }
 
-.schedule-builder .checkbox {
-  display: inline;
-  padding-right: (@custom-control-indicator-size / 2);
+.in-columns {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    padding-left: 30px;
+  }
 }
 
 .note-editor.note-frame {

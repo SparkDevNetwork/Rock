@@ -148,7 +148,7 @@
                             window.location = locationUrl;
                         }
                     })
-                    .on('rockTree:rendered', function () {
+                    .on('rockTree:rendered rockTree:expand rockTree:collapse rockTree:itemClicked', function () {
 
                         // update viewport height
                         resizeScrollbar(scrollbCategory);

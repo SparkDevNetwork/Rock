@@ -34,6 +34,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -63,6 +64,14 @@ namespace Rock.Field.Types
             cb.Text = "Yes";
             cb.Help = "When set, inactive campuses will be included in the list.";
 
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
+
             return controls;
         }
 
@@ -74,13 +83,23 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive campuses will be included in the list.", string.Empty ) );
+
+            string description = "When set, inactive campuses will be included in the list.";
+            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", description, string.Empty ) );
+
+            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null )
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
                 {
                     configurationValues[INCLUDE_INACTIVE_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                {
+                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[1] ).Text;
                 }
             }
 
@@ -99,6 +118,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
                 {
                     ( (CheckBox)controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( NumberBox ) controls[1] ).Text = configurationValues[REPEAT_COLUMNS].Value;
                 }
             }
         }

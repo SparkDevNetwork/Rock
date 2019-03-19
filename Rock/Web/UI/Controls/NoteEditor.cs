@@ -37,6 +37,7 @@ namespace Rock.Web.UI.Controls
 
         private DropDownList _ddlNoteType;
         private HiddenFieldWithClass _hfHasUnselectableNoteType;
+        private ValidationSummary _vsEditNote;
         private RockTextBox _tbNote;
         private CheckBox _cbAlert;
         private CheckBox _cbPrivate;
@@ -440,11 +441,23 @@ namespace Rock.Web.UI.Controls
             _hfParentNoteId.CssClass = "js-parentnoteid";
             Controls.Add( _hfParentNoteId );
 
+            string validationGroup = $"vgNoteEdit_{this.ID}";
+
+            _vsEditNote = new ValidationSummary();
+            _vsEditNote.ID = this.ID + "_vsEditNote";
+            _vsEditNote.ValidationGroup = validationGroup;
+            _vsEditNote.CssClass = "alert alert-validation";
+            _vsEditNote.HeaderText = "Please correct the following:";
+            Controls.Add( _vsEditNote );
+
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
             _tbNote.Rows = 3;
             _tbNote.CssClass = "js-notetext";
             _tbNote.ValidateRequestMode = ValidateRequestMode.Disabled;
+            _tbNote.Required = true;
+            _tbNote.RequiredFieldValidator.ErrorMessage = "Note is required.";
+            _tbNote.ValidationGroup = validationGroup;
             Controls.Add( _tbNote );
 
             _ddlNoteType.ID = this.ID + "_ddlNoteType";
@@ -472,7 +485,8 @@ namespace Rock.Web.UI.Controls
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
             _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
-            _lbSaveNote.CausesValidation = false;
+            _lbSaveNote.CausesValidation = true;
+            _lbSaveNote.ValidationGroup = validationGroup;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add( _lbSaveNote );
@@ -556,6 +570,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _vsEditNote.RenderControl( writer );
             _tbNote.RenderControl( writer );
             _hfNoteId.RenderControl( writer );
             _hfParentNoteId.RenderControl( writer );

@@ -653,7 +653,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    _aFileName.HRef = string.Format( "{0}GetFile.ashx?isBinaryFile=F&rootFolder={1}&fileName={2}", ResolveUrl( "~" ), Rock.Security.Encryption.EncryptString( this.RootFolder ), BinaryFileId );
+                    _aFileName.HRef = ResolveUrl( this.UploadedContentFilePath );
                     _aFileName.InnerText = this.UploadedContentFilePath;
                 }
 

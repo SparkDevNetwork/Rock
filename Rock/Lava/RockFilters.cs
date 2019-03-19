@@ -3000,22 +3000,20 @@ namespace Rock.Lava
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-            if ( person != null && numericalGroupTypeId.HasValue )
+            if ( person == null && !numericalGroupTypeId.HasValue )
             {
-                var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .AsNoTracking()
-                    .Where( a =>
-                        a.Occurrence.Group != null &&
-                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
-                        a.PersonAlias.PersonId == person.Id &&
-                        a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime )
-                    .FirstOrDefault();
-
-                return attendance;
+                return new Attendance();
             }
 
-            return new Attendance();
+            return new AttendanceService( GetRockContext( context ) ).Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.Occurrence.Group != null &&
+                    a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
+                    a.PersonAlias.PersonId == person.Id &&
+                    a.DidAttend == true )
+                .OrderByDescending( a => a.StartDateTime )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -3944,7 +3942,8 @@ namespace Rock.Lava
 
                     case "Host":
                         {
-                            return HttpContext.Current.Request.Url.Host;
+                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                            return host;
                         }
 
                     case "Path":
