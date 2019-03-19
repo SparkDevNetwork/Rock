@@ -45,7 +45,11 @@
             $picker.find('.js-time-units-plural').toggle(isLast || isPrevious || isNext || isUpcoming);
             $picker.find('.js-time-units-date-range').toggle(isDateRange);
             var $pickerContainer = $picker.closest('.js-slidingdaterange-container');
-            $pickerContainer.find('.js-slidingdaterange-info').toggle(isLast || isPrevious || isNext || isUpcoming || isCurrent);
+            if (isLast || isPrevious || isNext || isUpcoming || isCurrent) {
+                $pickerContainer.find('.js-slidingdaterange-info').css( "display", "inline" );
+            } else {
+                $pickerContainer.find('.js-slidingdaterange-info').hide();
+            }
         },
         updateDateRangeInfo = function ($picker) {
             var $select = $picker.find('.js-slidingdaterange-select');

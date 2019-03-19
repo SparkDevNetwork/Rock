@@ -21,9 +21,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
+using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -192,7 +194,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class DuplicatePersonInfo
         {
@@ -234,7 +236,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The birth month.
             /// </value>
-            public int? BirthMonth { get; set;  }
+            public int? BirthMonth { get; set; }
 
             /// <summary>
             /// Gets or sets the birth day.
@@ -456,6 +458,7 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
+
                 // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
                 // connection status badge on the Bio bar, but I think label-default works better here.
                 string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
@@ -584,7 +587,7 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfoHtml += "<div class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</div>";
+                    personInfoHtml += "<span class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</span>";
                 }
 
                 if ( personAge != null )
@@ -624,7 +627,7 @@ namespace Rock.Rest.Controllers
 
                 if ( location != null )
                 {
-                    string addressHtml = "<div class='address'><h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</div>";
+                    string addressHtml = "<dl class='address'><dt>Address</dt><dd>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</dd></dl>";
                     personSearchResult.Address = location.GetFullStreetAddress();
                     personInfoHtml += addressHtml;
                 }
@@ -635,17 +638,17 @@ namespace Rock.Rest.Controllers
             {
                 string emailAndPhoneHtml = "<div class='margin-t-sm'>";
                 emailAndPhoneHtml += "<span class='email'>" + person.Email + "</span>";
-                string phoneNumberList = "<div class='phones'>";
+                string phoneNumberList = "<ul class='phones list-unstyled'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
-                        "<br>{0} <small>{1}</small>",
+                        "<li>{0} <small>{1}</small></li>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
 
-                emailAndPhoneHtml += phoneNumberList + "</div></div>";
+                emailAndPhoneHtml += phoneNumberList + "</ul></div>";
 
                 personInfoHtml += emailAndPhoneHtml;
             }
@@ -669,8 +672,8 @@ namespace Rock.Rest.Controllers
         [Obsolete( "Returns incorrect results, will be removed in a future version" )]
         public string GetImpersonationParameterObsolete( int personId )
         {
-            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
-            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
+            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug.
+            // Marked obsolete but kept around in case anybody was taking advantage of this bug
 
             string result = string.Empty;
 
@@ -810,6 +813,8 @@ namespace Rock.Rest.Controllers
 
         #endregion
 
+        #region Delete Override
+
         /// <summary>
         /// DELETE endpoint for a Person Record. NOTE: Person records can not be deleted using REST, so this will always return a 405
         /// </summary>
@@ -820,6 +825,101 @@ namespace Rock.Rest.Controllers
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
+
+        #endregion
+
+        #region Export
+
+        /// <summary>
+        /// Exports Person Records
+        /// </summary>
+        /// <param name="page">The page being requested (where first page is 1).</param>
+        /// <param name="pageSize">The number of records to provide per page. NOTE: This is limited to the 'API Max Items Per Page' global attribute.</param>
+        /// <param name="sortBy">Optional field to sort by. This must be a mapped property on the Person model.</param>
+        /// <param name="sortDirection">The sort direction (1 = Ascending, 0 = Descending). Default is 1 (Ascending).</param>
+        /// <param name="dataViewId">The optional data view to use for filtering.</param>
+        /// <param name="modifiedSince">The optional date/time to filter to only get newly updated items.</param>
+        /// <param name="attributeKeys">Optional comma-delimited list of attribute keys for the attribute values that should be included with each exported record, or specify 'all' to include all attributes.</param>
+        /// <param name="attributeReturnType">Raw/Formatted (default is Raw)</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/Export" )]
+        public PeopleExport Export(
+            int page = 1,
+            int pageSize = 1000,
+            string sortBy = null,
+            System.Web.UI.WebControls.SortDirection sortDirection = System.Web.UI.WebControls.SortDirection.Ascending,
+            int? dataViewId = null,
+            DateTime? modifiedSince = null,
+            string attributeKeys = null,
+            AttributeReturnType attributeReturnType = AttributeReturnType.Raw
+            )
+        {
+            // limit to 'API Max Items Per Page' global attribute
+            int maxPageSize = GlobalAttributesCache.Get().GetValue( "core_ExportAPIsMaxItemsPerPage" ).AsIntegerOrNull() ?? 1000;
+            var actualPageSize = Math.Min( pageSize, maxPageSize );
+
+            ExportOptions exportOptions = new ExportOptions
+            {
+                SortBy = sortBy,
+                SortDirection = sortDirection,
+                DataViewId = dataViewId,
+                ModifiedSince = modifiedSince,
+                AttributeList = AttributesExport.GetAttributesFromAttributeKeys<Person>( attributeKeys ),
+                AttributeReturnType = attributeReturnType
+            };
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            return personService.GetPeopleExport( page, actualPageSize, exportOptions );
+        }
+
+        #endregion
+
+        #region VCard
+
+        /// <summary>
+        /// Returns VCard for person.
+        /// </summary>
+        /// <param name="personGuid">The person Guid.</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/VCard/{personGuid}" )]
+        public HttpResponseMessage GetVCard( Guid personGuid )
+        {
+            var rockContext = ( Rock.Data.RockContext ) Service.Context;
+
+            var person = new PersonService( rockContext ).Get( personGuid );
+            if ( person == null )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
+
+            string fileName = person.FullName + ".vcf";
+            HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetPerson() );
+            mergeFields.Add( "Person", person );
+            string vCard = GlobalAttributesCache.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
+
+            // remove empty lines (the vcard spec is very picky)
+            vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", "", RegexOptions.Multiline );
+
+            var inputEncoding = Encoding.Default;
+            var outputEncoding = Encoding.GetEncoding( 28591 );
+            var cardBytes = inputEncoding.GetBytes( vCard );
+            var outputBytes = Encoding.Convert( inputEncoding, outputEncoding, cardBytes );
+            result.Content = new ByteArrayContent( outputBytes );
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "text/vcard" );
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue( "attachment" );
+            result.Content.Headers.ContentDisposition.FileName = fileName;
+            return result;
+        }
+
+        #endregion
     }
 
     /// <summary>

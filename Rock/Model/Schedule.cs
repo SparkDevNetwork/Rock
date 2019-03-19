@@ -658,7 +658,7 @@ namespace Rock.Model
 
                         case FrequencyType.Weekly:
 
-                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString().Pluralize() ).ToList().AsDelimited( "," );
                             if ( string.IsNullOrEmpty( result ) )
                             {
                                 // no day selected, so it has an incomplete schedule
@@ -667,7 +667,11 @@ namespace Rock.Model
 
                             if ( rrule.Interval > 1 )
                             {
-                                result += string.Format( " every {0} weeks", rrule.Interval );
+                                result = string.Format( "Every {0} weeks: ", rrule.Interval ) + result;
+                            }
+                            else
+                            {
+                                result = "Weekly: " + result;
                             }
 
                             result += " at " + startTimeText;

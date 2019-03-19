@@ -684,6 +684,7 @@ namespace Rock.Web.UI.Controls
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
@@ -768,7 +769,8 @@ $(document).ready( function() {{
             documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
             imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
-            fileTypeBlackList: '{fileTypeBlackList}'
+            fileTypeBlackList: '{fileTypeBlackList}',
+            fileTypeWhiteList: '{fileTypeWhiteList}'
         }},
 
         rockMergeFieldOptions: {{ 
