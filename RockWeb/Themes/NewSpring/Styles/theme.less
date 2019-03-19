@@ -14,6 +14,7 @@
 @import '_cards';
 @import '_swiper';
 @import '_ratios';
+@import '_forms';
 @import '_panels';
 @import '_grids';
 @import '_dropdowns';
@@ -70,7 +71,7 @@ h4, .h4,
 h5, .h5, 
 h6, .h6 {
 	font-family: @font-family-sans-serif;
-	letter-spacing: -.5px;
+	letter-spacing: -1px;
 	margin-top: 0;
 
 	a {
@@ -83,15 +84,6 @@ h6, .h6 {
 			text-decoration: none;
 		}
 	}
-}
-
-h1, .h1, 
-h2, .h2,
-h3, .h3,
-h4, .h4,
-h5, .h5,
-h6, .h6 {
-	letter-spacing: -1px;
 }
 
 img { max-width: 100%; }
@@ -161,12 +153,12 @@ mark, .mark {
 	line-height: ceil((@line-height-computed * .8));
 
 	@media (max-width: @screen-sm-max) {
-		font-size: floor((@font-size-base * .9));
+		font-size: floor((@font-size-base * .95));
 		line-height: ceil((@line-height-computed * .75));
 	}
 
 	@media (max-width: @screen-xs-max) {
-		font-size: floor((@font-size-base * .9));
+		font-size: floor((@font-size-base * .95));
 		line-height: ceil((@line-height-computed * .55));
 	}
 

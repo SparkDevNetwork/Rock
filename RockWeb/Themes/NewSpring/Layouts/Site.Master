@@ -49,11 +49,12 @@
         <form id="form1" runat="server">
 
             <div id="navigation">
-
-                <Rock:Zone Name="Header" runat="server" />
                 <Rock:Zone Name="Login" runat="server" />
                 <Rock:Zone Name="Navigation" runat="server" />
 
+            </div>
+            <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
+                <Rock:Zone Name="Header" runat="server" />
             </div>
 
             <div id="content" class="clearfix">
@@ -74,11 +75,6 @@
                         <div class="updateprogress-bg modal-backdrop"></div>
                     </ProgressTemplate>
             </asp:UpdateProgress>
-
-            <Rock:Lava ID="PostFooter" runat="server">
-                {% include '~~/Assets/Lava/navigation-modal.html' %}
-                {% include '~~/Assets/Lava/search-modal.html' %}
-            </Rock:Lava>
 
         </form>
 

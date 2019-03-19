@@ -7,10 +7,15 @@
 	box-shadow: 0 1px 3px fade(@gray-darker, 25%), 0 3px 0px fade(@gray-darker, 10%);
 	margin-bottom: @base-spacing-unit/2;
 	border-radius: @border-radius-base;
+	background-color: transparent;
 
 	@media (min-width: @screen-sm-min) {
 		margin-bottom: @base-spacing-unit;
 	}
+}
+
+.panel-heading, .panel-body, .panel-footer {
+	background-color: @white;
 }
 
 .panel-default > .panel-heading {
@@ -37,9 +42,6 @@
 	display: block;
 	border-top-left-radius: @border-radius-base;
 	border-top-right-radius: @border-radius-base;
-	margin-left: -1px;
-	margin-right: -1px;
-	margin-top: -1px;
 
 	img {
 		display: block;

@@ -1,14 +1,13 @@
 {% assign tagCount = blockData.tags | length %}
 
-<section class="shell soft-half-top hard-bottom hard-sides push-half-bottom flush-sides xs-text-center">
+<section class="shell soft-half-top hard-bottom hard-sides push-half-bottom flush-sides flush-bottom xs-text-center">
     <div class="container-fluid hard-sides {% if pageHeaderColorHex %}text-white{% endif %}">
 
     	{% if blockData.preTitle %}
     		<p class="sans-serif stronger letter-spacing-condensed push-half-bottom xs-push-bottom">{{ blockData.preTitle | safe }}</p>
     	{% endif %}
 
-
-        <h1 class="flush">{{ CurrentPage.PageTitle}}</h1>
+        <h1 class="h4 flush">{{ CurrentPage.PageTitle}}</h1>
 
         {% if blockData.subtitle %}
             <p class="sans-serif stronger letter-spacing-condensed push-half-top flush-bottom {% if pageHeaderColorHex %}{% else %}text-gray-dark{% endif %}"><small>{{ blockData.subtitle | safe }}</small></p>

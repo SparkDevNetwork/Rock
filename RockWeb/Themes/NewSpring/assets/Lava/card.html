@@ -12,7 +12,7 @@
 
 {% assign url = url | Trim %}
 
-<div {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %}">
+<div {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
 
     {% if imageurl != null and imageurl != '' %}
         {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
