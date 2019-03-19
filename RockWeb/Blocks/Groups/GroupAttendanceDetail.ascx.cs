@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Groups
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
     [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
+    [BooleanField("Allow Sorting", "Should the block allow sorting the Member's list by First Name or Last Name?", true, "", 13)]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Fields
@@ -97,6 +98,7 @@ namespace RockWeb.Blocks.Groups
         private bool _allowCampusFilter = false;
         private AttendanceOccurrence _occurrence = null;
         private List<GroupAttendanceAttendee> _attendees;
+        private const string TOGGLE_SETTING = "AttendanceListSorting_Toggle";
 
         #endregion
 
@@ -145,6 +147,7 @@ namespace RockWeb.Blocks.Groups
 
             dtNotes.Label = GetAttributeValue( "AttendanceNoteLabel" );
             dtNotes.Visible = GetAttributeValue( "ShowNotes" ).AsBooleanOrNull() ?? true;
+            tglSort.Visible = GetAttributeValue( "AllowSorting" ).AsBooleanOrNull() ?? true;
         }
 
         /// <summary>
@@ -154,6 +157,11 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            
+            if ( !Page.IsPostBack )
+            {
+                tglSort.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
+            }
 
             if ( !_canManageMembers )
             {
@@ -406,6 +414,17 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
+        }
+        
+        /// <summary>
+        /// Handles the CheckedChanged event of the tgl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglSort_CheckedChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( TOGGLE_SETTING, tglSort.Checked.ToString() );
+            BindAttendees();
         }
 
         /// <summary>
@@ -839,7 +858,31 @@ namespace RockWeb.Blocks.Groups
             lDidAttendCount.Visible = attendanceCount > 0;
             lDidAttendCount.Text = attendanceCount.ToString( "N0" );
 
-            lvMembers.DataSource = campusAttendees.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ).ToList();
+            if ( tglSort.Visible && tglSort.Checked )
+            {
+                lvMembers.DataSource = campusAttendees.OrderBy( a => a.LastName ).ThenBy( a => a.NickName )
+                    .Select( m => new
+                    {
+                        PersonId = m.PersonId,
+                        FullName = m.LastName + ", " + m.NickName,
+                        Attended = m.Attended,
+                        MergedTemplate = m.MergedTemplate
+                    } )
+                    .ToList();                
+            }
+            else
+            {
+                lvMembers.DataSource = campusAttendees.OrderBy( a => a.NickName ).ThenBy( a => a.LastName )
+                    .Select( m => new
+                    {
+                        PersonId = m.PersonId,
+                        FullName = m.NickName + " " + m.LastName,
+                        Attended = m.Attended,
+                        MergedTemplate = m.MergedTemplate
+                    } )
+                    .ToList();
+            }
+            
             lvMembers.DataBind();
 
             ppAddPerson.PersonId = Rock.Constants.None.Id;
