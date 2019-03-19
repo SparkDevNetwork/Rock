@@ -176,7 +176,7 @@ The following are new, proposed file format definitions that are being considere
 
 `Id,RegistrationTemplateId,Name,Type,DiscountApplies`
 
-## registrationTemplate-feeitem.csv
+## registrationtemplate-feeitem.csv
 
 `RegistrationTemplateFeeId,Name,Cost`
 
