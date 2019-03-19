@@ -1,4 +1,4 @@
-/*
+
 CREATE FUNCTION dbo.SplitCamelCase(@X VARCHAR(8000))
 RETURNS VARCHAR(8000) AS
 BEGIN
@@ -12,7 +12,6 @@ BEGIN
  RETURN @X
 END
 GO
-*/
 
 /* Helps code generate Rock\SystemGuid\EntityType.cs */
 SELECT CONCAT (
@@ -33,3 +32,4 @@ WHERE IsEntity = 1
 and Name like 'Rock.Model.%'
 ORDER BY NAME
 
+DROP FUNCTION dbo.SplitCamelCase
