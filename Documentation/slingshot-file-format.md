@@ -160,7 +160,7 @@ The following are new, proposed file format definitions that are being considere
 
 `PersonId,EntityId,EntityType`
 
-## person-relationship.csv
+## person-knownrelationship.csv
 
 `FromPersonId,ToPersonId,GroupRole`
 
