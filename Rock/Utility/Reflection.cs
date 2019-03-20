@@ -302,6 +302,10 @@ namespace Rock
                         AssemblyName assemblyName = AssemblyName.GetAssemblyName( assemblyFileName );
                         assembly = AppDomain.CurrentDomain.Load( assemblyName );
                     }
+                    catch( BadImageFormatException)
+                    {
+                        // BadImageFormatException means the dll isn't a managed dll (not a .NET dll), so we can safely ignore
+                    }
                     catch ( Exception ex )
                     {
                         Rock.Model.ExceptionLogService.LogException( new Exception( $"Unable to load assembly from {assemblyFileName}", ex ) );
