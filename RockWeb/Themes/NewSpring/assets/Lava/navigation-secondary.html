@@ -1,0 +1,45 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+<!-- Mobile Secondary Nav -->
+<section class="bg-gray-darker hard flush shadowed">
+    <div class="soft-half-ends soft-sides xs-soft-half-sides text-right clearfix">
+        
+
+        <a href="{{ Page.Url }}">
+            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 4px;">{{ Page.Title }}</h2>
+        </a>
+        
+            <a href="#" data-toggle="modal" data-target="#navigation-secondary-modal" title="Sub Navigation" class="btn btn-sm btn-primary hidden-md hidden-lg">
+                More
+            </a>
+
+            <ul class="list-inline flush hidden-xs hidden-sm">
+                {% for page in IncludePageList %}
+                    {% assign path = 'Global' | Page:'Path' %}
+                    {% assign parts =  page | PropertyToKeyValue %}
+                    <li><a href="{{ parts.Value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}" data-scroll="">{{ parts.Key }}</a></li>
+                {% endfor %}
+                {% for childPage in Page.Pages %}
+                    <li><a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a></li>
+                {% endfor %}
+
+            </ul>
+    </div>
+
+    <div id="25" class="bg-white panel-collapse collapse hidden-md hidden-lg hidden" role="tabpanel" aria-labelledby="heading-25">
+        <div class="panel-body soft hard-bottom clearfix">
+            <ul class="list-style-none hard">
+                {% for page in IncludePageList %}
+                {% assign path = 'Global' | Page:'Path' %}
+                {% assign parts =  page | PropertyToKeyValue %}
+                    <li><a href="{{ parts.Value }}" class="text-decoration-none" data-scroll=""><h3 class="h5 push-half-bottom">{{ parts.Key }}</h3></a></li>
+                {% endfor %}
+                {% for childPage in Page.Pages %}
+                    <li><a href="{{ childPage.Url }}" class="text-decoration-none" data-scroll=""><h3 class="h5 push-half-bottom">{{ childPage.Title }}</h3></a></li>
+                {% endfor %}
+
+            </ul>
+        </div>
+    </div>
+</section>
+{% endif %}

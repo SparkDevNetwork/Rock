@@ -1,0 +1,86 @@
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture url %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign url = url | Trim %}
+
+<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="
+shell
+hero
+bg-gray-dark
+position-relative 
+rounded 
+shadowed 
+text-white 
+push-bottom
+xs-push-half-bottom
+bring-forward
+{% if ratio != null and ratio != '' %}
+    ratio-{{ ratio }} hard xs-soft floating
+{% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
+
+    {% if backgroundvideourl != null and backgroundvideourl != '' %}
+
+        <!-- Background Video -->
+        <video class="video display-block full-screen width-full rounded hidden-xs hidden-sm {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; opacity: {{ imageopacity }};" width="1280" height="720" loop="" autoplay="">
+            <source src="{{ backgroundvideourl }}" type="video/mp4">
+        </video>
+
+    {% endif %}
+    
+    <!-- Background Image -->
+    {% if imageurl != null and imageurl != '' %}
+        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+    {% endif %}
+
+    {% if mobileimageurl != null and mobileimageurl != '' %}
+        <span class="hidden-md hidden-lg full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+    {% endif %}
+
+    {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
+
+    <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top">
+
+        {% if imageoverlayurl != null and imageoverlayurl != '' %}
+            <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
+        {% endif %}
+
+
+        {% if title != null and title != '' %}
+            <h1>{{ title }}</h1>
+        {% endif %}
+
+        {{ content }}
+
+        {% if url != empty %}
+            <p>
+                <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+            </p>
+        {% endif %}
+
+        {% if video != null and video != '' %}
+            <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
+                <a href="#" class="btn btn-primary">Watch Video <i class="fas fa-xs fa-play"></i></a>
+            </span>
+
+            <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+        {% endif %}
+
+        {% if lava != null and lava != '' %}
+            {{ lava }}
+        {% endif %}
+
+    </div>
+
+    {% if ratio != null and ratio != '' %}</div>{% endif %}
+
+</section>
