@@ -1,0 +1,24 @@
+<div id="navigation-secondary-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body soft hard-bottom clearfix">
+        <i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i>
+          <h1 class="h2">{{ CurrentPage.PageTitle }}</h1>
+        
+        <hr class="flush-top push-bottom">
+        <ul class="list-style-none hard">
+          {% for page in IncludePageList %}
+          {% assign path = 'Global' | Page:'Path' %}
+          {% assign parts =  page | PropertyToKeyValue %}
+            <li><h3 class="text-primary push-half-bottom"><a href="{{ parts.Value }}" data-scroll><i class="fal fa-fw fa-map-marker-alt display-none"></i>{{ parts.Key }}</a></h3></li>
+          {% endfor %}
+          {% for childPage in Page.Pages %}
+          <li><h3 class="text-primary push-half-bottom"><a href="{{ childPage.Url }}" data-scroll><i class="fal fa-fw fa-map-marker-alt display-none"></i>{{ childPage.Title }}</a></h3></li>
+          {% endfor %}
+
+        </ul>
+
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

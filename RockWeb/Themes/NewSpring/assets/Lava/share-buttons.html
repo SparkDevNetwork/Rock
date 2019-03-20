@@ -1,0 +1,18 @@
+{#
+
+{% set blockData = { 
+    id: '',
+    orientation: '',
+	copy: '',
+    linkUrl: ''
+} %}{% include "share-buttons.html" %}
+
+#}
+
+<div class="row row-condensed">
+	<div class="{% if blockData.orientation == 'vertical' %}col-md-12{% else %}col-md-6 col-sm-6 col-xs-12{% endif %}">
+		<a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share><i class="fas fa-fw fa-share flush"></i> {{ [14,8,311,42,5,4,73,19,2] | random }}</a>
+	</div><div class="{% if blockData.orientation == 'vertical' %}col-md-12 push-half-bottom{% else %}col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom{% endif %}">
+		<a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like><i class="far fa-fw fa-heart flush"></i> {{ [14,8,311,42,5,4,73,19,2] | random }}</a>
+	</div>
+</div>

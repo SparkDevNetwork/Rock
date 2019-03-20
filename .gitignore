@@ -22,6 +22,8 @@ StyleCop.Cache
 RockWeb/App_Code/ClassDiagram.cd
 RockWeb/App_Code/ClassDiagram2.cd
 RockWeb/prepros-6.config
+RockWeb/Bin/EntityFramework.SqlServer.dll.refresh
+RockWeb/Bin/EntityFramework.dll.refresh
 
 #specific folders
 [Oo]bj/
@@ -33,8 +35,9 @@ RockWeb/.well-known/*
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
-
 Packages/*
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/cc_newspring
 
 # javascript deps
 node_modules
