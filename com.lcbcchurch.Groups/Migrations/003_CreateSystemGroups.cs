@@ -74,6 +74,35 @@ namespace com.lcbcchurch.Groups.Migrations
                     Where Guid in ('66AE33E8-B374-4F07-BBE3-4096F1CBCE88')
             " );
 
+            // Set all these groups to be private
+            Sql( @"
+                Update [Group]
+                Set [IsPublic] = 0
+                Where [Guid] in (
+                    'D791D411-2434-4D2B-A9AC-E621BFAEC6E5', -- System
+                    'ED3CF5DF-E4B0-4D18-A3C1-4FE9BBA83EB0', -- Connections
+                    '4890D767-15C6-465B-9D77-4A6078C59444', -- Care Requests
+                    '286A2DD3-84E5-4D05-9D3E-66D2B66E26F6', -- Berks PRT
+                    '83258E8C-ACA4-4CC8-B1FA-B7C36083535B', -- BranchCreek PRT
+                    'C1281FB4-AF5B-4D73-A7F4-BCE0F182B8CC', -- Coal Township PRT
+                    'F01A37C7-08A5-49B5-B392-1D5943D4BE83', -- Columbia-Montour PRT
+                    '4B68A2D5-90BA-4224-A5AA-4AB9CEBD16ED', -- Ephrata PRT
+                    'DB6021D5-1F2F-4B1A-A7F4-49AD3A86BAEA', -- Hanover PRT
+                    '4CBA8124-6EF5-4A9C-B74A-88C1D94AF334', -- Harrisburg PRT
+                    '7DA4D575-0738-4B1B-A3BF-014D97A8A397', -- Hazleton PRT
+                    '69B22D74-B087-452E-9C0B-117A821458B7', -- Lancaster City PRT
+                    '4E33BB52-AA8E-46BA-92D9-F4283557D772', -- Lebanon PRT
+                    '1570BEAB-F23B-49FA-A4B8-3CD3AD26C124', -- Manheim PRT
+                    'EB9A9EEE-821E-4971-AC67-404B24C5C9D7', -- Online PRT
+                    '74AA6A28-5CF4-4A38-AC5A-D6C51BC5C5D3', -- Waynesboro PRT
+                    'E85C5DEE-3B98-4F1D-8D2F-CB7DE719D040', -- West Shore PRT
+                    'D78EB9A3-669A-46E0-B63E-3512A93E888A', -- York PRT
+
+                    '351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9', -- Workflows
+                    '5579B44A-AA02-4E9B-BAB7-29E702E773BF', -- Weekend Attendance Entry Routing
+                    'CDA9CAE4-0674-4CD2-A275-8104F953D5CB' -- General Contact Routing
+                )
+            " );
         }
 
         public override void Down()

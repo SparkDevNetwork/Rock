@@ -36,6 +36,7 @@ using Rock.Security;
 using Rock.Web.UI.Controls;
 using Page = System.Web.UI.Page;
 using Rock.Attribute;
+using Rock.Utility;
 
 namespace Rock.Web.UI
 {
@@ -873,7 +874,7 @@ namespace Rock.Web.UI
 
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
-                if ( !Request.IsSecureConnection && (_pageCache.RequiresEncryption || Site.RequiresEncryption) )
+                if ( !WebRequestHelper.IsSecureConnection(HttpContext.Current)  && ( _pageCache.RequiresEncryption || Site.RequiresEncryption ) )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
                     Response.Redirect( redirectUrl, false );

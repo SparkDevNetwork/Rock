@@ -163,6 +163,9 @@ namespace Rock.Security
         /// Decrypt the given string.  Assumes the string was encrypted using 
         /// EncryptString(), using an identical sharedSecret.
         /// </summary>
+        /// <returns>
+        ///  decrypted string ; otherwise, null.
+        /// </returns>
         /// <param name="cipherText">The text to decrypt.</param>
         public static string DecryptString( string cipherText )
         {

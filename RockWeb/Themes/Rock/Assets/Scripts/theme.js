@@ -106,6 +106,11 @@ function PreventNumberScroll() {
     $('form').on('blur', 'input[type=number]', function (e) {
       $(this).off('mousewheel.disableScroll')
     });
+    $('form').on('keydown', 'input[type=number]', function (e) {
+        if (e.which === 38 || e.which === 40) {
+            e.preventDefault();
+        }
+    });
 
     $('.js-notetext').blur(function() {
       $(this).parent().removeClass("focus-within");

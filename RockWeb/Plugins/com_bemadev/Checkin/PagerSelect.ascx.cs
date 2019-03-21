@@ -62,6 +62,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             }
             else
             {
+                ClearSelection();
+
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -89,15 +91,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 var isPagerOffered = group.Group.GetAttributeValue( "ArePagersOffered" ).AsBoolean();
                 if ( isPagerAllowed && isPagerOffered )
                 {
-                    if ( backingUp )
-                    {
-                        GoBack( true );
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -139,6 +133,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
+
                     var person = CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
@@ -169,7 +165,21 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     {
                         if ( UserBackedUp )
                         {
-                            GoBack();
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            var pagerNumberExists = person.StateParameters.Any( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value != null && sp.Key != pagerNumberKey );
+                            if ( pagerNumberExists )
+                            {
+                                GoBack();
+                            }
+                        }
+                        else
+                        {
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            var pagerNumberExists = person.StateParameters.Any( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value != null && sp.Key != pagerNumberKey );
+                            if ( pagerNumberExists )
+                            {
+                                NavigateToNextPage( false );
+                            }
                         }
                     }
                     else
@@ -213,10 +223,8 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
                         if ( group != null )
                         {
-                            if ( tbPagerNumber.Text.IsNotNullOrWhiteSpace() )
-                            {
-                                person.StateParameters.AddOrReplace( "PagerNumber", tbPagerNumber.Text );
-                            }
+                            var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                            person.StateParameters.AddOrReplace( pagerNumberKey, tbPagerNumber.Text );
 
                             ProcessSelection( person, schedule );
                         }
@@ -233,6 +241,16 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack( true );
+        }
+        private void ClearSelection()
+        {
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
+            {
+                var schedule = person.CurrentSchedule;
+                var pagerNumberKey = String.Format( "PagerNumber_ScheduleId_{0}", schedule.Schedule.Id );
+                person.StateParameters.Remove( pagerNumberKey );
+            }
         }
 
         /// <summary>
@@ -262,6 +280,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     string.Format( "<p>{0}</p>", msg ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
                 {
+                    ClearSelection();
                 }
                 else
                 {

@@ -441,6 +441,8 @@ namespace Rock.Model
 
                                 var transactionDetail = new FinancialTransactionDetail();
                                 transactionDetail.AccountId = detail.AccountId;
+                                transactionDetail.EntityTypeId = detail.EntityTypeId;
+                                transactionDetail.EntityId = detail.EntityId;
 
                                 if ( detail.Amount <= remainingAmount )
                                 {

@@ -628,6 +628,12 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( additionalSegmentDataView.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                         {
+                            if ( commonSegmentDataViewList.Where( v => v.Guid == additionalSegmentDataView.Guid ).Any() )
+                            {
+                                // This was already added so just move along...
+                                continue;
+                            }
+
                             cblCommunicationGroupSegments.Items.Add( new ListItem( additionalSegmentDataView.Name, additionalSegmentDataView.Id.ToString() ) );
                         }
                     }

@@ -202,5 +202,24 @@ namespace Rock.SystemGuid
         public const string BIO_WORKFLOWACTION = "7197A0FB-B330-43C4-8E62-F3C14F649813";
 
         #endregion
+
+        #region File Type Lists
+
+        /// <summary>
+        /// Global attribute of image file type extensions that should be allowed.
+        /// </summary>
+        public const string CONTENT_IMAGE_FILETYPE_WHITELIST = "0F842054-7629-419F-BC72-90BDDE9F3676";
+
+        /// <summary>
+        /// Global attribute of file type extensions that should never be allowed. Has precedence over other lists.
+        /// </summary>
+        public const string CONTENT_FILETYPE_BLACKLIST = "9FFB15C1-AA53-4FBA-A480-64C9B348C5E5";
+
+        /// <summary>
+        /// The content filetype whitelist. Has a lower precedence than CONTENT_FILETYPE_BLACKLIST
+        /// </summary>
+        public const string CONTENT_FILETYPE_WHITELIST = "B895B6D7-BA21-45C0-8913-EF47FAAD69B1";
+
+        #endregion File Type Lists
     }
 }

@@ -69,6 +69,7 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                     {
                         var personGroupTypes = person.GetGroupTypes( true );
                         var groupTypes = new List<CheckInGroupType>();
+                        var itemTagsPrinted = false;
 
                         // Get Primary area group types first
                         personGroupTypes.Where( t => checkInState.ConfiguredGroupTypes.Contains( t.GroupType.Id ) ).ToList().ForEach( t => groupTypes.Add( t ) );
@@ -96,44 +97,35 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                 {
                                     var locationLabels = GetLabels( location.Location, groupLabels );
 
-                                    foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
+                                    foreach ( var schedule in location.GetSchedules( true ) )
                                     {
-                                        person.SetOptions( labelCache );
 
-                                        if ( labelCache.LabelType == KioskLabelType.Family )
+                                        foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
                                         {
-                                            if ( familyLabelsAdded.Contains( labelCache.Guid ) ||
-                                                personLabelsAdded.Contains( labelCache.Guid ) )
+                                            person.SetOptions( labelCache );
+
+
+                                            var parentLabelGuid = "50CFDC79-E5E1-459E-B7F9-9618B6A507A7".AsGuid();
+                                            if ( parentLabelGuid != null )
                                             {
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                familyLabelsAdded.Add( labelCache.Guid );
-                                            }
-                                        }
-                                        else if ( labelCache.LabelType == KioskLabelType.Person )
-                                        {
-                                            if ( personLabelsAdded.Contains( labelCache.Guid ) )
-                                            {
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                personLabelsAdded.Add( labelCache.Guid );
+                                                if ( personLabelsAdded.Contains( labelCache.Guid ) && labelCache.Guid == parentLabelGuid )
+                                                {
+                                                    continue;
+                                                }
+                                                else
+                                                {
+                                                    personLabelsAdded.Add( labelCache.Guid );
+                                                }
+
+                                                AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
                                             }
                                         }
 
-                                        AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
-
-                                    }
-
-                                    if ( person.StateParameters.ContainsKey( "ItemTags" ) )
-                                    {
-                                        var itemTagAmount = person.StateParameters["ItemTags"];
-                                        if ( itemTagAmount.IsNotNullOrWhiteSpace() )
+                                        var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
+                                        if ( itemTagParameters.Any() && !itemTagsPrinted )
                                         {
-                                            var numberOfTags = itemTagAmount.AsInteger();
+                                            itemTagsPrinted = true;
+                                            var numberOfTags = itemTagParameters.Max();
                                             if ( numberOfTags > 0 )
                                             {
                                                 var binaryFileGuid = GetAttributeValue( action, "ItemTagLabel" ).AsGuidOrNull();
@@ -148,13 +140,72 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                                     {
                                                         for ( int i = 0; i < numberOfTags; i++ )
                                                         {
-                                                            AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
+                                                            AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
                                                         }
                                                     }
                                                 }
                                             }
+
                                         }
                                     }
+                                    //foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
+                                    //{
+                                    //    person.SetOptions( labelCache );
+
+                                    //    if ( labelCache.LabelType == KioskLabelType.Family )
+                                    //    {
+                                    //        if ( familyLabelsAdded.Contains( labelCache.Guid ) ||
+                                    //            personLabelsAdded.Contains( labelCache.Guid ) )
+                                    //        {
+                                    //            continue;
+                                    //        }
+                                    //        else
+                                    //        {
+                                    //            familyLabelsAdded.Add( labelCache.Guid );
+                                    //        }
+                                    //    }
+                                    //    else if ( labelCache.LabelType == KioskLabelType.Person )
+                                    //    {
+                                    //        if ( personLabelsAdded.Contains( labelCache.Guid ) )
+                                    //        {
+                                    //            continue;
+                                    //        }
+                                    //        else
+                                    //        {
+                                    //            personLabelsAdded.Add( labelCache.Guid );
+                                    //        }
+                                    //    }
+
+                                    //    AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
+
+                                    //}
+
+                                    //var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
+                                    //if ( itemTagParameters.Any() && !itemTagsPrinted )
+                                    //{
+                                    //    itemTagsPrinted = true;
+                                    //    var numberOfTags = itemTagParameters.Max();
+                                    //    if ( numberOfTags > 0 )
+                                    //    {
+                                    //        var binaryFileGuid = GetAttributeValue( action, "ItemTagLabel" ).AsGuidOrNull();
+                                    //        if ( binaryFileGuid != null )
+                                    //        {
+
+                                    //            var labelCache = KioskLabel.Get( binaryFileGuid.Value );
+                                    //            if ( labelCache != null && (
+                                    //                labelCache.LabelType == KioskLabelType.Family ||
+                                    //                labelCache.LabelType == KioskLabelType.Person ||
+                                    //                labelCache.LabelType == KioskLabelType.Location ) )
+                                    //            {
+                                    //                for ( int i = 0; i < numberOfTags; i++ )
+                                    //                {
+                                    //                    AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
+                                    //                }
+                                    //            }
+                                    //        }
+                                    //    }
+
+                                    //}
                                 }
                             }
                         }
@@ -168,7 +219,7 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
             return false;
         }
 
-        private static void AddLabel( RockContext rockContext, CheckInState checkInState, Dictionary<string, object> commonMergeFields, GroupMemberService groupMemberService, List<CheckInPerson> people, CheckInPerson person, CheckInGroupType groupType, Dictionary<int, string> PrinterIPs, CheckInGroup group, CheckInLocation location, KioskLabel labelCache )
+        private static void AddLabel( RockContext rockContext, CheckInState checkInState, Dictionary<string, object> commonMergeFields, GroupMemberService groupMemberService, List<CheckInPerson> people, CheckInPerson person, CheckInGroupType groupType, Dictionary<int, string> PrinterIPs, CheckInGroup group, CheckInLocation location, CheckInSchedule schedule, KioskLabel labelCache )
         {
             var mergeObjects = new Dictionary<string, object>();
             foreach ( var keyValue in commonMergeFields )
@@ -176,6 +227,7 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                 mergeObjects.Add( keyValue.Key, keyValue.Value );
             }
 
+            mergeObjects.Add( "Schedule", schedule );
             mergeObjects.Add( "Location", location );
             mergeObjects.Add( "Group", group );
             mergeObjects.Add( "Person", person );

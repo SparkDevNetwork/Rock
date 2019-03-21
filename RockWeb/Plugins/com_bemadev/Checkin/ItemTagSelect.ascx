@@ -30,7 +30,11 @@
                         <label class="control-label">
                             <asp:Literal ID="lCaption" runat="server" /></label>
                         <div class="controls">
-                            <Rock:NumberUpDown ID="nbItemTags" runat="server" Label="How Many Item Tags would you like?" Minimum="0" Maximum="5" Value="0" />
+                            <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
+                                <ItemTemplate>
+                                    <Rock:BootstrapButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Container.DataItem.ToString() %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" DataLoadingText="Loading..." />
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </div>
                     </div>
 
@@ -40,7 +44,6 @@
 
         <div class="row-fluid checkin-footer">
             <div class="checkin-actions">
-                <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClick="lbSelect_Click" Text="Next" />
                 <asp:LinkButton CssClass="btn btn-default btn-back" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
                 <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
             </div>

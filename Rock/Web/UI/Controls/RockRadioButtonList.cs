@@ -259,9 +259,9 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
 
             // If a radiobutton list has no items selected, then there is not anything included in
-            // the control state for this control, so on postback a value is not set, and the 
+            // the control state for this control, so on postback a value is not set, and the
             // creation of child controls will not be called.  this presents a problem when using
-            // validation since it is during the CreateChildControls that the validator is rewired 
+            // validation since it is during the CreateChildControls that the validator is rewired
             // to the control.  Because of this, always ensure child controls on a postback
             if (Page.IsPostBack)
             {
@@ -300,15 +300,17 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-horizontal" );
+
+                if ( this.RepeatColumns <= 0 )
+                {
+                    this.RepeatColumns = 4;
+                }
+
+                cssClassBuilder.Append( string.Format( " in-columns in-columns-{0}", RepeatColumns ) );
             }
             else
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-vertical" );
-            }
-
-            if ( this.RepeatColumns > 0 )
-            {
-                cssClassBuilder.Append( " in-columns" );
             }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );

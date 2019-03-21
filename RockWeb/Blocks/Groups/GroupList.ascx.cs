@@ -921,6 +921,8 @@ namespace RockWeb.Blocks.Groups
 
             ddlGroup.DataSource = groupList;
             ddlGroup.DataBind();
+            ddlGroup.Items.Insert( 0, new ListItem() );
+            ddlGroupRole.Items.Clear();
         }
 
         #endregion

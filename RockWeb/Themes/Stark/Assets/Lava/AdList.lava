@@ -24,4 +24,4 @@
 <div class="row announcement-list">
   {% endif -%}
   {% endfor -%}
-</div>
+</div> 
