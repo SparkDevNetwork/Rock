@@ -96,8 +96,8 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// For Credit Card transactions, this is the response code that the gateway returns 
-        /// For Scanned Checks, this is the check number
+        /// For Credit Card transactions, this is the response code that the gateway returns. 
+        /// For Scanned Checks, this is the check number.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.

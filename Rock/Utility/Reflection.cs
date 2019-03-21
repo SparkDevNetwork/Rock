@@ -128,11 +128,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDisplayName( Type type )
         {
-            foreach ( var nameAttribute in type.GetCustomAttributes( typeof( DisplayNameAttribute ), true ) )
-            {
-                return ( ( DisplayNameAttribute ) nameAttribute ).DisplayName;
-            }
-            return null;
+            return type.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
         }
 
         /// <summary>
@@ -142,12 +138,9 @@ namespace Rock
         /// <returns></returns>
         public static string GetCategory( Type type )
         {
-            foreach ( var categoryAttribute in type.GetCustomAttributes( typeof( CategoryAttribute ), true ) )
-            {
-                return ( ( CategoryAttribute ) categoryAttribute ).Category;
-            }
-            return null;
+            return type.GetCustomAttribute<CategoryAttribute>( true )?.Category;
         }
+
         /// <summary>
         /// Returns the Description Attribute value for a given type
         /// </summary>
@@ -155,11 +148,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( Type type )
         {
-            foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
-            {
-                return ( ( DescriptionAttribute ) descriptionAttribute ).Description;
-            }
-            return null;
+            return type.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
         }
 
         /// <summary>

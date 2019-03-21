@@ -1421,5 +1421,30 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201812111901295_Rollup_1211_FixChartShortcode", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Scheduled Transactions didn&apos;t write to history until v7.4, so convert those into History notes
+        ///
+        ///DECLARE @historyCategoryId INT = (
+        ///		SELECT TOP 1 Id
+        ///		FROM Category
+        ///		WHERE Guid = &apos;477EE3BE-C68F-48BD-B218-FAFC99AF56B3&apos;
+        ///		)
+        ///	,@entityTypeIdScheduledTransaction INT = (
+        ///		SELECT TOP 1 Id
+        ///		FROM EntityType
+        ///		WHERE [Guid] = &apos;76824E8A-CCC4-4085-84D9-8AF8C0807E20&apos;
+        ///		)
+        ///	,@noteTypeIdScheduledTransaction INT = (
+        ///		SELECT TOP 1 Id
+        ///		FROM NoteType
+        ///		WHERE [Guid] = &apos;360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory {
+            get {
+                return ResourceManager.GetString("_201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHi" +
+                        "story", resourceCulture);
+            }
+        }
     }
 }
