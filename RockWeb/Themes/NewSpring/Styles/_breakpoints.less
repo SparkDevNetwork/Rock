@@ -165,12 +165,19 @@
 	h5, .h5 { font-size: ceil((@font-size-base * 1.2)); }
 	h6, .h6 { font-size: @font-size-base; }
 
+	.xs-h1 { font-size: floor((@font-size-base * 1.9)); letter-spacing: -.7px !important; }
+	.xs-h2 { font-size: floor((@font-size-base * 1.65)); letter-spacing: -.7px !important; }
+	.xs-h3 { font-size: ceil((@font-size-base * 1.55)); }
+	.xs-h4 { font-size: ceil((@font-size-base * 1.35)); }
+	.xs-h5 { font-size: ceil((@font-size-base * 1.2)); }
+	.xs-h6 { font-size: @font-size-base; }
+
 	small {
 		font-size: 90%;
 	}
 
 	.label.circular {
-		padding: .3em .8em;
+		padding: .3em .8em .25em;
 	}
 
 	blockquote {
@@ -192,7 +199,7 @@
 	}
 
 	.btn-sm {
-		padding: 6px 10px 4px;
+		padding: 5px 10px 4px;
 	}
 
 	.xs-mx-auto {
@@ -233,6 +240,14 @@
 	.btn-play {
 		transform: scale(1.5);
 	}
+
+
+	// Ratios
+	.xs-ratio-thin:before{ padding-top: 40%; }
+	.xs-ratio-landscape:before{ padding-top: 50%; }
+	.xs-ratio-shuare:before{ padding-top: 70%; }
+	.xs-ratio-square:before{ padding-top: 100%; }
+	.xs-ratio-portrait:before{ padding-top: 150%; }
 	
 
 	// Positioning

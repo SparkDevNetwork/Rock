@@ -20,7 +20,7 @@
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
 
-            <img src="{{ imageurl }}" alt="" class="{% if grayscale == 'y' %}grayscale{% endif %}" style="{% if imageopacity %}opacity: {{ imageopacity }};{% endif %}">
+            <div class="ratio-landscape background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></div>
 
             {% if type != null and type != '' %}
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>

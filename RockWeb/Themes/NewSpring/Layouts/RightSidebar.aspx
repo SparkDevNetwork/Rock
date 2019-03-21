@@ -8,16 +8,7 @@
     </Rock:Lava>
 
     <div class="soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
-
-        <Rock:Lava ID="PageTitle" runat="server">
-        {% if CurrentPage.PageDisplayTitle == true %}
-            {[pageHeader]}
-        {% endif %}
-        </Rock:Lava>
-
-        <!-- Breadcrumbs -->
-        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-
+        
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error no-index" style="display:none">
             <p><strong>Error</strong></p>

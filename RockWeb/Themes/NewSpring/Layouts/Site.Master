@@ -55,6 +55,13 @@
             </div>
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
                 <Rock:Zone Name="Header" runat="server" />
+                <Rock:Lava ID="PageTitle" runat="server">
+                    {% if CurrentPage.MenuDisplayChildPages == 'True' %}
+                        {[ navigationSecondary ]}
+                    {% elseif CurrentPage.PageDisplayTitle == 'True' %}
+                        {[ pageHeader title:'{{ CurrentPage.PageTitle }}' ]}
+                    {% endif %}
+                </Rock:Lava>
             </div>
 
             <div id="content" class="clearfix">
@@ -62,6 +69,12 @@
                 <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
                 <Rock:Zone Name="Footer" runat="server" />                
             </div>
+
+            <Rock:Lava ID="SiteModals" runat="server">
+            {[ modalNavigation ]}
+            {[ modalNavigationSecondary ]}
+            {[ modalSearch ]}
+            </Rock:Lava>
 
             <%-- controls for scriptmanager and update panel --%>
             <asp:ScriptManager ID="sManager" runat="server"/>
