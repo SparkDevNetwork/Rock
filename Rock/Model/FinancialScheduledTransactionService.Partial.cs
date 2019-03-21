@@ -117,9 +117,10 @@ namespace Rock.Model
                 scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
             {
+                var rockContext = this.Context as RockContext;
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
-                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                    scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
                 }
 
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
