@@ -571,7 +571,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Campus Configuration class.
+    /// DataView Configuration class.
     /// </summary>
     public partial class DataViewConfiguration : EntityTypeConfiguration<DataView>
     {
