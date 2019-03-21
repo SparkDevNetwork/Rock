@@ -1018,143 +1018,146 @@ namespace RockWeb.Blocks.Cms
             var groupMemberService = new GroupMemberService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
-            if ( CurrentPerson != null )
+            // invalid situation; return and report nothing.
+            if ( CurrentPerson == null )
             {
-                var personId = CurrentPerson.Id;
+                return;
+            }
 
-                // Setup Image
-                string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( CurrentPerson, 200, 200 );
-                if ( CurrentPerson.PhotoId.HasValue )
-                {
-                    lImage.Text = string.Format( "<a href='{0}'>{1}</a>", CurrentPerson.PhotoUrl, imgTag );
-                }
-                else
-                {
-                    lImage.Text = imgTag;
-                }
+            var personId = CurrentPerson.Id;
 
-                // Person Info
-                lName.Text = CurrentPerson.FullName;
-                if ( CurrentPerson.BirthDate.HasValue )
-                {
-                    lAge.Text = string.Format( "{0} old <small>({1})</small><br/>", CurrentPerson.FormatAge(), CurrentPerson.BirthYear != DateTime.MinValue.Year ? CurrentPerson.BirthDate.Value.ToShortDateString() : CurrentPerson.BirthDate.Value.ToMonthDayString() );
-                }
+            // Setup Image
+            string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( CurrentPerson, 200, 200 );
+            if ( CurrentPerson.PhotoId.HasValue )
+            {
+                lImage.Text = string.Format( "<a href='{0}'>{1}</a>", CurrentPerson.PhotoUrl, imgTag );
+            }
+            else
+            {
+                lImage.Text = imgTag;
+            }
 
-                lGender.Text = CurrentPerson.Gender != Gender.Unknown ? CurrentPerson.Gender.ToString() : string.Empty;
-                lGrade.Text = CurrentPerson.GradeFormatted;
-                lMaritalStatus.Text = CurrentPerson.MaritalStatusValueId.DefinedValue();
-                if ( CurrentPerson.AnniversaryDate.HasValue )
-                {
-                    lMaritalStatus.Text += string.Format( " {0} yrs <small>({1})</small>", CurrentPerson.AnniversaryDate.Value.Age(), CurrentPerson.AnniversaryDate.Value.ToMonthDayString() );
-                }
+            // Person Info
+            lName.Text = CurrentPerson.FullName;
+            if ( CurrentPerson.BirthDate.HasValue )
+            {
+                lAge.Text = string.Format( "{0} old <small>({1})</small><br/>", CurrentPerson.FormatAge(), CurrentPerson.BirthYear != DateTime.MinValue.Year ? CurrentPerson.BirthDate.Value.ToShortDateString() : CurrentPerson.BirthDate.Value.ToMonthDayString() );
+            }
 
-                if ( CurrentPerson.GetFamily( rockContext ) != null && ddlGroup.Items.Count > 1 )
-                {
-                    ddlGroup.Visible = true;
-                }
+            lGender.Text = CurrentPerson.Gender != Gender.Unknown ? CurrentPerson.Gender.ToString() : string.Empty;
+            lGrade.Text = CurrentPerson.GradeFormatted;
+            lMaritalStatus.Text = CurrentPerson.MaritalStatusValueId.DefinedValue();
+            if ( CurrentPerson.AnniversaryDate.HasValue )
+            {
+                lMaritalStatus.Text += string.Format( " {0} yrs <small>({1})</small>", CurrentPerson.AnniversaryDate.Value.Age(), CurrentPerson.AnniversaryDate.Value.ToMonthDayString() );
+            }
 
-                // Contact Info
-                bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
-                phPhoneDisplay.Visible = showPhoneNumbers;
-                if ( showPhoneNumbers )
+            if ( CurrentPerson.GetFamily( rockContext ) != null && ddlGroup.Items.Count > 1 )
+            {
+                ddlGroup.Visible = true;
+            }
+
+            // Contact Info
+            bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
+            phPhoneDisplay.Visible = showPhoneNumbers;
+            if ( showPhoneNumbers )
+            {
+                if ( CurrentPerson.PhoneNumbers != null )
                 {
-                    if ( CurrentPerson.PhoneNumbers != null )
+                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
+                    rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
+                    rptPhones.DataBind();
+                }
+            }
+
+            lEmail.Text = CurrentPerson.Email;
+
+            // Person Attributes
+            List<Guid> attributeGuidList = GetPersonAttributeGuids( personId );
+            CurrentPerson.LoadAttributes();
+            rptPersonAttributes.DataSource = CurrentPerson.Attributes.Where( a =>
+                 attributeGuidList.Contains( a.Value.Guid ) )
+                .Select( a => new
+                {
+                    Name = a.Value.Name,
+                    Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, CurrentPerson.Id, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                } )
+                .OrderBy( av => av.Name )
+                .ToList()
+                .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
+            rptPersonAttributes.DataBind();
+
+            // Families
+            if ( GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() )
+            {
+                if ( ddlGroup.SelectedValueAsId().HasValue )
+                {
+                    var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
+                    if ( group != null )
                     {
-                        var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
-                        rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                        rptPhones.DataBind();
-                    }
-                }
 
-                lEmail.Text = CurrentPerson.Email;
+                        // Family Name
+                        lGroupName.Text = group.Name;
 
-                // Person Attributes
-                List<Guid> attributeGuidList = GetPersonAttributeGuids( personId );
-                CurrentPerson.LoadAttributes();
-                rptPersonAttributes.DataSource = CurrentPerson.Attributes.Where( a =>
-                     attributeGuidList.Contains( a.Value.Guid ) )
-                    .Select( a => new
-                    {
-                        Name = a.Value.Name,
-                        Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, CurrentPerson.Id, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-                    } )
-                    .OrderBy( av => av.Name )
-                    .ToList()
-                    .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
-                rptPersonAttributes.DataBind();
-
-                // Families
-                if ( GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() )
-                {
-                    if ( ddlGroup.SelectedValueAsId().HasValue )
-                    {
-                        var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-                        if ( group != null )
+                        // Family Address
+                        Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
+                        if ( locationTypeGuid.HasValue )
                         {
+                            var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
 
-                            // Family Name
-                            lGroupName.Text = group.Name;
+                            var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
 
-                            // Family Address
-                            Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
-                            if ( locationTypeGuid.HasValue )
+                            if ( familyGroupTypeGuid.HasValue )
                             {
-                                var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
+                                var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
-                                var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
-
-                                if ( familyGroupTypeGuid.HasValue )
+                                var address = new GroupLocationService( rockContext ).Queryable()
+                                                    .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                                         && l.GroupLocationTypeValueId == addressTypeDv.Id
+                                                         && l.Group.Members.Any( m => m.PersonId == CurrentPerson.Id )
+                                                         && l.Group.Id == group.Id )
+                                                    .Select( l => l.Location )
+                                                    .FirstOrDefault();
+                                if ( address != null )
                                 {
-                                    var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
-
-                                    var address = new GroupLocationService( rockContext ).Queryable()
-                                                        .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                             && l.GroupLocationTypeValueId == addressTypeDv.Id
-                                                             && l.Group.Members.Any( m => m.PersonId == CurrentPerson.Id )
-                                                             && l.Group.Id == group.Id )
-                                                        .Select( l => l.Location )
-                                                        .FirstOrDefault();
-                                    if ( address != null )
-                                    {
-                                        lAddress.Text = string.Format( "<div class='margin-b-md'><b>{0} Address</b><br />{1}</div>", addressTypeDv.Value, address.FormattedHtmlAddress );
-                                    }
+                                    lAddress.Text = string.Format( "<div class='margin-b-md'><b>{0} Address</b><br />{1}</div>", addressTypeDv.Value, address.FormattedHtmlAddress );
                                 }
                             }
-
-                            // Family Attributes
-                            group.LoadAttributes();
-                            List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                            var familyAttributes = group.Attributes.Where( a =>
-                                 familyAttributeGuidList.Contains( a.Value.Guid ) )
-                                .Select( a => new
-                                {
-                                    Name = a.Value.Name,
-                                    Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, group.Id, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-                                } )
-                                .OrderBy( av => av.Name )
-                                .ToList()
-                                .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
-                            if ( familyAttributes.Count() > 0 )
-                            {
-                                lFamilyHeader.Visible = true;
-                                rptGroupAttributes.DataSource = familyAttributes;
-                                rptGroupAttributes.DataBind();
-                            }
-
-                            rptGroupMembers.DataSource = group.Members.Where( gm =>
-                                gm.PersonId != CurrentPerson.Id &&
-                                gm.Person.IsDeceased == false )
-                                .OrderBy( m => m.GroupRole.Order )
-                                .ToList();
-                            rptGroupMembers.DataBind();
                         }
+
+                        // Family Attributes
+                        group.LoadAttributes();
+                        List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
+                        var familyAttributes = group.Attributes.Where( a =>
+                             familyAttributeGuidList.Contains( a.Value.Guid ) )
+                            .Select( a => new
+                            {
+                                Name = a.Value.Name,
+                                Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, group.Id, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                            } )
+                            .OrderBy( av => av.Name )
+                            .ToList()
+                            .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
+                        if ( familyAttributes.Count() > 0 )
+                        {
+                            lFamilyHeader.Visible = true;
+                            rptGroupAttributes.DataSource = familyAttributes;
+                            rptGroupAttributes.DataBind();
+                        }
+
+                        rptGroupMembers.DataSource = group.Members.Where( gm =>
+                            gm.PersonId != CurrentPerson.Id &&
+                            gm.Person.IsDeceased == false )
+                            .OrderBy( m => m.GroupRole.Order )
+                            .ToList();
+                        rptGroupMembers.DataBind();
                     }
                 }
+            }
 
-                if ( String.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.WorkflowLaunchPage ) ) )
-                {
-                    lbRequestChanges.Visible = false;
-                }
+            if ( String.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.WorkflowLaunchPage ) ) )
+            {
+                lbRequestChanges.Visible = false;
             }
 
             hfPersonGuid.Value = Guid.Empty.ToString();
@@ -1171,183 +1174,188 @@ namespace RockWeb.Blocks.Cms
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
             RockContext rockContext = new RockContext();
-            if ( ddlGroup.SelectedValueAsId().HasValue )
+
+            // invalid situation; return and report nothing.
+            if ( ! ddlGroup.SelectedValueAsId().HasValue )
             {
-                var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-                if ( group != null )
+                return;
+            }
+
+
+            var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
+            if ( group != null )
+            {
+                RoleType = null;
+                hfPersonGuid.Value = personGuid.ToString();
+                var person = new Person();
+                if ( personGuid == Guid.Empty )
                 {
-                    RoleType = null;
-                    hfPersonGuid.Value = personGuid.ToString();
-                    var person = new Person();
-                    if ( personGuid == Guid.Empty )
+                    rblRole.DataSource = group.GroupType.Roles.OrderBy( r => r.Order ).ToList();
+                    rblRole.DataBind();
+                    rblRole.Visible = true;
+                    rblRole.Required = true;
+                }
+                else
+                {
+                    person = new PersonService( rockContext ).Get( personGuid );
+                    if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
                     {
-                        rblRole.DataSource = group.GroupType.Roles.OrderBy( r => r.Order ).ToList();
-                        rblRole.DataBind();
-                        rblRole.Visible = true;
-                        rblRole.Required = true;
+                        tbFirstName.Enabled = false;
+                        tbLastName.Enabled = false;
                     }
-                    else
+                }
+
+                if ( ddlGroup.SelectedValueAsId().HasValue )
+                {
+                    if ( person != null )
                     {
-                        person = new PersonService( rockContext ).Get( personGuid );
                         if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
                         {
                             tbFirstName.Enabled = false;
                             tbLastName.Enabled = false;
                         }
-                    }
-
-                    if ( ddlGroup.SelectedValueAsId().HasValue )
-                    {
-
-                        if ( person != null )
+                        imgPhoto.BinaryFileId = person.PhotoId;
+                        imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
+                        dvpTitle.SetValue( person.TitleValueId );
+                        tbFirstName.Text = person.FirstName;
+                        tbNickName.Text = person.NickName;
+                        tbLastName.Text = person.LastName;
+                        dvpSuffix.SetValue( person.SuffixValueId );
+                        bpBirthDay.SelectedDate = person.BirthDate;
+                        rblGender.SelectedValue = person.Gender.ConvertToString();
+                        if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
                         {
-                            if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
+                            _IsEditRecordAdult = false;
+                            tbEmail.Required = false;
+                            // don't display campus selector to children.
+                            cpCampus.Visible = false;
+
+                            if ( person.GraduationYear.HasValue )
                             {
-                                tbFirstName.Enabled = false;
-                                tbLastName.Enabled = false;
-                            }
-                            imgPhoto.BinaryFileId = person.PhotoId;
-                            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
-                            dvpTitle.SetValue( person.TitleValueId );
-                            tbFirstName.Text = person.FirstName;
-                            tbNickName.Text = person.NickName;
-                            tbLastName.Text = person.LastName;
-                            dvpSuffix.SetValue( person.SuffixValueId );
-                            bpBirthDay.SelectedDate = person.BirthDate;
-                            rblGender.SelectedValue = person.Gender.ConvertToString();
-                            if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
-                            {
-                                _IsEditRecordAdult = false;
-                                tbEmail.Required = false;
-                                // don't display campus selector to children.
-                                cpCampus.Visible = false;
-
-                                if ( person.GraduationYear.HasValue )
-                                {
-                                    ypGraduation.SelectedYear = person.GraduationYear.Value;
-                                }
-                                else
-                                {
-                                    ypGraduation.SelectedYear = null;
-                                }
-
-                                ddlGradePicker.Visible = true;
-                                if ( !person.HasGraduated ?? false )
-                                {
-                                    int gradeOffset = person.GradeOffset.Value;
-                                    var maxGradeOffset = ddlGradePicker.MaxGradeOffset;
-
-                                    // keep trying until we find a Grade that has a gradeOffset that includes the Person's gradeOffset (for example, there might be combined grades)
-                                    while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
-                                    {
-                                        gradeOffset++;
-                                    }
-
-                                    ddlGradePicker.SetValue( gradeOffset );
-                                }
-                                else
-                                {
-                                    ddlGradePicker.SelectedIndex = 0;
-                                }
+                                ypGraduation.SelectedYear = person.GraduationYear.Value;
                             }
                             else
                             {
-                                _IsEditRecordAdult = true;
-                                bool requireEmail = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
-                                tbEmail.Required = requireEmail;
-                                ddlGradePicker.Visible = false;
-                                // show/hide campus selector
-                                bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                                cpCampus.Visible = showCampus;
-                                if ( showCampus )
-                                {
-                                    cpCampus.Campuses = CampusCache.All( false );
-                                    cpCampus.SetValue( person.GetCampus() );
-                                }
+                                ypGraduation.SelectedYear = null;
                             }
-                            tbEmail.Text = person.Email;
-                            rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
-                            rblCommunicationPreference.Visible = this.GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
-                            rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
-
-                            // Person Attributes
-                            var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-                            if ( !displayedAttributeGuids.Any() || personGuid == Guid.Empty )
+                            ddlGradePicker.Visible = true;
+                            if ( !person.HasGraduated ?? false )
                             {
-                                pnlPersonAttributes.Visible = false;
+                                int gradeOffset = person.GradeOffset.Value;
+                                var maxGradeOffset = ddlGradePicker.MaxGradeOffset;
+
+                                // keep trying until we find a Grade that has a gradeOffset that includes the Person's gradeOffset (for example, there might be combined grades)
+                                while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
+                                {
+                                    gradeOffset++;
+                                }
+
+                                ddlGradePicker.SetValue( gradeOffset );
                             }
                             else
                             {
-                                pnlPersonAttributes.Visible = true;
-                                DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, true );
+                                ddlGradePicker.SelectedIndex = 0;
                             }
-
-                            // Family Attributes
-                            if ( person.Id == CurrentPerson.Id )
+                        }
+                        else
+                        {
+                            _IsEditRecordAdult = true;
+                            bool requireEmail = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
+                            tbEmail.Required = requireEmail;
+                            ddlGradePicker.Visible = false;
+                            // show/hide campus selector
+                            bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                            cpCampus.Visible = showCampus;
+                            if ( showCampus )
                             {
-                                List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                                if ( familyAttributeGuidList.Any() )
-                                {
-                                    pnlFamilyAttributes.Visible = true;
-                                    DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, true );
-                                }
-                                else
-                                {
-                                    pnlFamilyAttributes.Visible = false;
-                                }
+                                cpCampus.Campuses = CampusCache.All( false );
+                                cpCampus.SetValue( person.GetCampus() );
+                            }
+                        }
+                        tbEmail.Text = person.Email;
+                        rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
-                                Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
-                                if ( locationTypeGuid.HasValue )
-                                {
-                                    pnlAddress.Visible = true;
-                                    var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
+                        rblCommunicationPreference.Visible = this.GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
+                        rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
-                                    // if address type is home enable the move and is mailing/physical
-                                    if ( addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
-                                    {
-                                        lbMoved.Visible = true;
-                                        cbIsMailingAddress.Visible = true;
-                                        cbIsPhysicalAddress.Visible = true;
-                                    }
-                                    else
-                                    {
-                                        lbMoved.Visible = false;
-                                        cbIsMailingAddress.Visible = false;
-                                        cbIsPhysicalAddress.Visible = false;
-                                    }
+                        // Person Attributes
+                        var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
+                        if ( !displayedAttributeGuids.Any() || personGuid == Guid.Empty )
+                        {
+                            pnlPersonAttributes.Visible = false;
+                        }
+                        else
+                        {
+                            pnlPersonAttributes.Visible = true;
+                            DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, true );
+                        }
 
-                                    lAddressTitle.Text = addressTypeDv.Value + " Address";
-
-                                    var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
-
-                                    if ( familyGroupTypeGuid.HasValue )
-                                    {
-                                        var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
-
-                                        var familyAddress = new GroupLocationService( rockContext ).Queryable()
-                                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id
-                                                                 && l.Group.Members.Any( m => m.PersonId == person.Id ) )
-                                                            .FirstOrDefault();
-                                        if ( familyAddress != null )
-                                        {
-                                            acAddress.SetValues( familyAddress.Location );
-
-                                            cbIsMailingAddress.Checked = familyAddress.IsMailingLocation;
-                                            cbIsPhysicalAddress.Checked = familyAddress.IsMappedLocation;
-                                        }
-                                    }
-                                }
+                        // Family Attributes
+                        if ( person.Id == CurrentPerson.Id )
+                        {
+                            List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
+                            if ( familyAttributeGuidList.Any() )
+                            {
+                                pnlFamilyAttributes.Visible = true;
+                                DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, true );
                             }
                             else
                             {
                                 pnlFamilyAttributes.Visible = false;
-                                pnlAddress.Visible = false;
                             }
 
-                            BindPhoneNumbers( person );
+                            Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
+                            if ( locationTypeGuid.HasValue )
+                            {
+                                pnlAddress.Visible = true;
+                                var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
+
+                                // if address type is home enable the move and is mailing/physical
+                                if ( addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
+                                {
+                                    lbMoved.Visible = true;
+                                    cbIsMailingAddress.Visible = true;
+                                    cbIsPhysicalAddress.Visible = true;
+                                }
+                                else
+                                {
+                                    lbMoved.Visible = false;
+                                    cbIsMailingAddress.Visible = false;
+                                    cbIsPhysicalAddress.Visible = false;
+                                }
+
+                                lAddressTitle.Text = addressTypeDv.Value + " Address";
+
+                                var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+
+                                if ( familyGroupTypeGuid.HasValue )
+                                {
+                                    var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
+
+                                    var familyAddress = new GroupLocationService( rockContext ).Queryable()
+                                                        .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                                                && l.GroupLocationTypeValueId == addressTypeDv.Id
+                                                                && l.Group.Members.Any( m => m.PersonId == person.Id ) )
+                                                        .FirstOrDefault();
+                                    if ( familyAddress != null )
+                                    {
+                                        acAddress.SetValues( familyAddress.Location );
+
+                                        cbIsMailingAddress.Checked = familyAddress.IsMailingLocation;
+                                        cbIsPhysicalAddress.Checked = familyAddress.IsMappedLocation;
+                                    }
+                                }
+                            }
                         }
+                        else
+                        {
+                            pnlFamilyAttributes.Visible = false;
+                            pnlAddress.Visible = false;
+                        }
+
+                        BindPhoneNumbers( person );
+                        
                     }
                 }
             }
@@ -1355,6 +1363,7 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = false;
             pnlEdit.Visible = true;
         }
+
         private void BindPhoneNumbers( Person person = null )
         {
             if ( person == null ) person = new Person();

@@ -113,6 +113,9 @@ namespace Rock.Client
     public partial class FinancialGateway : FinancialGatewayEntity
     {
         /// <summary />
+        public int /* DayOfWeek*/? BatchDayOfWeek { get; set; }
+
+        /// <summary />
         public long BatchTimeOffsetTicks { get; set; }
 
         /// <summary />

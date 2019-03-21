@@ -442,6 +442,7 @@
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
     <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
     <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
     <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
@@ -487,6 +488,7 @@
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
     <Compile Include="Utility\EnumOrderAttribute.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
