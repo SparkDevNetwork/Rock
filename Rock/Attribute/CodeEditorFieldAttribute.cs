@@ -59,7 +59,7 @@ namespace Rock.Attribute
         /// <value>
         /// The editor mode.
         /// </value>
-        public CodeEditorMode EditorMode
+        public virtual CodeEditorMode EditorMode
         {
             get
             {
@@ -78,7 +78,7 @@ namespace Rock.Attribute
         /// <value>
         /// The editor theme.
         /// </value>
-        public CodeEditorTheme EditorTheme
+        public virtual CodeEditorTheme EditorTheme
         {
             get
             {
@@ -97,7 +97,7 @@ namespace Rock.Attribute
         /// <value>
         /// The height of the editor.
         /// </value>
-        public int EditorHeight
+        public virtual int EditorHeight
         {
             get
             {

@@ -93,8 +93,7 @@ namespace Rock.Tests.Integration
             }
             catch ( Exception ex )
             {
-
-                //throw;
+                throw ex;
             }
            
         }

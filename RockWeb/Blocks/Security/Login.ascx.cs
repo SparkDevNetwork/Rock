@@ -253,7 +253,10 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
-                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        var isSuccess = component.AuthenticateAndTrack( userLogin, tbPassword.Text );
+                        rockContext.SaveChanges();
+
+                        if ( isSuccess )
                         {
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;

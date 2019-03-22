@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     /// </summary>
     [DisplayName( "Schedule Builder" )]
     [Category( "Check-in" )]
-    [Description( "Helps to build schedules to be used for checkin." )]
+    [Description( "Helps to build schedules used for check-in." )]
     public partial class CheckinScheduleBuilder : RockBlock, ICustomGridOptions
     {
         private int? _groupTypeId = null;
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gGroupLocationSchedule_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            // add tooltip to header columns
+            // add tool-tip to header columns
             if ( e.Row.RowType == DataControlRowType.Header )
             {
                 var scheduleService = new ScheduleService( new RockContext() );
@@ -375,7 +375,7 @@ namespace RockWeb.Blocks.CheckIn
                 qryList = qryList.Where( a => currentAndDescendantLocationIds.Contains( a.Location.Id ) ).ToList();
             }
 
-            // put stuff in a datatable so we can dynamically have columns for each Schedule
+            // put stuff in a DataTable so we can dynamically have columns for each Schedule
             DataTable dataTable = new DataTable();
             dataTable.Columns.Add( "GroupLocationId" );
             dataTable.Columns.Add( "GroupId" );
@@ -499,7 +499,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             var groupTypes = new List<GroupType>();
 
-            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
+            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Check-in Template
             // or with group types that allow multiple locations/schedules and support named locations
             int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
@@ -512,14 +512,14 @@ namespace RockWeb.Blocks.CheckIn
                 .Select( t => t.Id )
                 .ToList();
 
-            // Now find all their descendents (so we can exclude them in a sec)
+            // Now find all their descendants (so we can exclude them in a sec)
             var descendentGroupTypeIds = new List<int>();
             foreach ( int id in checkInGroupTypeIds )
             {
                 descendentGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( id ).Select( a => a.Id ).ToList() );
             }
 
-            // Now query again for all the types that have a purpose of 'Check-in Template' or support check-in outside of being a descendent of the template
+            // Now query again for all the types that have a purpose of 'Check-in Template' or support check-in outside of being a descendant of the template
             var groupTypeList = groupTypeService.Queryable()
                 .Where( a =>
                     checkInGroupTypeIds.Contains( a.Id ) ||
@@ -533,6 +533,7 @@ namespace RockWeb.Blocks.CheckIn
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
+
             foreach ( var groupType in groupTypeList )
             {
                 // Make sure the group type supports named locations (we can't query on this in the above qry)

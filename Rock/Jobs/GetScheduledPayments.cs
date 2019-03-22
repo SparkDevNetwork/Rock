@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
     [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 4 )]
     [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 5)]
-    [FinancialGatewayField( "Target Gateway", "By default payments will download from all active financial gateways.  Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.", false, "", "", 6 )]
+    [FinancialGatewayField( "Target Gateway", "By default payments will download from all active financial gateways. Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.", false, "", "", 6 )]
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
@@ -49,13 +49,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Job that updates the JobPulse setting with the current date/time.
-        /// This will allow us to notify an admin if the jobs stop running.
-        ///
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
+        /// Executes the specified context.
         /// </summary>
+        /// <param name="context">The context.</param>
+        /// <exception cref="Exception">
+        /// One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine )
+        /// </exception>
         public virtual void Execute( IJobExecutionContext context )
         {
             var exceptionMsgs = new List<string>();
