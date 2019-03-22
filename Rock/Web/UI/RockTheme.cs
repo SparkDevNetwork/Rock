@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using System.Web;
 using dotless.Core;
 using dotless.Core.configuration;
+using dotless.Core.Loggers;
 
 namespace Rock.Web.UI
 {
@@ -123,6 +124,9 @@ namespace Rock.Web.UI
                     dotLessConfiguration.MinifyOutput = true;
                     dotLessConfiguration.DisableVariableRedefines = true;
                     //dotLessConfiguration.RootPath = themeDirectory.FullName;
+                    dotLessConfiguration.Logger = typeof( DotlessLogger );
+                    dotLessConfiguration.LogLevel = LogLevel.Warn;
+
                     var origDirectory = Directory.GetCurrentDirectory();
                     try
                     {
@@ -135,14 +139,27 @@ namespace Rock.Web.UI
                                 // don't compile files that start with an underscore
                                 foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
                                 {
-                                    string cssSource = LessWeb.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
-                                    File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
 
-                                    // check for compile errors (an empty css source returned)
-                                    if ( cssSource == string.Empty )
+                                    ILessEngine lessEngine = new EngineFactory( dotLessConfiguration ).GetEngine( new AspNetContainerFactory() );
+
+                                    string cssSource = lessEngine.TransformToCss( File.ReadAllText( file.FullName ), null );
+
+                                    // Check for compile errors
+                                    if ( lessEngine.LastTransformationSuccessful )
+                                    {
+                                        File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+                                    }
+                                    else
                                     {
                                         messages += "A compile error occurred on " + file.Name;
                                         compiledSuccessfully = false;
+
+                                        // Try to get the logger instance fron the underlying engine
+                                        var loggerInstance = ( ( ( lessEngine as ParameterDecorator )?.Underlying as CacheDecorator )?.Underlying as LessEngine )?.Logger as DotlessLogger;
+                                        if ( loggerInstance != null )
+                                        {
+                                            messages += "\n" + string.Join( "\n", loggerInstance.LogLines ) + "\n";
+                                        }
                                     }
                                 }
                             }
@@ -360,6 +377,18 @@ namespace Rock.Web.UI
                 DirectoryInfo nextTargetSubDir =
                     target.CreateSubdirectory( diSourceSubDir.Name );
                 CopyAll( diSourceSubDir, nextTargetSubDir );
+            }
+        }
+        
+        private class DotlessLogger : Logger
+        {
+            public List<string> LogLines = new List<string>();
+
+            public DotlessLogger( LogLevel level ): base( level ) { }
+
+            protected override void Log( string message )
+            {
+                LogLines.Add( message );
             }
         }
     }
