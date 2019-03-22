@@ -28,25 +28,40 @@
         /// </summary>
         private void CreatePersonBirthdatePersistedIndexed()
         {
+            // NOTE: Sql Server 2012 (prior to SP4) has a bug where TRY_CONVERT thinks that style 126 is non-deterministic
             Sql( @"
-IF EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_BirthDate' AND object_id = OBJECT_ID('Person'))
+if (charindex( 'SQL Server 2012', @@VERSION) = 0 or charindex( 'SQL Server 2012 (SP4', @@VERSION) > 0)
 BEGIN
-    DROP INDEX [IX_BirthDate] ON [Person]
-END
+	IF EXISTS (
+			SELECT *
+			FROM sys.indexes
+			WHERE name = 'IX_BirthDate'
+				AND object_id = OBJECT_ID('Person')
+			)
+	BEGIN
+		DROP INDEX [IX_BirthDate] ON [Person]
+	END
 
-ALTER TABLE [Person]
-DROP COLUMN BirthDate
+	ALTER TABLE [Person]
 
--- Calculate Birthdate using TRY_CONVERT to guard against bad dates, and use 126 style so that it'll parse as style 126 (ISO-8601) which is deterministic which will let it be persisted
-ALTER TABLE [Person] ADD [BirthDate] AS CASE 
-		WHEN BirthYear IS NOT NULL
-			THEN TRY_CONVERT(DATE, CONVERT(VARCHAR, [BirthYear]) + '-' + CONVERT(VARCHAR, [BirthMonth]) + '-' + CONVERT(VARCHAR, [BirthDay]), 126)
-		ELSE NULL
-		END PERSISTED
+	DROP COLUMN BirthDate
 
-IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_BirthDate' AND object_id = OBJECT_ID('Person'))
-BEGIN
-    CREATE INDEX [IX_BirthDate] ON [Person] ([BirthDate])
+	-- Calculate Birthdate using TRY_CONVERT to guard against bad dates, and use 126 style so that it'll parse as style 126 (ISO-8601) which is deterministic which will let it be persisted
+	ALTER TABLE [Person] ADD [BirthDate] AS CASE 
+			WHEN BirthYear IS NOT NULL
+				THEN TRY_CONVERT(DATE, CONVERT(VARCHAR, [BirthYear]) + '-' + CONVERT(VARCHAR, [BirthMonth]) + '-' + CONVERT(VARCHAR, [BirthDay]), 126)
+			ELSE NULL
+			END PERSISTED
+
+	IF NOT EXISTS (
+			SELECT *
+			FROM sys.indexes
+			WHERE name = 'IX_BirthDate'
+				AND object_id = OBJECT_ID('Person')
+			)
+	BEGIN
+		CREATE INDEX [IX_BirthDate] ON [Person] ([BirthDate])
+	END
 END
 " );
         }
