@@ -3477,6 +3477,9 @@ namespace Rock.Lava
 
             if ( input != null )
             {
+                // Don't call Redirect with a false -- we want it to throw the thread abort exception
+                // so remaining lava does not continue to execute.  We'll catch the exception in the
+                // LavaExtension's ResolveMergeFields method.
                 HttpContext.Current.Response.Redirect( input, true );
             }
 
