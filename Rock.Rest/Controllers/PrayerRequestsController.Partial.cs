@@ -154,8 +154,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PrayerRequests/GetByPersonsGroupAndGroupTypes/{personId}" )]
-        public IQueryable<PrayerRequest> GetByPersonsGroupAndGroupTypes( string groupTypeIds, int personId )
+        [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes/{personId}" )]
+        public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( string groupTypeIds, int personId )
         {
             RockContext rockContext = new RockContext();
             System.DateTime now = RockDateTime.Now;
