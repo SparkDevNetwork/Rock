@@ -353,6 +353,12 @@ textarea,
   border-radius: 50%;
 }
 
+.grid-select-cell .status-list .badge {
+  width: (@line-height-computed - 4px);
+  height: (@line-height-computed - 4px);
+  border-radius: 50%;
+}
+
 /*#endregion */
 
 /*#region
@@ -1359,6 +1365,13 @@ body.navbar-side-open {
 
   label { // Override forms.less
     padding-left: 0;
+  }
+}
+
+.controls {
+  .checkbox:first-child,
+  .checkbox:last-child {
+    margin-top: 7px;
   }
 }
 

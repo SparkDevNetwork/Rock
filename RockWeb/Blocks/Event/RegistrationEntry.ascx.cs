@@ -3652,7 +3652,7 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanel;
 
-            if ( CurrentPanel == 2 )
+            if ( CurrentPanel == 2 && !(RegistrationState.RegistrationId.HasValue &&  RegistrationState.DiscountCode.IsNotNullOrWhiteSpace()) )
             {
                 AutoApplyDiscounts();
             }

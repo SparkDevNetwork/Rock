@@ -574,6 +574,8 @@ namespace Rock.Model
                 return false;
             }
 
+            templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
+
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( templateHtml );
 

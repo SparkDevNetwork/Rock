@@ -534,33 +534,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Validates the group membership.
+        /// Validates the group member does not already exist based on GroupId, GroupRoleId, and PersonId
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupType">Type of the group.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        private bool ValidateGroupMemberDuplicateMember( RockContext rockContext, GroupTypeCache groupType, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            // load group including members to save queries in group member validation
             var groupService = new GroupService( rockContext );
-            var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
+            var group = this.Group ?? groupService.Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
-            var groupType = GroupTypeCache.Get( group.GroupTypeId );
-            var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
-
-            var existingGroupMembership = group.Members.Where( m => m.PersonId == this.PersonId );
-
-            // check to see if the person is already a member of the group/role
-            bool allowDuplicateGroupMembers = groupService.AllowsDuplicateMembers( group );
-
-            if ( !allowDuplicateGroupMembers )
+            if ( !groupService.AllowsDuplicateMembers( group ) )
             {
-                if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
+                var groupMember = new GroupMemberService( rockContext ).GetByGroupIdAndPersonIdAndGroupRoleId( this.GroupId, this.PersonId, this.GroupRoleId );
+                if ( groupMember != null && groupMember.Id != this.Id )
                 {
                     var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
 
+                    var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
                     errorMessage = string.Format(
                         "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
                         person,
@@ -571,14 +564,56 @@ namespace Rock.Model
                 }
             }
 
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the group membership.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var groupService = new GroupService( rockContext );
+            var group = this.Group ?? new GroupService( rockContext ).Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            if ( groupType == null )
+            {
+                // For some reason we could not get a GroupType
+                errorMessage = $"The GroupTypeId {group.GroupTypeId} used by {this.Group.Name} does not exist.";
+                return false;
+            }
+
+            var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
+            if ( groupRole == null )
+            {
+                // For some reason we could not get a GroupTypeRole for the GroupRoleId for this GroupMember.
+                errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {this.Group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
+                return false;
+            }
+
+            // Verify duplicate role/person
+            if ( !groupService.AllowsDuplicateMembers( group ) )
+            {
+                if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
+                {
+                    return false;
+                }
+            }
+
+            // Verify max group role membership
             if ( groupRole.MaxCount.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
                 int memberCountInRole = group.Members
-                                            .Where( m =>
-                                                m.GroupRoleId == this.GroupRoleId
-                                                && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                            .Where( m => m != this )
-                                            .Count();
+                        .Where( m =>
+                            m.GroupRoleId == this.GroupRoleId
+                            && m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Where( m => m != this )
+                        .Count();
 
                 bool roleMembershipAboveMax = false;
 
@@ -608,11 +643,11 @@ namespace Rock.Model
                 if ( roleMembershipAboveMax )
                 {
                     errorMessage = string.Format(
-                "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
-                groupRole.Name.Pluralize().ToLower(),
-                groupType.GroupTerm.ToLower(),
-                groupRole.MaxCount,
-                groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
+                        "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
+                        groupRole.Name.Pluralize().ToLower(),
+                        groupType.GroupTerm.ToLower(),
+                        groupRole.MaxCount,
+                        groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
                     return false;
                 }
             }
@@ -637,17 +672,21 @@ namespace Rock.Model
             }
 
             // check group capacity
-            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
+            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
                 var currentActiveGroupMemberCount = group.ActiveMembers().Count();
+                var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
 
                 // check if this would be adding an active group member (new active group member or changing existing group member status to active)
-                if (
-                    ( this.Id.Equals( 0 ) && this.GroupMemberStatus == GroupMemberStatus.Active )
-                    || ( !this.Id.Equals( 0 )
-                            && existingGroupMembership.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any()
-                            && this.GroupMemberStatus == GroupMemberStatus.Active )
-                   )
+                if ( this.Id == 0 )
+                {
+                    if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
+                    {
+                        errorMessage = "Adding this individual would put the group over capacity.";
+                        return false;
+                    }
+                }
+                else if ( existingGroupMembershipForPerson.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any() )
                 {
                     if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
                     {

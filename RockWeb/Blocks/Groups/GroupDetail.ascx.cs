@@ -687,7 +687,7 @@ namespace RockWeb.Blocks.Groups
             if ( scheduleType == ScheduleType.Custom )
             {
                 iCalendarContent = sbSchedule.iCalendarContent;
-                var calEvent = ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
+                var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
                 if ( calEvent == null || calEvent.DTStart == null )
                 {
                     scheduleType = ScheduleType.None;

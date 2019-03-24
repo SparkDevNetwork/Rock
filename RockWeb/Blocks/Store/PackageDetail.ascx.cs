@@ -370,6 +370,13 @@ namespace RockWeb.Blocks.Store
             return "http://www.rockrms.com/" + url;
         }
 
+        protected string FormatRating( int ratings )
+        {
+            var mergeValues = new Dictionary<string, object>();
+            mergeValues.AddOrIgnore( "Rating", ratings );
+            return "{{ Rating | RatingMarkup }}".ResolveMergeFields( mergeValues );
+        }
+
         protected string FormatReviewText(string reviewText )
         {
             return reviewText.Replace( "\r\n", "<br />" ).Replace( Environment.NewLine, "<br />" ).Replace( "\n", "<br />" );
