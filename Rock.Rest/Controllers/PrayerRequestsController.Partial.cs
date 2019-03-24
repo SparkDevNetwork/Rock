@@ -160,13 +160,13 @@ namespace Rock.Rest.Controllers
             RockContext rockContext = new RockContext();
             System.DateTime now = RockDateTime.Now;
 
-            // Turn the comma separated list of groupTypeIds into a list of strings.
-            List<string> groupTypeIdsList = ( groupTypeIds ?? "" ).Split( ',' ).ToList();
+            // Turn the comma separated list of groupTypeIds into a list of integers.
+            List<int> groupTypeIdsList = ( groupTypeIds ?? "" ).Split( ',' ).AsIntegerList();
 
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId( personId )   // Get the groups that a person is a part of
-                .Where( gm => groupTypeIdsList.Contains( gm.Group.GroupTypeId.ToString() ) )    // Filter those groups by a set of passed in group types
+                .Where( gm => groupTypeIdsList.Contains( gm.Group.GroupTypeId ) )    // Filter those groups by a set of passed in group types
                 .SelectMany( gm => gm.Group.Members )   // Get the members of those groups
                 .Where( m => m.PersonId != personId )   // Filter out the passed in person
                 .Select( m => m.Person.Aliases.FirstOrDefault().Id );   // Return the person alias ids
