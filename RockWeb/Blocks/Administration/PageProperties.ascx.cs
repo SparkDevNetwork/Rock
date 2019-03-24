@@ -781,9 +781,7 @@ namespace RockWeb.Blocks.Administration
                         }
                         else
                         {
-                            var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
-                            pageAndRouteIds.Add( pageAndRouteId );
-                            RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
+                            RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteId );
                         }
                     }
                 }

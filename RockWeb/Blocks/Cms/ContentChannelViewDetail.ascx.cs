@@ -1,4 +1,8 @@
-﻿// <copyright>
+﻿/////
+///// IMPORTANT NOTE:  This block was renamed ContentChannelItemView in develop. If there are fixes in any 1.8.x hotfixes, you'll have to manually make the same changes in ContentChannelItemView when merging
+/////
+
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +33,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Field.Types;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -39,7 +44,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
+    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
     [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
     [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
@@ -227,7 +232,8 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
@@ -299,7 +305,8 @@ Guid - ContentChannelItem Guid
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
             this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
-            this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
+            var ppFieldType = new PageReferenceFieldType();
+            this.SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
@@ -468,8 +475,15 @@ Guid - ContentChannelItem Guid
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
-                mergeFields.Add( "DetailPage", GetAttributeValue( "DetailPage" ) );
 
+                int detailPage = 0;
+                var page = PageCache.Get( GetAttributeValue( "DetailPage" ) );
+                if ( page != null )
+                {
+                    detailPage = page.Id;
+                }
+
+                mergeFields.Add( "DetailPage", detailPage );
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
 
                 if ( !string.IsNullOrWhiteSpace( metaDescriptionValue ) )
