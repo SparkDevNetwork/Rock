@@ -801,7 +801,7 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
 
-                foreach (var attribute in RegistrationAttributesState)
+                foreach ( var attribute in RegistrationAttributesState )
                 {
                     var newAttribute = attribute.Clone( false );
                     newAttribute.EntityTypeQualifierValue = null;
@@ -831,6 +831,23 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
+
+            // validate gateway
+            int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
+            if ( gatewayId.HasValue )
+            {
+                var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
+                if ( financialGateway != null )
+                {
+                    if ( financialGateway.GetGatewayComponent() is Rock.Financial.IHostedGatewayComponent )
+                    {
+                        nbValidationError.Text = "Unsupported Gateway. Registration doesn't currently support Gateways that have a hosted payment interface.";
+                        nbValidationError.Visible = true;
+                        return;
+                    }
+                }
+            }
+
             var service = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
@@ -2948,7 +2965,7 @@ The logged-in person's information will be used to complete the registrar inform
             // ensure Registration Attributes have order set
             int order = 0;
             RegistrationAttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
-            
+
             gRegistrationAttributes.DataSource = RegistrationAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gRegistrationAttributes.DataBind();
         }
@@ -3406,6 +3423,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion Dialog Methods
 
-        
+
     }
 }

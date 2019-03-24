@@ -16,18 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Web.UI;
+using System.Data.Entity;
 using System.Linq;
-
+using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Data.Entity;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of binary file types
+    /// Field Type used to display a dropdown list of Financial Gateways.
+    /// Stored as FinancialGateway.Guid
     /// </summary>
     [Serializable]
     public class FinancialGatewayFieldType : FieldType
@@ -52,11 +52,8 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid.Value );
-                    if ( financialGateway != null )
-                    {
-                        formattedValue = financialGateway.Name;
-                    }
+                    var financialGatewayName = new FinancialGatewayService( rockContext ).GetSelect( financialGatewayGuid.Value, s => s.Name );
+                    formattedValue = financialGatewayName;
                 }
             }
 
@@ -78,7 +75,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new FinancialGatewayPicker { ID = id, ShowAll = false }; 
+            return new FinancialGatewayPicker { ID = id, ShowAll = false };
         }
 
         /// <summary>
@@ -94,7 +91,7 @@ namespace Rock.Field.Types
             {
                 int? itemId = picker.SelectedValue.AsIntegerOrNull();
                 Guid? itemGuid = null;
-                if ( itemId.HasValue)
+                if ( itemId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {

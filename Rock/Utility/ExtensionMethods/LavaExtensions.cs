@@ -673,6 +673,11 @@ namespace Rock
 
                 return result;
             }
+            catch ( System.Threading.ThreadAbortException )
+            {
+                // Do nothing...it's just a Lava PageRedirect that just happened.
+                return string.Empty;
+            }
             catch ( Exception ex )
             {
                 if ( throwExceptionOnErrors )
