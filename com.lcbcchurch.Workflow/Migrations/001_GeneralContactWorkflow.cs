@@ -226,7 +226,26 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue("EED11036-BC0F-480C-9CBE-F922536B8DE5","50B01639-4938-40D2-A791-AA0EB4F86847",@"False"); // General Contact:Request:Persist the Workflow:Active
             RockMigrationHelper.AddActionTypeAttributeValue("EED11036-BC0F-480C-9CBE-F922536B8DE5","86F795B0-0CB6-4DA4-9CE4-B11D0922F361",@""); // General Contact:Request:Persist the Workflow:Order
             RockMigrationHelper.AddActionTypeAttributeValue("EED11036-BC0F-480C-9CBE-F922536B8DE5","E22BE348-18B1-4420-83A8-6319B35416D2",@"False"); // General Contact:Request:Persist the Workflow:Persist Immediately
-            RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"{% assign group = Workflow | Attribute:'AdminGroup','Object' %} {% assign personGuid = '' %} {% for gm in group.Members %}     {% if personGuid == '' %}         {% assign memberCampuses = gm | Attribute:'Campus','RawValue' %}         {% assign requestCampusGuid = Workflow | Attribute:'Campus','Guid' %}          {% if requestCampusGuid != '' %}             {% if memberCampuses contains requestCampusGuid %}                 {% assign personGuid = gm.Person.PrimaryAlias.Guid %}             {% elseif memberCampuses == '' %}                 {% assign personGuid = gm.Person.PrimaryAlias.Guid %}             {% endif %}         {% else %}             {% assign personGuid = gm.Person.PrimaryAlias.Guid %}         {% endif %}     {% endif %} {% endfor %} {{personGuid}} " ); // General Contact:Request:Get Initial Worker Guid:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"
+{% assign group = Workflow | Attribute:'AdminGroup','Object' %}
+{% assign personGuid = '' %}
+{% for gm in group.Members %}
+    {% if personGuid == '' %}
+        {% assign memberCampuses = gm | Attribute:'Campus','RawValue' %}
+        {% assign requestCampusGuid = Workflow | Attribute:'Campus','Guid' %}
+
+        {% if requestCampusGuid != '' %}
+            {% if memberCampuses contains requestCampusGuid %}
+                {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+            {% elseif memberCampuses == '' %}
+                {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+            {% endif %}
+        {% else %}
+            {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{{personGuid}} " ); // General Contact:Request:Get Initial Worker Guid:Lava
             RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","F1924BDC-9B79-4018-9D4A-C3516C87A514",@"False"); // General Contact:Request:Get Initial Worker Guid:Active
             RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","1B833F48-EFC2-4537-B1E3-7793F6863EAA",@""); // General Contact:Request:Get Initial Worker Guid:Order
             RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","431273C6-342D-4030-ADC7-7CDEDC7F8B27",@"59f2f9b3-ca30-4b77-8bb3-fdf035d3e63b"); // General Contact:Request:Get Initial Worker Guid:Attribute
