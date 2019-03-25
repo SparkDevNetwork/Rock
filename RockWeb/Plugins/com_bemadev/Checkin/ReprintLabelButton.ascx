@@ -9,19 +9,6 @@
 
 <script>
 
-    function displayReprintButton() {
-
-        if ($(".controls.kioskmanager-actions.checkin-actions").length) {
-            $("[id$='btnReprint']").prependTo($(".controls.kioskmanager-actions.checkin-actions"));
-        }
-    }
-
-    if (window.addEventListener) {
-        window.addEventListener('load', displayReprintButton, false); //W3C
-    } else {
-        window.attachEvent('onload', displayReprintButton); //IE
-    }
-
     function startReprintListener() {
         var mutationObserver = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
@@ -32,6 +19,10 @@
 
                     if (!$(".controls.kioskmanager-actions.checkin-actions").length && $("[id$='btnReprint']").is(':visible')) {
                         $("[id$='btnReprint']").hide();
+                    }
+
+                    if ($(".controls.kioskmanager-actions.checkin-actions").children("[id$='btnReprint']").length == 0) {
+                        $("[id$='btnReprint']").prependTo($(".controls.kioskmanager-actions.checkin-actions"));
                     }
                 }
             });
