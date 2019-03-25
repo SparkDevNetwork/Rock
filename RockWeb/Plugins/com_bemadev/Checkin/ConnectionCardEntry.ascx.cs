@@ -809,6 +809,12 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             {
                 personAlias = person.PrimaryAlias;
                 familyGroup = person.GetFamily();
+                person.FirstName = tbFirstName.Text;
+                person.LastName = tbLastName.Text;
+                person.Email = tbEmail.Text;
+                person.BirthMonth = bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Month : null;
+                person.BirthDay = bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Day : null;
+                person.BirthYear = bpBirthDay.SelectedDate.HasValue ? ( int? ) bpBirthDay.SelectedDate.Value.Year : null;
             }
             else
             {
