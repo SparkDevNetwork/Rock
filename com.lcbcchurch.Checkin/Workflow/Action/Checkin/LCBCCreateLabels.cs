@@ -180,7 +180,7 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
             {
                 pagerNumber = pagerNumberParameters.Max();
             }
-            mergeObjects.Add( "PagerNumber", location );
+            mergeObjects.Add( "PagerNumber", pagerNumber );
 
             var groupMembers = groupMemberService.Queryable().AsNoTracking()
                 .Where( m =>
