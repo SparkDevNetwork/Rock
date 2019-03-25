@@ -8,20 +8,7 @@
 </asp:UpdatePanel>
 
 <script>
-    function displayRosterButton() {
-        if ($(".controls.kioskmanager-actions.checkin-actions").length) {
-
-            $("[id$='btnPrintRoster']").prependTo($(".controls.kioskmanager-actions.checkin-actions"));
-        }
-    }
-    if (window.addEventListener) {
-        window.addEventListener('load', displayRosterButton, false); //W3C
-    } else {
-        window.attachEvent('onload', displayRosterButton); //IE
-    }
-
-
-    function startRosterListener() {
+function startRosterListener() {
         var mutationObserver = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 for (var i = 0; i < mutation.addedNodes.length; i++) {
@@ -31,6 +18,10 @@
 
                     if (!$(".controls.kioskmanager-actions.checkin-actions").length && $("[id$='btnPrintRoster']").is(':visible')) {
                         $("[id$='btnPrintRoster']").hide();
+                    }
+
+                    if ($(".controls.kioskmanager-actions.checkin-actions").children("[id$='btnPrintRoster']").length == 0) {
+                        $("[id$='btnPrintRoster']").prependTo($(".controls.kioskmanager-actions.checkin-actions"));
                     }
                 }
             });

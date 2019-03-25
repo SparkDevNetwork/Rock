@@ -117,6 +117,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         {
             base.OnLoad( e );
 
+            string script = string.Format( @"
+            <script>
+                function GetPagerSelection() {{
+                    $('#{0}').button('loading')
+                    return true;
+                }}
+            </script>
+        ", lbSelect.ClientID );
+            Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectPager", script );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;

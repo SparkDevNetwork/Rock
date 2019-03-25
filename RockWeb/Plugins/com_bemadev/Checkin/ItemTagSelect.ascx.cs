@@ -248,12 +248,15 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
 
         private void ClearSelection()
         {
-            var person = CurrentCheckInState.CheckIn.CurrentPerson;
-            if ( person != null )
+            if ( CurrentCheckInState != null )
             {
-                var schedule = person.CurrentSchedule;
-                var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
-                person.StateParameters.Remove( itemTagKey );
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
+                {
+                    var schedule = person.CurrentSchedule;
+                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                    person.StateParameters.Remove( itemTagKey );
+                }
             }
         }
 
