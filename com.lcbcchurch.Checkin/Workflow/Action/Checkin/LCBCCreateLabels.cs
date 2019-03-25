@@ -179,33 +179,6 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                     //    AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
 
                                     //}
-
-                                    //var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
-                                    //if ( itemTagParameters.Any() && !itemTagsPrinted )
-                                    //{
-                                    //    itemTagsPrinted = true;
-                                    //    var numberOfTags = itemTagParameters.Max();
-                                    //    if ( numberOfTags > 0 )
-                                    //    {
-                                    //        var binaryFileGuid = GetAttributeValue( action, "ItemTagLabel" ).AsGuidOrNull();
-                                    //        if ( binaryFileGuid != null )
-                                    //        {
-
-                                    //            var labelCache = KioskLabel.Get( binaryFileGuid.Value );
-                                    //            if ( labelCache != null && (
-                                    //                labelCache.LabelType == KioskLabelType.Family ||
-                                    //                labelCache.LabelType == KioskLabelType.Person ||
-                                    //                labelCache.LabelType == KioskLabelType.Location ) )
-                                    //            {
-                                    //                for ( int i = 0; i < numberOfTags; i++ )
-                                    //                {
-                                    //                    AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
-                                    //                }
-                                    //            }
-                                    //        }
-                                    //    }
-
-                                    //}
                                 }
                             }
                         }
@@ -233,6 +206,14 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
             mergeObjects.Add( "Person", person );
             mergeObjects.Add( "People", people );
             mergeObjects.Add( "GroupType", groupType );
+
+            string pagerNumber = string.Empty;
+            var pagerNumberParameters = person.StateParameters.Where( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList();
+            if ( pagerNumberParameters.Any())
+            {
+                 pagerNumber = pagerNumberParameters.Max();               
+            }
+            mergeObjects.Add( "PagerNumber", location );
 
             var groupMembers = groupMemberService.Queryable().AsNoTracking()
                 .Where( m =>
