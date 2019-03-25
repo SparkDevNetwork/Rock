@@ -47,50 +47,54 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
             var reportPage = new PageService( rockContext ).Get( Guid.Parse( "B3FAE8FA-4023-4239-9C28-F9D2C5285612" ) );
             if ( reportPage != null )
             {
-                //only gets the first campus it finds from the first location it pulls in kiosk config
-                var location = new DeviceService( rockContext ).Get( CurrentCheckInState.Kiosk.Device.Guid ).Locations.FirstOrDefault();
-                if ( location != null )
+                if ( CurrentCheckInState != null )
                 {
-                    string locationIdList = "";
-                    if ( this.CurrentKioskId.HasValue )
+                    //only gets the first campus it finds from the first location it pulls in kiosk config
+                    var location = new DeviceService( rockContext ).Get( CurrentCheckInState.Kiosk.Device.Guid ).Locations.FirstOrDefault();
+                    if ( location != null )
                     {
-                        var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
-                        locationIdList = groupTypesLocations
-                           .Select( a => a.Id )
-                           .ToList().AsDelimited( "%2C" );
-                    }
-
-                    List<int> scheduleIdList = new List<int>();
-                    if ( CurrentCheckInState != null && CurrentCheckInState.Kiosk != null )
-                    {
-                        foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
+                        string locationIdList = "";
+                        if ( this.CurrentKioskId.HasValue )
                         {
-                            foreach ( var group in groupType.KioskGroups )
+                            var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
+                            locationIdList = groupTypesLocations
+                               .Select( a => a.Id )
+                               .ToList().AsDelimited( "%2C" );
+                        }
+
+                        List<int> scheduleIdList = new List<int>();
+                        if ( CurrentCheckInState != null && CurrentCheckInState.Kiosk != null )
+                        {
+                            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
                             {
-                                foreach ( var kioskLocation in group.KioskLocations )
+                                foreach ( var group in groupType.KioskGroups )
                                 {
-                                    foreach ( var schedule in kioskLocation.KioskSchedules )
+                                    foreach ( var kioskLocation in group.KioskLocations )
                                     {
-                                        if ( schedule.Schedule.WasScheduleActive( DateTime.Now ) )
+                                        foreach ( var schedule in kioskLocation.KioskSchedules )
                                         {
-                                            scheduleIdList.Add( schedule.Schedule.Id );
+                                            if ( schedule.Schedule.WasScheduleActive( DateTime.Now ) )
+                                            {
+                                                scheduleIdList.Add( schedule.Schedule.Id );
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+
+                        string url = string.Concat( "/Page/", reportPage.Id, "?CampusId=", location.CampusId, "&LocationIds=", locationIdList, "&ScheduleIds=", scheduleIdList.Distinct().ToList().AsDelimited( "%2C" ) );
+                        btnPrintRoster.Attributes.Add( "href", url );
+                        btnPrintRoster.Visible = true;
+
+
                     }
-
-                    string url = string.Concat( "/Page/", reportPage.Id, "?CampusId=", location.CampusId, "&LocationIds=", locationIdList, "&ScheduleIds=", scheduleIdList.Distinct().ToList().AsDelimited( "%2C" ) );
-                    btnPrintRoster.Attributes.Add( "href", url );
-                    btnPrintRoster.Visible = true;
-
-
+                    else
+                    {
+                        btnPrintRoster.Visible = false;
+                    }
                 }
-                else
-                {
-                    btnPrintRoster.Visible = false;
-                }
+
 
             }
             else
