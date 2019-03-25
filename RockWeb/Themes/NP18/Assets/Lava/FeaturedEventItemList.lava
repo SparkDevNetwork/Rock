@@ -9,13 +9,13 @@
         {% assign EventItemLookup = ',' | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
         {% unless ShownEventItemIds contains EventItemLookup %}
 
-            {% assign ShownEventItemIds = ShownEventItemIds | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
-            {% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
-
             {% assign EventIsActive = event.EventItemOccurrence.EventItem.IsActive %}
             {% assign EventItemIsApproved = event.EventItemOccurrence | Attribute:'Approved' %}
 
             {% if EventIsActive == true and EventItemIsApproved == 'Approved' %}
+
+                {% assign ShownEventItemIds = ShownEventItemIds | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
+                {% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
 
                 <div class="css-grid-item {{event.Name | ToCssClass }}">
     	    		      <div class="event-header"><a class="" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}#events_list" style="background-image:url('{{event.EventItem.Photo.Path}}')"></a></div>
