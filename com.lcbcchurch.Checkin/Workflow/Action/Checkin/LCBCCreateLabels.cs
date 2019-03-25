@@ -104,21 +104,19 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
                                         {
                                             person.SetOptions( labelCache );
 
-
-                                            var parentLabelGuid = "50CFDC79-E5E1-459E-B7F9-9618B6A507A7".AsGuid();
-                                            if ( parentLabelGuid != null )
+                                            if ( labelCache.LabelType == KioskLabelType.Family )
                                             {
-                                                if ( personLabelsAdded.Contains( labelCache.Guid ) && labelCache.Guid == parentLabelGuid )
+                                                if ( familyLabelsAdded.Contains( labelCache.Guid ) )
                                                 {
                                                     continue;
                                                 }
                                                 else
                                                 {
-                                                    personLabelsAdded.Add( labelCache.Guid );
+                                                    familyLabelsAdded.Add( labelCache.Guid );
                                                 }
-
-                                                AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
                                             }
+
+                                            AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, schedule, labelCache );
                                         }
 
                                         var itemTagParameters = person.StateParameters.Where( sp => sp.Key.Contains( "ItemTag" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList().AsIntegerList();
@@ -148,37 +146,6 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
 
                                         }
                                     }
-                                    //foreach ( var labelCache in locationLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
-                                    //{
-                                    //    person.SetOptions( labelCache );
-
-                                    //    if ( labelCache.LabelType == KioskLabelType.Family )
-                                    //    {
-                                    //        if ( familyLabelsAdded.Contains( labelCache.Guid ) ||
-                                    //            personLabelsAdded.Contains( labelCache.Guid ) )
-                                    //        {
-                                    //            continue;
-                                    //        }
-                                    //        else
-                                    //        {
-                                    //            familyLabelsAdded.Add( labelCache.Guid );
-                                    //        }
-                                    //    }
-                                    //    else if ( labelCache.LabelType == KioskLabelType.Person )
-                                    //    {
-                                    //        if ( personLabelsAdded.Contains( labelCache.Guid ) )
-                                    //        {
-                                    //            continue;
-                                    //        }
-                                    //        else
-                                    //        {
-                                    //            personLabelsAdded.Add( labelCache.Guid );
-                                    //        }
-                                    //    }
-
-                                    //    AddLabel( rockContext, checkInState, commonMergeFields, groupMemberService, people, person, groupType, PrinterIPs, group, location, labelCache );
-
-                                    //}
                                 }
                             }
                         }
@@ -209,9 +176,9 @@ namespace com.lcbcchurch.Checkin.Workflow.Action.CheckIn
 
             string pagerNumber = string.Empty;
             var pagerNumberParameters = person.StateParameters.Where( sp => sp.Key.Contains( "PagerNumber" ) && sp.Value.IsNotNullOrWhiteSpace() ).Select( sp => sp.Value ).ToList();
-            if ( pagerNumberParameters.Any())
+            if ( pagerNumberParameters.Any() )
             {
-                 pagerNumber = pagerNumberParameters.Max();               
+                pagerNumber = pagerNumberParameters.Max();
             }
             mergeObjects.Add( "PagerNumber", location );
 
