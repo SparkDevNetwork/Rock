@@ -42,6 +42,8 @@
                 </div>
                 <br />
                 <div class="row">
+                    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" SetFocusOnError="true" ControlToValidate="tbFirstName" runat="server" Display="None"></asp:RequiredFieldValidator>
+                    <asp:RequiredFieldValidator ID="RequiredFieldValidator2" SetFocusOnError="true" ControlToValidate="tbLastName" runat="server" Display="None"></asp:RequiredFieldValidator>
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-4">
