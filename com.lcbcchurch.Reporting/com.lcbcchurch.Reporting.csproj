@@ -52,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\008_AddedColumnsAndSignalReferencing.cs" />
+    <Compile Include="Migrations\007_AddedAttendanceJob.cs" />
     <Compile Include="Migrations\006_MoveAssimilationAbsenteePages.cs" />
     <Compile Include="Migrations\004_WeekendAttendanceCheckinConfig.cs" />
     <Compile Include="Migrations\003_AddFtgNotificationJob.cs" />
