@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
             string script = string.Format( @"
             <script>
                 function GetPagerSelection() {{
-                    $('#{0}').button('loading')
+                    $('#{0}').attr('data-loading-text', 'Loading...').button('loading')
                     return true;
                 }}
             </script>
