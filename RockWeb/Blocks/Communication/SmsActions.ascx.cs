@@ -75,8 +75,8 @@ namespace RockWeb.Blocks.Communication
                 avcAttributes.ExcludedCategoryNames = new string[] { "Filter" };
                 avcFilters.IncludedCategoryNames = new string[] { "Filter" };
 
-                tbFromNumber.Text = "+15551234567";
-                tbToNumber.Text = "+15559991234";
+                tbFromNumber.Text = "+16235553322"; // Ted Decker's cell
+                tbToNumber.Text = "+15559991234"; // Fake church number
             }
             else
             {
