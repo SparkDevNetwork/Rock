@@ -260,6 +260,10 @@
     <Compile Include="Migrations\201903191824245_Rollup_0319.Designer.cs">
       <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.cs" />
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.Designer.cs">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.cs" />
     <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.Designer.cs">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
@@ -699,6 +703,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903191824245_Rollup_0319.resx">
       <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903202256547_EFMigrationCleanUp.resx">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903202308416_ScheduledTransactionHistory.resx">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
