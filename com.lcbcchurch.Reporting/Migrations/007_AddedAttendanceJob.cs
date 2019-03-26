@@ -39,9 +39,124 @@ namespace com.lcbcchurch.Reporting.Migrations
                           VALUES 
                           (0, 0, 'Calculate Weekend Gathering Attendance', 'Job that populates the Next Steps Visit attributes', 'Rock.Jobs.RunSQL', '0 0 20 ? * SUN *', 1, '86C2F5FE-FCD1-4E07-83B1-7C7E621F06C6')" );
 
-           var systemJobId =  SqlScalar( "Select Top 1 Id From ServiceJob Where Guid = '86C2F5FE-FCD1-4E07-83B1-7C7E621F06C6'" ).ToString().AsInteger();
+            var systemJobId = SqlScalar( "Select Top 1 Id From ServiceJob Where Guid = '86C2F5FE-FCD1-4E07-83B1-7C7E621F06C6'" ).ToString().AsInteger();
             RockMigrationHelper.AddAttributeValue( "FF66ABF1-B01D-4AE7-814E-95D842B2EA99", systemJobId, "3600", "AC25616F-90DD-4162-97DF-C6EBD73E2B2A" );
-            RockMigrationHelper.AddAttributeValue( "7AD0C57A-D40E-4A14-81D8-8ACA68600FF5", systemJobId, @"DECLARE @FirstVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''1859E6AE-DD4B-49D1-83B3-5EC6A9D029CB'') DECLARE @SecondVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''FBF88BC2-F99F-45BF-85F9-1DE91C26C4BD'') DECLARE @ThirdVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''4208456B-67B2-4B37-8F4B-547DF48A89FC'') DECLARE @LastAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = ''9ABC5D6B-4840-495B-9F5E-123F9AAF2F59'')  DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @FirstVisitAttributeId DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @SecondVisitAttributeId DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @ThirdVisitAttributeId DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @LastAttendedAttributeId  IF @FirstVisitAttributeId IS NOT NULL BEGIN  INSERT INTO [AttributeValue]  ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])  SELECT 1, @FirstVisitAttributeId, p.Id, CONVERT(varchar(50), a.FirstVisit, 126), newid(), getdate()  FROM [Person] p  CROSS APPLY (    SELECT     MIN([StartDateTime]) [FirstVisit]   FROM    [Attendance] a    INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]    INNER JOIN [Group] g ON g.Id = O.GroupId    INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId    INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]   WHERE     gt.AttendanceCountsAsWeekendService = 1    AND a.[DidAttend] = 1    AND pa.[PersonId] = p.[Id]  ) a  WHERE   p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId )   AND a.FirstVisit < DATEADD(d, 14, p.CreatedDateTime)  END  IF @SecondVisitAttributeId IS NOT NULL BEGIN  INSERT INTO [AttributeValue]  ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])  SELECT 1, @SecondVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()  FROM [Person] p  CROSS APPLY (    SELECT     MIN([StartDateTime]) [SecondVisit]   FROM    [Attendance] a    INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]    INNER JOIN [Group] g ON g.Id = O.GroupId    INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId    INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]   WHERE     gt.AttendanceCountsAsWeekendService = 1    AND pa.[PersonId] = p.[Id]    AND a.[DidAttend] = 1    AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)  ) a  WHERE   p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId )   AND p.[Id] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [ValueAsDateTime] IS NOT NULL )   AND a.[SecondVisit] IS NOT NULL END   IF @ThirdVisitAttributeId IS NOT NULL BEGIN  INSERT INTO [AttributeValue]  ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])  SELECT 1, @ThirdVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()  FROM [Person] p  CROSS APPLY (    SELECT     MIN([StartDateTime]) [SecondVisit]   FROM    [Attendance] a    INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]    INNER JOIN [Group] g ON g.Id = O.GroupId    INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId    INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]   WHERE     gt.AttendanceCountsAsWeekendService = 1    AND pa.[PersonId] = p.[Id]    AND a.[DidAttend] = 1    AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)  ) a  WHERE   p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @ThirdVisitAttributeId )   AND p.[Id] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId AND [ValueAsDateTime] IS NOT NULL )   AND a.[SecondVisit] IS NOT NULL END    DELETE FROM [AttributeValue] WHERE [AttributeId] = @LastAttendedAttributeId;   INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])  SELECT * FROM    (SELECT     p.Id    , @LastAttendedAttributeId AS [AttributeId]    , (SELECT        MAX(a.StartDateTime )      FROM       [Attendance] a       INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]       INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]       INNER JOIN [Group] g ON g.Id = O.GroupId       INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId      WHERE        gt.AttendanceCountsAsWeekendService = 1                         AND a.[DidAttend] = 1       AND pa.[PersonId] = p.Id)      AS [LastAttendedDate]    , 0 AS [IsSystem]    , newid() AS [Guid]    , getdate() AS [CreateDate]   FROM Person p ) AS a  WHERE a.[LastAttendedDate] IS NOT NULL", "A30EFA82-0221-4982-9DFB-37A73986A247" );
+            RockMigrationHelper.AddAttributeValue( "7AD0C57A-D40E-4A14-81D8-8ACA68600FF5", systemJobId, @"
+DECLARE @FirstVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''1859E6AE-DD4B-49D1-83B3-5EC6A9D029CB'')
+DECLARE @SecondVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''FBF88BC2-F99F-45BF-85F9-1DE91C26C4BD'')
+DECLARE @ThirdVisitAttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = ''4208456B-67B2-4B37-8F4B-547DF48A89FC'')
+DECLARE @LastAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = ''9ABC5D6B-4840-495B-9F5E-123F9AAF2F59'')
+
+DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @FirstVisitAttributeId
+DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @SecondVisitAttributeId
+DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @ThirdVisitAttributeId
+DELETE FROM [AttributeValue] WHERE ([Value] = '''' OR [Value] IS NULL) AND AttributeId = @LastAttendedAttributeId
+IF @FirstVisitAttributeId IS NOT NULL
+BEGIN
+    INSERT INTO [AttributeValue]
+    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
+    SELECT 1, @FirstVisitAttributeId, p.Id, CONVERT(varchar(50), a.FirstVisit, 126), newid(), getdate()
+    FROM [Person] p
+    CROSS APPLY (
+        SELECT
+            MIN([StartDateTime]) [FirstVisit]
+        FROM
+            [Attendance] a
+        INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+        INNER JOIN [Group] g ON g.Id = O.GroupId
+        INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+        INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+        WHERE
+            gt.AttendanceCountsAsWeekendService = 1
+            AND a.[DidAttend] = 1
+            AND pa.[PersonId] = p.[Id]
+    ) a
+    WHERE
+        p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId )
+        AND a.FirstVisit < DATEADD(d, 14, p.CreatedDateTime)
+END
+
+IF @SecondVisitAttributeId IS NOT NULL
+BEGIN
+    INSERT INTO [AttributeValue]
+    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
+    SELECT 1, @SecondVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()
+    FROM [Person] p
+    CROSS APPLY (
+        SELECT
+        MIN([StartDateTime]) [SecondVisit]
+        FROM
+        [Attendance] a
+        INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+        INNER JOIN [Group] g ON g.Id = O.GroupId
+        INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+        INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+        WHERE
+            gt.AttendanceCountsAsWeekendService = 1
+            AND pa.[PersonId] = p.[Id]
+            AND a.[DidAttend] = 1
+            AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)
+    ) a
+    WHERE
+        p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId )
+        AND p.[Id] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [ValueAsDateTime] IS NOT NULL )
+        AND a.[SecondVisit] IS NOT NULL
+END
+
+IF @ThirdVisitAttributeId IS NOT NULL
+BEGIN
+    INSERT INTO [AttributeValue]
+    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime])
+    SELECT 1, @ThirdVisitAttributeId, p.Id, CONVERT(varchar(50), a.[SecondVisit], 126), newid(), getdate()
+    FROM [Person] p
+    CROSS APPLY (
+        SELECT
+        MIN([StartDateTime]) [SecondVisit]
+        FROM
+        [Attendance] a
+        INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+        INNER JOIN [Group] g ON g.Id = O.GroupId
+        INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+        INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+        WHERE
+            gt.AttendanceCountsAsWeekendService = 1
+            AND pa.[PersonId] = p.[Id]
+            AND a.[DidAttend] = 1
+            AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)
+    ) a
+    WHERE
+        p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @ThirdVisitAttributeId )
+        AND p.[Id] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId AND [ValueAsDateTime] IS NOT NULL )
+        AND a.[SecondVisit] IS NOT NULL
+END
+
+DELETE FROM [AttributeValue] WHERE [AttributeId] = @LastAttendedAttributeId;
+INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
+
+SELECT *
+FROM (
+    SELECT
+        p.Id
+        , @LastAttendedAttributeId AS [AttributeId]
+        , (SELECT
+            MAX(a.StartDateTime )
+            FROM
+                [Attendance] a
+            INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
+            INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+            INNER JOIN [Group] g ON g.Id = O.GroupId
+            INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+            WHERE
+                gt.AttendanceCountsAsWeekendService = 1
+                AND a.[DidAttend] = 1
+                AND pa.[PersonId] = p.Id)
+        AS [LastAttendedDate]
+        , 0 AS [IsSystem]
+        , newid() AS [Guid]
+        , getdate() AS [CreateDate]
+    FROM Person p
+) AS a
+WHERE a.[LastAttendedDate] IS NOT NULL", "A30EFA82-0221-4982-9DFB-37A73986A247" );
 
             // Attrib Value for Block:First Time Guests, Attribute:Query Page: Assimilation Report, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "37A9B4BC-FED2-4E09-BECA-2CAB9DE1D248", "CBE194E9-4F10-4505-93DE-31EABA918E85", @"--- First grab everyone for this campus and time period
@@ -291,6 +406,6 @@ Where ( @CampusIds = 'null' or c.Id in (Select * From ufnUtility_CsvToTable(@Cam
         }
         public override void Down()
         {
-            }
+        }
     }
 }
