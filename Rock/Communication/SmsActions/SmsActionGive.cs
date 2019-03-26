@@ -161,13 +161,9 @@ namespace Rock.Communication.SmsActions
             }
 
             var keyword = GetKeyword( action );
-            var defaultAmount = GetDefaultAmount( action );
             var messageText = message.Message.Trim();
 
-            var doesKeywordMatch = DoesKeywordMatch( keyword, messageText );
-            var giftAmount = GetGiftAmount( keyword, messageText, defaultAmount );
-
-            return doesKeywordMatch && giftAmount.HasValue;
+            return DoesKeywordMatch( keyword, messageText );
         }
 
         /// <summary>
@@ -228,7 +224,7 @@ namespace Rock.Communication.SmsActions
             return new FinancialPersonSavedAccountService( rockContext )
                 .GetByPersonId( person.Id )
                 .AsNoTracking()
-                .FirstOrDefault( /* TODO merge this in     sa => sa.IsDefault*/ );
+                .FirstOrDefault( sa => sa.IsDefault );
         }
 
         #endregion
@@ -245,7 +241,7 @@ namespace Rock.Communication.SmsActions
             {
                 return defaultAmount;
             }
-            
+
             var textWithoutKeyword = Regex.Replace( messageText, keyword, string.Empty, RegexOptions.IgnoreCase ).Trim();
 
             // First try to parse a decimal like "1123.56"
@@ -257,7 +253,12 @@ namespace Rock.Communication.SmsActions
                 successfulParse = decimal.TryParse( textWithoutKeyword, NumberStyles.Currency, CultureInfo.CurrentCulture, out parsedValue );
             }
 
-            return successfulParse ? parsedValue : ( decimal? ) null;
+            if ( successfulParse )
+            {
+                return decimal.Round( parsedValue, 2 );
+            }
+
+            return null;
         }
 
         #endregion

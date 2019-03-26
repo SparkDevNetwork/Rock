@@ -31,7 +31,8 @@ namespace Rock.Migrations
         {
             CreateSmsActionUp();
             PagesAndBlocksUp();
-
+            PersonsDefaultAccountUp();
+            
             Sql( $@"
                 UPDATE [DefinedType]
                 SET 
@@ -47,6 +48,7 @@ namespace Rock.Migrations
         {
             CreateSmsActionDown();
             PagesAndBlocksDown();
+            PersonsDefaultAccountDown();
 
             Sql( $@"
                 UPDATE [DefinedType]
@@ -54,6 +56,18 @@ namespace Rock.Migrations
                     [Name] = 'Text To Workflow', 
                     [Description] = 'Matches SMS phones and keywords to launch workflows of various types'
                 WHERE [Guid] = '{ Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW }'" );
+        }
+
+        private void PersonsDefaultAccountUp()
+        {
+            AddColumn( "dbo.Person", "ContributionFinancialAccountId", c => c.Int( nullable: true ) );
+            AddForeignKey( "dbo.Person", "ContributionFinancialAccountId", "dbo.FinancialAccount", "Id" );
+        }
+
+        private void PersonsDefaultAccountDown()
+        {
+            DropForeignKey( "dbo.Person", "ContributionFinancialAccountId", "dbo.FinancialAccount" );
+            DropColumn( "dbo.Person", "ContributionFinancialAccountId" );
         }
 
         private void CreateSmsActionUp()
