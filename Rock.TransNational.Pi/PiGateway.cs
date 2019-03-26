@@ -224,6 +224,18 @@ namespace Rock.TransNational.Pi
             }
         }
 
+        /// <summary>
+        /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
+        {
+            // Pi Gateway requires that a subscription has to have a start date at least 24 after the current UTC Date
+            // This sometimes will make the minimum date 2 days from now if it is already currently tomorrow in UTC (for example after 5PM Arizona Time which is offset by -7 hours from UTC)
+            return DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
+        }
+
         #endregion IHostedGatewayComponent
 
         #region PiGateway Rock Wrappers
@@ -506,12 +518,15 @@ namespace Rock.TransNational.Pi
         /// </summary>
         /// <param name="subscriptionRequestParameters">The subscription request parameters.</param>
         /// <param name="scheduleTransactionFrequencyValueGuid">The schedule transaction frequency value unique identifier.</param>
-        /// <param name="startDateLocal">The start date local.</param>
-        private static void SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDateLocal )
+        /// <param name="startDate">The start date.</param>
+        private static void SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate )
         {
             BillingPlanParameters billingPlanParameters = subscriptionRequestParameters as BillingPlanParameters;
-            billingPlanParameters.NextBillDateUTC = GetBestUTCStartDate( startDateLocal );
+
+            // NOTE: Don't convert startDate to UTC, let the gateway worry about that
+            billingPlanParameters.NextBillDateUTC = startDate;
             BillingFrequency? billingFrequency = null;
+            int billingDuration = 0;
             int billingCycleInterval = 1;
             string billingDays = null;
             int startDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.Day;
@@ -536,8 +551,10 @@ namespace Rock.TransNational.Pi
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY.AsGuid() )
             {
                 // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled
+                var twiceMonthlyDays = new int[2] { startDayOfMonth, twiceMonthlySecondDayOfMonth };
                 billingFrequency = BillingFrequency.twice_monthly;
-                billingDays = $"{startDayOfMonth},{twiceMonthlySecondDayOfMonth}";
+                // twiceMonthly Days have to be in numeric order
+                billingDays = $"{twiceMonthlyDays.OrderBy( a => a ).ToList().AsDelimited( "," )}";
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY.AsGuid() )
             {
@@ -553,11 +570,18 @@ namespace Rock.TransNational.Pi
                 billingFrequency = BillingFrequency.daily;
                 billingDays = "7";
             }
-            
+            else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+            {
+                // if ONE-TIME create a monthly subscription, but with a duration of 1 so that it only does it once
+                billingCycleInterval = 1;
+                billingFrequency = BillingFrequency.monthly;
+                billingDays = $"{startDayOfMonth}";
+            }
+
             billingPlanParameters.BillingFrequency = billingFrequency;
             billingPlanParameters.BillingCycleInterval = billingCycleInterval;
             billingPlanParameters.BillingDays = billingDays;
-            billingPlanParameters.Duration = 0;
+            billingPlanParameters.Duration = billingDuration;
         }
 
         /// <summary>
@@ -753,10 +777,7 @@ namespace Rock.TransNational.Pi
             {
                 var values = new List<DefinedValueCache>();
 
-                // Todo: See if PiGateway supports onetime scheduled transactions
-                //values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-
-
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
@@ -977,21 +998,7 @@ namespace Rock.TransNational.Pi
             return scheduledTransaction;
         }
 
-        /// <summary>
-        /// Gets the best UTC start date.
-        /// </summary>
-        /// <param name="startDateLocal">The start date local.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// We want to convert the startDate as a UTC Date, so get the UTC Date of the StartDate
-        /// Add a day to the LocalDate before converting to UTC so make sure the UTC Date is on or after the specified date
-        /// Since UTC is 7 hours ahead (AZ time), we need to add a day so that it doesn't post on 5pm on the date *before* the expected date
-        /// </remarks>
-        private static DateTime GetBestUTCStartDate( DateTime startDateLocal )
-        {
-            // Note: see above /// remarks
-            return DateTime.SpecifyKind( startDateLocal, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
-        }
+       
 
         /// <summary>
         /// Updates the scheduled payment.

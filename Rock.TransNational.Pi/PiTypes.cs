@@ -702,7 +702,7 @@ namespace Rock.TransNational.Pi
         public string BillingDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration (??)
+        /// Gets or sets the duration (the number of times to do the recurring payment, or 0 to specify forever)
         /// </summary>
         /// <value>
         /// The duration.
@@ -822,6 +822,17 @@ namespace Rock.TransNational.Pi
         /// </summary>
         [JsonIgnore]
         public System.Net.HttpStatusCode StatusCode;
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"{Status} - { Message } [{StatusCode}]";
+        }
     }
 
     #endregion shared types
