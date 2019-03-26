@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -29,7 +28,7 @@ namespace Rock.Model
     public partial class FinancialBatchService
     {
         /// <summary>
-        /// Gets the specified name prefix.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
         /// <param name="currencyType">Type of the currency.</param>
@@ -45,7 +44,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified name prefix.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
         /// <param name="nameSuffix">The name suffix.</param>
@@ -57,6 +56,24 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
+        {
+            return Get( namePrefix, nameSuffix, currencyType, creditCardType, transactionDate, batchTimeOffset, null, batches );
+        }
+
+        /// <summary>
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
+        /// </summary>
+        /// <param name="namePrefix">The name prefix.</param>
+        /// <param name="nameSuffix">The name suffix.</param>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <param name="creditCardType">Type of the credit card.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
+        /// <returns></returns>
+        public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
+        DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
         {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
             string ccSuffix = string.Empty;
@@ -77,18 +94,32 @@ namespace Rock.Model
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
 
-            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batches );
+            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
         }
 
         /// <summary>
-        /// Gets the by name and date.
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="batchName">Name of the batch.</param>
         /// <param name="transactionDate">The transaction date.</param>
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
-        public FinancialBatch GetByNameAndDate ( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
+        public FinancialBatch GetByNameAndDate( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
+        {
+            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, null, batches );
+        }
+
+        /// <summary>
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
+        /// </summary>
+        /// <param name="batchName">Name of the batch.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
+        /// <returns></returns>
+        public FinancialBatch GetByNameAndDate( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
         {
             FinancialBatch batch = null;
 
@@ -128,14 +159,32 @@ namespace Rock.Model
                 batch.Name = batchName;
                 batch.Status = BatchStatus.Open;
 
+                var isWeekly = batchWeeklyDayOfWeek.HasValue;
                 var batchStartDateTime = transactionDate.Date.Add( batchTimeOffset );
-                if ( batchStartDateTime > transactionDate )
-                {
-                    batchStartDateTime = batchStartDateTime.AddDays( -1 );
-                }
-                batch.BatchStartDateTime = batchStartDateTime;
-                batch.BatchEndDateTime = batchStartDateTime.AddDays( 1 );
 
+                if ( isWeekly )
+                {
+                    var dayOfWeekDifference = batchWeeklyDayOfWeek.Value - batchStartDateTime.DayOfWeek;
+                    batchStartDateTime = batchStartDateTime.AddDays( dayOfWeekDifference );
+
+                    if ( batchStartDateTime > transactionDate )
+                    {
+                        batchStartDateTime = batchStartDateTime.AddDays( -7 );
+                    }
+
+                    batch.BatchEndDateTime = batchStartDateTime.AddDays( 7 );
+                }
+                else
+                {
+                    if ( batchStartDateTime > transactionDate )
+                    {
+                        batchStartDateTime = batchStartDateTime.AddDays( -1 );
+                    }
+
+                    batch.BatchEndDateTime = batchStartDateTime.AddDays( 1 );
+                }
+
+                batch.BatchStartDateTime = batchStartDateTime;
                 batch.ControlAmount = 0;
                 Add( batch );
             }

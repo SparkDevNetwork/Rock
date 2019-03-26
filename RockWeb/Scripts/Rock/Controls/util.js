@@ -31,7 +31,16 @@
               else {
                 return '';
               }
-            }
+            },
+            getScrollbarWidth: function () {
+                // thx d.walsh
+                var scrollDiv = document.createElement('div');
+                scrollDiv.className = 'modal-scrollbar-measure';
+                document.body.appendChild(scrollDiv);
+                var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+                document.body.removeChild(scrollDiv);
+                return scrollbarWidth;
+            } // Static
         };
 
         return exports;

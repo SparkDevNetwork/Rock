@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on based on the current age in years" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -82,7 +82,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -95,7 +95,7 @@ function() {
     var result = 'Age';
     var compareTypeText = $('.js-filter-compare :selected', $content).text();
     if ( $('.js-filter-control', $content).is(':visible') ) {
-        var compareValueSingle = $('.js-filter-control', $content).val()    
+        var compareValueSingle = $('.js-filter-control', $content).val()
         result += ' ' + compareTypeText + ' ' + (compareValueSingle || '');
     }
     else if ( $('.js-filter-control-between', $content).is(':visible') ) {
@@ -191,7 +191,7 @@ function() {
             NumberBox nbValue = controls[1] as NumberBox;
             NumberRangeEditor numberRangeEditor = controls[2] as NumberRangeEditor;
 
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

@@ -575,7 +575,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                 return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
@@ -673,6 +673,11 @@ namespace Rock
 
                 return result;
             }
+            catch ( System.Threading.ThreadAbortException )
+            {
+                // Do nothing...it's just a Lava PageRedirect that just happened.
+                return string.Empty;
+            }
             catch ( Exception ex )
             {
                 if ( throwExceptionOnErrors )
@@ -681,7 +686,7 @@ namespace Rock
                 }
                 else
                 {
-                    ExceptionLogService.LogException( ex );
+                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }

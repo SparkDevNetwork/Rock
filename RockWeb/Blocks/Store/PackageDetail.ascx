@@ -111,11 +111,13 @@
                                     <asp:Repeater ID="rptLatestVersionRatings" runat="server">
                                         <ItemTemplate>
                                             <div class="col-md-12 margin-b-lg">
-                                                    <div style="width: 65px; float: left;">
+                                                    <div class="pull-left" style="width: 65px;">
                                                         <img src='<%# PersonPhotoUrl( Eval( "PersonAlias.Person.PhotoUrl" ).ToString() ) %>&width=50' class="img-circle" />
                                                     </div>
                                                     <div style="width: 100%;">
-                                                        <div class='rating rating-<%# Eval("Rating")%> pull-left margin-r-sm'></div>
+                                                        <div class="rating pull-left margin-r-sm" style="color:#ffc870;">
+                                                            <%#  FormatRating((int)Eval("Rating")) %>
+                                                        </div>
                                                         <strong><%# Eval("PersonAlias.Person.FullName")%></strong>
                                                         <p class="margin-b-lg">
                                                             <%# FormatReviewText(Eval("Review").ToString())%>
@@ -134,8 +136,10 @@
                                         <asp:Repeater ID="rptAdditionalVersions" runat="server">
                                             <ItemTemplate>
                                                 <div class="clearfix">
-                                                    <h4 style="float: left;" class="margin-r-sm"><%# Eval("VersionLabel")%></h4>
-                                                    <div class='rating rating-<%# GetRating((int)Eval("Id")) %> pull-left margin-t-sm'></div>
+                                                    <h4 class="pull-left margin-r-sm"><%# Eval("VersionLabel")%></h4>
+                                                    <div class="rating pull-left margin-t-sm">
+                                                            <%#  FormatRating(Convert.ToInt32( GetRating((int)Eval("Id")))) %>
+                                                    </div>
                                                 </div>
 
                                                 <p class="margin-b-lg">

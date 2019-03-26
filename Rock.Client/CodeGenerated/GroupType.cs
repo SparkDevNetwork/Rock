@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdministratorTerm { get; set; } = @"Administrator";
+
+        /// <summary />
         public Rock.Client.Enums.ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary />
@@ -152,6 +155,10 @@ namespace Rock.Client
             <dt> Capacity </dt>
 
             <dd>{{ Group.GroupCapacity }}</dd>
+            {% endif %}
+        {% if Group.GroupType.ShowAdministrator and Group.GroupAdministratorPersonAlias != null and Group.GroupAdministratorPersonAlias != '' %}
+            <dt> {{ Group.GroupType.AdministratorTerm }}</dt>
+            <dd>{{ Group.GroupAdministratorPersonAlias.Person.FullName }}</dd>
             {% endif %}
         </dl>
         <dl>
@@ -305,6 +312,9 @@ namespace Rock.Client
         public bool SendAttendanceReminder { get; set; }
 
         /// <summary />
+        public bool ShowAdministrator { get; set; }
+
+        /// <summary />
         public bool ShowConnectionStatus { get; set; }
 
         /// <summary />
@@ -352,6 +362,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( GroupType source )
         {
             this.Id = source.Id;
+            this.AdministratorTerm = source.AdministratorTerm;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowGroupSync = source.AllowGroupSync;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
@@ -388,6 +399,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.SendAttendanceReminder = source.SendAttendanceReminder;
+            this.ShowAdministrator = source.ShowAdministrator;
             this.ShowConnectionStatus = source.ShowConnectionStatus;
             this.ShowInGroupList = source.ShowInGroupList;
             this.ShowInNavigation = source.ShowInNavigation;

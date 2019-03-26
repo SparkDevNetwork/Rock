@@ -102,9 +102,9 @@ namespace Rock.Reporting.DataFilter
             fieldIndex++;
 
             // render empty row for "none"
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag();  // "row field-criteria"
+            writer.RenderEndTag();  // "row form-row field-criteria"
 
             // render the controls for the selectedEntityField
             string controlId = string.Format( "{0}_{1}", propertyControlsPrefix, selectedEntityField );

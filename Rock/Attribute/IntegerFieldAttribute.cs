@@ -41,5 +41,25 @@ namespace Rock.Attribute
             : base( name, description, required, ( defaultValue == int.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.IntegerFieldType ).FullName )
         {
         }
+
+        /// <summary>
+        /// Gets or sets the default integer value of the attribute.  This is the value that will be used if a specific value has not yet been created
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public int DefaultIntegerValue
+        {
+            get
+            {
+                return base.DefaultValue.AsIntegerOrNull() ?? int.MinValue;
+            }
+
+            set
+            {
+                base.DefaultValue = value == int.MinValue ? string.Empty : value.ToString();
+            }
+        }
+
     }
 }

@@ -33,6 +33,25 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Reads the parameter to check for DOM objects and possible URLs
+        /// Accepts an encoded string and returns an encoded string
+        /// </summary>
+        /// <param name="encodedString"></param>
+        public static string ScrubEncodedStringForXSSObjects( string encodedString )
+        {
+            // Characters used by DOM Objects; javascript, document, window and URLs
+            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+
+            if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
+            {
+                return "%2f";
+            }
+            else
+            {
+                return encodedString;
+            }
+        }
+        /// <summary>
         /// Joins and array of strings using the provided separator.
         /// </summary>
         /// <param name="source">The source.</param>
@@ -206,7 +225,7 @@ namespace Rock
                 .Replace( "/", string.Empty )
                 .Replace( "?", string.Empty )
                 .Replace( ":", string.Empty )
-                .Replace( "@", string.Empty)
+                .Replace( "@", string.Empty )
                 .Replace( "=", string.Empty )
                 .Replace( "&", string.Empty )
                 .Replace( "<", string.Empty )
@@ -218,11 +237,33 @@ namespace Rock
                 .Replace( "}", string.Empty )
                 .Replace( "|", string.Empty )
                 .Replace( "\\", string.Empty )
-                .Replace( "^", string.Empty)
+                .Replace( "^", string.Empty )
                 .Replace( "[", string.Empty )
                 .Replace( "]", string.Empty )
                 .Replace( "`", string.Empty )
                 .Replace( "'", string.Empty );
+        }
+
+        /// <summary>
+        /// Converts a comma delimited string into a List&lt;int&gt;
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static IEnumerable<int> StringToIntList( this string str ) {
+            // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
+
+            if ( String.IsNullOrEmpty( str ) )
+            {
+                yield break;
+            }
+
+            foreach(var s in str.Split(',')) {
+                int num;
+                if ( int.TryParse( s, out num ) )
+                {
+                    yield return num;
+                }
+            }
         }
 
         /// <summary>
@@ -574,8 +615,8 @@ namespace Rock
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
             // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); 
-            
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
             {
@@ -803,10 +844,10 @@ namespace Rock
                         DateTime value;
                         var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
                         if ( DateTime.TryParseExact(
-                                monthDayYearString, 
-                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, 
+                                monthDayYearString,
+                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" },
                                 CultureInfo.InvariantCulture,
-                                DateTimeStyles.AllowWhiteSpaces, 
+                                DateTimeStyles.AllowWhiteSpaces,
                                 out value ) )
                         {
                             return value;

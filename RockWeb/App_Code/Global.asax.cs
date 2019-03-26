@@ -362,9 +362,16 @@ namespace RockWeb
                 Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 RockTheme.CompileAll( out messages );
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && messages.IsNotNullOrWhiteSpace() )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    if ( messages.IsNullOrWhiteSpace() )
+                    {
+                        System.Diagnostics.Debug.WriteLine( "Less files compiled successfully." );
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    }
                 }
 
             } ).Start();
@@ -848,17 +855,12 @@ namespace RockWeb
             // Add ingore rule for asp.net ScriptManager files. 
             routes.Ignore("{resource}.axd/{*pathInfo}");
 
-            // Add page routes
-            foreach ( var route in pageRouteService 
-                .Queryable().AsNoTracking()
-                .GroupBy( r => r.Route )
-                .Select( s => new {
-                    Name = s.Key,
-                    Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList() 
-                } )
-                .ToList() )
+            //Add page routes
+            var pageRoutes = pageRouteService.Queryable().OrderBy( r => r.Route).ToList();
+
+            foreach ( var pageRoute in pageRoutes )
             {
-                routes.AddPageRoute( route.Name, route.Pages );
+                routes.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
             }
 
             // Add a default page route

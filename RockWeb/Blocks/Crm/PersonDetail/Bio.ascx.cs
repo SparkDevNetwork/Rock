@@ -472,7 +472,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( Person != null )
             {
-                Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ) );
+                Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ),false );
             }
         }
 

@@ -128,11 +128,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDisplayName( Type type )
         {
-            foreach ( var nameAttribute in type.GetCustomAttributes( typeof( DisplayNameAttribute ), true ) )
-            {
-                return ( ( DisplayNameAttribute ) nameAttribute ).DisplayName;
-            }
-            return null;
+            return type.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
         }
 
         /// <summary>
@@ -142,12 +138,9 @@ namespace Rock
         /// <returns></returns>
         public static string GetCategory( Type type )
         {
-            foreach ( var categoryAttribute in type.GetCustomAttributes( typeof( CategoryAttribute ), true ) )
-            {
-                return ( ( CategoryAttribute ) categoryAttribute ).Category;
-            }
-            return null;
+            return type.GetCustomAttribute<CategoryAttribute>( true )?.Category;
         }
+
         /// <summary>
         /// Returns the Description Attribute value for a given type
         /// </summary>
@@ -155,11 +148,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( Type type )
         {
-            foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
-            {
-                return ( ( DescriptionAttribute ) descriptionAttribute ).Description;
-            }
-            return null;
+            return type.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
         }
 
         /// <summary>
@@ -182,6 +171,44 @@ namespace Rock
 
             System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
             return dbContext;
+        }
+
+        /// <summary>
+        /// Gets the type of the i entity for entity.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, int id )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { id } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the type of the i entity for entity.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, Guid guid )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { guid } ) as Rock.Data.IEntity;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -263,6 +290,10 @@ namespace Rock
                         // if an assembly is found that isn't loaded yet, load it into the CurrentDomain
                         AssemblyName assemblyName = AssemblyName.GetAssemblyName( assemblyFileName );
                         assembly = AppDomain.CurrentDomain.Load( assemblyName );
+                    }
+                    catch( BadImageFormatException)
+                    {
+                        // BadImageFormatException means the dll isn't a managed dll (not a .NET dll), so we can safely ignore
                     }
                     catch ( Exception ex )
                     {

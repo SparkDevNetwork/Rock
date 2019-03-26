@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Fundraising
     [BooleanField( "Show Clipboard Icon", "Show a clipboard icon which will copy the page url to the users clipboard", true, order:8)]
     [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 9 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "PersonAttributes", "The Person Attributes that the participant can edit", false, true, order: 7 )]
+    [BooleanField( "Show Amount", "Determines if the Amount column should be displayed in the Contributions List.", false, order: 8 )]
     public partial class FundraisingParticipant : RockBlock
     {
         #region Base Control Methods
@@ -214,6 +215,7 @@ namespace RockWeb.Blocks.Fundraising
         private void CreateDynamicControls( GroupMember groupMember )
         {
             groupMember.LoadAttributes();
+            groupMember.Group.LoadAttributes();
             // GroupMember Attributes (all of them)
             phGroupMemberAttributes.Controls.Clear();
 
@@ -565,6 +567,11 @@ namespace RockWeb.Blocks.Fundraising
         /// </summary>
         protected void BindContributionsGrid()
         {
+            var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
+            gContributions.ColumnsOfType<CurrencyField>()
+                .First( c => c.DataField == "TotalAmount" )
+                .Visible = showAmount;
+
             var rockContext = new RockContext();
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
