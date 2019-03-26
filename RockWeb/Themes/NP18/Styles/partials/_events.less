@@ -82,7 +82,8 @@
 			background-position: center center;
 			span {
 				position: absolute;
-				.vc();
+				top: 50%;
+				transform: translateY(-50%);
 				width: 100%;
 				text-align: center;
 				color: @white;
@@ -250,7 +251,7 @@
   h1 {
     .font(30);
     @media (min-width: @screen-sm-min) {
-      .font(60);
+      .font-fix(60);
     }
   }
 }

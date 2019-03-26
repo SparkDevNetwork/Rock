@@ -481,11 +481,12 @@
 					font-size: 40px;
 				}
 				@media (min-width: @screen-lg) {
-					.font(82,@font-weight-light);
+					.font-fix(82,@font-weight-light);
 				}
 				text-align: center;
 				width:100%;
-				.vc();
+				top: 50%;
+				transform: translateY(-50%);
 				z-index: 15;
 				bottom: auto;
 				line-height: 1;
@@ -501,7 +502,7 @@
 						font-size: 55px;
 					}
 					@media (min-width: @screen-lg) {
-						.font(115,@font-weight-bold);
+						.font-fix(115,@font-weight-bold);
 					}
 				}
 			}
@@ -636,7 +637,7 @@
 		@media (min-width: @screen-md) {
 			padding: 90px 80px;
 			width: 35%;
-			.font(64,900);
+			.font-fix(64,900);
 		}
 		span {
 			display: block;

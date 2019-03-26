@@ -15,6 +15,14 @@
 	font-weight: @weight;
 	font-style: @style;
 }
+.font-fix(@size,@weight:normal,@style:normal) {
+	@pxValue: 	(unit(@size)/(unit(@font-size-large)/unit(@font-size-base))); //px value needs to be calculated based on viewport size
+	@remValue: 	(unit(@size)/unit(@font-size-large)); //rem value is constant, because html base font size changes
+	font-size: 	~"@{pxValue}px";
+	font-size: 	~"@{remValue}rem";
+	font-weight: @weight;
+	font-style: @style;
+}
 .box-shadow(){
 	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 }
@@ -33,15 +41,6 @@
 .no-gutter > [class*='col-'] {
     padding-right:0;
     padding-left:0;
-}
-//in .vc() and .hc() below, the +_ suffix lets you combine both mixins for one class, instead of the last one called overriding anything before: http://lesscss.org/features/#merge-feature
-.vc(){
-  top: 50%;
-  transform+_: translateY(-50%);
-}
-.hc(){
-  left: 50%;
-  transform+_: translateX(-50%);
 }
 .aspect-ratio(@width, @height) {
   position: relative;
