@@ -110,6 +110,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.Gender = source.Gender;
             target.GivingGroupId = source.GivingGroupId;
+            target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.IsDeceased = source.IsDeceased;
@@ -118,8 +119,6 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.LastName = source.LastName;
             target.MaritalStatusValueId = source.MaritalStatusValueId;
-            target.MetaPersonicxLifestageClusterId = source.MetaPersonicxLifestageClusterId;
-            target.MetaPersonicxLifestageGroupId = source.MetaPersonicxLifestageGroupId;
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PhotoId = source.PhotoId;

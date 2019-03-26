@@ -86,6 +86,7 @@
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponse.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />

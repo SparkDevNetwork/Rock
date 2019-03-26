@@ -25,6 +25,7 @@ using System.Web.Http.OData;
 using Rock;
 using Rock.BulkExport;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -58,6 +59,60 @@ namespace Rock.Rest.Controllers
 
             financialTransaction.CheckMicrParts = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrParts );
             return this.Post( financialTransaction );
+        }
+
+        /// <summary>
+        /// Process and charge a payment.
+        /// </summary>
+        /// <param name="automatedPaymentArgs"></param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <returns>The ID of the new transaction</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/Process" )]
+        public virtual HttpResponseMessage ProcessPayment( [FromBody]AutomatedPaymentArgs automatedPaymentArgs, [FromUri]bool enableDuplicateChecking = true, [FromUri]bool enableScheduleAdherenceProtection = true )
+        {
+            var errorMessage = string.Empty;
+            
+            var rockContext = Service.Context as RockContext;
+            var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
+
+            if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) ||
+                automatedPaymentProcessor.IsRepeatCharge( out errorMessage ) ||
+                !automatedPaymentProcessor.IsAccordingToSchedule( out errorMessage ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var transaction = automatedPaymentProcessor.ProcessCharge( out errorMessage );
+            var gatewayException = automatedPaymentProcessor.GetMostRecentException();
+
+            if ( !string.IsNullOrEmpty( errorMessage ) )
+            {
+                if ( gatewayException != null )
+                {
+                    throw gatewayException;
+                }
+
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.InternalServerError, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            if ( transaction == null )
+            {
+                if ( gatewayException != null )
+                {
+                    throw gatewayException;
+                }
+
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.InternalServerError, "No transaction was created" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, transaction.Id );
+            return response;
         }
 
         /// <summary>

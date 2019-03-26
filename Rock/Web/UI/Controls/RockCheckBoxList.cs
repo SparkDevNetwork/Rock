@@ -391,18 +391,18 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns <= 0 )
-            {
-                this.RepeatColumns = 4;
-            }
-
-            cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

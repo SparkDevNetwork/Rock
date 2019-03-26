@@ -637,6 +637,12 @@ namespace RockWeb.Blocks.Core
                     ParentCategoryId = _parentCategoryId,
                 };
             }
+            else
+            {
+                entityTypePicker.SelectedEntityTypeId = category.EntityTypeId;
+                tbEntityQualifierField.Text = category.EntityTypeQualifierColumn;
+                tbEntityQualifierValue.Text = category.EntityTypeQualifierValue;
+            }
 
 
             tbName.Text = category.Name;

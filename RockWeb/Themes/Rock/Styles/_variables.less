@@ -1,4 +1,6 @@
 
+@enable-global-custom-controls: true;
+
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;                      // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
 @body-background:             #fafafa;                      // The page background color. #color
@@ -237,8 +239,8 @@
 @input-border-radius:         @border-radius-base;            // The border radius of input fields.
 @input-border-focus:          @brand-primary;                 // The border color of active inputs.
 
-@input-focus-rgba:            rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
-@input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
+@input-focus-rgba:            fade(@input-border-focus, 40%);
+@input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
 @input-color-placeholder:        lighten(@text-color, 40%);   // The text color of input placeholder text.

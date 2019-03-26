@@ -36,11 +36,30 @@ namespace Rock.Web
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and
         /// then loading the appropriate layout (ASPX) page
+        /// 
+        /// Pick url on the following priority order:
+        /// 1. PageId
+        /// 2. Route match and site match
+        /// 3. ShortLink match and site match
+        /// 4. Route and no site match
+        /// 5. ShortLink with no site match
+        /// 6. If there is no routing info in the request then set to default page
+        /// 7. 404 if route does not exist
+        /// 
         /// </summary>
         /// <param name="requestContext"></param>
         /// <returns></returns>
         System.Web.IHttpHandler IRouteHandler.GetHttpHandler( RequestContext requestContext )
         {
+            string pageId = string.Empty;
+            int routeId = 0;
+            bool isSiteMatch = false;
+            Dictionary<string, string> parms;
+            string host;
+            HttpRequestBase routeHttpRequest;
+            HttpCookie siteCookie;
+
+            // Context cannot be null
             if ( requestContext == null )
             {
                 throw new ArgumentNullException( "requestContext" );
@@ -48,97 +67,54 @@ namespace Rock.Web
 
             try
             {
-                var httpRequest = requestContext.HttpContext.Request;
+                routeHttpRequest = requestContext.HttpContext.Request;
+                siteCookie = routeHttpRequest.Cookies["last_site"];
+                parms = new Dictionary<string, string>();
+                host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
 
-                var siteCookie = httpRequest.Cookies["last_site"];
-
-                string pageId = "";
-                int routeId = 0;
-                bool isSiteMatch = false;
-
-                var parms = new Dictionary<string, string>();
-                var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-                // Pages using the default routing URL will have the page id in the RouteData.Values collection
                 if ( requestContext.RouteData.Values["PageId"] != null )
                 {
-                    pageId = (string)requestContext.RouteData.Values["PageId"];
+                    // Pages using the default routing URL will have the page id in the RouteData.Values collection
+                    pageId = ( string ) requestContext.RouteData.Values["PageId"];
                     isSiteMatch = true;
                 }
-
-                // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
                 else if ( requestContext.RouteData.DataTokens["PageRoutes"] != null )
                 {
-                    
-                    var pageAndRouteIds = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
-                    if ( pageAndRouteIds != null && pageAndRouteIds.Count > 0 )
-                    {
-                        // Default to first site/page
-                        if ( pageAndRouteIds.Count >= 1 )
-                        {
-                            var pageAndRouteIdDefault = pageAndRouteIds.First();
-                            pageId = pageAndRouteIdDefault.PageId.ToJson();
-                            routeId = pageAndRouteIdDefault.RouteId;
-
-                            // Then check to see if any can be matched by site
-                            SiteCache site = null;
-
-                            // First check to see if site was specified in querystring
-                            int? siteId = httpRequest.QueryString["SiteId"].AsIntegerOrNull();
-                            if ( siteId.HasValue )
-                            {
-                                site = SiteCache.Get( siteId.Value );
-                            }
-
-                            // Then check to see if site can be determined by domain
-                            if ( site == null )
-                            {
-                                site = SiteCache.GetSiteByDomain( host );
-                            }
-
-                            // Then check the last site
-                            if ( site == null )
-                            {
-                                if ( siteCookie != null && siteCookie.Value != null )
-                                {
-                                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
-                                }
-                            }
-
-                            if ( site != null )
-                            {
-                                foreach ( var pageAndRouteId in pageAndRouteIds )
-                                {
-                                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
-                                    if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
-                                    {
-                                        pageId = pageAndRouteId.PageId.ToJson();
-                                        routeId = pageAndRouteId.RouteId;
-                                        isSiteMatch = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    SiteCache site = GetSite(routeHttpRequest, host, siteCookie );
+                    // Pages that use a custom URL route will have the page id in the RouteData.DataTokens collection
+                    GetPageIdFromDataTokens(requestContext, site, out pageId, out routeId, out isSiteMatch );
 
                     foreach ( var routeParm in requestContext.RouteData.Values )
                     {
-                        parms.Add( routeParm.Key, (string)routeParm.Value );
+                        parms.Add( routeParm.Key, ( string ) routeParm.Value );
                     }
                 }
-                
-                // If page has not been specified get the site by the domain 
-                if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
+                else if ( ( ( System.Web.Routing.Route ) requestContext.RouteData.Route ).Url.IsNullOrWhiteSpace() )
                 {
-                    SiteCache site = SiteCache.GetSiteByDomain( host );
+                    // if we don't have routing info then set the page ID to the default page for the site.
+
+                    // Get the site, if not found use the default site
+                    SiteCache site = GetSite( routeHttpRequest, host, siteCookie );
                     if ( site == null )
                     {
-                        // Use last site
-                        if ( siteCookie != null && siteCookie.Value != null )
-                        {
-                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
-                        }
+                        site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
+
+                    if ( site.DefaultPageId.HasValue )
+                    {
+                        pageId = site.DefaultPageId.Value.ToString();
+                        isSiteMatch = true;
+                    }
+                    else
+                    {
+                        throw new SystemException( "Invalid Site Configuration" );
+                    }
+                }
+
+                // If the the page ID and site has not yet been matched
+                if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
+                {
+                    SiteCache site = GetSite( routeHttpRequest, host, siteCookie );
 
                     // if not found use the default site
                     if ( site == null )
@@ -148,24 +124,6 @@ namespace Rock.Web
 
                     if ( site != null )
                     {
-                        // First default to the site's default page
-                        if ( string.IsNullOrWhiteSpace( pageId ) )
-                        {
-                            if ( site.DefaultPageId.HasValue )
-                            {
-                                pageId = site.DefaultPageId.Value.ToString();
-                            }
-                            else
-                            {
-                                throw new SystemException( "Invalid Site Configuration" );
-                            }
-
-                            if ( site.DefaultPageRouteId.HasValue )
-                            {
-                                routeId = site.DefaultPageRouteId.Value;
-                            }
-                        }
-
                         // Check to see if this is a short link route
                         string shortlink = null;
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
@@ -185,12 +143,7 @@ namespace Rock.Web
                             {
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
 
-                                // Pick url on the following priority order:
-                                // Route match and site match
-                                // ShortLink match and site match
-                                // Route and no site match
-                                // ShortLink with no site match
-                                if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null  ) )
+                                if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null ) )
                                 {
                                     pageId = string.Empty;
                                     routeId = 0;
@@ -205,9 +158,10 @@ namespace Rock.Web
                                     {
                                         transaction.UserName = requestContext.HttpContext.User.Identity.Name;
                                     }
+
                                     transaction.DateViewed = RockDateTime.Now;
-                                    transaction.IPAddress = UI.RockPage.GetClientIpAddress( httpRequest );
-                                    transaction.UserAgent = httpRequest.UserAgent ?? "";
+                                    transaction.IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest );
+                                    transaction.UserAgent = routeHttpRequest.UserAgent ?? string.Empty;
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 
                                     requestContext.HttpContext.Response.Redirect( trimmedUrl );
@@ -220,7 +174,7 @@ namespace Rock.Web
                         if ( site.EnableMobileRedirect )
                         {
                             // get the device type
-                            string u = httpRequest.UserAgent;
+                            string u = routeHttpRequest.UserAgent;
 
                             var clientType = InteractionDeviceType.GetClientType( u );
 
@@ -233,12 +187,9 @@ namespace Rock.Web
                             }
 
                             // if not, mobile device and tables should be redirected also, check if device is a tablet
-                            if ( !redirect && site.RedirectTablets )
+                            if ( !redirect && site.RedirectTablets && clientType == "Tablet")
                             {
-                                if ( clientType == "Tablet" )
-                                {
-                                    redirect = true;
-                                }
+                                redirect = true;
                             }
 
                             if ( redirect )
@@ -262,7 +213,7 @@ namespace Rock.Web
                 if ( !string.IsNullOrEmpty( pageId ) )
                 {
                     int pageIdNumber = 0;
-                    if ( Int32.TryParse( pageId, out pageIdNumber ) )
+                    if ( int.TryParse( pageId, out pageIdNumber ) )
                     {
                         page = PageCache.Get( pageIdNumber );
                     }
@@ -271,22 +222,13 @@ namespace Rock.Web
                 if ( page == null )
                 {
                     // try to get site's 404 page
-                    SiteCache site = SiteCache.GetSiteByDomain( host );
-                    if ( site == null )
-                    {
-                        // Use last site
-                        if ( siteCookie != null && siteCookie.Value != null )
-                        {
-                            site = SiteCache.Get( siteCookie.Value.AsInteger() );
-                        }
-                    }
-
+                    SiteCache site = GetSite( routeHttpRequest, host, siteCookie );
                     if ( site != null && site.PageNotFoundPageId != null )
                     {
                         if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
-                                new Exception( string.Format( "404 Error: {0}", httpRequest.Url.AbsoluteUri ) ),
+                                new Exception( $"404 Error: {routeHttpRequest.Url.AbsoluteUri}" ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
@@ -297,57 +239,38 @@ namespace Rock.Web
                     else
                     {
                         // no 404 page found for the site, return the default 404 error page
-                        return (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
+                        return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
                     }
-                      
                 }
+
+                CreateOrUpdateSiteCookie( siteCookie, requestContext, page );
 
                 string theme = page.Layout.Site.Theme;
                 string layout = page.Layout.FileName;
                 string layoutPath = PageCache.FormatPath( theme, layout );
-
-                if ( siteCookie == null )
-                {
-                    siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
-                }
-                else
-                {
-                    siteCookie.Value = page.Layout.SiteId.ToString();
-                }
-                requestContext.HttpContext.Response.SetCookie( siteCookie );
-
+                
                 try
                 {
-                    // Return the page for the selected theme and layout
-                    Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                    cmsPage.SetPage( page );
-                    cmsPage.PageReference = new PageReference( page.Id, routeId, parms, httpRequest.QueryString );
-                    return cmsPage;
+                    return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
                 }
                 catch ( System.Web.HttpException )
                 {
-                    // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
+                    // The Selected theme and/or layout didn't exist so try to use the layout in the default theme.
                     theme = "Rock";
 
-                    // If not using the default layout, verify that Layout exists in the default theme directory
-                    if ( layout != "FullWidth" &&
-                        !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout ) ) ) )
+                    // Verify that Layout exists in the default theme directory and if not try use the default layout of the default theme
+                    string layoutPagePath = string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout );
+                    if ( !File.Exists( requestContext.HttpContext.Server.MapPath( layoutPagePath ) ) )
                     {
-                        // If selected layout doesn't exist in the default theme, switch to the Default layout
                         layout = "FullWidth";
                     }
 
-                    // Build the path to the aspx file to
                     layoutPath = PageCache.FormatPath( theme, layout );
 
-                    // Return the default layout and/or theme
-                    Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                    cmsPage.SetPage( page );
-                    cmsPage.PageReference = new PageReference( page.Id, routeId, parms, httpRequest.QueryString );
-                    return cmsPage;
+                    return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 if ( requestContext.HttpContext != null )
                 {
@@ -355,9 +278,126 @@ namespace Rock.Web
                     requestContext.HttpContext.Cache["RockLastException"] = ex;
                 }
 
-                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
-                return errorPage;
+                return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
             }
+        }
+
+        /// <summary>
+        /// Uses the DataTokens to contstruct a list of PageAndRouteIds
+        /// If any exist then set page and route ID to the first one found.
+        /// Then loop through the collection looking for a site match, if one is found then set the page and route ID to that
+        /// and the IsSiteMatch property to true.
+        /// </summary>
+        private void GetPageIdFromDataTokens( RequestContext routeRequestContext, SiteCache site, out string pageId, out int routeId, out bool isSiteMatch )
+        {
+            pageId = string.Empty;
+            routeId = 0;
+            isSiteMatch = false;
+
+            // Pages that use a custom URL route will have the page id in the RouteData.DataTokens collection
+            List<PageAndRouteId> pageAndRouteIds = routeRequestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
+
+            if ( pageAndRouteIds != null && pageAndRouteIds.Any() )
+            {
+                // Default to first site/page
+                var pageAndRouteIdDefault = pageAndRouteIds.First();
+                pageId = pageAndRouteIdDefault.PageId.ToJson();
+                routeId = pageAndRouteIdDefault.RouteId;
+
+                // Then check to see if any can be matched by site
+                
+
+                if ( site == null )
+                {
+                    return;
+                }
+
+                foreach ( var pageAndRouteId in pageAndRouteIds )
+                {
+                    var pageCache = PageCache.Get( pageAndRouteId.PageId );
+                    if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
+                    {
+                        pageId = pageAndRouteId.PageId.ToJson();
+                        routeId = pageAndRouteId.RouteId;
+                        isSiteMatch = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the site from the site cache in the following order:
+        /// 1. check the query string and try to get the site
+        /// 2. Get the site using the domain of the current request
+        /// 3. Get the last site from the site cookie
+        /// </summary>
+        /// <returns></returns>
+        private SiteCache GetSite(HttpRequestBase routeHttpRequest, string host, HttpCookie siteCookie )
+        {
+            SiteCache site = null;
+
+            // First check to see if site was specified in querystring
+            int? siteId = routeHttpRequest.QueryString["SiteId"].AsIntegerOrNull();
+            if ( siteId.HasValue )
+            {
+                site = SiteCache.Get( siteId.Value );
+            }
+
+            // Then check to see if site can be determined by domain
+            if ( site == null )
+            {
+                site = SiteCache.GetSiteByDomain( host );
+            }
+
+            // Then check the last site
+            if ( site == null )
+            {
+                if ( siteCookie != null && siteCookie.Value != null )
+                {
+                    site = SiteCache.Get( siteCookie.Value.AsInteger() );
+                }
+            }
+
+            return site;
+        }
+
+        /// <summary>
+        /// Creates the or updates site cookie with the last_site value using the site ID of the page
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="routeRequestContext">The routeRequestContext.</param>
+        /// <param name="siteCookie">The siteCookie.</param>
+        private void CreateOrUpdateSiteCookie( HttpCookie siteCookie, RequestContext routeRequestContext, PageCache page )
+        {
+            if ( siteCookie == null )
+            {
+                siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
+            }
+            else
+            {
+                siteCookie.Value = page.Layout.SiteId.ToString();
+            }
+
+            routeRequestContext.HttpContext.Response.SetCookie( siteCookie );
+        }
+
+        /// <summary>
+        /// Creates the rock page for the selected theme and layout.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="layoutPath">The layout path.</param>
+        /// <param name="routeHttpRequest">The routeHttpRequest.</param>
+        /// <param name="parms">The parms.</param>
+        /// /// <param name="routeId">The routeId.</param>
+        /// <returns></returns>
+        private Rock.Web.UI.RockPage CreateRockPage( PageCache page, string layoutPath, int routeId, Dictionary<string, string> parms, HttpRequestBase routeHttpRequest )
+        {
+            // Return the page for the selected theme and layout
+            Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage ) BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+            cmsPage.SetPage( page );
+            cmsPage.PageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
+            return cmsPage;
         }
     }
 
@@ -422,5 +462,4 @@ namespace Rock.Web
             return;
         }
     }
-
 }

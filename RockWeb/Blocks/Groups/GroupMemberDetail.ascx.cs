@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Groups
                 if ( checkForArchivedGroupMember )
                 {
                     // check if this is a duplicate member before checking for archived so that validation logic works a little smoother
-                    if ( !groupService.AllowsDuplicateMembers( group ) )
+                    if ( !GroupService.AllowsDuplicateMembers() )
                     {
                         GroupMember duplicateGroupMember;
                         if ( groupService.ExistsAsMember( group, personId.Value, role.Id, out duplicateGroupMember ) )

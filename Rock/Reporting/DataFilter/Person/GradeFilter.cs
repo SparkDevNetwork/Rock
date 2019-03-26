@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on based on the current grade" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -93,7 +93,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -106,11 +106,11 @@ function() {{
   var compareText = $('.js-filter-compare', $content).find(':selected').text();
   var compareValue = $('.js-filter-control', $content).filter(':visible').length ? $('.js-filter-control', $content).find(':selected').text() : '';
   var result = '{0} ' + compareText + ' ' + compareValue;
-  
+
   return result;
 }}
 ", GetGlobalGradeLabel().EscapeQuotes());
-            
+
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ function() {{
             DropDownList ddlCompare = controls[0] as DropDownList;
             RockDropDownList ddlGradeDefinedValue = controls[1] as RockDropDownList;
 
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -279,8 +279,8 @@ function() {{
                  * example (assuming defined values are the stock values):
                  * Billy graduates in 2020, the transition date is 6/1
                  * In other words, Billy graduates on 6/1/2020
-                 * and current date is Feb 1, 2015.  
-                 
+                 * and current date is Feb 1, 2015.
+
                  * Stock Example:
                  * 9th Grade offset is 3
                  * 8th Grade offset is 4
@@ -288,52 +288,52 @@ function() {{
                  * 6th Grade offset is 6
                  * Billy graduates on 6/1/2020 and current date is Feb 1, 2015
                  * Therefore, his current grade offset is 5 yrs, which would mean he is in 7th grade
-                 *                  * 
-                 * If the filter is: 
+                 *                  *
+                 * If the filter is:
                  *      Equal to 7th grade...
-                 *          7th Graders would be included. 
+                 *          7th Graders would be included.
                  *          Grade offset must be LessThanOrEqualTo 5 and GreaterThan 4
                  *      Not-Equal to 7th grade...
-                 *          7th Graders would not be included. 
+                 *          7th Graders would not be included.
                  *          Grade offset must be LessThanOrEqualTo 4 or GreaterThan 5
                  *      Less than 7th grade..
-                 *          7th Graders would not be included, 6th and younger would be included. 
+                 *          7th Graders would not be included, 6th and younger would be included.
                  *          Grade offset must be GreaterThan 5
                  *      Less than or Equal to 7th grade..
-                 *          7th Graders and younger would be included. 
+                 *          7th Graders and younger would be included.
                  *          Grade offset must be GreaterThan 4
                  *      Greater than 7th grade..
-                 *          7th Graders would not be included, 8th Graders and older would be included. 
+                 *          7th Graders would not be included, 8th Graders and older would be included.
                  *          Grade offset must be LessThanOrEqualTo 4
                  *      Greater than or Equal to 7th grade..
-                 *          7th Graders and older would be included. 
+                 *          7th Graders and older would be included.
                  *          Grade offset must be LessThanOrEqualTo 5
-                 *          
+                 *
                  * Combined Example:
                  * High School offset is 3
                  * Jr High offset is 5
                  * K-6 offset is 12
                  * Billy graduates on 6/1/2020 and current date is Feb 1, 2015
                  * Therefore, his current grade offset is 5 yrs, which would mean he is in Jr High
-                 * 
-                 * If the filter is: 
+                 *
+                 * If the filter is:
                  *      Equal to Jr High...
-                 *          Jr High would be included. 
+                 *          Jr High would be included.
                  *          Grade offset must be LessThanOrEqualTo 5 and GreaterThan 3
                  *      Not-Equal to Jr High...
-                 *          Jr High would not be included. 
+                 *          Jr High would not be included.
                  *          Grade offset must be LessThanOrEqualTo 3 or GreaterThan 5
                  *      Less than Jr High..
-                 *          Jr High would not be included, K-6 and younger would be included. 
+                 *          Jr High would not be included, K-6 and younger would be included.
                  *          Grade offset must be GreaterThan 5
                  *      Less than or Equal to Jr High..
-                 *          Jr High and younger would be included. 
+                 *          Jr High and younger would be included.
                  *          Grade offset must be GreaterThan 3
                  *      Greater than Jr High..
-                 *          Jr High would not be included, High School and older would be included. 
+                 *          Jr High would not be included, High School and older would be included.
                  *          Grade offset must be LessThanOrEqualTo 3
                  *      Greater than or Equal to Jr High..
-                 *          Jr High and older would be included. 
+                 *          Jr High and older would be included.
                  *          Grade offset must be LessThanOrEqualTo 5
                  */
 
@@ -342,7 +342,7 @@ function() {{
                 int nextGradeOffset = nextGradeDefinedValue != null ? nextGradeDefinedValue.Value.AsInteger() : -1;
 
                 switch ( comparisonType )
-                { 
+                {
                     case ComparisonType.EqualTo:
                         // Include people who have have a grade offset LessThanOrEqualTo selected grade's offset, but GreaterThan the next grade's offset
                         personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear <= gradeOffset

@@ -379,14 +379,102 @@ namespace Rock.Storage.AssetStorage
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
             string physicalPath = FileSystemCompontHttpContext.Server.MapPath( virtualPath );
 
-            if ( asset.Type == AssetType.File )
+            try
             {
-                File.Delete( physicalPath );
+                if ( asset.Type == AssetType.File )
+                {
+                    if ( File.Exists( physicalPath ) )
+                    {
+                        File.Delete( physicalPath );
+                    }
+                }
+                else if ( asset.Type == AssetType.Folder )
+                {
+                    if ( Directory.Exists( physicalPath ) )
+                    {
+                        Directory.Delete( physicalPath, true );
+                    }
+                }
             }
-            else if ( asset.Type == AssetType.Folder )
+            catch ( Exception ex )
             {
-                Directory.Delete( physicalPath, true );
+                ExceptionLogService.LogException( ex );
+                throw;
             }
+        }
+
+        /// <summary>
+        /// Checks the file extension against the Content File Type White list.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>
+        ///   <c>true</c> if [is file type allowed by white list] [the specified asset]; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool IsFileTypeAllowedByWhiteList( string fileName )
+        {
+            // validate file type (applies to all uploaded files)
+            var globalAttributesCache = GlobalAttributesCache.Get();
+
+            IEnumerable<string> contentFileTypeWhiteList = ( globalAttributesCache.GetValue( "ContentFiletypeWhitelist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
+            contentFileTypeWhiteList = contentFileTypeWhiteList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
+
+            // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
+            string fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( new char[] { '.' } ).Trim();
+            
+            if ( contentFileTypeWhiteList.Any() && !contentFileTypeWhiteList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks the file extension against the Content File Type Black list.
+        /// </summary>
+        /// <param name="fileName">Name of the file with the extension. Can inclued the full path.</param>
+        /// <returns>
+        ///   <c>true</c> if [is file type allowed by black list] [the specified asset]; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool IsFileTypeAllowedByBlackList( string fileName )
+        {
+            // validate file type (applies to all uploaded files)
+            var globalAttributesCache = GlobalAttributesCache.Get();
+
+            IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
+            contentFileTypeBlackList = contentFileTypeBlackList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
+
+            // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
+            string fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( new char[] { '.' } ).Trim();
+
+            if ( contentFileTypeBlackList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks the file extension against the Content File Type Black and White lists.
+        /// Checks the Blacklist first so that one takes precedence.
+        /// </summary>
+        /// <param name="fileName">Name of the file. Can inluced the full path.</param>
+        /// <returns>
+        ///   <c>true</c> if [is file type allowed by black and white lists] [the specified file name]; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool IsFileTypeAllowedByBlackAndWhiteLists( string fileName )
+        {
+            if ( !IsFileTypeAllowedByBlackList( fileName ) )
+            {
+                return false;
+            }
+            else if ( !IsFileTypeAllowedByWhiteList( fileName ) )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         #endregion Protected Methods

@@ -79,8 +79,9 @@ namespace Rock
                     return JsonConvert.DeserializeObject<T>( val );
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof(T).Name}. {ex}" );
                 return default( T );
             }
         }

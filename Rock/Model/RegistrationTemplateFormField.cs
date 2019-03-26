@@ -80,7 +80,7 @@ namespace Rock.Model
         public int? AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will be auto set for each person on the registration.
+        /// Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will default to the value entered for first person registered.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [common value]; otherwise, <c>false</c>.
@@ -169,8 +169,31 @@ namespace Rock.Model
         [DataMember]
         public string FieldVisibilityRulesJSON
         {
-            get => FieldVisibilityRules?.ToJson();
-            set => FieldVisibilityRules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+            get
+            {
+                return FieldVisibilityRules?.ToJson();
+            }
+
+            set
+            {
+                Field.FieldVisibilityRules rules = null;
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    rules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>();
+                    if ( rules == null )
+                    {
+                        // if can't be deserialized as FieldVisibilityRules, it might have been serialized as an array from an earlier version
+                        var rulesList = value.FromJsonOrNull<List<Field.FieldVisibilityRule>>();
+                        if ( rulesList != null )
+                        {
+                            rules = new Field.FieldVisibilityRules();
+                            rules.RuleList.AddRange( rulesList );
+                        }
+                    }
+                }
+
+                this.FieldVisibilityRules = rules ?? new Field.FieldVisibilityRules();
+            }
         }
 
         #endregion

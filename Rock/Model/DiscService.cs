@@ -29,36 +29,120 @@ namespace Rock.Model
         /// Raw question data.
         /// </summary>
         private static String[,] questionData = {
-            {"Enjoys challenges","Enjoys having fun","Freely expresses feelings","Comfortable with circumstances","NNNN","NNNN"},
-            {"Tries to avoid mistakes","Not easily moved","Convinces others ","Goes along with the flow","CDIS","CDIS"},
-            {"Liked by others","Systematically thinks through issues","Quickly shares thoughts","Does not like change","ICDS","ICDS"},
-            {"Enjoys talking","Calculates actions","Actions are predictable","Makes decisions quickly","ICSD","ICSD"},
-            {"Takes risks","Sees imperfections","People person","Avoids extremes","DCIS","DCIS"},
-            {"Sensitive to others","Influences others","Struggles acknowledging abilities","Produces results","SICD","SICD"},
-            {"Full of energy","Tries to avoid mistakes","Takes control","Accessible to others","ICDS","ICDS"},
-            {"High-spirited","Easily focuses","Does not speak up","Fully committed to the goal","ICSD","ICSD"},
-            {"Pays attention to details","Consistent with others","Is entertaining","Gives direction","CSID","CSID"},
-            {"Conquers challenges","Encourages others","Follows others","Minutely exact","DISC","DISC"},
-            {"Plays down abilities","Listens to others","Driven by goals","An optimist","CSDI","CSDI"},
-            {"Pushes others forward","Concerned for other","Concerned for correctness","Is self sufficient","ISCD","ISCD"},
-            {"Pursues goals","Understands other's feelings","People enjoy them","Avoids danger","DSIC","DSIC"},
-            {"Prefers precision","Follows others","Starts things","Enjoys life fully","CSDI","CSDI"},
-            {"Liked by others","Thinks things through","Perseveres over obstacles","Does things the traditional way","ICDS","ICDS"},
-            {"Is analytical","Takes risks","Loyal to others","Possesses charm ","CDSI","CDSI"},
-            {"Enjoys others","Patient listener","Takes care of themselves","Listens to details","ISDC","ISDC"},
-            {"Doesn't challenge others","Doggedly pursues","Works systematically","High energy","SDCI","SDCI"},
-            {"Overcomes difficulties","Shows feelings freely","Mindful of others","Prone to worry","DISC","DISC"},
-            {"Enjoys hanging out with people","Cares deeply about others","Is concerned about the facts","Secure in abilities","ISCD","ISCD"},
-            {"Does things the right way","Is generous","Shares inner thoughts","Committed to the goal","CSID","CSID"},
-            {"Acts without thinking","Evaluates objectively","Assumes control","Comfortable with the status quo","ICDS","ICDS"},
-            {"Spends time with others","Thinks systematically through issues","Displays confidence","Gives grace to others","ICDS","ICDS"},
-            {"Seeks others","Comfortable with the status quo","Resistant to opposition","Follows instructions precisely","ISDC","ISDC"},
-            {"Pushes others to do their best","Thinks through problems analytically","Collaborative team player","Upbeat about life","DCSI","DCSI"},
-            {"Enjoys having fun with others","Conforms exactly to a standard","Expresses opinions freely","Is consistent","ICDS","ICDS"},
-            {"Forcefully pursues a goal","Welcoming to others","Considerate of others","Carefully assesses risks","DISC","DISC"},
-            {"Critical of others","Pushes others","Optimistic toward others","Concerned with others","CDIS","CDIS"},
-            {"Readily follows others","Tries to avoid mistakes","Does not show weakness","Enjoys others","NNNN","NNNN"},
-            {"Expresses feelings","Often stands out","Monitors details","Satisfied with circumstances","IDCS","IDCS"}
+            {"Follows rules","Enjoys challenges","Enjoys having fun","Uncomfortable with change","CDIS","CDIS"},
+            {"Tries to avoid mistakes","Not easily moved","Convinces others ","Goes with the flow","CDIS","CDIS"},
+            {"Thinks through issues","Quickly shares thoughts","Liked by others","Prefers not to change","CDIS","CDIS"},
+            {"Calculates actions","Makes decisions quickly","Enjoys talking","Actions are predictable","CDIS","CDIS"},
+            {"Sees imperfections","Takes risks","People person","Avoids extremes","CDIS","CDIS"},
+            {"Struggles acknowledging abilities","Produces results","Influences others","Sensitive to others","CDIS","CDIS"},
+            {"Avoids mistakes","Takes control","Full of energy","Available to others","CDIS","CDIS"},
+            {"Easily focuses","Fully committed to the goal","High-spirited","Does not speak up","CDIS","CDIS"},
+            {"Pays attention to details","Gives direction","Is entertaining","Consistent with others","CDIS","CDIS"},
+            {"Very exact","Conquers challenges","Encourages others","Follows others","CDIS","CDIS"},
+            {"Plays down abilities","Driven by goals","Is an optimist","Concerned for others","CDIS","CDIS"},
+            {"Concerned for correctness","Is self sufficient","Persuades others","Concerned for other","CDIS","CDIS"},
+            {"Avoids danger","Pursues goals","Are enjoyed by People","Empathizes with others","CDIS","CDIS"},
+            {"Prefers precision","Starts things","Enjoys life fully","Follows others","CDIS","CDIS"},
+            {"Thinks things through","Perseveres obstacles","Liked by others","Sticks with the traditional way","CDIS","CDIS"},
+            {"Is analytical","Takes risks","Possesses charm ","Loyal to others","CDIS","CDIS"},
+            {"Share details","Unmovable in opposition","Enjoys others","Patient listener","CDIS","CDIS"},
+            {"Works systematically","Pursues doggedly","Full of energy","Doesn't challenge others","CDIS","CDIS"},
+            {"Prone to worrying","Overcomes difficulties","Freely shows feelings","Mindful of others","CDIS","CDIS"},
+            {"Is concerned about the facts","Secure in abilities","Enjoys people","Cares deeply about others","CDIS","CDIS"},
+            {"Does things the right way","Committed to the goal","Shares inner thoughts","Is generous","CDIS","CDIS"},
+            {"Evaluates objectively","Assumes control","Acts without thinking","Like things the way they are","CDIS","CDIS"},
+            {"Systematically thinks through issues","Displays confidence","Spends time with others","Gives grace to others","CDIS","CDIS"},
+            {"Follows instructions precisely","Resistant to opposition","Seeks out others","Comfortable with the status quo","CDIS","CDIS"},
+            {"Thinks through problems","Pushes others","Upbeat about life","Collaborates with other","CDIS","CDIS"},
+            {"Conforms exactly to a standard","Freely expresses opinions","Enjoys having fun with others","Is consistent","CDIS","CDIS"},
+            {"Carefully assesses risks","Forcefully pursues goals","Welcomes others","Considerate of others","CDIS","CDIS"},
+            {"Critical of others","Drives to complete the goal","Optimistic toward others","Concerned for others","CDIS","CDIS"},
+            {"Tries to avoid mistakes","Does not show weakness","Enjoys others","Readily follows others","CDIS","CDIS"},
+            {"Follows rules","Stands out","Expresses feelings","Satisfied with circumstances","CDIS","CDIS"}
+        };
+
+
+        /// <summary>
+        /// Raw question data with code as key.
+        /// </summary>
+        private static Dictionary<string, DiscConstant> constructData = new Dictionary<string, DiscConstant>()
+        {
+            { AttributeKeys.AdaptiveD,  new DiscConstant(11.65673864,4.418053037) },
+            { AttributeKeys.AdaptiveI,  new DiscConstant(13.16455696,5.194907006) },
+            { AttributeKeys.AdaptiveS,  new DiscConstant(11.93373045,3.956836979) },
+            { AttributeKeys.AdaptiveC,  new DiscConstant(13.24497394,5.183690143) },
+            { AttributeKeys.NaturalD,  new DiscConstant(11.76396128,4.344015851) },
+            { AttributeKeys.NaturalI,  new DiscConstant(13.3655994,4.156180707) },
+            { AttributeKeys.NaturalS,  new DiscConstant(12.38644825,3.79901483) },
+            { AttributeKeys.NaturalC,  new DiscConstant(12.48399106,4.431075553) }
+        };
+
+        /// <summary>
+        /// Z score to percentage
+        /// </summary>
+        private static Dictionary<double, double> zScoreToPercentage = new Dictionary<double, double>()
+        {
+            { 3,99.9},
+            { 2.9,99.8},
+            { 2.8,99.7},
+            { 2.7,99.6},
+            { 2.6,99.5},
+            { 2.5,99.4},
+            { 2.4,99.2},
+            { 2.3,98.9},
+            {2.2,98.6},
+            {2.1,98.2},
+            {2,97.8},
+            {1.9,97.1},
+            {1.8,96.4},
+            {1.7,95.5},
+            {1.6,94.5},
+            {1.5,93.3},
+            {1.4,91.9},
+            {1.3,90.3},
+            {1.2,88.5},
+            {1.1,86.4},
+            {1,84.1},
+            {0.9,78.8},
+            {0.8,78.8},
+            {0.7,75.8},
+            {0.6,72.6},
+            {0.5,69.2},
+            {0.4,65.5},
+            {0.3,61.8},
+            {0.2,57.9},
+            {0.1,54},
+            {0,50},
+            {-0.1,46},
+            {-0.2,42.1},
+            {-0.3,38.2},
+            {-0.4,34.5},
+            {-0.5,30.9},
+            {-0.6,27.4},
+            {-0.7,24.2},
+            {-0.8,21.2},
+            {-0.9,18.4},
+            {-1,15.9},
+            {-1.1,13.6},
+            {-1.2,11.5},
+            {-1.3,9.7},
+            {-1.4,8.1},
+            {-1.5,6.7},
+            {-1.6,5.5},
+            {-1.7,4.5},
+            {-1.8,3.6},
+            {-1.9,2.9},
+            {-2,2.3},
+            {-2.1,1.8},
+            {-2.2,1.4},
+            {-2.3,1.1},
+            {-2.4,0.8},
+            {-2.5,0.6},
+            {-2.6,0.5},
+            {-2.7,0.4},
+            {-2.8,0.3},
+            {-2.9,0.2},
+            {-3,0.1}
         };
 
 #pragma warning disable 1591
@@ -138,9 +222,10 @@ namespace Rock.Model
             {
                 for ( int responseIndex = 0; responseIndex < 4; responseIndex++ )
                 {
-                    response.QuestionNumber = ( questionIndex + 1 ).ToString( "D2" );
+                    response.QuestionNumber = ( questionIndex + 1 ).ToString();
                     response.ResponseNumber = ( responseIndex + 1 ).ToString();
-                    response.ResponseID = response.QuestionNumber + response.ResponseNumber; ;
+                    response.ResponseID = response.QuestionNumber + response.ResponseNumber;
+                    ;
                     response.ResponseText = questionData[questionIndex, responseIndex];
                     response.MostScore = questionData[questionIndex, 4].Substring( responseIndex, 1 );
                     response.LeastScore = questionData[questionIndex, 5].Substring( responseIndex, 1 );
@@ -154,65 +239,80 @@ namespace Rock.Model
         /// <summary>
         /// Scores the test.
         /// </summary>
-        /// <param name="moreN">The more n.</param>
         /// <param name="moreD">The more d.</param>
         /// <param name="moreI">The more i.</param>
         /// <param name="moreS">The more s.</param>
         /// <param name="moreC">The more c.</param>
-        /// <param name="lessN">The less n.</param>
         /// <param name="lessD">The less d.</param>
         /// <param name="lessI">The less i.</param>
         /// <param name="lessS">The less s.</param>
         /// <param name="lessC">The less c.</param>
-        /// <returns>returns a AssessmentResults object</returns>
-        static public AssessmentResults Score( int moreN, int moreD, int moreI, int moreS, int moreC, int lessN, int lessD, int lessI, int lessS, int lessC )
+        /// <returns>
+        /// returns a AssessmentResults object
+        /// </returns>
+        static public AssessmentResults Score( int moreD, int moreI, int moreS, int moreC, int lessD, int lessI, int lessS, int lessC )
         {
-            // Holds the most and least totals for each Letter attribute
-            Dictionary<string, int[]> results = new Dictionary<string, int[]>();
-            results["S"] = new int[] { 0, 0 };
-            results["C"] = new int[] { 0, 0 };
-            results["I"] = new int[] { 0, 0 };
-            results["N"] = new int[] { 0, 0 }; // This is intentionally not used after most/least totalling (foreach loop below). Placebo questions?
-            results["D"] = new int[] { 0, 0 };
-
-            results["S"][0] = moreS;
-            results["S"][1] = lessS;
-            results["C"][0] = moreC;
-            results["C"][1] = lessC;
-            results["I"][0] = moreI;
-            results["I"][1] = lessI;
-            results["N"][0] = moreN;
-            results["N"][1] = lessN;
-            results["D"][0] = moreD;
-            results["D"][1] = lessD;
-
-            int nbS = 27 - results["S"][1];
-            int nbC = 26 - results["C"][1];
-            int nbI = 26 - results["I"][1];
-            int nbD = 27 - results["D"][1];
-
-            decimal decX = results["S"][0] + results["C"][0] + results["I"][0] + results["D"][0];
-            decimal decY = nbS + nbC + nbI + nbD;
-
             AssessmentResults testResults = new AssessmentResults();
-            if ( decX > 0 && decY > 0 )
-            {
-                testResults.AdaptiveBehaviorS = Convert.ToInt32( ( results["S"][0] / decX * 100 ) );
-                testResults.AdaptiveBehaviorC = Convert.ToInt32( ( results["C"][0] / decX * 100 ) );
-                testResults.AdaptiveBehaviorI = Convert.ToInt32( ( results["I"][0] / decX * 100 ) );
-                testResults.AdaptiveBehaviorD = Convert.ToInt32( ( results["D"][0] / decX * 100 ) );
+            testResults.AdaptiveBehaviorS = GetAdaptiveScoreValue( AttributeKeys.AdaptiveS, moreS );
+            testResults.AdaptiveBehaviorC = GetAdaptiveScoreValue( AttributeKeys.AdaptiveC, moreC );
+            testResults.AdaptiveBehaviorI = GetAdaptiveScoreValue( AttributeKeys.AdaptiveI, moreI );
+            testResults.AdaptiveBehaviorD = GetAdaptiveScoreValue( AttributeKeys.AdaptiveD, moreD );
 
-                testResults.NaturalBehaviorS = Convert.ToInt32( ( nbS / decY * 100 ) );
-                testResults.NaturalBehaviorC = Convert.ToInt32( ( nbC / decY * 100 ) );
-                testResults.NaturalBehaviorI = Convert.ToInt32( ( nbI / decY * 100 ) );
-                testResults.NaturalBehaviorD = Convert.ToInt32( ( nbD / decY * 100 ) );
-                testResults.LastSaveDate = RockDateTime.Now;
+            testResults.NaturalBehaviorS = GetNaturalScoreValue( AttributeKeys.NaturalS, lessS );
+            testResults.NaturalBehaviorC = GetNaturalScoreValue( AttributeKeys.NaturalC, lessC );
+            testResults.NaturalBehaviorI = GetNaturalScoreValue( AttributeKeys.NaturalI, lessI );
+            testResults.NaturalBehaviorD = GetNaturalScoreValue( AttributeKeys.NaturalD, lessD );
+            testResults.LastSaveDate = RockDateTime.Now;
 
-                // Determine the Natural personality type
-                testResults.PersonalityType = DetermineNaturalPersonalityType( testResults );
-            }
+            // Determine the Natural personality type
+            testResults.PersonalityType = DetermineNaturalPersonalityType( testResults );
 
             return testResults;
+        }
+
+        /// <summary>
+        /// Evaluate the adaptive score for the given Key and count.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="count">The count.</param>
+        /// <returns>returns a adaptive score value</returns>
+        public static int GetAdaptiveScoreValue( string key, int count )
+        {
+            var discConst = constructData[key];
+            var scoreValue = Math.Round( ( count + 5 - discConst.Mean ) / constructData[key].StandardDeviation, 1 );
+            return Convert.ToInt32( GetPercentFromScore( scoreValue ) );
+        }
+
+        private static decimal GetPercentFromScore( double scoreValue )
+        {
+            decimal percent;
+            if ( scoreValue > 3.0 )
+            {
+                percent = 100;
+            }
+            else if ( scoreValue < -3.0 )
+            {
+                percent = 0;
+            }
+            else
+            {
+                percent = Convert.ToDecimal( zScoreToPercentage[scoreValue] );
+            }
+            return percent;
+        }
+
+        /// <summary>
+        /// Evaluate the natural score for the given Key and count.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="count">The count.</param>
+        /// <returns>returns a natural score value</returns>
+        public static int GetNaturalScoreValue( string key, int count )
+        {
+            int nb = 30 - count;
+            var discConst = constructData[key];
+            var scoreValue = Math.Round( ( nb - 10 - discConst.Mean ) / constructData[key].StandardDeviation, 1 );
+            return Convert.ToInt32( GetPercentFromScore( scoreValue ) );
         }
 
         /// <summary>
@@ -232,7 +332,7 @@ namespace Rock.Model
 
             List<KeyValuePair<string, int>> list = dictionary.ToList();
             list.Sort( ( x, y ) => y.Value.CompareTo( x.Value ) );
-            personalityType = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 24 ) ? list[1].Key : string.Empty );
+            personalityType = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 50 ) ? list[1].Key : string.Empty );
             return personalityType;
         }
 
@@ -375,7 +475,7 @@ namespace Rock.Model
         /// <param name="scoreS">The S score.</param>
         /// <param name="scoreC">The C score.</param>
         /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
-        public static void PlotOneGraph( System.Web.UI.HtmlControls.HtmlGenericControl barD, System.Web.UI.HtmlControls.HtmlGenericControl barI, 
+        public static void PlotOneGraph( System.Web.UI.HtmlControls.HtmlGenericControl barD, System.Web.UI.HtmlControls.HtmlGenericControl barI,
             System.Web.UI.HtmlControls.HtmlGenericControl barS, System.Web.UI.HtmlControls.HtmlGenericControl barC,
             int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
         {
@@ -403,22 +503,56 @@ namespace Rock.Model
                 maxValue = scoreC;
             }
             maxScore.AddCssClass( "discbar-primary" );
-            var score = Math.Floor( (double)( (double)scoreD / (double)maxScale ) * 100 ).ToString();
+            var score = Math.Floor( ( double ) ( ( double ) scoreD / ( double ) maxScale ) * 100 ).ToString();
             barD.Style.Add( "height", score + "%" );
             barD.Attributes["title"] = scoreD.ToString();
 
-            score = Math.Floor( (double)( (double)scoreI / (double)maxScale ) * 100 ).ToString();
+            score = Math.Floor( ( double ) ( ( double ) scoreI / ( double ) maxScale ) * 100 ).ToString();
             barI.Style.Add( "height", score + "%" );
             barI.Attributes["title"] = scoreI.ToString();
 
-            score = Math.Floor( (double)( (double)scoreS / (double)maxScale ) * 100 ).ToString();
+            score = Math.Floor( ( double ) ( ( double ) scoreS / ( double ) maxScale ) * 100 ).ToString();
             barS.Style.Add( "height", score + "%" );
             barS.Attributes["title"] = scoreS.ToString();
 
-            score = Math.Floor( (double)( (double)scoreC / (double)maxScale ) * 100 ).ToString();
+            score = Math.Floor( ( double ) ( ( double ) scoreC / ( double ) maxScale ) * 100 ).ToString();
             barC.Style.Add( "height", score + "%" );
             barC.Attributes["title"] = scoreC.ToString();
         }
         #endregion
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class DiscConstant
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DiscConstant"/> class.
+            /// </summary>
+            /// <param name="mean">The mean.</param>
+            /// <param name="standardDeviation">The standard deviation.</param>
+            public DiscConstant( double mean, double standardDeviation )
+            {
+                Mean = mean;
+                StandardDeviation = standardDeviation;
+            }
+
+            /// <summary>
+            /// Gets or sets the mean.
+            /// </summary>
+            /// <value>
+            /// The mean.
+            /// </value>
+            public double Mean { get; set; }
+
+            /// <summary>
+            /// Gets or sets the standard deviation.
+            /// </summary>
+            /// <value>
+            /// The standard deviation.
+            /// </value>
+            public double StandardDeviation { get; set; }
+        }
     }
 }

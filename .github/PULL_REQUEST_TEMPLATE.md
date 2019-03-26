@@ -35,5 +35,8 @@ If this is a relatively large or complex change, kick off the discussion by expl
 
 ## Documentation
 <!--
-If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here
+If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here.
 -->
+
+## Migrations
+If your pull request requires a migration, please *exclude the migration from the Rock.Migration project*, but submit it with your pull request. Please add a note to your pull request that provides a heads up that a migration file is present.

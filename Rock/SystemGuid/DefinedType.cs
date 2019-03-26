@@ -330,5 +330,11 @@ namespace Rock.SystemGuid
         /// Used to manage the lava code that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
+
+        /// <summary>
+        /// Used to store various liquid templates for features in Rock.
+        /// </summary>
+        public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
+
     }
 }

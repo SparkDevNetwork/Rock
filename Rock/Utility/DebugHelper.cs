@@ -33,6 +33,11 @@ namespace Rock
         /// </summary>
         public static int _callCounts = 0;
 
+        /// <summary>
+        /// The call ms total
+        /// </summary>
+        public static double _callMSTotal = 0.00;
+
         private class DebugHelperUserState
         {
             public int CallNumber { get; set; }
@@ -220,6 +225,7 @@ namespace Rock
                     var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
 
                     System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
+                    _callMSTotal += debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds;
                 }
             }
         }
@@ -253,6 +259,7 @@ namespace Rock
         public static void SQLLoggingStart( System.Data.Entity.DbContext dbContext )
         {
             _callCounts = 0;
+            _callMSTotal = 0.00;
             SQLLoggingStop();
             _debugLoggingDbCommandInterceptor.DbContext = dbContext;
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
@@ -263,6 +270,11 @@ namespace Rock
         /// </summary>
         public static void SQLLoggingStop()
         {
+            if ( _callCounts != 0 )
+            {
+                Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
+            }
+
             DbInterception.Remove( _debugLoggingDbCommandInterceptor );
         }
 

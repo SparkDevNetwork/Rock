@@ -834,7 +834,7 @@ namespace RockWeb.Blocks.Event
                     lbSubmitPayment.Visible = true;
                     aStep2Submit.Visible = false;
 
-                    var threeStepGateway = component as ThreeStepGatewayComponent;
+                    var threeStepGateway = component as IThreeStepGatewayComponent;
                     bool using3StepGateway = ( threeStepGateway != null );
                     phCCDetails.Visible = !using3StepGateway;
                     if ( using3StepGateway )
@@ -1767,7 +1767,7 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
-                var threeStepGateway = gateway as ThreeStepGatewayComponent;
+                var threeStepGateway = gateway as IThreeStepGatewayComponent;
 
                 if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
                 {
@@ -1853,7 +1853,7 @@ namespace RockWeb.Blocks.Event
             return transaction;
         }
 
-        private bool ProcessStep1( ThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
+        private bool ProcessStep1( IThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             paymentInfo.IPAddress = GetClientIpAddress();
             paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
@@ -1870,10 +1870,10 @@ namespace RockWeb.Blocks.Event
 
         private bool ProcessStep3( string resultQueryString, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
-            ThreeStepGatewayComponent gateway = null;
+            IThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
             {
-                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
             }
 
             if ( gateway == null )
@@ -2023,8 +2023,18 @@ namespace RockWeb.Blocks.Event
                 History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                 batch.ControlAmount = newControlAmount;
 
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                if ( batch.Id == 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+
                 transaction.BatchId = batch.Id;
-                batch.Transactions.Add( transaction );
+
+                // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                financialTransactionService.Add( transaction );
 
                 rockContext.SaveChanges();
 

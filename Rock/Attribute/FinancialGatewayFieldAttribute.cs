@@ -22,7 +22,8 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a financial gateway
+    /// Field Attribute to select a financial gateway.
+    /// Stored as FinancialGateway.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class FinancialGatewayFieldAttribute : FieldAttribute

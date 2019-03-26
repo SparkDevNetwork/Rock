@@ -85,6 +85,9 @@ namespace Rock.Client
         public DateTime StartDate { get; set; }
 
         /// <summary />
+        public string Summary { get; set; }
+
+        /// <summary />
         public string TransactionCode { get; set; }
 
         /// <summary />
@@ -142,6 +145,7 @@ namespace Rock.Client
             this.NumberOfPayments = source.NumberOfPayments;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
+            this.Summary = source.Summary;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
             this.TransactionTypeValueId = source.TransactionTypeValueId;
