@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     Group = _group,
                     GroupId = _group.Id,
-                    OccurrenceDate = occurrenceDate ?? RockDateTime.Today.Date,
+                    OccurrenceDate = occurrenceDate ?? RockDateTime.Today,
                     LocationId = locationId,
                     ScheduleId = scheduleId,
                 };
@@ -683,7 +683,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     lOccurrenceDate.Visible = false;
                     dpOccurrenceDate.Visible = true;
-                    dpOccurrenceDate.SelectedDate = _occurrence.OccurrenceDate.Date;
+                    dpOccurrenceDate.SelectedDate = _occurrence.OccurrenceDate;
 
                     int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
                     if ( locationId.HasValue )
