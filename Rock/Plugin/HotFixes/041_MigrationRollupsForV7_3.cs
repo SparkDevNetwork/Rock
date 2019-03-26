@@ -35,7 +35,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // Update 'Wizard' Communication Detail block to have the same Approvers as 'Simple' communication detail block
-            Sql( HotFixMigrationResource._041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers );
+            //Sql( HotFixMigrationResource._041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers );
         }
 
         /// <summary>
