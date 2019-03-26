@@ -143,9 +143,10 @@ namespace com.lcbcchurch.Care.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "3F139C6A-A7D3-4230-B8D7-6B81FB0D81B0", "0C4C13B8-7076-4872-925A-F950886B5E16", @"c46722a7-f40a-4deb-9a01-cc3151076745" ); // Notify Worker of New PRT Request Assignment:Start:Send Notifications:Send To Email Addresses|Attribute Value
             RockMigrationHelper.AddActionTypeAttributeValue( "3F139C6A-A7D3-4230-B8D7-6B81FB0D81B0", "D43C2686-7E02-4A70-8D99-3BCD8ECAFB2F", @"" ); // Notify Worker of New PRT Request Assignment:Start:Send Notifications:Send to Group Role
             RockMigrationHelper.AddActionTypeAttributeValue( "3F139C6A-A7D3-4230-B8D7-6B81FB0D81B0", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"New PRT Request" ); // Notify Worker of New PRT Request Assignment:Start:Send Notifications:Subject
+            string careRequestDetailPageId = SqlScalar( "SELECT TOP 1 P.Id FROM [Page] P WHERE P.[Guid] = '0AFB6A46-50F3-4E82-939B-88D4248A657B'" ).ToString().Trim();
             RockMigrationHelper.AddActionTypeAttributeValue( "3F139C6A-A7D3-4230-B8D7-6B81FB0D81B0", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% assign worker =  Workflow | Attribute:'Worker','Object' %}
-{% capture url %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}page/536?ConnectionRequestId={{ Workflow | Attribute:'ConnectionRequestId' }}&ConnectionOpportunityId={{ Workflow | Attribute:'ConnectionOpportunityId' }}{% endcapture %}
+{% capture url %}{{ 'Global' | Attribute:'InternalApplicationRoot' }}page/" + careRequestDetailPageId + @"?ConnectionRequestId={{ Workflow | Attribute:'ConnectionRequestId' }}&ConnectionOpportunityId={{ Workflow | Attribute:'ConnectionOpportunityId' }}{% endcapture %}
 <p>{{ worker.FirstName }},</p>
 <p>A new PRT Request has been assigned to you:<p>
 <p>

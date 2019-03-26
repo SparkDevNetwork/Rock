@@ -115,7 +115,7 @@ namespace com.lcbcchurch.Reporting.Migrations
 <p>{{ Person.FirstName }},</p>
 <p>A new First Time Guest report has been generated:<p>
 <p>
-    <a href='{{ 'Global' | Attribute:'InternalApplicationRoot' }}/page/" + assimilationReportPageId + @"?DateRange={{ dateRange | EscapeDataString}}&Visitors=1&GroupRole=3%2c4&CampusIds=14'>First Time Guest Report</a>
+    <a href='{{ 'Global' | Attribute:'InternalApplicationRoot' }}page/" + assimilationReportPageId + @"?DateRange={{ dateRange | EscapeDataString}}&Visitors=1&GroupRole=3%2c4&CampusIds=14'>First Time Guest Report</a>
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}" ); // First Time Guest Notification Workflow:Start:Email Link to Form:Body
