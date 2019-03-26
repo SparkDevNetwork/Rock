@@ -243,7 +243,7 @@ Guid - ContentChannelItem Guid
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
-            foreach( ListItem cacheTag in cblCacheTags.Items )
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
@@ -547,7 +547,7 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            
+
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
@@ -613,22 +613,21 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                if ( Request.QueryString.HasKeys() )
+                var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
+                // if this is the standard "page/{PageId}" route, don't grab the Item from the route since it would just be the pageId
+                if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
+                {
+                    // if no specific Parameter was specified, get whatever the last Parameter in the Route is
+                    var key = this.Page.RouteData.Values.Keys.LastOrDefault();
+                    if ( key.IsNotNullOrWhiteSpace() )
+                    {
+                        contentChannelItemKey = this.Page.RouteData.Values[key].ToString();
+                    }
+                }
+                else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
                 }
-                else
-                {
-                    var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
-
-                    // if this is the standard "page/{PageId" route, don't grab the Item from the route since it would just be the pageId
-                    if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
-                    {
-                        // if no specific Parameter was specified, and there was no QueryString, get whatever the last Parameter in the Route is
-                        contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).LastOrDefault();
-                    }
-                }
-
             }
 
             return contentChannelItemKey;
@@ -906,7 +905,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
         {
-            if (cbLogInteractions.Checked)
+            if ( cbLogInteractions.Checked )
             {
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;
