@@ -419,14 +419,16 @@ namespace RockWeb.Blocks.Groups
                                                     var showInfoWindow = {1}; 
                                                     var mapStyle = {2};
                                                     var pinColor = '{3}';
-                                                    var pinImage = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
-                                                        new google.maps.Size(21, 34),
-                                                        new google.maps.Point(0,0),
-                                                        new google.maps.Point(10, 34));
-                                                    var pinShadow = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_shadow',
-                                                        new google.maps.Size(40, 37),
-                                                        new google.maps.Point(0, 0),
-                                                        new google.maps.Point(12, 35));
+
+                                                    var pinImage = {{
+                                                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                                        fillColor: '#' + pinColor,
+                                                        fillOpacity: 1,
+                                                        strokeColor: '#000',
+                                                        strokeWeight: 1,
+                                                        scale: 1,
+                                                        labelOrigin: new google.maps.Point(0,-28)
+                                                    }};
 
                                                     initializeMap();
 
@@ -459,7 +461,7 @@ namespace RockWeb.Blocks.Groups
                                                                 map: map,
                                                                 title: htmlDecode(group.name),
                                                                 icon: pinImage,
-                                                                shadow: pinShadow
+                                                                label: String.fromCharCode(9679)
                                                             }});
 
                                                             // Allow each marker to have an info window    
