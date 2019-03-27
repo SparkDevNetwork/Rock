@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
 using EntityFramework.Utilities;
+
 using Rock.Data;
 
 namespace Rock.Model

@@ -19,14 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization;
+
+using ImageResizer;
 
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
-using System.Drawing;
-using ImageResizer;
 
 namespace Rock.Model
 {

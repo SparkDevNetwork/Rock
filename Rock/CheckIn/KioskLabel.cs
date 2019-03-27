@@ -16,11 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {

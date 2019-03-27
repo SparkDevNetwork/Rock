@@ -20,11 +20,11 @@ using System.ComponentModel;
 using System.Data.Entity.Spatial;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls

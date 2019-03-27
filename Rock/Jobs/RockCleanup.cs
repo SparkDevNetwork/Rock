@@ -23,11 +23,12 @@ using System.Linq;
 using System.Reflection;
 
 using Quartz;
+
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {

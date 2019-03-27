@@ -18,18 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
+
 using Quartz;
 
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {

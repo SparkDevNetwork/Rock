@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
