@@ -65,7 +65,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="js-dataview-mode-div">
-                                <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Dataview" Help="The dataview that will return a list of people that meet the criteria." AllowCategorySelection="false" />
+                                <Rock:DataViewItemPicker ID="dpDataView" runat="server" Label="Meets Dataview" Help="The dataview that will return a list of people that meet the criteria." />
                                 <Rock:DataViewItemPicker ID="dpWarningDataView" runat="server" Label="Warning Dataview" Help="Optional dataview that will return a list of people that should be marked as in a warning status." />
                             </div>
                             <div class="js-sql-mode-div">
