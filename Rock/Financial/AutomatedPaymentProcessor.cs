@@ -467,6 +467,37 @@ namespace Rock.Financial
             return SaveTransaction( transactionGuid );
         }
 
+        public FinancialTransaction CreateTransactionToProcessInTheFuture( DateTime futureProcessingDateTime, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( _payment != null )
+            {
+                errorMessage = "A payment has already been produced";
+                return null;
+            }
+
+            if ( IsRepeatCharge( out errorMessage ) )
+            {
+                return null;
+            }
+
+            if ( !IsAccordingToSchedule( out errorMessage ) )
+            {
+                return null;
+            }
+
+            if ( !AreArgsValid( out errorMessage ) )
+            {
+                return null;
+            }
+
+            var transactionGuid = Guid.NewGuid();
+            var transaction = SaveTransaction( transactionGuid );
+            transaction.TransactionDateTime = null;
+            transaction.FutureProcessingDateTime = futureProcessingDateTime;
+        }
+
         /// <summary>
         /// Safely load entities that have not yet been assigned a non-null value based on the arguments.
         /// </summary>

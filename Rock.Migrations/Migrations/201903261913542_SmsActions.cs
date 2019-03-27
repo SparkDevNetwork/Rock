@@ -32,6 +32,7 @@ namespace Rock.Migrations
             CreateSmsActionUp();
             PagesAndBlocksUp();
             PersonsDefaultAccountUp();
+            FutureTransactionUp();
             
             Sql( $@"
                 UPDATE [DefinedType]
@@ -49,6 +50,7 @@ namespace Rock.Migrations
             CreateSmsActionDown();
             PagesAndBlocksDown();
             PersonsDefaultAccountDown();
+            FutureTransactionDown();
 
             Sql( $@"
                 UPDATE [DefinedType]
@@ -56,6 +58,18 @@ namespace Rock.Migrations
                     [Name] = 'Text To Workflow', 
                     [Description] = 'Matches SMS phones and keywords to launch workflows of various types'
                 WHERE [Guid] = '{ Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW }'" );
+        }
+
+        private void FutureTransactionUp()
+        {
+            AddColumn( "dbo.FinancialTransaction", "FutureProcessingDateTime", c => c.DateTime( nullable: true ) );
+            CreateIndex( "dbo.FinancialTransaction", "FutureProcessingDateTime" );
+        }
+
+        private void FutureTransactionDown()
+        {
+            DropIndex( "dbo.FinancialTransaction", new [] { "FutureProcessingDateTime" } );
+            DropColumn( "dbo.FinancialTransaction", "FutureProcessingDateTime" );
         }
 
         private void PersonsDefaultAccountUp()
