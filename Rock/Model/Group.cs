@@ -25,11 +25,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
