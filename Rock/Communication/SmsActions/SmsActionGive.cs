@@ -39,23 +39,15 @@ namespace Rock.Communication.SmsActions
         required: true,
         defaultValue: "Give",
         order: 1,
-        category: "Keyword",
+        category: "Gift",
         key: AttributeKeys.Keyword )]
-
-    [CurrencyField(
-        name: "Default Amount",
-        description: "The amount that will be the default gift if no amount is specified. Leave blank to require the user to indicate an amount",
-        required: false,
-        order: 2,
-        category: "Amount",
-        key: AttributeKeys.DefaultAmount )]
 
     [CurrencyField(
         name: "Max Amount",
         description: "The maximum gift amount. Leave blank to allow gifts of any size.",
         required: false,
-        order: 3,
-        category: "Amount",
+        order: 2,
+        category: "Gift",
         key: AttributeKeys.MaxAmount )]
 
     [IntegerField(
@@ -63,8 +55,8 @@ namespace Rock.Communication.SmsActions
         description: "The number of minutes to delay processing the gifts. Delaying allows for simple refunds within the window because payments have not been sent to the processor.",
         required: true,
         defaultValue: 30,
-        order: 4,
-        category: "Delay",
+        order: 3,
+        category: "Gift",
         key: AttributeKeys.ProcessingDelayMinutes )]
 
     [MemoField(
@@ -72,8 +64,8 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender's message doesn't make sense or is missing information. <span class='tip tip-lava'></span>",
         required: true,
         defaultValue: "To give, simply text ‘{{ keyword }} 100’ or ‘{{ keyword }} $123.45’.",
-        order: 5,
-        category: "Responses",
+        order: 4,
+        category: "Response",
         key: AttributeKeys.HelpResponse )]
 
     [MemoField(
@@ -81,8 +73,8 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span>",
         required: false,
         defaultValue: "Thank you for your generosity but our mobile giving solution cannot process a gift this large. Please give using our website.",
-        order: 6,
-        category: "Responses",
+        order: 5,
+        category: "Response",
         key: AttributeKeys.MaxAmountResponse )]
 
     [MemoField(
@@ -90,8 +82,8 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span>",
         required: true,
         defaultValue: "Hi there! Please use our website to setup your giving profile before using this mobile giving solution.",
-        order: 7,
-        category: "Responses",
+        order: 6,
+        category: "Response",
         key: AttributeKeys.SetupResponse )]
 
     public class SmsActionGive : SmsActionComponent
@@ -99,7 +91,6 @@ namespace Rock.Communication.SmsActions
         private static class AttributeKeys
         {
             public const string Keyword = "Keyword";
-            public const string DefaultAmount = "DefaultAmount";
             public const string MaxAmount = "MaxAmount";
             public const string MaxAmountResponse = "MaxAmountResponse";
             public const string ProcessingDelayMinutes = "ProcessingDelayMinutes";
@@ -176,34 +167,33 @@ namespace Rock.Communication.SmsActions
         {
             var rockContext = new RockContext();
 
+            var person = message.FromPerson;
             var keyword = GetKeyword( action );
-            var defaultAmount = GetDefaultAmount( action );
             var messageText = message.Message.Trim();
-            var giftAmountNullable = GetGiftAmount( keyword, messageText, defaultAmount );
-            var giftAmount = giftAmountNullable ?? 0m;
+            var giftAmountNullable = GetGiftAmount( keyword, messageText );
             var maxAmount = GetMaxAmount( action );
-            var exceedsMax = DoesAmountExceedMax( giftAmount, maxAmount );
-            var defaultSavedAccount = GetDefaultSavedAccount( rockContext, message.FromPerson );
+            var defaultSavedAccount = GetDefaultSavedAccount( rockContext, person );
 
-            if ( defaultSavedAccount == null )
+            if ( defaultSavedAccount == null || person == null || !person.ContributionFinancialAccountId.HasValue )
             {
                 var lavaTemplate = GetSetupResponse( action );
                 return GetResolvedSmsResponse( lavaTemplate, keyword, message );
             }
+
+            if ( !IsAmountValid( giftAmountNullable ) )
+            {
+                var lavaTemplate = GetHelpResponse( action );
+                return GetResolvedSmsResponse( lavaTemplate, keyword, message );
+            }
+
+            var giftAmount = giftAmountNullable.Value;
+            var exceedsMax = DoesAmountExceedMax( giftAmount, maxAmount );
 
             if ( exceedsMax )
             {
                 var lavaTemplate = GetMaxAmountResponse( action );
                 return GetResolvedSmsResponse( lavaTemplate, keyword, message );
             }
-
-            if ( !giftAmountNullable.HasValue )
-            {
-                var lavaTemplate = GetHelpResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message );
-            }
-
-            // TODO need financial account id
 
             // TODO make the transaction with the processing delay
 
@@ -231,17 +221,10 @@ namespace Rock.Communication.SmsActions
 
         #region Parsing Helpers
 
-        private static decimal? GetGiftAmount( string keyword, string messageText, decimal? defaultAmount )
+        private static decimal? GetGiftAmount( string keyword, string messageText )
         {
             messageText = messageText.Trim();
             keyword = keyword.Trim();
-            var messageEqualsKeyword = keyword.Equals( messageText, StringComparison.CurrentCultureIgnoreCase );
-
-            if ( messageEqualsKeyword )
-            {
-                return defaultAmount;
-            }
-
             var textWithoutKeyword = Regex.Replace( messageText, keyword, string.Empty, RegexOptions.IgnoreCase ).Trim();
 
             // First try to parse a decimal like "1123.56"
@@ -328,17 +311,6 @@ namespace Rock.Communication.SmsActions
 
             var maxAmountString = action.GetAttributeValue( AttributeKeys.MaxAmount );
             return maxAmountString.AsDecimalOrNull();
-        }
-
-        private static decimal? GetDefaultAmount( SmsActionCache action )
-        {
-            if ( action == null )
-            {
-                throw new ArgumentException( "Parameter cannot be null", "action" );
-            }
-
-            var defaultAmountString = action.GetAttributeValue( AttributeKeys.DefaultAmount );
-            return defaultAmountString.AsDecimalOrNull();
         }
 
         private static string GetHelpResponse( SmsActionCache action )
