@@ -545,7 +545,6 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             var groupService = new GroupService( rockContext );
-            var group = this.Group ?? groupService.Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
             if ( !GroupService.AllowsDuplicateMembers() )
             {
@@ -654,19 +653,22 @@ namespace Rock.Model
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
-                    .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
-                    && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
-
-                if ( requirementStatusesRequiredForAdd.Any() )
+                if ( group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
                 {
-                    // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
-                    errorMessage = "This person must meet the following requirements before they are added to this group: "
-                        + requirementStatusesRequiredForAdd
-                        .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
-                        .ToList().AsDelimited( ", " );
+                    var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
+                        .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                        && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
 
-                    return false;
+                    if ( requirementStatusesRequiredForAdd.Any() )
+                    {
+                        // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
+                        errorMessage = "This person must meet the following requirements before they are added to this group: "
+                            + requirementStatusesRequiredForAdd
+                            .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
+                            .ToList().AsDelimited( ", " );
+
+                        return false;
+                    }
                 }
             }
 
