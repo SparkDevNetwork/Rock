@@ -254,8 +254,11 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 if ( person != null )
                 {
                     var schedule = person.CurrentSchedule;
-                    var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
-                    person.StateParameters.Remove( itemTagKey );
+                    if (schedule != null) // Check-In Type: Individual will have null schedule, because schedule is set later in the workflow
+                    {
+                        var itemTagKey = String.Format( "ItemTag_ScheduleId_{0}", schedule.Schedule.Id );
+                        person.StateParameters.Remove( itemTagKey );
+                    }
                 }
             }
         }
