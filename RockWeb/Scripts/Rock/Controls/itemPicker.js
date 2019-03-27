@@ -20,6 +20,7 @@
                     $tree = $control.find('.treeview'),
                     treeOptions = {
                         multiselect: this.options.allowMultiSelect,
+                        categorySelection: this.options.allowCategorySelection,
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
@@ -253,6 +254,7 @@
                 controlId: null,
                 restUrl: null,
                 restParams: null,
+                allowCategorySelection: false,
                 allowMultiSelect: false,
                 defaultText: '',
                 selectedIds: null,
