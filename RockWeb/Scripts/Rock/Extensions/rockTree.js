@@ -53,7 +53,8 @@
 		            parentId: item.ParentId,
 		            hasChildren: item.HasChildren,
 		            isActive: item.IsActive,
-                    countInfo: item.CountInfo
+                    countInfo: item.CountInfo,
+                    isCategory: item.IsCategory
 		        };
 
 		        if (item.Children && typeof item.Children.length === 'number') {
@@ -341,7 +342,7 @@
             if (!data || typeof this.options.mapping.mapData !== 'function') {
                 throw 'Unable to load data!';
             }
-
+            
             // Call configured `mapData` function. If it wasn't overridden by the user,
             // `_mapArrayDefault` will be called.
             nodeArray = this.options.mapping.mapData(data);
@@ -396,9 +397,6 @@
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
-                    
-
-
 				    // Include any configured custom data-* attributes to be decorated on the <li>
 				    for (var i = 0; i < includeAttrs.length; i++) {
 				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
@@ -417,7 +415,7 @@
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
 				    var $rockTreeNameNode = $li.find('.rocktree-name');
 
-                    if (!self.options.categorySelection && hasChildren) {
+                    if (!self.options.categorySelection && node.isCategory) {
                         // Remove the hover event for the item since it is a category and we don't want to show it as being selectable.
                         $rockTreeNameNode.addClass('disabled');
                     }
@@ -584,8 +582,7 @@
                     i;
                 
                 // Selecting a category when one is not allowed should do nothing.
-                var isCategory = $item.parent('li').hasClass('rocktree-folder');
-                if (!self.options.categorySelection && isCategory ) {
+                if (!self.options.categorySelection && node.isCategory ) {
                     return;
                 }
 
