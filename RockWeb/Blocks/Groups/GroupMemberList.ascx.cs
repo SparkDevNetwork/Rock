@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableAttributeIds"] = AvailableAttributes.Select( a => a.Id ).ToArray();
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null? null :  AvailableAttributes.Select( a => a.Id ).ToArray();
             return base.SaveViewState();
         }
 
