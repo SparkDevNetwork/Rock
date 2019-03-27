@@ -16,15 +16,11 @@
 //
 using System;
 using System.Web.Http;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Rest.Filters;
 
-using Rock.Security;
-using Rock.Pbx;
 using Rock.Model;
+using Rock.Pbx;
+using Rock.Rest.Filters;
+using Rock.Security;
 
 namespace Rock.Rest.Controllers
 {

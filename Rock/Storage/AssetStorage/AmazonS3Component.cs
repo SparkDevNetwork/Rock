@@ -20,18 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
-using Rock.Model;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Web.Cache;
-using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Storage.AssetStorage
 {

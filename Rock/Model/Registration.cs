@@ -23,9 +23,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;

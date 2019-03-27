@@ -20,7 +20,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-using System.Linq.Expressions;
 
 using Rock.Chart;
 using Rock.Data;
