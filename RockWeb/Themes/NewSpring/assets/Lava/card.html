@@ -43,6 +43,10 @@
         </h2>
         {% endif %}
 
+        {% if collectiontext != null and collectiontext != '' %}
+            <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-half-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+        {% endif %}
+
         {% if subtitle != null and subtitle != '' %}
             <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
         {% endif %}

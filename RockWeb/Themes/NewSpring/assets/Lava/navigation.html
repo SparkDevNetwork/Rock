@@ -15,7 +15,7 @@
 			{% if CurrentPerson != null %}
 				<a href="/account" title="My Profile">
 					{% if personPhoto != null %}
-						<img src="{{ personPhoto }}" alt="" class="nav-icon circular" style="border: 2px solid rgba(255,255,255,1)">
+						<div class="position-relative display-inline-block nav-icon circular background-cover" style="top: 12px; width: 35px; height: 35px; background-image:url('{{ personPhoto }}'); border: 2px solid rgba(255,255,255,1);"></div>
 					{% else %}
 						<i class="fas fa-fw fa-lg fa-user-circle"></i>
 					{% endif %}

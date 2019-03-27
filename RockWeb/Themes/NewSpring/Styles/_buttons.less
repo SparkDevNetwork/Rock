@@ -6,6 +6,10 @@
 	vertical-align: bottom;
 }
 
+.btn:not(.btn-default) {
+	border: 0px;
+}
+
 .btn-link:hover, .btn-link:active, .btn-link:focus {
 	text-decoration: none;
 }
@@ -32,6 +36,7 @@
 	}
 }
 
+.btn-primary:active, .btn-primary:focus { background-color: @brand-primary; }
 .btn-secondary { .button-variant(@white, @brand-secondary, @brand-secondary); }
 .btn-tertiary { .button-variant(@white, @brand-tertiary, @brand-tertiary); }
 .btn-gray-lighter { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
