@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 using Rock.Data;
-using Rock.Model;
 using Rock.Extension;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.PersonProfile

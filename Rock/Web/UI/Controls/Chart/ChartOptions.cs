@@ -19,7 +19,6 @@ using System.Linq;
 
 using Newtonsoft.Json;
 
-using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 
