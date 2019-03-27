@@ -239,7 +239,7 @@ namespace Rock.Web
                     else
                     {
                         // no 404 page found for the site, return the default 404 error page
-                        return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
+                        return new Rock404Handler();
                     }
                 }
 
@@ -462,4 +462,20 @@ namespace Rock.Web
             return;
         }
     }
+
+    /// <summary>
+    /// Return a 404 response
+    /// </summary>
+
+    public class Rock404Handler : IHttpHandler
+    {
+        public void ProcessRequest( HttpContext ctx )
+        {
+            ctx.Response.StatusCode = 404;
+            ctx.ApplicationInstance.CompleteRequest();
+        }
+        public bool IsReusable { get { return false; } }
+    }
+
+
 }
