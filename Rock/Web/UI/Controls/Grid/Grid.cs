@@ -1853,6 +1853,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
+                        if ( gridRowCounter == this.Rows.Count )
+                        {
+                            // Stop when the counter reaches the number of rows displayed in the grid.
+                            break;
+                        }
+
                         var dataKeyValue = this.DataKeys[gridRowCounter].Value;
                         gridRowCounter++;
 
@@ -2947,6 +2953,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
+                        if ( gridRowCounter == this.Rows.Count )
+                        {
+                            // Stop when the counter reaches the number of rows displayed in the grid.
+                            break;
+                        }
+
                         var dataKeyValue = this.DataKeys[gridRowCounter].Value;
                         gridRowCounter++;
 
