@@ -172,11 +172,11 @@ namespace RockWeb
             {
                 if ( channel.ContentChannelType.IncludeTime )
                 {
-                    content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
                 }
                 else
                 {
-                    content = content.Where( c => c.ExpireDateTime > RockDateTime.Today );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
                 }
             }
 
