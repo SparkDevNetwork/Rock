@@ -3379,7 +3379,7 @@ namespace RockWeb.Blocks.Event
         /// <returns>true or the value of ShowOnWaitlist</returns>
         private bool FormHasWaitFields()
         {
-            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex )
+            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex && FormCount > CurrentFormIndex )
             {
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )
