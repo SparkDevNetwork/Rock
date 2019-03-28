@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Routing;
+
 using Swashbuckle.Application;
 
 namespace Rock.Rest.Swagger

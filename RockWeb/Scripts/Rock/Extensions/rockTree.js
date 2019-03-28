@@ -53,7 +53,8 @@
 		            parentId: item.ParentId,
 		            hasChildren: item.HasChildren,
 		            isActive: item.IsActive,
-                    countInfo: item.CountInfo
+                    countInfo: item.CountInfo,
+                    isCategory: item.IsCategory
 		        };
 
 		        if (item.Children && typeof item.Children.length === 'number') {
@@ -341,7 +342,7 @@
             if (!data || typeof this.options.mapping.mapData !== 'function') {
                 throw 'Unable to load data!';
             }
-
+            
             // Call configured `mapData` function. If it wasn't overridden by the user,
             // `_mapArrayDefault` will be called.
             nodeArray = this.options.mapping.mapData(data);
@@ -372,7 +373,8 @@
 				renderNode = function ($list, node) {
 				    var hasChildren = false;
 				    if (node.hasChildren) {
-				        hasChildren = true;
+                        hasChildren = true;
+                        
 				        // we know it has children, but they might not be loaded yet (children === undefined)
 				        // but if they are loaded there may actually be NO active children, so in that case,
 				        // we'll consider them as NOT having children
@@ -391,7 +393,7 @@
                   
 				    $li.addClass('rocktree-item')
 						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-            .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
+                        .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
@@ -412,7 +414,12 @@
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
 				    var $rockTreeNameNode = $li.find('.rocktree-name');
-				    
+
+                    if (!self.options.categorySelection && node.isCategory) {
+                        // Remove the hover event for the item since it is a category and we don't want to show it as being selectable.
+                        $rockTreeNameNode.addClass('disabled');
+                    }
+
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
 				            $rockTreeNameNode.addClass('selected');
@@ -569,11 +576,15 @@
                 var $rockTree = $(this).parents('.rocktree'),
                     $item = $(this),
                     id = $item.parent('li').attr('data-id'),
-                    //storageId = $item.parent('li').attr('data-storage-id') || "",
                     node = _findNodeById(id, self.nodes),
                     selectedNodes = [],
                     onSelected = self.options.onSelected,
                     i;
+                
+                // Selecting a category when one is not allowed should do nothing.
+                if (!self.options.categorySelection && node.isCategory ) {
+                    return;
+                }
 
                 // If multi-select is disabled, clear all previous selections
                 if (!self.options.multiselect) {
@@ -713,6 +724,7 @@
         restParams: null,
         local: null,
         multiselect: false,
+        categorySelection: true,
         showSelectChildren: false,
         loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {

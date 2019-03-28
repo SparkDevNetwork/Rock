@@ -17,10 +17,6 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Web.UI;
-
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.PrayerRequest
 {

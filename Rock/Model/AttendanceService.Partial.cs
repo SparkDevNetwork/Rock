@@ -20,7 +20,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-using System.Linq.Expressions;
 
 using Rock.Chart;
 using Rock.Data;
@@ -255,7 +254,7 @@ namespace Rock.Model
 
             if ( startDate.HasValue )
             {
-                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value.Date );
             }
 
             if ( endDate.HasValue )

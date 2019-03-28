@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.Web.XmlTransform;
+
 using NuGet;
-using Rock.Model;
 
 namespace Rock.Services.NuGet
 {

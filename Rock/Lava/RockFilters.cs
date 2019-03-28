@@ -32,23 +32,30 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
+
 using DDay.iCal;
+
 using DotLiquid;
 using DotLiquid.Util;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using ImageResizer;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using Rock.Web.UI;
-using UAParser;
 using Rock.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+
+using UAParser;
 
 namespace Rock.Lava
 {

@@ -22,7 +22,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Security;
 using Rock.Data;
 using Rock.Web.Cache;
 

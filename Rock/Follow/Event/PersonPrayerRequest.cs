@@ -17,14 +17,12 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
-using Rock;
-using Rock.Data;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Follow.Event
 {

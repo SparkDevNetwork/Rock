@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Linq;
@@ -27,7 +28,6 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using System.Data.Entity;
 
 namespace Rock.Model
 {

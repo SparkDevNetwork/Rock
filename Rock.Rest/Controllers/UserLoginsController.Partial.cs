@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+
 using Newtonsoft.Json;
 
 using Rock.Model;

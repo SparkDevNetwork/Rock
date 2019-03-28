@@ -69,6 +69,15 @@ ul.rocktree ul {
     border-radius: var(--border-radius-base);
   }
 
+  .disabled {
+    cursor: default;
+
+    &:hover {
+      color: @text-color;
+      background: inherit;
+    }
+  }
+
   .rocktree-loading {
     margin-left: 10px;
     font-size: 12px;

@@ -1024,7 +1024,15 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
+                    if ( BirthMonth <= 12 )
+                    {
+                        if ( BirthDay <= DateTime.DaysInMonth( BirthYear.Value, BirthMonth.Value ) )
+                        {
+                            return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
+                        }
+                    }
+
+                    return null;
                 }
             }
 

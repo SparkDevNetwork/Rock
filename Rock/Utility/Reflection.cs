@@ -235,12 +235,31 @@ namespace Rock
         }
 
         /// <summary>
-        /// The plugin assemblies
+        /// The Plugin assemblies
         /// </summary>
         private static List<Assembly> _pluginAssemblies = null;
 
+
         /// <summary>
-        /// Gets a list of Assemblies in the ~/Bin and ~/Plugins folders that are possible Rock plugin assemblies
+        /// The RockWeb app_code assembly
+        /// </summary>
+        private static Assembly _appCodeAssembly = null;
+
+        /// <summary>
+        /// Sets the RockWeb.App_Code assembly so that the Reflection methods can search for types in it
+        /// </summary>
+        /// <param name="appCodeAssembly">The application code assembly.</param>
+        public static void SetAppCodeAssembly( Assembly appCodeAssembly )
+        {
+            _appCodeAssembly = appCodeAssembly;
+            if ( _pluginAssemblies != null && _appCodeAssembly != null )
+            {
+                _pluginAssemblies.Add( _appCodeAssembly );
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of Assemblies in the ~/Bin and ~/Plugins folders as well as the RockWeb.App_Code assembly that are assemblies that might have plugins
         /// </summary>
         /// <returns></returns>
         public static List<Assembly> GetPluginAssemblies()
@@ -279,6 +298,10 @@ namespace Rock
                 .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v, StringComparer.OrdinalIgnoreCase );
 
             List<Assembly> pluginAssemblies = new List<Assembly>();
+            if ( _appCodeAssembly != null )
+            {
+                pluginAssemblies.Add( _appCodeAssembly );
+            }
 
             foreach ( var assemblyFileName in assemblyFileNames )
             {
@@ -291,7 +314,7 @@ namespace Rock
                         AssemblyName assemblyName = AssemblyName.GetAssemblyName( assemblyFileName );
                         assembly = AppDomain.CurrentDomain.Load( assemblyName );
                     }
-                    catch( BadImageFormatException)
+                    catch ( BadImageFormatException )
                     {
                         // BadImageFormatException means the dll isn't a managed dll (not a .NET dll), so we can safely ignore
                     }

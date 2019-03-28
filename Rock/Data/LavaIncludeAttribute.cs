@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations;
-
 namespace Rock.Data
 {
     /// <summary>
