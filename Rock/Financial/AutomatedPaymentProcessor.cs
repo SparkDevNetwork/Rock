@@ -143,7 +143,7 @@ namespace Rock.Financial
                     // Check for transactions in the giving group
                     t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
                     // Check for recent transactions
-                    t.TransactionDateTime >= minDateTime )
+                    ( t.TransactionDateTime >= minDateTime || t.FutureProcessingDateTime >= minDateTime ) )
                 .ToList();
 
             // Look for a recent transaction that has the same account/amount combinations
@@ -442,6 +442,12 @@ namespace Rock.Financial
             _referencePaymentInfo.Email = _authorizedPerson.Email;
 
             var transactionGuid = Guid.NewGuid();
+                       
+            // If this is a future transaction, then stop the "dry-run" at this point and save
+            if (_automatedPaymentArgs.FutureProcessingDateTime.HasValue)
+            {
+                return SaveTransaction( transactionGuid );
+            }
 
             var metadata = new Dictionary<string, string>
             {
@@ -465,37 +471,6 @@ namespace Rock.Financial
             }
 
             return SaveTransaction( transactionGuid );
-        }
-
-        public FinancialTransaction CreateTransactionToProcessInTheFuture( DateTime futureProcessingDateTime, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            if ( _payment != null )
-            {
-                errorMessage = "A payment has already been produced";
-                return null;
-            }
-
-            if ( IsRepeatCharge( out errorMessage ) )
-            {
-                return null;
-            }
-
-            if ( !IsAccordingToSchedule( out errorMessage ) )
-            {
-                return null;
-            }
-
-            if ( !AreArgsValid( out errorMessage ) )
-            {
-                return null;
-            }
-
-            var transactionGuid = Guid.NewGuid();
-            var transaction = SaveTransaction( transactionGuid );
-            transaction.TransactionDateTime = null;
-            transaction.FutureProcessingDateTime = futureProcessingDateTime;
         }
 
         /// <summary>
@@ -588,11 +563,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Once _financialTransaction is set, this method stores the transaction in the database along with the
-        /// appropriate details and batch information.
+        /// This method stores the transaction in the database along with the appropriate details and batch information.
         /// </summary>
         private FinancialTransaction SaveTransaction( Guid transactionGuid )
         {
+            // if this is a future transaction, the payment hasn't been charged yet
+            if ( _payment == null && _automatedPaymentArgs.FutureProcessingDateTime.HasValue )
+            {
+                _payment = new Payment
+                {
+                    Status = "PreProcessing",
+                    StatusMessage = "This transaction is scheduled to be processed in the future",
+                    TransactionCode = _financialPersonSavedAccount.Id.ToStringSafe()
+                };
+            }
+
             var financialTransaction = new FinancialTransaction
             {
                 TransactionCode = _payment.TransactionCode,
@@ -601,7 +586,7 @@ namespace Rock.Financial
                 ScheduledTransactionId = _automatedPaymentArgs.ScheduledTransactionId,
                 AuthorizedPersonAliasId = _automatedPaymentArgs.AuthorizedPersonAliasId,
                 ShowAsAnonymous = _automatedPaymentArgs.ShowAsAnonymous,
-                TransactionDateTime = RockDateTime.Now,
+                TransactionDateTime = _automatedPaymentArgs.FutureProcessingDateTime.HasValue ? (DateTime?)null : RockDateTime.Now,
                 FinancialGatewayId = _financialGateway.Id,
                 TransactionTypeValueId = _transactionType.Id,
                 Summary = _referencePaymentInfo.Comment1,
@@ -610,7 +595,8 @@ namespace Rock.Financial
                 Status = _payment.Status,
                 StatusMessage = _payment.StatusMessage,
                 SettledDate = _payment.SettledDate,
-                ForeignKey = _payment.ForeignKey
+                ForeignKey = _payment.ForeignKey,
+                FutureProcessingDateTime = _automatedPaymentArgs.FutureProcessingDateTime
             };
 
             financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail
@@ -654,7 +640,7 @@ namespace Rock.Financial
                 string.Empty,
                 _referencePaymentInfo.CurrencyTypeValue,
                 _referencePaymentInfo.CreditCardTypeValue,
-                financialTransaction.TransactionDateTime.Value,
+                financialTransaction.TransactionDateTime ?? financialTransaction.FutureProcessingDateTime.Value,
                 _financialGateway.GetBatchTimeOffset(),
                 _financialGateway.BatchDayOfWeek );
 
