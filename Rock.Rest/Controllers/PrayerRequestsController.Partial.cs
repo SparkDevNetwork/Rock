@@ -149,24 +149,24 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Get the prayer requests of every member of a certain set of groups that a person belongs to
         /// </summary>
-        /// <param name="groupTypeIds">A list of group type ids</param>
         /// <param name="excludePerson">Exclude the logged in person prayers</param>
+        /// <param name="groupTypeIds">A list of group type ids</param>
+        /// <param name="personId">The id of the person to pull group prayers for</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes" )]
-        public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( string groupTypeIds, bool excludePerson )
+        [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes/{personId}" )]
+        public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( bool excludePerson, string groupTypeIds, int personId )
         {
             RockContext rockContext = new RockContext();
             System.DateTime now = RockDateTime.Now;
-            Person person = GetPerson();
 
             // Turn the comma separated list of groupTypeIds into a list of strings.
             List<int> groupTypeIdsList = ( groupTypeIds ?? "" ).Split( ',' ).AsIntegerList();
 
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
-            IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId( person.Id )   // Get the groups that a person is a part of
+            IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId( personId )   // Get the groups that a person is a part of
                 .Where( gm =>
                     groupTypeIdsList.Contains( gm.Group.GroupTypeId ) &&    // Filter those groups by a set of passed in group types. 
                     gm.Group.IsActive == true && gm.Group.IsArchived == false   // Also make sure the groups are active and not archived.
@@ -189,7 +189,7 @@ namespace Rock.Rest.Controllers
             // Filter out the current persons prayers if excludePerson is true
             if ( excludePerson )
             {
-                prayerRequestList = prayerRequestList.Where( pr => pr.RequestedByPersonAlias.PersonId != person.Id );
+                prayerRequestList = prayerRequestList.Where( pr => pr.RequestedByPersonAlias.PersonId != personId );
             }
 
             //Return this as a queryable.
