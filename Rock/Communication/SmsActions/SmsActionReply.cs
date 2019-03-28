@@ -71,16 +71,17 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that is to be checked.</param>
+        /// <param name="errorMessage">If there is a problem processing, this should be set</param>
         /// <returns>
         ///   <c>true</c> if the message should be processed.
         /// </returns>
-        public override bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
+        public override bool ShouldProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
             //
             // Give the base class a chance to check it's own settings to see if we
             // should process this message.
             //
-            if ( !base.ShouldProcessMessage( action, message ) )
+            if ( !base.ShouldProcessMessage( action, message, out errorMessage ) )
             {
                 return false;
             }
@@ -103,9 +104,12 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that was received by Rock.</param>
+        /// <param name="errorMessage">If there is a problem processing, this should be set</param>
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
-        public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message )
+        public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             //
             // Process the message with lava to get the response that should be sent back.
             //

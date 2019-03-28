@@ -123,9 +123,12 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that is to be checked.</param>
+        /// /// <param name="errorMessage">If there is a problem, this should be set</param>
         /// <returns><c>true</c> if the message should be processed.</returns>
-        public virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message )
+        public virtual bool ShouldProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             var attribute = action.Attributes.ContainsKey( "PhoneNumbers" ) ? action.Attributes["PhoneNumbers"] : null;
             var phoneNumbers = GetAttributeValue( action, "PhoneNumbers" );
             var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, phoneNumbers );
@@ -138,8 +141,9 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that was received by Rock.</param>
+        /// <param name="errorMessage">If there is a problem processing, this should be set</param>
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
-        public abstract SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message );
+        public abstract SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage );
 
         #endregion
     }

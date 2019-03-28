@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using Rock.Communication.SmsActions;
 using Rock.Web.Cache;
@@ -30,6 +31,7 @@ namespace Rock.Model
         static public SmsMessage ProcessIncomingMessage( SmsMessage message )
         {
             SmsMessage response = null;
+            var errorMessage = string.Empty;
 
             var smsActions = SmsActionCache.All()
                 .Where( a => a.IsActive )
@@ -38,12 +40,21 @@ namespace Rock.Model
 
             foreach ( var smsAction in smsActions )
             {
-                if ( smsAction.SmsActionComponent != null )
+                if ( smsAction.SmsActionComponent == null )
+                {
+                    LogIfError( string.Format( "The SmsActionComponent for {0} was null", smsAction.Name ) );
+                    continue;
+                }
+
+                try
                 {
                     //
                     // Check if the action wants to process this message.
                     //
-                    if ( !smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message ) )
+                    var shouldProcessMessage = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
+                    LogIfError( errorMessage );
+
+                    if ( !shouldProcessMessage )
                     {
                         continue;
                     }
@@ -52,7 +63,8 @@ namespace Rock.Model
                     // Process the message and use either the response returned by the action
                     // or the previous response we already had.
                     //
-                    response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message ) ?? response;
+                    response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage ) ?? response;
+                    LogIfError( errorMessage );
 
                     //
                     // If the action is set to not continue after processing then stop.
@@ -62,9 +74,41 @@ namespace Rock.Model
                         return response;
                     }
                 }
+                catch ( Exception exception )
+                {
+                    LogIfError( exception );
+                }
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// If the exception is not null, log it
+        /// </summary>
+        /// <param name="exception"></param>
+        static private void LogIfError( Exception exception )
+        {
+            if ( exception == null )
+            {
+                return;
+            }
+
+            ExceptionLogService.LogException( new Exception( "An exception occured in the SmsAction pipeline. See the inner exception.", exception ) );
+        }
+
+        /// <summary>
+        /// If the errorMessage is not empty, log it
+        /// </summary>
+        /// <param name="errorMessage"></param>
+        static private void LogIfError( string errorMessage )
+        {
+            if ( string.IsNullOrEmpty( errorMessage ) )
+            {
+                return;
+            }
+
+            ExceptionLogService.LogException( new Exception( string.Format( "An error occured in the SmsAction pipeline: {0}", errorMessage ) ) );
         }
     }
 }
