@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -103,7 +104,7 @@ namespace Rock.Model
         public virtual InteractionChannel Channel { get; set; }
 
         [NotMapped]
-        private System.Data.Entity.EntityState SaveState { get; set; }
+        private EntityState SaveState { get; set; }
 
         #endregion
 
@@ -114,7 +115,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
             this.SaveState = entry.State;
             base.PreSaveChanges( dbContext, entry );
@@ -126,13 +127,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( this.SaveState == System.Data.Entity.EntityState.Added ||
-                this.SaveState == System.Data.Entity.EntityState.Deleted )
+            if ( this.SaveState == EntityState.Added || this.SaveState == EntityState.Deleted )
             {
                 var channel = InteractionChannelCache.Get( this.ChannelId );
                 if ( channel != null )
                 {
-                    if ( this.SaveState == System.Data.Entity.EntityState.Added )
+                    if ( this.SaveState == EntityState.Added )
                     {
                         channel.AddComponentId( this.Id );
                     }
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             InteractionComponentCache.UpdateCachedEntity( this.Id, this.SaveState );
         }

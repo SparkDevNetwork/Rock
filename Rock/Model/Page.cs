@@ -19,6 +19,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -496,9 +498,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
-            if (state == System.Data.Entity.EntityState.Deleted)
+            if (state == EntityState.Deleted)
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
@@ -549,9 +551,9 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
                 _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
             }
@@ -573,7 +575,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
             if ( oldPageCache != null )
@@ -585,12 +587,12 @@ namespace Rock.Model
 
             if ( this.ParentPageId.HasValue )
             {
-                PageCache.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached );
+                PageCache.UpdateCachedEntity( this.ParentPageId.Value, EntityState.Detached );
             }
 
             if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
             {
-                PageCache.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached );
+                PageCache.UpdateCachedEntity( _originalParentPageId.Value, EntityState.Detached );
             }
         }
 

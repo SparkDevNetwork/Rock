@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -269,7 +270,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var changeTransaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( changeTransaction );
@@ -282,7 +283,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         oldPersonId = null;
                         newPersonId = PersonId;
@@ -298,7 +299,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         oldPersonId = entry.OriginalValues["PersonId"].ToStringSafe().AsIntegerOrNull();
                         newPersonId = PersonId;
@@ -309,7 +310,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         oldPersonId = entry.OriginalValues["PersonId"].ToStringSafe().AsIntegerOrNull();
                         newPersonId = null;
@@ -919,7 +920,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
             if ( group != null )
