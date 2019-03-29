@@ -1012,32 +1012,42 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
         public DateTime? BirthDate
         {
             get {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                if ( BirthDay == null || BirthMonth == null )
-                {
-                    return null;
-                }
-                else
-                {
-                    if ( BirthMonth <= 12 )
-                    {
-                        if ( BirthDay <= DateTime.DaysInMonth( BirthYear.Value, BirthMonth.Value ) )
-                        {
-                            return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
-                        }
-                    }
-
-                    return null;
-                }
+                _birthDate = CalculateBirthDate();
+                return _birthDate;
             }
 
             private set {
-                // don't do anything here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+                _birthDate = value;
+            }
+        }
+
+        private DateTime? _birthDate ;
+
+        /// <summary>
+        /// Calculates the birthdate from the BirthYear, BirthMonth, and BirthDay. Will return null if it cannot be computed.
+        /// </summary>
+        /// <returns></returns>
+        private DateTime? CalculateBirthDate()
+        {
+             if ( BirthDay == null || BirthMonth == null )
+                {
+                    return null;
+                }
+            else
+            {
+                if ( BirthMonth <= 12 )
+                {
+                    if ( BirthDay <= DateTime.DaysInMonth( BirthYear.Value, BirthMonth.Value ) )
+                    {
+                        return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
+                    }
+                }
+
+                return null;
             }
         }
 
@@ -1909,6 +1919,9 @@ namespace Rock.Model
                     }
                 }
             }
+
+            // Calculates the BirthDate and sets it
+            this.BirthDate = this.CalculateBirthDate();
 
             CalculateSignals();
 

@@ -331,6 +331,12 @@ namespace Rock.Jobs
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
             }
 
+            // update the BirthDate with a computed value
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService.UpdateBirthDateAll( personRockContext );
+            }
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
