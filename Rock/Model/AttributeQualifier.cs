@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -111,10 +112,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             // AttributeCache has QualifierValues that could get stale if AttributeQualifier is modified
-            AttributeCache.UpdateCachedEntity( this.AttributeId, System.Data.Entity.EntityState.Modified );
+            AttributeCache.UpdateCachedEntity( this.AttributeId, EntityState.Modified );
         }
 
         #endregion
