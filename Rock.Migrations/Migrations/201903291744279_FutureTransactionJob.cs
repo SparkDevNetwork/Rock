@@ -41,7 +41,7 @@ namespace Rock.Migrations
                     CreatedDateTime,
                     NotificationStatus
                 ) VALUES (
-                    1, --IsSystem
+                    0, --IsSystem
                     1, --IsActive
                     'Charge Future Transactions', --Name
                     'Charge future transactions where the FutureProcessingDateTime is now or has passed.', --Description
