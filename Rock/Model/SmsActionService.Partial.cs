@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using System.Web;
 using Rock.Communication.SmsActions;
 using Rock.Web.Cache;
 
@@ -94,7 +95,9 @@ namespace Rock.Model
                 return;
             }
 
-            ExceptionLogService.LogException( new Exception( "An exception occured in the SmsAction pipeline. See the inner exception.", exception ) );
+            var context = HttpContext.Current;
+            var wrappedException = new Exception( "An exception occured in the SmsAction pipeline. See the inner exception.", exception );
+            ExceptionLogService.LogException( wrappedException, context );
         }
 
         /// <summary>
@@ -108,7 +111,9 @@ namespace Rock.Model
                 return;
             }
 
-            ExceptionLogService.LogException( new Exception( string.Format( "An error occured in the SmsAction pipeline: {0}", errorMessage ) ) );
+            var context = HttpContext.Current;
+            var exception = new Exception( string.Format( "An error occured in the SmsAction pipeline: {0}", errorMessage ) );
+            ExceptionLogService.LogException( exception, context );
         }
     }
 }
