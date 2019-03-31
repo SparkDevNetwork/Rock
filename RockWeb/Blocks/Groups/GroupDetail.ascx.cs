@@ -900,7 +900,8 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberWorkflowTriggerService.RemoveCachedTriggers();
             }
 
-            if ( checkinDataUpdated )
+            // Flush the kiosk devices cache if this group updated check-in data and its group type takes attendance
+            if ( checkinDataUpdated && group.GroupType.TakesAttendance )
             {
                 Rock.CheckIn.KioskDevice.Clear();
             }
