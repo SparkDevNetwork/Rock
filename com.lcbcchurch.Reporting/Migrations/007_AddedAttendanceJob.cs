@@ -29,6 +29,8 @@ namespace com.lcbcchurch.Reporting.Migrations
         public override void Up()
         {
             RockMigrationHelper.AddGroupType( "F1 Weekend Gathering", "", "Group", "Member", false, true, true, "", 0, "", 0, "", "EA3530C1-7A0C-45A3-9899-CF184F2B8D42" );
+            RockMigrationHelper.UpdateGroupTypeRole( "EA3530C1-7A0C-45A3-9899-CF184F2B8D42", "Member", "", 0, null, null, "EB951E95-BD73-4228-AFCC-DDB49CBC7538", false, false, true );
+
             RockMigrationHelper.UpdatePersonAttributeCategory( "Next Steps", "", "", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D" );
             RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "First Weekend Attendance", "LCBCFirstVisit", "", "", 1009, "", "1859E6AE-DD4B-49D1-83B3-5EC6A9D029CB" );
             RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Second Weekend Attendance", "LCBCSecondVisit", "", "", 1010, "", "FBF88BC2-F99F-45BF-85F9-1DE91C26C4BD" );
