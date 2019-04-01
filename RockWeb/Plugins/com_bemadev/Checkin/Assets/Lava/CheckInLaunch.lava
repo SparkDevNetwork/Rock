@@ -1,0 +1,204 @@
+{% assign urlPattern = "/checkin/kioskId/checkInConfigId/checkInAreas" %}
+
+{% assign kviAttendedCheckInURL = urlPattern %}
+{% assign kviUnattendedCheckInURL = urlPattern %}
+{% assign firstTimeFamilyURL = urlPattern %}
+{% assign kidMinistryEventsURL = urlPattern %}
+
+{% assign studentMinistryCollideURL = urlPattern %}
+{% assign studentMinistryHSMURL = urlPattern %}
+{% assign studentMinistryEventsURL = urlPattern %}
+{% assign nextStepsURL = urlPattern %}
+{% assign campusEventsURL = urlPattern %}
+
+{% assign campusName = 'Global' | PageParameter:'campus' %}
+
+<!-- Get Campus from ShortCode in URLParameter-->
+{% for campus in Campuses %}
+    {% if campus.ShortCode == campusName %}
+        {% assign campusName = campus.Name %}
+    {% endif %}
+{% endfor %}
+
+<!-- Set Kiosk Device IDs using campusName -->
+{% device where:'Name == "{{ campusName }}: Attended Check-In"' %}
+    {% assign attendedCheckInKioskId = device.Id %}
+{% enddevice %}
+{% device where:'Name == "{{ campusName }}: Unattended Check-In"' %}
+    {% assign unattendedCheckInKioskId = device.Id %}
+{% enddevice %}
+{% device where:'Name == "{{ campusName }}: Student Min Check-In"' %}
+    {% assign studentMinCheckInKioskId = device.Id %}
+{% enddevice %}
+
+<!--
+{% device where:'Name == "{{ campusName }}: HSM Check-In"' %}
+    {% assign hsmCheckInKioskId = device.Id %}
+{% enddevice %}
+-->
+
+<!-- Set Kiosk Device in URLs -->
+{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'kioskId', unattendedCheckInKioskId %}
+{% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+
+
+<!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
+{% grouptype where:'Name == "TEST - kidMin Check-In + Volunteers"'%}
+    {% assign kidMinCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
+{% grouptype where:'Name == "TEST - Student Min Check-In + Volunteers"'%}
+    {% assign studentMinCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
+{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
+{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
+{% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
+{% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
+{% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
+
+{% sql %}
+DECLARE @kidMinistryCheckInConfigId int = {{kidMinCheckinConfigId}}
+DECLARE @studentMinCheckInConfigId int = {{studentMinCheckinConfigId}}
+
+SELECT GroupTypeId, ChildGroupTypeId, Name
+FROM [GroupTypeAssociation] as gta
+JOIN [GroupType] as gt on gt.id = gta.ChildGroupTypeId
+WHERE [GroupTypeId] in (
+    @kidMinistryCheckInConfigId
+    ,@studentMinCheckInConfigId
+)
+{% endsql %}
+
+
+<!-- Build up string of check-in areas -->
+
+<!-- KVI / First-Time Family Areas -->
+{% assign kviAreas = "" %}
+{% assign firstTimeFamilyAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == kidMinCheckinConfigId %}
+        {% assign kviAreas =  kviAreas | Append: item.ChildGroupTypeId | Append: "," %}
+    {% elseif item.Name == "Collide" %}
+        {% assign firstTimeFamilyAreas =  firstTimeFamilyAreas | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+
+{% assign lastChar = kviAreas | Right: 1 %}
+{% if lastChar == ',' %}
+    {% assign kviAreas = kviAreas | ReplaceLast: ',', '' %}
+{% endif %}
+
+{% if firstTimeFamilyAreas != "" %}
+    {% assign firstTimeFamilyAreas =  kviAreas | Append: "," | Append: firstTimeFamilyAreas %}
+{% endif %}
+
+<!-- Collide Areas -->
+{% assign collideAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == studentMinCheckinConfigId %}
+        {% if item.Name contains "Collide" %}
+            {% assign collideAreas = collideAreas | Append: "," | Append: item.ChildGroupTypeId %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% assign collideAreas = collideAreas | RemoveFirst:',' %}
+
+<!-- HSM Areas -->
+{% assign hsmAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == studentMinCheckinConfigId %}
+        {% if item.Name contains "High School Ministry" %}
+            {% assign hsmAreas = hsmAreas | Append: "," | Append: item.ChildGroupTypeId %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% assign hsmAreas = hsmAreas | RemoveFirst:',' %}
+
+{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
+{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
+{% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInAreas', firstTimeFamilyAreas %}
+{% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInAreas', collideAreas %}
+{% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInAreas', hsmAreas %}
+
+<!-- Themes -->
+{% assign kidVentureIslandTheme = "?Theme=CheckinKidVentureIsland"%}
+{% assign studentMinistryTheme = "?Theme=CheckinStudentMinistry"%}
+
+{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Append: kidVentureIslandTheme %}
+{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Append: kidVentureIslandTheme %}
+{% assign firstTimeFamilyURL = firstTimeFamilyURL | Append: kidVentureIslandTheme %}
+{% assign studentMinistryCollideURL = studentMinistryCollideURL | Append: studentMinistryTheme %}
+{% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
+
+
+
+
+<h3>{{campusName}} Options</h3>
+<div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-body">
+        <ul>
+            <li>
+                <a href="{{ kviAttendedCheckInURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry Assisted Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ kviUnattendedCheckInURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry Self Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ firstTimeFamilyURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>First-Time Family Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ studentMinistryCollideURL }}">
+                <i class="fas fa-portrait"></i>
+                <h3>Student Min Collide</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ studentMinistryHSMURL }}">
+                <i class="fas fa-portrait"></i>
+                <h3>Student Min HSM</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+<div class="panel panel-default">
+     <div class="panel-heading">
+         <h4 class="panel-title"
+             data-toggle="collapse" 
+             data-target="#collapseOne">
+             Debugging Info
+         </h4>
+      </div>
+      <div id="collapseOne" class="panel-collapse collapse">
+        <div class="panel-body">
+            KVI Check-In Config: {{ kidMinCheckinConfigId }}<br>
+            StudMin Check-In Config: {{ studentMinCheckinConfigId }}<br>
+            KviAreas: {{ kviAreas }}<br>
+            CollideAreas: {{ collideAreas }}<br>
+            HSMAreas: {{ hsmAreas }}<br>
+            First-Time Family Areas: {{ firstTimeFamilyAreas }}<br><br>
+
+            KVI Attended Check-In:      {{ kviAttendedCheckInURL }}<br>
+            KVI Unattended Check-In:    {{ kviUnattendedCheckInURL }}<br>
+            First-Time Family Check-In: {{ firstTimeFamilyURL }}<br>
+            Collide Check-In: {{ studentMinistryCollideURL }}<br>
+            HSM Check-In: {{ studentMinistryHSMURL }}<br>
+        </div>
+      </div>
+  </div>
