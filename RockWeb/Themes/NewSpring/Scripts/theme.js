@@ -3,7 +3,6 @@
 	@import './_swiper.js'
 	@import './_navigation.js'
 	@import './_likes.js'
-  @import './_smooth-scroll.js'
 
 	var swipers = document.querySelectorAll('.swiper-container');
     

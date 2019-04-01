@@ -1,0 +1,132 @@
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
+
+    {% capture pageTitle %}{{ Group.Name }}{% endcapture %}
+    {{ pageTitle | SetPageTitle }}
+
+    <section class="soft xs-soft-half bg-white rounded shadowed push-bottom xs-push-half-bottom hard-bottom clearfix">
+
+        <div class="row">
+            <div class="col-md-6 push-bottom xs-push-half-bottom">
+                <h2 class="h3 push-half-bottom">Group Details:</h4>
+                {% for attribute in Group.AttributeValues %}
+                    <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+                {% endfor %}
+            </div><div class="col-md-6 push-bottom xs-push-half-bottom">
+                <h2 class="h3 push-half-bottom">Leaders:</h4>
+                <p>
+                {% for member in Group.Members %}
+                {% if member.GroupRole.IsLeader %}
+                    {{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small><br>
+                {% endif %}
+                {% endfor %}
+                </p>
+            </div>
+        </div>
+
+        {% if AllowedActions.Edit == true %}
+            <div class="actions push-bottom xs-push-half-bottom clearfix">
+                <a class="btn btn-default" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit Group</a>
+            </div>
+        {% endif %}
+    </section>
+
+
+    <section class="soft-half bg-white rounded shadowed push-bottom xs-push-half-bottom">
+        {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+            <ul class="nav nav-pills">
+                {% if LinkedPages.RosterPage != '' %}
+                    {% if LinkedPages.RosterPage == CurrentPage.Path %}
+                        <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+                    {% else %}
+                        <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+                    {% endif %}
+                {% endif %}
+
+                {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+                    {% if LinkedPages.AttendancePage == CurrentPage.Path %}
+                        <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+                    {% else %}
+                        <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        {% endif %}
+    </section>
+
+        {% groupmember where:'GroupId == {{ Group.Id }}' sort:'GroupMemberStatus desc,Person.LastName' %}            
+            <div class="row">
+                {% for member in groupmemberItems %}<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 push-bottom">
+                    <div class="soft xs-soft-half hard-bottom clearfix bg-white rounded shadowed rollover-container overflow-hidden full-width">
+                        {% capture memberStatusClass %}{% if member.GroupMemberStatus == 0 %}default{% elseif member.GroupMemberStatus == 1 %}primary{% else %}warning{% endif %}{% endcapture %}
+                                                
+                        <small class="display-inline-block sans-serif stronger letter-spacing-condensed label label-{{ memberStatusClass }} push-bottom">{{ member.GroupMemberStatus }}</small>
+
+                        <h3 class="h4 push-half-bottom"><img src="{{ member.Person.PhotoUrl }}&height=50&width=50&mode=crop&scale=both" height="50" class="pull-left margin-r-md circular" alt=""> {{ member.Person.NickName }}<br>{{ member.Person.LastName }}</h3>
+                        
+                        {% assign memberAddress =  member.Person | Address:'Home' %}
+                        {% if memberAddress != '' %}
+                            {% assign street2 = member.Person | Address:'Home','[[ Street2 ]]' %}
+                            <p class="push-half-bottom">
+                                {{ member.Person | Address:'Home','[[ Street1 ]]' }}<br>
+                                {% if street2 != empty %}
+                                    {{ street2 }}<br>
+                                {% endif %}
+                                {{ member.Person | Address:'Home','[[ City ]], [[State]] [[ PostalCode ]]' }}
+                            </p>
+                        {% endif %}
+
+                        {% for phone in member.Person.PhoneNumbers %}
+                            <p class="flush">{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small></p>
+                        {% endfor %}
+
+                        <p class="push-half-top"><a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a></p>
+
+
+                        {% if LinkedPages.PersonDetailPage %}
+                            <p><a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}" class="btn btn-xs btn-default">View Person Details</a></p>
+						{% endif %}
+
+                        {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+						<div class="pull-left rollover-item text-decoration-none position-absolute top-zero right-zero push-top push-right">
+                            <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+							    <i class="fa fa-fw fa-pencil"></i>
+							</a>
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							    <i class="fa fa-fw fa-times"></i>
+							</a>
+						</div>
+						{% endif %}
+                    </div>
+                </div>{% endfor %}
+            </div>
+        {% endgroupmember %}
+
+        <div class=" push-bottom xs-push-half-bottom">
+			{% if AllowedActions.Edit == true %}
+				<a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-primary btn-sm"><i class="fa fa-plus flush"></i> Add Member
+				</a>
+			{% endif %}
+			{% if LinkedPages.CommunicationPage != '' %}
+				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+					<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-sm"><i class="fa fa-envelope-o flush"></i> Email Roster
+					</a>
+				{% endif %}
+			{% endif %}
+            {% if LinkedPages.AlternateCommunicationPage %}
+                {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+                <a href="#" onclick="{{ '' | Postback:'SendAlternateCommunication' }}" class="btn btn-default btn-sm"><i class="fa fa-mobile-phone flush"></i> Text Roster
+                </a>
+                {% endif %}
+            {% endif %}
+		</div>
+
+
+{% else %}
+
+    <section>
+        {% if Group.Id %}
+            <div class='alert alert-warning'>You do not have permission to view this group.</div>
+        {% endif %}
+    </section>
+
+{% endif %}

@@ -25,11 +25,12 @@
 
                 {% if video != null and video != '' %}
                     <div class="btn btn-play position-absolute 
+                
                     {% if imagealignment == 'Left' %}
                         position-right-boundry margin-right-negative
                     {% else %}
                         position-left-boundry margin-left-negative sm-margin-top-auto
-                    {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white shadowed"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
+                    {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
 
                     <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
                     <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
@@ -40,8 +41,8 @@
         {% if url != empty %}</a>{% endif %}
     {% endif %}    
 
-    <div class="row {% if imagealignment == 'Left' %}text-right{% else %}text-left{% endif %} flush"><!-- Section Padding and Alignement Classes -->
-        <div class="bg-white col-xs-12 col-sm-12 col-md-6 text-left soft-ends xs-hard-ends"><!-- Text Alignment Classes -->
+    <div class="row {% if imagealignment == 'Left' %}text-right{% else %}text-left{% endif %} flush">
+        <div class="bg-white col-xs-12 col-sm-12 col-md-6 text-left soft-double-ends sm-soft-ends xs-soft-ends sm-hard-bottom xs-hard-bottom">
             <div class="bg-white soft-double soft-bottom sm-soft xs-soft-ends xs-soft-sides xs-text-center sm-text-center md-text-left">
 
                 {% if video != null and video != '' %}<div class="{% if imagealignment == 'Left' %}soft-left{% else %}soft-right{% endif %} sm-hard-sides sm-soft-top xs-hard-sides xs-soft-top">{% endif %}

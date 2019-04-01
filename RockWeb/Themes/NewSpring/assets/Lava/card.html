@@ -32,7 +32,7 @@
     <div class="panel-body xs-soft xs-hard-bottom">
 
         {% if label != null and label != '' %}
-            <p><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>
+            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>
         {% endif %}
         
         {% if title != null and title != '' %}
@@ -60,6 +60,10 @@
             {% else %}
                 {{ content }}
             {% endif %}
+        {% endif %}
+
+        {% if lava != empty %}
+            {{ lava }}
         {% endif %}
 
         {% if url != empty %}
