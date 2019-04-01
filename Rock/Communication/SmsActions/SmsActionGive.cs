@@ -35,37 +35,55 @@ namespace Rock.Communication.SmsActions
     [ExportMetadata( "ComponentName", "Give" )]
 
     [TextField(
-        name: "Keyword",
+        name: "Give Keyword",
         description: "The case-insensitive keyword that will be expected at the beginning of the message.",
         required: true,
         defaultValue: "Give",
         order: 1,
-        category: "Gift",
-        key: AttributeKeys.Keyword )]
+        category: "Giving",
+        key: AttributeKeys.GivingKeyword )]
 
     [CurrencyField(
         name: "Max Amount",
         description: "The maximum gift amount. Leave blank to allow gifts of any size.",
         required: false,
         order: 2,
-        category: "Gift",
+        category: "Giving",
         key: AttributeKeys.MaxAmount )]
 
     [IntegerField(
         name: "Processing Delay Minutes",
-        description: "The number of minutes to delay processing the gifts. Delaying allows for simple refunds within the window because payments have not been sent to the processor. Set to zero or leave blank to process gifts immediately.",
+        description: "The number of minutes to delay processing the gifts. Delaying allows for refunds through the refund action within the window because payments have not been sent to the processor. Set to zero or leave blank to process gifts immediately.",
         required: false,
         defaultValue: 30,
         order: 3,
-        category: "Gift",
+        category: "Giving",
         key: AttributeKeys.ProcessingDelayMinutes )]
+
+    [TextField(
+        name: "Refund Keyword",
+        description: "The case-insensitive keyword that is expected to trigger the refund. Leave blank to disable SMS refunds.",
+        required: false,
+        defaultValue: "Refund",
+        order: 4,
+        category: "Refund",
+        key: AttributeKeys.RefundKeyword )]
+
+    [IntegerField(
+        name: "Maximum Refund Timeframe",
+        description: "The number of minutes since a gift was made that a refund through this SMS action is allowed. Refunds are always allowed inside of the Processing Delay of the Give action no matter what this is set to. To only allow refunds inside the Processing Delay, leave this blank or set to zero.",
+        required: false,
+        defaultValue: 0,
+        order: 5,
+        category: "Refund",
+        key: AttributeKeys.MaxRefundMinutes )]
 
     [MemoField(
         name: "Help Response",
         description: "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span>",
         required: true,
         defaultValue: "Something went wrong. To give, simply text ‘{{ Keyword }} 100’ or ‘{{ Keyword }} $123.45’. Please contact us if you need help.",
-        order: 4,
+        order: 6,
         category: "Response",
         key: AttributeKeys.HelpResponse )]
 
@@ -74,7 +92,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span>",
         required: false,
         defaultValue: "Thank you for your generosity but our mobile giving solution cannot process a gift this large. Please give using our website.",
-        order: 5,
+        order: 7,
         category: "Response",
         key: AttributeKeys.MaxAmountResponse )]
 
@@ -83,7 +101,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span>",
         required: true,
         defaultValue: "Hi there! Please use our website to setup your giving profile before using this mobile giving solution.",
-        order: 6,
+        order: 8,
         category: "Response",
         key: AttributeKeys.SetupResponse )]
 
@@ -92,21 +110,46 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span>",
         required: true,
         defaultValue: "Thank you! We received your gift of {{ GiftAmount }} to the {{ AccountName }}.",
-        order: 7,
+        order: 9,
         category: "Response",
         key: AttributeKeys.SuccessResponse )]
+
+    [MemoField(
+        name: "Refund Failure Response",
+        description: "The response that will be sent if the sender's gift cannot be refunded. <span class='tip tip-lava'></span>",
+        required: true,
+        defaultValue: "We are unable to process a refund for your last gift. Please contact us for assistance.",
+        order: 10,
+        category: "Response",
+        key: AttributeKeys.RefundFailureResponse )]
+
+    [MemoField(
+        name: "Refund Success Response",
+        description: "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span>",
+        required: true,
+        defaultValue: "Your gift for {{ GiftAmount }} to the {{ AccountName }} has been refunded.",
+        order: 11,
+        category: "Response",
+        key: AttributeKeys.RefundSuccessResponse )]
 
     public class SmsActionGive : SmsActionComponent
     {
         private static class AttributeKeys
         {
-            public const string Keyword = "Keyword";
+            public const string GivingKeyword = "Keyword";
             public const string MaxAmount = "MaxAmount";
             public const string MaxAmountResponse = "MaxAmountResponse";
             public const string ProcessingDelayMinutes = "ProcessingDelayMinutes";
+
+            public const string RefundKeyword = "RefundKeyword";
+            public const string MaxRefundMinutes = "MaxRefundMinutes";
+
             public const string HelpResponse = "HelpResponse";
             public const string SetupResponse = "SetupResponse";
             public const string SuccessResponse = "SuccessResponse";
+
+            public const string RefundSuccessResponse = "RefundSuccessResponse";
+            public const string RefundFailureResponse = "RefundFailureResponse";
         }
 
         #region Properties
@@ -133,7 +176,7 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The description of this SMS Action.
         /// </value>
-        public override string Description => "Allows an SMS sender to make a payment.";
+        public override string Description => "Allows an SMS sender to make a payment and get a refund.";
 
         #endregion
 
@@ -166,10 +209,8 @@ namespace Rock.Communication.SmsActions
                 return false;
             }
 
-            var keyword = GetKeyword( action );
             var messageText = message.Message.Trim();
-
-            return messageText.StartsWith( keyword, StringComparison.CurrentCultureIgnoreCase );
+            return IsGivingMessage( action, messageText ) || IsRefundMessage( action, messageText );
         }
 
         /// <summary>
@@ -181,14 +222,59 @@ namespace Rock.Communication.SmsActions
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
         public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
+            errorMessage = string.Empty;      
+            var messageText = message.Message.Trim();
+
+            var isGiving = IsGivingMessage( action, messageText );
+            var isRefund = IsRefundMessage( action, messageText );
+
+            if ( isGiving )
+            {
+                return DoGift( action, message, out errorMessage );
+            }
+            else if ( isRefund )
+            {
+                return DoRefund( action, message, out errorMessage );
+            }
+
+            errorMessage = "The message was not a giving or refund request.";
+            return null;
+        }
+
+        #endregion
+
+        #region Giving
+
+        /// <summary>
+        /// Determine if the message has the giving keyword
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="messageText"></param>
+        /// <returns></returns>
+        private bool IsGivingMessage( SmsActionCache action, string messageText )
+        {
+            var givingKeyword = GetGivingKeyword( action );
+            return messageText.StartsWith( givingKeyword, StringComparison.CurrentCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Process a gift if the sender requests it
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="message"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        private SmsMessage DoGift( SmsActionCache action, SmsMessage message, out string errorMessage )
+        {
             errorMessage = string.Empty;
             var rockContext = new RockContext();
 
-            var person = message.FromPerson;
-            var keyword = GetKeyword( action );
             var messageText = message.Message.Trim();
-            var giftAmountNullable = GetGiftAmount( keyword, messageText );
+            var givingKeyword = GetGivingKeyword( action );
+            var giftAmountNullable = GetGiftAmount( givingKeyword, messageText );
             var maxAmount = GetMaxAmount( action );
+
+            var person = message.FromPerson;
             var defaultSavedAccount = GetDefaultSavedAccount( rockContext, person );
 
             // If the number is not recognized, the person doesn't have a configured account designation, or the person
@@ -196,7 +282,7 @@ namespace Rock.Communication.SmsActions
             if ( defaultSavedAccount == null || person == null || !person.ContributionFinancialAccountId.HasValue || !person.PrimaryAliasId.HasValue )
             {
                 var lavaTemplate = GetSetupResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message );
+                return GetResolvedGiftSmsResponse( lavaTemplate, givingKeyword, message, null );
             }
 
             // If the amount is not valid (missing, not valid decimal, or not valid currency format), send back the
@@ -204,7 +290,7 @@ namespace Rock.Communication.SmsActions
             if ( !giftAmountNullable.HasValue || giftAmountNullable.Value < 1m )
             {
                 var lavaTemplate = GetHelpResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message );
+                return GetResolvedGiftSmsResponse( lavaTemplate, givingKeyword, message, null );
             }
 
             // If the gift amount exceeds the max amount, send the "max amount" response
@@ -214,7 +300,7 @@ namespace Rock.Communication.SmsActions
             if ( exceedsMax )
             {
                 var lavaTemplate = GetMaxAmountResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message, giftAmount.FormatAsCurrency() );
+                return GetResolvedGiftSmsResponse( lavaTemplate, givingKeyword, message, giftAmount.FormatAsCurrency() );
             }
 
             // Validation has passed so prepare the automated payment processor args to charge the payment
@@ -248,7 +334,7 @@ namespace Rock.Communication.SmsActions
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
             {
                 var lavaTemplate = GetHelpResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message, giftAmount.FormatAsCurrency() );
+                return GetResolvedGiftSmsResponse( lavaTemplate, givingKeyword, message, giftAmount.FormatAsCurrency() );
             }
 
             // If charge seems like a duplicate or repeat, tell the sender
@@ -268,13 +354,116 @@ namespace Rock.Communication.SmsActions
             if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
             {
                 var lavaTemplate = GetHelpResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message, giftAmount.FormatAsCurrency() );
+                return GetResolvedGiftSmsResponse( lavaTemplate, givingKeyword, message, giftAmount.FormatAsCurrency() );
             }
-            else
+
+            // Tag the transaction's summary with info from this action
+            transaction.Summary = string.Format( "{0}{1}Text To Give from {2} with the message `{3}`",
+                transaction.Summary,
+                transaction.Summary.IsNullOrWhiteSpace() ? string.Empty : ". ",
+                message.FromNumber,
+                messageText );
+            rockContext.SaveChanges();
+
+            // Let the sender know that the gift was a success
+            var successTemplate = GetSuccessResponse( action );
+            return GetResolvedGiftSmsResponse( successTemplate, givingKeyword, message, giftAmount.FormatAsCurrency() );
+        }
+
+        #endregion
+
+        #region Refund
+
+        /// <summary>
+        /// Return true if the message text is requesting a refund
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="messageText"></param>
+        /// <returns></returns>
+        public bool IsRefundMessage( SmsActionCache action, string messageText )
+        {
+            var refundKeyword = GetRefundKeyword( action );
+            return messageText.Equals( refundKeyword, StringComparison.CurrentCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Handles the action of giving a refund if the message requests it
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="message"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        private SmsMessage DoRefund( SmsActionCache action, SmsMessage message, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var rockContext = new RockContext();
+
+            var person = message.FromPerson;
+            var keyword = GetRefundKeyword( action );
+
+            if ( person == null || !person.PrimaryAliasId.HasValue )
             {
-                var lavaTemplate = GetSuccessResponse( action );
-                return GetResolvedSmsResponse( lavaTemplate, keyword, message, giftAmount.FormatAsCurrency() );
-            }            
+                var template = GetRefundFailureResponse( action );
+                return GetResolvedRefundSmsResponse( template, keyword, message, null );
+            }
+
+            var service = new FinancialTransactionService( rockContext );
+            var futureTransactions = service.GetFutureTransactionsThatNeedToBeCharged();
+            var transactionToRefund = futureTransactions.FirstOrDefault( ft => ft.AuthorizedPersonAliasId == person.PrimaryAliasId );
+
+            // If there is a future transaction, it can simply be deleted since it has not been processed yet
+            if ( transactionToRefund != null )
+            {
+                var canDelete = service.CanDelete( transactionToRefund, out errorMessage );
+                var success = canDelete && service.Delete( transactionToRefund );
+
+                if ( success )
+                {
+                    var template = GetRefundSuccessResponse( action );
+                    return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                }
+                else
+                {
+                    var template = GetRefundFailureResponse( action );
+                    return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                }
+            }
+
+            // Check for non future transactions if the attribute setting allows it
+            var maxRefundMinutes = GetMaxRefundMinutes( action );
+
+            if ( maxRefundMinutes.HasValue && maxRefundMinutes.Value > 0 )
+            {
+                var minDateTime = RockDateTime.Now.Subtract( TimeSpan.FromMinutes( maxRefundMinutes.Value ) );
+
+                // Query for transactions that are within the refund threshold
+                transactionToRefund = service.Queryable()
+                    .Where( ft =>
+                        ft.TransactionDateTime.HasValue
+                        && ft.TransactionDateTime.Value >= minDateTime
+                        && ft.AuthorizedPersonAliasId == person.PrimaryAliasId )
+                    .OrderByDescending( ft => ft.TransactionDateTime )
+                    .FirstOrDefault();
+
+                if ( transactionToRefund != null )
+                {
+                    var refundTransaction = transactionToRefund.ProcessRefund( out errorMessage );
+
+                    if ( refundTransaction != null )
+                    {
+                        var template = GetRefundSuccessResponse( action );
+                        return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                    }
+                    else
+                    {
+                        var template = GetRefundFailureResponse( action );
+                        return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                    }
+                }
+            }
+
+            var lavaTemplate = GetRefundFailureResponse( action );
+            return GetResolvedRefundSmsResponse( lavaTemplate, keyword, message, transactionToRefund );
         }
 
         #endregion
@@ -332,23 +521,57 @@ namespace Rock.Communication.SmsActions
         #region Attribute Helpers
 
         /// <summary>
-        /// Take the lava template, resolve it with useful text-to-give fields, and generate an SMS object to respond with
+        /// Use this method with the refund action to get a formatted response
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <param name="keyword"></param>
+        /// <param name="message"></param>
+        /// <param name="transactionToRefund"></param>
+        /// <returns></returns>
+        private static SmsMessage GetResolvedRefundSmsResponse( string lavaTemplate, string keyword, SmsMessage message, FinancialTransaction transactionToRefund )
+        {
+            if ( transactionToRefund != null && transactionToRefund.TransactionDetails != null && transactionToRefund.TransactionDetails.Any() )
+            {
+                var formattedGiftAmount = transactionToRefund.TotalAmount.FormatAsCurrency();
+                var firstDetail = transactionToRefund.TransactionDetails.FirstOrDefault();
+                var accountName = firstDetail?.Account?.PublicName;
+                return GetResolvedSmsResponse( lavaTemplate, keyword, message, formattedGiftAmount, accountName );
+            }
+
+            return GetResolvedSmsResponse( lavaTemplate, keyword, message, null, null );
+        }
+
+        /// <summary>
+        /// Use this method with the give action to get a formatted response
         /// </summary>
         /// <param name="lavaTemplate">The response lava template</param>
         /// <param name="keyword">The keyword attribute</param>
         /// <param name="message">The original request message</param>
-        /// <param name="formattedGiftAmount">The formatted gift amount, if parsed</param>
+        /// <param name="formattedAmount">The formatted gift amount, if parsed</param>
         /// <returns></returns>
-        private static SmsMessage GetResolvedSmsResponse( string lavaTemplate, string keyword, SmsMessage message, string formattedGiftAmount = null )
+        private static SmsMessage GetResolvedGiftSmsResponse( string lavaTemplate, string keyword, SmsMessage message, string formattedAmount )
         {
             // Add some useful lava fields for the rock admin to make meaningful SMS responses
             var accountName = message.FromPerson?.ContributionFinancialAccount?.PublicName;
+            return GetResolvedSmsResponse(lavaTemplate, keyword, message, formattedAmount, accountName);
+        }
 
+        /// <summary>
+        /// Take the lava template, resolve it with useful text-to-give fields, and generate an SMS object to respond with
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <param name="keyword"></param>
+        /// <param name="message"></param>
+        /// <param name="formattedAmount"></param>
+        /// <param name="accountName"></param>
+        /// <returns></returns>
+        private static SmsMessage GetResolvedSmsResponse( string lavaTemplate, string keyword, SmsMessage message, string formattedAmount, string accountName )
+        {
             var mergeObjects = new Dictionary<string, object>
             {
                 { "Message", message },
                 { "Keyword", keyword },
-                { "GiftAmount", formattedGiftAmount },
+                { "Amount", formattedAmount },
                 { "AccountName", accountName }
             };
 
@@ -366,25 +589,25 @@ namespace Rock.Communication.SmsActions
 
         #endregion
 
-        #region Attribute Getters
+        #region Giving Attribute Getters
 
         /// <summary>
         /// Get and validate the keyword attribute
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        private static string GetKeyword( SmsActionCache action )
+        private static string GetGivingKeyword( SmsActionCache action )
         {
             if ( action == null )
             {
                 throw new ArgumentException( "Parameter cannot be null", "action" );
             }
 
-            var keyword = action.GetAttributeValue( AttributeKeys.Keyword );
+            var keyword = action.GetAttributeValue( AttributeKeys.GivingKeyword );
 
             if ( string.IsNullOrWhiteSpace( keyword ) )
             {
-                throw new ArgumentException( "Attribute cannot be empty", AttributeKeys.Keyword );
+                throw new ArgumentException( "Attribute cannot be empty", AttributeKeys.GivingKeyword );
             }
 
             return keyword.Trim();
@@ -421,6 +644,52 @@ namespace Rock.Communication.SmsActions
             var maxAmountString = action.GetAttributeValue( AttributeKeys.MaxAmount );
             return maxAmountString.AsDecimalOrNull();
         }
+
+        #endregion
+
+        #region Refund Attribute Getters
+
+        /// <summary>
+        /// Get and validate the keyword attribute
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        private static string GetRefundKeyword( SmsActionCache action )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentException( "Parameter cannot be null", "action" );
+            }
+
+            var keyword = action.GetAttributeValue( AttributeKeys.RefundKeyword );
+
+            if ( keyword.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return keyword.Trim();
+        }
+
+        /// <summary>
+        /// Get and validate the max refund minutes attribute
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        private static int? GetMaxRefundMinutes( SmsActionCache action )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentException( "Parameter cannot be null", "action" );
+            }
+
+            var minutes = action.GetAttributeValue( AttributeKeys.MaxRefundMinutes ).AsIntegerOrNull();
+            return minutes;
+        }
+
+        #endregion
+
+        #region Response Attribute Getters
 
         /// <summary>
         /// Get and validate the success response attribute
@@ -502,6 +771,50 @@ namespace Rock.Communication.SmsActions
 
             var response = action.GetAttributeValue( AttributeKeys.MaxAmountResponse );
             return response?.Trim();
+        }
+
+        /// <summary>
+        /// Get and validate the success response attribute
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        private static string GetRefundSuccessResponse( SmsActionCache action )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentException( "Parameter cannot be null", "action" );
+            }
+
+            var response = action.GetAttributeValue( AttributeKeys.RefundSuccessResponse );
+
+            if ( string.IsNullOrWhiteSpace( response ) )
+            {
+                throw new ArgumentException( "Attribute cannot be empty", AttributeKeys.RefundSuccessResponse );
+            }
+
+            return response.Trim();
+        }
+
+        /// <summary>
+        /// Get and validate the failure response attribute
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        private static string GetRefundFailureResponse( SmsActionCache action )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentException( "Parameter cannot be null", "action" );
+            }
+
+            var response = action.GetAttributeValue( AttributeKeys.RefundFailureResponse );
+
+            if ( string.IsNullOrWhiteSpace( response ) )
+            {
+                throw new ArgumentException( "Attribute cannot be empty", AttributeKeys.RefundFailureResponse );
+            }
+
+            return response.Trim();
         }
 
         #endregion
