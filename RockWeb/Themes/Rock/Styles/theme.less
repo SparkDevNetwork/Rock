@@ -907,10 +907,6 @@ body.nav-open {
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
-  &.open-secondary-nav {
-    width: @navbarside-width + 280px;
-  }
-
   &::-webkit-scrollbar {
     width: 6px;
     background-color: transparent;
@@ -920,6 +916,14 @@ body.nav-open {
     width: 6px;
     background-color: rgba(0,0,0, .2);
     border-radius: 10px;
+  }
+
+  &.open-secondary-nav {
+    width: @navbarside-width + 280px;
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0);
+    }
   }
 
   @media (min-width: @screen-sm-min) {
@@ -1035,6 +1039,16 @@ body.nav-open {
         text-align: left;
         background-color: @navbarside-sub-bg;
 
+
+        /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
+        @media (min-width: @screen-sm-min) {
+          @media not all and (min-resolution:.001dpcm) { @supports (-webkit-appearance:none) {
+            top: @navbar-top-height;
+          }}
+        }
+
+
+
         li {
 
           a {
@@ -1141,6 +1155,7 @@ body.nav-open {
   }
 }
 
+
 .navbar-side-open #cms-admin-footer {
   left: @navbarside-width;
   width: auto;
@@ -1157,7 +1172,7 @@ body.nav-open {
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
     display: block;
-    height: 100% !important; // Overrides collapse if window is resized
+    height: ~"calc(100% - @{navbar-top-height})" !important; // Overrides collapse if window is resized
   }
 
   #content-wrapper {
