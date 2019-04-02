@@ -20,21 +20,19 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Site = Rock.Model.Site;
 using Attribute = Rock.Model.Attribute;
-using Newtonsoft.Json;
-using Rock.Attribute;
+using Site = Rock.Model.Site;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -45,23 +43,13 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a specific site." )]
 
-    [BinaryFileTypeField("Default File Type",
+    [BinaryFileTypeField( "Default File Type",
         Key = AttributeKey.DefaultFileType,
-        Description ="The default file type to use while uploading Favicon",
+        Description = "The default file type to use while uploading Favicon",
         IsRequired = true,
-        DefaultValue =  Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
-        Category ="",
+        DefaultValue = Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category = "",
         Order = 0 )]
-    //TODO Work with Mike to determine Pattern for EnumType Parameter
-    [EnumsField( "Site Type", "Includes Items with the following Type.", typeof( SiteType ), true, "0", order: 1,key:"SiteType")]
-    //[EnumsField( "Site Type",
-    //    Key = AttributeKey.SiteType,
-    //    Description = "Includes Items with the following Type.",
-    //    IsRequired = true,
-    //    DefaultValue = "0",
-    //    Category = "",
-    //    EnumSourceType = typeof( SiteType ),
-    //    Order = 1 )]
 
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
@@ -69,7 +57,6 @@ namespace RockWeb.Blocks.Cms
         protected static class AttributeKey
         {
             public const string DefaultFileType = "DefaultFileType";
-            public const string SiteType = "SiteType";
         }
         #endregion
 
@@ -183,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gPageAttributes_ShowEdit( attributeGuid );
         }
 
@@ -234,7 +221,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             PageAttributesState.RemoveEntity( attributeGuid );
 
             BindPageAttributesGrid();
@@ -468,6 +455,7 @@ namespace RockWeb.Blocks.Cms
                 site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
+                site.IsActive = cbIsActive.Checked;
 
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
@@ -582,7 +570,7 @@ namespace RockWeb.Blocks.Cms
                 interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
-                
+
 
                 // Create the default page is this is a new site
                 if ( !site.DefaultPageId.HasValue && newSite )
@@ -844,6 +832,8 @@ namespace RockWeb.Blocks.Cms
             imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
             imgSiteLogo.BinaryFileId = site.SiteLogoBinaryFileId;
 
+            cbIsActive.Checked = site.IsActive;
+
             if ( site.DefaultPageRoute != null )
             {
                 ppDefaultPage.SetValue( site.DefaultPageRoute );
@@ -931,7 +921,7 @@ namespace RockWeb.Blocks.Cms
                 cbEnableIndexing.Visible = false;
                 tbIndexStartingLocation.Visible = false;
             }
-            
+
             var attributeService = new AttributeService( new RockContext() );
             var siteIdQualifierValue = site.Id.ToString();
             PageAttributesState = attributeService.GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()
