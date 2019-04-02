@@ -51,7 +51,7 @@ namespace Rock.Jobs
         {
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
-            var futureTransactions = transactionService.GetFutureTransactionsThatNeedToBeCharged().ToList();
+            var futureTransactions = transactionService.GetFutureTransactions().Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now ).ToList();
             var errors = new List<string>();
             var successCount = 0;
 

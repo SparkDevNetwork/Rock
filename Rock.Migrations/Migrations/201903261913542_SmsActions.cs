@@ -64,10 +64,21 @@ namespace Rock.Migrations
         {
             AddColumn( "dbo.FinancialTransaction", "FutureProcessingDateTime", c => c.DateTime( nullable: true ) );
             CreateIndex( "dbo.FinancialTransaction", "FutureProcessingDateTime" );
+
+            RockMigrationHelper.UpdateDefinedValue(
+                Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+                "SMS Gift",
+                "A payment made through text-to-give",
+                Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE,
+                true,
+                null,
+                string.Empty,
+                5 );
         }
 
         private void FutureTransactionDown()
         {
+            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE );
             DropIndex( "dbo.FinancialTransaction", new [] { "FutureProcessingDateTime" } );
             DropColumn( "dbo.FinancialTransaction", "FutureProcessingDateTime" );
         }
