@@ -44,12 +44,13 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Worker", "Worker", "The person responsible to follow up on the inquiry", 4, @"", "1193D684-0C9E-4D86-9C23-0F9E4940A0E9", true ); // Commitment Choice:Worker
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Assign New Worker", "NewWorker", "If this inquiry needs to be re-assigned to a different person, select that person here.", 5, @"", "BC3CA97D-AD69-4368-92A8-A44C0554EA1E", false ); // Commitment Choice:Assign New Worker
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Notes", "Notes", "Staff notes about this inquiry", 6, @"", "14D38C07-101C-4B24-94B5-A31F990F0F2F", false ); // Commitment Choice:Notes
-            RockMigrationHelper.AddAttributeQualifier( "34814E97-227A-4BCD-B628-3350FC0CB380", "EnableSelfSelection", @"False", "7CC2D344-DDDE-4AB5-985F-06214B8259F6" ); // Commitment Choice:Person:EnableSelfSelection
-            RockMigrationHelper.AddAttributeQualifier( "422408DF-F0B1-46FD-9AE3-CF88E611398D", "fieldtype", @"rb", "69FCADA4-17A7-4572-A415-A85CAB539C44" ); // Commitment Choice:Commitment:fieldtype
-            RockMigrationHelper.AddAttributeQualifier( "422408DF-F0B1-46FD-9AE3-CF88E611398D", "values", @"Committed^I''ve made the decision to start trusting Jesus, Questioning^I still have questions about what it means to trust Jesus", "7811257B-62D3-43B4-B45E-C28DB3A29B83" ); // Commitment Choice:Commitment:values
-            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "ispassword", @"False", "BC724604-9566-4931-81DC-75484AAEF915" ); // Commitment Choice:Contact Info:ispassword
-            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "maxcharacters", @"", "1C087D70-0242-42B3-8CAF-84FA5438D67B" ); // Commitment Choice:Contact Info:maxcharacters
-            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "showcountdown", @"False", "0986AA59-1A75-46C2-A99C-39D9BB7D2E58" ); // Commitment Choice:Contact Info:showcountdown
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Worker Group", "WorkerGroup", "", 7, @"5579B44A-AA02-4E9B-BAB7-29E702E773BF", "473AC7B5-045E-4BFF-B8C4-6B2FAA10DDCF", false ); // Commitment Choice:Worker Group
+            RockMigrationHelper.AddAttributeQualifier( "34814E97-227A-4BCD-B628-3350FC0CB380", "EnableSelfSelection", @"False", "E086BFDF-2D9C-4F7D-8277-932BDDBEC2B4" ); // Commitment Choice:Person:EnableSelfSelection
+            RockMigrationHelper.AddAttributeQualifier( "422408DF-F0B1-46FD-9AE3-CF88E611398D", "fieldtype", @"rb", "98677DC9-F55F-4C5E-A5BD-DCC939390A72" ); // Commitment Choice:Commitment:fieldtype
+            RockMigrationHelper.AddAttributeQualifier( "422408DF-F0B1-46FD-9AE3-CF88E611398D", "values", @"Committed^I''ve made the decision to start trusting Jesus, Questioning^I still have questions about what it means to trust Jesus", "3F1F8390-0EAA-407B-9FA8-BD3FAE74B8DB" ); // Commitment Choice:Commitment:values
+            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "ispassword", @"False", "489DD20A-C2BB-43DC-979A-0FD5DDE3D269" ); // Commitment Choice:Contact Info:ispassword
+            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "maxcharacters", @"", "F88F472F-7380-4B78-BD0A-EDD38D6795AC" ); // Commitment Choice:Contact Info:maxcharacters
+            RockMigrationHelper.AddAttributeQualifier( "377E487E-D6A2-4D65-9F34-6980D6038100", "showcountdown", @"False", "0AC70D68-DC07-4E93-B524-784B2826C945" ); // Commitment Choice:Contact Info:showcountdown
             RockMigrationHelper.UpdateWorkflowActivityType( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", true, "Request", "Prompt the user for the information about their request", true, 0, "92EDD2DA-4C1A-4404-8FED-05192B06194D" ); // Commitment Choice:Request
             RockMigrationHelper.UpdateWorkflowActivityType( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", true, "Open", "Activity used to process the inquiry.", false, 1, "97845D92-C631-4CFA-BB7F-F611903EAFF5" ); // Commitment Choice:Open
             RockMigrationHelper.UpdateWorkflowActivityType( "54FE40B1-3885-4E65-B15B-6E5C64AA59B9", true, "Complete", "Complete the workflow", false, 2, "D6B82D91-5DA5-480D-80AA-8E4178767B83" ); // Commitment Choice:Complete
@@ -62,8 +63,9 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "656800C4-D478-4427-923F-583F093761D5", "1193D684-0C9E-4D86-9C23-0F9E4940A0E9", 3, false, true, false, false, @"", @"", "2DF7504F-2A99-4E3A-AFC0-C388482AD377" ); // Commitment Choice:Open:Capture Notes:Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "656800C4-D478-4427-923F-583F093761D5", "BC3CA97D-AD69-4368-92A8-A44C0554EA1E", 4, true, false, false, false, @"", @"", "165F9FCE-738A-44C4-9029-1A3B47CB98E9" ); // Commitment Choice:Open:Capture Notes:Assign New Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "656800C4-D478-4427-923F-583F093761D5", "14D38C07-101C-4B24-94B5-A31F990F0F2F", 5, true, false, false, false, @"", @"", "B4D53987-997B-45D7-99B0-EB26BB913328" ); // Commitment Choice:Open:Capture Notes:Notes
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute( "656800C4-D478-4427-923F-583F093761D5", "473AC7B5-045E-4BFF-B8C4-6B2FAA10DDCF", 7, false, true, false, false, @"", @"", "2D284DEE-B611-42FA-AE26-8A123E074524" ); // Commitment Choice:Open:Capture Notes:Worker Group
             RockMigrationHelper.UpdateWorkflowActionType( "92EDD2DA-4C1A-4404-8FED-05192B06194D", "Set Name", 0, "36005473-BD5D-470B-B28D-98E6D7ED808D", true, false, "", "", 1, "", "82D3B8DD-FCBD-4CE7-B7EE-2E929E18B024" ); // Commitment Choice:Request:Set Name
-            RockMigrationHelper.UpdateWorkflowActionType( "92EDD2DA-4C1A-4404-8FED-05192B06194D", "Assign Worker", 1, "17962C23-2E94-4E06-8461-0FB8B94E2FEA", true, true, "", "", 8, "Serving", "6EE874F7-38C1-482F-B460-18E6970549C0" ); // Commitment Choice:Request:Assign Worker
+            RockMigrationHelper.UpdateWorkflowActionType( "92EDD2DA-4C1A-4404-8FED-05192B06194D", "Assign Initial Worker", 1, "BC21E57A-1477-44B3-A7C2-61A806118945", true, false, "", "", 8, "Serving", "6EE874F7-38C1-482F-B460-18E6970549C0" ); // Commitment Choice:Request:Assign Initial Worker
             RockMigrationHelper.UpdateWorkflowActionType( "92EDD2DA-4C1A-4404-8FED-05192B06194D", "Open", 2, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "", 8, "LifeGroups", "6DEEB608-0C28-4542-9C48-F78444971DD3" ); // Commitment Choice:Request:Open
             RockMigrationHelper.UpdateWorkflowActionType( "97845D92-C631-4CFA-BB7F-F611903EAFF5", "Assign Activity to Worker", 0, "F100A31F-E93A-4C7A-9E55-0FAF41A101C4", true, false, "", "", 1, "", "C4D37429-58D9-495C-8739-428CB1EBAE6D" ); // Commitment Choice:Open:Assign Activity to Worker
             RockMigrationHelper.UpdateWorkflowActionType( "97845D92-C631-4CFA-BB7F-F611903EAFF5", "Capture Notes", 1, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "656800C4-D478-4427-923F-583F093761D5", "", 1, "", "DC8C2F6E-E4FF-41FE-8C40-793E0469033D" ); // Commitment Choice:Open:Capture Notes
@@ -76,10 +78,28 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "82D3B8DD-FCBD-4CE7-B7EE-2E929E18B024", "5D95C15A-CCAE-40AD-A9DD-F929DA587115", @"" ); // Commitment Choice:Request:Set Name:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "82D3B8DD-FCBD-4CE7-B7EE-2E929E18B024", "0A800013-51F7-4902-885A-5BE215D67D3D", @"False" ); // Commitment Choice:Request:Set Name:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "82D3B8DD-FCBD-4CE7-B7EE-2E929E18B024", "93852244-A667-4749-961A-D47F88675BE4", @"{% assign person = Workflow | Attribute:'Person','Object'%}{{person.FullName}} ( {{ Workflow | Attribute:'Interests' }} )" ); // Commitment Choice:Request:Set Name:Text Value|Attribute Value
-            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "CE28B79D-FBC2-4894-9198-D923D0217549", @"False" ); // Commitment Choice:Request:Assign Worker:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "7AC47975-71AC-4A2F-BF1F-115CF5578D6F", @"1193d684-0c9e-4d86-9c23-0f9e4940a0e9" ); // Commitment Choice:Request:Assign Worker:Attribute
-            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "18EF907D-607E-4891-B034-7AA379D77854", @"" ); // Commitment Choice:Request:Assign Worker:Order
-            RockMigrationHelper.AddActionTypePersonAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "5C803BD1-40FA-49B1-AE7E-68F43D3687BB", @"36c2aba2-27e5-4652-9c96-ce504139e8f6" ); // Commitment Choice:Request:Assign Worker:Person
+            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"
+{% assign group = Workflow | Attribute:'WorkerGroup','Object' %}
+{% assign personGuid = '' %}
+{% for gm in group.Members %}
+    {% if personGuid == '' %}
+        {% assign memberCampuses = gm | Attribute:'Campus','RawValue' %}
+        {% assign requestCampusGuid = Workflow | Attribute:'Campus','Guid' %}
+
+        {% if requestCampusGuid != '' %}
+            {% if memberCampuses contains requestCampusGuid %}
+                {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+            {% elseif memberCampuses == '' %}
+                {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+            {% endif %}
+        {% else %}
+            {% assign personGuid = gm.Person.PrimaryAlias.Guid %}
+        {% endif %}
+    {% endif %}{% endfor %}
+{{personGuid | Trim }}" ); // Commitment Choice:Request:Assign Initial Worker:Lava
+            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "F1924BDC-9B79-4018-9D4A-C3516C87A514", @"False" ); // Commitment Choice:Request:Assign Initial Worker:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "431273C6-342D-4030-ADC7-7CDEDC7F8B27", @"1193d684-0c9e-4d86-9c23-0f9e4940a0e9" ); // Commitment Choice:Request:Assign Initial Worker:Attribute
+            RockMigrationHelper.AddActionTypeAttributeValue( "6EE874F7-38C1-482F-B460-18E6970549C0", "F3E380BF-AAC8-4015-9ADC-0DF56B5462F5", @"RockEntity" ); // Commitment Choice:Request:Assign Initial Worker:Enabled Lava Commands
             RockMigrationHelper.AddActionTypeAttributeValue( "6DEEB608-0C28-4542-9C48-F78444971DD3", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // Commitment Choice:Request:Open:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "6DEEB608-0C28-4542-9C48-F78444971DD3", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // Commitment Choice:Request:Open:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "6DEEB608-0C28-4542-9C48-F78444971DD3", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"97845D92-C631-4CFA-BB7F-F611903EAFF5" ); // Commitment Choice:Request:Open:Activity
@@ -112,7 +132,14 @@ namespace com.lcbcchurch.Workflow.Migrations
 
             #region DefinedValue AttributeType qualifier helper
 
-            Sql( @"     UPDATE [aq] SET [key] = 'definedtype', [Value] = CAST( [dt].[Id] as varchar(5) )     FROM [AttributeQualifier] [aq]     INNER JOIN [Attribute] [a] ON [a].[Id] = [aq].[AttributeId]     INNER JOIN [FieldType] [ft] ON [ft].[Id] = [a].[FieldTypeId]     INNER JOIN [DefinedType] [dt] ON CAST([dt].[guid] AS varchar(50) ) = [aq].[value]     WHERE [ft].[class] = 'Rock.Field.Types.DefinedValueFieldType'     AND [aq].[key] = 'definedtypeguid'    " );
+            Sql( @"
+UPDATE [aq] SET [key] = 'definedtype', [Value] = CAST( [dt].[Id] as varchar(5) )
+FROM [AttributeQualifier] [aq]
+INNER JOIN [Attribute] [a] ON [a].[Id] = [aq].[AttributeId]
+INNER JOIN [FieldType] [ft] ON [ft].[Id] = [a].[FieldTypeId]
+INNER JOIN [DefinedType] [dt] ON CAST([dt].[guid] AS varchar(50) ) = [aq].[value]
+WHERE [ft].[class] = 'Rock.Field.Types.DefinedValueFieldType'
+AND [aq].[key] = 'definedtypeguid'" );
 
             #endregion
         }

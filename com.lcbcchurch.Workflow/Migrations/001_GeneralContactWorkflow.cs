@@ -28,8 +28,20 @@ namespace com.lcbcchurch.Workflow.Migrations
     {
         public override void Up()
         {
-            RockMigrationHelper.UpdateGroup( "57DC00A3-FF88-4D4C-9878-30AE309117E2", "8400497B-C52F-40AE-A529-3FCCB9587101", "CEN General Inquiry Admins", "", null, 0, "8529700D-6A8F-4D7C-BA83-CAA7C22915FC", false, false, true );
-            AddGroupGroupMemberAttribute( "8529700D-6A8F-4D7C-BA83-CAA7C22915FC", "69254F91-C97F-4C2D-9ACB-1683B088097B", "Campus", "", 0, "", true, "CCC95489-99D9-48B5-BDD4-BE28F58C61FE", true );
+            RockMigrationHelper.AddGroupType( "System", "Holds system-level group types.", "Group", "Member", false, true, true, "fa fa-cogs", 0, null, 0, null, "15708E27-CC26-435F-B8B8-5E6CC48DDDA6" );
+            RockMigrationHelper.AddGroupType( "Workflow Routing", "Holds groups that control routing of a Workflow to a worker.", "Group", "Member", false, true, true, "fa fa-code-fork", 0, null, 0, null, "943708E0-170B-4935-AA3A-3DF958D8D2C8" );
+
+            AddGroupTypeAssociation( "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "15708E27-CC26-435F-B8B8-5E6CC48DDDA6" );  // System > System
+            AddGroupTypeAssociation( "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "943708E0-170B-4935-AA3A-3DF958D8D2C8" );  // System > Workflow Routing
+
+            RockMigrationHelper.UpdateGroupTypeRole( "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "Member", "", 0, null, null, "88C1908F-7FAD-421D-B9F6-272E7C2DEF5B", false, false, true ); // System > Member
+            RockMigrationHelper.UpdateGroupTypeRole( "943708E0-170B-4935-AA3A-3DF958D8D2C8", "Member", "", 0, null, null, "AF296AD9-CAC8-4941-8645-30DBDB8B6E4B", false, false, true ); // Workflow Routing > Member
+
+            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "943708E0-170B-4935-AA3A-3DF958D8D2C8", "69254F91-C97F-4C2D-9ACB-1683B088097B", "Campus", @"", 0, "", "66AE33E8-B374-4F07-BBE3-4096F1CBCE88" );
+
+            RockMigrationHelper.UpdateGroup( null, "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "System", "", null, 0, "D791D411-2434-4D2B-A9AC-E621BFAEC6E5", false, false, true ); // System
+            RockMigrationHelper.UpdateGroup( "D791D411-2434-4D2B-A9AC-E621BFAEC6E5", "15708E27-CC26-435F-B8B8-5E6CC48DDDA6", "Workflows", "", null, 0, "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", false, false, true ); // Workflows
+            RockMigrationHelper.UpdateGroup( "351E56B1-5ED6-4C38-9D0E-E7EFAFD4DCA9", "943708E0-170B-4935-AA3A-3DF958D8D2C8", "General Contact Routing", "Group to hold people the General Contact Workflow can be assigned to. Mostly Campus Admins.", null, 0, "CDA9CAE4-0674-4CD2-A275-8104F953D5CB", false, false, true ); // General Contact Routing
 
             #region EntityTypes
 
@@ -118,7 +130,7 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","E4EAB7B2-0B76-429B-AFE4-AD86D7428C70","Worker","Worker","The person responsible to follow up on the inquiry",7,@"","B5A5D6B4-592B-4CF0-8C20-CF488805608B", true); // General Contact:Worker
             RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","E4EAB7B2-0B76-429B-AFE4-AD86D7428C70","Assign New Worker","NewWorker","If this inquiry needs to be re-assigned to a different person, select that person here.",8,@"","01DD1CDA-D3E2-49FB-9D1C-E945718C5EB3", false); // General Contact:Assign New Worker
             RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","C28C7BF3-A552-4D77-9408-DEDCF760CED0","Notes","Notes","Staff notes about this inquiry",9,@"","0DC37C7D-075F-4067-B276-B4CCC24E1562", false); // General Contact:Notes
-            RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","F4399CEF-827B-48B2-A735-F7806FCFE8E8","Admin Group","AdminGroup","",10,@"8529700d-6a8f-4d7c-ba83-caa7c22915fc","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614", false); // General Contact:Admin Group
+            RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","F4399CEF-827B-48B2-A735-F7806FCFE8E8","Worker Group","WorkerGroup","",10,@"CDA9CAE4-0674-4CD2-A275-8104F953D5CB","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614", false); // General Contact:Worker Group
             RockMigrationHelper.UpdateWorkflowTypeAttribute("9A5541BD-A914-4EE2-9CC0-DC6258D7D17D","9C204CD0-1233-41C5-818A-C5DA439445AA","WorkerGuid","WorkerGuid","",11,@"","59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B", false); // General Contact:WorkerGuid
             RockMigrationHelper.AddAttributeQualifier("59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B","ispassword",@"False","6B18CB80-6F8F-49AE-B3D6-58442C40751A"); // General Contact:WorkerGuid:ispassword
             RockMigrationHelper.AddAttributeQualifier("59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B","maxcharacters",@"","5528C5D2-8497-4A52-990F-1C45881EE1B7"); // General Contact:WorkerGuid:maxcharacters
@@ -157,7 +169,7 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","B5A5D6B4-592B-4CF0-8C20-CF488805608B",7,false,true,false,false,@"",@"","FDBA0D12-65E7-488C-A227-8F45D8627D90"); // General Contact:Request:Prompt User:Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","01DD1CDA-D3E2-49FB-9D1C-E945718C5EB3",9,false,true,false,false,@"",@"","72B2E7B6-79FE-4F4F-BF49-A35874A08305"); // General Contact:Request:Prompt User:Assign New Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","0DC37C7D-075F-4067-B276-B4CCC24E1562",8,false,true,false,false,@"",@"","401090E3-9915-479B-917D-57D391056040"); // General Contact:Request:Prompt User:Notes
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","6048C019-3C98-486E-8794-81F2356AB507"); // General Contact:Request:Prompt User:Admin Group
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","6048C019-3C98-486E-8794-81F2356AB507"); // General Contact:Request:Prompt User:Worker Group
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B",11,false,true,false,false,@"",@"","F84AA094-1880-42A9-B287-1848415FB6F0"); // General Contact:Request:Prompt User:WorkerGuid
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","C6C6A13C-8ABC-4C14-97C1-61E1D4093125",0,true,true,false,false,@"",@"","0912694A-B693-4B09-B19B-C61AD2D8BF2B"); // General Contact:Open:Capture Notes:Requester
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","E58F6294-52DE-4993-AD00-8332D5FCC908",1,false,true,false,false,@"",@"","9302B1E1-751E-46C3-BF7C-BA3EAE75B213"); // General Contact:Open:Capture Notes:First Name
@@ -169,7 +181,7 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","B5A5D6B4-592B-4CF0-8C20-CF488805608B",7,false,true,false,false,@"",@"","161211A3-B659-4ABD-AE1F-9FA8FCABE8F4"); // General Contact:Open:Capture Notes:Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","01DD1CDA-D3E2-49FB-9D1C-E945718C5EB3",8,true,false,false,false,@"",@"","A9B12036-631D-4C3C-8520-A8B6EE2AC6F4"); // General Contact:Open:Capture Notes:Assign New Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","0DC37C7D-075F-4067-B276-B4CCC24E1562",9,true,false,false,false,@"",@"","203709FC-8D7B-41DE-92DE-04A365D6BAB9"); // General Contact:Open:Capture Notes:Notes
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","12E03678-8B9E-4AC5-9ED2-A83E8D61BD0B"); // General Contact:Open:Capture Notes:Admin Group
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","12E03678-8B9E-4AC5-9ED2-A83E8D61BD0B"); // General Contact:Open:Capture Notes:Worker Group
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("5FB12E48-0F07-4B31-B17E-0609C93DC5E8","59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B",11,false,true,false,false,@"",@"","171554AD-9793-4D2E-95CC-91BFA9719F10"); // General Contact:Open:Capture Notes:WorkerGuid
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","C6C6A13C-8ABC-4C14-97C1-61E1D4093125",0,true,true,false,false,@"",@"","6FA0B462-DE5B-4D7E-9064-C23500F72B59"); // General Contact:Create Prayer Request:Worker User Entry:Requester
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","E17C1327-7BA3-40E9-94D0-885FB61C08DC",15,false,true,false,false,@"",@"","335EA175-9F47-4928-8F4D-91BAED1E4061"); // General Contact:Create Prayer Request:Worker User Entry:Prayer Command Text
@@ -185,7 +197,7 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","B5A5D6B4-592B-4CF0-8C20-CF488805608B",7,false,true,false,false,@"",@"","3F2FBD96-DB48-4A2C-973A-42D7BED63298"); // General Contact:Create Prayer Request:Worker User Entry:Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","01DD1CDA-D3E2-49FB-9D1C-E945718C5EB3",8,false,true,false,false,@"",@"","31A04179-6B86-4390-A1E7-8581CAB62537"); // General Contact:Create Prayer Request:Worker User Entry:Assign New Worker
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","0DC37C7D-075F-4067-B276-B4CCC24E1562",9,true,true,false,false,@"",@"","0879FCE7-6B98-47F2-816E-4F3738072E85"); // General Contact:Create Prayer Request:Worker User Entry:Notes
-            RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","021E4FAB-DD46-4F5B-AE79-B611EC71478B"); // General Contact:Create Prayer Request:Worker User Entry:Admin Group
+            RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","6E9BA6A0-E7BD-47D0-ADFF-3883BE6C8614",10,false,true,false,false,@"",@"","021E4FAB-DD46-4F5B-AE79-B611EC71478B"); // General Contact:Create Prayer Request:Worker User Entry:Worker Group
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("0082B677-1060-48DA-B739-48F8DE05395F","59F2F9B3-CA30-4B77-8BB3-FDF035D3E63B",11,false,true,false,false,@"",@"","F5A85E53-C473-47AF-A432-5D595020CCB7"); // General Contact:Create Prayer Request:Worker User Entry:WorkerGuid
             RockMigrationHelper.UpdateWorkflowActionType("CDAB149A-11EA-4E50-A02A-343E4414810C","Prompt User",0,"486DC4FA-FCBC-425F-90B0-E606DA8A9F68",true,false,"BE95DB03-7967-4FD7-A831-0ADA6BF8FFE8","",1,"","9CE9BE24-853A-4B10-8A35-AB1C5473A015"); // General Contact:Request:Prompt User
             RockMigrationHelper.UpdateWorkflowActionType("CDAB149A-11EA-4E50-A02A-343E4414810C","Set Name",1,"36005473-BD5D-470B-B28D-98E6D7ED808D",true,false,"","",1,"","9718742D-5416-49E0-B05B-ADEEB10A46DB"); // General Contact:Request:Set Name
@@ -227,7 +239,7 @@ namespace com.lcbcchurch.Workflow.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue("EED11036-BC0F-480C-9CBE-F922536B8DE5","86F795B0-0CB6-4DA4-9CE4-B11D0922F361",@""); // General Contact:Request:Persist the Workflow:Order
             RockMigrationHelper.AddActionTypeAttributeValue("EED11036-BC0F-480C-9CBE-F922536B8DE5","E22BE348-18B1-4420-83A8-6319B35416D2",@"False"); // General Contact:Request:Persist the Workflow:Persist Immediately
             RockMigrationHelper.AddActionTypeAttributeValue("448A26ED-5AC0-4FA1-9124-ACDC3A3C7DA0","F1F6F9D6-FDC5-489C-8261-4B9F45B3EED4", @"
-{% assign group = Workflow | Attribute:'AdminGroup','Object' %}
+{% assign group = Workflow | Attribute:'WorkerGroup','Object' %}
 {% assign personGuid = '' %}
 {% for gm in group.Members %}
     {% if personGuid == '' %}
@@ -311,7 +323,7 @@ namespace com.lcbcchurch.Workflow.Migrations
         public override void Down()
         {
             RockMigrationHelper.DeleteAttribute( "CCC95489-99D9-48B5-BDD4-BE28F58C61FE" );
-            RockMigrationHelper.DeleteGroup( "8529700D-6A8F-4D7C-BA83-CAA7C22915FC" );
+            RockMigrationHelper.DeleteGroup( "CDA9CAE4-0674-4CD2-A275-8104F953D5CB" );
         }
 
         private void AddGroupGroupMemberAttribute( string groupGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, bool isRequired, string guid, bool isGridColumn = false )
@@ -385,6 +397,34 @@ namespace com.lcbcchurch.Workflow.Migrations
                         ,'{guid}')
                 END
                 " );
+        }
+
+        public void AddGroupTypeAssociation( string parentGroupTypeGuid, string childGroupTypeGuid )
+        {
+            Sql( string.Format( @"
+
+                -- Insert a group type association...
+
+                DECLARE @ParentGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{0}' )
+                DECLARE @ChildGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{1}' )
+
+                IF NOT EXISTS (
+                    SELECT [GroupTypeId]
+                    FROM [GroupTypeAssociation]
+                    WHERE [GroupTypeId] = @ParentGroupTypeId
+                    AND [ChildGroupTypeId] = @ChildGroupTypeId)
+                BEGIN
+                    INSERT INTO [GroupTypeAssociation] (
+                        [GroupTypeId]
+                        ,[ChildGroupTypeId])
+                    VALUES(
+                        @ParentGroupTypeId
+                        ,@ChildGroupTypeId)
+                END
+            ",
+                parentGroupTypeGuid,
+                childGroupTypeGuid
+           ) );
         }
     }
 }
