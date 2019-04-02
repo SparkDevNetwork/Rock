@@ -28,11 +28,14 @@ namespace com.lcbcchurch.Reporting.Migrations
     {
         public override void Up()
         {
+            RockMigrationHelper.AddGroupType( "F1 Weekend Gathering", "", "Group", "Member", false, true, true, "", 0, "", 0, "", "EA3530C1-7A0C-45A3-9899-CF184F2B8D42" );
+            RockMigrationHelper.UpdateGroupTypeRole( "EA3530C1-7A0C-45A3-9899-CF184F2B8D42", "Member", "", 0, null, null, "EB951E95-BD73-4228-AFCC-DDB49CBC7538", false, false, true );
+
             RockMigrationHelper.UpdatePersonAttributeCategory( "Next Steps", "", "", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D" );
-            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "First Visit", "LCBCFirstVisit", "", "", 1009, "", "1859E6AE-DD4B-49D1-83B3-5EC6A9D029CB" );
-            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Second Visit", "LCBCSecondVisit", "", "", 1010, "", "FBF88BC2-F99F-45BF-85F9-1DE91C26C4BD" );
-            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Third Visit", "LCBCThirdVisit", "", "", 1011, "", "4208456B-67B2-4B37-8F4B-547DF48A89FC" );
-            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Last Visit", "LCBCLastVisit", "", "", 1012, "", "9ABC5D6B-4840-495B-9F5E-123F9AAF2F59" );
+            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "First Weekend Attendance", "LCBCFirstVisit", "", "", 1009, "", "1859E6AE-DD4B-49D1-83B3-5EC6A9D029CB" );
+            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Second Weekend Attendance", "LCBCSecondVisit", "", "", 1010, "", "FBF88BC2-F99F-45BF-85F9-1DE91C26C4BD" );
+            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Third Weekend Attendance", "LCBCThirdVisit", "", "", 1011, "", "4208456B-67B2-4B37-8F4B-547DF48A89FC" );
+            RockMigrationHelper.UpdatePersonAttribute( "6B6AA175-4758-453F-8D83-FCD8044B5F36", "FAC12B3C-CB73-4DC6-8A54-3C3F5F3A312D", "Last Weekend Attendance", "LCBCLastVisit", "", "", 1012, "", "9ABC5D6B-4840-495B-9F5E-123F9AAF2F59" );
             // add job service
             Sql( @"  INSERT INTO [ServiceJob]
                           ([IsSystem], [IsActive], [Name], [Description], [Class], [CronExpression], [NotificationStatus], [Guid])
@@ -67,13 +70,12 @@ BEGIN
         INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
         INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
         WHERE
-            gt.AttendanceCountsAsWeekendService = 1
+            gt.Guid in (''531320FA-9BD1-494A-B512-EDBA1262B93D'',''EA3530C1-7A0C-45A3-9899-CF184F2B8D42'')
             AND a.[DidAttend] = 1
             AND pa.[PersonId] = p.[Id]
     ) a
     WHERE
         p.[Id] NOT IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId )
-        AND a.FirstVisit < DATEADD(d, 14, p.CreatedDateTime)
 END
 
 IF @SecondVisitAttributeId IS NOT NULL
@@ -92,7 +94,7 @@ BEGIN
         INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
         INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
         WHERE
-            gt.AttendanceCountsAsWeekendService = 1
+            gt.Guid in (''531320FA-9BD1-494A-B512-EDBA1262B93D'',''EA3530C1-7A0C-45A3-9899-CF184F2B8D42'')
             AND pa.[PersonId] = p.[Id]
             AND a.[DidAttend] = 1
             AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @FirstVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)
@@ -119,7 +121,7 @@ BEGIN
         INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
         INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
         WHERE
-            gt.AttendanceCountsAsWeekendService = 1
+            gt.Guid in (''531320FA-9BD1-494A-B512-EDBA1262B93D'',''EA3530C1-7A0C-45A3-9899-CF184F2B8D42'')
             AND pa.[PersonId] = p.[Id]
             AND a.[DidAttend] = 1
             AND CONVERT(date, a.[StartDateTime]) > (SELECT MAX([ValueAsDateTime]) FROM [AttributeValue] WHERE [AttributeId] = @SecondVisitAttributeId AND [EntityId] = pa.[PersonId] AND [IsSystem] = 1)
@@ -147,7 +149,7 @@ FROM (
             INNER JOIN [Group] g ON g.Id = O.GroupId
             INNER JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
             WHERE
-                gt.AttendanceCountsAsWeekendService = 1
+            gt.Guid in (''531320FA-9BD1-494A-B512-EDBA1262B93D'',''EA3530C1-7A0C-45A3-9899-CF184F2B8D42'')
                 AND a.[DidAttend] = 1
                 AND pa.[PersonId] = p.Id)
         AS [LastAttendedDate]
