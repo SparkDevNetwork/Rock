@@ -293,10 +293,20 @@ Rock.controls.tagList.initialize({{
         }
 
         /// <summary>
-        /// Saves the tag values that user entered for the entity (
+        /// Saves the tag values that user entered for the entity as a personal tag for the provided PersonAlias
         /// </summary>
         /// <param name="personAlias">The person alias.</param>
         public void SaveTagValues( PersonAlias personAlias )
+        {
+            SaveTagValues( personAlias, true );
+        }
+
+        /// <summary>
+        /// Saves the tag values that user entered for the entity
+        /// </summary>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="isPersonal">if set to <c>true</c> [is personal]. then the tag will be a personal tag for the provided PersonAlias. Otherwise the tag will be an organizational tag.</param>
+        public void SaveTagValues( PersonAlias personAlias, bool isPersonal )
         {
             int? currentPersonId = null;
             if ( personAlias != null )
@@ -340,7 +350,7 @@ Rock.controls.tagList.initialize({{
                         tag.CategoryId = CategoryId;
                         tag.EntityTypeQualifierColumn = EntityQualifierColumn;
                         tag.EntityTypeQualifierValue = EntityQualifierValue;
-                        tag.OwnerPersonAliasId = personAlias.Id;
+                        tag.OwnerPersonAliasId = isPersonal == true ? personAlias.Id : ( int? ) null;
                         tag.Name = tagName;
                         tagService.Add( tag );
                     }
