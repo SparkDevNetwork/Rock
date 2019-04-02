@@ -35,8 +35,26 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Lists sites defined in the system.")]
     [LinkedPage("Detail Page")]
+
+    //TODO Work with Mike to determine Pattern for EnumType Parameter
+    [EnumsField( "Site Type", "Includes Items with the following Type.", typeof( SiteType ), true, "0", order: 1, key: AttributeKey.SiteType)]
+    //[EnumsField( "Site Type",
+    //    Key = AttributeKey.SiteType,
+    //    Description = "Includes Items with the following Type.",
+    //    IsRequired = true,
+    //    DefaultValue = "0",
+    //    Category = "",
+    //    EnumSourceType = typeof( SiteType ),
+    //    Order = 1 )]
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+        protected static class AttributeKey
+        {
+            public const string SiteType = "SiteType";
+        }
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -122,8 +140,13 @@ namespace RockWeb.Blocks.Cms
             SiteService siteService = new SiteService( new RockContext() );
             SortProperty sortProperty = gSites.SortProperty;
             var qry = siteService.Queryable();
+
+            var siteType = GetAttributeValue( AttributeKey.SiteType).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SiteType>() ).ToList();
             //Default show inactive to false if no filter (user preference) applied. 
             bool showInactiveSites = rFilterSite.GetUserPreference( "Show Inactive" ).AsBoolean();
+
+            // filter by block setting Site type
+            qry = qry.Where( s => siteType.Contains( s.SiteType ) );
 
             if ( !showInactiveSites )
             {
