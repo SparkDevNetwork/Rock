@@ -274,7 +274,8 @@ namespace Rock.Security.BackgroundCheck
                         new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
 
                     if ( packageName.Trim().Equals( "BASIC", StringComparison.OrdinalIgnoreCase ) ||
-                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) )
+                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) ||
+                        packageName.Trim().Equals( "PLUS MVR", StringComparison.OrdinalIgnoreCase ) )
                     {
                         orderElement.Add( new XElement( "OrderDetail",
                             new XAttribute( "OrderId", workflow.Id.ToString() ),
