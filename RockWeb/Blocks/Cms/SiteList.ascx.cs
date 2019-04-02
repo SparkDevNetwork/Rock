@@ -122,6 +122,13 @@ namespace RockWeb.Blocks.Cms
             SiteService siteService = new SiteService( new RockContext() );
             SortProperty sortProperty = gSites.SortProperty;
             var qry = siteService.Queryable();
+            //Default show inactive to false if no filter (user preference) applied. 
+            bool showInactiveSites = rFilterSite.GetUserPreference( "Show Inactive" ).AsBoolean();
+
+            if ( !showInactiveSites )
+            {
+                qry = qry.Where( s => s.IsActive == true );
+            }
 
             if ( sortProperty != null )
             {
@@ -132,7 +139,7 @@ namespace RockWeb.Blocks.Cms
                 gSites.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
 
-            gSites.EntityTypeId = EntityTypeCache.Get<Site>().Id;
+            gSites.EntityTypeId = EntityTypeCache.Get<Site>().Id; 
             gSites.DataBind();
         }
 
@@ -147,5 +154,16 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilterSite control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilterSite_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilterSite.SaveUserPreference( "Show Inactive", cbShowInactive.Checked.ToString() );
+            BindGrid();
+        }
     }
 }

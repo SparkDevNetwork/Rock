@@ -44,10 +44,35 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a specific site." )]
-    [BinaryFileTypeField( "Default File Type", "The default file type to use while uploading Favicon", true,
-        Rock.SystemGuid.BinaryFiletype.DEFAULT, "", 0 )]
+
+    [BinaryFileTypeField("Default File Type",
+        Key = AttributeKey.DefaultFileType,
+        Description ="The default file type to use while uploading Favicon",
+        IsRequired = true,
+        DefaultValue =  Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category ="",
+        Order = 0 )]
+    //TODO Work with Mike to determine Pattern for EnumType Parameter
+    [EnumsField( "Site Type", "Includes Items with the following Type.", typeof( SiteType ), true, "0", order: 1,key:"SiteType")]
+    //[EnumsField( "Site Type",
+    //    Key = AttributeKey.SiteType,
+    //    Description = "Includes Items with the following Type.",
+    //    IsRequired = true,
+    //    DefaultValue = "0",
+    //    Category = "",
+    //    EnumSourceType = typeof( SiteType ),
+    //    Order = 1 )]
+
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+        protected static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+            public const string SiteType = "SiteType";
+        }
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -735,7 +760,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            Guid fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuid();
+            Guid fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
             imgSiteIcon.BinaryFileTypeGuid = fileTypeGuid;
 
             // set theme compile button
