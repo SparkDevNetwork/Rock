@@ -38,7 +38,7 @@ namespace Rock.Communication.SmsActions
         name: "Give Keyword",
         description: "The case-insensitive keyword that will be expected at the beginning of the message.",
         required: true,
-        defaultValue: "Give",
+        defaultValue: "GIVE",
         order: 1,
         category: "Giving",
         key: AttributeKeys.GivingKeyword )]
@@ -64,7 +64,7 @@ namespace Rock.Communication.SmsActions
         name: "Refund Keyword",
         description: "The case-insensitive keyword that is expected to trigger the refund. Leave blank to disable SMS refunds.",
         required: false,
-        defaultValue: "Refund",
+        defaultValue: "REFUND",
         order: 4,
         category: "Refund",
         key: AttributeKeys.RefundKeyword )]
@@ -109,7 +109,7 @@ namespace Rock.Communication.SmsActions
         name: "Success Response",
         description: "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span>",
         required: true,
-        defaultValue: "Thank you! We received your gift of {{ GiftAmount }} to the {{ AccountName }}.",
+        defaultValue: "Thank you! We received your gift of {{ Amount }} to the {{ AccountName }}.",
         order: 9,
         category: "Response",
         key: AttributeKeys.SuccessResponse )]
@@ -127,7 +127,7 @@ namespace Rock.Communication.SmsActions
         name: "Refund Success Response",
         description: "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span>",
         required: true,
-        defaultValue: "Your gift for {{ GiftAmount }} to the {{ AccountName }} has been refunded.",
+        defaultValue: "Your gift for {{ Amount }} to the {{ AccountName }} has been refunded.",
         order: 11,
         category: "Response",
         key: AttributeKeys.RefundSuccessResponse )]
@@ -222,7 +222,7 @@ namespace Rock.Communication.SmsActions
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
         public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
-            errorMessage = string.Empty;      
+            errorMessage = string.Empty;
             var messageText = message.Message.Trim();
 
             var isGiving = IsGivingMessage( action, messageText );
@@ -309,6 +309,7 @@ namespace Rock.Communication.SmsActions
                 AuthorizedPersonAliasId = person.PrimaryAliasId.Value,
                 AutomatedGatewayId = defaultSavedAccount.Id,
                 FinancialPersonSavedAccountId = defaultSavedAccount.Id,
+                FinancialSourceGuid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE.AsGuidOrNull(),
                 AutomatedPaymentDetails = new List<AutomatedPaymentArgs.AutomatedPaymentDetailArgs>
                 {
                     new AutomatedPaymentArgs.AutomatedPaymentDetailArgs {
@@ -407,26 +408,34 @@ namespace Rock.Communication.SmsActions
                 return GetResolvedRefundSmsResponse( template, keyword, message, null );
             }
 
+            var smsGiftSourceId = DefinedValueCache.GetId( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE );
             var service = new FinancialTransactionService( rockContext );
-            var futureTransactions = service.GetFutureTransactionsThatNeedToBeCharged();
-            var transactionToRefund = futureTransactions.FirstOrDefault( ft => ft.AuthorizedPersonAliasId == person.PrimaryAliasId );
+            var futureTransactionToDelete = service.GetFutureTransactions()
+                .Where( ft =>
+                    ft.SourceTypeValueId == smsGiftSourceId
+                    && ft.AuthorizedPersonAliasId == person.PrimaryAliasId )
+                .OrderByDescending( ft => ft.FutureProcessingDateTime )
+                .FirstOrDefault();
 
             // If there is a future transaction, it can simply be deleted since it has not been processed yet
-            if ( transactionToRefund != null )
+            if ( futureTransactionToDelete != null )
             {
-                var canDelete = service.CanDelete( transactionToRefund, out errorMessage );
-                var success = canDelete && service.Delete( transactionToRefund );
+                // Generate the responses ahead of time because once the transaction is deleted, the object is modified and the amount and account
+                // are not accessible
+                var errorResponse = GetResolvedRefundSmsResponse( GetRefundFailureResponse( action ), keyword, message, futureTransactionToDelete );
+                var canDelete = service.CanDelete( futureTransactionToDelete, out errorMessage );
 
-                if ( success )
+                if ( !canDelete )
                 {
-                    var template = GetRefundSuccessResponse( action );
-                    return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                    return errorResponse;
                 }
-                else
-                {
-                    var template = GetRefundFailureResponse( action );
-                    return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
-                }
+
+                var successResponse = GetResolvedRefundSmsResponse( GetRefundSuccessResponse( action ), keyword, message, futureTransactionToDelete );
+                var success = service.Delete( futureTransactionToDelete );
+
+                rockContext.SaveChanges();
+
+                return success ? successResponse : errorResponse;
             }
 
             // Check for non future transactions if the attribute setting allows it
@@ -437,7 +446,7 @@ namespace Rock.Communication.SmsActions
                 var minDateTime = RockDateTime.Now.Subtract( TimeSpan.FromMinutes( maxRefundMinutes.Value ) );
 
                 // Query for transactions that are within the refund threshold
-                transactionToRefund = service.Queryable()
+                var processedTransactionToRefund = service.Queryable()
                     .Where( ft =>
                         ft.TransactionDateTime.HasValue
                         && ft.TransactionDateTime.Value >= minDateTime
@@ -445,25 +454,26 @@ namespace Rock.Communication.SmsActions
                     .OrderByDescending( ft => ft.TransactionDateTime )
                     .FirstOrDefault();
 
-                if ( transactionToRefund != null )
+                if ( processedTransactionToRefund != null )
                 {
-                    var refundTransaction = transactionToRefund.ProcessRefund( out errorMessage );
+                    var refundTransaction = processedTransactionToRefund.ProcessRefund( out errorMessage );
+                    rockContext.SaveChanges();
 
                     if ( refundTransaction != null )
                     {
                         var template = GetRefundSuccessResponse( action );
-                        return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                        return GetResolvedRefundSmsResponse( template, keyword, message, processedTransactionToRefund );
                     }
                     else
                     {
                         var template = GetRefundFailureResponse( action );
-                        return GetResolvedRefundSmsResponse( template, keyword, message, transactionToRefund );
+                        return GetResolvedRefundSmsResponse( template, keyword, message, processedTransactionToRefund );
                     }
                 }
             }
 
             var lavaTemplate = GetRefundFailureResponse( action );
-            return GetResolvedRefundSmsResponse( lavaTemplate, keyword, message, transactionToRefund );
+            return GetResolvedRefundSmsResponse( lavaTemplate, keyword, message, null );
         }
 
         #endregion
@@ -478,7 +488,7 @@ namespace Rock.Communication.SmsActions
         /// <returns></returns>
         private static FinancialPersonSavedAccount GetDefaultSavedAccount( RockContext rockContext, Person person )
         {
-            if (person == null)
+            if ( person == null )
             {
                 return null;
             }
@@ -493,6 +503,12 @@ namespace Rock.Communication.SmsActions
 
         #region Parsing Helpers
 
+        /// <summary>
+        /// Parse the gift amount from the message text.  Expected format is something like "{{keyword}} {{amount}}"
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="messageText"></param>
+        /// <returns></returns>
         private static decimal? GetGiftAmount( string keyword, string messageText )
         {
             messageText = messageText.Trim();
@@ -553,7 +569,7 @@ namespace Rock.Communication.SmsActions
         {
             // Add some useful lava fields for the rock admin to make meaningful SMS responses
             var accountName = message.FromPerson?.ContributionFinancialAccount?.PublicName;
-            return GetResolvedSmsResponse(lavaTemplate, keyword, message, formattedAmount, accountName);
+            return GetResolvedSmsResponse( lavaTemplate, keyword, message, formattedAmount, accountName );
         }
 
         /// <summary>
