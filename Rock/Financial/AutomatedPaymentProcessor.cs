@@ -657,6 +657,8 @@ namespace Rock.Financial
             }
 
             financialPaymentDetail.SetFromPaymentInfo( _referencePaymentInfo, _automatedGatewayComponent, _rockContext );
+            financialTransaction.FinancialPaymentDetail = financialPaymentDetail;
+            financialTransaction.FinancialPaymentDetailId = financialPaymentDetail.Id == 0 ? (int?)null : financialPaymentDetail.Id;
 
             // Future transactions already have the appropriate FinancialTransactionDetail models
             if ( _futureTransaction == null )
