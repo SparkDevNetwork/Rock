@@ -31,7 +31,7 @@ namespace com.lcbcchurch.Care.Migrations
             // Page: Care
             RockMigrationHelper.AddPage( "B0F4B33D-DD11-4CCC-B79D-9342831B8701", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Care", "", "19D2AEA1-7A31-4980-93C6-D2CA7286D5A4", "fa fa-plug" ); // Site:Rock RMS
                                                                                                                                                                                              // Add Block to Page: Care, Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "19D2AEA1-7A31-4980-93C6-D2CA7286D5A4","","3F69E04F-F966-4CAE-B89D-F97DFEF6407A","My Connection Opportunities","Main", @"<script type=""text / javascript"">
+            RockMigrationHelper.AddBlock( true, "19D2AEA1-7A31-4980-93C6-D2CA7286D5A4","","3F69E04F-F966-4CAE-B89D-F97DFEF6407A","My Connection Opportunities","Main", @"<script type=""text/javascript"">
 function renameConnectionTextAtOnload() {
     $('.checkbox-inline:contains(""Connected"")').each( function(){
         var replacementText = $(this).text().replace( ""Connected"", 'Completed' );
@@ -123,7 +123,7 @@ $(document ).ready( function() {
 {% assign personId = 'Global' | PageParameter:'PersonId' %}
 {% assign connectionRequestId = 'Global' | PageParameter:'ConnectionRequestId' %}
 
-<script type=""text / javascript"">
+<script type=""text/javascript"">
 function renameConnectionTextAtOnload() {
     $('.radio-inline:contains(""Connected"")').each( function(){
         var replacementText = $(this).text().replace( ""Connected"", 'Completed' );
