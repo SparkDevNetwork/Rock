@@ -817,6 +817,12 @@ namespace Rock.Model
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets the file URL.
+        /// </summary>
+        /// <param name="configurationMobilePhoneFileId">The configuration mobile phone file identifier.</param>
+        /// <returns>full path of resource from Binary file path</returns>
         private static string GetFileUrl( int? configurationMobilePhoneFileId )
         {
             string virtualPath = string.Empty;
@@ -827,7 +833,18 @@ namespace Rock.Model
                     var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) configurationMobilePhoneFileId );
                     if ( binaryFile != null )
                     {
-                        virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                        if ( binaryFile.Path.Contains( "~" ) )
+                        {
+                            // Need to build out full path
+                            virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                            var globalAttributes = GlobalAttributesCache.Get();
+                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                            virtualPath = $"{publicAppRoot}{virtualPath}";
+                        }
+                        else
+                        {
+                            virtualPath = binaryFile.Path;
+                        }
                     }
                 }
             }

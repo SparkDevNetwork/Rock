@@ -11,7 +11,7 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilterSite" runat="server" OnApplyFilterClick="rFilterSite_ApplyFilterClick">
-                        <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Show Inactive" />
+                        <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Include Inactive" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gSites" runat="server" AllowSorting="true" OnRowSelected="gSites_Edit">
                         <Columns>
