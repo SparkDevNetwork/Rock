@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201904020008503_UpdateSiteAndLayoutWithMobileColumns"; }
+            get { return "201904031746404_UpdateSiteAndLayoutWithMobileColumns"; }
         }
         
         string IMigrationMetadata.Source

@@ -434,6 +434,9 @@ namespace Rock.Model
         [DataMember]
         public int? SiteLogoBinaryFileId { get; set; }
 
+        [DataMember]
+        public DateTime? LatestVersionDateTime { get; set; }
+
         /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
@@ -441,11 +444,11 @@ namespace Rock.Model
         /// The configuration mobile file path.
         /// </value>
         [NotMapped]
-        public string ConfigurationMobilePhoneFilePath
+        public string ConfigurationMobilePhoneFileUrl
         {
             get
             {
-                return Site.GetFilePathById( this.ConfigurationMobilePhoneFileId );
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneFileId );
             }
             private set { }
         }
@@ -457,25 +460,24 @@ namespace Rock.Model
         /// The configuration tablet file path.
         /// </value>
         [NotMapped]
-        public string ConfigurationTabletFilePath
+        public string ConfigurationTabletFileUrl
         {
             get
             {
-                return Site.GetFilePathById( this.ConfigurationMobileTabletFileId );
+                return Site.GetFileUrl( this.ConfigurationMobileTabletFileId );
             }
             private set { }
         }
 
         [NotMapped]
-        public string ThumbnailFilePath
+        public string ThumbnailFileUrl
         {
             get
             {
-                return Site.GetFilePathById( this.ThumbnailFileId );
+                return Site.GetFileUrl( this.ThumbnailFileId );
             }
             private set { }
         }
-
 
 
         /// <summary>
@@ -815,7 +817,7 @@ namespace Rock.Model
                 return false;
             }
         }
-        private static string GetFilePathById( int? configurationMobilePhoneFileId )
+        private static string GetFileUrl( int? configurationMobilePhoneFileId )
         {
             string virtualPath = string.Empty;
             if ( configurationMobilePhoneFileId.HasValue )
