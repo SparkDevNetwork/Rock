@@ -38,6 +38,12 @@ namespace Rock.Migrations
             AddColumn("dbo.Site", "SiteType", c => c.Int(nullable: false));
             AddColumn("dbo.Site", "ThumbnailFileId", c => c.Int());
             AddColumn("dbo.Site", "LatestVersionDateTime", c => c.DateTime());
+
+            // Add Site Type Attribute to Attribute table
+            RockMigrationHelper.AddBlockTypeAttribute( "441D5A71-C250-4FF5-90C3-DEEAD3AC028D", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Site Type", "SiteType", "", @"Includes Items with the following Type.", 1, @"", "786B9AA2-EA35-4C96-BA33-7A6F9945A10E" );
+
+            // Default the Value to Web 
+            RockMigrationHelper.UpdateBlockAttributeValue( "9EAAC77C-3B75-428E-A393-F51B2D29097F", "786B9AA2-EA35-4C96-BA33-7A6F9945A10E", "0" );
         }
         
         /// <summary>
@@ -54,6 +60,8 @@ namespace Rock.Migrations
             DropColumn("dbo.Site", "IsActive");
             DropColumn("dbo.Layout", "LayoutMobileTablet");
             DropColumn("dbo.Layout", "LayoutMobilePhone");
+
+            RockMigrationHelper.DeleteAttribute( "786B9AA2-EA35-4C96-BA33-7A6F9945A10E" );
         }
     }
 }
