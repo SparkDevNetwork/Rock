@@ -46,7 +46,7 @@ namespace Rock.Migrations
                     'Charge Future Transactions', --Name
                     'Charge future transactions where the FutureProcessingDateTime is now or has passed.', --Description
                     'Rock.Jobs.ChargeFutureTransactions', --Class
-                    '0 0/15 * 1/1 * ? *', --Cron
+                    '0 0/10 * 1/1 * ? *', --Cron
                     '{0}', -- Guid
                     GETDATE(), -- Created
                     1 -- All notifications
