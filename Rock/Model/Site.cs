@@ -24,7 +24,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// The configuration tablet file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationTabletFileId { get; set; }
+        public int? ConfigurationMobileTabletFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the additional settings.
@@ -435,6 +435,50 @@ namespace Rock.Model
         public int? SiteLogoBinaryFileId { get; set; }
 
         /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationMobilePhoneFilePath
+        {
+            get
+            {
+                return Site.GetFilePathById( this.ConfigurationMobilePhoneFileId );
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationTabletFilePath
+        {
+            get
+            {
+                return Site.GetFilePathById( this.ConfigurationMobileTabletFileId );
+            }
+            private set { }
+        }
+
+        [NotMapped]
+        public string ThumbnailFilePath
+        {
+            get
+            {
+                return Site.GetFilePathById( this.ThumbnailFileId );
+            }
+            private set { }
+        }
+
+
+
+        /// <summary>
         /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
         /// </summary>
         /// <value>
@@ -770,6 +814,23 @@ namespace Rock.Model
             {
                 return false;
             }
+        }
+        private static string GetFilePathById( int? configurationMobilePhoneFileId )
+        {
+            string virtualPath = string.Empty;
+            if ( configurationMobilePhoneFileId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) configurationMobilePhoneFileId );
+                    if ( binaryFile != null )
+                    {
+                        virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                    }
+                }
+            }
+
+            return virtualPath;
         }
 
         #endregion
