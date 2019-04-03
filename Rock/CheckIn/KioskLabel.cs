@@ -29,6 +29,7 @@ namespace Rock.CheckIn
     /// Cached Check-in Label
     /// </summary>
     [DataContract]
+    [Serializable]
     public class KioskLabel : ItemCache<KioskLabel>
     {
         /// <summary>
@@ -89,7 +90,6 @@ namespace Rock.CheckIn
         /// <value>
         /// The merge fields.
         /// </value>
-        [DataMember]
         public Dictionary<string, string> MergeFields
         {
             get
@@ -123,8 +123,8 @@ namespace Rock.CheckIn
             }
         }
 
-
-        private Dictionary<string, int> _mergeCodeDefinedValueIds = null;
+        [DataMember]
+        private Dictionary<string, int> _mergeCodeDefinedValueIds { get; set; } = null;
 
         #region Static Methods
 
