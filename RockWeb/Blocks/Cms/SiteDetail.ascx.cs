@@ -456,7 +456,6 @@ namespace RockWeb.Blocks.Cms
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.IsActive = cbIsActive.Checked;
-
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;

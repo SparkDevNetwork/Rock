@@ -34,13 +34,13 @@ namespace Rock.Migrations
             //All Sites IsActive default true
             AddColumn("dbo.Site", "IsActive", c => c.Boolean(nullable: false,defaultValue:true));
             AddColumn("dbo.Site", "ConfigurationMobilePhoneFileId", c => c.Int());
-            AddColumn("dbo.Site", "ConfigurationTabletFileId", c => c.Int());
+            AddColumn("dbo.Site", "ConfigurationMobileTabletFileId", c => c.Int());
             AddColumn("dbo.Site", "AdditionalSettings", c => c.String());
             //Site Type defaults to 0 (Web)
             AddColumn("dbo.Site", "SiteType", c => c.Int(nullable: false));
             AddColumn("dbo.Site", "ThumbnailFileId", c => c.Int());
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -49,8 +49,8 @@ namespace Rock.Migrations
             DropColumn("dbo.Site", "ThumbnailFileId");
             DropColumn("dbo.Site", "SiteType");
             DropColumn("dbo.Site", "AdditionalSettings");
-            DropColumn("dbo.Site", "ConfigurationTabletFileId");
-            DropColumn("dbo.Site", "ConfigurationMobilePhoneFileId");
+            DropColumn("dbo.Site", "ConfigurationMobileTabletFileId");
+            DropColumn("dbo.Site", "ConfigurationMobilePhoneFileId" );
             DropColumn("dbo.Site", "IsActive");
             DropColumn("dbo.Layout", "LayoutMobileTablet");
             DropColumn("dbo.Layout", "LayoutMobilePhone");
