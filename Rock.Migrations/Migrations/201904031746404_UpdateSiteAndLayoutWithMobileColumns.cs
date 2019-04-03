@@ -20,7 +20,7 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations;
     
     /// <summary>
-    ///  Site mobile device integration of phone and tablet
+    ///
     /// </summary>
     public partial class UpdateSiteAndLayoutWithMobileColumns : Rock.Migrations.RockMigration
     {
@@ -31,26 +31,26 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.Layout", "LayoutMobilePhone", c => c.String());
             AddColumn("dbo.Layout", "LayoutMobileTablet", c => c.String());
-            //All Sites IsActive default true
             AddColumn("dbo.Site", "IsActive", c => c.Boolean(nullable: false,defaultValue:true));
             AddColumn("dbo.Site", "ConfigurationMobilePhoneFileId", c => c.Int());
             AddColumn("dbo.Site", "ConfigurationMobileTabletFileId", c => c.Int());
             AddColumn("dbo.Site", "AdditionalSettings", c => c.String());
-            //Site Type defaults to 0 (Web)
             AddColumn("dbo.Site", "SiteType", c => c.Int(nullable: false));
             AddColumn("dbo.Site", "ThumbnailFileId", c => c.Int());
+            AddColumn("dbo.Site", "LatestVersionDateTime", c => c.DateTime());
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
+            DropColumn("dbo.Site", "LatestVersionDateTime");
             DropColumn("dbo.Site", "ThumbnailFileId");
             DropColumn("dbo.Site", "SiteType");
             DropColumn("dbo.Site", "AdditionalSettings");
             DropColumn("dbo.Site", "ConfigurationMobileTabletFileId");
-            DropColumn("dbo.Site", "ConfigurationMobilePhoneFileId" );
+            DropColumn("dbo.Site", "ConfigurationMobilePhoneFileId");
             DropColumn("dbo.Site", "IsActive");
             DropColumn("dbo.Layout", "LayoutMobileTablet");
             DropColumn("dbo.Layout", "LayoutMobilePhone");

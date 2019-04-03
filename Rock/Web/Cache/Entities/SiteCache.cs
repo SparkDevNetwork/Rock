@@ -527,22 +527,6 @@ namespace Rock.Web.Cache
         public int? ConfigurationMobileTabletFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration mobile file path.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile file path.
-        /// </value>
-        public string ConfigurationMobilePhoneFilePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the configuration tablet file path.
-        /// </summary>
-        /// <value>
-        /// The configuration tablet file path.
-        /// </value>
-        public string ConfigurationMobileTabletFilePath { get; set; }
-
-        /// <summary>
         /// Gets or sets the thumbnail file identifier.
         /// </summary>
         /// <value>
@@ -551,7 +535,31 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ThumbnailFileId { get; set; }
 
-        public string ThumbnailFilePath { get; set; }
+        /// <summary>
+        /// Gets or sets the latest version date time.
+        /// </summary>
+        /// <value>
+        /// The latest version date time.
+        /// </value>
+        public DateTime? LatestVersionDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        public string ConfigurationMobilePhoneFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        public string ConfigurationMobileTabletFileUrl { get; set; }
+
+        public string ThumbnailFileUrl { get; set; }
 
         #endregion
 
@@ -605,9 +613,11 @@ namespace Rock.Web.Cache
             AdditionalSettings = site.AdditionalSettings;
             ConfigurationMobilePhoneFileId = site.ConfigurationMobilePhoneFileId;
             ConfigurationMobileTabletFileId = site.ConfigurationMobileTabletFileId;
-            ConfigurationMobilePhoneFilePath = site.ConfigurationMobilePhoneFilePath;
-            ConfigurationMobileTabletFilePath = site.ConfigurationTabletFilePath;
-            ThumbnailFilePath = site.ThumbnailFilePath;
+            ConfigurationMobilePhoneFileUrl = site.ConfigurationMobilePhoneFileUrl;
+            ConfigurationMobileTabletFileUrl = site.ConfigurationTabletFileUrl;
+            ThumbnailFileId = site.ThumbnailFileId;
+            ThumbnailFileUrl = site.ThumbnailFileUrl;
+            LatestVersionDateTime = site.LatestVersionDateTime;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {
