@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -82,7 +84,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = ( RockContext ) dbContext;
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -90,7 +92,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
                         if ( binaryFile.IsTemporary )
@@ -101,7 +103,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
                         if ( binaryFile.IsTemporary )
@@ -111,7 +113,7 @@ namespace Rock.Model
 
                         break;
                     }
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         // if deleting, and there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=true 
                         // so that it'll get cleaned up
