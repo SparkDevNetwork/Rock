@@ -1041,11 +1041,9 @@ body.nav-open {
 
 
         /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
-        @media (min-width: @screen-sm-min) {
-          @media not all and (min-resolution:.001dpcm) { @supports (-webkit-appearance:none) {
+          @media not all and (min-resolution:.001dpcm) and (min-width: @screen-sm-min) { @supports (-webkit-appearance:none) {
             top: @navbar-top-height;
           }}
-        }
 
 
 
