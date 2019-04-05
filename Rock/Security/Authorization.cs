@@ -83,6 +83,11 @@ namespace Rock.Security
         /// </summary>
         public const string MANAGE_MEMBERS = "ManageMembers";
 
+        /// <summary>
+        /// Authorization action for using (tagging with) the Tag.
+        /// </summary>
+        public const string TAG = "Tag";
+
         #endregion
 
         #region Public Methods
