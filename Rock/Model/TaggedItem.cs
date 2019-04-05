@@ -133,12 +133,13 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            if ( this.Tag.OwnerPersonAlias != null && person != null && this.Tag.OwnerPersonAlias.PersonId == person.Id )
+            
+            if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId == person.Id )
             {
                 // always allow people to do anything with their own tags
                 return true;
             }
-            else if ( this.Tag.OwnerPersonAlias != null && person != null && this.Tag.OwnerPersonAlias.PersonId != person.Id )
+            else if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId != person.Id )
             {
                 // always prevent people from doing anything with someone else's tags
                 return false;
