@@ -116,7 +116,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            if ( ViewState["AvailableAttributeIds"] != null )
+            {
+                AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            }
 
             AddDynamicControls();
         }
