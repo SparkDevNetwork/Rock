@@ -50,7 +50,7 @@
                     <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
-                    <div id="pnlEditDetails" runat="server"> 
+                    <div id="pnlEditDetails" runat="server">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
@@ -237,8 +237,9 @@
                     </div>
 
                     <fieldset id="fieldsetViewDetails" runat="server">
-                        <div class="taglist row">
-                              <Rock:TagList ID="taglGroupTags" runat="server" CssClass="clearfix" />
+
+                        <div class="taglist">
+                            <Rock:TagList ID="taglGroupTags" runat="server" CssClass="clearfix" />
                         </div>
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
