@@ -293,20 +293,10 @@ Rock.controls.tagList.initialize({{
         }
 
         /// <summary>
-        /// Saves the tag values that user entered for the entity as a personal tag for the provided PersonAlias
-        /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        public void SaveTagValues( PersonAlias personAlias )
-        {
-            SaveTagValues( personAlias, true );
-        }
-
-        /// <summary>
         /// Saves the tag values that user entered for the entity
         /// </summary>
         /// <param name="personAlias">The person alias.</param>
-        /// <param name="isPersonal">if set to <c>true</c> [is personal]. then the tag will be a personal tag for the provided PersonAlias. Otherwise the tag will be an organizational tag.</param>
-        public void SaveTagValues( PersonAlias personAlias, bool isPersonal )
+        public void SaveTagValues( PersonAlias personAlias )
         {
             int? currentPersonId = null;
             if ( personAlias != null )
@@ -341,16 +331,16 @@ Rock.controls.tagList.initialize({{
                         tagName = tagName.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )[0];
                     }
 
-                    // If this is a new tag, create it
+                    // Only if this is a new tag, create it
                     Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
-                    if ( ( tag == null || !tag.IsAuthorized( "Tag", person ) ) && personAlias != null )
+                    if ( personAlias != null && tag == null )
                     {
                         tag = new Tag();
                         tag.EntityTypeId = EntityTypeId;
                         tag.CategoryId = CategoryId;
                         tag.EntityTypeQualifierColumn = EntityQualifierColumn;
                         tag.EntityTypeQualifierValue = EntityQualifierValue;
-                        tag.OwnerPersonAliasId = isPersonal == true ? personAlias.Id : ( int? ) null;
+                        tag.OwnerPersonAliasId = personAlias.Id;
                         tag.Name = tagName;
                         tagService.Add( tag );
                     }
@@ -380,7 +370,13 @@ Rock.controls.tagList.initialize({{
                 // Add any tagged items that user added
                 foreach ( var tag in currentTags )
                 {
-                    if ( tag.IsAuthorized("Tag", person ) && !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) )
+                    // If the tagged item was not already there, and (it's their personal tag OR they are authorized to use it) then add it.
+                    if ( !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) &&
+                         (
+                            ( tag.OwnerPersonAliasId != null && tag.OwnerPersonAliasId == personAlias?.Id ) ||
+                            tag.IsAuthorized( "Tag", person )
+                         )
+                       )
                     {
                         var taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;
