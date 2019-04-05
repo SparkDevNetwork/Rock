@@ -141,6 +141,10 @@ a.warning {
   img {
     width: 100%;
   }
+
+  > a.fluidbox-opened:hover + a {
+    display: none;
+  }
 }
 
 .well {
@@ -246,6 +250,10 @@ a.warning {
 // grid controls in asp.net center content using align=center but bootstrap overrides this
 th[align="center"] {
   text-align: center;
+}
+
+th[align="right"] {
+  text-align: right;
 }
 
 .form-right {
