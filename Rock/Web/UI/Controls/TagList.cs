@@ -359,7 +359,7 @@ Rock.controls.tagList.initialize({{
                 // Delete any tagged items that user removed
                 foreach ( var taggedItem in existingTaggedItems )
                 {
-                    if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase )  && taggedItem.IsAuthorized( "Tag", person ) )
+                    if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase )  && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
                     {
                         existingNames.Remove( taggedItem.Tag.Name );
                         taggedItemService.Delete( taggedItem );
@@ -374,7 +374,7 @@ Rock.controls.tagList.initialize({{
                     if ( !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) &&
                          (
                             ( tag.OwnerPersonAliasId != null && tag.OwnerPersonAliasId == personAlias?.Id ) ||
-                            tag.IsAuthorized( "Tag", person )
+                            tag.IsAuthorized( Rock.Security.Authorization.TAG, person )
                          )
                        )
                     {
