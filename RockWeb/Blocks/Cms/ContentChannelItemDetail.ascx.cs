@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Cms
                     if ( contentItem.ContentChannel.IsTaggingEnabled )
                     {
                         taglTags.EntityGuid = contentItem.Guid;
-                        taglTags.SaveTagValues( CurrentPersonAlias, false );
+                        taglTags.SaveTagValues( CurrentPersonAlias );
                     }
 
                     int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
@@ -793,8 +793,7 @@ namespace RockWeb.Blocks.Cms
                      contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
                 taglTags.EntityGuid = contentItem.Guid;
                 taglTags.DelaySave = true;
-                // We do not want a person ID here because all ContentChannelItem tags should be organizational
-                taglTags.GetTagValues( null );
+                taglTags.GetTagValues( CurrentPersonId );
                 rcwTags.Visible = true;
             }
             else
