@@ -5,12 +5,13 @@
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <asp:HiddenField ID="hfScriptInitialized" runat="server" />
-                <div style="display: none;">
-                    <asp:Label ID="lbAssetStorageId" CssClass="js-assetstorage-id" runat="server"></asp:Label><br />
-                    <asp:Label ID="lbSelectFolder" CssClass="js-selectfolder" runat="server"></asp:Label><br />
-                    <asp:Label ID="lbExpandedFolders" CssClass="js-expandedFolders" runat="server"></asp:Label>
-                </div>
 
+                <%-- Hidden Field to store the selected value that was set to, in case a new value wasn't selected--%>
+                <asp:HiddenField ID="hfSelectedValue" runat="server" />
+
+                <Rock:HiddenFieldWithClass ID="hfAssetStorageId" CssClass="js-assetstorage-id" runat="server" />
+                <Rock:HiddenFieldWithClass ID="hfSelectFolder" CssClass="js-selectfolder" runat="server" />
+                <Rock:HiddenFieldWithClass ID="hfExpandedFolders" CssClass="js-expandedFolders" runat="server" />
 
                 <div class="actions btn-group">
                     <a href="#" class="btn btn-xs btn-default js-createfolder" title="Create a new folder in the selected folder">
