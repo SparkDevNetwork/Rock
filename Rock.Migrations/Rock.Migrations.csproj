@@ -272,9 +272,9 @@
     <Compile Include="Migrations\201903281945210_FixBirthDay.Designer.cs">
       <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201904050001011_AssetManagerInHtmlEditor.cs" />
-    <Compile Include="Migrations\201904050001011_AssetManagerInHtmlEditor.Designer.cs">
-      <DependentUpon>201904050001011_AssetManagerInHtmlEditor.cs</DependentUpon>
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs" />
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.Designer.cs">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -721,8 +721,8 @@
     <EmbeddedResource Include="Migrations\201903281945210_FixBirthDay.resx">
       <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201904050001011_AssetManagerInHtmlEditor.resx">
-      <DependentUpon>201904050001011_AssetManagerInHtmlEditor.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.resx">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
