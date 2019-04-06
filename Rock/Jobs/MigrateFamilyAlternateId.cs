@@ -31,10 +31,11 @@ namespace Rock.Jobs
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of attribute records to process on each run of this job.", false, 500000, "", 0, "HowMany" )]
+    [TextField( "Guid", "Bar Code Attribute Guid", false, "335E912F-A445-445B-878E-6553E9D07FC4", "", 0, "attributeGuid" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     public class MigrateFamilyAlternateId : IJob
     {
-        private const string _attributeGuid = "8F528431-A438-4488-8DC3-CA42E66C1B37";
+        private const string _attributeGuid = "335E912F-A445-445B-878E-6553E9D07FC4";
 
         /// <summary>
         /// Executes the specified context.
@@ -48,8 +49,8 @@ namespace Rock.Jobs
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 500000;
             var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
-
-            bool anyRemaining = UpdateSearchValueRecords( context, howMany, commandTimeout );
+            var attributeGuid = dataMap.GetString( "attributeGuid" );
+            bool anyRemaining = UpdateSearchValueRecords( context, howMany, commandTimeout, attributeGuid );
 
             if ( !anyRemaining )
             {
@@ -59,7 +60,7 @@ namespace Rock.Jobs
                     rockContext.Database.CommandTimeout = commandTimeout;
 
                     var attributeService = new AttributeService( rockContext );
-                    var attribute = attributeService.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
+                    var attribute = attributeService.Get( attributeGuid.AsGuid() );
                     bool valuesExist = attribute != null;
                     if ( valuesExist )
                     {
@@ -69,36 +70,36 @@ namespace Rock.Jobs
                             .Any();
                     }
 
-                    if ( !valuesExist )
-                    { 
-                        // Delete the attribute
-                        if ( attribute != null )
-                        {
-                            attributeService.Delete( attribute );
-                        }
+                    //if ( !valuesExist )
+                    //{ 
+                    //    // Delete the attribute
+                    //    if ( attribute != null )
+                    //    {
+                    //        attributeService.Delete( attribute );
+                    //    }
 
-                        // delete job if there are no un-migrated history rows  left
-                        var jobId = context.GetJobId();
-                        var jobService = new ServiceJobService( rockContext );
-                        var job = jobService.Get( jobId );
-                        if ( job != null )
-                        {
-                            jobService.Delete( job );
-                            rockContext.SaveChanges();
-                            return;
-                        }
-                    }
+                    //    // delete job if there are no un-migrated history rows  left
+                    //    var jobId = context.GetJobId();
+                    //    var jobService = new ServiceJobService( rockContext );
+                    //    var job = jobService.Get( jobId );
+                    //    if ( job != null )
+                    //    {
+                    //        jobService.Delete( job );
+                    //        rockContext.SaveChanges();
+                    //        return;
+                    //    }
+                    //}
                 }
             }
         }
 
-        private bool UpdateSearchValueRecords( IJobExecutionContext context, int howManyToConvert, int commandTimeout )
+        private bool UpdateSearchValueRecords( IJobExecutionContext context, int howManyToConvert, int commandTimeout, string attributeGuid )
         {
             bool anyRemaining = true;
 
             int howManyLeft = howManyToConvert;
 
-            var attribute = AttributeCache.Get( "8F528431-A438-4488-8DC3-CA42E66C1B37".AsGuid() );
+            var attribute = AttributeCache.Get( attributeGuid.AsGuid() );
             var searchTypeValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( attribute != null && searchTypeValue != null )
             {
@@ -146,7 +147,7 @@ namespace Rock.Jobs
                                 }
                             }
 
-                            attributeValueService.Delete( attributevalueRecord );
+                            //attributeValueService.Delete( attributevalueRecord );
 
                             rockContext.SaveChanges();
                         }
