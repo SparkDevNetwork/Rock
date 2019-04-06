@@ -557,7 +557,7 @@ namespace Rock.Model
             if ( saveToHistoryTable )
             {
                 HistoryChanges = new History.HistoryChangeList();
-                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue );
+                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
             }
 
             if ( !attributeCache.EnableHistory )
