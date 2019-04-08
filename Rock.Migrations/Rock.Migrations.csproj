@@ -276,6 +276,10 @@
     <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.Designer.cs">
       <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.cs" />
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.Designer.cs">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -723,6 +727,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.resx">
       <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904081825224_AssetManagerInHtmlEditor.resx">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
