@@ -19,8 +19,13 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class SmsActions : Rock.Migrations.RockMigration
+    public partial class SmsActions : RockMigration
     {
+        private const string SmsGivePageRouteGuid = "58592279-6CD7-47FD-BD0C-E35784FF69FF";
+        private const string SmsGiveBlockTypeGuid = "597F3E62-8FCA-45AA-9502-BBBA3C5CA181";
+        private const string SmsGiveBlockGuid = "22B0428C-5C39-4C92-8CBE-F64F7A045FF1";
+        private const string FutureTransactionJobGuid = "123ADD3C-8A58-4A4D-9370-5E9C6CD3760B";
+
         /// <summary>
         /// The guid of the job that will charge future transactions
         /// </summary>
@@ -35,6 +40,7 @@ namespace Rock.Migrations
             PagesAndBlocksUp();
             PersonsDefaultAccountUp();
             FutureTransactionUp();
+            GivePagesAndBlocksUp();
             
             Sql( $@"
                 UPDATE [DefinedType]
@@ -53,6 +59,7 @@ namespace Rock.Migrations
             PagesAndBlocksDown();
             PersonsDefaultAccountDown();
             FutureTransactionDown();
+            GivePagesAndBlocksDown();
 
             Sql( $@"
                 UPDATE [DefinedType]
@@ -89,12 +96,21 @@ namespace Rock.Migrations
                     CreatedDateTime,
                     NotificationStatus
                 ) VALUES (
+<<<<<<< HEAD
                     0, -- IsSystem (make non-system so it can be disabled and edited in the UI if needed)
                     1, -- IsActive
                     'Charge Future Transactions', -- Name
                     'Charge future transactions where the FutureProcessingDateTime is now or has passed.', -- Description
                     'Rock.Jobs.ChargeFutureTransactions', -- Class
                     '0 0/10 * 1/1 * ? *', -- Cron (every 10 minutes)
+=======
+                    0, --IsSystem
+                    1, --IsActive
+                    'Charge Future Transactions', --Name
+                    'Charge future transactions where the FutureProcessingDateTime is now or has passed.', --Description
+                    'Rock.Jobs.ChargeFutureTransactions', --Class
+                    '0 0/10 * 1/1 * ? *', -- Cron every 10 minutes
+>>>>>>> - Start on text-to-give setup page and block with a Rock PID link to get there from  the SMS setup response
                     '{0}', -- Guid
                     GETDATE(), -- Created
                     1 -- All notifications
@@ -112,12 +128,14 @@ namespace Rock.Migrations
         private void PersonsDefaultAccountUp()
         {
             AddColumn( "dbo.Person", "ContributionFinancialAccountId", c => c.Int( nullable: true ) );
+            CreateIndex( "dbo.Person", "ContributionFinancialAccountId" );
             AddForeignKey( "dbo.Person", "ContributionFinancialAccountId", "dbo.FinancialAccount", "Id" );
         }
 
         private void PersonsDefaultAccountDown()
         {
             DropForeignKey( "dbo.Person", "ContributionFinancialAccountId", "dbo.FinancialAccount" );
+            DropIndex( "dbo.Person", new[] { "ContributionFinancialAccountId" } );
             DropColumn( "dbo.Person", "ContributionFinancialAccountId" );
         }
 
@@ -174,6 +192,47 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock( "F6CA6D07-DDF4-47DD-AA7E-29F5DCCC2DDC" );
             RockMigrationHelper.DeleteBlockType( "44C32EB7-4DA3-4577-AC41-E3517442E269" ); // Communication > Sms Actions
             RockMigrationHelper.DeletePage( "2277986A-F53D-4E46-B6EC-6BAD1111DA39" ); //  Page: SMS Actions, Layout: Full Width, Site: Rock RMS
+        }
+
+        private void GivePagesAndBlocksUp()
+        {
+            RockMigrationHelper.AddPage(
+                true,
+                SystemGuid.Page.GIVE,
+                SystemGuid.Layout.LEFT_SIDEBAR,
+                "Text To Give",
+                "Configuration that allows a user to give using a text message",
+                SystemGuid.Page.TEXT_TO_GIVE_SETUP );
+
+            RockMigrationHelper.AddPageRoute(
+                SystemGuid.Page.TEXT_TO_GIVE_SETUP,
+                "TextToGive",
+                SmsGivePageRouteGuid );
+
+            RockMigrationHelper.AddBlockType(
+                "Text To Give Setup",
+                "Allow an SMS sender to configure their SMS based giving.",
+                "~/Blocks/Finance/TextToGiveSetup.ascx",
+                "Finance",
+                SmsGiveBlockTypeGuid );
+
+            RockMigrationHelper.AddBlock(
+                true,
+                SystemGuid.Page.TEXT_TO_GIVE_SETUP,
+                null,
+                SmsGiveBlockTypeGuid,
+                "Text To Give Setup",
+                "Main",
+                string.Empty,
+                string.Empty,
+                0,
+                SmsGiveBlockGuid );
+        }
+
+        private void GivePagesAndBlocksDown()
+        {
+            RockMigrationHelper.DeleteBlockType( SmsGiveBlockTypeGuid );
+            RockMigrationHelper.DeletePage( SystemGuid.Page.TEXT_TO_GIVE_SETUP );
         }
     }
 }
