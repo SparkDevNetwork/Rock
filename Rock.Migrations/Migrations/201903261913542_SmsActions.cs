@@ -16,14 +16,16 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-
     /// <summary>
     ///
     /// </summary>
     public partial class SmsActions : Rock.Migrations.RockMigration
     {
+        /// <summary>
+        /// The guid of the job that will charge future transactions
+        /// </summary>
+        private string FutureTransactionJobGuid = "123ADD3C-8A58-4A4D-9370-5E9C6CD3760B";
+
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
@@ -74,10 +76,34 @@ namespace Rock.Migrations
                 null,
                 string.Empty,
                 5 );
+
+            Sql( string.Format( @"
+                INSERT INTO ServiceJob (
+                    IsSystem,
+                    IsActive,
+                    Name,
+                    Description,
+                    Class,
+                    CronExpression,
+                    Guid,
+                    CreatedDateTime,
+                    NotificationStatus
+                ) VALUES (
+                    0, -- IsSystem (make non-system so it can be disabled and edited in the UI if needed)
+                    1, -- IsActive
+                    'Charge Future Transactions', -- Name
+                    'Charge future transactions where the FutureProcessingDateTime is now or has passed.', -- Description
+                    'Rock.Jobs.ChargeFutureTransactions', -- Class
+                    '0 0/10 * 1/1 * ? *', -- Cron (every 10 minutes)
+                    '{0}', -- Guid
+                    GETDATE(), -- Created
+                    1 -- All notifications
+                );", FutureTransactionJobGuid ) );
         }
 
         private void FutureTransactionDown()
         {
+            Sql( string.Format( "DELETE FROM ServiceJob WHERE Guid = '{0}';", FutureTransactionJobGuid ) );
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE );
             DropIndex( "dbo.FinancialTransaction", new [] { "FutureProcessingDateTime" } );
             DropColumn( "dbo.FinancialTransaction", "FutureProcessingDateTime" );
