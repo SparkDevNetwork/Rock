@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_bemadev.CheckIn
 {
-    [DisplayName( "Connection Card Entry" )]
+    [DisplayName( "Weekend Attendance Entry" )]
     [Category( "com_bemadev > Check-in" )]
     [Description( "Provides a way to manually enter attendance for a large group of people in an efficient manner." )]
 
@@ -67,7 +67,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
     [WorkflowTypeField( "Commitment Workflow Type", "The type of workflow to be fired if any of the commitments are selected", false, false, "", "Commitment Workflow Settings" )]
 
 
-    public partial class ConnectionCardEntry : RockBlock
+    public partial class WeekendAttendanceEntry : RockBlock
     {
         #region Properties
         private List<AttendeeSummary> AttendeeState { get; set; }
