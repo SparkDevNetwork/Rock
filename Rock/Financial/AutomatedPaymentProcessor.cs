@@ -628,7 +628,7 @@ namespace Rock.Financial
             financialTransaction.TransactionDateTime = _automatedPaymentArgs.FutureProcessingDateTime.HasValue ? ( DateTime? ) null : RockDateTime.Now;
             financialTransaction.FinancialGatewayId = _financialGateway.Id;
             financialTransaction.TransactionTypeValueId = _transactionType.Id;
-            financialTransaction.Summary = _referencePaymentInfo.Comment1;
+            financialTransaction.Summary = string.Format( "{0} {1}", financialTransaction.Summary, _referencePaymentInfo.Comment1 ).Trim();
             financialTransaction.SourceTypeValueId = _financialSource.Id;
             financialTransaction.IsSettled = _payment.IsSettled;
             financialTransaction.Status = _payment.Status;

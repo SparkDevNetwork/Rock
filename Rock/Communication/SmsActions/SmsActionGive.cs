@@ -307,7 +307,7 @@ namespace Rock.Communication.SmsActions
             var automatedPaymentArgs = new AutomatedPaymentArgs
             {
                 AuthorizedPersonAliasId = person.PrimaryAliasId.Value,
-                AutomatedGatewayId = defaultSavedAccount.Id,
+                AutomatedGatewayId = defaultSavedAccount.FinancialGatewayId.Value,
                 FinancialPersonSavedAccountId = defaultSavedAccount.Id,
                 FinancialSourceGuid = SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_SMS_GIVE.AsGuidOrNull(),
                 AutomatedPaymentDetails = new List<AutomatedPaymentArgs.AutomatedPaymentDetailArgs>
@@ -496,7 +496,7 @@ namespace Rock.Communication.SmsActions
             return new FinancialPersonSavedAccountService( rockContext )
                 .GetByPersonId( person.Id )
                 .AsNoTracking()
-                .FirstOrDefault( sa => sa.IsDefault );
+                .FirstOrDefault( sa => sa.IsDefault && sa.FinancialGatewayId.HasValue );
         }
 
         #endregion
