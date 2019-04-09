@@ -274,8 +274,11 @@ namespace Rock.Security.BackgroundCheck
                     orderElement.Add( new XElement( "PackageServiceCode", packageName,
                         new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
 
+                    // Added PLUS MVR to assist NP with their need. This should be moved to a configuration
+                    // in the future.
                     if ( packageName.Trim().Equals( "BASIC", StringComparison.OrdinalIgnoreCase ) ||
-                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) )
+                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) ||
+                        packageName.Trim().Equals( "PLUS MVR", StringComparison.OrdinalIgnoreCase ) )
                     {
                         orderElement.Add( new XElement( "OrderDetail",
                             new XAttribute( "OrderId", workflow.Id.ToString() ),
