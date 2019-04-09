@@ -59,6 +59,8 @@
                                 newWindow: false
                             });
                         }
+
+                        context.invoke('triggerEvent', 'change');
                     }
                 });
 
