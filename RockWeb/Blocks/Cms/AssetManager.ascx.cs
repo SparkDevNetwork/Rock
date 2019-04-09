@@ -253,6 +253,9 @@ upnlFiles.ClientID // {2}
                         case "expanded-folders":
                             hfExpandedFolders.Value = nameValue[1];
                             break;
+                        case "isRoot":
+                            hfIsRoot.Value = nameValue[1];
+                            break;
                         default:
                             break;
                     }
@@ -295,7 +298,6 @@ upnlFiles.ClientID // {2}
                 }
             }
 
-            ListFiles();
         }
 
         /// <summary>
@@ -379,6 +381,7 @@ upnlFiles.ClientID // {2}
 
             hfSelectFolder.Value = string.Empty;
             upnlFolders.Update();
+            ListFiles();
             // TODO: select the parent of the folder just deleted and list the files
         }
 
