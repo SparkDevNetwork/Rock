@@ -49,6 +49,8 @@
                                 $image.attr('alt', altText);
                             });
                         }
+
+                        context.invoke('triggerEvent', 'change');
                     }
                 });
 
