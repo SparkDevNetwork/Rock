@@ -294,7 +294,9 @@ upnlFiles.ClientID // {2}
                     Response.AddHeader( "content-disposition", "attachment; filename=" + asset.Name );
                     Response.BufferOutput = true;
                     Response.BinaryWrite( bytes );
-                    Response.End();
+                    Response.Flush();
+                    Response.SuppressContent = true;
+                    System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
                 }
             }
 
