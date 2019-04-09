@@ -184,6 +184,11 @@
                 <h1 class="panel-title">Test Message</h1>
             </div>
             <div class="panel-body">
+
+                <div class="alert alert-warning" role="alert">
+                    While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
+                </div>
+
                 <div class="row">
                     <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
