@@ -603,6 +603,9 @@ namespace Rock.Storage.AssetStorage
             string virtualThumbPath = Path.Combine( thumbDir, name );
             string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
 
+            // Encode the name thumb path since it can contain special characters
+            virtualThumbPath = virtualThumbPath.EncodeHtml();
+
             if (File.Exists( physicalThumbPath ) )
             {
                 var thumbLastModDate = File.GetLastWriteTimeUtc( physicalThumbPath );
