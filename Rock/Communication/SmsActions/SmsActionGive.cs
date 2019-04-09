@@ -384,6 +384,12 @@ namespace Rock.Communication.SmsActions
         public bool IsRefundMessage( SmsActionCache action, string messageText )
         {
             var refundKeyword = GetRefundKeyword( action );
+
+            if ( refundKeyword.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
             return messageText.Equals( refundKeyword, StringComparison.CurrentCultureIgnoreCase );
         }
 
