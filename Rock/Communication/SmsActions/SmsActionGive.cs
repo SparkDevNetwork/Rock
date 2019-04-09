@@ -109,7 +109,7 @@ namespace Rock.Communication.SmsActions
         name: "Setup Response",
         description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span>",
         required: true,
-        defaultValue: "Welcome! Let's set up your device to securely give using this link: {{ SetupLink }}",
+        defaultValue: "Welcome! Let's set up your device to securely give using this link: {{ SetupLink | CreateShortLink}}",
         order: 9,
         category: "Response",
         key: AttributeKeys.SetupResponse )]
