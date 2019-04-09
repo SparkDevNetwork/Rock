@@ -519,7 +519,8 @@ namespace Rock.Communication.SmsActions
             person.PhoneNumbers.Add( new PhoneNumber
             {
                 NumberTypeValueId = numberTypeId,
-                Number = PhoneNumber.CleanNumber( message.FromNumber )
+                Number = PhoneNumber.CleanNumber( message.FromNumber ),
+                IsMessagingEnabled = true
             } );
 
             rockContext.SaveChanges();

@@ -46,20 +46,10 @@ namespace RockWeb.Blocks.Finance
         required: false,
         order: 2 )]
 
-    [BooleanField(
-        key: AttributeKeys.Impersonation,
-        name: "Impersonation",
-        trueText: "Allow (only use on an internal page used by staff)",
-        falseText: "Don't Allow",
-        description: "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
-        defaultValue: false,
-        order: 3 )]
-
     public partial class TextToGiveSetup : RockBlock
     {
         private static class AttributeKeys
         {
-            public const string Impersonation = "Impersonation";
             public const string CreditCardGateway = "CreditCardGateway";
             public const string AchGateway = "AchGateway";
         }
@@ -81,12 +71,13 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            if (!IsPostBack)
+            if ( !IsPostBack )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    PrefillForm( rockContext );
-                    BindSavedAccounts( rockContext );
+                    var person = GetTargetPerson( rockContext );
+                    PrefillForm( rockContext, person );
+                    BindSavedAccounts( rockContext, person );
                 }
             }
         }
@@ -94,10 +85,8 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Fill out the form with the target person's details
         /// </summary>
-        private void PrefillForm( RockContext rockContext )
+        private void PrefillForm( RockContext rockContext, Person person )
         {
-            var person = GetTargetPerson( rockContext );
-
             if ( person == null )
             {
                 return;
@@ -109,7 +98,7 @@ namespace RockWeb.Blocks.Finance
             acAddress.SetValues( person.GetHomeLocation() );
 
             var campus = person.GetCampus();
-            caapDetailPicker.CampusId = campus == null ? (int?)null : campus.Id;
+            caapDetailPicker.CampusId = campus == null ? ( int? ) null : campus.Id;
         }
 
         /// <summary>
@@ -118,45 +107,41 @@ namespace RockWeb.Blocks.Finance
         /// <param name="rockContext"></param>
         private Person GetTargetPerson( RockContext rockContext )
         {
-            Person person = null;
+            var personService = new PersonService( rockContext );
+            var personKey = PageParameter( "Person" );
 
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            if ( GetAttributeValue( AttributeKeys.Impersonation ).AsBoolean() )
+            if ( !string.IsNullOrWhiteSpace( personKey ) )
             {
-                string personKey = PageParameter( "Person" );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                var incrementKeyUsage = !IsPostBack;
+                var person = personService.GetByImpersonationToken( personKey, incrementKeyUsage, PageCache.Id );
+
+                if ( person == null )
                 {
-                    var incrementKeyUsage = !this.IsPostBack;
-                    person = new PersonService( rockContext ).GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
-
-                    if ( person == null )
-                    {
-                        ShowError( "Invalid or Expired Person Token specified" );
-                        return person;
-                    }
+                    ShowError( "Invalid or Expired Person Token specified" );
                 }
-            }
 
-            if ( person == null && CurrentPersonId.HasValue )
+                return person;
+            }
+            else if ( CurrentPersonId.HasValue )
             {
                 // Don't use CurrentPerson because we need an entity associated with the RockContext so it can be updated
-                person = new PersonService( rockContext ).Get( CurrentPersonId.Value );
+                return personService.Get( CurrentPersonId.Value );
             }
 
-            return person;
+            return null;
         }
 
         /// <summary>
         /// Populate the appropriate saved accounts for the person and gateway in the drop down list
         /// </summary>
         /// <param name="rockContext"></param>
-        private void BindSavedAccounts( RockContext rockContext )
+        private void BindSavedAccounts( RockContext rockContext, Person person )
         {
             var selectedId = ddlSavedAccountPicker.SelectedValue.AsIntegerOrNull();
             ddlSavedAccountPicker.Items.Clear();
 
             // Get the stripe saved accounts for the person
-            var savedAccounts = GetPersonSavedAccounts( rockContext );
+            var savedAccounts = GetPersonSavedAccounts( rockContext, person );
 
             // Bind the accounts
             if ( savedAccounts.Any() )
@@ -196,10 +181,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private List<FinancialPersonSavedAccount> GetPersonSavedAccounts( RockContext rockContext )
+        private List<FinancialPersonSavedAccount> GetPersonSavedAccounts( RockContext rockContext, Person person )
         {
-            var person = GetTargetPerson( rockContext );
-
             if ( person == null )
             {
                 return new List<FinancialPersonSavedAccount>();
@@ -236,8 +219,18 @@ namespace RockWeb.Blocks.Finance
                     person.ContributionFinancialAccountId = null;
                 }
 
-                var homeLocation = person.GetHomeLocation() ?? new Location();
-                acAddress.GetValues( homeLocation );
+                var family = person.GetFamily( rockContext );
+                var groupLocation = family.GroupLocations.FirstOrDefault();
+                var location = groupLocation == null ? new Location() : groupLocation.Location;
+
+                acAddress.GetValues( location );
+
+                if ( groupLocation == null )
+                {
+                    groupLocation = new GroupLocation();
+                    groupLocation.Location = location;
+                    family.GroupLocations.Add( groupLocation );
+                }
 
                 var selectedSavedAccountId = ddlSavedAccountPicker.SelectedValue.AsInteger();
                 var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
