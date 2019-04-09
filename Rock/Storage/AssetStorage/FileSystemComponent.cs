@@ -206,8 +206,11 @@ namespace Rock.Storage.AssetStorage
                 FileInfo fileInfo = new FileInfo( physicalFile );
 
                 var objAsset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, createThumbnail );
-                FileStream fs = new FileStream( physicalFile, FileMode.Open );
-                objAsset.AssetStream = fs;
+                using ( FileStream fs = new FileStream( physicalFile, FileMode.Open ) )
+                {
+                    objAsset.AssetStream = new MemoryStream();
+                    fs.CopyTo( objAsset.AssetStream );
+                }
 
                 return objAsset;
             }
