@@ -132,7 +132,7 @@
 
                     $folderTreeView.on('rockTree:expand rockTree:collapse', function (evt, data) {
                         resizeScrollAreaHeight();
-
+                        
                         // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
                         var expandedDataIds = $(evt.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
                             var dataId = $(this).attr('data-id');
@@ -154,6 +154,7 @@
                 }
 
                 $folderTreeView.off('rockTree:selected').on('rockTree:selected', function (e, data) {
+                    debugger
                     var assetFolderIdParts = unescape(data).split(",");
                     var storageId = assetFolderIdParts[0] || "";
                     var folder = assetFolderIdParts[1] || "";
@@ -168,7 +169,7 @@
                         $selectFolder.val(folder);
                         $assetStorageId.val(storageId);
                         $isRoot.val(isRoot);
-                        postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/").replace("'", "\\'") + '?expanded-folders:' + expandedFolders + '?isRoot:' + isRoot;
+                        postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/").replace("'", "\\'") + '?expanded-folders:' + expandedFolders.replace("'", "\\'") + '?isRoot:' + isRoot;
 
                         var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
                         window.location = jsPostback;
