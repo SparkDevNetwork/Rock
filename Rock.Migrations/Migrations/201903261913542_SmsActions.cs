@@ -27,11 +27,6 @@ namespace Rock.Migrations
         private const string FutureTransactionJobGuid = "123ADD3C-8A58-4A4D-9370-5E9C6CD3760B";
 
         /// <summary>
-        /// The guid of the job that will charge future transactions
-        /// </summary>
-        private string FutureTransactionJobGuid = "123ADD3C-8A58-4A4D-9370-5E9C6CD3760B";
-
-        /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
@@ -96,21 +91,12 @@ namespace Rock.Migrations
                     CreatedDateTime,
                     NotificationStatus
                 ) VALUES (
-<<<<<<< HEAD
                     0, -- IsSystem (make non-system so it can be disabled and edited in the UI if needed)
                     1, -- IsActive
                     'Charge Future Transactions', -- Name
                     'Charge future transactions where the FutureProcessingDateTime is now or has passed.', -- Description
                     'Rock.Jobs.ChargeFutureTransactions', -- Class
                     '0 0/10 * 1/1 * ? *', -- Cron (every 10 minutes)
-=======
-                    0, --IsSystem
-                    1, --IsActive
-                    'Charge Future Transactions', --Name
-                    'Charge future transactions where the FutureProcessingDateTime is now or has passed.', --Description
-                    'Rock.Jobs.ChargeFutureTransactions', --Class
-                    '0 0/10 * 1/1 * ? *', -- Cron every 10 minutes
->>>>>>> - Start on text-to-give setup page and block with a Rock PID link to get there from  the SMS setup response
                     '{0}', -- Guid
                     GETDATE(), -- Created
                     1 -- All notifications
