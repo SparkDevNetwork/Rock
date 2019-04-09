@@ -828,6 +828,9 @@ namespace RockWeb.Blocks.Groups
                     groupService.Add( group );
                 }
 
+                // Save changes because we'll need the group's Id next...
+                rockContext.SaveChanges();
+
                 if ( adding )
                 {
                     // add ADMINISTRATE to the person who added the group 
