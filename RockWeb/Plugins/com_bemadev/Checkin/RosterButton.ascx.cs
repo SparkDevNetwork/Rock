@@ -67,15 +67,18 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
                         {
                             foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
                             {
-                                foreach ( var group in groupType.KioskGroups )
+                                if ( CurrentCheckInState.ConfiguredGroupTypes.Contains( groupType.GroupType.Id ))
                                 {
-                                    foreach ( var kioskLocation in group.KioskLocations )
+                                    foreach ( var group in groupType.KioskGroups )
                                     {
-                                        foreach ( var schedule in kioskLocation.KioskSchedules )
+                                        foreach ( var kioskLocation in group.KioskLocations )
                                         {
-                                            if ( schedule.Schedule.WasScheduleActive( DateTime.Now ) )
+                                            foreach ( var schedule in kioskLocation.KioskSchedules )
                                             {
-                                                scheduleIdList.Add( schedule.Schedule.Id );
+                                                if ( schedule.Schedule.WasScheduleActive( RockDateTime.Now ) )
+                                                {
+                                                    scheduleIdList.Add( schedule.Schedule.Id );
+                                                }
                                             }
                                         }
                                     }
