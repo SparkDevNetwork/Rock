@@ -47,6 +47,7 @@
                 var $assetStorageId = $assetBrowser.find('.js-assetstorage-id');
                 var $treePort = $assetBrowser.find('.js-treeviewport');
                 var $treeTrack = $assetBrowser.find('.js-treetrack');
+                var $isRoot = $assetBrowser.find('.js-isroot');
 
                 var $createFolder = $assetBrowser.find('.js-createfolder');
                 var $createFolderDiv = $assetBrowser.find('.js-createfolder-div');
@@ -81,7 +82,7 @@
                 }
 
                 // Can delete folder only if a folder is selected
-                if ($selectFolder.val() == "") {
+                if ($selectFolder.val() == "" || $isRoot.val() == "True"  ) {
                     $('.js-deletefolder').addClass('aspNetDisabled');
                 }
                 else {
@@ -156,6 +157,7 @@
                     var assetFolderIdParts = unescape(data).split(",");
                     var storageId = assetFolderIdParts[0] || "";
                     var folder = assetFolderIdParts[1] || "";
+                    var isRoot = assetFolderIdParts[2] || false;
                     var postbackArg;
                     var expandedFolders = encodeURIComponent($expandedFolders.val());
 
@@ -165,7 +167,8 @@
                     if ($selectFolder.val() != folder || $assetStorageId.val() != storageId) {
                         $selectFolder.val(folder);
                         $assetStorageId.val(storageId);
-                        postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/") + '?expanded-folders:' + expandedFolders;
+                        $isRoot.val(isRoot);
+                        postbackArg = 'storage-id:' + storageId + '?folder-selected:' + folder.replace(/\\/g, "/").replace("'", "\\'") + '?expanded-folders:' + expandedFolders + '?isRoot:' + isRoot;
 
                         var jsPostback = "javascript:__doPostBack('" + options.filesUpdatePanelId + "','" + postbackArg + "');";
                         window.location = jsPostback;

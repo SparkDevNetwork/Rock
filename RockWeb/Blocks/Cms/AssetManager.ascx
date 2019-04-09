@@ -12,6 +12,7 @@
                 <Rock:HiddenFieldWithClass ID="hfAssetStorageId" CssClass="js-assetstorage-id" runat="server" />
                 <Rock:HiddenFieldWithClass ID="hfSelectFolder" CssClass="js-selectfolder" runat="server" />
                 <Rock:HiddenFieldWithClass ID="hfExpandedFolders" CssClass="js-expandedFolders" runat="server" />
+                 <Rock:HiddenFieldWithClass ID="hfIsRoot" CssClass="js-isroot" runat="server" />
 
                 <div class="actions btn-group">
                     <a href="#" class="btn btn-xs btn-default js-createfolder" title="Create a new folder in the selected folder">
