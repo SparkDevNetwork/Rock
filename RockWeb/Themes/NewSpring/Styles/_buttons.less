@@ -4,6 +4,11 @@
 	font-weight: 500;
 	text-decoration: none;
 	vertical-align: bottom;
+	border: 0px;
+}
+
+.btn-primary, .btn-secondary, .btn-tertiary {
+	border: 0px;
 }
 
 .btn-link:hover, .btn-link:active, .btn-link:focus {
@@ -32,6 +37,8 @@
 	}
 }
 
+.btn-default { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
+.btn-primary:active, .btn-primary:focus { background-color: @brand-primary; }
 .btn-secondary { .button-variant(@white, @brand-secondary, @brand-secondary); }
 .btn-tertiary { .button-variant(@white, @brand-tertiary, @brand-tertiary); }
 .btn-gray-lighter { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
@@ -57,13 +64,6 @@
   .button-variant(@white; @pinterest; @pinterest);
 }
 
-// Fixes alignment of large icons within buttons
-.btn {
-	i {
-		margin-left: 5px;
-	}
-}
-
 .btn .fa-xs, .fa-xs {
 	position: relative;
 	top: -1px;
@@ -76,14 +76,14 @@
 
 
 .btn-play {
-	width: @base-spacing-unit*1.5;
-	height: @base-spacing-unit*1.5;
-	line-height: @base-spacing-unit*1.5;
+	width: @base-spacing-unit*2;
+	height: @base-spacing-unit*2;
+	line-height: @base-spacing-unit*2;
 	background-color: @brand-primary;
 	border-radius: 1000px;
 	border: 3px solid @white;
 	transition: background-color .1s;
-	font-size: @font-size-base*.6;
+	font-size: @font-size-base*.8;
 	transform: scale(1.65);
 	z-index: 1;
 

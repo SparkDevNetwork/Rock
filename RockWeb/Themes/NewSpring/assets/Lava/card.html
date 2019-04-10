@@ -20,7 +20,7 @@
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
 
-            <img src="{{ imageurl }}" alt="" class="{% if grayscale == 'y' %}grayscale{% endif %}" style="{% if imageopacity %}opacity: {{ imageopacity }};{% endif %}">
+            <div class="ratio-landscape background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></div>
 
             {% if type != null and type != '' %}
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
@@ -29,10 +29,10 @@
         {% if url != empty %}</a>{% else %}</div>{% endif %}
     {% endif %}
 
-    <div class="panel-body xs-soft xs-hard-bottom">
+    <div class="panel-body hard-bottom xs-soft xs-hard-bottom">
 
         {% if label != null and label != '' %}
-            <p><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>
+            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>
         {% endif %}
         
         {% if title != null and title != '' %}
@@ -41,6 +41,10 @@
                 {{ title }}
             {% if url != empty %}</a>{% endif %}
         </h2>
+        {% endif %}
+
+        {% if collectiontext != null and collectiontext != '' %}
+            <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-half-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
         {% endif %}
 
         {% if subtitle != null and subtitle != '' %}
@@ -56,6 +60,10 @@
             {% else %}
                 {{ content }}
             {% endif %}
+        {% endif %}
+
+        {% if lava != empty %}
+            {{ lava }}
         {% endif %}
 
         {% if url != empty %}

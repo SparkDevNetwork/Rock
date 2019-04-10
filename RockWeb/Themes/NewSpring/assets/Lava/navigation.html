@@ -11,20 +11,19 @@
 	</li><li>
 		<a href="#" data-toggle="modal" data-target="#search-modal" title="Search"><i class="fas fa-fw fa-lg fa-search"></i></a>
 	</li><li>
-			{% assign personPhoto = CurrentPerson.PhotoUrl %}
-			{% if CurrentPerson != null %}
-				<a href="/account" title="My Profile">
-					{% if personPhoto != null %}
-						<img src="{{ personPhoto }}" alt="" class="nav-icon circular" style="border: 2px solid rgba(255,255,255,1)">
-					{% else %}
-						<i class="fas fa-fw fa-lg fa-user-circle"></i>
-					{% endif %}
-				</a>
-			{% else %}
-				<a href="/sign-in" title="Sign In">
+		{% assign personPhoto = CurrentPerson.PhotoUrl %}
+		{% if CurrentPerson != null %}
+			<a href="/account" title="My Profile">
+				{% if personPhoto != null %}
+					<div class="position-relative display-inline-block nav-icon circular background-cover" style="top: 12px; width: 35px; height: 35px; background-image:url('{{ personPhoto }}'); border: 2px solid rgba(255,255,255,1);"></div>
+				{% else %}
 					<i class="fas fa-fw fa-lg fa-user-circle"></i>
-				</a>
-			{% endif %}
-		</a>
+				{% endif %}
+			</a>
+		{% else %}
+			<a href="/sign-in" title="Sign In">
+				<i class="fas fa-fw fa-lg fa-user-circle"></i>
+			</a>
+		{% endif %}
 	</li></span>
 </ul>
