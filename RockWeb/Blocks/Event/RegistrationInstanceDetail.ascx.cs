@@ -3088,6 +3088,23 @@ namespace RockWeb.Blocks.Event
                                 gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
                             }
                         }
+                        else if ( sortProperty.Property == "RegisteredBy" )
+                        {
+                            // Sort by the Person name if we have it, otherwise the provided first and last name.
+                            Func<Registration, string> sortBy = ( r ) =>
+                            {
+                                return r.PersonAlias != null && r.PersonAlias.Person != null ? r.PersonAlias.Person.FullNameReversed : string.Format( "{0}, {1}", r.LastName, r.FirstName );
+                            };
+
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( sortBy ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( sortBy ).AsQueryable() );
+                            }
+                        }
                         else
                         {
                             gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );

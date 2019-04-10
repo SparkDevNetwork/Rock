@@ -18,10 +18,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using Microsoft.Web.XmlTransform;
+
 using NuGet;
-using NuGet.Resources;
-using Rock.Model;
 
 namespace Rock.Services.NuGet
 {

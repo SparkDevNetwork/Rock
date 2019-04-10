@@ -15,12 +15,14 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -562,7 +564,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
             var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
@@ -580,9 +582,9 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         [RockObsolete( "1.8" )]
         [Obsolete]
-        private void ProcessObsoleteOccurrenceFields( System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        private void ProcessObsoleteOccurrenceFields( DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Modified || entry.State == System.Data.Entity.EntityState.Added )
+            if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
             {
                 // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
                 if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )

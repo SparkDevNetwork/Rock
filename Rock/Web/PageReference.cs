@@ -22,9 +22,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Model;
 
 namespace Rock.Web
 {

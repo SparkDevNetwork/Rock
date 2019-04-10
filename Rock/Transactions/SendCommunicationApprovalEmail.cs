@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
 
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Jobs;
-using Rock.Communication;
 using Rock.Web.Cache;
 
 namespace Rock.Transactions

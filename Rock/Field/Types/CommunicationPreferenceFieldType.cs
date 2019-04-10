@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using Rock.Model;
 
 namespace Rock.Field.Types

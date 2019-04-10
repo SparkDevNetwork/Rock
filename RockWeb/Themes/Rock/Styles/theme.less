@@ -412,11 +412,10 @@ textarea,
 }
 
 .wizard {
-  margin: -35px;
-  margin-bottom: 35px;
+  margin: -5px -15px 35px -15px;
 
-  @media (max-width: @screen-md-min) {
-    margin-left: -12px;
+  @media (min-width: @screen-md-min) {
+    margin: -35px -35px 35px -35px;
   }
 }
 
@@ -907,10 +906,6 @@ body.nav-open {
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
-  &.open-secondary-nav {
-    width: @navbarside-width + 280px;
-  }
-
   &::-webkit-scrollbar {
     width: 6px;
     background-color: transparent;
@@ -920,6 +915,14 @@ body.nav-open {
     width: 6px;
     background-color: rgba(0,0,0, .2);
     border-radius: 10px;
+  }
+
+  &.open-secondary-nav {
+    width: @navbarside-width + 280px;
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0);
+    }
   }
 
   @media (min-width: @screen-sm-min) {
@@ -1035,6 +1038,14 @@ body.nav-open {
         text-align: left;
         background-color: @navbarside-sub-bg;
 
+
+        /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
+          @media not all and (min-resolution:.001dpcm) and (min-width: @screen-sm-min) { @supports (-webkit-appearance:none) {
+            top: @navbar-top-height;
+          }}
+
+
+
         li {
 
           a {
@@ -1139,7 +1150,13 @@ body.nav-open {
       }
     }
   }
+
+  // Hide config-bar inside navigation since it is always cropped
+  .config-bar {
+    display: none !important;
+  }
 }
+
 
 .navbar-side-open #cms-admin-footer {
   left: @navbarside-width;
@@ -1157,7 +1174,7 @@ body.nav-open {
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
     display: block;
-    height: 100% !important; // Overrides collapse if window is resized
+    height: ~"calc(100% - @{navbar-top-height})" !important; // Overrides collapse if window is resized
   }
 
   #content-wrapper {
@@ -1186,7 +1203,7 @@ body.navbar-side-open {
 
   .page-title {
     padding: 20px 15px;
-    margin: -5px -5px 5px -5px;
+    margin: -5px -15px 5px -15px;
     color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);

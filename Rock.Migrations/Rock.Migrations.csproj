@@ -260,6 +260,30 @@
     <Compile Include="Migrations\201903191824245_Rollup_0319.Designer.cs">
       <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.cs" />
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.Designer.cs">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.cs" />
+    <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.Designer.cs">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903281945210_FixBirthDay.cs" />
+    <Compile Include="Migrations\201903281945210_FixBirthDay.Designer.cs">
+      <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs" />
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.Designer.cs">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.cs" />
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.Designer.cs">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904092249258_Rollup_0409.cs" />
+    <Compile Include="Migrations\201904092249258_Rollup_0409.Designer.cs">
+      <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -696,6 +720,24 @@
     <EmbeddedResource Include="Migrations\201903191824245_Rollup_0319.resx">
       <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903202256547_EFMigrationCleanUp.resx">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903202308416_ScheduledTransactionHistory.resx">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903281945210_FixBirthDay.resx">
+      <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.resx">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904081825224_AssetManagerInHtmlEditor.resx">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904092249258_Rollup_0409.resx">
+      <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -958,6 +1000,9 @@
     </Content>
     <Content Include="Migrations\201812111901295_Rollup_1211_FixChartShortcode.sql">
       <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory.sql">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
+
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
@@ -673,7 +674,7 @@ namespace Rock.Rest.Controllers
             }
 
             // force the link to open a new scrollable, re-sizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-            personInfoHtmlBuilder.Append( $"<p class='margin-t-sm'><small><a href='/person/{person.Id}' class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>" );
+            personInfoHtmlBuilder.Append( $"<p class='margin-t-sm'><small><a href='/person/{person.Id}' class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\" tabindex=\"-1\">View Profile</a></small></p>" );
 
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
             personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtmlBuilder.ToString();

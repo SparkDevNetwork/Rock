@@ -24,9 +24,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -347,7 +348,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
                 originalSiteId = entry.OriginalValues["SiteId"]?.ToString().AsIntegerOrNull();
                 originalLayoutId = entry.OriginalValues["LayoutId"]?.ToString().AsIntegerOrNull();
@@ -371,7 +372,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             BlockCache.UpdateCachedEntity( this.Id, entityState );
 

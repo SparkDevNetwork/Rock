@@ -592,7 +592,7 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            errorMessage = "The payment gateway associated with this scheduled tranaction (NMI) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
+            errorMessage = "The payment gateway associated with this scheduled transaction (NMI) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
             return false;
         }
 

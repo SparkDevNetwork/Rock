@@ -16,8 +16,8 @@
 
 using System.Collections.Generic;
 using System.Web.UI;
-using Newtonsoft.Json;
 
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
