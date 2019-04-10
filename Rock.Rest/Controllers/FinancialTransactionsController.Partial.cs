@@ -87,15 +87,26 @@ namespace Rock.Rest.Controllers
             }
 
             var transaction = automatedPaymentProcessor.ProcessCharge( out errorMessage );
+            var gatewayException = automatedPaymentProcessor.GetMostRecentException();
 
             if ( !string.IsNullOrEmpty( errorMessage ) )
             {
+                if ( gatewayException != null )
+                {
+                    throw gatewayException;
+                }
+
                 var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.InternalServerError, errorMessage );
                 throw new HttpResponseException( errorResponse );
             }
 
             if ( transaction == null )
             {
+                if ( gatewayException != null )
+                {
+                    throw gatewayException;
+                }
+
                 var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.InternalServerError, "No transaction was created" );
                 throw new HttpResponseException( errorResponse );
             }

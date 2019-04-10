@@ -178,6 +178,15 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a summary of the scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing a summary of the scheduled transaction.
+        /// </value>
+        [DataMember]
+        public string Summary { get; set; }
+
+        /// <summary>
         /// Gets or sets the payment gateway's payment schedule key/identifier.  This is the value that uniquely identifies the payment schedule on 
         /// with the payment gateway.
         /// </summary>
@@ -282,7 +291,7 @@ namespace Rock.Model
         private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
 
         /// <summary>
-        /// Gets or sets <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that have been processed and have have cleared for this scheduled transaction profile. 
+        /// Gets or sets <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that have been processed and have cleared for this scheduled transaction profile. 
         /// </summary>
         /// <value>
         /// A collection of the processed and cleared <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for this scheduled transaction profile.

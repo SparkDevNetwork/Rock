@@ -65,7 +65,7 @@ namespace Rockweb.Blocks.Crm
             </p>
 " )]
     [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 5 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 1, order: 6 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 6 )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -143,6 +143,9 @@ namespace Rockweb.Blocks.Crm
             else
             {
                 nbError.Visible = true;
+                pnlInstructions.Visible = false;
+                pnlQuestions.Visible = false;
+                pnlResults.Visible = false;
             }
 
             if ( _targetPerson != null )
@@ -292,15 +295,15 @@ namespace Rockweb.Blocks.Crm
                 RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
 
                 var assessment = ( ( AssessmentResponse ) ( e.Item.DataItem ) );
-                ListItem m1 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 0 ) );
-                ListItem m2 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 1 ) );
-                ListItem m3 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 2 ) );
-                ListItem m4 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 3 ) );
+                ListItem m1 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 0 ) );
+                ListItem m2 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 1 ) );
+                ListItem m3 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 2 ) );
+                ListItem m4 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 3 ) );
 
-                ListItem l1 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 0 ) );
-                ListItem l2 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 1 ) );
-                ListItem l3 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 2 ) );
-                ListItem l4 = new ListItem( "<span class='sr-only'></span>", assessment.Questions.Keys.ElementAt( 3 ) );
+                ListItem l1 = new ListItem( "<span class='sr-only'>Least</span>", assessment.Questions.Keys.ElementAt( 0 ) );
+                ListItem l2 = new ListItem( "<span class='sr-only'>Least</span>", assessment.Questions.Keys.ElementAt( 1 ) );
+                ListItem l3 = new ListItem( "<span class='sr-only'>Least</span>", assessment.Questions.Keys.ElementAt( 2 ) );
+                ListItem l4 = new ListItem( "<span class='sr-only'>Least</span>", assessment.Questions.Keys.ElementAt( 3 ) );
 
                 lQuestion1.Text = assessment.Questions.Values.ElementAt( 0 );
                 rblMore1.Items.Add( m1 );

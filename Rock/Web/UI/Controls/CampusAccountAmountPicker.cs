@@ -111,7 +111,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the accountIds of the selectable accounts. This will be the accounts that will displayed. (Required)
+        /// Gets or sets the accountIds of the selectable accounts (Required).
+        /// This will be the accounts that will be displayed, but only if the Account is <seealso cref="FinancialAccount.IsActive"/>, <seealso cref="FinancialAccount.IsPublic"/>, and within the <seealso cref="FinancialAccount.StartDate"/> and <seealso cref="FinancialAccount.EndDate"/> of the Account
         /// Note: This has special logic. See comments on <seealso cref="SelectedAccountIds"/>
         /// </summary>
         /// <value>
@@ -143,18 +144,37 @@ namespace Rock.Web.UI.Controls
                     using ( var rockContext = new RockContext() )
                     {
                         _financialAccountsCache = new FinancialAccountService( rockContext ).Queryable().AsNoTracking()
+                            .Select(a => new
+                            {
+                                a.Id,
+                                a.ParentAccountId,
+                                a.CampusId,
+                                a.IsActive,
+                                a.StartDate,
+                                a.EndDate
+                            } )
                             .ToDictionary(
                                 k => k.Id,
                                 v => new FinancialAccountInfo
                                 {
                                     Id = v.Id,
                                     ParentAccountId = v.ParentAccountId,
-                                    CampusId = v.CampusId
+                                    CampusId = v.CampusId,
+                                    IsActive = v.IsActive,
+                                    StartDate = v.StartDate,
+                                    EndDate = v.EndDate
                                 } );
 
                         foreach ( var account in _financialAccountsCache.Values )
                         {
-                            account.ChildAccounts = _financialAccountsCache.Values.Where( a => a.ParentAccountId == account.Id ).ToList();
+                            account.ActiveChildAccounts = _financialAccountsCache.Values
+                                .Where( a =>
+                                    a.ParentAccountId == account.Id
+                                    && a.IsActive
+                                    && ( a.StartDate == null || a.StartDate <= RockDateTime.Today )
+                                    && ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) 
+                                )
+                                .ToList();
                             if ( account.ParentAccountId.HasValue )
                             {
                                 account.ParentAccount = _financialAccountsCache.GetValueOrNull( account.ParentAccountId.Value );
@@ -198,6 +218,14 @@ namespace Rock.Web.UI.Controls
             /// The amount.
             /// </value>
             public decimal? Amount { get; set; }
+
+            /// <summary>
+            /// Set ReadOnly to True to prevent the amount from being changed.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+            /// </value>
+            public bool ReadOnly { get; set; } = false;
         }
 
         /// <summary>
@@ -218,7 +246,13 @@ namespace Rock.Web.UI.Controls
 
             public int? CampusId { get; set; }
 
-            public List<FinancialAccountInfo> ChildAccounts { get; set; }
+            public bool IsActive { get; set; }
+
+            public DateTime? StartDate { get; set; }
+
+            public DateTime? EndDate { get; set; }
+
+            public List<FinancialAccountInfo> ActiveChildAccounts { get; set; }
 
             public override string ToString()
             {
@@ -229,8 +263,8 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the selected account ids (including the ones where an amount is not specified)
         /// Note: This has special logic. The account(s) that the user selects <seealso cref="SelectedAccountIds"/> will be determined as follows:
-        ///   1) If the selected account is not associated with a campus, the Selected Account will be the first matching child account that is associated with the selected campus.
-        ///   2) If the selected account is not associated with a campus, but there are no child accounts for the selected campus, the parent account (the one the user sees) will be returned.
+        ///   1) If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.
+        ///   2) If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.
         ///   3) If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)
         /// </summary>
         /// <value>
@@ -419,8 +453,8 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                // displayed account doesn't have a campus (or belongs to another campus). Find first matching child account
-                var firstMatchingChildAccount = displayedAccount.ChildAccounts.FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
+                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
+                var firstMatchingChildAccount = displayedAccount.ActiveChildAccounts.FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
                 if ( firstMatchingChildAccount != null )
                 {
                     // one of the child accounts is associated with the campus so, return the child account
@@ -674,6 +708,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 var nbAccountAmountMulti = rptItem.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
                                 nbAccountAmountMulti.Value = selectedAmount;
+                                nbAccountAmountMulti.ReadOnly = selectedAccountAmount.ReadOnly;
                             }
                         }
                     }
@@ -691,6 +726,7 @@ namespace Rock.Web.UI.Controls
                     var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
                     _ddlAccountSingle.SetValue( displayedAccountId );
                     _nbAmountAccountSingle.Text = selectedAccountAmount.Amount?.ToString( "N2" );
+                    _nbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;
                 }
             }
         }

@@ -2168,20 +2168,22 @@ namespace Rock.Model
             string key = encryptedKey.Replace( '!', '%' );
             key = System.Web.HttpUtility.UrlDecode( key );
             string concatinatedKeys = Rock.Security.Encryption.DecryptString( key );
-            string[] keyParts = concatinatedKeys.Split( '>' );
-            if ( keyParts.Length == 2 )
+            if ( concatinatedKeys.IsNotNullOrWhiteSpace() )
             {
-                Guid guid = new Guid( keyParts[0] );
-                string actionPart = keyParts[1];
-
-                Person person = Get( guid );
-
-                if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                string[] keyParts = concatinatedKeys.Split( '>' );
+                if ( keyParts.Length == 2 )
                 {
-                    return person;
+                    Guid guid = new Guid( keyParts[0] );
+                    string actionPart = keyParts[1];
+
+                    Person person = Get( guid );
+
+                    if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return person;
+                    }
                 }
             }
-
             return null;
         }
 
