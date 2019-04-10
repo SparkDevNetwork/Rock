@@ -38,6 +38,7 @@ RockWeb/.well-known/*
 Packages/*
 /RockWeb/Plugins/*
 !/RockWeb/Plugins/cc_newspring
+/RockWeb/documents
 
 # javascript deps
 node_modules
