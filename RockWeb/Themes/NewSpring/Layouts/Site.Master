@@ -28,6 +28,7 @@
         <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/compiled/theme.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -55,6 +56,11 @@
             </div>
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
                 <Rock:Zone Name="Header" runat="server" />
+                <Rock:Lava ID="PageTitle" runat="server">
+                    {% if CurrentPage.PageDisplayTitle == 'True' and CurrentPage.MenuDisplayChildPages == 'False' %}
+                        {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                    {% endif %}         
+                </Rock:Lava>
             </div>
 
             <div id="content" class="clearfix">
@@ -62,6 +68,12 @@
                 <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
                 <Rock:Zone Name="Footer" runat="server" />                
             </div>
+
+            <Rock:Lava ID="SiteModals" runat="server">
+            {[ modalNavigation ]}
+            {[ modalNavigationSecondary ]}
+            {[ modalSearch ]}
+            </Rock:Lava>
 
             <%-- controls for scriptmanager and update panel --%>
             <asp:ScriptManager ID="sManager" runat="server"/>

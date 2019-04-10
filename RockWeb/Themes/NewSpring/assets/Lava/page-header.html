@@ -1,31 +1,27 @@
-{% assign tagCount = blockData.tags | length %}
+<section class="shell bg-gray-darker text-white soft xs-soft-half flush xs-text-center shadowed">
 
-<section class="shell soft-half-top hard-bottom hard-sides push-half-bottom flush-sides flush-bottom xs-text-center">
-    <div class="container-fluid hard-sides {% if pageHeaderColorHex %}text-white{% endif %}">
+    {% if preTitle != '' %}
+        <p class="hidden sans-serif stronger letter-spacing-condensed push-half-bottom xs-push-bottom">{{ blockData.preTitle | safe }}</p>
+    {% endif %}
 
-    	{% if blockData.preTitle %}
-    		<p class="sans-serif stronger letter-spacing-condensed push-half-bottom xs-push-bottom">{{ blockData.preTitle | safe }}</p>
-    	{% endif %}
+    <h1 class="h4 xs-h6 flush">{{ title }}</h1>
 
-        <h1 class="h4 flush">{{ CurrentPage.PageTitle}}</h1>
-
-        {% if blockData.subtitle %}
-            <p class="sans-serif stronger letter-spacing-condensed push-half-top flush-bottom {% if pageHeaderColorHex %}{% else %}text-gray-dark{% endif %}"><small>{{ blockData.subtitle | safe }}</small></p>
-        {% endif %}
-		
-        {% if tagCount != 0 %}
-            <p class="tag-list sans-serif push-half-bottom">
-                <small>{% for id, title in blockData.tags %}
-                    <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
-                {% endfor %}</small>
-            </p>
-        {% endif %}
+    {% if subtitle != '' %}
+        <p class="hidden sans-serif stronger letter-spacing-condensed push-half-top flush-bottom {% if pageHeaderColorHex %}{% else %}text-gray-dark{% endif %}"><small>{{ blockData.subtitle | safe }}</small></p>
+    {% endif %}
+    
+    {% if tagCount > 0 %}
+        <p class="hidden tag-list sans-serif push-half-bottom">
+            <small>{% for id, title in blockData.tags %}
+                <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
+            {% endfor %}</small>
+        </p>
+    {% endif %}
+    
+    {% if copy != '' %}
+        <div class="hidden text-constrained">
+            {{ blockData.copy | safe }}
+        </div>
+    {% endif %}
         
-        {% if blockData.copy %}
-            <div class="text-constrained">
-                {{ blockData.copy | safe }}
-            </div>
-        {% endif %}
-        
-    </div>
 </section>
