@@ -33,6 +33,25 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Reads the parameter to check for DOM objects and possible URLs
+        /// Accepts an encoded string and returns an encoded string
+        /// </summary>
+        /// <param name="encodedString"></param>
+        public static string ScrubEncodedStringForXSSObjects( string encodedString )
+        {
+            // Characters used by DOM Objects; javascript, document, window and URLs
+            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+
+            if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
+            {
+                return "%2f";
+            }
+            else
+            {
+                return encodedString;
+            }
+        }
+        /// <summary>
         /// Joins and array of strings using the provided separator.
         /// </summary>
         /// <param name="source">The source.</param>

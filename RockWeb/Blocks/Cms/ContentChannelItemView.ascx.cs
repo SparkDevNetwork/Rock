@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Field.Types;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -227,7 +228,8 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
@@ -299,7 +301,8 @@ Guid - ContentChannelItem Guid
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
             this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
-            this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
+            var ppFieldType = new PageReferenceFieldType();
+            this.SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
@@ -468,7 +471,14 @@ Guid - ContentChannelItem Guid
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
-                mergeFields.Add( "DetailPage", GetAttributeValue( "DetailPage" ) );
+                int detailPage = 0;
+                var page = PageCache.Get( GetAttributeValue( "DetailPage" ) );
+                if ( page != null )
+                {
+                    detailPage = page.Id;
+                }
+
+                mergeFields.Add( "DetailPage", detailPage );
 
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
 

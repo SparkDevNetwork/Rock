@@ -63,55 +63,50 @@
     </div>
 
     <div class="checkin-body">
-
         <div class="checkin-scroll-panel">
             <div class="scroller">
+                <div class="checkin-search-body <%= (CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == new Guid(Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER) ? "search-phone" : "search-name") %>">
 
-                <div class="checkin-search-body">
+                    <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
+                        <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
 
-                <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
-                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
+                        <div class="tenkey checkin-phone-keypad">
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">1</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">2</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">3</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">4</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">5</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">6</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">7</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">8</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">9</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
+                            </div>
+                        </div>
+                    </asp:Panel>
 
-                    <div class="tenkey checkin-phone-keypad">
-                        <div>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">1</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">2</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">3</a>
-                        </div>
-                        <div>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">4</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">5</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">6</a>
-                        </div>
-                        <div>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">7</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">8</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">9</a>
-                        </div>
-                        <div>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
-                            <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
-                        </div>
+                    <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
+                        <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
+                    </asp:Panel>
+
+                    <div class="checkin-actions">
+                        <Rock:BootstrapButton CssClass="btn btn-primary btn-block" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>
+                        <asp:LinkButton CssClass="btn btn-default btn-block btn-cancel" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Cancel" />
                     </div>
-                </asp:Panel>
 
-                <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
-                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
-                </asp:Panel>
-
-                <div class="checkin-actions">
-                    <Rock:BootstrapButton CssClass="btn btn-primary btn-block" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>
-                    <asp:LinkButton CssClass="btn btn-default btn-block btn-cancel" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Cancel" />
                 </div>
-
-            </div>
-
             </div>
         </div>
-
     </div>
-
 
 </ContentTemplate>
 </asp:UpdatePanel>

@@ -2,6 +2,8 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
+        $(".photo a").fluidbox();
+
         $('.js-cancel-checkin').click(function (event) {
             event.stopImmediatePropagation();
             var personName = $('H4.js-checkin-person-name').first().text();
@@ -13,45 +15,58 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <h4 class="js-checkin-person-name">
-            <asp:Literal ID="lName" runat="server"></asp:Literal></h4>
-
         <div class="row margin-b-sm">
-            <div class="col-sm-4 col-md-3 col-lg-2">
+            <div class="col-sm-3 col-md-2 xs-text-center">
                 <asp:Literal ID="lPhoto" runat="server" />
 
             </div>
-            <div class="col-sm-8 col-md-9 col-lg-10">
+            <div class="col-sm-9 col-md-10 xs-text-center">
+                <h1 class="title name js-checkin-person-name margin-t-none"><asp:Literal ID="lName" runat="server"></asp:Literal></h1>
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
-                <ul class="list-unstyled">
-                    <li>
-                        <asp:Literal ID="lGender" runat="server" /></li>
-                    <li>
-                        <asp:Literal ID="lAge" runat="server" /></li>
-                    <li>
-                        <asp:Literal ID="lGrade" runat="server" /></li>
-                </ul>
-                <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
-                    <ul class="list-unstyled list-horizontal">
-                        <asp:Repeater ID="rptrPhones" runat="server">
-                            <ItemTemplate>
-                                <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>'><i class="fa fa-phone-square"></i><%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Value") %>)</small></a></li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
-                </Rock:RockControlWrapper>
-                <Rock:RockControlWrapper ID="rcwTextMessage" runat="server" Visible="true" Label="Text Message">
-                    <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
-                    <!-- Initiates entry -->
-                    <asp:LinkButton runat="server" ID="btnSms" EnableViewState="true" CssClass="btn btn-default js-btn-sms" OnClick="btnSms_Click" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li>
+                                <asp:Literal ID="lGender" runat="server" />
+                            </li>
+                            <li>
+                                <asp:Literal ID="lAge" runat="server" />
+                            </li>
+                            <li>
+                                <asp:Literal ID="lGrade" runat="server" />
+                            </li>
+                        </ul>
+                        <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
+                            <ul class="list-unstyled list-horizontal">
+                                <asp:Repeater ID="rptrPhones" runat="server">
+                                    <ItemTemplate>
+                                        <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>'><i class="fa fa-phone-square"></i><%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Value") %>)</small></a></li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwTextMessage" runat="server" Visible="true" Label="Text Message">
+                            <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
+                            <!-- Initiates entry -->
+                            <asp:LinkButton runat="server" ID="btnSms" EnableViewState="true" CssClass="btn btn-default js-btn-sms" OnClick="btnSms_Click" />
 
-                    <!-- During entry -->
-                    <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here..." class="form-control js-sms-message margin-b-sm"></textarea>
-                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
-                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
-                </Rock:RockControlWrapper>
+                            <!-- During entry -->
+                            <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your message here..." class="form-control js-sms-message margin-b-sm"></textarea>
+                            <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send" OnClick="btnSend_Click">Send</asp:LinkButton>
+                            <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
+                        </Rock:RockControlWrapper>
 
-                <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
+                        <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
+                    </div>
+                    <div class="col-md-6">
+                        <div ID="pnlAdultFields" runat="server" class="adult-attributes">
+                            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
+                        </div>
+                        <div ID="pnlChildFields" runat="server" class="child-attributes">
+                            <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -66,14 +81,6 @@
                 </asp:Repeater>
             </ul>
         </Rock:RockControlWrapper>
-        <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
-            <h5> Adult Attributes</h5>
-            <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
-        </Rock:HtmlGenericContainer>
-        <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
-            <h5> Child Attributes</h5>
-            <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
-        </Rock:HtmlGenericContainer>
         <Rock:RockControlWrapper ID="rcwRelationships" runat="server" Label="Related People" CssClass="list-unstyled">
             <ul class="list-unstyled list-horizontal">
                 <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">

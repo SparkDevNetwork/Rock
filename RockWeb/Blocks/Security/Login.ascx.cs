@@ -253,7 +253,10 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
-                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        var isSuccess = component.AuthenticateAndTrack( userLogin, tbPassword.Text );
+                        rockContext.SaveChanges();
+
+                        if ( isSuccess )
                         {
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
@@ -450,8 +453,9 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = Server.UrlDecode( returnUrl );
-                Response.Redirect( redirectUrl, false );
+                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                redirectUrl =  Server.UrlDecode( redirectUrl );
+                Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
