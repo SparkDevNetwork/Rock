@@ -300,16 +300,13 @@ namespace RockWeb
                 return false;
             }
 
-            // If this is a public calendar then just return true
-            if ( eventCalendar.IsAllowedByDefault( "View" ) )
-            {
-                return true;
-            }
 
+            // Need to replace CurrentUser with the result of a person token, in the meantime this will always create a null person unless directly downloadng the ical when logged into the site
             UserLogin currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
             Person currentPerson = currentUser != null ? currentUser.Person : null;
-
-            if ( currentPerson != null && eventCalendar.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+            var isAuthorized = eventCalendar.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+            
+            if ( isAuthorized )
             {
                 return true;
             }

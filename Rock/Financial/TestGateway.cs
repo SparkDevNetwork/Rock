@@ -254,7 +254,30 @@ namespace Rock.Financial
         public override List<Payment> GetPayments( FinancialGateway financialGateway, DateTime startDate, DateTime endDate, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return new List<Payment>();
+            var fakePayments = new List<Payment>();
+            var randomNumberOfPayments = new Random().Next( 1, 1000 );
+            var rockContext = new Rock.Data.RockContext();
+            var scheduledTransactionList = new FinancialScheduledTransactionService( rockContext ).Queryable().ToList();
+
+            var transactionDateTime = startDate;
+            for( int paymentNumber = 0; paymentNumber < randomNumberOfPayments; paymentNumber++  )
+            {
+                var scheduledTransaction = scheduledTransactionList.OrderBy( a => a.Guid ).FirstOrDefault();
+                var fakePayment = new Payment
+                {
+                    Amount = scheduledTransaction.TotalAmount,
+                    TransactionDateTime = startDate,
+                    CreditCardTypeValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues.OrderBy( a => Guid.NewGuid() ).First(),
+                    CurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
+                    TransactionCode = Guid.NewGuid().ToString("N"),
+                    GatewayScheduleId = scheduledTransaction.GatewayScheduleId
+                };
+
+                fakePayments.Add( fakePayment );
+            }
+            
+
+            return fakePayments;
         }
 
         /// <summary>

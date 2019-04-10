@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -1682,10 +1683,10 @@ namespace Rock.Model
 
             if ( groupTypeRoleId.HasValue )
             {
-                var role = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
-                if ( role != null )
+                var roleName = new GroupTypeRoleService( rockContext ).GetSelect( groupTypeRoleId.Value, a=> a.Name );
+                if ( roleName != null )
                 {
-                    return role.Name;
+                    return roleName;
                 }
             }
 

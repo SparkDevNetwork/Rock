@@ -1782,7 +1782,7 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null )
             {
-                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees > 0 )
+                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees >= 0 )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
                     var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
@@ -3367,8 +3367,18 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                     batch.ControlAmount = newControlAmount;
 
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                    // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                    if ( batch.Id == 0 )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
                     transaction.BatchId = batch.Id;
-                    batch.Transactions.Add( transaction );
+
+                    // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                    financialTransactionService.Add( transaction );
 
                     rockContext.SaveChanges();
                 } );
@@ -3707,7 +3717,7 @@ namespace RockWeb.Blocks.Event
         /// <returns>true or the value of ShowOnWaitlist</returns>
         private bool FormHasWaitFields()
         {
-            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex )
+            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex && FormCount > CurrentFormIndex )
             {
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )

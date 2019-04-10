@@ -34,7 +34,10 @@ namespace RockWeb.Blocks.Cms
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
+        private const string NullSelectedId = "-1";
+
         #region IPicker Implementation
+        
         /// <summary>
         /// The selected value will be returned as a URL. For 3rd party cloud services a presigned URL must be created
         /// for the file to be publicly available.
@@ -46,9 +49,11 @@ namespace RockWeb.Blocks.Cms
         {
             get
             {
-                if ( lbAssetStorageId.Text.IsNullOrWhiteSpace() )
+                EnsureChildControls();
+                if ( hfAssetStorageId.Value.IsNullOrWhiteSpace() || hfAssetStorageId.Value.Equals(NullSelectedId ))
                 {
-                    return string.Empty;
+                    // use the selected value of this hidden field if they didn't select a new value
+                    return hfSelectedValue.Value;
                 }
 
                 foreach ( RepeaterItem repeaterItem in rptFiles.Items )
@@ -57,7 +62,7 @@ namespace RockWeb.Blocks.Cms
                     if ( cbEvent.Checked == true )
                     {
                         var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
-                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\" }}", lbAssetStorageId.Text, keyControl.Text );
+                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\" }}", hfAssetStorageId.Value, keyControl.Text );
                     }
                 }
 
@@ -66,6 +71,11 @@ namespace RockWeb.Blocks.Cms
 
             set
             {
+                EnsureChildControls();
+
+                // set the selected value to this hidden field to use as the selected value if they don't select a new value
+                // Note that the asset manager won't actually pre-select this value when navigating to select a value (as intended)
+                hfSelectedValue.Value = value;
             }
         }
 
@@ -162,21 +172,21 @@ namespace RockWeb.Blocks.Cms
             fupUpload.FileUploaded += fupUpload_FileUploaded;
 
             string submitScriptFormat = @"// include in the post to ~/FileUploader.ashx
-    var assetKey = $('#{0}').text();
-    var storageId = $('#{1}').text();
+    var assetKey = $('#{0}').val();
+    var storageId = $('#{1}').val();
     data.formData = {{ StorageId: storageId, Key: assetKey, IsAssetStorageProviderAsset: true }};
 ";
 
             // setup javascript for when a file is submitted
-            fupUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, lbSelectFolder.ClientID, lbAssetStorageId.ClientID );
+            fupUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectFolder.ClientID, hfAssetStorageId.ClientID );
 
             string doneScriptFormat = @"// reselect the node to refresh the list of files
-    var selectedFolderPath =  $('#{1}').text() + ',' + $('#{0}').text();
+    var selectedFolderPath =  $('#{1}').val() + ',' + $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
     foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
 ";
             // setup javascript for when a file is done uploading
-            fupUpload.DoneFunctionClientScript = string.Format( doneScriptFormat, lbSelectFolder.ClientID, lbAssetStorageId.ClientID );
+            fupUpload.DoneFunctionClientScript = string.Format( doneScriptFormat, hfSelectFolder.ClientID, hfAssetStorageId.ClientID );
 
             var folderTreeScript = string.Format( @"
 Sys.Application.add_load(function () {{
@@ -211,11 +221,11 @@ upnlFiles.ClientID // {2}
             base.OnLoad( e );
 
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
-            var hasAssetStorageId = lbAssetStorageId.Text.IsNotNullOrWhiteSpace();
+            var hasAssetStorageId = hfAssetStorageId.Value.IsNotNullOrWhiteSpace();
 
             if ( !this.IsPostBack || !hasAssetStorageId )
             {
-                lbAssetStorageId.Text = "-1";
+                hfAssetStorageId.Value = NullSelectedId;
                 return;
             }
 
@@ -235,13 +245,16 @@ upnlFiles.ClientID // {2}
                     switch ( eventParam )
                     {
                         case "folder-selected":
-                            lbSelectFolder.Text = nameValue[1];
+                            hfSelectFolder.Value = nameValue[1];
                             break;
                         case "storage-id":
-                            lbAssetStorageId.Text = nameValue[1];
+                            hfAssetStorageId.Value = nameValue[1];
                             break;
                         case "expanded-folders":
-                            lbExpandedFolders.Text = nameValue[1];
+                            hfExpandedFolders.Value = nameValue[1];
+                            break;
+                        case "isRoot":
+                            hfIsRoot.Value = nameValue[1];
                             break;
                         default:
                             break;
@@ -281,11 +294,12 @@ upnlFiles.ClientID // {2}
                     Response.AddHeader( "content-disposition", "attachment; filename=" + asset.Name );
                     Response.BufferOutput = true;
                     Response.BinaryWrite( bytes );
-                    Response.End();
+                    Response.Flush();
+                    Response.SuppressContent = true;
+                    System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
                 }
             }
 
-            ListFiles();
         }
 
         /// <summary>
@@ -343,9 +357,9 @@ upnlFiles.ClientID // {2}
             // Selecting the root does not put a value for the selected folder, so we have to make sure
             // if it does not have a value that we use name instead of key so the root folder is used
             // by the component.
-            if ( lbSelectFolder.Text.IsNotNullOrWhiteSpace() )
+            if ( hfSelectFolder.Value.IsNotNullOrWhiteSpace() )
             {
-                asset.Key = lbSelectFolder.Text + tbCreateFolder.Text;
+                asset.Key = hfSelectFolder.Value + tbCreateFolder.Text;
             }
             else
             {
@@ -365,10 +379,11 @@ upnlFiles.ClientID // {2}
         {
             AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
             var component = assetStorageProvider.GetAssetStorageComponent();
-            component.DeleteAsset( assetStorageProvider, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
+            component.DeleteAsset( assetStorageProvider, new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
 
-            lbSelectFolder.Text = string.Empty;
+            hfSelectFolder.Value = string.Empty;
             upnlFolders.Update();
+            ListFiles();
             // TODO: select the parent of the folder just deleted and list the files
         }
 
@@ -450,7 +465,7 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            var files = component.ListFilesInFolder( assetStorageProvider, new Asset { Key = lbSelectFolder.Text, Type = AssetType.Folder } );
+            var files = component.ListFilesInFolder( assetStorageProvider, new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
             rptFiles.DataSource = files;
             rptFiles.DataBind();
         }
@@ -462,7 +477,7 @@ upnlFiles.ClientID // {2}
         private AssetStorageProvider GetAssetStorageProvider()
         {
             AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
-            string assetStorageId = lbAssetStorageId.Text;
+            string assetStorageId = hfAssetStorageId.Value;
 
             if ( assetStorageId.IsNotNullOrWhiteSpace() )
             {

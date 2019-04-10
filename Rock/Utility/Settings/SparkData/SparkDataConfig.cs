@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Newtonsoft.Json;
+
 using Rock.Extension;
 
 namespace Rock.Utility.Settings.SparkData

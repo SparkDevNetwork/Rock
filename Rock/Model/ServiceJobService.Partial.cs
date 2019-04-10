@@ -15,13 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.Compilation;
 
 using Quartz;
-
-using Rock.Data;
 
 namespace Rock.Model
 {

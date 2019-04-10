@@ -16,16 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -294,7 +293,7 @@ Rock.controls.tagList.initialize({{
         }
 
         /// <summary>
-        /// Saves the tag values that user entered for the entity (
+        /// Saves the tag values that user entered for the entity
         /// </summary>
         /// <param name="personAlias">The person alias.</param>
         public void SaveTagValues( PersonAlias personAlias )
@@ -332,9 +331,9 @@ Rock.controls.tagList.initialize({{
                         tagName = tagName.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )[0];
                     }
 
-                    // If this is a new tag, create it
+                    // Only if this is a new tag, create it
                     Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
-                    if ( ( tag == null || !tag.IsAuthorized( "Tag", person ) ) && personAlias != null )
+                    if ( personAlias != null && tag == null )
                     {
                         tag = new Tag();
                         tag.EntityTypeId = EntityTypeId;
@@ -360,7 +359,7 @@ Rock.controls.tagList.initialize({{
                 // Delete any tagged items that user removed
                 foreach ( var taggedItem in existingTaggedItems )
                 {
-                    if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase )  && taggedItem.IsAuthorized( "Tag", person ) )
+                    if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase )  && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
                     {
                         existingNames.Remove( taggedItem.Tag.Name );
                         taggedItemService.Delete( taggedItem );
@@ -371,7 +370,13 @@ Rock.controls.tagList.initialize({{
                 // Add any tagged items that user added
                 foreach ( var tag in currentTags )
                 {
-                    if ( tag.IsAuthorized("Tag", person ) && !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) )
+                    // If the tagged item was not already there, and (it's their personal tag OR they are authorized to use it) then add it.
+                    if ( !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) &&
+                         (
+                            ( tag.OwnerPersonAliasId != null && tag.OwnerPersonAliasId == personAlias?.Id ) ||
+                            tag.IsAuthorized( Rock.Security.Authorization.TAG, person )
+                         )
+                       )
                     {
                         var taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;

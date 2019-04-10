@@ -25,11 +25,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -231,6 +232,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is archived; otherwise, <c>false</c>.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public bool IsArchived { get; set; } = false;
 
@@ -240,6 +242,7 @@ namespace Rock.Model
         /// <value>
         /// The archived date time.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public DateTime? ArchivedDateTime { get; set; }
 
@@ -249,6 +252,7 @@ namespace Rock.Model
         /// <value>
         /// The archived by person alias identifier.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? ArchivedByPersonAliasId { get; set; }
 
@@ -715,7 +719,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Group").SetNewValue( Name );
 
@@ -738,7 +742,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         var originalIsActive = entry.OriginalValues["IsActive"].ToStringSafe().AsBoolean();
                         History.EvaluateChange( HistoryChangeList, "Name", entry.OriginalValues["Name"].ToStringSafe(), Name );
@@ -769,7 +773,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
 
@@ -1008,7 +1012,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
                 _originalGroupTypeId = entry.OriginalValues["GroupTypeId"]?.ToString().AsIntegerOrNull();
                 _originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"]?.ToString().AsBooleanOrNull();
@@ -1032,7 +1036,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             // If the group changed, and it was a security group, flush the security for the group
             Guid? originalGroupTypeGuid = null;

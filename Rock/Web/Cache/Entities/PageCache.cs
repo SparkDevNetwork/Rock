@@ -25,7 +25,6 @@ using System.Xml.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 
 namespace Rock.Web.Cache
 {
@@ -779,12 +778,12 @@ namespace Rock.Web.Cache
             {
                 {"Id", Id},
                 {"Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle},
-                {"Current", isCurrentPage.ToString().ToLower()},
-                {"IsParentOfCurrent", isParentOfCurrent.ToString().ToLower()},
+                {"Current", isCurrentPage},
+                {"IsParentOfCurrent", isParentOfCurrent},
                 {"Url", new PageReference(Id, 0, parameters, queryString).BuildUrl()},
-                {"DisplayDescription", MenuDisplayDescription.ToString().ToLower()},
+                {"DisplayDescription", MenuDisplayDescription},
                 {"DisplayIcon", MenuDisplayIcon.ToString().ToLower()},
-                {"DisplayChildPages", MenuDisplayChildPages.ToString().ToLower()},
+                {"DisplayChildPages", MenuDisplayChildPages},
                 {"IconCssClass", IconCssClass ?? string.Empty},
                 {"Description", Description ?? string.Empty},
                 {"IconUrl", iconUrl}

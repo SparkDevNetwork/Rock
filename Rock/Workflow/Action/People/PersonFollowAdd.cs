@@ -19,14 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Data.Entity;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Field;
 
 namespace Rock.Workflow.Action
 {
