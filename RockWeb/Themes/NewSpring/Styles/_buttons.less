@@ -4,6 +4,7 @@
 	font-weight: 500;
 	text-decoration: none;
 	vertical-align: bottom;
+	border: 0px;
 }
 
 .btn-primary, .btn-secondary, .btn-tertiary {
@@ -36,6 +37,7 @@
 	}
 }
 
+.btn-default { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
 .btn-primary:active, .btn-primary:focus { background-color: @brand-primary; }
 .btn-secondary { .button-variant(@white, @brand-secondary, @brand-secondary); }
 .btn-tertiary { .button-variant(@white, @brand-tertiary, @brand-tertiary); }
@@ -60,13 +62,6 @@
 
 .btn-pinterest {
   .button-variant(@white; @pinterest; @pinterest);
-}
-
-// Fixes alignment of large icons within buttons
-.btn {
-	i {
-		margin-left: 5px;
-	}
 }
 
 .btn .fa-xs, .fa-xs {
