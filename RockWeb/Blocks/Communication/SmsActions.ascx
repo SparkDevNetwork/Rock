@@ -1,7 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmsActions.ascx.cs" Inherits="RockWeb.Blocks.Communication.SmsActions" %>
-
 <style>
-.sms-container {
+
+</style>
+
+<!--
+<style>
+ .sms-container {
     border: 1px solid #ddd;
     background-color: #eee;
     padding: 12px;
@@ -58,120 +62,94 @@
         cursor: move;
     }
 
-/* Dragula */
-.gu-mirror {
-  position: fixed !important;
-  margin: 0 !important;
-  z-index: 9999 !important;
-  opacity: 0.8;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-  filter: alpha(opacity=80);
-}
-.gu-hide {
-  display: none !important;
-}
-.gu-unselectable {
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
-}
-.gu-transit {
-  opacity: 0.2;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
-  filter: alpha(opacity=20);
-}
 </style>
+-->
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:LinkButton ID="lbDragCommand" runat="server" CssClass="hidden" />
 
-        <div class="panel panel-block">
+        <div class="panel panel-block sms-main-panel">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Actions</h1>
+                <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline</h1>
             </div>
 
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-3 col-sm-6">
-                        <div class="js-sms-action-components sms-container">
-                            <div class="sms-header">
-                                Components
-                            </div>
+            <div class="panel-body padding-all-none">
+                <div class="row row-eq-height row-no-gutters">
+                    <div class="col-md-2 col-sm-6 js-sms-action-components sms-action-components">
 
-                            <div class="js-drag-container">
-                                <asp:Repeater ID="rptrComponents" runat="server">
-                                    <ItemTemplate>
-                                        <div class="sms-action-component" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
-                                            <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                            <%# Eval( "Title" ) %>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="col-md-4 col-sm-6">
-                        <div class="js-sms-actions sms-container">
-                            <div class="sms-header">
-                                Actions
-                            </div>
-
-                            <div class="js-drag-container">
-                                <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
-                                    <ItemTemplate>
-                                        <div class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
-                                            <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
-                                            <%# Eval( "Name" ) %>
-                                            <div class="pull-right">
-                                                <i class="fa fa-arrow-alt-circle-right<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
-                                                <i class="fa fa-bars js-reorder"></i>
-                                                <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
+                                <div class="js-drag-container">
+                                    <asp:Repeater ID="rptrComponents" runat="server">
+                                        <ItemTemplate>
+                                            <div class="sms-action-component" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
+                                                <i class="<%# Eval( "IconCssClass" ) %>"></i>
+                                                <span><%# Eval( "Title" ) %></span>
                                             </div>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
-                        </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                     </div>
 
-                    <div class="col-md-5 col-sm-12">
-                        <asp:Panel ID="pnlEditAction" runat="server" CssClass="js-sms-action-settings sms-container" Visible="false">
+                    <div class="col-md-6 col-sm-6 js-sms-actions sms-container">
+                    <div class="sms-thing">
+                        Incoming Message
+                                            </div>
+                                <div class="js-drag-container">
+                                    <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
+                                        <ItemTemplate>
+                                            <div class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
+                                                <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
+                                                <%# Eval( "Name" ) %>
+                                                <div class="pull-right">
+                                                    <i class="fa fa-arrow-alt-circle-right<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
+                                                    <i class="fa fa-bars reorder js-reorder"></i>
+                                                    <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+
+                    </div>
+
+                    <div class="col-md-4 col-sm-12">
+                        <asp:Panel ID="pnlEditAction" runat="server" CssClass="js-sms-action-settings" Visible="false">
                             <asp:HiddenField ID="hfEditActionId" runat="server" />
-
-                            <div class="sms-header">
-                                Action Settings
+                            <div class="panel panel-edit">
+                            <div class="panel-heading sms-header">
+                                <asp:Literal ID="lActionType" runat="server" />
                             </div>
 
-                            <Rock:RockLiteral ID="lActionType" runat="server" Label="Action Type" />
+                            <div class="panel-body">
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />
+
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
+
+                                <div class="row form-row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbContinue" runat="server" Label="Continue" Help="If the continue option is enabled then processing will continue even if this action successfully processes the SMS message." />
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbContinue" runat="server" Label="Continue" Help="If the continue option is enabled then processing will continue even if this action successfully processes the SMS message." />
+
+
+
+                                <Rock:AttributeValuesContainer ID="avcFilters" runat="server" ShowCategoryLabel="false" />
+
+                                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+
+                                <div class="actions">
+                                    <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
+                                    <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" />
+
+                                    <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
                                 </div>
                             </div>
-
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
-
-                            <Rock:AccordionPanel ID="apnlFilters" runat="server" Title="Filters" TitleIcon="fa fa-filter">
-                                <Body>
-                                    <Rock:AttributeValuesContainer ID="avcFilters" runat="server" ShowCategoryLabel="false" />
-                                </Body>
-                            </Rock:AccordionPanel>
-
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
-
-                            <div class="actions">
-                                <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
-                                <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" />
-
-                                <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
                             </div>
                         </asp:Panel>
                     </div>
