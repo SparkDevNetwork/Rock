@@ -426,3 +426,126 @@ iframe.email-body {
     }
   }
 }
+
+
+.sms-action-components {
+  background: @panel-heading-bg;
+}
+
+.sms-action-component {
+  padding: 16px 20px;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+  align-items: center;
+  display: flex;
+  color: @text-muted;
+
+  &:hover {
+    background-color: darken(@panel-heading-bg, 10%);
+  }
+
+  > i {
+    width: 34px;
+    font-size: 26px;
+    text-align: center;
+    margin-right: 8px;
+    color: @text-color;
+  }
+}
+
+.sms-container {
+  padding: 20px 20px !important;
+}
+
+.sms-action {
+  background-color: hsla(0,0%,100%,.9);
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+  padding: 20px 16px;
+  font-size: 21px;
+  max-width: 500px;
+
+  &.editing {
+    box-shadow: 0 0 0 4px #4cafff;
+  }
+
+  .reorder {
+    cursor: move;
+    cursor: -webkit-grab;
+    cursor: grab;
+  }
+}
+
+.sms-main-panel {
+  background: linear-gradient(#dceefd,hsla(0,0%,100%,0) 1px),linear-gradient(90deg,#dceefd,hsla(0,0%,100%,0) 1px);
+  background-size: 10px 10px;
+  background-position: 0 0;
+}
+
+.panel.panel-edit {
+  margin: 20px 20px 0 20px;
+  background-color: #f6f6f6;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
+
+  .panel-heading {
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    font-size: 12px;
+  }
+}
+
+
+// .sms-action-component,
+// .sms-action
+// {
+// border: 1px solid #dbdbdb;
+// /* @btn-default-border */
+//     padding: 6px 8px;
+//   margin-bottom: 12px;
+//     background: #fff;
+//     box-shadow: 0 1px 0 hsl(228, 7%, 83%);
+//     border-radius: 4px;
+//     cursor: move;
+//   cursor: -webkit-grab;
+//   cursor: grab;
+// }
+
+// .sms-action {
+// cursor:pointer;
+// }
+
+
+// .sms-action > .fa,
+//     .sms-action-component > .fa {
+//         width: 30px;
+//         padding-right: 2px;
+//         text-align: center;
+//     }
+
+
+    /* Dragula */
+.gu-mirror {
+  position: fixed !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  opacity: 0.8;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+}
+.gu-hide {
+  display: none !important;
+}
+.gu-unselectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+.gu-transit {
+  opacity: 0.2;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+  filter: alpha(opacity=20);
+}

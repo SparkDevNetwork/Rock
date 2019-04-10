@@ -228,7 +228,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public AccordionPanel()
         {
-            CssClass = "panel panel-block";
+            CssClass = "panel panel-widget";
         }
 
         #endregion
