@@ -392,6 +392,7 @@
     <Compile Include="Financial\IGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayPaymentControlTokenEvent.cs" />
+    <Compile Include="Jobs\PostV90DataMigrations.cs" />
     <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
     <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
