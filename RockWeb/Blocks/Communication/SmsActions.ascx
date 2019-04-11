@@ -203,6 +203,14 @@
                 <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
 
                 <Rock:RockLiteral ID="lResponse" runat="server" Label="Response" CssClass="margin-t-lg" />
+
+                <div class="form-group static-control margin-t-lg">
+	                <label class="control-label">Action Outcomes</label>
+                    <div class="control-wrapper">
+		                <pre runat="server" id="preOutcomes"></pre>
+                    </div>	                
+                </div>
+                
             </div>
 
         </div>
