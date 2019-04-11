@@ -195,7 +195,8 @@ class TwilioSmsResponseAsync : IAsyncResult
         {
             message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Replace( "+", "" ) );
 
-            var smsResponse = SmsActionService.ProcessIncomingMessage( message );
+            var outcomes = SmsActionService.ProcessIncomingMessage( message );
+            var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
             var twilioMessage = new Twilio.TwiML.Message();
 
             if ( smsResponse != null )
