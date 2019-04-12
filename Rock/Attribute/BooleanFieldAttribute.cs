@@ -59,5 +59,24 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( "truetext", new Field.ConfigurationValue( trueText ) );
             FieldConfigurationValues.Add( "falsetext", new Field.ConfigurationValue( falseText ) );
         }
+
+        /// <summary>
+        /// Gets or sets the default value of the attribute.  This is the value that will be used if a specific value has not yet been created
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public bool DefaultBooleanValue
+        {
+            get
+            {
+                return base.DefaultValue.AsBoolean();
+            }
+
+            set
+            {
+                base.DefaultValue = value.ToString();
+            }
+        }
     }
 }
