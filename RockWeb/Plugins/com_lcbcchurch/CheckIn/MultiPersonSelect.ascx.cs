@@ -32,22 +32,23 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn
 {
     [DisplayName("Person Select (Family Check-in)")]
-    [Category("Check-in")]
+    [Category("LCBC > Check-in")]
     [Description("Lists people who match the selected family and provides option of selecting multiple.")]
 
     [LinkedPage("Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
+    [LinkedPage( "Auto Select Done Page", "The page to navigate to once all people have checked in during family check-in.", false, "", "", 6, "AutoSelectDonePage" )]
     [CodeEditorField( "Pre-Selected Options Format", "The format to use when displaying auto-checkin options", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
 <span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
 <span class='auto-select-group'>{{ Group.Name }}</span>
 <span class='auto-select-location'>{{ Location.Name }}</span>
-", "", 6, "OptionFormat" )]
+", "", 7, "OptionFormat" )]
 
-    [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 7 )]
-    [TextField( "Caption", "", false, "Select People", "Text", 8 )]
-    [TextField( "Option Title", "Title to display on option screen. Use {0} for person's full name.", false, "{0}", "Text", 9 )]
-    [TextField( "Option Sub Title", "Subtitle to display on option screen. Use {0} for person's nickname.", false, "Please select the options that {0} would like to attend.", "Text", 10 )]
-    [TextField( "No Option Message", "", false, "Sorry, there are currently not any available areas that the selected people can check into.", "Text", 11 )]
-    [TextField( "Next Button Text", "", false, "Next", "Text", 12 )]
+    [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 8 )]
+    [TextField( "Caption", "", false, "Select People", "Text", 9 )]
+    [TextField( "Option Title", "Title to display on option screen. Use {0} for person's full name.", false, "{0}", "Text", 10 )]
+    [TextField( "Option Sub Title", "Subtitle to display on option screen. Use {0} for person's nickname.", false, "Please select the options that {0} would like to attend.", "Text", 11 )]
+    [TextField( "No Option Message", "", false, "Sorry, there are currently not any available areas that the selected people can check into.", "Text", 12 )]
+    [TextField( "Next Button Text", "", false, "Next", "Text", 13 )]
 
     public partial class MultiPersonSelect : CheckInBlock
     {
@@ -272,11 +273,11 @@ namespace RockWeb.Blocks.CheckIn
     <div class='col-md-4 family-personselect'>{0}</div>
     <div class='col-md-8 auto-select text-light'>
         <div class='auto-select-caption'>is checking into...</div>
-        <div class='auto-select-details'>{1}</div>
+        <div class='auto-select-details' style='margin-top: 10px;'>{1}</div>
     </div>
 </div>
 
-", person.Person.FullName, options.AsDelimited( "<br/>" ) );
+", person.Person.FullName, options.AsDelimited( "<hr style='margin: 7px 0;'>" ) );
                     }
                     else
                     {
@@ -350,7 +351,17 @@ namespace RockWeb.Blocks.CheckIn
                     if ( _autoCheckin )
                     {
                         SaveState();
-                        NavigateToLinkedPage( "AutoSelectNextPage" );
+
+                        // Check to see if itemTag/pager are possible and bypasses those pages if not (Large number of 
+                        // redirects between itemTag/pager pages cause problems for some unknown reason)
+                        if ( BypassItemTagAndPagerFlow() )
+                        {
+                            NavigateToLinkedPage( "AutoSelectDonePage" );
+                        }
+                        else
+                        {
+                            NavigateToLinkedPage( "AutoSelectNextPage" );
+                        }
                     }
                     else
                     {
@@ -358,6 +369,39 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether to bypass the item tag and pager selections. This is solely based off of it not being 
+        /// possible to have item tags because of the kiosk and groups being used.
+        /// i.e. Kiosk and AT LEAST ONE group from the possible selections need to allow item tags for us to hit those pages
+        /// </summary>
+        private bool BypassItemTagAndPagerFlow()
+        {
+            var areItemTagsAllowed = CurrentCheckInState.Kiosk.Device.GetAttributeValue( "AllowItemTags" ).AsBoolean();
+            var areItemTagsOffered = false;
+            var family = CurrentCheckInState.CheckIn.CurrentFamily.People;
+            foreach ( var person in family )
+            {
+                if (person.PreSelected && person.Selected)
+                {
+                    var schedule = person.CurrentSchedule;
+
+                    var groupTypes = person.SelectedGroupTypes( schedule );
+                    var group = groupTypes.SelectMany( t => t.SelectedGroups( schedule ) ).FirstOrDefault();
+                    areItemTagsOffered = group.Group.GetAttributeValue( "AreItemTagsOffered" ).AsBoolean();
+                    if (areItemTagsOffered)
+                    {
+                        areItemTagsOffered = true;
+                        break;
+                    }
+                }
+            }
+            if ( !(areItemTagsOffered && areItemTagsAllowed) )
+            {
+                return true;
+            }
+            return false;
         }
 
         protected void lbBack_Click( object sender, EventArgs e )

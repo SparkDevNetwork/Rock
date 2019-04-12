@@ -153,7 +153,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 {
                     ClearSelection();
 
-                    var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                    var person = getCurrentPersonEligibleForItemTags(); //CurrentCheckInState.CheckIn.CurrentPerson; // getCurrentPersonEligibleForItemTags();
                     if ( person == null )
                     {
                         GoBack();
@@ -261,6 +261,53 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     }
                 }
             }
+        }
+
+        private CheckInPerson getCurrentPersonEligibleForItemTags()
+        {
+            var areItemTagsOffered = false;
+            CheckInPerson person = null;
+
+            // while currentPerson not null?
+            while (CurrentCheckInState.CheckIn.CurrentPerson != null)
+            {
+                person = CurrentCheckInState.CheckIn.CurrentPerson;
+                
+                if (person != null)
+                {
+
+                    // Check to see if this item tags are offered in the group this person is checking into
+                    var schedule = person.CurrentSchedule;
+
+                    var groupTypes = person.SelectedGroupTypes( schedule );
+                    var group = groupTypes.SelectMany( t => t.SelectedGroups( schedule ) ).FirstOrDefault();
+                    areItemTagsOffered = group.Group.GetAttributeValue( "AreItemTagsOffered" ).AsBoolean();
+
+                    // Process the person if they aren't eligible for item tags so we can move onto next person
+                    if (!areItemTagsOffered)
+                    {
+                        if (schedule != null)
+                        {
+                            schedule.Processed = true;
+                        }
+
+                        if (!person.SelectedSchedules.Any( s => !s.Processed ))
+                        {
+                            person.Processed = true;
+                        }
+
+                        SaveState();
+                    }
+                    else
+                    {
+                        // person is eligible for item tags
+                        SaveState();
+                        break;
+                    }
+                }
+            }
+
+            return person;
         }
 
         /// <summary>
