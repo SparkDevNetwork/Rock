@@ -108,7 +108,7 @@ WHERE [GroupTypeId] in (
 {% assign collideAreas = "" %}
 {% for item in results %}
     {% if item.GroupTypeId == studentMinCheckinConfigId %}
-        {% if item.Name contains "Collide" %}
+        {% if item.Name contains "Collide" or item.Name contains "LCBC Staff" %}
             {% assign collideAreas = collideAreas | Append: "," | Append: item.ChildGroupTypeId %}
         {% endif %}
     {% endif %}
@@ -146,10 +146,13 @@ WHERE [GroupTypeId] in (
 
 <!-- Themes -->
 {% assign kidVentureIslandTheme = "?Theme=CheckinKidVentureIsland"%}
+{% assign kviTheme = "?Theme=CheckinKVI"%}
 {% assign studentMinistryTheme = "?Theme=CheckinStudentMinistry"%}
 
-{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Append: kidVentureIslandTheme %}
-{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Append: kidVentureIslandTheme %}
+{% assign iPadAssistedURL = kviAttendedCheckInURL | Append: kidVentureIslandTheme %}
+{% assign iPadSelfURL = kviUnattendedCheckInURL | Append: kidVentureIslandTheme %}
+{% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Append: kviTheme %}
+{% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Append: kviTheme %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Append: kidVentureIslandTheme %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Append: studentMinistryTheme %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
@@ -172,6 +175,18 @@ WHERE [GroupTypeId] in (
                 <a href="{{ kviUnattendedCheckInURL }}">
                 <i class="fa fa-sign-in"></i>
                 <h3>kidMinistry Self Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ iPadAssistedURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry iPad Assisted Check-In</h3>
+                </a>
+            </li>
+             <li>
+                <a href="{{ iPadSelfURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry iPad Self Check-In</h3>
                 </a>
             </li>
             <li>
@@ -224,10 +239,12 @@ WHERE [GroupTypeId] in (
 
             KVI Attended Check-In:      {{ kviAttendedCheckInURL }}<br>
             KVI Unattended Check-In:    {{ kviUnattendedCheckInURL }}<br>
+            iPad Assisted Check-In:     {{ iPadAssistedURL }}<br>
+            iPad Self Check-In:         {{ iPadSelfURL }}<br>
             First-Time Family Check-In: {{ firstTimeFamilyURL }}<br>
-            Collide Check-In: {{ studentMinistryCollideURL }}<br>
-            HSM Check-In: {{ studentMinistryHSMURL }}<br>
-            Campus Events Check-In: {{ campusEventsURL }}<br>
+            Collide Check-In:           {{ studentMinistryCollideURL }}<br>
+            HSM Check-In:               {{ studentMinistryHSMURL }}<br>
+            Campus Events Check-In:     {{ campusEventsURL }}<br>
         </div>
       </div>
   </div>
