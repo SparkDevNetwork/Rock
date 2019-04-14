@@ -153,7 +153,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                 {
                     ClearSelection();
 
-                    var person = getCurrentPersonEligibleForItemTags(); //CurrentCheckInState.CheckIn.CurrentPerson; // getCurrentPersonEligibleForItemTags();
+                    var person = getCurrentPersonEligibleForItemTags(); //CurrentCheckInState.CheckIn.CurrentPerson;
                     if ( person == null )
                     {
                         GoBack();
@@ -267,15 +267,18 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
         {
             var areItemTagsOffered = false;
             CheckInPerson person = null;
+            CheckInPerson lastPerson = null;
 
             // while currentPerson not null?
             while (CurrentCheckInState.CheckIn.CurrentPerson != null)
             {
                 person = CurrentCheckInState.CheckIn.CurrentPerson;
-                
-                if (person != null)
-                {
 
+                if (person != null && !person.Processed)
+                {
+                    lastPerson = CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true ).Last(); // this could probably be outside of the loop
+                    //lastPerson = CurrentCheckInState.CheckIn.GetFamilies( true ).FirstOrDefault().GetPeople(true).Last();
+                    
                     // Check to see if this item tags are offered in the group this person is checking into
                     var schedule = person.CurrentSchedule;
 
@@ -283,8 +286,11 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     var group = groupTypes.SelectMany( t => t.SelectedGroups( schedule ) ).FirstOrDefault();
                     areItemTagsOffered = group.Group.GetAttributeValue( "AreItemTagsOffered" ).AsBoolean();
 
-                    // Process the person if they aren't eligible for item tags so we can move onto next person
-                    if (!areItemTagsOffered)
+                    // Process the person if:
+                    // 1) They aren't eligible for item tags
+                    // 2) This isn't the last person in the family
+                    // ...so we can move onto next person
+                    if (!areItemTagsOffered && !person.Equals( lastPerson ) )
                     {
                         if (schedule != null)
                         {
