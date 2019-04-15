@@ -106,6 +106,7 @@
     <Compile Include="CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
+    <Compile Include="CodeGenerated\ControlTotalResult.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
     <Compile Include="CodeGenerated\DataViewPersistedValue.cs" />
