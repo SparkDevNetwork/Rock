@@ -1111,7 +1111,7 @@ namespace RockWeb.Plugins.com_bemadev.CheckIn
                     }
                 }
 
-                prayerRequest.IsApproved = true;
+                prayerRequest.IsApproved = false;
                 prayerRequest.IsActive = true;
                 prayerRequest.AllowComments = GetAttributeValue( "DefaultAllowCommentsChecked" ).AsBooleanOrNull() ?? true;
                 prayerRequest.IsPublic = GetAttributeValue( "DefaultToPublic" ).AsBooleanOrNull() ?? false;
