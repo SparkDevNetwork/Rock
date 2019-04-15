@@ -430,7 +430,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this["SelectedAccountForAmountsIds"] as int[];
+                return this["SelectedAccountForAmountsIds"] as int[] ?? new int[0];
             }
 
             set
