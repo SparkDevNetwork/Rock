@@ -773,7 +773,7 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
                         }
                     }
