@@ -41,7 +41,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", "", false, Order = 0 )]
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
     [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
     [BooleanField( "Show 'Approved' column", "If enabled, the Approved column will be shown with a Yes/No toggle button.", true, "", 3, "ShowApprovedColumn" )]
     [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
@@ -91,7 +90,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
             public static readonly string ActiveStatus = "Active Status";
             public static readonly string PublicStatus = "Public/Private";
             public static readonly string Comments = "Comments";
-            public static readonly string ShowExpired = "Show Expired";
         }
         #endregion
 
@@ -121,10 +119,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
 
             // if there is a Person as the ContextEntity, there is no need to show the Name column
             gPrayerRequests.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
-
-
-            gPrayerRequests.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
-            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
         }
 
         /// <summary>
@@ -207,9 +201,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
             cpPrayerCampusFilter.Campuses = CampusCache.All( false );
             cpPrayerCampusFilter.SetValue( new CampusService( new RockContext() ).Get( selectedPrayerCampusId ) );
 
-            // Set the Show Expired filter
-            cbShowExpired.Checked = gfFilter.GetUserPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
-
             BindAttributes();
             AddDynamicControls();
         }
@@ -271,8 +262,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
 
             gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
             gfFilter.SaveUserPreference( FilterSetting.PrayerCampus, cpPrayerCampusFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : cpPrayerCampusFilter.SelectedValue );
-
-            gfFilter.SaveUserPreference( FilterSetting.ShowExpired, cbShowExpired.Checked ? "True" : string.Empty );
 
             if ( AvailableAttributes != null )
             {
@@ -586,12 +575,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
                 prayerRequests = prayerRequests.Where( a => a.EnteredDateTime < endDate );
             }
 
-            // Don't show expired prayer requests.
-            if ( !cbShowExpired.Checked )
-            {
-                prayerRequests = prayerRequests.Where( a => a.ExpirationDate == null || RockDateTime.Today <= a.ExpirationDate );
-            }
-
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
@@ -653,58 +636,6 @@ namespace RockWeb.Plugins.com_bemadev.Prayer
             }
 
             NavigateToLinkedPage( "DetailPage", queryParms );
-        }
-
-        /// <summary>
-        /// Handles the CheckChanged event of the gPrayerRequests IsApproved field.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gPrayerRequests_CheckChanged( object sender, RowEventArgs e )
-        {
-            bool failure = true;
-
-            if ( e.RowKeyValue != null )
-            {
-                var rockContext = new RockContext();
-                PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
-                PrayerRequest prayerRequest = prayerRequestService.Get( e.RowKeyId );
-
-                if ( prayerRequest != null )
-                {
-                    failure = false;
-
-                    // if it was approved, set it to unapproved... otherwise
-                    if ( prayerRequest.IsApproved ?? false )
-                    {
-                        prayerRequest.IsApproved = false;
-                    }
-                    else
-                    {
-                        prayerRequest.IsApproved = true;
-                        prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
-                        prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
-
-                        // reset the flag count only to zero ONLY if it had a value previously.
-                        if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
-                        {
-                            prayerRequest.FlagCount = 0;
-                        }
-
-                        var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
-                        prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
-                    }
-
-                    rockContext.SaveChanges();
-                }
-
-                BindGrid();
-            }
-
-            if ( failure )
-            {
-                maGridWarning.Show( "Unable to approve that prayer request", ModalAlertType.Warning );
-            }
         }
 
         /// <summary>
