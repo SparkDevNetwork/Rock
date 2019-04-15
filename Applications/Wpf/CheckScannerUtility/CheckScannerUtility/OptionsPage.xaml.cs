@@ -155,14 +155,14 @@ namespace Rock.Apps.CheckScannerUtility
             cboCampusFilter.SelectedValuePath = "Id";
             cboCampusFilter.DisplayMemberPath = "Name";
             cboCampusFilter.Items.Clear();
-            var nullOption = new object();
+            var nullOption = new { Id = (int?)null, Name = (string)null };
             cboCampusFilter.Items.Add( nullOption );
             foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
                 cboCampusFilter.Items.Add( campus );
             }
 
-            cboCampusFilter.SelectedItem = campusList.FirstOrDefault( a => a.Id == _rockConfig.CampusIdFilter ) ?? nullOption;
+            cboCampusFilter.SelectedItem = campusList.FirstOrDefault( a => a.Id == _rockConfig.CampusIdFilter );
         }
 
         /// <summary>
@@ -283,6 +283,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 txtPlurality.Text = rockConfig.Plurality;
             }
+
+            LoadFinancialAccounts( rockConfig.CampusIdFilter );
         }
 
         /// <summary>
@@ -472,7 +474,7 @@ namespace Rock.Apps.CheckScannerUtility
                 selectedAccounts.Add( displayAccount.Id );
             }
 
-            if ( displayAccount.Children != null )
+            if ( displayAccount?.Children != null )
             {
                 foreach ( var child in displayAccount.Children )
                 {
