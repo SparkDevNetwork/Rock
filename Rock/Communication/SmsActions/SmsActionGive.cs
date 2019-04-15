@@ -84,7 +84,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Help Response",
-        description: "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Something went wrong. To give, simply text ‘{{ Keyword }} 100’ or ‘{{ Keyword }} $123.45’. Please contact us if you need help.",
         order: 6,
@@ -95,7 +95,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Max Amount Response",
-        description: "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: false,
         defaultValue: "Thank you for your generosity but our mobile giving solution cannot process a gift this large. Please give using our website.",
         order: 7,
@@ -106,7 +106,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Setup Response",
-        description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Hi there! Please use our website to setup your giving profile before using this mobile giving solution.",
         order: 8,
@@ -117,7 +117,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Success Response",
-        description: "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Thank you! We received your gift of {{ Amount }} to the {{ AccountName }}.",
         order: 9,
@@ -128,7 +128,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Refund Failure Response",
-        description: "The response that will be sent if the sender's gift cannot be refunded. <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the sender's gift cannot be refunded. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "We are unable to process a refund for your last gift. Please contact us for assistance.",
         order: 10,
@@ -139,7 +139,7 @@ namespace Rock.Communication.SmsActions
         mode: CodeEditorMode.Lava,
         theme: CodeEditorTheme.Rock,
         name: "Refund Success Response",
-        description: "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span>",
+        description: "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Your gift for {{ Amount }} to the {{ AccountName }} has been refunded.",
         order: 11,
@@ -578,7 +578,7 @@ namespace Rock.Communication.SmsActions
             };
 
             // Resolve the lava template with the lava fields
-            var resolvedMessage = lavaTemplate.ResolveMergeFields( mergeObjects, message.FromPerson );
+            var resolvedMessage = lavaTemplate.ResolveMergeFields( mergeObjects );
 
             // Generate a reply SMS object
             return new SmsMessage
