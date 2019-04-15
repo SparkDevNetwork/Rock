@@ -62,6 +62,9 @@ namespace EnsureCopyrightHeader
 
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
 
+            // exclude files that come from the localhistory VS extension
+            sourceFilenames = sourceFilenames.Where( a => !a.Contains( ".localhistory" ) ).ToList();
+
             // this was was our standard copyright badge up until 1/17/2014. Look for it in case it sneaks back in
             const string oldCopyrightBadge1 = @"// <copyright>
 // Copyright 2013 by the Spark Development Network
