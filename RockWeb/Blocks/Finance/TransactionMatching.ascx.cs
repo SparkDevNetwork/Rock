@@ -615,7 +615,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional transaction matching sessions will know that it is currently getting looked at
+                    // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potential transaction matching sessions will know that it is currently getting looked at
                     if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
                     {
                         transactionToMatch.ProcessedByPersonAlias = null;
@@ -791,12 +791,20 @@ namespace RockWeb.Blocks.Finance
                     qryTransactionCount = qryTransactionCount.Where( a => a.BatchId == batchId );
                 }
 
-                // get count of transactions that haven't been matched (not including the one we are currently editing)
+                // get count of transactions that have been matched (not including the one we are currently editing)
                 int currentTranId = hfTransactionId.Value.AsInteger();
-                int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
-                int totalBatchItemCount = qryTransactionCount.Count();
+                int matchedCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
+                int percentComplete;
 
-                int percentComplete = ( int ) Math.Round( ( double ) ( 100 * matchedRemainingCount ) / totalBatchItemCount );
+                int totalBatchItemCount = qryTransactionCount.Count();
+                if ( totalBatchItemCount != 0 )
+                {
+                    percentComplete = ( int ) Math.Round( ( double ) ( 100 * matchedCount ) / totalBatchItemCount );
+                }
+                else
+                {
+                    percentComplete = 100;
+                }
 
                 lProgressBar.Text = string.Format(
                         @"<div class='progress'>
@@ -1132,9 +1140,12 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
 
-                // Payment Detail Attributes
-                financialTransaction.FinancialPaymentDetail.LoadAttributes( rockContext );
-                Helper.GetEditValues( phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail );
+                if ( this.GetAttributeValue( AttributeKey.DisplayPaymentDetailAttributeControls ).AsBoolean() )
+                {
+                    // Payment Detail Attributes
+                    financialTransaction.FinancialPaymentDetail.LoadAttributes( rockContext );
+                    Helper.GetEditValues( phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail );
+                }
 
                 changes.AddChange( History.HistoryVerb.Matched, History.HistoryChangeType.Record, "Transaction" );
 
