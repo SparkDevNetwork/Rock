@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Rock.Apps.CheckScannerUtility.Behaviors
+namespace Rock.Wpf.Behaviors
 {
     /// <summary>
     ///     Exposes attached behaviors that can be

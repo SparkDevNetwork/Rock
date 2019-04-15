@@ -18,10 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using ImageSafeInterop;
 using Rock.Apps.CheckScannerUtility.Models;
@@ -38,11 +40,10 @@ namespace Rock.Apps.CheckScannerUtility
     public partial class OptionsPage : System.Windows.Controls.Page
     {
         private RockRestClient _Client;
-        private bool _campusChanged = false;
         private List<FinancialAccount> _allAccounts;
         private RockConfig _rockConfig;
         private ObservableCollection<DisplayAccountModel> _displayAccounts = new ObservableCollection<DisplayAccountModel>();
-        private RockConfig.InterfaceType _interfaceType;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="OptionsPage"/> class.
         /// </summary>
@@ -66,9 +67,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void ShowDetail()
         {
-            LoadFinancialAccounts();
             LoadDeviceDropDown();
             LoadBatchCampusDropDown();
+
             lblAlert.Visibility = Visibility.Collapsed;
             GetConfigValues();
 
@@ -77,18 +78,34 @@ namespace Rock.Apps.CheckScannerUtility
 
         }
 
-        private void LoadFinancialAccounts()
+        /// <summary>
+        /// Loads the financial accounts.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        private void LoadFinancialAccounts( int? campusId )
         {
             var client = this.RestClient;
-            _allAccounts = client.GetData<List<FinancialAccount>>( "api/FinancialAccounts" );
-            SetParentChildAccounts( _allAccounts );
-            icAccountsForBatches.Items.Clear();
-            icAccountsForBatches.ItemsSource = _displayAccounts;
+            _allAccounts = client.GetData<List<FinancialAccount>>( "api/FinancialAccounts?$filter=IsActive eq true" );
 
+            if ( campusId.HasValue )
+            {
+                _allAccounts = _allAccounts.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId ).ToList();
+            }
+
+            SetParentChildAccounts( _allAccounts );
+            tvAccountsForBatches.ItemsSource = null;
+            tvAccountsForBatches.Items.Clear();
+            tvAccountsForBatches.ItemsSource = _displayAccounts;
         }
 
         private HybridDictionary _map = new HybridDictionary();
 
+        /// <summary>
+        /// Adds the parent child.
+        /// </summary>
+        /// <param name="displayAccount">The display account.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="parentId">The parent identifier.</param>
         public void AddParentChild( DisplayAccountModel displayAccount, int id, int? parentId )
         {
             // keep a map of each id to the node
@@ -103,45 +120,49 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 // Find the parent in the map and add node as it's child node
                 var parent = ( DisplayAccountModel ) _map[parentId];
-                if ( parent.Children == null )
-                {
-                    parent.Children = new ObservableCollection<DisplayAccountModel>();
-                }
                 parent.Children.Add( displayAccount );
             }
         }
 
+        /// <summary>
+        /// Sets the parent child accounts.
+        /// </summary>
+        /// <param name="accounts">The accounts.</param>
         private void SetParentChildAccounts( List<FinancialAccount> accounts )
         {
+            _displayAccounts = new ObservableCollection<DisplayAccountModel>();
+            _map = new HybridDictionary();
             foreach ( var account in accounts )
             {
-                var parentDisplayAccount = new DisplayAccountModel();
+                var parentDisplayAccount = new DisplayAccountModel(account);
                 var children = _allAccounts.Where( a => a.ParentAccountId != null && a.ParentAccountId == account.Id ).ToList();
-                parentDisplayAccount.AccountDisplayName = account.Name;
                 if ( _rockConfig.SelectedAccountForAmountsIds != null )
                 {
                     parentDisplayAccount.IsAccountChecked = _rockConfig.SelectedAccountForAmountsIds.Contains( account.Id );
-                    parentDisplayAccount.Id = account.Id;
                 }
 
                 this.AddParentChild( parentDisplayAccount, account.Id, account.ParentAccountId );
             }
         }
 
+        /// <summary>
+        /// Loads the batch campus drop down.
+        /// </summary>
         private void LoadBatchCampusDropDown()
         {
             var client = RestClient;
             var campusList = client.GetData<List<Campus>>( "api/Campuses" );
-            cbDefaultCampus.SelectedValue = "Id";
-            cbDefaultCampus.DisplayMemberPath = "Name";
-            cbDefaultCampus.Items.Clear();
+            cboCampusFilter.SelectedValuePath = "Id";
+            cboCampusFilter.DisplayMemberPath = "Name";
+            cboCampusFilter.Items.Clear();
+            var nullOption = new object();
+            cboCampusFilter.Items.Add( nullOption );
             foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
-                cbDefaultCampus.Items.Add( campus );
+                cboCampusFilter.Items.Add( campus );
             }
 
-            cbDefaultCampus.SelectedIndex = 0;
-
+            cboCampusFilter.SelectedItem = campusList.FirstOrDefault( a => a.Id == _rockConfig.CampusIdFilter ) ?? nullOption;
         }
 
         /// <summary>
@@ -153,12 +174,9 @@ namespace Rock.Apps.CheckScannerUtility
         {
             var rockConfig = RockConfig.Load();
             txtRockUrl.Text = rockConfig.RockBaseUrl;
-            if ( rockConfig.CaptureAmountOnScan == true )
-            {
-                chkRequireConrolAmount.IsChecked = rockConfig.RequireControlAmount;
-                chkRequireControlItemCount.IsChecked = rockConfig.RequireControlItemCount;
-                chkCaptureAmountOnScan.IsChecked = rockConfig.CaptureAmountOnScan;
-            }
+            chkCaptureAmountOnScan.IsChecked = rockConfig.CaptureAmountOnScan;
+            chkRequireControlAmount.IsChecked = rockConfig.RequireControlAmount;
+            chkRequireControlItemCount.IsChecked = rockConfig.RequireControlItemCount;
 
             if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
@@ -313,15 +331,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSave_Click( object sender, RoutedEventArgs e )
         {
-
             _rockConfig.CaptureAmountOnScan = chkCaptureAmountOnScan.IsChecked == true;
       
-            _rockConfig.RequireControlAmount = chkRequireConrolAmount.IsChecked == true;
+            _rockConfig.RequireControlAmount = chkRequireControlAmount.IsChecked == true;
             _rockConfig.RequireControlItemCount = chkRequireControlItemCount.IsChecked == true;
             AddAccountsForAmountsToSave();
             if ( _rockConfig.CaptureAmountOnScan && _rockConfig.SelectedAccountForAmountsIds.Count() == 0 )
             {
-                MessageBox.Show( "Capture Amount selected but no accounts checked" );
+                MessageBox.Show( "Please select at least one account", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning );
                 return;
             }
             try
@@ -406,14 +423,11 @@ namespace Rock.Apps.CheckScannerUtility
                 _rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
             }
 
-            var defaultCampus = cbDefaultCampus.SelectedValue as Campus;
-            if (defaultCampus != null)
-            {
-                _rockConfig.DefaultCampusId = defaultCampus.Id;
-            }
+            var campusFilter = cboCampusFilter.SelectedItem as Campus;
+            _rockConfig.CampusIdFilter = campusFilter?.Id;
 
             _rockConfig.Save();
-            BatchPage.LoadLookups(_campusChanged);
+            BatchPage.LoadLookups();
 
             // shutdown the scanner so that options will be reloaded when the batch page loads
             if ( BatchPage.rangerScanner != null )
@@ -424,14 +438,19 @@ namespace Rock.Apps.CheckScannerUtility
             BatchPage.UnbindAllEvents();
             BatchPage.BindDeviceToPage();
             BatchPage.ConnectToScanner();
+            BatchPage.LoadFinancialBatchesGrid();
+            BatchPage.UpdateBatchUI( BatchPage.SelectedFinancialBatch );
 
             this.NavigationService.Navigate(BatchPage);
         }
 
+        /// <summary>
+        /// Adds the accounts for amounts to save.
+        /// </summary>
         private void AddAccountsForAmountsToSave()
         {
             List<int> selectedAccounts = new List<int>();
-            foreach ( var item in icAccountsForBatches.Items )
+            foreach ( var item in tvAccountsForBatches.Items )
             {
                 var displayAccount = item as DisplayAccountModel;
                 SetParentChildIdsToSave( displayAccount, ref selectedAccounts );
@@ -460,10 +479,7 @@ namespace Rock.Apps.CheckScannerUtility
                     SetParentChildIdsToSave( child, ref selectedAccounts );
                 }
             }
-
-
         }
-
 
         /// <summary>
         /// Handles the Click event of the btnCancel control.
@@ -495,8 +511,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             // show Image Option only for Ranger so default Collapsed for both MagTeks
-            lblImageOption.Visibility = Visibility.Hidden;
-            cboImageOption.Visibility = Visibility.Hidden;
+            spImageOption.Visibility = Visibility.Collapsed;
 
             // show Image Option only for Ranger so default Collapsed
             lblAdvancedInfo.Visibility = Visibility.Hidden;
@@ -526,7 +541,7 @@ namespace Rock.Apps.CheckScannerUtility
                         break;
                     default:
                         // show Image Option only for Ranger
-                        lblImageOption.Visibility = Visibility.Visible;
+                        spImageOption.Visibility = Visibility.Visible;
                         cboImageOption.Visibility = Visibility.Visible;
                         lblMagTekCommPort.Visibility = Visibility.Collapsed;
                         cboMagTekCommPort.Visibility = Visibility.Collapsed;
@@ -542,7 +557,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         private RockRestClient RestClient
-        {
+        { 
             get
             {
                 if ( _Client == null )
@@ -558,19 +573,14 @@ namespace Rock.Apps.CheckScannerUtility
 
         private void ChkCaptureAmountOnScan_Unchecked( object sender, RoutedEventArgs e )
         {
-            chkRequireConrolAmount.IsChecked = false;
+            chkRequireControlAmount.IsChecked = false;
             chkRequireControlItemCount.IsChecked = false;
         }
 
-        private void Page_SizeChanged( object sender, SizeChangedEventArgs e )
+        private void CbCampusFilter_SelectionChanged( object sender, SelectionChangedEventArgs e)
         {
-
-            this.icAccountsForBatches.Height = sp_ScannerSettings.Height - 60;
-        }
-
-        private void CbDefaultCampus_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            this._campusChanged = true;
+            int? campusId = cboCampusFilter.SelectedValue as int?;
+            LoadFinancialAccounts( campusId );
         }
     }
 }

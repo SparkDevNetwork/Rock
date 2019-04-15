@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace Rock.Apps.CheckScannerUtility
+namespace Rock.Wpf
 {
     public static class FocusExtension
     {
