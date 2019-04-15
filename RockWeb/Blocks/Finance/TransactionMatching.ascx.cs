@@ -1019,13 +1019,6 @@ namespace RockWeb.Blocks.Finance
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
-            if ( cbTotalAmount.Text.AsDecimalOrNull().HasValue && !authorizedPersonId.HasValue )
-            {
-                nbSaveError.Text = "Transaction must be matched to a person when the amount is specified.";
-                nbSaveError.Visible = true;
-                return;
-            }
-
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
             if ( financialTransaction != null &&
                 financialTransaction.AuthorizedPersonAliasId.HasValue &&
