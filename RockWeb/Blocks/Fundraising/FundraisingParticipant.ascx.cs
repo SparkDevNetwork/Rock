@@ -568,6 +568,15 @@ namespace RockWeb.Blocks.Fundraising
         protected void BindContributionsGrid()
         {
 
+            // Hide the whole Amount column if the block setting is set to hide
+            var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
+            var amountCol = gContributions.ColumnsOfType<RockLiteralField>()
+                .FirstOrDefault( c => c.ID == "lTransactionDetailAmount" );
+            if ( amountCol != null )
+            {
+                amountCol.Visible = showAmount;
+            }
+
             var rockContext = new RockContext();
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
             int groupMemberId = hfGroupMemberId.Value.AsInteger();
@@ -612,9 +621,8 @@ namespace RockWeb.Blocks.Fundraising
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
 
-                var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
                 Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
-                if ( lTransactionDetailAmount != null && lTransactionDetailAmount.Visible == showAmount )
+                if ( lTransactionDetailAmount != null && lTransactionDetailAmount.Visible )
                 {
 					var amount = financialTransaction.TransactionDetails
                         .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
