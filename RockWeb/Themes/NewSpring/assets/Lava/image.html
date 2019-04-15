@@ -13,7 +13,9 @@
 {% assign url = url | Trim %}
 
 {% if url != empty %}<a href="{{ url }}">{% endif %}
-	<div class="ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %} background-cover background-center" style="background-image:url('{{ imageurl }}');">
-		
+	<div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %}" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
+		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}">
+
+		</div>
 	</div>
 {% if url != empty %}</a>{% endif %}
