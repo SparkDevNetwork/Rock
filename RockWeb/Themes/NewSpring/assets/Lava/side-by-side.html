@@ -15,7 +15,6 @@
 <section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
     {% if imageurl != null and imageurl != '' %}
-        {% if url != empty and video == '' %}<a href="{{ url | Trim }}">{% endif %}
 
             <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1;">
 
@@ -38,7 +37,6 @@
 
             </div>
 
-        {% if url != empty %}</a>{% endif %}
     {% endif %}    
 
     <div class="row {% if imagealignment == 'Left' %}text-right{% else %}text-left{% endif %} flush">
