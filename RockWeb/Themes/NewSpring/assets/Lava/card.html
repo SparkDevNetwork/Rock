@@ -13,7 +13,11 @@
 {% assign url = url | Trim %}
 
 <div {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
-
+        {% if CurrentPerson | HasRightsTo:'Edit' %}
+        <div class="panel-header bg-white soft-half">
+            <p class="flush"><a href="/page/342?contentItemId={{ Item.Id }}" class="btn btn-xs btn-info">Edit This</a></p>
+        </div>
+    {% endif %}
     {% if imageurl != null and imageurl != '' %}
         {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
@@ -69,9 +73,6 @@
         {% if url != empty %}
             <p>
                 <a href="{{ url }}" class="btn btn-sm btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
-                {% if CurrentPerson | HasRightsTo:'Edit' %}
-                    <a href="/page/342?contentItemId={{ id }}" class="btn btn-sm btn-info pull-right">Edit This</a>
-                {% endif %}
             </p>
         {% endif %}
 

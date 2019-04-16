@@ -12,6 +12,7 @@
 
 {% assign url = url | Trim %}
 
+
 <section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="
 shell
 hero
@@ -47,7 +48,7 @@ bring-forward
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-    <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top">
+    <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
 
         {% if imageoverlayurl != null and imageoverlayurl != '' %}
             <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
@@ -82,5 +83,7 @@ bring-forward
     </div>
 
     {% if ratio != null and ratio != '' %}</div>{% endif %}
+
+    <div class="hero-shim {% if hideforegroundelements == 'Yes' %}hidden{% endif %}"></div>
 
 </section>
