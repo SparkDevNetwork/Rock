@@ -406,7 +406,14 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            if ( !string.IsNullOrWhiteSpace( photoGuid ) )
+            {
+                imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            }
+            else
+            {
+                imgOpportunityPhoto.Visible = false;
+            }
 
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
@@ -567,7 +574,6 @@ namespace RockWeb.Blocks.Fundraising
         /// </summary>
         protected void BindContributionsGrid()
         {
-
             // Hide the whole Amount column if the block setting is set to hide
             var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
             var amountCol = gContributions.ColumnsOfType<RockLiteralField>()
