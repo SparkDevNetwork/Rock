@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Rock.Communication.SmsActions;
@@ -29,10 +30,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="message">The message received by the communications component.</param>
         /// <returns>If not null, identifies the response that should be sent back to the sender.</returns>
-        static public SmsMessage ProcessIncomingMessage( SmsMessage message )
+        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message )
         {
-            SmsMessage response = null;
             var errorMessage = string.Empty;
+            var outcomes = new List<SmsActionOutcome>();
 
             var smsActions = SmsActionCache.All()
                 .Where( a => a.IsActive )
@@ -47,15 +48,22 @@ namespace Rock.Model
                     continue;
                 }
 
+                var outcome = new SmsActionOutcome
+                {
+                    ActionName = smsAction.Name
+                };
+                outcomes.Add( outcome );
+
                 try
                 {
                     //
                     // Check if the action wants to process this message.
                     //
-                    var shouldProcessMessage = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
+                    outcome.ShouldProcess = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
+                    outcome.ErrorMessage = errorMessage;
                     LogIfError( errorMessage );
 
-                    if ( !shouldProcessMessage )
+                    if ( !outcome.ShouldProcess )
                     {
                         continue;
                     }
@@ -64,24 +72,47 @@ namespace Rock.Model
                     // Process the message and use either the response returned by the action
                     // or the previous response we already had.
                     //
-                    response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage ) ?? response;
+                    outcome.Response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage );
+                    outcome.ErrorMessage = errorMessage;
                     LogIfError( errorMessage );
 
-                    //
-                    // If the action is set to not continue after processing then stop.
-                    //
-                    if ( !smsAction.ContinueAfterProcessing )
+                    if ( outcome.Response != null )
                     {
-                        return response;
-                    }
+                        LogIfError( errorMessage );
+                    }                    
                 }
                 catch ( Exception exception )
                 {
+                    outcome.Exception = exception;
                     LogIfError( exception );
+                }
+
+                //
+                // If the action is set to not continue after processing then stop.
+                //
+                if ( outcome.ShouldProcess && !smsAction.ContinueAfterProcessing )
+                {
+                    break;
                 }
             }
 
-            return response;
+            return outcomes;
+        }
+
+        /// <summary>
+        /// From the list of outcomes, get the last outcome with a non-null message and return that message
+        /// </summary>
+        /// <param name="outcomes"></param>
+        /// <returns></returns>
+        public static SmsMessage GetResponseFromOutcomes( List<SmsActionOutcome> outcomes )
+        {
+            if ( outcomes == null )
+            {
+                return null;
+            }
+
+            var lastOutcomeWithResponse = outcomes.LastOrDefault( o => o.Response != null );
+            return lastOutcomeWithResponse == null ? null : lastOutcomeWithResponse.Response;
         }
 
         /// <summary>
