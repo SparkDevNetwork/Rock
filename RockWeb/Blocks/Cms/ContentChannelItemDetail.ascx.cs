@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Cms
                     // If the list was filtered due to VIEW security, don't sort it
                     if ( !isFiltered )
                     {
-                        var service = new ContentChannelItemService( rockContext );
+                        var service = new ContentChannelItemAssociationService( rockContext );
                         service.Reorder( items, e.OldIndex, e.NewIndex );
                         rockContext.SaveChanges();
                     }
@@ -1100,7 +1100,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+                    items = items.OrderByDescending( p => p.ChildContentChannelItem.StartDateTime ).ToList();
                 }
             }
 
@@ -1109,13 +1109,13 @@ namespace RockWeb.Blocks.Cms
 
             gChildItems.DataSource = items.Select( i => new
             {
-                i.Id,
-                i.Guid,
-                i.Title,
-                i.StartDateTime,
-                ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
-                Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
-                Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
+                i.ChildContentChannelItem.Id,
+                i.ChildContentChannelItem.Guid,
+                i.ChildContentChannelItem.Title,
+                i.ChildContentChannelItem.StartDateTime,
+                ExpireDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ChildContentChannelItem.ExpireDateTime : ( DateTime? ) null,
+                Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) i.Order : ( int? ) null,
+                Status = ( i.ChildContentChannelItem.ContentChannel.RequiresApproval && !i.ChildContentChannelItem.ContentChannelType.DisableStatus ) ? DisplayStatus( i.ChildContentChannelItem.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
 
@@ -1133,7 +1133,7 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+                items = items.OrderByDescending( p => p.ChildContentChannelItem.StartDateTime ).ToList();
             }
 
             gParentItems.ObjectList = new Dictionary<string, object>();
@@ -1141,26 +1141,26 @@ namespace RockWeb.Blocks.Cms
 
             gParentItems.DataSource = items.Select( i => new
             {
-                i.Id,
-                i.Guid,
-                i.Title,
-                StartDateTime = i.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates ? i.StartDateTime : (DateTime?)null,
-                ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
-                Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
-                Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
+                i.ChildContentChannelItem.Id,
+                i.ChildContentChannelItem.Guid,
+                i.ChildContentChannelItem.Title,
+                StartDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates ? i.ChildContentChannelItem.StartDateTime : ( DateTime? ) null,
+                ExpireDateTime = i.ChildContentChannelItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ChildContentChannelItem.ExpireDateTime : ( DateTime? ) null,
+                Order = contentItem.ContentChannel.ChildItemsManuallyOrdered ? ( int? ) null : ( int? ) i.ChildContentChannelItem.Order,
+                Status = ( i.ChildContentChannelItem.ContentChannel.RequiresApproval && !i.ChildContentChannelItem.ContentChannelType.DisableStatus ) ? DisplayStatus( i.ChildContentChannelItem.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : string.Empty
             } ).ToList();
             gParentItems.DataBind();
         }
 
-        private List<ContentChannelItem> GetChildItems( ContentChannelItem contentItem, out bool isFiltered )
+        private List<ContentChannelItemAssociation> GetChildItems( ContentChannelItem contentItem, out bool isFiltered )
         {
             isFiltered = false;
-            var items = new List<ContentChannelItem>();
+            var items = new List<ContentChannelItemAssociation>();
 
-            foreach ( var item in contentItem.ChildItems.Select( a => a.ChildContentChannelItem ).ToList() )
+            foreach ( var item in contentItem.ChildItems.ToList() )
             {
-                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( item.ContentChannelItem.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     items.Add( item );
                 }
@@ -1173,13 +1173,13 @@ namespace RockWeb.Blocks.Cms
             return items;
         }
 
-        private List<ContentChannelItem> GetParentItems( ContentChannelItem contentItem )
+        private List<ContentChannelItemAssociation> GetParentItems( ContentChannelItem contentItem )
         {
-            var items = new List<ContentChannelItem>();
+            var items = new List<ContentChannelItemAssociation>();
 
-            foreach ( var item in contentItem.ParentItems.Select( a => a.ContentChannelItem ).ToList() )
+            foreach ( var item in contentItem.ParentItems.ToList() )
             {
-                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( item.ContentChannelItem.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     items.Add( item );
                 }
