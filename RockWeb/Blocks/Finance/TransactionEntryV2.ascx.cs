@@ -1523,6 +1523,8 @@ mission. We are so grateful for your commitment.</p>
             if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
+                return;
             }
 
             SetInitialTargetPersonControls();
@@ -2312,6 +2314,7 @@ mission. We are so grateful for your commitment.</p>
                         gatewayScheduleId = paymentInfo.TransactionCode;
                     }
 
+                    // if an exception occurred, it is possible that an orphaned subscription might be on the Gateway server. Some gateway components will clean-up when there is exception, but log it just in case it needs to be resolved by a human
                     throw new Exception( string.Format( "Error occurred when saving financial scheduled transaction for gateway scheduled payment with a gatewayScheduleId of {0} and FinancialScheduledTransaction with Guid of {1}.", gatewayScheduleId, transactionGuid ), ex );
                 }
             }
