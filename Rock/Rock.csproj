@@ -393,6 +393,7 @@
     <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionOutcome.cs" />
     <Compile Include="Communication\SmsActions\SmsMessage.cs" />
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
@@ -485,6 +486,7 @@
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="SystemGuid\Layout.cs" />
+    <Compile Include="SystemGuid\PageRoute.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />

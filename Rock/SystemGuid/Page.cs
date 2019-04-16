@@ -1505,7 +1505,6 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Text To Give Setup page guid
-        /// ParentPage: Contributions
         /// </summary>
         public const string TEXT_TO_GIVE_SETUP = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1";
 

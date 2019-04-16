@@ -329,7 +329,41 @@ namespace RockWeb.Blocks.Communication
                     message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber );
                 }
 
-                var response = SmsActionService.ProcessIncomingMessage( message );
+                var outcomes = SmsActionService.ProcessIncomingMessage( message );
+                var response = SmsActionService.GetResponseFromOutcomes( outcomes );
+
+                var stringBuilder = new StringBuilder();
+
+                if ( outcomes != null )
+                {
+                    foreach ( var outcome in outcomes )
+                    {
+                        if ( outcome != null )
+                        {
+                            stringBuilder.AppendLine( outcome.ActionName );
+                            stringBuilder.AppendLine( string.Format( "\tShould Process = {0}", outcome.ShouldProcess ) );
+
+                            if ( outcome.Response != null && !outcome.Response.Message.IsNullOrWhiteSpace() )
+                            {
+                                stringBuilder.AppendLine( string.Format( "\tResponse = {0}", outcome.Response.Message ) );
+                            }
+
+                            if (!outcome.ErrorMessage.IsNullOrWhiteSpace())
+                            {
+                                stringBuilder.AppendLine( string.Format( "\tError = {0}", outcome.ErrorMessage ) );
+                            }
+
+                            if ( outcome.Exception != null )
+                            {
+                                stringBuilder.AppendLine( string.Format( "\tException = {0}", outcome.Exception.Message ) );
+                            }
+
+                            stringBuilder.AppendLine();
+                        }
+                    }
+                }
+
+                preOutcomes.InnerText = stringBuilder.ToString();
 
                 if ( response != null )
                 {
@@ -343,6 +377,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 lResponse.Text = "--Empty Message--";
+                preOutcomes.InnerText = string.Empty;
             }
         }
 

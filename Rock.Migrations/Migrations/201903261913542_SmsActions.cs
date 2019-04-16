@@ -21,7 +21,6 @@ namespace Rock.Migrations
     /// </summary>
     public partial class SmsActions : RockMigration
     {
-        private const string SmsGivePageRouteGuid = "58592279-6CD7-47FD-BD0C-E35784FF69FF";
         private const string SmsGiveBlockTypeGuid = "597F3E62-8FCA-45AA-9502-BBBA3C5CA181";
         private const string SmsGiveBlockGuid = "22B0428C-5C39-4C92-8CBE-F64F7A045FF1";
         private const string FutureTransactionJobGuid = "123ADD3C-8A58-4A4D-9370-5E9C6CD3760B";
@@ -193,7 +192,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddPageRoute(
                 SystemGuid.Page.TEXT_TO_GIVE_SETUP,
                 "TextToGive",
-                SmsGivePageRouteGuid );
+                SystemGuid.PageRoute.TEXT_TO_GIVE_SETUP );
 
             RockMigrationHelper.AddBlockType(
                 "Text To Give Setup",
