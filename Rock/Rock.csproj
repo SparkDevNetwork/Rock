@@ -389,6 +389,7 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Financial\HostedPaymentInfoControlOptions.cs" />
     <Compile Include="Financial\IGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayPaymentControlTokenEvent.cs" />

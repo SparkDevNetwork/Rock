@@ -122,19 +122,23 @@ namespace Rock.TransNational.Pi
         /// <param name="enableACH">if set to <c>true</c> [enable ach]. (Credit Card is always enabled)</param>
         /// <param name="controlId">The control identifier.</param>
         /// <returns></returns>
-        public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, bool enableACH, string controlId )
+        public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
         {
             PiHostedPaymentControl piHostedPaymentControl = new PiHostedPaymentControl { ID = controlId };
             piHostedPaymentControl.PiGateway = this;
             piHostedPaymentControl.GatewayBaseUrl = this.GetGatewayUrl( financialGateway );
-            if ( enableACH )
+            List<PiPaymentType> enabledPaymentTypes = new List<PiPaymentType>();
+            if (options?.EnableACH ?? true)
             {
-                piHostedPaymentControl.EnabledPaymentTypes = new PiPaymentType[] { PiPaymentType.card, PiPaymentType.ach };
+                enabledPaymentTypes.Add( PiPaymentType.ach );
             }
-            else
+
+            if ( options?.EnableCreditCard ?? true )
             {
-                piHostedPaymentControl.EnabledPaymentTypes = new PiPaymentType[] { PiPaymentType.card };
+                enabledPaymentTypes.Add( PiPaymentType.card );
             }
+
+            piHostedPaymentControl.EnabledPaymentTypes = enabledPaymentTypes.ToArray();
 
             piHostedPaymentControl.PublicApiKey = this.GetPublicApiKey( financialGateway );
 
