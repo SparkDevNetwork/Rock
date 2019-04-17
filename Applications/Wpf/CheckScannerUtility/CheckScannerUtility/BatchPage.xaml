@@ -472,7 +472,7 @@
                                     Grid.Column="0"
                                     Content="Control Item Count"
                                     Style="{StaticResource labelStyle}" />
-                                <rockWpfControls:CurrencyBox
+                                <TextBox
                                     x:Name="txtControlItemCount"
                                     Grid.Row="7"
                                     Grid.Column="0"
