@@ -30,8 +30,6 @@ using Rock.Model;
 using Rock.Slingshot.Model;
 using Rock.Web.Cache;
 using System.Security.Cryptography;
-using System.Data.Entity.Validation;
-using System.ComponentModel.DataAnnotations;
 
 namespace Rock.Slingshot
 {
@@ -551,17 +549,6 @@ namespace Rock.Slingshot
                 financialBatchsToInsert.Add( financialBatch );
             }
 
-            foreach ( var batch in financialBatchsToInsert )
-            {
-                if ( !batch.IsValid )
-                {
-                    throw new ValidationException(
-                        string.Format( "Batch with foreign id {0}: {1}",
-                            batch.ForeignId,
-                            string.Join( ", ", batch.ValidationResults.Select( vr => vr.ErrorMessage ) ) ) );
-                }
-            }
-
             rockContext.BulkInsert( financialBatchsToInsert );
 
             stopwatchTotal.Stop();
@@ -813,7 +800,7 @@ namespace Rock.Slingshot
                     TimeSpan.TryParse( groupImport.MeetingTime, out meetingTime );
                     group.Schedule = new Schedule()
                     {
-                        Name = group.Name.Left( 50 ),
+                        Name = group.Name,
                         IsActive = group.IsActive,
                         WeeklyDayOfWeek = meetingDay,
                         WeeklyTimeOfDay = meetingTime,
@@ -889,18 +876,7 @@ namespace Rock.Slingshot
                 groupSchedulesToInsert.Add( groupWithSchedule.Schedule );
             }
 
-            foreach ( var groupSchedule in groupSchedulesToInsert )
-            {
-                if ( !groupSchedule.IsValid )
-                {
-                    throw new ValidationException(
-                        string.Format( "Group schedule with foreign id {0}: {1}",
-                            groupSchedule.ForeignId,
-                            string.Join( ", ", groupSchedule.ValidationResults.Select( vr => vr.ErrorMessage ) ) ) );
-                }
-            }
-
-            rockContext.BulkInsert( groupSchedulesToInsert, false );
+            rockContext.BulkInsert( groupSchedulesToInsert );
 
             if ( groupSchedulesToInsert.Any() )
             {
@@ -1785,31 +1761,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     person.SaveAttributeValues();
                 }
 
-                try
-                {
-                    var updatedRecords = rockContextForPersonUpdate.SaveChanges( true );
-                    return addressesUpdated || personAttributesUpdated || updatedRecords > 0;
-                }
-                catch ( DbEntityValidationException validationException )
-                {
-                    var validationErrors = new List<string>();
+                var updatedRecords = rockContextForPersonUpdate.SaveChanges( true );
 
-                    if ( validationException.EntityValidationErrors != null )
-                    {
-                        validationErrors.AddRange( validationException.EntityValidationErrors
-                            .Where( eve => eve.ValidationErrors != null )
-                            .SelectMany( eve => eve.ValidationErrors )
-                            .Select( ve => ve.ErrorMessage ) );
-                    }
-
-                    throw new DbEntityValidationException(
-                            string.Format( "Validation problem with entity related to person with Id {0} and foreign Id {1} ({2}): {3}",
-                                person.Id,
-                                person.ForeignId,
-                                string.Join( ", ", validationErrors ),
-                                validationException.Message ),
-                            validationException );
-                }
+                return addressesUpdated || personAttributesUpdated || updatedRecords > 0;
             }
         }
 
