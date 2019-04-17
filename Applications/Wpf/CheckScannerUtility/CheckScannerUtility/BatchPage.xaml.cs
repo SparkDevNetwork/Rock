@@ -98,7 +98,33 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        RockRestClient _restClient = null;
 
+        /// <summary>
+        /// Gets the rest client.
+        /// </summary>
+        /// <value>
+        /// The rest client.
+        /// </value>
+        public RockRestClient RestClient
+        {
+            get
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                if ( _restClient == null || !_restClient.rockBaseUri.Equals( new Uri( rockConfig.RockBaseUrl ) ) )
+                {
+                    RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                    client.Login( rockConfig.Username, rockConfig.Password );
+                    _restClient = client;
+                }
+
+                return _restClient;
+            }
+        }
+
+        /// <summary>
+        /// Binds the device to page.
+        /// </summary>
         public void BindDeviceToPage()
         {
             if ( this.micrImage != null )
@@ -456,8 +482,8 @@ namespace Rock.Apps.CheckScannerUtility
         public void LoadLookups()
         {
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
+            var client = this.RestClient;
+
             this.CampusList = client.GetData<List<Campus>>( "api/Campuses" );
 
             cboCampus.SelectedValuePath = "Id";
@@ -494,9 +520,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             int? origSelectedBatchId = this.SelectedFinancialBatch?.Id;
             RockConfig config = RockConfig.Load();
-            RockRestClient client = new RockRestClient( config.RockBaseUrl );
-
-            client.Login( config.Username, config.Password );
+            var client = this.RestClient;
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
             if ( config.CampusIdFilter.HasValue )
@@ -890,8 +914,7 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 RockConfig rockConfig = RockConfig.Load();
-                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                var client = this.RestClient;
 
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
@@ -1082,8 +1105,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( this.SelectedFinancialBatch != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
 
                         var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
                         if ( transactions != null )
@@ -1156,13 +1178,12 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
+            var client = this.RestClient;
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
             string campusName = null;
-            if (selectedBatch.CampusId.HasValue)
+            if ( selectedBatch.CampusId.HasValue )
             {
                 campusName = this.CampusList.FirstOrDefault( a => a.Id == selectedBatch.CampusId.Value )?.Name;
             }
@@ -1314,8 +1335,7 @@ namespace Rock.Apps.CheckScannerUtility
             if ( transactions != null )
             {
                 RockConfig rockConfig = RockConfig.Load();
-                var client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                var client = this.RestClient;
 
                 foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
@@ -1400,8 +1420,8 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( financialTransaction != null )
                 {
                     RockConfig config = RockConfig.Load();
-                    RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                    client.Login( config.Username, config.Password );
+                    var client = this.RestClient;
+
                     financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
                     BatchItemDetailPage.batchPage = this;
                     BatchItemDetailPage.FinancialTransaction = financialTransaction;
@@ -1444,8 +1464,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( financialTransaction != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
                         client.Delete( string.Format( "api/FinancialTransactions/{0}", transactionId ) );
                         UpdateBatchUI( this.SelectedFinancialBatch );
                     }
