@@ -1,0 +1,60 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+<!-- Secondary Nav -->
+<section class="bg-gray-darker hard flush shadowed hidden-xs hidden-sm">
+    <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
+
+        <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
+            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 4px;">{{ Page.Title }}</h2>
+        </a>
+
+        <ul class="list-inline flush">
+            {% for page in IncludePageList %}
+                {% assign path = 'Global' | Page:'Path' %}
+                {% assign parts =  page | PropertyToKeyValue %}
+                <li><a href="{{ parts.Value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}" data-scroll="">{{ parts.Key }}</a></li>
+            {% endfor %}
+            {% for childPage in Page.Pages %}
+                <li><a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a></li>
+            {% endfor %}
+
+        </ul>
+
+    </div>
+</section>
+
+<!-- Mobile Secondary Nav -->
+<section class="bg-primary hard flush shadowed hidden-md hidden-lg">
+        <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
+
+            <a class="btn btn-block btn-primary collapsed letter-spacing-condensed stronger text-decoration-none text-center" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                {{ CurrentPage.PageTitle }}
+                <i class="position-relative fas fa-caret-down" style="top: 1px;"></i>
+            </a>
+    
+            <div class="panel panel-default flush hidden-md hidden-lg">
+                <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                    <div class="panel-body hard" style="background-color: transparent;">
+                        <div class="list-group text-left">
+                        {% assign path = 'Global' | Page:'Path' %}
+                        {% for page in IncludePageList %}
+                            {% assign parts =  page | PropertyToKeyValue %}
+                            {% if parts.Value != path %}
+                                <a href="{{ parts.Value }}" class="list-group-item text-gray-darker sans-serif stronger letter-spacing-condensed text-decoration-none">{{ parts.Key }}</button>
+                            {% endif %}
+                        {% endfor %}
+                        {% for childPage in Page.Pages %}
+                            {%  if childPage.Url != path %}
+                                <a href="{{ childPage.Url }}" class="list-group-item text-gray-darker sans-serif stronger letter-spacing-condensed text-decoration-none">{{ childPage.Title }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+        </div>
+    </section>
+
+
+{% endif %}

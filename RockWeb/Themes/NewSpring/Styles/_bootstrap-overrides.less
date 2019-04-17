@@ -1,0 +1,33 @@
+@import "../../../Styles/Bootstrap/mixins.less";
+
+.fa, .fas {
+  font-family: "Font Awesome\ 5 Pro" !important;
+}
+
+// Buttons
+.btn-sm {
+  .button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+  padding-bottom: @padding-small-vertical - 1;
+}
+
+.btn-xs {
+  .button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+}
+
+.button-variant(@color; @background; @border) {
+  &:focus,
+  &.focus {
+    background-color: @background;
+        border-color: @border;
+  }
+}
+
+// Pagination
+.pagination {
+	> li {
+		> a,
+		> span {
+			padding: @padding-base-vertical * 1.5 + 1 @padding-base-horizontal * 1.25 @padding-base-vertical * 1.5 - 1;
+		}
+	}
+}

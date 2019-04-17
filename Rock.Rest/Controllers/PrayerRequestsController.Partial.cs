@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -142,6 +144,55 @@ namespace Rock.Rest.Controllers
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
 
             Service.Context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Get the prayer requests of every member of a certain set of groups that a person belongs to
+        /// </summary>
+        /// <param name="excludePerson">Exclude the logged in person prayers</param>
+        /// <param name="groupTypeIds">A list of group type ids</param>
+        /// <param name="personId">The id of the person to pull group prayers for</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes/{personId}" )]
+        public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( bool excludePerson, string groupTypeIds, int personId )
+        {
+            RockContext rockContext = new RockContext();
+            System.DateTime now = RockDateTime.Now;
+
+            // Turn the comma separated list of groupTypeIds into a list of strings.
+            List<int> groupTypeIdsList = ( groupTypeIds ?? "" ).Split( ',' ).AsIntegerList();
+
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId( personId )   // Get the groups that a person is a part of
+                .Where( gm =>
+                    groupTypeIdsList.Contains( gm.Group.GroupTypeId ) &&    // Filter those groups by a set of passed in group types. 
+                    gm.Group.IsActive == true && gm.Group.IsArchived == false   // Also make sure the groups are active and not archived.
+                 )
+                .SelectMany( gm => gm.Group.Members )   // Get the members of those groups
+                .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.IsArchived == false ) // Make sure that the group members are active and haven't been archived
+                .Select( m => m.Person.Aliases.FirstOrDefault().Id );   // Return the person alias ids
+
+            // Get the prayers for the people.
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            IQueryable<PrayerRequest> prayerRequestList = prayerRequestService.Queryable()
+                .Where( pr =>
+                    ( groupMemberPersonAliasList.Contains( (int)pr.RequestedByPersonAliasId ) ) &&
+                    ( pr.IsActive.HasValue && pr.IsActive.Value == true ) &&
+                    ( pr.IsPublic.HasValue && pr.IsPublic.Value == true ) &&
+                    ( pr.IsApproved.HasValue && pr.IsApproved == true ) &&
+                    ( !pr.ExpirationDate.HasValue || pr.ExpirationDate.Value > now )
+                );
+
+            // Filter out the current persons prayers if excludePerson is true
+            if ( excludePerson ) { 
+                prayerRequestList = prayerRequestList.Where( pr => pr.RequestedByPersonAlias.PersonId != personId );
+            }
+
+            //Return this as a queryable.
+            return prayerRequestList;
         }
     }
 }

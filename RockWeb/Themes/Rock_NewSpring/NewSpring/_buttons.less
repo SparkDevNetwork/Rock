@@ -1,0 +1,42 @@
+// .btn {
+// 	padding: 6px 10px 4px;
+// }
+
+.btn {
+	font-weight: 500;
+
+	.btn-icon {
+		margin-top: -1px;
+		margin-left: 6px;
+		padding-left: 10px;
+		border-left: 1px solid rgba(0,0,0,.1);
+		vertical-align: middle;
+	}
+}
+
+.btn-action {
+	background-color: @theme-1;
+	border-color: @theme-1;
+
+	&:hover, &:active, &:focus {
+		background-color: @secondary-color;
+		border-color: @secondary-color;
+	}
+}
+
+.btn-sm {
+	padding: 5px 10px;
+	
+	.btn-icon {
+		padding-bottom: 1px;
+	}
+}
+
+.btn-primary:focus {
+	background-color: @theme-1;
+	border-color: darken(@theme-1,5%);
+}
+
+.btn-default {
+	color: @theme-6-text;
+}

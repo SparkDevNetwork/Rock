@@ -48,7 +48,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Shoulds serialize a HtmlContent into a JSON string.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Need a mock for Global Attributes" )]
         public void ExportJson()
         {
             var html = new HtmlContent

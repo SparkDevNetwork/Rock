@@ -1,0 +1,43 @@
+{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','twitter:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','twitter:description' }}
+{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','og:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','og:description' }}
+{% assign opportunityPhotoUrl = item | Attribute:'OpportunityPhoto','Url' %}
+{% if opportunityPhotoUrl != '' %}
+{{ opportunityPhotoUrl | AddMetaTagToHead:'property','og:image' }}
+{{ opportunityPhotoUrl | AddMetaTagToHead:'property','twitter:image' }}
+{{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+{% endif %}
+
+{% assign setPageTitleToOpportunityTitle = Block | Attribute:'SetPageTitletoOpportunityTitle','RawValue' %}
+
+{% assign startDate = Group | Attribute:'OpportunityStartDate' %}
+{% assign endDate = Group | Attribute:'OpportunityEndDate' %}
+
+{% capture id %}{% endcapture %}
+{% capture title %}{{ Group.Name }}{% endcapture %}
+{% capture content %}
+    <p class="lead">{{ Group | Attribute:'OpportunityLocation' }}<br>
+    {{ startDate | Date:'MMMM' }} {{ startDate | Date:'d' | NumberToOrdinal }}, {{ startDate | Date:'yyyy' }}{% if startDate != empty %}
+     - {{ endDate | Date:'MMMM' }} {{ endDate | Date:'d' | NumberToOrdinal }}, {{ endDate | Date:'yyyy' }}{% endif %}
+    </p>
+{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{{ Group | Attribute:'OpportunityImage','Url' }}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}.6{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{{ Group | Attribute:'OpportunityVideo','RawValue' }}{% endcapture %}
+{% capture ratio %}{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}{% endcapture %}
+{% capture linkurl %}{% endcapture %}
+{% capture linktext %}{% endcapture %}
+
+{[ hero ]}
