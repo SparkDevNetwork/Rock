@@ -1091,6 +1091,12 @@ namespace Rock.Model
                 }
             }
 
+            var registrationService = new RegistrationService( this.Context as RockContext );
+            foreach ( var registration in registrationService.Queryable().Where(a => a.GroupId == item.Id) )
+            {
+                registration.GroupId = null;
+            }
+
             string message;
             if ( !CanDelete( item, out message ) )
             {
