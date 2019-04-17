@@ -69,6 +69,11 @@
 
                 addFilterRow($filter, expression.Value, expression.Comparison);
             }
+
+            if (data.Filters.length === 0) {
+                addFilterRow($filter, '', 8);
+                updateData($filter);
+            }
         }
 
         //
@@ -242,6 +247,13 @@
 
                 filters.push({ Value: text, Comparison: type });
             });
+
+            //
+            // If there is only one filter, it is a Contains filter and has no value, then get rid of it.
+            //
+            if (filters.length === 1 && filters[0].Value === '' && filters[0].Comparison === 8) {
+                filters = [];
+            }
 
             //
             // Build the final filtered text value.
