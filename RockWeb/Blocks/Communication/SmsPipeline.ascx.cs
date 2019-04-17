@@ -34,19 +34,19 @@ using Rock.Communication.SmsActions;
 
 namespace RockWeb.Blocks.Communication
 {
-    [DisplayName( "SMS Actions" )]
+    [DisplayName( "SMS Pipeline" )]
     [Category( "Communication" )]
-    [Description( "Configures the SMS Actions that run when an incoming message is received." )]
-    public partial class SmsActions : RockBlock
+    [Description( "Configures the pipeline that processes an incoming SMS message." )]
+    public partial class SmsPipeline : RockBlock
     {
 
-    #region Base Control Methods
+        #region Base Control Methods
 
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
