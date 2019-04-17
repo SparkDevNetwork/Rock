@@ -257,8 +257,14 @@ namespace Rock.Model
             decimal controlAmount = batch.ControlAmount + refundTransaction.TotalAmount;
             batch.ControlAmount = controlAmount;
 
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0)
+            {
+                rockContext.SaveChanges();
+            }
+
             refundTransaction.BatchId = batch.Id;
-            batch.Transactions.Add( refundTransaction );
+            Add( refundTransaction );
 
             errorMessage = string.Empty;
             return refundTransaction;

@@ -16,7 +16,7 @@
 //
 using System;
 using System.Web;
-
+using Rock.Web.Cache;
 using Rock.Extension;
 using Rock.Model;
 
@@ -43,6 +43,46 @@ namespace Rock.Security
         /// The requires remote authentication.
         /// </value>
         public abstract Boolean RequiresRemoteAuthentication { get; }
+
+        /// <summary>
+        /// Authenticates the user based on user name and password. If the attempt is a failure,
+        /// the the userlogin model is updated and possibly locked according to the global attributes
+        /// PasswordAttemptWindow and MaxInvalidPasswordAttempts
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        public bool AuthenticateAndTrack( UserLogin user, string password )
+        {
+            if ( user == null )
+            {
+                return false;
+            }
+
+            if ( user.IsLockedOut.HasValue && user.IsLockedOut.Value )
+            {
+                return false;
+            }
+
+            var isSuccess = false;
+
+            try
+            {
+                isSuccess = Authenticate( user, password );
+
+                if ( !isSuccess )
+                {
+                    UserLoginService.UpdateFailureCount( user );
+                }
+            }
+            catch {
+                // If an exception occured we want to return the default "false" or the
+                // value set by the Authenticate method if that succeeded.  Nothing to do
+                // here.
+            }
+
+            return isSuccess;
+        }
 
         /// <summary>
         /// Authenticates the user based on user name and password

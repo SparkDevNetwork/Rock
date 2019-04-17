@@ -441,12 +441,17 @@
     <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
     <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
     <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
+    <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
+    <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
     <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
+    <Compile Include="Plugin\HotFixes\069_MigrationRollupsForV8_7_6.cs" />
     <Compile Include="Plugin\HotFixes\068_MigrationRollupsForV8_7_5.cs" />
     <Compile Include="Plugin\HotFixes\067_MigrationRollupsForV8_7_4.cs" />
     <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
+    <Compile Include="Plugin\HotFixes\070_MigrationRollupsForV8_7_7.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2177,6 +2182,7 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\GetSavedAccount.cs" />
     <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />

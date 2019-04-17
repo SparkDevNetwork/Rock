@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Security;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Security;
@@ -65,6 +63,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns true if there is a UserLogin record matching the specified userName
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <returns></returns>
+        public bool Exists( string userName )
+        {
+            return Queryable().Where( u => u.UserName == userName ).Any();
+        }
+
+        /// <summary>
         /// Sets the a <see cref="Rock.Model.UserLogin">UserLogin's</see> password.
         /// </summary>
         /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to change the password for.</param>
@@ -82,43 +90,6 @@ namespace Rock.Model
 
             authenticationComponent.SetPassword( user, password );
             user.LastPasswordChangedDateTime = RockDateTime.Now;
-        }
-
-        /// <summary>
-        /// Updates the <see cref="Rock.Model.UserLogin"/> failed password attempt count.
-        /// </summary>
-        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to update the failure count on.</param>
-        private void UpdateFailureCount( UserLogin user )
-        {
-            int passwordAttemptWindow = 0;
-            int maxInvalidPasswordAttempts = int.MaxValue;
-
-            var globalAttributes = GlobalAttributesCache.Get();
-            if ( !Int32.TryParse( globalAttributes.GetValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
-                passwordAttemptWindow = 0;
-            if ( !Int32.TryParse( globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
-                maxInvalidPasswordAttempts = int.MaxValue;
-
-            DateTime firstAttempt = user.FailedPasswordAttemptWindowStartDateTime ?? DateTime.MinValue;
-            int attempts = user.FailedPasswordAttemptCount ?? 0;
-
-            TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
-            if ( RockDateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
-            {
-                attempts++;
-                if ( attempts >= maxInvalidPasswordAttempts )
-                {
-                    user.IsLockedOut = true;
-                    user.LastLockedOutDateTime = RockDateTime.Now;
-                }
-
-                user.FailedPasswordAttemptCount = attempts;
-            }
-            else
-            {
-                user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
-            }
         }
 
         /// <summary>
@@ -262,6 +233,52 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether a new UserLogin with the specified parameters would be valid 
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="passwordConfirm">The password confirm.</param>
+        /// <param name="errorTitle">The error title.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid new user login] [the specified user name]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidNewUserLogin( string userName, string password, string passwordConfirm, out string errorTitle, out string errorMessage )
+        {
+            errorTitle = null;
+            errorMessage = null;
+            if ( string.IsNullOrWhiteSpace( userName ) || string.IsNullOrWhiteSpace( password ) )
+            {
+                errorTitle = "Missing Information";
+                errorMessage = "A username and password are required when saving an account";
+                return false;
+            }
+
+            if ( new UserLoginService( new RockContext() ).Exists( userName ) )
+            {
+                errorTitle = "Invalid Username";
+                errorMessage = "The selected Username is already being used. Please select a different Username";
+                return false;
+            }
+
+            if ( !UserLoginService.IsPasswordValid( password ) )
+            {
+                errorTitle = string.Empty;
+                errorMessage = UserLoginService.FriendlyPasswordRules();
+                return false;
+            }
+
+            if ( passwordConfirm != password )
+            {
+                errorTitle = "Invalid Password";
+                errorMessage = "The password and password confirmation do not match";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Returns a user friendly description of the password rules.
         /// </summary>
         /// <returns>A user friendly description of the password rules.</returns>
@@ -280,12 +297,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the specified rock context.
+        /// Creates a new <see cref="Rock.Model.UserLogin" /> and saves it to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
         /// <param name="serviceType">Type of the service.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeId">The EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user will use.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
@@ -364,12 +381,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin" />
+        /// Creates a new <see cref="Rock.Model.UserLogin" /> and saves it to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
         /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeId">The EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user will use.</param>
         /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
         /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
         /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
@@ -457,6 +474,58 @@ namespace Rock.Model
                         HistoryService.SaveChanges( rockContext, typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, true );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Call this method if the login attempt fails.  Updates the
+        /// <see cref="Rock.Model.UserLogin"/> failed password attempt count.
+        /// </summary>
+        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to update the failure count on.</param>
+        public static void UpdateFailureCount( UserLogin user )
+        {
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            // Get the global attribute that defines what the window in minutes of time
+            // are between the first unsuccessful login and the point in time where those
+            // failed logins will be forgiven
+            var passwordAttemptWindow = globalAttributes.GetValue( "PasswordAttemptWindow" ).AsIntegerOrNull() ?? 0;
+            var passwordAttemptWindowMinutes = TimeSpan.FromMinutes( passwordAttemptWindow );
+
+            // Get the global attribute that defines the total number of failed attempts that are
+            // permitted within the window before the use is locked out
+            var maxInvalidPasswordAttempts = globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ).AsIntegerOrNull() ?? int.MaxValue;
+
+            // Get the current state of this user's failed login attempts
+            var firstAttempt = user.FailedPasswordAttemptWindowStartDateTime ?? DateTime.MinValue;
+            var attempts = user.FailedPasswordAttemptCount ?? 0;
+            var endOfWindow = firstAttempt.Add( passwordAttemptWindowMinutes );
+
+            // Determine if the user is still inside the window where failed logins have not
+            // yet been forgiven
+            var inWindow = RockDateTime.Now < endOfWindow;
+
+            if ( inWindow )
+            {
+                // The user is within the window meaning the failed logins are accumulating and
+                // cannot yet be forgiven
+                attempts++;
+
+                if ( attempts >= maxInvalidPasswordAttempts )
+                {
+                    user.IsLockedOut = true;
+                    user.LastLockedOutDateTime = RockDateTime.Now;
+                }
+
+                user.FailedPasswordAttemptCount = attempts;
+            }
+            else
+            {
+                // The user is outside the window, so failed logins can be forgiven and the
+                // database record tracking fields can be reset to only reflect this single
+                // failed login
+                user.FailedPasswordAttemptCount = 1;
+                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }
         }
 

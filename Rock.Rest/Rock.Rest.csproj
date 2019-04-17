@@ -134,8 +134,10 @@
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />
+    <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />
@@ -338,7 +340,6 @@
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
     <Compile Include="Controllers\PersonBadgesController.cs" />
-    <Compile Include="Controllers\PrayerRequestsController.Parial.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />
