@@ -2,6 +2,402 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
-Test
+
+        <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
+
+             <div id="divRegistration" runat="server" class="wizard-item complete">
+                <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-clipboard"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Registration
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+    
+            <div id="divGroup" runat="server" class="wizard-item complete">
+                <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-users"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Group
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+    
+            <div id="divEvent" runat="server" class="wizard-item active">
+                <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar-plus"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Event
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+    
+            <div id="divEventOccurrence" runat="server" class="wizard-item">
+                <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-clock"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Event Occurrence
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div id="divSummary" runat="server" class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-list-ul"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Summary
+                </div>
+            </div>
+
+        </asp:Panel>
+
+        <asp:Panel ID="pnlInitiate" runat="server">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-magic"></i>
+                        Event Registration Wizard - Choose a Template</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:EmailBox ID="tbContactEmail" runat="server" Label="Contact Email" Required="true" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:PhoneNumberBox ID="tbContactPhone" runat="server" Label="Contact Phone" Required="true" />
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbNext_Initiate" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Initiate_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+
+
+
+        </asp:Panel>
+
+        <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                        Event Registration Wizard - Registration</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbRegistrationName" runat="server" Label="Registration Name" Required="true" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker ID="dtpRegistrationStarts" runat="server" Label="Registration Starts" Required="true" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker ID="dtpRegistrationEnds" runat="server" Label="Registration Ends" Required="true" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker ID="dtpReminderDate" runat="server" Label="Send Reminder Date" Required="true" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="numbMaximimAttendees" runat="server" Label="Maximum Attendees" Required="true" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlCosts" runat="server">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" Help="The cost per registrant." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
+                                        Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbBatchPrefix" runat="server" Label="Batch Prefix" Required="true" />
+                                </div>
+                            </div>
+                        </asp:Panel>
+
+                        <div class="row">
+                            <div class="col-md-6 col-md-offset-6">
+                                <Rock:RockTextBox ID="tbSlug" runat="server" Label="Slug" Required="true" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:PanelWidget ID="pwRegistrationCustomization" runat="server" Title="Registration Customization">
+                                    <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                    <Rock:HtmlEditor ID="HtmlEditor1" runat="server" Label="Reminder Details" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                    <Rock:HtmlEditor ID="HtmlEditor2" runat="server" Label="Confirmation Details" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                </Rock:PanelWidget>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPrev_Registration" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Registration_Click"  />
+                            <asp:LinkButton ID="lbNext_Registration" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Registration_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlGroup" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-users"></i>
+                        Event Registration Wizard - Group</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbGroupName" runat="server" Label="New Group Name" Required="true" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:GroupPicker ID="gpParentGroup" runat="server" Label="Parent Group" />
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPrev_Group" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Group_Click"  />
+                            <asp:LinkButton ID="lbNext_Group" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Group_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlEvent" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-calendar-plus"></i>
+                        Event Registration Wizard - Event</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:Toggle ID="tglEventSelection" runat="server" ActiveButtonCssClass="btn-primary" OnText="New Event" OffText="Existing Event"
+                                    OnCheckedChanged="tglEventSelection_CheckedChanged" />
+                                <hr />
+                            </div>
+                        </div>
+                        <asp:Panel ID="pnlExistingEvent" runat="server">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:EventItemPicker ID="eipSelectedEvent" runat="server"  Label="Event" Required="true" />
+                                </div>
+                            </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlNewEvent" runat="server" Visible="false">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbCalendarEventName" runat="server" Label="Calendar Event Name" Required="true" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbEventSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="4" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:HtmlEditor ID="htmlEventDescription" runat="server" Label="Description" Toolbar="Light" />
+                                </div>
+                            </div>
+
+                            <!--
+                                Reminder:
+                                Copy Audiences and Attributes Logic From \Blocks\Event\EventItemDetail.ascx
+                                -->
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockControlWrapper ID="rcwAudiences" runat="server" Label="Audiences">
+                                        <div class="grid">
+                                            <Rock:Grid ID="gAudiences" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Audience" ShowHeader="false">
+                                                <Columns>
+                                                    <Rock:RockBoundField DataField="Value" />
+                                                    <Rock:DeleteField OnClick="gAudiences_Delete" />
+                                                </Columns>
+                                            </Rock:Grid>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+                                    <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" 
+                                        Help="Calendars that this item should be added to (at least one is required)."
+                                        OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
+                                        RepeatDirection="Horizontal" Required="true" />
+                                    <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
+                                        Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
+                                        <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                                    </Rock:PanelWidget>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPrev_Event" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Event_Click"  />
+                            <asp:LinkButton ID="lbNext_Event" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Event_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlEventOccurrence" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-clock"></i>
+                        Event Registration Wizard - Event Occurrence</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbLocationDescription" runat="server" Label="Location Description" Required="true" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" >
+                                    <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule"/>
+                                    <asp:Literal ID="lScheduleText" runat="server" />
+                                </Rock:RockControlWrapper>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" Toolbar="Light" />
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPrev_EventOccurrence" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_EventOccurrence_Click"  />
+                            <asp:LinkButton ID="lbNext_EventOccurrence" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_EventOccurrence_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlSummary" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-list-ul"></i>
+                        Event Registration Wizard - Summary</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="alert alert-info">
+                        <div><strong>Please confirm the following changes:</strong></div>
+                        <asp:PlaceHolder ID="phChanges" runat="server" />
+                    </div>
+
+                    <fieldset>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPrev_Summary" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Summary_Click"  />
+                            <asp:LinkButton ID="lbNext_Summary" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Finish" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Summary_Click" />
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlFinished" runat="server" CssClass="js-navigation-panel" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-check"></i>
+                        Event Registration Wizard - Finished</h1>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="alert alert-success">
+                        <div><strong>Success</strong></div>
+                        <div>
+                            Registration created for
+                            <asp:Label ID="lblEventRegistrationTitle" runat="server" />
+                        </div>
+                        <hr />
+
+                        <ul>
+                            <li><asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
+                            <li><asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
+                            <li><asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
+                            <li><asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </asp:Panel>
+
+
+        <asp:Label ID="lblDebug" runat="server" />
     </ContentTemplate>
 </asp:UpdatePanel>
+
