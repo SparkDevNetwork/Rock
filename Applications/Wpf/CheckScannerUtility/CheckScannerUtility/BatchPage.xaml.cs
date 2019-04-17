@@ -221,6 +221,14 @@ namespace Rock.Apps.CheckScannerUtility
         public List<DefinedValue> CurrencyValueList { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus list.
+        /// </summary>
+        /// <value>
+        /// The campus list.
+        /// </value>
+        public List<Campus> CampusList { get; set; }
+
+        /// <summary>
         /// Gets the selected currency value.
         /// </summary>
         /// <value>
@@ -235,7 +243,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// All the possible Transation Source Type, including ones that can't be selected when scanning
+        /// All the possible Transaction Source Type, including ones that can't be selected when scanning
         /// </summary>
         /// <value>
         /// The source type value list.
@@ -431,9 +439,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount )
             {
-                if (this.SelectedFinancialBatch != null && this.SelectedFinancialBatch.ControlItemCount > 0)
-                { 
-                    if (this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
+                if ( this.SelectedFinancialBatch != null && this.SelectedFinancialBatch.ControlItemCount > 0 )
+                {
+                    if ( this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
                     {
                         btnScan.IsEnabled = false;
                         btnScan.ToolTip = "Item count equals control count";
@@ -450,18 +458,20 @@ namespace Rock.Apps.CheckScannerUtility
             RockConfig rockConfig = RockConfig.Load();
             RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
-            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campuses" );
+            this.CampusList = client.GetData<List<Campus>>( "api/Campuses" );
 
             cboCampus.SelectedValuePath = "Id";
             cboCampus.DisplayMemberPath = "Name";
             cboCampus.Items.Clear();
             cboCampus.Items.Add( null );
+
+            var filteredCampusList = this.CampusList.ToList();
             if ( rockConfig.CampusIdFilter.HasValue )
             {
-                campusList = campusList.Where( a => a.Id == rockConfig.CampusIdFilter.Value ).ToList();
+                filteredCampusList = filteredCampusList.Where( a => a.Id == rockConfig.CampusIdFilter.Value ).ToList();
             }
 
-            foreach ( var campus in campusList.OrderBy( a => a.Name ) )
+            foreach ( var campus in filteredCampusList.OrderBy( a => a.Name ) )
             {
                 cboCampus.Items.Add( campus );
             }
@@ -507,7 +517,7 @@ namespace Rock.Apps.CheckScannerUtility
                     FinancialBatchWithControlVariance financialBatchWithControlVariance = new FinancialBatchWithControlVariance();
                     financialBatchWithControlVariance.CopyPropertiesFrom( pendingBatch );
                     ControlTotalResult controlTotalAmounts;
-                    if (controlTotalsLookup.ContainsKey(pendingBatch.Id))
+                    if ( controlTotalsLookup.ContainsKey( pendingBatch.Id ) )
                     {
                         controlTotalAmounts = controlTotalsLookup[pendingBatch.Id];
                     }
@@ -550,7 +560,13 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( SelectedFinancialBatch != null )
                 {
                     // try to set the selected batch in the grid to our current batch (if it still exists in the database)
-                    grdBatches.SelectedValue = gridDataContext.FirstOrDefault();
+                    var selectedValue = gridDataContext.FirstOrDefault( a => a.Id == SelectedFinancialBatch.Id );
+                    if ( selectedValue == null )
+                    {
+                        selectedValue = gridDataContext.FirstOrDefault();
+                    }
+
+                    grdBatches.SelectedValue = selectedValue;
                     FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
 
                     ScanningPageUtility.ItemsToProcess = selectedBatch == null ? 0 : selectedBatch.ControlItemCount;
@@ -852,6 +868,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             grdBatches.IsEnabled = !showInEditMode;
             btnAddBatch.IsEnabled = !showInEditMode;
+            btnRefreshBatchList.IsEnabled = !showInEditMode;
         }
 
         /// <summary>
@@ -1144,8 +1161,14 @@ namespace Rock.Apps.CheckScannerUtility
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
+            string campusName = null;
+            if (selectedBatch.CampusId.HasValue)
+            {
+                campusName = this.CampusList.FirstOrDefault( a => a.Id == selectedBatch.CampusId.Value )?.Name;
+            }
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campuses/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
+
+            lblBatchCampusReadOnly.Content = campusName;
             if ( selectedBatch.BatchStartDateTime != null )
             {
                 lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
@@ -1240,7 +1263,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "C" );
 
-                spBatchControlAmountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlAmount  ? Visibility.Visible : Visibility.Collapsed;
+                spBatchControlAmountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlAmount ? Visibility.Visible : Visibility.Collapsed;
                 spBatchControlItemCountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount ? Visibility.Visible : Visibility.Collapsed;
                 spBatchControlItemCountReadOnly.Visibility = selectedBatch.ControlItemCount.HasValue ? Visibility.Visible : Visibility.Hidden;
 
