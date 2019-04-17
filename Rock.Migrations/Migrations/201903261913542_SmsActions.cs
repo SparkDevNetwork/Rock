@@ -162,18 +162,18 @@ namespace Rock.Migrations
 
         private void PagesAndBlocksUp()
         {
-            RockMigrationHelper.AddPage( true, "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "SMS Actions", "", "2277986A-F53D-4E46-B6EC-6BAD1111DA39", "fa fa-sms" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Communication > SMS Actions", "", "~/Blocks/Communication/SmsActions.ascx", "", "44C32EB7-4DA3-4577-AC41-E3517442E269" );
-            // Add Block to Page: SMS Actions Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "2277986A-F53D-4E46-B6EC-6BAD1111DA39".AsGuid(), null, Rock.SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), "44C32EB7-4DA3-4577-AC41-E3517442E269".AsGuid(), "Sms Actions", "Main", @"", @"", 0, "F6CA6D07-DDF4-47DD-AA7E-29F5DCCC2DDC" );
+            RockMigrationHelper.AddPage( true, "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "SMS Pipeline", "", "2277986A-F53D-4E46-B6EC-6BAD1111DA39", "fa fa-sms" ); // Site:Rock RMS
+            RockMigrationHelper.UpdateBlockType( "Communication > SMS Pipeline", "", "~/Blocks/Communication/SmsPipeline.ascx", "", "44C32EB7-4DA3-4577-AC41-E3517442E269" );
+            // Add Block to Page: SMS Pipeline Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "2277986A-F53D-4E46-B6EC-6BAD1111DA39".AsGuid(), null, Rock.SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), "44C32EB7-4DA3-4577-AC41-E3517442E269".AsGuid(), "Sms Pipeline", "Main", @"", @"", 0, "F6CA6D07-DDF4-47DD-AA7E-29F5DCCC2DDC" );
         }
 
         private void PagesAndBlocksDown()
         {
-            // Remove Block: Sms Actions, from Page: SMS Actions, Site: Rock RMS
+            // Remove Block: Sms Pipeline, from Page: SMS Pipeline, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "F6CA6D07-DDF4-47DD-AA7E-29F5DCCC2DDC" );
-            RockMigrationHelper.DeleteBlockType( "44C32EB7-4DA3-4577-AC41-E3517442E269" ); // Communication > Sms Actions
-            RockMigrationHelper.DeletePage( "2277986A-F53D-4E46-B6EC-6BAD1111DA39" ); //  Page: SMS Actions, Layout: Full Width, Site: Rock RMS
+            RockMigrationHelper.DeleteBlockType( "44C32EB7-4DA3-4577-AC41-E3517442E269" ); // Communication > Sms Pipeline
+            RockMigrationHelper.DeletePage( "2277986A-F53D-4E46-B6EC-6BAD1111DA39" ); //  Page: SMS Pipeline, Layout: Full Width, Site: Rock RMS
         }
     }
 }

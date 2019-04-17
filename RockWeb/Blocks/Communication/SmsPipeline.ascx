@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmsActions.ascx.cs" Inherits="RockWeb.Blocks.Communication.SmsActions" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmsPipeline.ascx.cs" Inherits="RockWeb.Blocks.Communication.SmsPipeline" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
