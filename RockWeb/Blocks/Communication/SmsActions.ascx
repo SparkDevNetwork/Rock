@@ -68,7 +68,7 @@
                         <div class="sms-heading">
                             Incoming SMS Message
                         </div>
-                        <ol class="js-drag-container list-unstyled">
+                        <ol class="drag-container js-drag-container list-unstyled">
                             <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
                                 <ItemTemplate>
                                     <li class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
