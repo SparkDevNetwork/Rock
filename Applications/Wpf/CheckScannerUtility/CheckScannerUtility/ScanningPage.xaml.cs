@@ -575,6 +575,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             var rockConfig = RockConfig.Load();
             this._interfaceType = rockConfig.ScannerInterfaceType;
+            this._isBackScan = false;
+            this._currentMagtekScannedDoc = null;
             this.gCheckMICRInfo.Visibility = Visibility.Collapsed;
             this.spScannedItemDisplay.Visibility = Visibility.Collapsed;
             this.spAccounts.Visibility = Visibility.Collapsed;
