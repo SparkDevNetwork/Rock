@@ -46,8 +46,6 @@
                             <Rock:CategoryPicker ID="catpPrayerCategoryFilter" runat="server" Label="Category" EntityTypeName="Rock.Model.PrayerRequest"/>
                             <Rock:CampusPicker ID="cpPrayerCampusFilter" runat="server" />
 
-                            <Rock:RockCheckBox ID="cbShowExpired" runat="server" Label="Show Expired Requests?" />
-
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
 
                         </Rock:GridFilter>
@@ -61,9 +59,6 @@
                                 <Rock:RockBoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
                                 <Rock:DateField DataField="EnteredDateTime" HeaderText="Entered" SortExpression="EnteredDateTime"/>
                                 <Rock:RockBoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
-                                <Rock:BadgeField DataField="PrayerCount" HeaderText="Prayer Count" SortExpression="PrayerCount" DangerMin="0" DangerMax="0" SuccessMin="3" />
-                                <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" DangerMin="4" WarningMin="2" InfoMin="1" InfoMax="2" />
-                                <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
                             </Columns>
                         </Rock:Grid>
                     </div>
