@@ -27,10 +27,10 @@ namespace Rock.Apps.CheckScannerUtility.Models
     {
         private FinancialAccount _financialAccount;
 
-        public DisplayAccountModel(FinancialAccount financialAccount )
+        public DisplayAccountModel(FinancialAccount financialAccount, List<FinancialAccount> allFinancialAccounts )
         {
             _financialAccount = financialAccount;
-            Children = new ObservableCollection<DisplayAccountModel>( financialAccount.ChildAccounts.Select( a => new DisplayAccountModel( a ) ) );
+            Children = new ObservableCollection<DisplayAccountModel>( allFinancialAccounts.Where(a => a.ParentAccountId.HasValue && a.ParentAccountId == financialAccount.Id ).Select(a => new DisplayAccountModel(a, allFinancialAccounts)).ToList());
         }
 
         private bool _accountIsChecked;
