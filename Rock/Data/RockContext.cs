@@ -1739,7 +1739,7 @@ namespace Rock.Data
                     catch ( Exception ex )
                     {
                         ExceptionLogService.LogException( new Exception( $"Exception occurred when Registering Entity Type {entityType} to RockContext", ex ), null );
-                    }
+                    }                    
                 }
 
                 // add configurations that might be in plugin assemblies
@@ -1759,7 +1759,13 @@ namespace Rock.Data
             {
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
-        }
+
+            // This has similar functionality like [NotMapped], but allows the properties to still work with odata
+            // even though they are ignored at the database level
+            modelBuilder.Entity<FinancialPaymentDetail>().Ignore( fpd => fpd.NameOnCard );
+            modelBuilder.Entity<FinancialPaymentDetail>().Ignore( fpd => fpd.ExpirationMonth );
+            modelBuilder.Entity<FinancialPaymentDetail>().Ignore( fpd => fpd.ExpirationYear );
+        }        
     }
 
     /// <summary>
