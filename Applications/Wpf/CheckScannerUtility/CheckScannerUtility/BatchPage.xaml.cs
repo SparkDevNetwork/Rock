@@ -361,7 +361,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
 
-            ScanningPage.ShowRangerScannerStatus( xportState, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -408,6 +408,10 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
+
+                //If set to false, Ranger's exception manager will never prompt the user, and
+                // management will be left to the application.
+                rangerScanner.SetGenericOption( "ExceptionHandling", "Enabled", "false" );
 
                 // Ranger assigns a score of 1-255 on how confident it is that the character was read correctly (1 unsure, 255 very sure)
                 // If the score is less than 255, it will assign another score to its next best guess.  
@@ -642,7 +646,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = status;
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
 
-            ScanningPage.ShowRangerScannerStatus( connected ? RangerTransportStates.TransportReadyToFeed : RangerTransportStates.TransportShutDown, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -706,22 +710,28 @@ namespace Rock.Apps.CheckScannerUtility
 
         private bool HandleMagTekImageSafe( RockConfig rockConfig )
         {
-            this.Cursor = Cursors.Wait;
-            UpdateScannerStatusForMagtek( false );
-
-            //Port Open Connects
-            var firmware = this.GetImageSafeVersion();
-            if ( firmware.Length > 0 )
+            try
             {
+                this.Cursor = Cursors.Wait;
+                UpdateScannerStatusForMagtek( false );
 
-                UpdateScannerStatusForMagtek( true );
-                ScannerFeederType = FeederType.SingleItem;
-                return true;
+                //Port Open Connects
+                var firmware = this.GetImageSafeVersion();
+                if ( firmware.Length > 0 )
+                {
+
+                    UpdateScannerStatusForMagtek( true );
+                    ScannerFeederType = FeederType.SingleItem;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else
+            finally
             {
-
-                return false;
+                this.Cursor = null;
             }
         }
 
@@ -839,7 +849,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in", rockConfig.ScannerInterfaceType.ConvertToString( true ) ) );
+                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in. You may need to restart the application after reconnecting the device.", rockConfig.ScannerInterfaceType.ConvertToString( true ) ) );
             }
         }
 
