@@ -7,11 +7,11 @@
 <div class="md-text-constrained md-mx-auto panel">
     {% if CurrentPerson | HasRightsTo:'Edit' %}
         <div class="panel-header bg-white soft-half" style="border-bottom: 1px solid #ddd;">
-            <p class="flush"><a href="/page/342?contentItemId={{ Item.Id }}" class="btn btn-xs btn-info">Edit This</a></p>
+            <p class="flush"><a href="/page/342?contentItemId={{ Item.Id }}" class="btn btn-sm btn-info">Edit This</a></p>
         </div>
     {% endif %}
 
-    <div class="panel-body xs-soft-half">
+    <div class="panel-body xs-soft-half hard-bottom">
         
         <h1 class="h2 xs-h3 push-half-top">{{ Item.Title }}</h1>
         
@@ -148,7 +148,7 @@
 
 
 
-{[ relatedItemsSwiper guid:'{{ Item.Guid }}' ]}
+{[ relatedItemsSwiper guid:'{{ Item.Guid }}' limit:'10' ]}
 
 
 

@@ -41,7 +41,7 @@
 
 {% assign url = url | Trim %}
 
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="shell bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
+<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="shell bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
 	
 	{% if imageurl != null and imageurl != '' %}
     	<span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
