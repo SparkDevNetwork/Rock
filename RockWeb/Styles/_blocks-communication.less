@@ -577,10 +577,8 @@ iframe.email-body {
 
 .panel-palette {
   margin: 20px;
-  //background-color: @ui-2;
   border: 1px solid @panel-border;
   box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
-
 
   .panel-heading {
     font-weight: 500;
@@ -617,30 +615,6 @@ iframe.email-body {
     border-top: 1px solid fade(@panel-border, 100%);
   }
 
-  /* Dragula */
-  .gu-mirror {
-    position: fixed !important;
-    z-index: 9999 !important;
-    margin: 0 !important;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-    filter: alpha(opacity=80);
-    opacity: .8;
-  }
-  .gu-hide {
-    display: none !important;
-  }
-  .gu-unselectable {
-    -webkit-user-select: none !important;
-    -moz-user-select: none !important;
-    -ms-user-select: none !important;
-    user-select: none !important;
-  }
-  .gu-transit {
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
-    filter: alpha(opacity=50);
-    opacity: .5;
-  }
-
   .component.gu-transit {
     max-width: 500px;
     padding: 20px 0;
@@ -650,4 +624,8 @@ iframe.email-body {
     list-style: none;
     border: 3px solid fade(#000, 20%);
   }
+}
+
+.component.gu-mirror {
+  list-style: none;
 }
