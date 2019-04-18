@@ -119,7 +119,7 @@ WHERE [GroupTypeId] in (
 {% assign hsmAreas = "" %}
 {% for item in results %}
     {% if item.GroupTypeId == studentMinCheckinConfigId %}
-        {% if item.Name contains "High School Ministry" %}
+        {% if item.Name contains "High School Ministry" or item.Name contains "LCBC Staff" %}
             {% assign hsmAreas = hsmAreas | Append: "," | Append: item.ChildGroupTypeId %}
         {% endif %}
     {% endif %}
