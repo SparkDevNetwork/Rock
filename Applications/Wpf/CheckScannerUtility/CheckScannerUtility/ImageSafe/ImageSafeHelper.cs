@@ -226,7 +226,6 @@ namespace ImageSafeInterop
         public static string DocInfo { get; set; }
         public static string CurrentDeviceName { get; set; }
         public static string Options { get; private set; }
-        public static StringBuilder ErrorLog = new StringBuilder();
         #endregion
 
         #region Private Members
@@ -329,25 +328,16 @@ namespace ImageSafeInterop
                 if ( nRet != MICR_ST_OK )
                 {
                     strLog = "Setup Options FAILED...";
-                    //PrintStatus(strLog);
-                    ErrorLog.AppendLine( strLog );
-                    checkData.Errors = ErrorLog;
+                    checkData.HasError = true;
+                    checkData.ErrorMessage = strLog;
                 }
-
-                strLog = "Begin Process Options Info...";
-
-                ErrorLog.AppendLine( strLog );
-
-
-                strLog = "End Process Options Info...";
-                ErrorLog.AppendLine( strLog );
 
                 StringBuilder strResponse = new StringBuilder();
                 strResponse.Capacity = 4096;
                 int nResponseLength = 4096;
                 DocInfo = "";
                 nRet = MTMICRProcessCheck( CurrentDeviceName, Options, strResponse, ref nResponseLength );
-                ;
+
                 if ( nRet == ( int ) MICR_ST_OK )
                 {
                     DocInfo = strResponse.ToString();
@@ -373,8 +363,7 @@ namespace ImageSafeInterop
                         else
                         {
                             checkData.HasError = true;
-                            ErrorLog.AppendLine( strLog );
-                            checkData.Errors = ErrorLog;
+                            checkData.ErrorMessage = strLog;
                             callback.DynamicInvoke( checkData );
                             //this.HandleError(handler, "Process Check Feeder not Set to Check.", checkData);
                             return;
@@ -383,10 +372,8 @@ namespace ImageSafeInterop
                     }
                     else if ( nReturnCode == 250 )
                     {
-                        ErrorLog.AppendLine( strLog );
-                        ErrorLog.AppendLine( "Check Waiting Timeout!" );
                         checkData.HasError = true;
-                        checkData.Errors = ErrorLog;
+                        checkData.ErrorMessage = "Check Waiting Timeout";
                         callback.DynamicInvoke( checkData );
 
                         return;
@@ -394,8 +381,7 @@ namespace ImageSafeInterop
                     else
                     {
                         checkData.HasError = true;
-                        checkData.Errors = ErrorLog;
-                        ErrorLog.AppendLine( "Process Check FAILED!" );
+                        checkData.ErrorMessage = "Process Check Failed";
                         callback.DynamicInvoke( checkData );
                         //this.HandleError(handler, strLog, checkData);
                         return;
@@ -404,15 +390,17 @@ namespace ImageSafeInterop
                 else
                 {
                     strLog = "MTMICRProcessCheck return code " + nRet;
+                    ImageSafeConst status = ( ImageSafeConst ) nRet;
+                    checkData.HasError = true;
+                    checkData.ErrorMessage = $"Unable to connect to scanner ( {status.ConvertToString()})";
+                    callback.DynamicInvoke( checkData );
 
                     //this.HandleError(handler, strLog, checkData);
                     return;
                 }
 
             }
-            checkData.Errors = ErrorLog;
             callback.DynamicInvoke( checkData );
-
             //HandleError(handler, "No Current Device Name found.", checkData);
         }
 

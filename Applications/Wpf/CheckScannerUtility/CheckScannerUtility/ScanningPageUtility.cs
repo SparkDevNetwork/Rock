@@ -58,24 +58,7 @@ namespace Rock.Apps.CheckScannerUtility
 
         public static List<FinancialAccount> Accounts { get; set; }
 
-        public static void ResumeRangerScanning()
-        {
-            if ( batchPage.rangerScanner != null )
-            {
-                // StartFeeding doesn't work if the Scanner isn't in ReadyToFeed state, so assign StartRangerFeedingWhenReady if it isn't ready yet
-                RangerTransportStates xportState = ( RangerTransportStates ) batchPage.rangerScanner.GetTransportState();
-                if ( xportState == RangerTransportStates.TransportReadyToFeed )
-                {
-                    batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedOne );
-                }
-                else
-                {
-                    // ensure the event is only registered once
-                    batchPage.rangerScanner.TransportReadyToFeedState -= StartRangerFeedingWhenReady;
-                    batchPage.rangerScanner.TransportReadyToFeedState += StartRangerFeedingWhenReady;
-                }
-            }
-        }
+       
 
         /// <summary>
         /// Writes to debug log.
@@ -389,20 +372,5 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         #endregion
-
-        public static void ShowRangerScannerStatus( RangerTransportStates xportStates, System.Windows.Media.Color statusColor, string statusText, ref Ellipse shapeStatus )
-        {
-            switch ( xportStates )
-            {
-                case RangerTransportStates.TransportReadyToFeed:
-                    break;
-
-                case RangerTransportStates.TransportFeeding:
-                    break;
-            }
-
-            shapeStatus.ToolTip = statusText;
-            shapeStatus.Fill = new System.Windows.Media.SolidColorBrush( statusColor );
-        }
     }
 }
