@@ -286,7 +286,8 @@
                     <controls:AlertLabel
                         x:Name="lblAlert"
                         AlertType="Danger"
-                        Content="ERROR: Something Something Something Something Something Something Something Something Something Something Something Something Something Something Something Something Something Something Something " />
+                        Content="ERROR: - "
+                        Visibility="Collapsed" />
 
                 </StackPanel>
                 <StackPanel

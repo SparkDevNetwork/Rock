@@ -633,14 +633,17 @@ namespace Rock.Apps.CheckScannerUtility
             var filteredAccounts = ScanningPageUtility.Accounts.Where( a => rockConfig.SelectedAccountForAmountsIds.Contains( a.Id ) );
             List<DisplayAccountValueModel> displayedAccountList = new List<DisplayAccountValueModel>();
 
-            int index = 0;
-
             foreach ( var account in filteredAccounts )
             {
-                displayedAccountList.Add( new DisplayAccountValueModel( account ) { Index = index++ } );
+                displayedAccountList.Add( new DisplayAccountValueModel( account ));
             }
 
+            int index = 0;
             displayedAccountList = displayedAccountList.OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
+            foreach (var displayedAccount in displayedAccountList)
+            {
+                displayedAccount.Index = index++;
+            }
 
             this.lvAccountDetailsEntry.ItemsSource = displayedAccountList;
             this.lvAccountDetailsDisplay.ItemsSource = displayedAccountList;
@@ -942,7 +945,7 @@ namespace Rock.Apps.CheckScannerUtility
         #region Scanner (MagTek MICRImage RS232) Events
 
         /// <summary>
-        /// Handles the MicrDataReceived event of the micrImage control.
+        /// Handles the MicrDataReceived event of the micrImage (RS232) control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
@@ -1204,6 +1207,7 @@ namespace Rock.Apps.CheckScannerUtility
                 // scanning the front image, but still need to scan the back
                 var message = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scanningChecks ? "checks" : "items" );
                 this.DisplayAlertMessage( AlertMessageType.Info, message );
+                btnStart.IsEnabled = true;
 
                 _currentMagtekScannedDoc.FrontImageData = e.ImageData;
                 _isBackScan = true;
