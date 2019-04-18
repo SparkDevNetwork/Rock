@@ -469,7 +469,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount )
             {
-                if ( this.SelectedFinancialBatch != null && this.SelectedFinancialBatch.ControlItemCount > 0 )
+                if ( this.SelectedFinancialBatch?.Transactions != null && this.SelectedFinancialBatch.ControlItemCount > 0 )
                 {
                     if ( this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
                     {
