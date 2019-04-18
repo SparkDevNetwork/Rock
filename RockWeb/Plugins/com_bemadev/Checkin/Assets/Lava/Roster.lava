@@ -6,10 +6,18 @@
   });
 </script>
 
+{% assign campusId = 'Global' | PageParameter:'CampusId' %}
+{% assign locationIds = 'Global' | PageParameter:'LocationIds' %}
+{% assign scheduleIds = 'Global' | PageParameter:'ScheduleIds' %}
+{% assign areaGuid = 'Global' | PageParameter:'Area' %}
+
+{% capture wheelHouseUrl %}/page/543?CampusId={{campusId}}&LocationIds=160481%2C160490%2C160491%2C160509%2C160517%2C160530%2C160543%2C160554%2C160565%2C160575%2C160588%2C160599%2C160600%2C160628%2C160629%2C160640%2C160654{% endcapture%}
+
 <div class="row">
 	<div class="col-sm-12">
 		<a href="/checkin/welcome" class="btn btn-primary hiddenButton" role="button" style="margin-right: 10px;background-color: #525252;border-color: #525252;"> Return to Checkin </a>
 		<a id="printbtn" class="btn btn-success hiddenButton" role="button" style="background-color: #00a1dd; border-color: #00a1dd;" > Print Page </a>	
+		<a href="{{wheelHouseUrl}}" class="btn btn-primary hiddenButton" role="button" style="background-color: #525252;border-color: #525252;" > Print Wheelhouse Report </a>	
 	</div>
 </div>
 
@@ -28,10 +36,7 @@
 	{% endif %}
 {% endfor %}
 
-{% assign campusId = 'Global' | PageParameter:'CampusId' %}
-{% assign locationIds = 'Global' | PageParameter:'LocationIds' %}
-{% assign scheduleIds = 'Global' | PageParameter:'ScheduleIds' %}
-{% assign areaGuid = 'Global' | PageParameter:'Area' %}
+
 
 
 {% assign debug = 'Global' | PageParameter:'Debug' %}
