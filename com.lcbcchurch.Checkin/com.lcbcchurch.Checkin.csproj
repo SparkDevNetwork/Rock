@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\014_RenameConnectionCardEntry.cs" />
     <Compile Include="Migrations\013_ReprintLabelFix.cs" />
     <Compile Include="Migrations\012_AddAutoSelectSupport.cs" />
     <Compile Include="Migrations\011_ItemTags.cs" />

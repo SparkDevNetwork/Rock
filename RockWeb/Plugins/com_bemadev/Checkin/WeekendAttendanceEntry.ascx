@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionCardEntry.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.CheckIn.ConnectionCardEntry" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WeekendAttendanceEntry.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.CheckIn.WeekendAttendanceEntry" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -9,7 +9,7 @@
                 <div class="pull-right">
                     <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Info" Text="Current Attendance: 0" />
                 </div>
-                <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i>Connection Card Entry</h3>
+                <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i>Weekend Attendance Entry</h3>
             </div>
 
             <div class="panel-body">
