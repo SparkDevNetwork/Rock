@@ -87,3 +87,32 @@ bring-forward
     <div class="hero-shim {% if hideforegroundelements == 'Yes' %}hidden{% endif %}"></div>
 
 </section>
+
+<!--
+
+    PAGE META TAGS
+
+-->
+
+{% assign url = 'Global' | Page:'Url' %}
+{% capture metatitle %}{% endcapture %}
+{% capture metadescription %}{% endcapture %}
+{% capture metaimage %}{% endcapture %}
+
+{% comment %} have to use the entity command for now because CurrentPage is not in the lava context for the content component block {% endcomment %}
+
+{% assign pageid = 'Global' | Page:'Id' %}
+
+{% page id:'{{ pageid }}' iterator:'pages' %}
+    {% for page in pages %}
+        {% assign pagemetatitle = page | Attribute:'PageMetaTitle' %}
+        {% assign pagemetadescription = page | Attribute:'PageMetaDescription' %}
+        {% assign pagemetaimage = page | Attribute:'PageMetaImage','Url' %}
+    {% endfor %}
+{% endpage %}
+
+{% capture metatitle %}{% if pagemetatitle and pagemetatitle != empty %}{{ pagemetatitle }}{% else %}{{ title }}{% endif %}{% endcapture %}
+{% capture metadescription %}{% if pagemetadescription and pagemetadescription != empty %}{{ pagemetadescription }}{% else %}{{ content | StripHtml | StripNewlines | Truncate:160,'...' }}{% endif %}{% endcapture %}
+{% capture metaimage %}{% if pagemetaimage and pagemetaimage != empty %}{{ pagemetaimage }}{% else %}{{ imageurl }}{% endif %}{% endcapture %}
+
+{[ metaTags url:'{{ url | Trim }}' title:'{{ metatitle }}' description:'{{ metadescription }}' image:'{{ metaimage }}' ]}
