@@ -31,7 +31,7 @@ bring-forward
     {% if backgroundvideourl != null and backgroundvideourl != '' %}
 
         <!-- Background Video -->
-        <video class="video display-block full-screen width-full rounded hidden-xs hidden-sm {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; opacity: {{ imageopacity }};" width="1280" height="720" loop="" autoplay="">
+        <video class="video display-block full-screen width-full rounded hidden-xs hidden-sm {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; opacity: {{ imageopacity }};" width="1280" height="720" preload loop autoplay muted>
             <source src="{{ backgroundvideourl }}" type="video/mp4">
         </video>
 
@@ -87,6 +87,7 @@ bring-forward
     <div class="hero-shim {% if hideforegroundelements == 'Yes' %}hidden{% endif %}"></div>
 
 </section>
+
 
 <!--
 
