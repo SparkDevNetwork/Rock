@@ -1027,10 +1027,38 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return Queryable( includeDeceased, includeBusinesses )
-                        .Where( p =>
-                            p.LastName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+                    // Originally written as:
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .Where( p =>
+                    //        p.LastName.StartsWith( singleName ) ||
+                    //        previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+
+                    // The LEFT OUTER JOIN version below is faster than the original
+                    // because SQL uses a different index for the WHERE EXISTS version
+                    // due to the fact that it will require the entire table to be scanned
+                    // and return 1 where the criteria match.
+                    //
+                    // The query below could have been written in fluent syntax, but it's a
+                    // bit more complicated like this (they produce the exact same SQL):
+                    //
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .GroupJoin(
+                    //            previousNamesQry,
+                    //            Person => Person.Id,
+                    //            PrevName => PrevName.PersonAlias.PersonId,
+                    //            ( x, y ) => new { Person = x, PrevNames = y } )
+                    //    .SelectMany(
+                    //            x => x.PrevNames.DefaultIfEmpty(),
+                    //            ( x, y ) => new { Person = x.Person, PrevName = y } )
+                    //    .Where( x => x.Person.LastName.StartsWith( singleName ) || x.PrevName.LastName.StartsWith( singleName ) )
+                    //    .Select( x => x.Person );
+
+                    return from person in Queryable( includeDeceased, includeBusinesses )
+                           join personPreviousName in previousNamesQry
+                                on person.Id equals personPreviousName.PersonAlias.PersonId into pnQuery
+                           from ppn in pnQuery.DefaultIfEmpty()
+                           where person.LastName.StartsWith( singleName ) || ppn.LastName.StartsWith( singleName )
+                           select person;
                 }
             }
             else
