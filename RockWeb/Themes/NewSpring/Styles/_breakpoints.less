@@ -16,6 +16,13 @@
 
 // SM Breakpoint
 @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+
+	.text-center, .sm-text-center {
+		ul, ol {
+			text-align: left;
+		}
+	}
+
 	.jumbo {
 		font-size: 46px;
 	}
@@ -151,6 +158,12 @@
 		}
 		.label {
 			font-size: ceil((@font-size-base * .7));
+		}
+	}
+
+	.text-center, .xs-text-center {
+		ul, ol {
+			text-align: left;
 		}
 	}
 
