@@ -12,10 +12,12 @@
 
 {% assign url = url | Trim %}
 
+<section class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
 {% if url != empty %}<a href="{{ url }}">{% endif %}
-	<div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %}" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
-		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}">
+	<div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %} overflow-hidden" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
+		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}">
 
 		</div>
 	</div>
 {% if url != empty %}</a>{% endif %}
+</section>

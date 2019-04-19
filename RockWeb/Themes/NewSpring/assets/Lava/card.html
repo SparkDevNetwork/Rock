@@ -22,7 +22,9 @@
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
 
-            <div class="ratio-landscape background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></div>
+            <div class="position-relative ratio-landscape">
+                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+            </div>
 
             {% if type != null and type != '' %}
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>

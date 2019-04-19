@@ -19,7 +19,9 @@
             <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
 
                 {% if imageurl != null and imageurl != '' %}
-                    <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                    <div class="full-screen overflow-hidden">
+                        <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                    </div>
                 {% endif %}
 
                 {% if video != null and video != '' %}

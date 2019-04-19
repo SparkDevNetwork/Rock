@@ -44,9 +44,9 @@
 <section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="shell bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
 	
 	{% if imageurl != null and imageurl != '' %}
-    	<span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
+    	<span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
     {% endif %}
-    <div class="bring-forward {% if textalignment == 'Right' %}pull-right{% elseif textalignment == 'Left' %}{% else %}center-block text-center{% endif %} xs-text-center text-constrained soft hard-bottom clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
+    <div class="bring-forward {% if textalignment == 'Right' and imageurl != '' %}pull-right{% elseif textalignment == 'Left' and imageurl != '' %}{% else %}center-block text-center{% endif %} xs-text-center text-constrained soft hard-bottom clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
 		
         {% if label != null and label != '' %}
             <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
