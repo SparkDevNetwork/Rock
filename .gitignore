@@ -31,6 +31,13 @@ RockWeb/App_Data/PackageStaging
 
 Packages/*
 
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/com_bemadev
+!/RockWeb/Plugins/com_bemaservices
+!/RockWeb/Plugins/com_lcbcchurch
+!/RockWeb/Plugins/com_shepherdchurch
+!/RockWeb/Plugins/org_newpointe
+
 # javascript deps
 node_modules
 *.map
