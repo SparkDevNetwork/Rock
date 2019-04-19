@@ -16,7 +16,7 @@
 
     {% if imageurl != null and imageurl != '' %}
 
-            <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1;">
+            <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
 
                 {% if imageurl != null and imageurl != '' %}
                     <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
