@@ -196,7 +196,8 @@ namespace RockWeb.Blocks.Event
                     Init_SetRootGroup( rockContext );
                 }
 
-
+                sbSchedule.iCalendarContent = string.Empty;
+                lScheduleText.Text = string.Empty;
 
                 DisplayDebug_AttributeValues();
             }
