@@ -124,6 +124,7 @@ namespace Rock.Model
         /// The name on card.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public string NameOnCard
         {
             get
@@ -143,6 +144,7 @@ namespace Rock.Model
         /// The expiration month.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? ExpirationMonth
         {
             get
@@ -162,6 +164,7 @@ namespace Rock.Model
         /// The expiration year.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? ExpirationYear
         {
             get
