@@ -268,10 +268,6 @@
     <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.Designer.cs">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201903261913542_SmsActions.cs" />
-    <Compile Include="Migrations\201903261913542_SmsActions.Designer.cs">
-      <DependentUpon>201903261913542_SmsActions.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -713,9 +709,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903202308416_ScheduledTransactionHistory.resx">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201903261913542_SmsActions.resx">
-      <DependentUpon>201903261913542_SmsActions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
