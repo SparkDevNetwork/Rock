@@ -12,33 +12,109 @@
 
 {% assign url = url | Trim %}
 
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+
+{% if ratio and ratio != empty %}
+{% assign trimcopy = 'Yes' %}
+
+<section class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
+    <div class="row floating flush {% if imagealignment == 'Right' %}row-reverse{% endif %}">
+        <div class="floating-item col-xs-12 col-sm-12 col-md-6 hard">
+            <div class="ratio-{{ ratio }}">
+                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                <div class="full-screen">
+                    {% if video != null and video != '' %}
+                        <div class="btn btn-play position-absolute 
+                    
+                        {% if imagealignment == 'Left' %}
+                            position-right-boundry margin-right-negative
+                        {% else %}
+                            position-left-boundry margin-left-negative sm-margin-top-auto
+                        {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
+
+                        <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                        <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+                    {% endif %}
+                </div>
+            </div>
+        </div><div class="floating-item col-xs-12 col-sm-12 col-md-6 hard">
+            <div class="ratio-{{ ratio }} xs-ratio-none sm-ratio-none bg-white">
+                <div class="soft-double-sides soft-top soft-half-bottom sm-soft-sides xs-soft-half-sides floating floating-left ratio-item top-zero xs-position-relative sm-position-relative">
+                    <div class="floating-item {% if video and video != empty and imagealignment == 'Left' %}soft-left{% elseif video and video != empty %}soft-right{% endif %} sm-hard-sides xs-hard-sides text-left sm-text-center xs-text-center">
+                        {% if label != null and label != '' %}
+                            <p><small class="label label-default sans-serif circular">{{ label }}</small></p>
+                        {% endif %}
+                        
+                        {% if title != null and title != '' %}
+                            <h2 class="block-title push-half-bottom">
+                                {% if url != empty %}<a href="{{ url }}">{% endif %}
+                                    {{ title }}
+                                {% if url != empty %}</a>{% endif %}
+                            </h2>
+                        {% endif %}
+
+                        {% if subtitle != null and subtitle != '' %}
+                            <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+                        {% endif %}
+
+                        {% assign tagCount = tags | length %}
+                        {% if tagCount != 0 %}
+                            <p class="tag-list sans-serif text-gray-darker push-half-bottom">
+                                <small>{% for id, title in tags %}
+                                    <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
+                                {% endfor %}</small>
+                            </p>
+                        {% endif %}
+                        
+                        {% if content != null and content != '' %}
+                            <div>
+                                {% if trimcopy == 'Yes' %}
+                                    {% assign length = content | Size %}
+                                    {{ content | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
+                                {% else %}
+                                    {{ content }}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+
+                        {% if url != empty %}                        
+                            <p>
+                                <a href="{{ url | Trim }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% else %}
+<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hidden hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
     {% if imageurl != null and imageurl != '' %}
+        <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
 
-            <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
+            {% if imageurl != null and imageurl != '' %}
+                <div class="full-screen overflow-hidden">
+                    <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                </div>
+            {% endif %}
 
-                {% if imageurl != null and imageurl != '' %}
-                    <div class="full-screen overflow-hidden">
-                        <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
-                    </div>
-                {% endif %}
+            {% if video != null and video != '' %}
+                <div class="btn btn-play position-absolute 
+            
+                {% if imagealignment == 'Left' %}
+                    position-right-boundry margin-right-negative
+                {% else %}
+                    position-left-boundry margin-left-negative sm-margin-top-auto
+                {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
 
-                {% if video != null and video != '' %}
-                    <div class="btn btn-play position-absolute 
-                
-                    {% if imagealignment == 'Left' %}
-                        position-right-boundry margin-right-negative
-                    {% else %}
-                        position-left-boundry margin-left-negative sm-margin-top-auto
-                    {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
+                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+            {% endif %}
 
-                    <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-                    <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-                {% endif %}
-
-            </div>
-
+        </div>
     {% endif %}    
 
     <div class="row {% if imagealignment == 'Left' %}text-right{% else %}text-left{% endif %} flush">
@@ -95,6 +171,8 @@
         </div>
     </div>
 </section>
+
+{% endif %}
 
 {% if trimcopy == 'Yes' %}
     {% if length > 200 %}

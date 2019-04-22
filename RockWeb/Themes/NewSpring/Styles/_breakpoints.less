@@ -26,8 +26,21 @@
 		width: 100%;
 	}
 
+	// Positioning
+	.sm-position-absolute { position: absolute !important; }
+	.sm-position-relative { position: relative !important; }
+	.sm-position-fixed { position: fixed !important; }
+
 	// Buttons
 	.btn-primary:hover { background-color: @brand-primary; }
+
+	// Ratios
+	.sm-ratio-none:before{ padding-top: 0%; }
+	.sm-ratio-thin:before{ padding-top: 40%; }
+	.sm-ratio-landscape:before{ padding-top: 50%; }
+	.sm-ratio-shuare:before{ padding-top: 70%; }
+	.sm-ratio-square:before{ padding-top: 100%; }
+	.sm-ratio-portrait:before{ padding-top: 150%; }
 
 	// Helper Classes
 	.sm-text-center { text-align: center; }
@@ -223,6 +236,11 @@
 		.button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
 	}
 
+	// Positioning
+	.xs-position-absolute { position: absolute !important; }
+	.xs-position-relative { position: relative !important; }
+	.xs-position-fixed { position: fixed !important; }
+
 	// Grid
 	.xs-row-reverse {
 		direction:rtl;
@@ -261,6 +279,7 @@
 
 
 	// Ratios
+	.xs-ratio-none:before{ padding-top: 0%; }
 	.xs-ratio-thin:before{ padding-top: 40%; }
 	.xs-ratio-landscape:before{ padding-top: 50%; }
 	.xs-ratio-shuare:before{ padding-top: 70%; }
