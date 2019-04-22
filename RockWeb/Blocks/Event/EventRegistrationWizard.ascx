@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventRegistrationWizard.ascx.cs" Inherits="RockWeb.Blocks.Event.EventRegistrationWizard" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Always" Visible="true">
     <ContentTemplate>
 
         <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
@@ -82,7 +82,10 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true" />
+                                <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" AppendDataBoundItems="true"
+                                    PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true">
+                                    <asp:ListItem Text="" Value="" />
+                                </Rock:DataDropDownList>
                             </div>
                             <div class="col-md-6">
                                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" />
@@ -175,9 +178,9 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:PanelWidget ID="pwRegistrationCustomization" runat="server" Title="Registration Customization">
-                                    <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
-                                    <Rock:HtmlEditor ID="HtmlEditor1" runat="server" Label="Reminder Details" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
-                                    <Rock:HtmlEditor ID="HtmlEditor2" runat="server" Label="Confirmation Details" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                    <Rock:HtmlEditor ID="htmlRegistrationInstructions" runat="server" Label="Registration Instructions" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                    <Rock:HtmlEditor ID="htmlReminderDetails" runat="server" Label="Reminder Details" Height="100" Help="These reminder details will be included in the reminder notification." Toolbar="Light" />
+                                    <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="100" Help="These confirmation details will be appended to those from the registration template when displayed at the end of the registration process." Toolbar="Light" />
                                 </Rock:PanelWidget>
                             </div>
                         </div>
@@ -395,7 +398,6 @@
                 </div>
             </div>
         </asp:Panel>
-
 
         <asp:Label ID="lblDebug" runat="server" />
     </ContentTemplate>
