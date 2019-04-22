@@ -94,6 +94,13 @@
   }
 }
 
+.radio-inline,
+.checkbox-inline {
+  label {
+    font-weight: 400;
+  }
+}
+
 // Mixin
 .custom-controls() {
   // radio buttons & checkboxes - fancy styling
@@ -121,6 +128,20 @@
     padding-right: 16px;
     padding-left: 30px;
     margin-left: 0;
+    label {
+      margin-bottom: 0;
+    }
+
+    .form-align & {
+      .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+      margin-top: (@input-height-base - @max) / 2;
+      margin-bottom: (@input-height-base - @max) / 2;
+
+      .radio-inline+.radio-inline, .checkbox-inline+.checkbox-inline {
+        .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+        margin-top: (@input-height-base - @max) / 2;
+      }
+    }
   }
 
   .radio,

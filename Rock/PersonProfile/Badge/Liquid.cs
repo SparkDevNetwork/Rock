@@ -17,9 +17,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Web.UI;
+
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 

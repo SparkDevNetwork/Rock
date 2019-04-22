@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
         public string AllowedFrameDomains { get; set; }
 
         /// <summary />
@@ -51,6 +54,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? CommunicationPageRouteId { get; set; }
+
+        /// <summary />
+        public int? ConfigurationMobilePhoneFileId { get; set; }
+
+        /// <summary />
+        public int? ConfigurationMobileTabletFileId { get; set; }
 
         /// <summary />
         public int? DefaultPageId { get; set; }
@@ -97,10 +106,16 @@ namespace Rock.Client
         public string IndexStartingLocation { get; set; }
 
         /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public DateTime? LatestVersionDateTime { get; set; }
 
         /// <summary />
         public int? LoginPageId { get; set; }
@@ -144,7 +159,13 @@ namespace Rock.Client
         public int? SiteLogoBinaryFileId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.SiteType SiteType { get; set; }
+
+        /// <summary />
         public string Theme { get; set; }
+
+        /// <summary />
+        public int? ThumbnailFileId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -179,12 +200,15 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
             this.ChangePasswordPageId = source.ChangePasswordPageId;
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            this.ConfigurationMobilePhoneFileId = source.ConfigurationMobilePhoneFileId;
+            this.ConfigurationMobileTabletFileId = source.ConfigurationMobileTabletFileId;
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
@@ -201,8 +225,10 @@ namespace Rock.Client
             this.IconCssWeight = source.IconCssWeight;
             #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
+            this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
+            this.LatestVersionDateTime = source.LatestVersionDateTime;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
             this.MobilePageId = source.MobilePageId;
@@ -216,7 +242,9 @@ namespace Rock.Client
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
             this.RequiresEncryption = source.RequiresEncryption;
             this.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
+            this.SiteType = source.SiteType;
             this.Theme = source.Theme;
+            this.ThumbnailFileId = source.ThumbnailFileId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

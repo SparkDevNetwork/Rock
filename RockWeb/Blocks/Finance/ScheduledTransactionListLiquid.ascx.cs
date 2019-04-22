@@ -151,6 +151,7 @@ namespace RockWeb.Blocks.Finance
 
             lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue( AttributeKey.TransactionLabel ) );
             _transferToGatewayGuid = GetAttributeValue( AttributeKey.TransferToGateway ).AsGuidOrNull();
+            lbAddScheduledTransaction.Visible = GetAttributeValue( AttributeKey.ScheduledTransactionEntryPage ).IsNotNullOrWhiteSpace();
 
             // set initial info
             if ( !IsPostBack )

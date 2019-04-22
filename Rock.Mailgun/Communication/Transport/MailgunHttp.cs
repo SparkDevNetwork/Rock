@@ -294,6 +294,7 @@ namespace Rock.Communication.Transport
                 {
                     // Resolve any possible merge fields in the replyTo address
                     replyTo.Name = "h:Reply-To";
+                    replyTo.Type = ParameterType.GetOrPost;
                     replyTo.Value = communication.ReplyToEmail.ResolveMergeFields( mergeFields, currentPerson );
                 }
 

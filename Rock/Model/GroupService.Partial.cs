@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -556,17 +558,24 @@ namespace Rock.Model
             }
 
             var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == group.Id );
-            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
+            var groupMemberRequirementList = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id ).Select( a => new
+            {
+                a.GroupMemberId,
+                a.RequirementWarningDateTime,
+                a.RequirementFailDateTime,
+                a.RequirementMetDateTime,
+                a.GroupRequirement
+            } ).ToList();
 
             if ( !includeInactive )
             {
                 qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
             }
 
-            var groupMembers = qryGroupMembers.ToList();
+            var groupMemberList = qryGroupMembers.Include(a => a.GroupMemberRequirements).ToList();
 
             // get a list of group member ids that don't meet all the requirements
-            List<int> qryGroupMemberIdsThatLackGroupRequirements = groupMembers
+            List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
                         .Where( r => 
@@ -581,34 +590,34 @@ namespace Rock.Model
                 .Select( a => a.Id )
                 .ToList();
 
-            IEnumerable<GroupMember> qryMembersWithIssues;
+            IEnumerable<GroupMember> membersWithIssuesList;
 
             if ( includeWarnings )
             {
-                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements
-                    .Where( 
-                        a => 
-                            a.RequirementWarningDateTime != null || 
+                List<int> groupMemberIdsWithRequirementWarningsList = groupMemberRequirementList
+                    .Where(
+                        a =>
+                            a.RequirementWarningDateTime != null ||
                             a.RequirementFailDateTime != null )
                     .Select( a => a.GroupMemberId )
-                    .Distinct();
+                    .Distinct().ToList();
 
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) || groupMemberIdsWithRequirementWarningsList.Contains( a.Id ) );
             }
             else
             {
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) );
             }
 
-            var qry = qryMembersWithIssues.Select( a => new
+            var groupMemberWithIssuesList = membersWithIssuesList.Select( a => new
             {
                 GroupMember = a,
-                GroupRequirementStatuses = qryGroupMemberRequirements.Where( x => x.GroupMemberId == a.Id )
-            } );
+                GroupRequirementStatuses = groupMemberRequirementList.Where( x => x.GroupMemberId == a.Id )
+            } ).ToList();
 
             var currentDateTime = RockDateTime.Now;
 
-            foreach (var groupMemberWithIssues in qry)
+            foreach (var groupMemberWithIssues in groupMemberWithIssuesList )
             {
                 Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus, DateTime>();
                 

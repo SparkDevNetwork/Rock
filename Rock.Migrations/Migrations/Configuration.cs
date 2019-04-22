@@ -16,14 +16,17 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Data.Entity.Migrations.DbMigrationsConfiguration{Rock.Data.RockContext}" />
     public sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// </summary>
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
@@ -32,25 +35,13 @@ namespace Rock.Migrations
             CommandTimeout = 300;
         }
 
+        /// <summary>
+        /// Runs after upgrading to the latest migration to allow seed data to be updated.
+        /// </summary>
+        /// <param name="context">Context to be used for updating seed data.</param>
         protected override void Seed( Rock.Data.RockContext context )
         {
-            // MP: Populate AnalyticsSourceDate (if it isn't already)
-            if ( !context.AnalyticsSourceDates.AsQueryable().Any() )
-            {
-                var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
-                var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
-                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
-            }
-
-            // MP: Migrate RegistrationTemplateFee.CostValue to RegistrationTemplateFee.FeeItems
-            using ( var rockContext = new Rock.Data.RockContext() )
-            {
-                var registrationTemplateFeeService = new Rock.Model.RegistrationTemplateFeeService( rockContext );
-#pragma warning disable 612, 618
-                registrationTemplateFeeService.MigrateFeeCostValueToFeeItems();
-#pragma warning restore 612, 618
-                rockContext.SaveChanges();
-            }
+            // NOTE: We probably don't want to add anything here
         }
     }
 }

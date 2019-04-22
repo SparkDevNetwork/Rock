@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Quartz;
-using Rock;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

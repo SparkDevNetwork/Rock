@@ -16,11 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -28,6 +29,7 @@ namespace Rock.CheckIn
     /// Cached Check-in Label
     /// </summary>
     [DataContract]
+    [Serializable]
     public class KioskLabel : ItemCache<KioskLabel>
     {
         /// <summary>
@@ -88,7 +90,6 @@ namespace Rock.CheckIn
         /// <value>
         /// The merge fields.
         /// </value>
-        [DataMember]
         public Dictionary<string, string> MergeFields
         {
             get
@@ -122,8 +123,8 @@ namespace Rock.CheckIn
             }
         }
 
-
-        private Dictionary<string, int> _mergeCodeDefinedValueIds = null;
+        [DataMember]
+        private Dictionary<string, int> _mergeCodeDefinedValueIds { get; set; } = null;
 
         #region Static Methods
 

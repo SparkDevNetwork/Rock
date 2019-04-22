@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -653,20 +653,25 @@ namespace Rock.Web.UI.Controls
         {
             bool rockMergeFieldEnabled = MergeFields.Any();
             bool rockFileBrowserEnabled = false;
-
+            bool rockAssetManagerEnabled = false;
+            var currentPerson = this.RockBlock().CurrentPerson;
+                
             // only show the File/Image plugin if they have Auth to the file browser page
             var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
-            if ( fileBrowserPage != null )
+            if ( fileBrowserPage != null && currentPerson != null )
             {
-                var currentPerson = this.RockBlock().CurrentPerson;
-                if ( currentPerson != null )
-                {
-                    if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                    {
-                        rockFileBrowserEnabled = true;
-                    }
-                }
+                rockFileBrowserEnabled = fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
+
+            var assetManagerPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME.AsGuid() );
+            if ( assetManagerPage != null && currentPerson != null )
+            {
+                rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            //TODO: Look for a valid asset manager and disable the control if one is not found
+
+
 
             var globalAttributesCache = GlobalAttributesCache.Get();
 
@@ -722,7 +727,7 @@ $(document).ready( function() {{
           image: [
             ['custom1', ['rockimagelink']],
             ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
-            ['custom2', ['rockimagebrowser']],
+            ['custom2', ['rockimagebrowser', 'rockassetmanager']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
           ],
@@ -745,7 +750,8 @@ $(document).ready( function() {{
         buttons: {{
             rockfilebrowser: RockFileBrowser,
             rockimagebrowser: RockImageBrowser, 
-            rockimagelink: RockImageLink, 
+            rockimagelink: RockImageLink,
+            rockassetmanager: RockAssetManager,
             rockmergefield: RockMergeField,
             rockcodeeditor: RockCodeEditor,
             rockpastetext: RockPasteText,
@@ -759,6 +765,10 @@ $(document).ready( function() {{
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
             fileTypeBlackList: '{fileTypeBlackList}',
             fileTypeWhiteList: '{fileTypeWhiteList}'
+        }},
+
+        rockAssetManagerOptions: {{
+            enabled: { rockAssetManagerEnabled.ToTrueFalse().ToLower() }
         }},
 
         rockMergeFieldOptions: {{ 
