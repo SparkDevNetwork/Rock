@@ -951,69 +951,50 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void SetInitialTargetPersonControls()
         {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             Person targetPerson = null;
-
-            string personKey = PageParameter( PageParameterKey.Person );
+            var personKey = PageParameter( PageParameterKey.Person );
 
             if ( personKey.IsNotNullOrWhiteSpace() )
             {
-                var incrementKeyUsage = !this.IsPostBack;
-                var rockContext = new RockContext();
-                targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
-
-                if ( targetPerson == null )
-                {
-                    nbInvalidPersonWarning.Text = "Invalid or Expired Person Token specified";
-                    nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
-                    nbInvalidPersonWarning.Visible = true;
-                    return;
-                }
+                var incrementKeyUsage = !this.IsPostBack;                
+                targetPerson = personService.GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
             }
 
             if ( targetPerson == null )
             {
-                targetPerson = CurrentPerson;
+                nbInvalidPersonWarning.Text = "Invalid or Expired Person Token specified";
+                nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
+                nbInvalidPersonWarning.Visible = true;
+                return;
             }
 
-            if ( targetPerson != null )
+            hfTargetPersonId.Value = targetPerson.Id.ToString();
+            SetAccountPickerCampus( targetPerson );
+
+            lCurrentPersonFullName.Text = targetPerson.FullName;
+            tbFirstName.Text = targetPerson.FirstName;
+            tbLastName.Text = targetPerson.LastName;
+            tbEmailIndividual.Text = targetPerson.Email;
+            var addressTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+
+            GroupLocation personGroupLocation = null;
+            if ( addressTypeId.HasValue )
             {
-                hfTargetPersonId.Value = targetPerson.Id.ToString();
+                personGroupLocation = personService.GetFirstLocation( targetPerson.Id, addressTypeId.Value );
+            }
+
+            if ( personGroupLocation != null )
+            {
+                acAddressIndividual.SetValues( personGroupLocation.Location );
             }
             else
             {
-                hfTargetPersonId.Value = string.Empty;
+                acAddressIndividual.SetValues( null );
             }
-
-            SetAccountPickerCampus( targetPerson );
-
-            pnlLoggedInNameDisplay.Visible = targetPerson != null;
-            if ( targetPerson != null )
-            {
-                lCurrentPersonFullName.Text = targetPerson.FullName;
-                tbFirstName.Text = targetPerson.FirstName;
-                tbLastName.Text = targetPerson.LastName;
-                tbEmailIndividual.Text = targetPerson.Email;
-                var rockContext = new RockContext();
-                var addressTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-
-                GroupLocation personGroupLocation = null;
-                if ( addressTypeId.HasValue )
-                {
-                    personGroupLocation = new PersonService( rockContext ).GetFirstLocation( targetPerson.Id, addressTypeId.Value );
-                }
-
-                if ( personGroupLocation != null )
-                {
-                    acAddressIndividual.SetValues( personGroupLocation.Location );
-                }
-                else
-                {
-                    acAddressIndividual.SetValues( null );
-                }
-            }
-
-            pnlNotLoggedInNameEntry.Visible = targetPerson == null;
         }
 
         /// <summary>
