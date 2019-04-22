@@ -106,6 +106,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
             }
+            else
+            {
+                var person = new PersonService( new RockContext() ).Get( PageParameter( PERSON_GUID_PAGE_QUERY_KEY ).AsGuid() );
+                BindAttribute( person );
+            }
         }
 
         #endregion
@@ -357,24 +362,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
                     lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
-                    var adultCategoryGuid = GetAttributeValue( "AdultAttributeCategory" ).AsGuidOrNull();
-                    var childCategoryGuid = GetAttributeValue( "ChildAttributeCategory" ).AsGuidOrNull();
-                    var isAdult = person.AgeClassification == AgeClassification.Adult || person.AgeClassification == AgeClassification.Unknown;
-                    var isChild = person.AgeClassification == AgeClassification.Child || person.AgeClassification == AgeClassification.Unknown;
-
-                    pnlAdultFields.Visible = isAdult && adultCategoryGuid.HasValue;
-                    pnlChildFields.Visible = isChild && childCategoryGuid.HasValue;
-                    if ( isAdult && adultCategoryGuid.HasValue )
-                    {
-                        avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
-                        avcAdultAttributes.AddDisplayControls( person );
-                    }
-
-                    if ( isChild && childCategoryGuid.HasValue )
-                    {
-                        avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
-                        avcChildAttributes.AddDisplayControls( person );
-                    }
+                    BindAttribute( person );
                     // Text Message
                     var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled && n.Number.IsNotNullOrWhiteSpace() );
                     if ( GetAttributeValue( SMS_FROM_KEY ).IsNotNullOrWhiteSpace() && phoneNumber != null )
@@ -508,24 +496,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ThenByDescending( a => a.Occurrence.Schedule.StartTimeOfDay )
                         .ToList()
                         .Select( a =>
-                            {
-                                var checkedInByPerson = a.CheckedInByPersonAliasId.HasValue ? personAliasService.GetPerson( a.CheckedInByPersonAliasId.Value ) : null;
+                        {
+                            var checkedInByPerson = a.CheckedInByPersonAliasId.HasValue ? personAliasService.GetPerson( a.CheckedInByPersonAliasId.Value ) : null;
 
-                                return new AttendanceInfo
-                                {
-                                    Id = a.Id,
-                                    Date = a.StartDateTime,
-                                    GroupId = a.Occurrence.Group.Id,
-                                    Group = a.Occurrence.Group.Name,
-                                    LocationId = a.Occurrence.LocationId.Value,
-                                    Location = a.Occurrence.Location.Name,
-                                    Schedule = a.Occurrence.Schedule.Name,
-                                    IsActive = a.IsCurrentlyCheckedIn,
-                                    Code = a.AttendanceCode != null ? a.AttendanceCode.Code : "",
-                                    CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName : string.Empty,
-                                    CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null
-                                };
-                            }
+                            return new AttendanceInfo
+                            {
+                                Id = a.Id,
+                                Date = a.StartDateTime,
+                                GroupId = a.Occurrence.Group.Id,
+                                Group = a.Occurrence.Group.Name,
+                                LocationId = a.Occurrence.LocationId.Value,
+                                Location = a.Occurrence.Location.Name,
+                                Schedule = a.Occurrence.Schedule.Name,
+                                IsActive = a.IsCurrentlyCheckedIn,
+                                Code = a.AttendanceCode != null ? a.AttendanceCode.Code : "",
+                                CheckInByPersonName = checkedInByPerson != null ? checkedInByPerson.FullName : string.Empty,
+                                CheckInByPersonGuid = checkedInByPerson != null ? checkedInByPerson.Guid : ( Guid? ) null
+                            };
+                        }
                         ).ToList();
 
                     // Set active locations to be a link to the room in manager page
@@ -549,6 +537,31 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     gHistory.DataSource = attendances;
                     gHistory.DataBind();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Binds the attribute to attribute value container
+        /// </summary>
+        private void BindAttribute( Rock.Model.Person person )
+        {
+            var adultCategoryGuid = GetAttributeValue( "AdultAttributeCategory" ).AsGuidOrNull();
+            var childCategoryGuid = GetAttributeValue( "ChildAttributeCategory" ).AsGuidOrNull();
+            var isAdult = person.AgeClassification == AgeClassification.Adult || person.AgeClassification == AgeClassification.Unknown;
+            var isChild = person.AgeClassification == AgeClassification.Child || person.AgeClassification == AgeClassification.Unknown;
+
+            pnlAdultFields.Visible = isAdult && adultCategoryGuid.HasValue;
+            pnlChildFields.Visible = isChild && childCategoryGuid.HasValue;
+            if ( isAdult && adultCategoryGuid.HasValue )
+            {
+                avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
+                avcAdultAttributes.AddDisplayControls( person );
+            }
+
+            if ( isChild && childCategoryGuid.HasValue )
+            {
+                avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
+                avcChildAttributes.AddDisplayControls( person );
             }
         }
 

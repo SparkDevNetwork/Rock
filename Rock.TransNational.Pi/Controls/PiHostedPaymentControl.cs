@@ -22,7 +22,9 @@ namespace Rock.TransNational.Pi.Controls
         private HiddenFieldWithClass _hfPublicApiKey;
         private HiddenFieldWithClass _hfGatewayUrl;
         private TextBox _hiddenInputStyleHook;
-        private Panel _gatewayIFrameContainer;
+        private Panel _paymentTypeSelector;
+        private Panel _gatewayCreditCardIFrameContainer;
+        private Panel _gatewayACHIFrameContainer;
 
         #endregion
 
@@ -221,8 +223,29 @@ namespace Rock.TransNational.Pi.Controls
             _hfGatewayUrl = new HiddenFieldWithClass() { ID = "_hfGatewayUrl", CssClass = "js-gateway-url" };
             Controls.Add( _hfGatewayUrl );
 
-            _gatewayIFrameContainer = new Panel() { ID = "_gatewayIFrameContainer", CssClass = "js-gateway-iframe-container" };
-            Controls.Add( _gatewayIFrameContainer );
+            _paymentTypeSelector = new Panel() { ID = "_paymentTypeSelector", CssClass = "js-gateway-paymenttype-selector gateway-paymenttype-selector" };
+            Controls.Add( _paymentTypeSelector );
+
+            Literal lPaymentSelectorHTML = new Literal() { ID = "lPaymentSelectorHTML" };
+
+            lPaymentSelectorHTML.Text = $@"
+<ul class='nav nav-pills'>
+    <li class='js-payment-creditcard payment-creditcard active' runat='server'>
+        <a data-toggle='pill'>Credit Card</a>
+    </li>
+    <li class='js-payment-ach payment-ach' runat='server'>
+        <a data-toggle='pill'>Bank Account</a>
+    </li>
+</ul>
+";
+
+            _paymentTypeSelector.Controls.Add( lPaymentSelectorHTML );
+
+            _gatewayCreditCardIFrameContainer = new Panel() { ID = "_gatewayCreditCardIFrameContainer", CssClass = "js-gateway-creditcard-iframe-container" };
+            Controls.Add( _gatewayCreditCardIFrameContainer );
+
+            _gatewayACHIFrameContainer = new Panel() { ID = "_gatewayACHIFrameContainer", CssClass = "js-gateway-ach-iframe-container" };
+            Controls.Add( _gatewayACHIFrameContainer );
         }
     }
 }

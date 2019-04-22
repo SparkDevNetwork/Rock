@@ -174,11 +174,11 @@ iframe.email-body {
 // -------------------------
 
 .sms-conversations-container {
+  position: relative;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  position: relative;
 
   > div {
     position: relative;
@@ -191,8 +191,8 @@ iframe.email-body {
   }
 
   .header {
-    padding: 12px 16px;
     min-height: 49px;
+    padding: 12px 16px;
     font-weight: 700;
     border-bottom: 1px solid @panel-border;
   }
@@ -220,16 +220,16 @@ iframe.email-body {
     }
 
     .header {
-      padding: 7px 16px;
       height: 49px;
+      padding: 7px 16px;
       background-color: @panel-heading-bg;
     }
 
     .overflow-scroll {
+      width: 100%;
+      height: ~"calc(100% - 50px)";
       overflow: hidden;
       overflow-y: scroll;
-      height: ~"calc(100% - 50px)";
-      width: 100%;
     }
 
     .sms-name {
@@ -241,9 +241,9 @@ iframe.email-body {
       display: -webkit-box;
       display: -webkit-flex;
       display: flex;
+      flex-direction: row;
       -webkit-box-orient: horizontal;
       -webkit-box-direction: normal;
-      flex-direction: row;
     }
 
     .unread {
@@ -270,22 +270,22 @@ iframe.email-body {
       box-sizing: border-box;
       -webkit-flex: 1 0 auto;
       flex: 1 0 auto;
-      -webkit-box-flex: 1;
       font-size: 13px;
       line-height: 24px;
       color: rgba(0, 0, 0, .5);
       text-align: right;
       text-transform: capitalize;
+      -webkit-box-flex: 1;
     }
   }
 
   .messages-outer-container{
     position: relative;
-    -webkit-box-flex: 1;
-    -ms-flex-positive: 1;
     flex-grow: 1;
     padding: 15px;
     overflow-y: auto;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
   }
 
   .footer {
@@ -391,18 +391,18 @@ iframe.email-body {
       display: inline-block;
       max-width: 75%;
       padding: 10px 14px;
-      border-radius: 20px;
-      background-color: #f3f3f3;
       color: #000;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
       word-break: break-word;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
       white-space: pre-line;
+      background-color: #f3f3f3;
+      border-radius: 20px;
     }
 
     &.outbound .bubble{
-      background-color: #0084ff;
       color: #fff;
+      background-color: #0084ff;
     }
 
     .message-meta {

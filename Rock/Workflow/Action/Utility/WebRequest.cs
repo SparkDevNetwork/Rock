@@ -18,11 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Dynamic;
-using System.Xml.Linq;
-using Newtonsoft.Json;
+
 using RestSharp;
 using RestSharp.Authenticators;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

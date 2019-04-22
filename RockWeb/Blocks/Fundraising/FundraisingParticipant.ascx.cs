@@ -406,7 +406,14 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            if ( !string.IsNullOrWhiteSpace( photoGuid ) )
+            {
+                imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            }
+            else
+            {
+                imgOpportunityPhoto.Visible = false;
+            }
 
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
@@ -567,10 +574,14 @@ namespace RockWeb.Blocks.Fundraising
         /// </summary>
         protected void BindContributionsGrid()
         {
+            // Hide the whole Amount column if the block setting is set to hide
             var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
-            gContributions.ColumnsOfType<CurrencyField>()
-                .First( c => c.DataField == "TotalAmount" )
-                .Visible = showAmount;
+            var amountCol = gContributions.ColumnsOfType<RockLiteralField>()
+                .FirstOrDefault( c => c.ID == "lTransactionDetailAmount" );
+            if ( amountCol != null )
+            {
+                amountCol.Visible = showAmount;
+            }
 
             var rockContext = new RockContext();
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
@@ -615,9 +626,9 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
-				
-				Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
-                if ( lTransactionDetailAmount != null )
+
+                Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null && lTransactionDetailAmount.Visible )
                 {
 					var amount = financialTransaction.TransactionDetails
                         .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )

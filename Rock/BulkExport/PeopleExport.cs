@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.BulkExport

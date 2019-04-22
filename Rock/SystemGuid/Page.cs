@@ -283,6 +283,11 @@ namespace Rock.SystemGuid
         public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
 
         /// <summary>
+        /// Gets the htmleditor RockAssetManager Plugin Frame page guid
+        /// </summary>
+        public const string HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389";
+
+        /// <summary>
         /// Gets the HtmlEditor RockMergeField Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>

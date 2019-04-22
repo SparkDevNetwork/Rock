@@ -53,9 +53,9 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Include Inactive Groups", "Determines if inactive groups should be included on the map.", false, "", 6 )]
     [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 7 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
-    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
+    [CodeEditorField( "Info Window Contents", "Lava template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
 <div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4>
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
 </div>
 
@@ -187,8 +187,8 @@ namespace RockWeb.Blocks.Groups
             {
                 pnlMap.Visible = false;
                 lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.</div>";
-            } 
-            else 
+            }
+            else
             {
                 var rockContext = new RockContext();
 
@@ -413,20 +413,22 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // write script to page
-                    string mapScriptFormat = @" <script> 
+                    string mapScriptFormat = @" <script>
                                                 Sys.Application.add_load(function () {{
-                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
-                                                    var showInfoWindow = {1}; 
+                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}');
+                                                    var showInfoWindow = {1};
                                                     var mapStyle = {2};
                                                     var pinColor = '{3}';
-                                                    var pinImage = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
-                                                        new google.maps.Size(21, 34),
-                                                        new google.maps.Point(0,0),
-                                                        new google.maps.Point(10, 34));
-                                                    var pinShadow = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_shadow',
-                                                        new google.maps.Size(40, 37),
-                                                        new google.maps.Point(0, 0),
-                                                        new google.maps.Point(12, 35));
+
+                                                    var pinImage = {{
+                                                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                                        fillColor: '#' + pinColor,
+                                                        fillOpacity: 1,
+                                                        strokeColor: '#000',
+                                                        strokeWeight: 1,
+                                                        scale: 1,
+                                                        labelOrigin: new google.maps.Point(0,-28)
+                                                    }};
 
                                                     initializeMap();
 
@@ -459,10 +461,10 @@ namespace RockWeb.Blocks.Groups
                                                                 map: map,
                                                                 title: htmlDecode(group.name),
                                                                 icon: pinImage,
-                                                                shadow: pinShadow
+                                                                label: String.fromCharCode(9679)
                                                             }});
 
-                                                            // Allow each marker to have an info window    
+                                                            // Allow each marker to have an info window
                                                             if (showInfoWindow) {{
                                                                 google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                                                                     return function () {{
@@ -473,7 +475,7 @@ namespace RockWeb.Blocks.Groups
                                                             }}
 
                                                             map.fitBounds(bounds);
-                       
+
                                                         }});
 
                                                         // Override our map zoom level once our fitBounds function runs (Make sure it only runs once)
@@ -502,7 +504,7 @@ namespace RockWeb.Blocks.Groups
                     if ( groupsMapped == 0 )
                     {
                         pnlMap.Visible = false;
-                        lMessages.Text = @" <p>  
+                        lMessages.Text = @" <p>
                                                 <div class='alert alert-warning fade in'>No groups were able to be mapped. You may want to check your configuration.</div>
                                         </p>";
                     }
@@ -511,7 +513,7 @@ namespace RockWeb.Blocks.Groups
                         // output any warnings
                         if ( groupsWithNoGeo > 0 )
                         {
-                            string messagesFormat = @" <p>  
+                            string messagesFormat = @" <p>
                                                 <div class='alert alert-warning fade in'>Some groups could not be mapped.
                                                     <button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='fa fa-times'></i></button>
                                                     <small><a data-toggle='collapse' data-parent='#accordion' href='#map-error-details'>Show Details</a></small>
@@ -523,7 +525,7 @@ namespace RockWeb.Blocks.Groups
                                                             </ul>
                                                         </p>
                                                     </div>
-                                                </div> 
+                                                </div>
                                             </p>";
                             lMessages.Text = string.Format( messagesFormat, sbGroupsWithNoGeo.ToString() );
                         }

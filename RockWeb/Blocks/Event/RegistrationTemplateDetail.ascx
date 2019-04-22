@@ -454,7 +454,7 @@
                         <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Text="Yes" Visible="false" ValidationGroup="Field"
                             Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
                         <Rock:RockCheckBox ID="cbShowOnGrid" runat="server" Label="Show on Grid" Text="Yes" Visible="false" ValidationGroup="Field"
-                            Help="Should this value be displayed on the list of registrants?" />
+                            Help="Should this value be displayed on the list of registrants? (Note: not all person fields are supported and therefore not shown on the grid)" />
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbUsePersonCurrentValue" runat="server" Label="Use Current Value" Text="Yes" Visible="false" ValidationGroup="Field"

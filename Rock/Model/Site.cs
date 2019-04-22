@@ -24,11 +24,12 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -63,6 +64,65 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets the configuration mobile phone file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile phone file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobilePhoneFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobileTabletFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the site.
+        /// </summary>
+        /// <value>
+        /// The type of the site.
+        /// </value>
+        [DataMember]
+        public SiteType SiteType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file identifier.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file identifier.
+        /// </value>
+        [DataMember]
+        public int? ThumbnailFileId { get; set; }
 
         /// <summary>
         /// Gets or sets a user defined description/summary  of the Site.
@@ -373,6 +433,52 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? SiteLogoBinaryFileId { get; set; }
+
+        [DataMember]
+        public DateTime? LatestVersionDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationMobilePhoneFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneFileId );
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationTabletFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobileTabletFileId );
+            }
+            private set { }
+        }
+
+        [NotMapped]
+        public string ThumbnailFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ThumbnailFileId );
+            }
+            private set { }
+        }
+
 
         /// <summary>
         /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
@@ -712,6 +818,40 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the file URL.
+        /// </summary>
+        /// <param name="configurationMobilePhoneFileId">The configuration mobile phone file identifier.</param>
+        /// <returns>full path of resource from Binary file path</returns>
+        private static string GetFileUrl( int? configurationMobilePhoneFileId )
+        {
+            string virtualPath = string.Empty;
+            if ( configurationMobilePhoneFileId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) configurationMobilePhoneFileId );
+                    if ( binaryFile != null )
+                    {
+                        if ( binaryFile.Path.Contains( "~" ) )
+                        {
+                            // Need to build out full path
+                            virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                            var globalAttributes = GlobalAttributesCache.Get();
+                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                            virtualPath = $"{publicAppRoot}{virtualPath}";
+                        }
+                        else
+                        {
+                            virtualPath = binaryFile.Path;
+                        }
+                    }
+                }
+            }
+
+            return virtualPath;
+        }
+
         #endregion
 
         #region ICacheable
@@ -730,7 +870,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             SiteCache.UpdateCachedEntity( this.Id, entityState );
 
@@ -749,6 +889,16 @@ namespace Rock.Model
     }
 
     #region enums
+
+
+    /// <summary>
+    /// Types Web, Mobile
+    /// </summary>
+    public enum SiteType
+    {
+        Web,
+        Mobile
+    }
 
     /// <summary>
     /// Font Awesome Icon CSS Weight

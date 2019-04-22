@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web.Cache;
-using Rock.Attribute;
 
 namespace Rock.Jobs
 {

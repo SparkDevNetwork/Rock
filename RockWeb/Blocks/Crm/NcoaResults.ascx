@@ -107,9 +107,9 @@
                         </ItemTemplate>
                     </asp:Repeater>
 
-                    <div class="ncoaResult-nav">
-                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
-                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                    <div class="clearfix">
+                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary pull-right" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary pull-left" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
                     </div>
 
                 </div>

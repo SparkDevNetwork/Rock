@@ -14,19 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using System.Web.Hosting;
 
-using RestSharp;
-using System.Configuration;
-using System.IO;
 using Newtonsoft.Json;
-using System.Web;
-using Rock.Web.UI;
 
 
 namespace Rock.Store
