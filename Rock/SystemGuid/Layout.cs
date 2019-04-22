@@ -23,7 +23,6 @@ namespace Rock.SystemGuid
     {
         /// <summary>
         /// Gets the Left Sidebar layout
-        /// ParentPage: Check-in
         /// </summary>
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
     }
