@@ -137,7 +137,8 @@
       margin-top: (@input-height-base - @max) / 2;
       margin-bottom: (@input-height-base - @max) / 2;
 
-      .radio-inline+.radio-inline, .checkbox-inline+.checkbox-inline {
+      .radio-inline + .radio-inline,
+      .checkbox-inline + .checkbox-inline {
         .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
         margin-top: (@input-height-base - @max) / 2;
       }
