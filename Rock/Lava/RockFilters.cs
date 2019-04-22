@@ -794,22 +794,35 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns matched RegEx string from inputted string
+        /// Returns matched RegEx string (or list of strings) from inputted string
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="expression">The regex expression.</param>
         /// <returns></returns>
-        public static string RegExMatchValue( string input, string expression )
+        public static object RegExMatchValue( string input, string expression )
         {
-            if ( input == null )
+            if (input == null)
             {
                 return null;
             }
 
             Regex regex = new Regex( expression );
-            Match match = regex.Match( input );
+            var matches = regex.Matches( input );
 
-            return match.Success ? match.Value : null;
+            // Flatten all matches to single list
+            var captured = matches
+                .Cast<Match>()
+                .Where(m => m.Success == true)
+                .SelectMany( o =>
+                    o.Groups.Cast<Capture>()
+                        .Select( c => c.Value ) );
+            // If we only have 1 match then just return a string
+            if (captured.Count() == 1)
+            {
+                return captured.First();
+            }
+            return captured.ToList();
+
         }
 
         /// <summary>
