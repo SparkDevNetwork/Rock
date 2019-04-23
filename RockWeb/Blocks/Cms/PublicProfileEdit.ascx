@@ -266,8 +266,8 @@
 
                     <asp:Panel ID="pnlAddress" runat="server">
                         <fieldset>
-                            <legend>
-                                <asp:Literal ID="lAddressTitle" runat="server" /></legend>
+                            <h3><asp:Literal ID="lAddressTitle" runat="server" /></h3>
+
 
                             <div class="clearfix">
                                 <div class="pull-left margin-b-md">
