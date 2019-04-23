@@ -46,29 +46,31 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace( value ))
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var names = new List<string>();
                 var guids = new List<Guid>();
 
-                foreach (string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ))
+                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
                     Guid? guid = guidValue.AsGuidOrNull();
-                    if (guid.HasValue)
+                    if ( guid.HasValue )
                     {
                         guids.Add( guid.Value );
                     }
                 }
 
-                if (guids.Any())
+                if ( !guids.Any() )
                 {
-                    using (var rockContext = new RockContext())
+                    return base.FormatValue( parentControl, formattedValue, null, condensed );
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationTemplates = new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
+                    if ( registrationTemplates.Any() )
                     {
-                        var registrationTemplates = new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
-                        if (registrationTemplates.Any())
-                        {
-                            formattedValue = string.Join( ", ", (from registrationTemplate in registrationTemplates select registrationTemplate.Name).ToArray() );
-                        }
+                        formattedValue = string.Join( ", ", ( from registrationTemplate in registrationTemplates select registrationTemplate.Name ).ToArray() );
                     }
                 }
             }
@@ -102,19 +104,21 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as RegistrationTemplatePicker;
+            if ( picker == null )
+            {
+                return null;
+            }
+
             string result = null;
 
-            if (picker != null)
+            var ids = picker.SelectedValuesAsInt().ToList();
+            using ( var rockContext = new RockContext() )
             {
-                var ids = picker.SelectedValuesAsInt().ToList();
-                using (var rockContext = new RockContext())
-                {
-                    var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByIds( ids ).ToList();
+                var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByIds( ids ).ToList();
 
-                    if (registrationTemplates.Any())
-                    {
-                        result = registrationTemplates.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
-                    }
+                if ( registrationTemplates.Any() )
+                {
+                    result = registrationTemplates.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
                 }
             }
 
@@ -131,13 +135,13 @@ namespace Rock.Field.Types
         {
             var picker = control as RegistrationTemplatePicker;
 
-            if (picker != null)
+            if ( picker != null )
             {
                 var guids = value?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
 
-                if (guids.Any())
+                if ( guids.Any() )
                 {
-                    using (var rockContext = new RockContext())
+                    using ( var rockContext = new RockContext() )
                     {
                         var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByGuids( guids ).ToList();
                         picker.SetValues( registrationTemplates );
