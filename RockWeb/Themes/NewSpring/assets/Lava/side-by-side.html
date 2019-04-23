@@ -31,7 +31,7 @@
                             position-right-boundry margin-right-negative
                         {% else %}
                             position-left-boundry margin-left-negative sm-margin-top-auto
-                        {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
+                        {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xFs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
 
                         <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
                         <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
@@ -92,7 +92,8 @@
 </section>
 
 {% else %}
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hidden hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+
+<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
     {% if imageurl != null and imageurl != '' %}
         <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
