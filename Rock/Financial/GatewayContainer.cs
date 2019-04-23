@@ -23,7 +23,7 @@ using Rock.Extension;
 namespace Rock.Financial
 {
     /// <summary>
-    /// MEF Container class for Binary File Gateway Components
+    /// MEF Container class for Financial Gateway Components
     /// </summary>
     public class GatewayContainer : Container<GatewayComponent, IComponentData>
     {

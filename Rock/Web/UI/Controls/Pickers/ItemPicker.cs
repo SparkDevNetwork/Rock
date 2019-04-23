@@ -454,6 +454,16 @@ namespace Rock.Web.UI.Controls
         public bool AllowMultiSelect { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow category selection].
+        /// If set to true then the user will be allowed to select a Category in addition to the Items.
+        /// Default value is false.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow category selection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowCategorySelection { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show select children].
         /// </summary>
         /// <value>
@@ -548,6 +558,7 @@ $@"Rock.controls.itemPicker.initialize({{
     controlId: '{this.ClientID}',
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
+    allowCategorySelection: {this.AllowCategorySelection.ToString().ToLower()},
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
     expandedIds: [{this.InitialItemParentIds}],

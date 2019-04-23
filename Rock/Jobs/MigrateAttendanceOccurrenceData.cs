@@ -14,13 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {

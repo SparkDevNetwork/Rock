@@ -16,9 +16,6 @@
 //
 using System.Web.UI;
 
-using Rock;
-using Rock.Model;
-using Rock.PersonProfile;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls

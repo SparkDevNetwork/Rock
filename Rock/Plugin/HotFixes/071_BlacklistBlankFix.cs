@@ -36,7 +36,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateContentBlackList();
+            //UpdateContentBlackList();
         }
 
         /// <summary>

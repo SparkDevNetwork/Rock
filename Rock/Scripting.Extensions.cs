@@ -14,13 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using CSScriptLibrary;
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Remoting.Lifetime;
 using System.Threading;
 using System.Threading.Tasks;
+
+using CSScriptLibrary;
 
 // Read in more details about all aspects of CS-Script hosting in applications 
 // here: http://www.csscript.net/help/Script_hosting_guideline_.html

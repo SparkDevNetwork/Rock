@@ -17,10 +17,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -246,15 +248,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
             if ( workflowTypeId.HasValue )
             {
-                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, System.Data.Entity.EntityState.Modified );
+                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
             }
 
-            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, System.Data.Entity.EntityState.Modified ); 
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified ); 
             WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 

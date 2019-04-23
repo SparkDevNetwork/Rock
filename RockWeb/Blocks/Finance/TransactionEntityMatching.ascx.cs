@@ -634,6 +634,12 @@ namespace RockWeb.Blocks.Finance
             {
                 var financialTransactionDetailLookup = _financialTransactionDetailList.FirstOrDefault( a => a.Id == financialTransactionDetailId );
 
+                // An un-match operation is only allowed if the entity type is already our target entity type.
+                if ( financialTransactionDetailLookup.EntityTypeId != _transactionEntityType.Id && !entityId.HasValue )
+                {
+                    return;
+                }
+
                 if ( financialTransactionDetailLookup.EntityTypeId != _transactionEntityType.Id
                     || financialTransactionDetailLookup.EntityId != entityId
                     || _blockTransactionTypeId.HasValue && _blockTransactionTypeId != financialTransactionDetailLookup.Transaction.TransactionTypeValueId )

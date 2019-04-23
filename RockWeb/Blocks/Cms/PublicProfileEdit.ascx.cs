@@ -409,6 +409,7 @@ namespace RockWeb.Blocks.Cms
                 hfCountry.Value = acAddress.Country;
 
                 Location currentAddress = new Location();
+                acAddress.Required = true;
                 acAddress.GetValues( currentAddress );
                 lPreviousAddress.Text = string.Format( "<strong>Previous Address</strong><br />{0}", currentAddress.FormattedHtmlAddress );
 
@@ -1304,6 +1305,9 @@ namespace RockWeb.Blocks.Cms
                             {
                                 pnlFamilyAttributes.Visible = false;
                             }
+
+                            lPreviousAddress.Text = string.Empty;
+                            acAddress.Required = false;
 
                             Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
                             if ( locationTypeGuid.HasValue )
