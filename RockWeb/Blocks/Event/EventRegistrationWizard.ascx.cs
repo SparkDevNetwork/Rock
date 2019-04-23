@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Event
     [Description( "A wizard to simplify creation of Event Registrations." )]
 
     #region "Block Attribute Settings"
+
     [AccountField(
         "Default Account",
         Key = AttributeKey.DefaultAccount,
@@ -126,12 +127,13 @@ namespace RockWeb.Blocks.Event
     //[WorkflowTypeField(
     //    "Completion Workflow",
     //    Key = AttributeKey.CompletionWorkflows,
-    //    Description = "A workflow that will be launched when a new registration is created.",
+    //    Description = "One or more workflow(s) that will be launched when a new registration is created.",
     //    Category = "",
     //    IsRequired = false,
     //    DefaultValue = "",
     //    AllowMultiple = true,
     //    Order = 9 )]
+
     #endregion
 
     public partial class EventRegistrationWizard : RockBlock
@@ -155,7 +157,6 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Properties
-
 
         #endregion
 
@@ -185,6 +186,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
+                ppContact.SetValue( CurrentPerson );
                 SetActiveWizardStep( ActiveWizardStep.Initiate );
 
                 using (var rockContext = new RockContext())
@@ -196,8 +198,8 @@ namespace RockWeb.Blocks.Event
                     Init_SetRootGroup( rockContext );
                 }
 
-                sbSchedule.iCalendarContent = string.Empty;
-                lScheduleText.Text = string.Empty;
+                //sbSchedule.iCalendarContent = string.Empty;
+                //lScheduleText.Text = string.Empty;
 
                 DisplayDebug_AttributeValues();
             }
@@ -237,8 +239,8 @@ namespace RockWeb.Blocks.Event
             Guid? acctGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
             if (acctGuid != null)
             {
-                FinancialAccountService acctService = new FinancialAccountService( rockContext );
-                FinancialAccount acct = acctService.Get( acctGuid.Value );
+                var acctService = new FinancialAccountService( rockContext );
+                var acct = acctService.Get( acctGuid.Value );
                 apAccount.SetValue( acct );
             }
 
@@ -249,14 +251,15 @@ namespace RockWeb.Blocks.Event
             Guid? calendarGuid = GetAttributeValue( AttributeKey.DefaultCalendar ).AsGuidOrNull();
             if (calendarGuid != null)
             {
-                EventCalendarService calendarService = new EventCalendarService( rockContext );
-                EventCalendar calendar = calendarService.Get( calendarGuid.Value );
+                var calendarService = new EventCalendarService( rockContext );
+                var calendar = calendarService.Get( calendarGuid.Value );
                 defaultCalendarId = calendar.Id;
             }
 
-            foreach (var calendar in new EventCalendarService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .OrderBy( c => c.Name ))
+            foreach ( var calendar in
+                new EventCalendarService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( c => c.Name ) )
             {
                 if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ))
                 {
@@ -274,30 +277,30 @@ namespace RockWeb.Blocks.Event
             Guid? groupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
             if (groupGuid != null)
             {
-                GroupService groupService = new GroupService( rockContext );
-                Group rootGroup = groupService.Get( groupGuid.Value );
+                var groupService = new GroupService( rockContext );
+                var rootGroup = groupService.Get( groupGuid.Value );
                 gpParentGroup.RootGroupId = rootGroup.Id;
             }
         }
 
         private void DisplayDebug_AttributeValues()
         {
-            RockContext rockContext = new RockContext();
+            var rockContext = new RockContext();
             lblDebug.Text = "Attribute Values:<br />";
 
             Guid? acctGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
             if ( acctGuid != null )
             {
-                FinancialAccountService acctService = new FinancialAccountService( rockContext );
-                FinancialAccount acct = acctService.Get( acctGuid.Value );
+                var acctService = new FinancialAccountService( rockContext );
+                var acct = acctService.Get( acctGuid.Value );
                 lblDebug.Text += "DefaultAccount: " + acct.Name + "<br />";
             }
 
             Guid? calendarGuid = GetAttributeValue( AttributeKey.DefaultCalendar ).AsGuidOrNull();
             if (calendarGuid != null)
             {
-                EventCalendarService calendarService = new EventCalendarService( rockContext );
-                EventCalendar calendar = calendarService.Get( calendarGuid.Value );
+                var calendarService = new EventCalendarService( rockContext );
+                var calendar = calendarService.Get( calendarGuid.Value );
                 lblDebug.Text += "DefaultCalendar: " + calendar.Name + "<br />";
             }
 
@@ -306,8 +309,8 @@ namespace RockWeb.Blocks.Event
                 Guid? registrationTemplateGuid = selectedRegistrationTemplate.AsGuidOrNull();
                 if ( registrationTemplateGuid != null )
                 {
-                    RegistrationTemplateService registrationTemplateService = new RegistrationTemplateService( rockContext );
-                    RegistrationTemplate registrationTemplate = registrationTemplateService.Get( registrationTemplateGuid.Value );
+                    var registrationTemplateService = new RegistrationTemplateService( rockContext );
+                    var registrationTemplate = registrationTemplateService.Get( registrationTemplateGuid.Value );
                     lblDebug.Text += "AvailableRegistrationTemplate: " + registrationTemplate.Name + "<br />";
                 }
             }
@@ -315,8 +318,8 @@ namespace RockWeb.Blocks.Event
             Guid? groupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
             if (groupGuid != null)
             {
-                GroupService groupService = new GroupService( rockContext );
-                Group rootGroup = groupService.Get( groupGuid.Value );
+                var groupService = new GroupService( rockContext );
+                var rootGroup = groupService.Get( groupGuid.Value );
                 lblDebug.Text += "RootGroup: " + rootGroup.Name + "<br />";
             }
 
@@ -331,8 +334,8 @@ namespace RockWeb.Blocks.Event
                 Guid? workflowTypeGuid = selectedCompletionWorkflow.AsGuidOrNull();
                 if (workflowTypeGuid != null)
                 {
-                    WorkflowTypeService workflowTypeService = new WorkflowTypeService( rockContext );
-                    WorkflowType workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
                     lblDebug.Text += "CompletionWorkflow: " + workflowType.Name + "<br />";
                 }
             }
@@ -361,20 +364,20 @@ namespace RockWeb.Blocks.Event
 
         private void SetResultLinks()
         {
-            Dictionary<string, string> qryGroup = new Dictionary<string, string>();
+            var qryGroup = new Dictionary<string, string>();
             qryGroup.Add( "GroupId", "value" );
             hlGroup.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.GroupViewerPage ), qryGroup );
 
-            Dictionary<string, string> qryRegistrationInstance = new Dictionary<string, string>();
+            var qryRegistrationInstance = new Dictionary<string, string>();
             qryRegistrationInstance.Add( "EventId", "value" );
             //ToDo:  should this be in the system guid collection?
             hlRegistrationInstance.NavigateUrl = GetPageUrl( "844dc54b-daec-47b3-a63a-712dd6d57793", qryRegistrationInstance );
 
-            Dictionary<string, string> qryEventOccurrence = new Dictionary<string, string>();
+            var qryEventOccurrence = new Dictionary<string, string>();
             qryEventOccurrence.Add( "EventId", "value" );
             hlEventOccurrence.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_OCCURRENCE, qryEventOccurrence );
 
-            Dictionary<string, string> qryEventDetail = new Dictionary<string, string>();
+            var qryEventDetail = new Dictionary<string, string>();
             qryEventDetail.Add( "EventId", "value" );
             hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
         }
@@ -671,9 +674,9 @@ namespace RockWeb.Blocks.Event
 
         protected void ppContact_SelectPerson( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            PersonService personService = new PersonService( rockContext );
-            Person contact = personService.Get( ppContact.SelectedValue.Value );
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var contact = personService.Get( ppContact.SelectedValue.Value );
 
             tbContactEmail.Text = contact.Email;
             var pn = contact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
@@ -716,7 +719,8 @@ namespace RockWeb.Blocks.Event
 
         protected void sbSchedule_SaveSchedule( object sender, EventArgs e )
         {
-
+            var schedule = new Schedule { iCalendarContent = sbSchedule.iCalendarContent };
+            lScheduleText.Text = schedule.FriendlyScheduleText;
         }
     }
 }

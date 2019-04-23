@@ -134,18 +134,18 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DateTimePicker ID="dtpRegistrationStarts" runat="server" Label="Registration Starts" Required="true" />
+                                <Rock:DateTimePicker ID="dtpRegistrationStarts" runat="server" Label="Registration Starts" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:DateTimePicker ID="dtpRegistrationEnds" runat="server" Label="Registration Ends" Required="true" />
+                                <Rock:DateTimePicker ID="dtpRegistrationEnds" runat="server" Label="Registration Ends" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DateTimePicker ID="dtpReminderDate" runat="server" Label="Send Reminder Date" Required="true" />
+                                <Rock:DateTimePicker ID="dtpReminderDate" runat="server" Label="Send Reminder Date" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="numbMaximimAttendees" runat="server" Label="Maximum Attendees" Required="true" />
+                                <Rock:NumberBox ID="numbMaximumAttendees" runat="server" Label="Maximum Attendees" />
                             </div>
                         </div>
 
@@ -164,14 +164,14 @@
                                     <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockTextBox ID="tbBatchPrefix" runat="server" Label="Batch Prefix" Required="true" />
+                                    <Rock:RockTextBox ID="tbBatchPrefix" runat="server" Label="Batch Prefix" />
                                 </div>
                             </div>
                         </asp:Panel>
 
                         <div class="row">
                             <div class="col-md-6 col-md-offset-6">
-                                <Rock:RockTextBox ID="tbSlug" runat="server" Label="Slug" Required="true" />
+                                <Rock:RockTextBox ID="tbSlug" runat="server" Label="Slug" />
                             </div>
                         </div>
 
