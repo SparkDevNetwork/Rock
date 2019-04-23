@@ -1446,5 +1446,35 @@ namespace Rock.Migrations.Migrations {
                         "story", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///		SELECT [Id]
+        ///		FROM [ServiceJob]
+        ///		WHERE [Class] = &apos;Rock.Jobs.PostV90DataMigrations&apos;
+        ///			AND [Guid] = &apos;3F279016-C7D1-490F-835D-8FFE6D943A32&apos;
+        ///		)
+        ///BEGIN
+        ///	INSERT INTO [ServiceJob] (
+        ///		[IsSystem]
+        ///		,[IsActive]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[Class]
+        ///		,[CronExpression]
+        ///		,[NotificationStatus]
+        ///		,[Guid]
+        ///		)
+        ///	VALUES (
+        ///		0
+        ///		,1
+        ///		,&apos;Runs data updates that need to occur after updating to v9.0&apos;
+        ///		,&apos;This job will take care of any data migrations that need to occur after updating to v [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob {
+            get {
+                return ResourceManager.GetString("_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob", resourceCulture);
+            }
+        }
     }
 }

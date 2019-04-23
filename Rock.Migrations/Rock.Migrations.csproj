@@ -284,6 +284,10 @@
     <Compile Include="Migrations\201904092249258_Rollup_0409.Designer.cs">
       <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904231856504_Rollup_0423.cs" />
+    <Compile Include="Migrations\201904231856504_Rollup_0423.Designer.cs">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -738,6 +742,9 @@
     <EmbeddedResource Include="Migrations\201904092249258_Rollup_0409.resx">
       <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904231856504_Rollup_0423.resx">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -1003,6 +1010,9 @@
     </Content>
     <Content Include="Migrations\201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory.sql">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob.sql">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
