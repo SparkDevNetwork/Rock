@@ -110,10 +110,13 @@ namespace Rock.Model
             target.BillingLocationId = source.BillingLocationId;
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.ExpirationMonth = source.ExpirationMonth;
             target.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            target.ExpirationYear = source.ExpirationYear;
             target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.NameOnCard = source.NameOnCard;
             target.NameOnCardEncrypted = source.NameOnCardEncrypted;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
