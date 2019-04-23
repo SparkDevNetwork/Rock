@@ -1029,7 +1029,9 @@ namespace Rock.Model
         private DateTime? _birthDate ;
 
         /// <summary>
-        /// Calculates the birthdate from the BirthYear, BirthMonth, and BirthDay. Will return null if it cannot be computed.
+        /// Calculates the birthdate from the BirthYear, BirthMonth, and BirthDay.
+        /// Will return null if BirthMonth or BirthDay is null.
+        /// If BirthYear is null then DateTime.MinValue.Year (Year = 1) is used.
         /// </summary>
         /// <returns></returns>
         private DateTime? CalculateBirthDate()
@@ -1042,7 +1044,7 @@ namespace Rock.Model
             {
                 if ( BirthMonth <= 12 )
                 {
-                    if ( BirthDay <= DateTime.DaysInMonth( BirthYear.Value, BirthMonth.Value ) )
+                    if ( BirthDay <= DateTime.DaysInMonth( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value ) )
                     {
                         return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
                     }
