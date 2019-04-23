@@ -245,9 +245,24 @@
 
 .global-custom-controls(true) {
   .custom-controls();
+
+  // Override fix for checkbox wrapping when in-columns from forms.less
+  .in-columns {
+    .checkbox-inline:first-child,
+    .radio-inline:first-child {
+      padding-left: @custom-control-gutter + @custom-control-indicator-size;
+    }
+  }
 }
 
 .global-custom-controls(false) {
+  .checkbox-inline:first-child,
+  .radio-inline:first-child {
+    // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines.
+    // padding-left = (.checkbox-inline + .checkbox-inline margin-left) + .checkbox-inline padding-left
+    padding-left: 30px;
+  }
+
   .assessment {
     .custom-controls();
   }
