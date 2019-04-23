@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Web.Cache

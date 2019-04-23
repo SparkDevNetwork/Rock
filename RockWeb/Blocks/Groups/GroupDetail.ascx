@@ -12,7 +12,7 @@
 
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning"  Visible="false" Text="That group does not exist or it has been archived."  />
+        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning" Visible="false" Text="That group does not exist or it has been archived." />
 
         <asp:Panel ID="pnlDetails" CssClass="js-group-panel" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
@@ -51,7 +51,6 @@
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
-
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
@@ -68,7 +67,6 @@
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                             </div>
                         </div>
-
                         <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                             <div class="row">
                                 <div class="col-md-6">
@@ -83,7 +81,7 @@
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
-                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0"  />
+                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
                                     <Rock:PersonPicker ID="ppAdministrator" runat="server" />
                                 </div>
                                 <div class="col-md-6">
@@ -240,6 +238,9 @@
 
                     <fieldset id="fieldsetViewDetails" runat="server">
 
+                        <div class="taglist">
+                            <Rock:TagList ID="taglGroupTags" runat="server" CssClass="clearfix" />
+                        </div>
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
                         <div class="actions">
@@ -332,10 +333,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataViewItemPicker ID="dvipSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" required="true" ValidationGroup="GroupSyncSettings" />
+                        <Rock:DataViewItemPicker ID="dvipSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" Required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" required="true" ValidationGroup="GroupSyncSettings" />
+                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" Required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                 </div>
                 <div class="row">
@@ -443,7 +444,7 @@
                     e.preventDefault();
                     Rock.dialogs.confirm('Are you sure you want to archive this group?', function (result) {
                         if (result) {
-                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
                     });
                 });

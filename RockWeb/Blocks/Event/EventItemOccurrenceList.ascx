@@ -28,12 +28,12 @@
                                     <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                     <asp:HyperLinkField HeaderText="Registration" DataTextField="RegistrationInstance" DataNavigateUrlFields="RegistrationInstanceId" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" />
-                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items">
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items" ColumnPriority="DesktopLarge">
                                         <ItemTemplate><%# Eval("ContentItems") %></ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
-                                    <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
-                                    <Rock:RockBoundField DataField="Email" HeaderText="Email" />
+                                    <Rock:RockBoundField DataField="Phone" HeaderText="Phone" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="Email" HeaderText="Email" ColumnPriority="Desktop" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

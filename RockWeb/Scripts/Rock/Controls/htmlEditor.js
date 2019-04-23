@@ -8,17 +8,17 @@
 
             // the toolbar items to include in the HtmlEditor when Toolbar is set to Light 
             toolbar_RockCustomConfigLight:
-	            [
+                [
                     // [groupName, [list of button]]
-                    ['source_group',['rockcodeeditor']],
-                    ['style_group1', ['bold', 'italic', 'strikethrough', 'link', 'color', 'style',  'ol', 'ul' ]],
+                    ['source_group', ['rockcodeeditor']],
+                    ['style_group1', ['bold', 'italic', 'strikethrough', 'link', 'color', 'style', 'ol', 'ul']],
                     ['style_group3', ['clear']],
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
-                    ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
+                    ['plugins2', ['rockimagebrowser', 'rockfilebrowser', 'rockassetmanager']],
                     ['plugins3', ['rockpastetext', 'rockpastefromword']],
                     ['style_group2', ['undo', 'redo']]
-	            ],
+                ],
 
             // the toolbar items to include in the HtmlEditor when Toolbar is set to Full 
             toolbar_RockCustomConfigFull:
@@ -32,12 +32,11 @@
                     ['full_toolbar_only', ['fontname', 'fontsize', 'superscript', 'subscript', 'table', 'hr']],
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
-                    ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
+                    ['plugins2', ['rockimagebrowser', 'rockfilebrowser', 'rockassetmanager']],
                     ['plugins3', ['rockpastetext', 'rockpastefromword']],
                     ['help_group1', ['help']]
-
                 ]
-        }
+        };
 
         return exports;
 

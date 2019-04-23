@@ -18,14 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DotLiquid;
-using Rock.Data;
-using Rock.Model;
-using CSScriptLibrary;
 using System.Text.RegularExpressions;
-using Microsoft.CSharp;
+
+using CSScriptLibrary;
+
+using DotLiquid;
 
 namespace Rock.Lava.Blocks
 {

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -32,13 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Gets the specified occurrence record.
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="occurrenceDate">The occurrence date, the time wil be removed.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
         public AttendanceOccurrence Get( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
         {
+            // We only want the date. Time need not apply.
+            occurrenceDate = occurrenceDate.Date;
+
             var qry = Queryable().Where( o => o.OccurrenceDate == occurrenceDate );
 
             qry = groupId.HasValue ?
@@ -58,7 +62,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets occurrence data for the selected group
+        /// Gets occurrence data for the selected group.
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="fromDateTime">From date time.</param>
@@ -66,8 +70,7 @@ namespace Rock.Model
         /// <param name="locationIds">The location ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public List<AttendanceOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime,
-            List<int> locationIds, List<int> scheduleIds )
+        public List<AttendanceOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime, List<int> locationIds, List<int> scheduleIds )
         {
             var qry = Queryable().Where( a => a.GroupId == group.Id );
 
@@ -75,13 +78,13 @@ namespace Rock.Model
             if ( fromDateTime.HasValue )
             {
                 var fromDate = fromDateTime.Value.Date;
-                qry = qry.Where( a => DbFunctions.TruncateTime( a.OccurrenceDate ) >= ( fromDate ) );
+                qry = qry.Where( a => a.OccurrenceDate >= ( fromDate ) );
             }
 
             if ( toDateTime.HasValue )
             {
                 var toDate = toDateTime.Value.Date;
-                qry = qry.Where( a => DbFunctions.TruncateTime( a.OccurrenceDate ) < ( toDate ) );
+                qry = qry.Where( a => a.OccurrenceDate < ( toDate ) );
             }
 
             // Location Filter
@@ -126,7 +129,7 @@ namespace Rock.Model
                 {
                     var newOccurrence = new AttendanceOccurrence
                     {
-                        OccurrenceDate = occurrence.Period.StartTime.Date.Add( occurrence.Period.StartTime.TimeOfDay ),
+                        OccurrenceDate = occurrence.Period.StartTime.Date,
                         GroupId = group.Id,
                         Group = group,
                         ScheduleId = groupSchedule.Id,
@@ -197,8 +200,8 @@ namespace Rock.Model
 
                     foreach ( var occurrence in newOccurrences.ToList() )
                     {
-                        if ( occurrence.OccurrenceDate.Date >= exclusion.Start.Value &&
-                            occurrence.OccurrenceDate.Date < exclusion.End.Value.AddDays( 1 ) )
+                        if ( occurrence.OccurrenceDate >= exclusion.Start.Value.Date &&
+                            occurrence.OccurrenceDate < exclusion.End.Value.Date.AddDays( 1 ) )
                         {
                             newOccurrences.Remove( occurrence );
                         }

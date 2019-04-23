@@ -18,11 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using DDay.iCal;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -379,7 +382,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
             var calEvent = GetCalendarEvent();
             if ( calEvent != null )

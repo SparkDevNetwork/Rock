@@ -16,15 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Web;
 
 using Quartz;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Data;
-using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Jobs
