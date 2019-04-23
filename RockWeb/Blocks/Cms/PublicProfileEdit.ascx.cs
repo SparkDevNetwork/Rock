@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField(
         name: "Show Phone Numbers",
         description: "Allows hiding the phone numbers.",
-        defaultValue: false,
+        defaultValue: true,
         order: 5,
         key: AttributeKeys.ShowPhoneNumbers )]
 
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Cms
         allowMultiple: true,
         defaultValue: Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME,
         order: 6,
-        key: AttributeKeys.PhoneTypes )]
+        key: AttributeKeys.PhoneNumbers )]
 
     [DefinedValueField(
         definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Cms
             public const string ShowFamilyMembers = "ShowFamilyMembers";
             public const string AddressType = "AddressType";
             public const string ShowPhoneNumbers = "ShowPhoneNumbers";
-            public const string PhoneTypes = "PhoneTypes";
+            public const string PhoneNumbers = "PhoneNumbers";
             public const string RequiredAdultPhoneTypes = "RequiredAdultPhoneTypes";
             public const string RequireAdultEmailAddress = "RequireAdultEmailAddress";
             public const string ShowCommunicationPreference = "ShowCommunicationPreference";
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( person.PhoneNumbers != null )
                 {
-                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneTypes ).Split( ',' ).AsGuidList();
+                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneNumbers ).Split( ',' ).AsGuidList();
                     rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
                     rptGroupMemberPhones.DataBind();
                     phPhoneDisplay.Visible = true;
@@ -1057,7 +1057,7 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( CurrentPerson.PhoneNumbers != null )
                 {
-                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneTypes ).Split( ',' ).AsGuidList();
+                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneNumbers ).Split( ',' ).AsGuidList();
                     rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
                     rptPhones.DataBind();
                 }
@@ -1368,7 +1368,7 @@ namespace RockWeb.Blocks.Cms
                 var phoneNumbers = new List<PhoneNumber>();
                 var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
                 var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneTypes ).Split( ',' ).AsGuidList();
+                var selectedPhoneTypeGuids = GetAttributeValue( AttributeKeys.PhoneNumbers ).Split( ',' ).AsGuidList();
 
                 if (phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any())
                 {
