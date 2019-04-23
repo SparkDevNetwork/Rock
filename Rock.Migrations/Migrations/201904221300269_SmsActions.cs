@@ -183,8 +183,8 @@ namespace Rock.Migrations
         {
             RockMigrationHelper.AddPage(
                 true,
-                SystemGuid.Page.GIVE,
-                SystemGuid.Layout.LEFT_SIDEBAR,
+                SystemGuid.Page.GIVE_NOW,
+                SystemGuid.Layout.FULL_WIDTH,
                 "Text To Give",
                 "Configuration that allows a user to give using a text message",
                 SystemGuid.Page.TEXT_TO_GIVE_SETUP );

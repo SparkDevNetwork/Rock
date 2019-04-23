@@ -5,9 +5,7 @@
 
         <%-- Message for any configuration warnings --%>
         <Rock:NotificationBox ID="nbConfigurationNotification" runat="server" Visible="false" />
-
         <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false" />
-
 
         <%-- Friendly Help if there is no Gateway configured --%>
         <asp:Panel ID="pnlGatewayHelp" runat="server" Visible="false">
@@ -19,7 +17,8 @@
                         <div class="panel-body">
                             <asp:HiddenField ID="hfGatewayEntityTypeId" runat="server" />
                             <h4>
-                                <asp:Literal ID="lGatewayName" runat="server" /></h4>
+                                <asp:Literal ID="lGatewayName" runat="server" />
+                            </h4>
                             <p>
                                 <asp:Literal ID="lGatewayDescription" runat="server" />
                             </p>

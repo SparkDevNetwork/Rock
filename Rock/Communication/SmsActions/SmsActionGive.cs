@@ -46,11 +46,20 @@ namespace Rock.Communication.SmsActions
         category: "Giving",
         key: AttributeKeys.GivingKeyword )]
 
+    [TextField(
+        name: "Setup Keyword",
+        description: "The case-insensitive keyword that will be expected at the beginning of the message.",
+        required: true,
+        defaultValue: "SETUP",
+        order: 2,
+        category: "Giving",
+        key: AttributeKeys.SetupKeyword )]
+
     [CurrencyField(
         name: "Maximum Gift Amount",
         description: "Leave blank to allow gifts of any size.",
         required: false,
-        order: 2,
+        order: 3,
         category: "Giving",
         key: AttributeKeys.MaxAmount )]
 
@@ -59,16 +68,16 @@ namespace Rock.Communication.SmsActions
         description: "The financial account to designate gifts toward. Leave blank to use the person's default giving designation.",
         required: false,
         category: "Giving",
-        order: 3,
+        order: 4,
         key: AttributeKeys.FinancialAccount )]
 
     [LinkedPage(
         name: "Setup Page",
         description: "The page to link with a token for the person to setup their SMS giving",
-        required: true,
+        required: false,
         defaultValue: SystemGuid.Page.TEXT_TO_GIVE_SETUP + "," + SystemGuid.PageRoute.TEXT_TO_GIVE_SETUP,
         category: "Giving",
-        order: 4,
+        order: 5,
         key: AttributeKeys.SetupPage )]
 
     [TextField(
@@ -76,7 +85,7 @@ namespace Rock.Communication.SmsActions
         description: "The case-insensitive keyword that is expected to trigger the refund. Leave blank to disable SMS refunds.",
         required: false,
         defaultValue: "REFUND",
-        order: 5,
+        order: 6,
         category: "Refund",
         key: AttributeKeys.RefundKeyword )]
 
@@ -85,7 +94,7 @@ namespace Rock.Communication.SmsActions
         description: "The number of minutes to delay processing the gifts and allow refunds (if the refund keyword is set). Delaying allows SMS requested refunds to completely bypass the financial gateway. Set to zero or leave blank to process gifts immediately and disallow refunds.",
         required: false,
         defaultValue: 30,
-        order: 5,
+        order: 7,
         category: "Refund",
         key: AttributeKeys.ProcessingDelayMinutes )]
 
@@ -96,7 +105,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Something went wrong. To give, simply text ‘{{ Keyword }} 100’ or ‘{{ Keyword }} $123.45’. Please contact us if you need help.",
-        order: 7,
+        order: 8,
         category: "Response",
         key: AttributeKeys.HelpResponse )]
 
@@ -107,7 +116,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: false,
         defaultValue: "Thank you for your generosity but our mobile giving solution cannot process a gift this large. Please give using our website.",
-        order: 8,
+        order: 9,
         category: "Response",
         key: AttributeKeys.MaxAmountResponse )]
 
@@ -117,8 +126,8 @@ namespace Rock.Communication.SmsActions
         name: "Setup Response",
         description: "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
-        defaultValue: "Welcome! Let's set up your device to securely give using this link: {{ SetupLink | CreateShortLink}}",
-        order: 9,
+        defaultValue: "Welcome! Let's set up your device to securely give using this link: {{ SetupLink | CreateShortLink }}",
+        order: 10,
         category: "Response",
         key: AttributeKeys.SetupResponse )]
 
@@ -129,7 +138,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Thank you! We received your gift of {{ Amount }} to the {{ AccountName }}.",
-        order: 10,
+        order: 11,
         category: "Response",
         key: AttributeKeys.SuccessResponse )]
 
@@ -140,7 +149,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the sender's gift cannot be refunded. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "We are unable to process a refund for your last gift. Please contact us for assistance.",
-        order: 11,
+        order: 12,
         category: "Response",
         key: AttributeKeys.RefundFailureResponse )]
 
@@ -151,7 +160,7 @@ namespace Rock.Communication.SmsActions
         description: "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         required: true,
         defaultValue: "Your gift for {{ Amount }} to the {{ AccountName }} has been refunded.",
-        order: 12,
+        order: 13,
         category: "Response",
         key: AttributeKeys.RefundSuccessResponse )]
 
@@ -162,7 +171,8 @@ namespace Rock.Communication.SmsActions
         private static class AttributeKeys
         {
             // Giving
-            public const string GivingKeyword = "Keyword";
+            public const string SetupKeyword = "SetupKeyword";
+            public const string GivingKeyword = "GivingKeyword";
             public const string MaxAmount = "MaxAmount";
             public const string MaxAmountResponse = "MaxAmountResponse";
             public const string FinancialAccount = "FinancialAccount";
@@ -238,7 +248,7 @@ namespace Rock.Communication.SmsActions
             }
 
             var messageText = message.Message.Trim();
-            return IsGivingMessage( action, messageText ) || IsRefundMessage( action, messageText );
+            return IsGivingMessage( action, messageText ) || IsRefundMessage( action, messageText ) || IsSetupMessage( action, messageText );
         }
 
         /// <summary>
@@ -253,16 +263,17 @@ namespace Rock.Communication.SmsActions
             errorMessage = string.Empty;
             var messageText = message.Message.Trim();
 
-            var isGiving = IsGivingMessage( action, messageText );
-            var isRefund = IsRefundMessage( action, messageText );
-
-            if ( isGiving )
+            if ( IsGivingMessage( action, messageText ) )
             {
                 return DoGift( action, message, out errorMessage );
             }
-            else if ( isRefund )
+            else if ( IsRefundMessage( action, messageText ) )
             {
                 return DoRefund( action, message, out errorMessage );
+            }
+            else if ( IsSetupMessage( action, messageText ) )
+            {
+                return DoSetup( action, message, out errorMessage );
             }
             else
             {
@@ -272,6 +283,48 @@ namespace Rock.Communication.SmsActions
         }
 
         #endregion
+
+        #region Setup
+
+        /// <summary>
+        /// Return true if the message text is requesting setup
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="messageText"></param>
+        /// <returns></returns>
+        public bool IsSetupMessage( SmsActionCache action, string messageText )
+        {
+            var keyword = GetSetupKeyword( action );
+
+            if ( keyword.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            return messageText.Equals( keyword, StringComparison.CurrentCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Process a setup link request
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="message"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        private SmsMessage DoSetup( SmsActionCache action, SmsMessage message, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var rockContext = new RockContext();
+
+            var setupKeyword = GetSetupKeyword( action );
+            var person = message.FromPerson ?? CreateNewPerson( rockContext, message );
+            var setupLink = GetSetupPageLink( action, person );
+
+            var lavaTemplate = GetSetupResponse( action );
+            return GetResolvedSmsResponse( lavaTemplate, setupKeyword, message, null, null, setupLink );
+        }
+
+        #endregion Setup
 
         #region Giving
 
@@ -303,7 +356,7 @@ namespace Rock.Communication.SmsActions
             var givingKeyword = GetGivingKeyword( action );
             var giftAmountNullable = GetGiftAmount( givingKeyword, messageText );
             var maxAmount = GetMaxAmount( action );
-            
+
             var person = message.FromPerson ?? CreateNewPerson( rockContext, message );
             var defaultSavedAccount = GetDefaultSavedAccount( rockContext, person );
 
@@ -499,7 +552,7 @@ namespace Rock.Communication.SmsActions
         /// <returns></returns>
         private Person CreateNewPerson( RockContext rockContext, SmsMessage message )
         {
-            if (message.FromPerson != null)
+            if ( message.FromPerson != null )
             {
                 return message.FromPerson;
             }
@@ -508,7 +561,7 @@ namespace Rock.Communication.SmsActions
             // and then tie future SMS gifts to this new person
             var person = new Person();
             PersonService.SaveNewPerson( person, rockContext );
-                        
+
             var numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Id;
             person.PhoneNumbers.Add( new PhoneNumber
             {
@@ -659,6 +712,28 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
+        /// Get and validate the setup keyword attribute
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        private static string GetSetupKeyword( SmsActionCache action )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentException( "Parameter cannot be null", "action" );
+            }
+
+            var keyword = action.GetAttributeValue( AttributeKeys.SetupKeyword );
+
+            if ( string.IsNullOrWhiteSpace( keyword ) )
+            {
+                throw new ArgumentException( "Attribute cannot be empty", AttributeKeys.SetupKeyword );
+            }
+
+            return keyword.Trim();
+        }
+
+        /// <summary>
         /// Get and validate the max amount attribute
         /// </summary>
         /// <param name="action"></param>
@@ -715,7 +790,18 @@ namespace Rock.Communication.SmsActions
             }
 
             var setupPageAttribute = action.GetAttributeValue( AttributeKeys.SetupPage );
+
+            if ( setupPageAttribute.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var setupPage = new Rock.Web.PageReference( setupPageAttribute );
+
+            if ( setupPage == null )
+            {
+                return null;
+            }
 
             // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
             var expiresInMinutes = 30;
@@ -766,7 +852,7 @@ namespace Rock.Communication.SmsActions
 
             var minutes = action.GetAttributeValue( AttributeKeys.ProcessingDelayMinutes ).AsIntegerOrNull();
             return minutes;
-        }        
+        }
 
         #endregion
 

@@ -25,5 +25,10 @@ namespace Rock.SystemGuid
         /// Gets the Left Sidebar layout
         /// </summary>
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+
+        /// <summary>
+        /// Gets the Full Width layout
+        /// </summary>
+        public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
     }
 }
