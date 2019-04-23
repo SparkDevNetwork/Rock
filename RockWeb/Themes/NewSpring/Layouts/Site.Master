@@ -58,7 +58,7 @@
                 <Rock:Zone Name="Header" runat="server" />
                 <Rock:Lava ID="PageTitle" runat="server">
                     {% if CurrentPage.PageDisplayTitle == 'True' %}
-                        <div class="hidden-md hidden-lg">
+                        <div class="{% if CurrentPage.MenuDisplayChildPages == 'True' %}hidden-md hidden-lg{% endif %}">
                             {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
                         </div>
                     {% endif %}         
