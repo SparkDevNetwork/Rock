@@ -28,13 +28,13 @@ namespace Rock.Financial
     {
         /// <summary>
         /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
-        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControl"/>
+        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControl" />
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="enableACH">if set to <c>true</c> [enable ach]. (Credit Card is always enabled)</param>
         /// <param name="controlId">The control identifier.</param>
+        /// <param name="options">The options.</param>
         /// <returns></returns>
-        Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, bool enableACH, string controlId );
+        Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options );
 
         /// <summary>
         /// Gets the JavaScript needed to tell the hostedPaymentInfoControl to get send the paymentInfo and get a token.
