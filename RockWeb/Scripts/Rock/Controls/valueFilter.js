@@ -57,7 +57,7 @@
                 $filterTypeAny.addClass(options.btnToggleOffClass).removeClass(options.btnToggleOnClass);
             }
             else {
-                $filterTypeAny.addClass(options.btnToggleOnClass).removeClass(options.btnToggleOffClass); 
+                $filterTypeAny.addClass(options.btnToggleOnClass).removeClass(options.btnToggleOffClass);
                 $filterTypeAll.addClass(options.btnToggleOffClass).removeClass(options.btnToggleOnClass);
             }
 
@@ -68,6 +68,11 @@
                 var expression = data.Filters[index];
 
                 addFilterRow($filter, expression.Value, expression.Comparison);
+            }
+
+            if (data.Filters.length === 0) {
+                addFilterRow($filter, '', 8);
+                updateData($filter);
             }
         }
 
@@ -155,7 +160,7 @@
             // Create the delete button.
             //
             var $btnDeleteContainer = $('<span class="input-group-btn" />').appendTo($row);
-            $('<button type="button" class="btn btn-danger"><i class="fa fa-times"></i></button>')
+            $('<button type="button" class="btn btn-danger btn-square"><i class="fa fa-times"></i></button>')
                 .appendTo($btnDeleteContainer);
 
             //
@@ -244,6 +249,13 @@
             });
 
             //
+            // If there is only one filter, it is a Contains filter and has no value, then get rid of it.
+            //
+            if (filters.length === 1 && filters[0].Value === '' && filters[0].Comparison === 8) {
+                filters = [];
+            }
+
+            //
             // Build the final filtered text value.
             //
             var data = {
@@ -306,7 +318,7 @@
                 // Setup the add button.
                 //
                 var $addButtonContainer = $('<div class="text-right" />').appendTo($filter);
-                var $addButton = $('<a href="#" class="btn btn-default btn-sm margin-t-sm"><i class="fa fa-plus"></i></a>').appendTo($addButtonContainer);
+                var $addButton = $('<a href="#" class="btn btn-default btn-square btn-sm margin-t-sm"><i class="fa fa-plus"></i></a>').appendTo($addButtonContainer);
 
                 //
                 // Store all the objects we need access to later as jQuery data objects

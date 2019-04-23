@@ -47,8 +47,8 @@ namespace Rock.Communication.SmsActions
         key: AttributeKeys.GivingKeyword )]
 
     [CurrencyField(
-        name: "Max Amount",
-        description: "The maximum gift amount. Leave blank to allow gifts of any size.",
+        name: "Maximum Gift Amount",
+        description: "Leave blank to allow gifts of any size.",
         required: false,
         order: 2,
         category: "Giving",
