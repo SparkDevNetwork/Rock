@@ -49,39 +49,40 @@ overflow-hidden
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-    <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
+        <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
 
-        {% if imageoverlayurl != null and imageoverlayurl != '' %}
-            <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
-        {% endif %}
+            {% if imageoverlayurl != null and imageoverlayurl != '' %}
+                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
+            {% endif %}
 
 
-        {% if title != null and title != '' %}
-            <h1>{{ title }}</h1>
-        {% endif %}
+            {% if title != null and title != '' %}
+                <h1>{{ title }}</h1>
+            {% endif %}
 
-        {{ content }}
+            {{ content }}
 
-        {% if url != empty %}
-            <p>
-                <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
-            </p>
-        {% endif %}
 
-        {% if video != null and video != '' %}
-            <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
-                <a href="#" class="btn btn-primary">Watch Video <i class="fas fa-xs fa-play"></i></a>
-            </span>
+            {% if url != empty %}
+                <p>
+                    <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                </p>
+            {% endif %}
 
-            <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-        {% endif %}
+            {% if video != null and video != '' %}
+                <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
+                    <a href="#" class="btn btn-primary">Watch Video <i class="fas fa-xs fa-play"></i></a>
+                </span>
 
-        {% if lava != null and lava != '' %}
-            {{ lava }}
-        {% endif %}
+                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+            {% endif %}
 
-    </div>
+            {% if lava and lava != empty %}
+                {{ lava }}
+            {% endif %}
+
+        </div>
 
     {% if ratio != null and ratio != '' %}</div>{% endif %}
 

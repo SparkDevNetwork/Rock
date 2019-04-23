@@ -57,8 +57,10 @@
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
                 <Rock:Zone Name="Header" runat="server" />
                 <Rock:Lava ID="PageTitle" runat="server">
-                    {% if CurrentPage.PageDisplayTitle == 'True' and CurrentPage.MenuDisplayChildPages == 'False' %}
-                        {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                    {% if CurrentPage.PageDisplayTitle == 'True' %}
+                        <div class="md-hidden lg-hidden">
+                            {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                        </div>
                     {% endif %}         
                 </Rock:Lava>
             </div>

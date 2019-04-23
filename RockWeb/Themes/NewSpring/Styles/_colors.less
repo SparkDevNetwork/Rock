@@ -52,6 +52,27 @@ a.text-gray-dark:focus {
 .text-white .panel-body a:not(.btn) { color: @brand-primary; }
 .text-white .panel-body a:not(.btn):hover { color: @brand-secondary; }
 
+.text-white {
+	.panel-body {
+		background-color: @white;
+		color: @gray-darker;
+
+		a:not(.btn) {
+			color: @brand-primary;
+		}
+
+		h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+			a {
+				color: @gray-darker;
+
+				&:hover {
+					color: @brand-primary;
+				}
+			}
+		}
+	}
+}
+
 .text-kidspring-primary { color: @kidspring-primary; }
 .text-kidspring-secondary { color: @kidspring-secondary; }
 .text-kidspring-tertiary { color: @kidspring-tertiary; }

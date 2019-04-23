@@ -32,3 +32,26 @@
 		}
 	}
 }
+
+// List Groups
+
+.list-group {
+
+  .list-group-item.active {
+    z-index: 0;
+  }
+
+  &.list-group-dark {
+    .list-group-item {
+      background-color: @gray-dark;
+      color: @brand-primary;
+      border-top: 1px solid @gray-darker;
+
+      &:hover, &:focus, &.active {
+        color: @white;
+        border-top: 1px solid @gray-darker;
+      }
+    }
+  }
+
+}
