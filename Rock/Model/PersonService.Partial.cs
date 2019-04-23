@@ -2691,21 +2691,27 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Updates Person.BirthDate for each person that is not deceased or inactive.
+        /// Updates Person.BirthDate for each person that is not deceased or inactive, and has a non-null <seealso cref="Person.BirthYear"/> greater than 1800
         /// </summary>
         public static void UpdateBirthDateAll( RockContext rockContext = null )
         {
             var inactiveStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
+            // NOTE: if BirthYear is 1800 or earlier, set BirthDate to null so that database Age calculations don't get an exception
             string sql = $@"
                 UPDATE Person
-                SET [BirthDate] = (
-                    SELECT CASE
-                    WHEN [BirthYear] IS NOT NULL 
-                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-                    END)
-                FROM Person
-                WHERE IsDeceased = 0
+                    SET [BirthDate] = (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    FROM Person
+                    WHERE IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();
