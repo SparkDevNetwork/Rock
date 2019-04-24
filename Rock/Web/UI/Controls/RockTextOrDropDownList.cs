@@ -15,11 +15,8 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {

@@ -17,15 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Services;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using System.Text;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -214,7 +216,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="state"></param>
-        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, EntityState state )
         {
         }
 
@@ -223,7 +225,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
         }
@@ -234,7 +236,7 @@ namespace Rock.Data
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
             PreSaveChanges( dbContext, entry );
         }

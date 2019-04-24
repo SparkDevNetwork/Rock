@@ -23,11 +23,12 @@ using System.Linq;
 using System.Reflection;
 
 using Quartz;
+
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -328,6 +329,12 @@ namespace Rock.Jobs
             {
                 personRockContext.Database.CommandTimeout = commandTimeout;
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
+            }
+
+            // update the BirthDate with a computed value
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService.UpdateBirthDateAll( personRockContext );
             }
 
             //// Add any missing Implied/Known relationship groups

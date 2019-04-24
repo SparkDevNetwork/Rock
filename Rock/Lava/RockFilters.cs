@@ -32,23 +32,30 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
+
 using DDay.iCal;
+
 using DotLiquid;
 using DotLiquid.Util;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using ImageResizer;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using Rock.Web.UI;
-using UAParser;
 using Rock.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+
+using UAParser;
 
 namespace Rock.Lava
 {
@@ -3477,6 +3484,9 @@ namespace Rock.Lava
 
             if ( input != null )
             {
+                // Don't call Redirect with a false -- we want it to throw the thread abort exception
+                // so remaining lava does not continue to execute.  We'll catch the exception in the
+                // LavaExtension's ResolveMergeFields method.
                 HttpContext.Current.Response.Redirect( input, true );
             }
 

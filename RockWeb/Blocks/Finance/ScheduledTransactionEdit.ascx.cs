@@ -1031,23 +1031,18 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
-                var changeSummary = new StringBuilder();
-
                 // Get the payment schedule
                 scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
-                changeSummary.Append( DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId, rockContext ) );
 
                 if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
                     scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
-                    changeSummary.AppendFormat( " starting {0}", scheduledTransaction.StartDate.ToShortDateString() );
                 }
                 else
                 {
                     scheduledTransaction.StartDate = DateTime.MinValue;
                 }
 
-                changeSummary.AppendLine();
 
                 PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                 if ( paymentInfo == null )
@@ -1101,25 +1096,8 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         detail.Amount = account.Amount;
-
-                        changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
-                        changeSummary.AppendLine();
                     }
 
-                    rockContext.SaveChanges();
-
-                    // Add a note about the change
-                    var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
-                    if ( noteType != null )
-                    {
-                        var noteService = new NoteService( rockContext );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Updated Transaction";
-                        note.Text = changeSummary.ToString();
-                        noteService.Add( note );
-                    }
                     rockContext.SaveChanges();
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;

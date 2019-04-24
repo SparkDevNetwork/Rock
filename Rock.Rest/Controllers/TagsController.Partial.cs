@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-using Rock.Data;
+
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -50,7 +50,7 @@ namespace Rock.Rest.Controllers
             string tagName = WebUtility.UrlDecode( name );
             var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid.AsGuidOrNull(), includeInactive );
 
-            if ( tag == null || !tag.IsAuthorized( "Tag", GetPerson() ) )
+            if ( tag == null || !tag.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson() ) )
             {
                 // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -101,7 +101,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var tag in tags.OrderBy( t => t.Name ) )
             {
-                if ( tag.IsAuthorized( "Tag", person ) )
+                if ( tag.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
                 {
                     tagItems.Add( tag );
                 }

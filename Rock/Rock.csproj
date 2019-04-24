@@ -388,6 +388,9 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Financial\IGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayPaymentControlTokenEvent.cs" />
     <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
     <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
@@ -487,12 +490,15 @@
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
     <Compile Include="Utility\EnumOrderAttribute.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
+    <Compile Include="Utility\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
@@ -2399,7 +2405,7 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Auth\" />
+    <Folder Include="bin\Auth\" />
     <Folder Include="Pbx\Provider\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>

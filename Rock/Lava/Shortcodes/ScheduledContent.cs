@@ -22,12 +22,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
 using DotLiquid.Util;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 
 namespace Rock.Lava.Shortcodes
 {

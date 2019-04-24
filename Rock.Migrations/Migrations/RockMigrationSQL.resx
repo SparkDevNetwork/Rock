@@ -307,4 +307,7 @@
   <data name="_201812111901295_Rollup_1211_FixChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201812111901295_rollup_1211_fixchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201903202308416_scheduledtransactionhistory_migratescheduledtransactionnotestohistory.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -20,18 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
-using Rock.Model;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Web.Cache;
-using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -607,6 +602,9 @@ namespace Rock.Storage.AssetStorage
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
             string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+
+            // Encode the name thumb path since it can contain special characters
+            virtualThumbPath = virtualThumbPath.EncodeHtml();
 
             if (File.Exists( physicalThumbPath ) )
             {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -24,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using DotLiquid;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -240,7 +242,7 @@ namespace Rock
                                 if ( entityDbContext != null )
                                 {
                                     var entryCollection = entityDbContext.Entry( myObject )?.Collection( key );
-                                    if ( entryCollection.EntityEntry.State == System.Data.Entity.EntityState.Detached )
+                                    if ( entryCollection.EntityEntry.State == EntityState.Detached )
                                     {
                                         // create a sample since we can't fetch real data
                                         Type listOfType = propType.GenericTypeArguments[0];
@@ -517,7 +519,7 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        private static DbContext GetDbContextFromEntity( object entity )
+        private static Data.DbContext GetDbContextFromEntity( object entity )
         {
             FieldInfo entityWrapperField = entity.GetType().GetField( "_entityWrapper" );
 
@@ -528,7 +530,7 @@ namespace Rock
             PropertyInfo entityWrapperContextProperty = entityWrapper.GetType().GetProperty( "Context" );
             var context = ( System.Data.Entity.Core.Objects.ObjectContext ) entityWrapperContextProperty.GetValue( entityWrapper, null );
 
-            return context?.TransactionHandler?.DbContext as DbContext;
+            return context?.TransactionHandler?.DbContext as Data.DbContext;
         }
 
         /// <summary>
@@ -672,6 +674,11 @@ namespace Rock
                 }
 
                 return result;
+            }
+            catch ( System.Threading.ThreadAbortException )
+            {
+                // Do nothing...it's just a Lava PageRedirect that just happened.
+                return string.Empty;
             }
             catch ( Exception ex )
             {

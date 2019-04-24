@@ -113,11 +113,10 @@
                                                             <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                             <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
                                                         </div>
-                                                        <div class="col-sm-5 col-lg-5">
-                                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="pull-left" CssClass="js-sms-number" />
-                                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' ContainerCssClass="pull-left" />
+                                                        <div class="col-sm-5 col-lg-5 form-align">
+                                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' DisplayInline="true" CssClass="js-sms-number" />
+                                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' DisplayInline="true" />
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -125,12 +124,14 @@
                                     </asp:Repeater>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
+                                <div class="form-group emailgroup">
+                                    <div class="form-row">
+                                        <div class="col-sm-6">
+                                            <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                                        </div>
+                                        <div class="col-sm-3 form-align">
+                                            <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Text="Email Is Active" DisplayInline="true" />
+                                        </div>
                                     </div>
                                 </div>
 
