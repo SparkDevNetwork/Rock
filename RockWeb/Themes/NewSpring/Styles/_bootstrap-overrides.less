@@ -7,6 +7,7 @@
 // Buttons
 .btn-sm {
   .button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
+  padding-top: @padding-small-vertical + 1;
   padding-bottom: @padding-small-vertical - 1;
 }
 
@@ -30,4 +31,27 @@
 			padding: @padding-base-vertical * 1.5 + 1 @padding-base-horizontal * 1.25 @padding-base-vertical * 1.5 - 1;
 		}
 	}
+}
+
+// List Groups
+
+.list-group {
+
+  .list-group-item.active {
+    z-index: 0;
+  }
+
+  &.list-group-dark {
+    .list-group-item {
+      background-color: @gray-dark;
+      color: @brand-primary;
+      border-top: 1px solid @gray-darker;
+
+      &:hover, &:focus, &.active {
+        color: @white;
+        border-top: 1px solid @gray-darker;
+      }
+    }
+  }
+
 }

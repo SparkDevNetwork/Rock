@@ -16,6 +16,7 @@
 
 // SM Breakpoint
 @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+
 	.jumbo {
 		font-size: 46px;
 	}
@@ -25,13 +26,28 @@
 		width: 100%;
 	}
 
+	// Positioning
+	.sm-position-absolute { position: absolute !important; }
+	.sm-position-relative { position: relative !important; }
+	.sm-position-fixed { position: fixed !important; }
+
 	// Buttons
 	.btn-primary:hover { background-color: @brand-primary; }
 
+	// Ratios
+	.sm-ratio-none:before{ padding-top: 0%; }
+	.sm-ratio-thin:before{ padding-top: 40%; }
+	.sm-ratio-landscape:before{ padding-top: 50%; }
+	.sm-ratio-shuare:before{ padding-top: 70%; }
+	.sm-ratio-square:before{ padding-top: 100%; }
+	.sm-ratio-portrait:before{ padding-top: 150%; }
+
 	// Helper Classes
-	.sm-text-center { text-align: center; }
+	.sm-text-center { text-align: center !important; }
 	.sm-text-left { text-align: left; }
 	.sm-text-right { text-align: right; }
+	.sm-mx-auto { margin-left: auto; margin-right: auto; }
+	.sm-pull-none { float: none !important; }
 
 	.sm-position-left-boundry { top: 50%; bottom: auto; left: 0; right: auto; }
 	.sm-position-right-boundry { top: 50%; bottom: auto; left: auto; right: 0; }
@@ -214,6 +230,8 @@
 		margin-right: auto;
 	}
 
+	.xs-text-center { text-align: center !important; }
+
 	.xs-btn-sm {
 		.button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
 	}
@@ -221,6 +239,11 @@
 	.xs-btn-xs {
 		.button-size(@padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);
 	}
+
+	// Positioning
+	.xs-position-absolute { position: absolute !important; }
+	.xs-position-relative { position: relative !important; }
+	.xs-position-fixed { position: fixed !important; }
 
 	// Grid
 	.xs-row-reverse {
@@ -248,8 +271,21 @@
 		transform: scale(1.5);
 	}
 
+	.xs-pull-none { float: none !important; }
+
+	// Display
+	.xs-display-none { display: none !important; }
+	.xs-display-block { display: block; }
+	.xs-display-inline-block { display: inline-block; }
+
+	// Widths
+
+	.xs-width-half { width: 50%; }
+	.xs-width-full { width: 100%; }
+
 
 	// Ratios
+	.xs-ratio-none:before{ padding-top: 0%; }
 	.xs-ratio-thin:before{ padding-top: 40%; }
 	.xs-ratio-landscape:before{ padding-top: 50%; }
 	.xs-ratio-shuare:before{ padding-top: 70%; }

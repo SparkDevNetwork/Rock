@@ -1,4 +1,6 @@
 {% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
+    
+    {% capture groupIdSlug %}{GroupId}{% endcapture %}
 
     <section class="soft xs-soft-half bg-white rounded shadowed push-bottom xs-push-half-bottom hard-bottom clearfix">
 
@@ -23,10 +25,11 @@
         {% endif %}
     </section>
 
+
     {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
         <ul class="nav nav-pills push-bottom xs-push-half-bottom">
             {% if LinkedPages.RosterPage != '' %}
-                {% if LinkedPages.RosterPage == CurrentPage.Path %}
+                {% if '/{{ LinkedPages.RosterPage | Replace:groupIdSlug,PageParameter.GroupId }}' == '{{ CurrentPage.Path }}' %}
                     <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
                 {% else %}
                     <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
@@ -34,16 +37,16 @@
             {% endif %}
 
             {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
-                {% if LinkedPages.AttendancePage == CurrentPage.Path %}
+                {% if '/{{ LinkedPages.AttendancePage | Replace:groupIdSlug,PageParameter.GroupId }}' == '{{ CurrentPage.Path }}' %}
                     <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
                 {% else %}
                     <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
                 {% endif %}
             {% endif %}
         </ul>
-    {% endif %}
+    {% endif %}    
 
-    {% if LinkedPages.RosterPage == CurrentPage.Path %}
+    {% if LinkedPages.RosterPage | Replace:groupIdSlug,PageParameter.GroupId == CurrentPage.Path %}
     <section class="soft xs-soft-half bg-white rounded shadowed hard-bottom clearfix push-bottom xs-push-half-bottom">
         
         <h3>Group Roster</h3>
