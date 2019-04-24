@@ -210,6 +210,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />
