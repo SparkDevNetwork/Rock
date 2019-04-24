@@ -68,7 +68,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Get transactions that have a FutureProcessingDateTime and the time for processing has arrived or passed.
+        /// Get transactions that have a FutureProcessingDateTime.
         /// </summary>
         /// <returns></returns>
         public IQueryable<FinancialTransaction> GetFutureTransactions()
