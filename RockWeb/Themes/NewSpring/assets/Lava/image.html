@@ -1,5 +1,3 @@
-{%- assign id = uniqueid -%}
-
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture url %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
@@ -14,38 +12,23 @@
 
 {% assign url = url | Trim %}
 
-{% if url != empty %}<a href="{{ url }}">{% endif %}
-	<div class="panel">
-	    <div style="{% if blockData.backgroundColorHex %}background-color: #{{ blockData.backgroundColorHex }};{% endif %}">
-	        <img src="{{ blockData.imageUrl }}" alt="" class="{% if blockData.grayscale %}grayscale{% endif %}" style="{% if blockData.imageOpacity %}opacity: {{ blockData.imageOpacity }};{% endif %}">
-	    </div>
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
+    {% if url != empty %}<a href="{{ url }}">{% endif %}
+	<div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %} overflow-hidden" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
+		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+        <div class="ratio-item floating {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
+            <div class="floating-item">
 
-		{% if blockData.share or blockData.likes %}
-	    <div class="panel-footer">
-	        <div class="panel-actions">
+                <span class="text-white">
+                    <h2 class="{{ titlesize }}">{{ title }}</h2>
+                    {{ content }}
+                </span>
 
-	            {% set buttonData = { 
-	                buttonSize: 'btn-sm',
-	                buttonColor: 'btn-primary',
-	                buttonIcon: '',
-	                linkUrl: blockData.linkUrl,
-	                linkText: blockData.linkText
-	            } %}{% include "button.html" %}
-
-	            <div class="pull-right">
-	                {% if blockData.share %}
-	                    <a href="#" class="btn btn-sm btn-default text-gray-dark text-decoration-none" data-share><i class="fas fa-share flush"></i> {{ [14,8,2,42,5,4,73,19,2] | random }}</a>
-	                {% endif %}
-
-	                {% if blockData.likes %}
-	                    <a href="#" class="btn btn-sm btn-default text-gray-dark text-decoration-none" data-like><i class="far fa-heart flush"></i> {{ [14,8,6,42,5,4,73,19,2] | random }}</a>
-	                {% endif %}
-
-	            </div>
-	        </div>
-	    </div>
-	    {% endif %}
-	    
+                {% if url != empty %}
+                    <div class="btn btn-primary" role="button">{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-
-{% if url != empty %}</a>{% endif %}
+    {% if url != empty %}</a>{% endif %}
+</section>

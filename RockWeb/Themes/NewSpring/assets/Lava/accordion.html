@@ -10,7 +10,7 @@
             </a>
             <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
                 <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">
-                    {{ item.content | Trim }}
+                    {{ item.content | Replace:"'","’" | Trim }}
                 </div>
             </div>
         </div>

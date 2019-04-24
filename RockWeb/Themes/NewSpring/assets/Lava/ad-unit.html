@@ -40,48 +40,62 @@
 {% endif %}
 
 {% assign url = url | Trim %}
-
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="shell bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
-	
-	{% if imageurl != null and imageurl != '' %}
-    	<span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
+    
+    {% if ratio and ratio != empty %}
+    {% assign trimcopy = 'Yes' %}
+    <div class="ratio-{{ ratio }} sm-ratio-shuare xs-ratio-square">
+        <div class="ratio-item floating {% if textalignment == 'Left' %}floating-left{% elseif textalignment == 'Right' %}floating-right{% endif %} sm-text-center xs-text-center">
+            <div class="floating-item">
     {% endif %}
-    <div class="bring-forward {% if textalignment == 'Right' %}pull-right{% elseif textalignment == 'Left' %}{% else %}center-block text-center{% endif %} xs-text-center text-constrained soft hard-bottom clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
-		
-        {% if label != null and label != '' %}
-            <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
-        {% endif %}
-
-        {% if title != null and title != '' %}
-            <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">{{ title }}</h2>
-        {% endif %}
-
-        {% if subtitle != null and subtitle != '' %}
-            <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
-        {% endif %}
-
-        {% if content != null and content != '' %}
-            <div>
-                {% if trimcopy == 'Yes' %}
-                    {% assign length = content | Size %}
-                    {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
-                {% else %}
-                    {{ content }}
+    
+                {% if imageurl != null and imageurl != '' %}
+                    <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
                 {% endif %}
+
+                <div class="bring-forward {% if textalignment != 'Center' %}text-left{% endif %} {% if ratio == '' %}{% if textalignment == 'Left' %}{% elseif textalignment == 'Right' %}pull-right{% else %}mx-auto{% endif %} sm-mx-auto xs-mx-auto{% endif %} text-constrained soft-top soft-double-sides clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
+                    
+                    {% if label != null and label != '' %}
+                        <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
+                    {% endif %}
+
+                    {% if title != null and title != '' %}
+                        <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} {% if textalignment != 'Center' %}text-left{% endif %} sm-text-center xs-text-center push-half-bottom">{{ title }}</h2>
+                    {% endif %}
+
+                    {% if subtitle != null and subtitle != '' %}
+                        <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+                    {% endif %}
+
+                    {% if content != null and content != '' %}
+                        <div class="{% if textalignment == 'Center' %}text-left{% endif %}">
+                            {% if trimcopy == 'Yes' %}
+                                {% assign length = content | Size %}
+                                {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
+                            {% else %}
+                                {{ content }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if url != empty %}
+                        <p class="{% if textalignment != 'Center' %}text-left{% endif %} sm-text-center xs-text-center">
+                            <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                        </p>
+                    {% endif %}
+
+                    {% if lava != null and lava != '' %}
+                        {{ lava }}
+                    {% endif %}
+
+                </div>
+
+    {% if ratio and ratio != empty %}
             </div>
-        {% endif %}
-
-		{% if url != empty %}
-            <p>
-                <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
-            </p>
-        {% endif %}
-
-        {% if lava != null and lava != '' %}
-            {{ lava }}
-        {% endif %}
-
+        </div>
     </div>
+    {% endif %}
+
 </section>
 
 {% if trimcopy == 'Yes' %}

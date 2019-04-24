@@ -12,15 +12,19 @@
 
 {% assign url = url | Trim %}
 
-<div {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
-
+<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
+        {% if CurrentPerson | HasRightsTo:'Edit' and id and id != empty %}
+            <a href="/page/342?contentItemId={{ id }}" class="position-absolute top-zero right-zero push-half-top push-right btn btn-sm btn-info shadowed bring-forward">Edit This</a>
+    {% endif %}
     {% if imageurl != null and imageurl != '' %}
         {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
 
-            <div class="ratio-landscape background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></div>
+            <div class="position-relative ratio-landscape">
+                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+            </div>
 
             {% if type != null and type != '' %}
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
@@ -29,7 +33,7 @@
         {% if url != empty %}</a>{% else %}</div>{% endif %}
     {% endif %}
 
-    <div class="panel-body hard-bottom xs-soft xs-hard-bottom">
+    <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
 
         {% if label != null and label != '' %}
             <p class="push-half-bottom"><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>

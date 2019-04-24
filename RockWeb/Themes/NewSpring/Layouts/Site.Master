@@ -27,7 +27,10 @@
         <!-- Libraries -->
         <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/compiled/theme.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
@@ -57,8 +60,10 @@
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
                 <Rock:Zone Name="Header" runat="server" />
                 <Rock:Lava ID="PageTitle" runat="server">
-                    {% if CurrentPage.PageDisplayTitle == 'True' and CurrentPage.MenuDisplayChildPages == 'False' %}
-                        {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                    {% if CurrentPage.PageDisplayTitle == 'True' %}
+                        <div class="{% if CurrentPage.MenuDisplayChildPages == 'True' %}hidden-md hidden-lg{% endif %}">
+                            {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                        </div>
                     {% endif %}         
                 </Rock:Lava>
             </div>
@@ -87,6 +92,37 @@
                         <div class="updateprogress-bg modal-backdrop"></div>
                     </ProgressTemplate>
             </asp:UpdateProgress>
+
+            <!-- Smooth Scrolling Setup -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function(){
+                    var navigation = document.querySelector('#zone-navigation');
+                    if(navigation != null) {
+                        var navigationHeight = navigation.offsetHeight;
+                    }
+
+                    var header = document.querySelector('#navigation-secondary');
+                    if(header != null) {
+                        var headerHeight = header.offsetHeight;
+                    }
+
+                    if (window.innerWidth > 667) {
+                        // Desktop
+                        offset = navigationHeight + headerHeight + 25 + "px";
+                    } else {
+                        // Mobile
+                        offset = headerHeight + 10 + "px";
+                    }
+
+                    var scroll = new SmoothScroll('a[data-scroll]', {
+                        speed: 500,
+                        speedAsDuration: true,
+                        offset: offset,
+                        easing: 'easeInOutCubic'
+                    });
+
+                });
+            </script>
 
         </form>
 

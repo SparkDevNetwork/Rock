@@ -1,10 +1,10 @@
-<section class="shell bg-gray-darker text-white soft xs-soft-half flush xs-text-center shadowed">
+<section class="shell bg-gray-dark text-white soft xs-soft-half flush text-left sm-text-center xs-text-center shadowed">
 
     {% if preTitle != '' %}
         <p class="hidden sans-serif stronger letter-spacing-condensed push-half-bottom xs-push-bottom">{{ blockData.preTitle | safe }}</p>
     {% endif %}
 
-    <h1 class="h4 xs-h6 flush">{{ title }}</h1>
+    <h1 class="h4 xs-h6 stronger flush">{{ title }}</h1>
 
     {% if subtitle != '' %}
         <p class="hidden sans-serif stronger letter-spacing-condensed push-half-top flush-bottom {% if pageHeaderColorHex %}{% else %}text-gray-dark{% endif %}"><small>{{ blockData.subtitle | safe }}</small></p>
