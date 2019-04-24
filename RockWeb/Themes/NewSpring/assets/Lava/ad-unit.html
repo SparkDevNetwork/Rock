@@ -53,24 +53,24 @@
                     <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
                 {% endif %}
 
-                <div class="bring-forward {% if textalignment != 'Center' %}text-left{% endif %} {% if ratio == '' %}{% if textalignment == 'Left' %}{% elseif textalignment == 'Right' %}pull-right{% else %}mx-auto{% endif %} sm-mx-auto xs-mx-auto{% endif %} text-constrained soft-top soft-double-sides clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
+                <div class="bring-forward {% if imageurl == '' %}mx-auto{% endif %} {% if textalignment != 'Center' %}text-left{% endif %} {% if ratio == '' %}{% if textalignment == 'Left' %}{% elseif textalignment == 'Right' %}pull-right{% else %}mx-auto{% endif %} sm-mx-auto xs-mx-auto{% endif %} text-constrained soft-top soft-double-sides clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">
                     
                     {% if label != null and label != '' %}
                         <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
                     {% endif %}
 
                     {% if title != null and title != '' %}
-                        <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} {% if textalignment != 'Center' %}text-left{% endif %} sm-text-center xs-text-center push-half-bottom">{{ title }}</h2>
+                        <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} {% if textalignment != 'Center' and imageurl != empty %}text-left{% endif %} sm-text-center xs-text-center push-half-bottom">{{ title }}</h2>
                     {% endif %}
 
                     {% if subtitle != null and subtitle != '' %}
                         <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
                     {% endif %}
 
-                    {% if content != null and content != '' %}
-                        <div class="{% if textalignment == 'Center' %}text-left{% endif %}">
+                    {% assign length = content | Size %}
+                    {% if content and content != empty %}
+                        <div class="{% if imageurl == '' %}text-{{ textalignment | Downcase }}{% else %}{% if textalignment == 'Center' and length < 200 %}text-center{% endif %}{% endif %}">
                             {% if trimcopy == 'Yes' %}
-                                {% assign length = content | Size %}
                                 {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
                             {% else %}
                                 {{ content }}
@@ -79,7 +79,7 @@
                     {% endif %}
 
                     {% if url != empty %}
-                        <p class="{% if textalignment != 'Center' %}text-left{% endif %} sm-text-center xs-text-center">
+                        <p class="{% if textalignment != 'Center' and imageurl != empty %}text-left{% endif %} sm-text-center xs-text-center">
                             <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
                         </p>
                     {% endif %}
