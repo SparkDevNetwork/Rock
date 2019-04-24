@@ -136,16 +136,23 @@
     label {
       margin-bottom: 0;
     }
+  }
 
-    .form-align & {
+  .form-align,
+  .form-horizontal {
+    .radio,
+    .checkbox,
+    .radio-inline,
+    .checkbox-inline {
+      .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+      margin-top: (@input-height-base - @max) / 2 !important;
+      margin-bottom: (@input-height-base - @max) / 2 !important;
+      padding-top: 0;
+    }
+
+    .radio-inline + .radio-inline, .checkbox-inline + .checkbox-inline {
       .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
       margin-top: (@input-height-base - @max) / 2;
-      margin-bottom: (@input-height-base - @max) / 2;
-
-      .radio-inline+.radio-inline, .checkbox-inline+.checkbox-inline {
-        .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
-        margin-top: (@input-height-base - @max) / 2;
-      }
     }
   }
 
