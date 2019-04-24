@@ -3,7 +3,8 @@
 {% assign kviAttendedCheckInURL = urlPattern %}
 {% assign kviUnattendedCheckInURL = urlPattern %}
 {% assign firstTimeFamilyURL = urlPattern %}
-{% assign kidMinistryEventsURL = urlPattern %}
+{% assign kidMinistryEventsAttendedURL = urlPattern %}
+{% assign kidMinistryEventsUnattendedURL = urlPattern %}
 
 {% assign studentMinistryCollideURL = urlPattern %}
 {% assign studentMinistryHSMURL = urlPattern %}
@@ -38,7 +39,8 @@
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'kioskId', attendedCheckInKioskId %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'kioskId', unattendedCheckInKioskId %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'kioskId', attendedCheckInKioskId %}
-{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign kidMinistryEventsAttendedURL = kidMinistryEventsAttendedURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign kidMinistryEventsUnattendedURL = kidMinistryEventsUnattendedURL | Replace: 'kioskId', unattendedCheckInKioskId %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
@@ -78,7 +80,8 @@
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
-{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'checkInConfigId', kidMinEventsCheckinConfigId %}
+{% assign kidMinistryEventsAttendedURL = kidMinistryEventsAttendedURL | Replace: 'checkInConfigId', kidMinEventsCheckinConfigId %}
+{% assign kidMinistryEventsUnattendedURL = kidMinistryEventsUnattendedURL | Replace: 'checkInConfigId', kidMinEventsCheckinConfigId %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInConfigId', studentMinEventsCheckinConfigId %}
@@ -207,7 +210,8 @@ Build up string of check-in areas
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInAreas', firstTimeFamilyAreas %}
-{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'checkInAreas', kidMinistryEventsAreas %}
+{% assign kidMinistryEventsAttendedURL = kidMinistryEventsAttendedURL | Replace: 'checkInAreas', kidMinistryEventsAreas %}
+{% assign kidMinistryEventsUnattendedURL = kidMinistryEventsUnattendedURL | Replace: 'checkInAreas', kidMinistryEventsAreas %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInAreas', collideAreas %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInAreas', hsmAreas %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInAreas', studentMinistryEventsAreas %}
@@ -226,7 +230,8 @@ Build up string of check-in areas
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Append: kviTheme %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Append: kviTheme %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Append: kviTheme %}
-{% assign kidMinistryEventsURL = kidMinistryEventsURL | Append: kviTheme %}
+{% assign kidMinistryEventsAttendedURL = kidMinistryEventsAttendedURL | Append: kviTheme %}
+{% assign kidMinistryEventsUnattendedURL = kidMinistryEventsUnattendedURL | Append: kviTheme %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Append: studentMinistryTheme %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Append: studentMinistryTheme %}
@@ -273,9 +278,15 @@ Build up string of check-in areas
                 </a>
             </li>
             <li>
-                <a href="{{ kidMinistryEventsURL }}">
+                <a href="{{ kidMinistryEventsAttendedURL }}">
                 <i class="fa fa-sign-in"></i>
-                <h3>kidMinistry Events</h3>
+                <h3>kidMinistry Events Assisted Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ kidMinistryEventsUnattendedURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry Events Self Check-In</h3>
                 </a>
             </li>
         </ul>
@@ -373,18 +384,19 @@ Build up string of check-in areas
             Campus Events Areas: {{ campusEventsAreas }}<br>
             MOTS Areas: {{ motsAreas }}<br><br>
 
-            KVI Attended Check-In:      {{ kviAttendedCheckInURL }}<br>
-            KVI Unattended Check-In:    {{ kviUnattendedCheckInURL }}<br>
-            iPad Assisted Check-In:     {{ iPadAssistedURL }}<br>
-            iPad Self Check-In:         {{ iPadSelfURL }}<br>
-            First-Time Family Check-In: {{ firstTimeFamilyURL }}<br>
-            KVI Events Check-In:        {{ kidMinistryEventsURL }}<br>
-            Collide Check-In:           {{ studentMinistryCollideURL }}<br>
-            HSM Check-In:               {{ studentMinistryHSMURL }}<br>
-            StudentMin Events Check-In: {{ studentMinistryEventsURL }}<br>
-            Next Steps Check-In:        {{ nextStepsURL }}<br>
-            Campus Events Check-In:     {{ campusEventsURL }}<br>
-            MOTS Check-In:              {{ motsURL }}<br>
+            KVI Attended Check-In:          {{ kviAttendedCheckInURL }}<br>
+            KVI Unattended Check-In:        {{ kviUnattendedCheckInURL }}<br>
+            iPad Assisted Check-In:         {{ iPadAssistedURL }}<br>
+            iPad Self Check-In:             {{ iPadSelfURL }}<br>
+            First-Time Family Check-In:     {{ firstTimeFamilyURL }}<br>
+            KVI Events Assisted Check-In:   {{ kidMinistryEventsAttendedURL }}<br>
+            KVI Events Self Check-In:       {{ kidMinistryEventsUnattendedURL }}<br>
+            Collide Check-In:               {{ studentMinistryCollideURL }}<br>
+            HSM Check-In:                   {{ studentMinistryHSMURL }}<br>
+            StudentMin Events Check-In:     {{ studentMinistryEventsURL }}<br>
+            Next Steps Check-In:            {{ nextStepsURL }}<br>
+            Campus Events Check-In:         {{ campusEventsURL }}<br>
+            MOTS Check-In:                  {{ motsURL }}<br>
         </div>
       </div>
   </div>
