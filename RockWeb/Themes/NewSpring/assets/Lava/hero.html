@@ -26,7 +26,7 @@ xs-push-half-bottom
 bring-forward
 overflow-hidden
 {% if ratio != null and ratio != '' %}
-    ratio-{{ ratio }} hard xs-soft floating
+    ratio-{{ ratio }} hard xs-soft floating floating-bottom
 {% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
 
     {% if backgroundvideourl != null and backgroundvideourl != '' %}
@@ -49,7 +49,7 @@ overflow-hidden
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-        <div class="bring-forward center-block text-constrained text-center soft-top push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
+        <div class="bring-forward center-block text-constrained text-center soft-top sm-flush-bottom xs-flush-bottom push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" style="margin-bottom: 90px;">
 
             {% if imageoverlayurl != null and imageoverlayurl != '' %}
                 <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
