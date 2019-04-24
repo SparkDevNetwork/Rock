@@ -32,6 +32,7 @@
         <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/dynamic-select.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -121,6 +122,7 @@
                         easing: 'easeInOutCubic'
                     });
 
+                    
                 });
             </script>
 

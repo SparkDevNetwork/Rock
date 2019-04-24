@@ -69,7 +69,7 @@
 
                     {% assign length = content | Size %}
                     {% if content and content != empty %}
-                        <div class="{% if imageurl == '' %}text-{{ textalignment | Downcase }}{% else %}{% if textalignment == 'Center' and length < 200 %}text-center{% endif %}{% endif %}">
+                        <div class="{% if imageurl == '' %}{% if textalignment and textalignment != empty %}text-{{ textalignment | Downcase }}{% else %}text-center{% endif %}{% else %}{% if textalignment == 'Center' and length < 200 %}text-center{% endif %}{% endif %}">
                             {% if trimcopy == 'Yes' %}
                                 {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
                             {% else %}
