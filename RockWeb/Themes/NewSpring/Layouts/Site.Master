@@ -31,6 +31,7 @@
         <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -91,6 +92,37 @@
                         <div class="updateprogress-bg modal-backdrop"></div>
                     </ProgressTemplate>
             </asp:UpdateProgress>
+
+            <!-- Smooth Scrolling Setup -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function(){
+                    var navigation = document.querySelector('#zone-navigation');
+                    if(navigation != null) {
+                        var navigationHeight = navigation.offsetHeight;
+                    }
+
+                    var header = document.querySelector('#navigation-secondary');
+                    if(header != null) {
+                        var headerHeight = header.offsetHeight;
+                    }
+
+                    if (window.innerWidth > 667) {
+                        // Desktop
+                        offset = navigationHeight + headerHeight + 25 + "px";
+                    } else {
+                        // Mobile
+                        offset = headerHeight + 10 + "px";
+                    }
+
+                    var scroll = new SmoothScroll('a[data-scroll]', {
+                        speed: 500,
+                        speedAsDuration: true,
+                        offset: offset,
+                        easing: 'easeInOutCubic'
+                    });
+
+                });
+            </script>
 
         </form>
 

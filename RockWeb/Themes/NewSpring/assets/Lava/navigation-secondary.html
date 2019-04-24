@@ -44,7 +44,12 @@
                     {% assign path = 'Global' | Page:'Path' %}
                     {% for page in IncludePageList %}
                         {% assign parts =  page | PropertyToKeyValue %}
-                        <a href="{{ parts.Value }}" class="list-group-item text-gray-darker sans-serif strong letter-spacing-condensed text-decoration-none {% if parts.Value == path %}active{% endif %}">{{ parts.Key }}</button>
+                        {% if parts.Value contains '#' %}
+                            {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                        {% else %}
+                            {% assign value = parts.Value %}
+                        {% endif %}
+                        <a href="{{ value }}" class="list-group-item text-gray-darker sans-serif strong letter-spacing-condensed text-decoration-none {% if parts.Value == path %}active{% endif %}">{{ parts.Key }}</button>
                     {% endfor %}
                     {% for childPage in Page.Pages %}
                         <a href="{{ childPage.Url }}" class="list-group-item text-gray-darker sans-serif strong letter-spacing-condensed text-decoration-none {%  if childPage.Url == path %}active{% endif %}">{{ childPage.Title }}</a>
