@@ -27,8 +27,10 @@
         <!-- Libraries -->
         <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/compiled/theme.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
