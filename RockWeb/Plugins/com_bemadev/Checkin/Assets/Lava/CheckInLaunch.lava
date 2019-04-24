@@ -40,7 +40,8 @@
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
-{% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign nextStepsURL = nextStepsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
 {% grouptype where:'Name == "kidMinistry Check-in"'%}
@@ -59,6 +60,10 @@
     {% assign studentMinEventsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
+{% grouptype where:'Name == "Next Steps Check-in"'%}
+    {% assign nextStepsCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
 {% grouptype where:'Name == "Campus Events Check-in"'%}
     {% assign campusEventsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
@@ -70,6 +75,7 @@
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInConfigId', studentMinEventsCheckinConfigId %}
+{% assign nextStepsURL = nextStepsURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 
 {% sql %}
@@ -77,6 +83,7 @@ DECLARE @kidMinistryCheckInConfigId int = {{kidMinCheckinConfigId}}
 DECLARE @kidMinistryEventsCheckInConfigId int = {{kidMinEventsCheckinConfigId}}
 DECLARE @studentMinCheckInConfigId int = {{studentMinCheckinConfigId}}
 DECLARE @studentMinEventsCheckInConfigId int = {{studentMinEventsCheckinConfigId}}
+DECLARE @nextStepsCheckInConfigId int = {{nextStepsCheckinConfigId}}
 DECLARE @campusEventsCheckInConfigId int = {{campusEventsCheckinConfigId}}
 
 
@@ -88,6 +95,7 @@ WHERE [GroupTypeId] in (
     ,@kidMinistryEventsCheckInConfigId
     ,@studentMinCheckInConfigId
     ,@studentMinEventsCheckInConfigId
+    ,@nextStepsCheckInConfigId
     ,@campusEventsCheckInConfigId
 )
 {% endsql %}
@@ -159,6 +167,15 @@ Build up string of check-in areas
 {% endfor %}
 {% assign studentMinistryEventsAreas = studentMinistryEventsAreas | Split:',' | Join:',' %}
 
+<!-- Next Steps Areas -->
+{% assign nextStepsAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == nextStepsCheckinConfigId %}
+        {% assign nextStepsAreas = nextStepsAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign nextStepsAreas = nextStepsAreas | Split:',' | Join:',' %}
+
 <!-- Campus Events Areas -->
 {% assign campusEventsAreas = "" %}
 {% for item in results %}
@@ -175,12 +192,14 @@ Build up string of check-in areas
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInAreas', collideAreas %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInAreas', hsmAreas %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInAreas', studentMinistryEventsAreas %}
+{% assign nextStepsURL = nextStepsURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
 
 <!-- Themes -->
 {% assign kidVentureIslandTheme = "?Theme=CheckinKidVentureIsland"%}
 {% assign kviTheme = "?Theme=CheckinKVI"%}
 {% assign studentMinistryTheme = "?Theme=CheckinStudentMinistry"%}
+{% assign genericLCBCTheme = "?Theme=CheckinGenericLCBC" %}
 
 {% assign iPadAssistedURL = kviAttendedCheckInURL | Append: kidVentureIslandTheme %}
 {% assign iPadSelfURL = kviUnattendedCheckInURL | Append: kidVentureIslandTheme %}
@@ -191,7 +210,8 @@ Build up string of check-in areas
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Append: studentMinistryTheme %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Append: studentMinistryTheme %}
-{% assign campusEventsURL = campusEventsURL | Append: kidVentureIslandTheme %}
+{% assign nextStepsURL = nextStepsURL | Append: genericLCBCTheme %}
+{% assign campusEventsURL = campusEventsURL | Append: genericLCBCTheme %}
 
 
 
@@ -268,6 +288,20 @@ Build up string of check-in areas
 </div>
 
 <div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-heading">Next Steps</div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <a href="{{ nextStepsURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>Next Steps Event Check-In</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel panel-default list-as-blocks clearfix">
     <div class="panel-heading">Campus</div>
     <div class="panel-body">
         <ul>
@@ -296,6 +330,7 @@ Build up string of check-in areas
             KVI Events Check-In Config: {{ kidMinEventsCheckinConfigId }}<br>
             StudMin Check-In Config: {{ studentMinCheckinConfigId }}<br>
             StudMin Events Check-In Config: {{ studentMinEventsCheckinConfigId }}<br>
+            Next Steps Check-In Config: {{ nextStepsCheckinConfigId }}<br>
             Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br><br>
 
             KviAreas: {{ kviAreas }}<br>
@@ -304,6 +339,7 @@ Build up string of check-in areas
             HSMAreas: {{ hsmAreas }}<br>
             StudentMinistryEventAreas: {{ studentMinistryEventsAreas }}<br>
             First-Time Family Areas: {{ firstTimeFamilyAreas }}<br>
+            Next Steps Areas: {{ nextStepsAreas }}<br><br>
             Campus Events Areas: {{ campusEventsAreas }}<br><br>
 
             KVI Attended Check-In:      {{ kviAttendedCheckInURL }}<br>
@@ -315,6 +351,7 @@ Build up string of check-in areas
             Collide Check-In:           {{ studentMinistryCollideURL }}<br>
             HSM Check-In:               {{ studentMinistryHSMURL }}<br>
             StudentMin Events Check-In: {{ studentMinistryEventsURL }}<br>
+            Next Steps Check-In:        {{ nextStepsURL }}<br>
             Campus Events Check-In:     {{ campusEventsURL }}<br>
         </div>
       </div>
