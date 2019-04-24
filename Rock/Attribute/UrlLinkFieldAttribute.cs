@@ -19,13 +19,13 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to set a URL.
+    /// Field Attribute to set an integer.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class UrlLinkFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UrlLinkFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="IntegerFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

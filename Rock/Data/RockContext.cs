@@ -1038,14 +1038,6 @@ namespace Rock.Data
         public DbSet<HtmlContent> HtmlContents { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMS actions.
-        /// </summary>
-        /// <value>
-        /// The SMS actions.
-        /// </value>
-        public DbSet<SmsAction> SmsActions { get; set; }
-
-        /// <summary>
         /// Gets or sets the Interactions.
         /// </summary>
         /// <value>
