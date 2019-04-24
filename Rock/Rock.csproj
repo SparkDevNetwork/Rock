@@ -390,7 +390,6 @@
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
-    <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
     <Compile Include="Communication\SmsActions\SmsActionOutcome.cs" />
