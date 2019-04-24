@@ -299,8 +299,8 @@
                 });
 
                 // Set checkbox labels to toggle child checkboxes when clicked
-                $('div.rock-check-box-list').find('label').prop('data-selected', false);
-                $('div.rock-check-box-list').find('label').on('click', function (e) {
+                $('div.rock-check-box-list').find('label.control-label').prop('data-selected', false);
+                $('div.rock-check-box-list').find('label.control-label').on('click', function (e) {
                     var selected = $(this).prop('data-selected')
                     $(this).siblings().find('input:checkbox').prop('checked', !selected);
                     $(this).prop('data-selected', !selected);

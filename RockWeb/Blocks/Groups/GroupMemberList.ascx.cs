@@ -116,7 +116,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            if ( ViewState["AvailableAttributeIds"] != null )
+            {
+                AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            }
 
             AddDynamicControls();
         }
@@ -252,8 +255,7 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableAttributes"] = AvailableAttributes;
-
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null? null :  AvailableAttributes.Select( a => a.Id ).ToArray();
             return base.SaveViewState();
         }
 

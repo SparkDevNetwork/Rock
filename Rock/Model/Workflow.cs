@@ -27,8 +27,8 @@ using System.Web;
 
 using Rock;
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -536,7 +536,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
             if ( _logEntries != null )
             {
@@ -556,7 +556,7 @@ namespace Rock.Model
             }
 
             // Set the workflow number
-            if ( state == System.Data.Entity.EntityState.Added )
+            if ( state == EntityState.Added )
             {
                 int maxNumber = new WorkflowService( dbContext as RockContext )
                     .Queryable().AsNoTracking()

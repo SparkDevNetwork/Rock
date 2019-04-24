@@ -88,9 +88,9 @@
                                 <Rock:NumberBox ID="nbTimetoLive" runat="server" Label="Time to Live (TTL)" NumberType="Integer" MinimumValue="0" 
                                     Help="The number of minutes a feed can stay cached before it is refreshed from the source."/>
                             </div>
-                            <Rock:RockCheckBox ID="cbEnableTag" runat="server" Label="Enable Tagging" CssClass="js-content-channel-enable-tags" />
+                            <Rock:RockCheckBox ID="cbEnableTag" runat="server" Label="Enable Tagging" Help="When enabled, items can be tagged by editors however if categories (below) are used, the category must have 'Tag' security rights for people to use existing organizational tags." CssClass="js-content-channel-enable-tags" />
                             <div id="divTag" runat="server" class="js-content-channel-tags">
-                                <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Tag" Label="Tag Category" />
+                                <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Tag" Label="Tag Category" Help="Remember to apply appropriate security (action level 'Tag') to these categories." />
 
                             </div>
                         </div>

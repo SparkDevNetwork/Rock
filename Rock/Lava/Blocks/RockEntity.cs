@@ -18,23 +18,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using DotLiquid;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 using System.Linq.Dynamic;
-using DotLiquid.Util;
-using System.Text.RegularExpressions;
 using System.Linq.Expressions;
-using Rock.Reporting.DataFilter;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Utility;
+
+using DotLiquid;
+
+using Rock.Data;
+using Rock.Model;
 using Rock.Reporting;
+using Rock.Reporting.DataFilter;
 using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {

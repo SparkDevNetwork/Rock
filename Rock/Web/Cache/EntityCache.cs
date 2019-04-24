@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+
 using DbContext = Rock.Data.DbContext;
 
 namespace Rock.Web.Cache
@@ -243,7 +244,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState )
+        public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.

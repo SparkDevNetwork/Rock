@@ -766,6 +766,7 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.Attributes["type"] = "number";
             _nbAmountAccountSingle.CssClass = "amount-input form-control";
             _nbAmountAccountSingle.Attributes["min"] = "0";
+            _nbAmountAccountSingle.Attributes["step"] = "0.01";
             _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
 
             var pnlSingleCampusDiv = new Panel() { CssClass = "campus-dropdown " };

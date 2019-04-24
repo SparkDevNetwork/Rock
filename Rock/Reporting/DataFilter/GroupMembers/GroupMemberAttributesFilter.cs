@@ -23,12 +23,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter.GroupMember
 {

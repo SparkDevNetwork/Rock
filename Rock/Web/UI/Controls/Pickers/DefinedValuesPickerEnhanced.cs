@@ -18,7 +18,6 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls

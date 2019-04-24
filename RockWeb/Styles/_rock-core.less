@@ -134,12 +134,16 @@ a.warning {
 }
 
 .help-message {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 .photo {
   img {
     width: 100%;
+  }
+
+  > a.fluidbox-opened:hover + a {
+    display: none;
   }
 }
 
@@ -218,34 +222,13 @@ a.warning {
   }
 }
 
-// fix btn colors that are inside of panels
-.alert-warning {
-  .btn-warning {
-    color: @btn-warning-color;
-  }
-}
-
-.alert-danger {
-  .btn-danger {
-    color: @btn-danger-color;
-  }
-}
-
-.alert-info {
-  .btn-info {
-    color: @btn-info-color;
-  }
-}
-
-.alert-success {
-  .btn-success {
-    color: @btn-success-color;
-  }
-}
-
 // grid controls in asp.net center content using align=center but bootstrap overrides this
 th[align="center"] {
   text-align: center;
+}
+
+th[align="right"] {
+  text-align: right;
 }
 
 .form-right {
@@ -369,7 +352,6 @@ th[align="center"] {
   margin: -15px -15px 15px -15px;
 }
 
-// .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
   .panel-heading {
     a.btn-link {
@@ -468,7 +450,6 @@ th[align="center"] {
 }
 
 .panel-widget {
-  // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-heading {
@@ -544,7 +525,6 @@ th[align="center"] {
 
 .panel-block {
   border-top-color: @panel-top-border-color;
-  //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
@@ -730,44 +710,53 @@ th[align="center"] {
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
+// fix btn colors that are inside of panels
 .alert-success {
+  .btn-success {
+    color: @btn-success-color;
+  }
+
   a {
     color: @alert-success-text;
     border-bottom: @alert-success-link-border-bottom;
   }
-
-  a.help {
-    border-bottom: 0;
-  }
 }
 
 .alert-info {
+  .btn-info {
+    color: @btn-info-color;
+  }
+
   a:not([class]) {
     color: @alert-info-text;
     border-bottom: @alert-info-link-border-bottom;
   }
-
-  a.help {
-    border-bottom: 0;
-  }
 }
 
 .alert-warning {
+  .btn-warning {
+    color: @btn-warning-color;
+  }
+
   a {
     color: @alert-warning-text;
     border-bottom: @alert-warning-link-border-bottom;
   }
-  a.help {
-    border-bottom: 0;
-  }
 }
 
 .alert-danger {
+  .btn-danger {
+    color: @btn-danger-color;
+  }
+
   a {
     color: @alert-danger-text;
     border-bottom: @alert-danger-link-border-bottom;
   }
-  a.help {
+}
+
+.alert {
+  .help{
     border-bottom: 0;
   }
 }
