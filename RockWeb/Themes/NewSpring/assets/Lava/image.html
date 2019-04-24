@@ -13,11 +13,22 @@
 {% assign url = url | Trim %}
 
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
-{% if url != empty %}<a href="{{ url }}">{% endif %}
+    {% if url != empty %}<a href="{{ url }}">{% endif %}
 	<div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %} overflow-hidden" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
-		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}">
+		<div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+        <div class="ratio-item floating {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
+            <div class="floating-item">
 
-		</div>
-	</div>
-{% if url != empty %}</a>{% endif %}
+                <span class="text-white">
+                    <h2 class="{{ titlesize }}">{{ title }}</h2>
+                    {{ content }}
+                </span>
+
+                {% if url != empty %}
+                    <div class="btn btn-primary" role="button">{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if url != empty %}</a>{% endif %}
 </section>
