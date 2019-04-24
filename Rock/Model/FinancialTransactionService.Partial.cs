@@ -68,6 +68,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get transactions that have a FutureProcessingDateTime and the time for processing has arrived or passed.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetFutureTransactions()
+        {
+            return Queryable().Where( t => t.FutureProcessingDateTime.HasValue );
+        }
+
+        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
