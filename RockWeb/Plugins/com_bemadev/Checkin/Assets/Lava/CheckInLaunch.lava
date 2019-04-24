@@ -31,11 +31,6 @@
     {% assign studentMinCheckInKioskId = device.Id %}
 {% enddevice %}
 
-<!--
-{% device where:'Name == "{{ campusName }}: HSM Check-In"' %}
-    {% assign hsmCheckInKioskId = device.Id %}
-{% enddevice %}
--->
 
 <!-- Set Kiosk Device in URLs -->
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'kioskId', attendedCheckInKioskId %}
@@ -44,6 +39,7 @@
 {% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'kioskId', attendedCheckInKioskId %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', attendedCheckInKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
@@ -51,8 +47,16 @@
     {% assign kidMinCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
+{% grouptype where:'Name == "kidMinistry Events Check-in"'%}
+    {% assign kidMinEventsCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
 {% grouptype where:'Name == "Student Ministry Check-in"'%}
     {% assign studentMinCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
+{% grouptype where:'Name == "Student Ministry Events Check-in"'%}
+    {% assign studentMinEventsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
 {% grouptype where:'Name == "Campus Events Check-in"'%}
@@ -62,27 +66,38 @@
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
+{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'checkInConfigId', kidMinEventsCheckinConfigId %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
+{% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInConfigId', studentMinEventsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 
 {% sql %}
 DECLARE @kidMinistryCheckInConfigId int = {{kidMinCheckinConfigId}}
+DECLARE @kidMinistryEventsCheckInConfigId int = {{kidMinEventsCheckinConfigId}}
 DECLARE @studentMinCheckInConfigId int = {{studentMinCheckinConfigId}}
+DECLARE @studentMinEventsCheckInConfigId int = {{studentMinEventsCheckinConfigId}}
 DECLARE @campusEventsCheckInConfigId int = {{campusEventsCheckinConfigId}}
+
 
 SELECT GroupTypeId, ChildGroupTypeId, Name
 FROM [GroupTypeAssociation] as gta
 JOIN [GroupType] as gt on gt.id = gta.ChildGroupTypeId
 WHERE [GroupTypeId] in (
     @kidMinistryCheckInConfigId
+    ,@kidMinistryEventsCheckInConfigId
     ,@studentMinCheckInConfigId
+    ,@studentMinEventsCheckInConfigId
     ,@campusEventsCheckInConfigId
 )
 {% endsql %}
 
 
-<!-- Build up string of check-in areas -->
+<!-- 
+------------------------------------------
+Build up string of check-in areas 
+------------------------------------------
+-->
 
 <!-- KVI / First-Time Family Areas -->
 {% assign kviAreas = "" %}
@@ -103,6 +118,15 @@ WHERE [GroupTypeId] in (
 {% if firstTimeFamilyAreas != "" %}
     {% assign firstTimeFamilyAreas =  kviAreas | Append: "," | Append: firstTimeFamilyAreas %}
 {% endif %}
+
+<!-- kidMinistry Events Areas -->
+{% assign kidMinistryEventsAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == kidMinEventsCheckinConfigId %}
+        {% assign kidMinistryEventsAreas = kidMinistryEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign kidMinistryEventsAreas = kidMinistryEventsAreas | Split:',' | Join:',' %}
 
 <!-- Collide Areas -->
 {% assign collideAreas = "" %}
@@ -126,13 +150,20 @@ WHERE [GroupTypeId] in (
 {% endfor %}
 {% assign hsmAreas = hsmAreas | RemoveFirst:',' %}
 
+<!-- Student Min Events Areas -->
+{% assign studentMinistryEventsAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == studentMinEventsCheckinConfigId %}
+        {% assign studentMinistryEventsAreas = studentMinistryEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign studentMinistryEventsAreas = studentMinistryEventsAreas | Split:',' | Join:',' %}
+
 <!-- Campus Events Areas -->
 {% assign campusEventsAreas = "" %}
 {% for item in results %}
     {% if item.GroupTypeId == campusEventsCheckinConfigId %}
-        {% if item.Name contains "Campus Events" %}
-            {% assign campusEventsAreas = campusEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
-        {% endif %}
+        {% assign campusEventsAreas = campusEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
     {% endif %}
 {% endfor %}
 {% assign campusEventsAreas = campusEventsAreas | Split:',' | Join:',' %}
@@ -140,8 +171,10 @@ WHERE [GroupTypeId] in (
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInAreas', firstTimeFamilyAreas %}
+{% assign kidMinistryEventsURL = kidMinistryEventsURL | Replace: 'checkInAreas', kidMinistryEventsAreas %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Replace: 'checkInAreas', collideAreas %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInAreas', hsmAreas %}
+{% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInAreas', studentMinistryEventsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
 
 <!-- Themes -->
@@ -153,16 +186,19 @@ WHERE [GroupTypeId] in (
 {% assign iPadSelfURL = kviUnattendedCheckInURL | Append: kidVentureIslandTheme %}
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Append: kviTheme %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Append: kviTheme %}
-{% assign firstTimeFamilyURL = firstTimeFamilyURL | Append: kidVentureIslandTheme %}
+{% assign firstTimeFamilyURL = firstTimeFamilyURL | Append: kviTheme %}
+{% assign kidMinistryEventsURL = kidMinistryEventsURL | Append: kviTheme %}
 {% assign studentMinistryCollideURL = studentMinistryCollideURL | Append: studentMinistryTheme %}
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
+{% assign studentMinistryEventsURL = studentMinistryEventsURL | Append: studentMinistryTheme %}
 {% assign campusEventsURL = campusEventsURL | Append: kidVentureIslandTheme %}
 
 
 
 
-<h3>{{campusName}} Options</h3>
+<h3 style="margin-top: 0px;">{{campusName}} Options</h3>
 <div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-heading">kidMinistry</div>
     <div class="panel-body">
         <ul>
             <li>
@@ -196,6 +232,20 @@ WHERE [GroupTypeId] in (
                 </a>
             </li>
             <li>
+                <a href="{{ kidMinistryEventsURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>kidMinistry Events</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-heading">Student Ministry</div>
+    <div class="panel-body">
+        <ul>
+            <li>
                 <a href="{{ studentMinistryCollideURL }}">
                 <i class="fas fa-portrait"></i>
                 <h3>Student Min Collide</h3>
@@ -207,6 +257,20 @@ WHERE [GroupTypeId] in (
                 <h3>Student Min HSM</h3>
                 </a>
             </li>
+            <li>
+                <a href="{{ studentMinistryEventsURL }}">
+                <i class="fas fa-portrait"></i>
+                <h3>Student Min Events</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel panel-default list-as-blocks clearfix">
+    <div class="panel-heading">Campus</div>
+    <div class="panel-body">
+        <ul>
             <li>
                 <a href="{{ campusEventsURL }}">
                 <i class="fa fa-sign-in"></i>
@@ -229,11 +293,16 @@ WHERE [GroupTypeId] in (
       <div id="collapseOne" class="panel-collapse collapse">
         <div class="panel-body">
             KVI Check-In Config: {{ kidMinCheckinConfigId }}<br>
+            KVI Events Check-In Config: {{ kidMinEventsCheckinConfigId }}<br>
             StudMin Check-In Config: {{ studentMinCheckinConfigId }}<br>
-            Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br>
+            StudMin Events Check-In Config: {{ studentMinEventsCheckinConfigId }}<br>
+            Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br><br>
+
             KviAreas: {{ kviAreas }}<br>
+            kidMinistryEventAreas: {{ kidMinistryEventsAreas }}<br>
             CollideAreas: {{ collideAreas }}<br>
             HSMAreas: {{ hsmAreas }}<br>
+            StudentMinistryEventAreas: {{ studentMinistryEventsAreas }}<br>
             First-Time Family Areas: {{ firstTimeFamilyAreas }}<br>
             Campus Events Areas: {{ campusEventsAreas }}<br><br>
 
@@ -242,8 +311,10 @@ WHERE [GroupTypeId] in (
             iPad Assisted Check-In:     {{ iPadAssistedURL }}<br>
             iPad Self Check-In:         {{ iPadSelfURL }}<br>
             First-Time Family Check-In: {{ firstTimeFamilyURL }}<br>
+            KVI Events Check-In:        {{ kidMinistryEventsURL }}<br>
             Collide Check-In:           {{ studentMinistryCollideURL }}<br>
             HSM Check-In:               {{ studentMinistryHSMURL }}<br>
+            StudentMin Events Check-In: {{ studentMinistryEventsURL }}<br>
             Campus Events Check-In:     {{ campusEventsURL }}<br>
         </div>
       </div>
