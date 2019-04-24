@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function(){
 
     // Get query string value by key
     var getQueryString = function ( field, url ) {
@@ -82,7 +82,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 var newElement = document.createElement('p');
                 newElement.classList.add('display-miles', 'display-inline-block', 'label', 'label-info', 'push-half-bottom', 'sans-serif', 'circular');
                 newElement.innerHTML = locationDistance + ' miles away';
-                insertAfter(newElement, locationCardHeading);
+                if(lat && lon) {
+                    insertAfter(newElement, locationCardHeading);
+                }
 
             }
 
@@ -113,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var anchor = document.querySelector('#locations');
 
             // Scroll constructor located in _smooth-scroll.js, compiled into main.js
-            scroll.animateScroll(anchor);
+            // scroll.animateScroll(anchor);
         });
     }
 
