@@ -18,7 +18,7 @@
 <!-- always trim copy if side by side is a fixed ratio -->
 {% assign trimcopy = 'Yes' %}
 
-<section class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
     <div class="row floating flush {% if imagealignment == 'Right' %}row-reverse{% endif %}">
         <div class="floating-item col-xs-12 col-sm-12 col-md-6 hard">
             <div class="ratio-{{ ratio }}">
@@ -93,7 +93,7 @@
 
 {% else %}
 
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
     {% if imageurl != null and imageurl != '' %}
         <div class="split {% if imagealignment == 'Left' %}split-left{% else %}split-right{% endif %} background-center background-cover" style="z-index: 1; {% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">

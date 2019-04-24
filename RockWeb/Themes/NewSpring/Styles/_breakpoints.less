@@ -43,7 +43,7 @@
 	.sm-ratio-portrait:before{ padding-top: 150%; }
 
 	// Helper Classes
-	.sm-text-center { text-align: center; }
+	.sm-text-center { text-align: center !important; }
 	.sm-text-left { text-align: left; }
 	.sm-text-right { text-align: right; }
 	.sm-mx-auto { margin-left: auto; margin-right: auto; }
@@ -229,6 +229,8 @@
 		margin-left: auto;
 		margin-right: auto;
 	}
+
+	.xs-text-center { text-align: center !important; }
 
 	.xs-btn-sm {
 		.button-size(@padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @btn-border-radius-small);

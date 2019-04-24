@@ -12,7 +12,7 @@
 
 {% assign url = url | Trim %}
 
-<div {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
+<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
         {% if CurrentPerson | HasRightsTo:'Edit' and id and id != empty %}
             <a href="/page/342?contentItemId={{ id }}" class="position-absolute top-zero right-zero push-half-top push-right btn btn-sm btn-info shadowed bring-forward">Edit This</a>
     {% endif %}

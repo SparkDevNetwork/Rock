@@ -13,7 +13,7 @@
 {% assign url = url | Trim %}
 
 
-<section {% if id != null and id != '' %}id="{{ id }}"{% endif %} class="
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="
 shell
 hero
 bg-gray-dark

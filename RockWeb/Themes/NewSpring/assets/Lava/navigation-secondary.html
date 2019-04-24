@@ -12,7 +12,12 @@
             {% for page in IncludePageList %}
                 {% assign path = 'Global' | Page:'Path' %}
                 {% assign parts =  page | PropertyToKeyValue %}
-                <li><a href="{{ parts.Value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}" data-scroll="">{{ parts.Key }}</a></li>
+                {% if parts.Value contains '#' %}
+                    {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                {% else %}
+                    {% assign value = parts.Value %}
+                {% endif %}
+                <li><a href="{{ value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}" data-scroll="">{{ parts.Key }}</a></li>
             {% endfor %}
             {% for childPage in Page.Pages %}
                 <li><a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a></li>

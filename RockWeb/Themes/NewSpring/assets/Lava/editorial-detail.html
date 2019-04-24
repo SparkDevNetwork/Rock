@@ -11,9 +11,9 @@
         </div>
     {% endif %}
 
-    <div class="panel-body xs-soft-half hard-bottom">
+    <div class="panel-body bg-white xs-soft-half hard-bottom">
         
-        <h1 class="h2 xs-h3 push-half-top">{{ Item.Title }}</h1>
+        <h1 class="h2 xs-h3 push-half-bottom">{{ Item.Title }}</h1>
         
         {% if subtitle != empty %}
             <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
@@ -148,7 +148,7 @@
 
 
 
-{[ relatedItemsSwiper guid:'{{ Item.Guid }}' limit:'10' ]}
+{[ relatedItemsSwiper title:'' guid:'{{ Item.Guid }}' ccids:'' limit:'9' ]}
 
 
 
