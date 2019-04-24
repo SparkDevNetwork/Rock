@@ -11,6 +11,8 @@
 {% assign nextStepsURL = urlPattern %}
 {% assign campusEventsURL = urlPattern %}
 
+{% assign motsURL = urlPattern %}
+
 {% assign campusName = 'Global' | PageParameter:'campus' %}
 
 <!-- Get Campus from ShortCode in URLParameter-->
@@ -42,6 +44,7 @@
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign motsURL = motsURL | Replace: 'kioskId', attendedCheckInKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
 {% grouptype where:'Name == "kidMinistry Check-in"'%}
@@ -68,6 +71,10 @@
     {% assign campusEventsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
+{% grouptype where:'Name == "MOTS Check-in"'%}
+    {% assign motsCheckinConfigId = grouptype.Id %}
+{% endgrouptype %}
+
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInConfigId', kidMinCheckinConfigId %}
@@ -77,6 +84,7 @@
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInConfigId', studentMinEventsCheckinConfigId %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
+{% assign motsURL = motsURL | Replace: 'checkInConfigId', motsCheckinConfigId %}
 
 {% sql %}
 DECLARE @kidMinistryCheckInConfigId int = {{kidMinCheckinConfigId}}
@@ -85,6 +93,7 @@ DECLARE @studentMinCheckInConfigId int = {{studentMinCheckinConfigId}}
 DECLARE @studentMinEventsCheckInConfigId int = {{studentMinEventsCheckinConfigId}}
 DECLARE @nextStepsCheckInConfigId int = {{nextStepsCheckinConfigId}}
 DECLARE @campusEventsCheckInConfigId int = {{campusEventsCheckinConfigId}}
+DECLARE @motsCheckInConfigId int = {{motsCheckinConfigId}}
 
 
 SELECT GroupTypeId, ChildGroupTypeId, Name
@@ -97,6 +106,7 @@ WHERE [GroupTypeId] in (
     ,@studentMinEventsCheckInConfigId
     ,@nextStepsCheckInConfigId
     ,@campusEventsCheckInConfigId
+    ,@motsCheckInConfigId
 )
 {% endsql %}
 
@@ -185,6 +195,15 @@ Build up string of check-in areas
 {% endfor %}
 {% assign campusEventsAreas = campusEventsAreas | Split:',' | Join:',' %}
 
+<!-- MOTS Areas -->
+{% assign motsAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == motsCheckinConfigId %}
+        {% assign motsAreas = motsAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign motsAreas = motsAreas | Split:',' | Join:',' %}
+
 {% assign kviAttendedCheckInURL = kviAttendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign kviUnattendedCheckInURL = kviUnattendedCheckInURL | Replace: 'checkInAreas', kviAreas %}
 {% assign firstTimeFamilyURL = firstTimeFamilyURL | Replace: 'checkInAreas', firstTimeFamilyAreas %}
@@ -194,6 +213,7 @@ Build up string of check-in areas
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInAreas', studentMinistryEventsAreas %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
+{% assign motsURL = motsURL | Replace: 'checkInAreas', motsAreas %}
 
 <!-- Themes -->
 {% assign kidVentureIslandTheme = "?Theme=CheckinKidVentureIsland"%}
@@ -212,6 +232,7 @@ Build up string of check-in areas
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Append: studentMinistryTheme %}
 {% assign nextStepsURL = nextStepsURL | Append: genericLCBCTheme %}
 {% assign campusEventsURL = campusEventsURL | Append: genericLCBCTheme %}
+{% assign motsURL = motsURL | Append: genericLCBCTheme %}
 
 
 
@@ -302,7 +323,7 @@ Build up string of check-in areas
 </div>
 
 <div class="panel panel-default list-as-blocks clearfix">
-    <div class="panel-heading">Campus</div>
+    <div class="panel-heading">Campus Events</div>
     <div class="panel-body">
         <ul>
             <li>
@@ -311,6 +332,14 @@ Build up string of check-in areas
                 <h3>Campus Events Check-In</h3>
                 </a>
             </li>
+            {% if campusName == 'Manheim' %}
+                <li>
+                    <a href="{{ motsURL }}">
+                    <i class="fa fa-sign-in"></i>
+                    <h3>MOTS Check-In</h3>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </div>
@@ -331,7 +360,8 @@ Build up string of check-in areas
             StudMin Check-In Config: {{ studentMinCheckinConfigId }}<br>
             StudMin Events Check-In Config: {{ studentMinEventsCheckinConfigId }}<br>
             Next Steps Check-In Config: {{ nextStepsCheckinConfigId }}<br>
-            Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br><br>
+            Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br>
+            MOTS Check-In Config: {{ motsCheckinConfigId }}<br><br>
 
             KviAreas: {{ kviAreas }}<br>
             kidMinistryEventAreas: {{ kidMinistryEventsAreas }}<br>
@@ -339,8 +369,9 @@ Build up string of check-in areas
             HSMAreas: {{ hsmAreas }}<br>
             StudentMinistryEventAreas: {{ studentMinistryEventsAreas }}<br>
             First-Time Family Areas: {{ firstTimeFamilyAreas }}<br>
-            Next Steps Areas: {{ nextStepsAreas }}<br><br>
-            Campus Events Areas: {{ campusEventsAreas }}<br><br>
+            Next Steps Areas: {{ nextStepsAreas }}<br>
+            Campus Events Areas: {{ campusEventsAreas }}<br>
+            MOTS Areas: {{ motsAreas }}<br><br>
 
             KVI Attended Check-In:      {{ kviAttendedCheckInURL }}<br>
             KVI Unattended Check-In:    {{ kviUnattendedCheckInURL }}<br>
@@ -353,6 +384,7 @@ Build up string of check-in areas
             StudentMin Events Check-In: {{ studentMinistryEventsURL }}<br>
             Next Steps Check-In:        {{ nextStepsURL }}<br>
             Campus Events Check-In:     {{ campusEventsURL }}<br>
+            MOTS Check-In:              {{ motsURL }}<br>
         </div>
       </div>
   </div>
