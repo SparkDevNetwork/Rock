@@ -85,6 +85,15 @@ namespace RockWeb.Blocks.Communication
                 {
                     ProcessDragEvents();
                 }
+
+                if ( hfIsTestingDrawerOpen.Value.AsBoolean() )
+                {
+                    divTestingDrawer.Style.Add( "display", null );
+                }
+                else
+                {
+                    divTestingDrawer.Style.Add( "display", "none" );
+                }
             }
 
             base.OnLoad( e );

@@ -9,13 +9,14 @@
                 <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline</h1>
 
                 <div class="panel-labels">
-                    <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle()">
+                    <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle( function () { $('#hfIsTestingDrawerOpen').val( $('#divTestingDrawer').css('display') !== 'none' ) } )">
                         <i class='fa fa-tools'></i>
                     </a>
                 </div>
             </div>
 
-            <div class="js-test-results panel-heading margin-v-none" style="display: none">
+            <asp:HiddenField runat="server" ID="hfIsTestingDrawerOpen" Value="false" ClientIDMode="Static" />
+            <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-heading margin-v-none" style="display: none">
                 <div class="alert alert-info" role="alert">
                     Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
                 </div>
