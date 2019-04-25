@@ -213,12 +213,8 @@ namespace RockWeb
                     }
 
                     // Register Routes
-                    stopwatch.Restart();
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "RegisterRoutes - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
+                    RouteTable.Routes.Clear();
+                    Rock.Web.RockRouteHandler.RegisterRoutes();
 
                     // Configure Rock Rest API
                     stopwatch.Restart();
@@ -226,7 +222,6 @@ namespace RockWeb
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                        stopwatch.Restart();
                     }
 
                     // setup and launch the jobs infrastructure if running under IIS
@@ -844,37 +839,6 @@ namespace RockWeb
 
                 rockContext.SaveChanges();
             }
-        }
-
-        /// <summary>
-        /// Registers the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
-        {
-            routes.Clear();
-
-            PageRouteService pageRouteService = new PageRouteService( rockContext );
-
-            // Add ingore rule for asp.net ScriptManager files. 
-            routes.Ignore("{resource}.axd/{*pathInfo}");
-
-            //Add page routes
-            var pageRoutes = pageRouteService.Queryable().OrderBy( r => r.Route).ToList();
-
-            foreach ( var pageRoute in pageRoutes )
-            {
-                routes.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
-            }
-
-            // Add a default page route
-            routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for when no parameters are passed
-            routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for shortlinks
-            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
         }
 
         /// <summary>
