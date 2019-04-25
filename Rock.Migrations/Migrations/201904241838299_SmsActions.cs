@@ -162,7 +162,7 @@ namespace Rock.Migrations
         private void PagesAndBlocksUp()
         {
             RockMigrationHelper.AddPage( true, "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "SMS Pipeline", "", "2277986A-F53D-4E46-B6EC-6BAD1111DA39", "fa fa-sms" ); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType( "Communication > SMS Pipeline", "", "~/Blocks/Communication/SmsPipeline.ascx", "", "44C32EB7-4DA3-4577-AC41-E3517442E269" );
+            RockMigrationHelper.UpdateBlockType( "SMS Pipeline", "Configures the pipeline that processes an incoming SMS message.", "~/Blocks/Communication/SmsPipeline.ascx", "Communication", "44C32EB7-4DA3-4577-AC41-E3517442E269" );
             // Add Block to Page: SMS Pipeline Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "2277986A-F53D-4E46-B6EC-6BAD1111DA39".AsGuid(), null, Rock.SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), "44C32EB7-4DA3-4577-AC41-E3517442E269".AsGuid(), "Sms Pipeline", "Main", @"", @"", 0, "F6CA6D07-DDF4-47DD-AA7E-29F5DCCC2DDC" );
         }
