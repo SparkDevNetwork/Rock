@@ -74,7 +74,9 @@
                         var scrollHeight = $modalBody.prop('scrollHeight');
                         if ($modalBody.outerHeight() != scrollHeight) {
                             // if modalbody didn't already grow to fit (maybe because of a bootstrap dropdown) make modal-body big enough to fit.
-                            $modalBody[0].style.minHeight = scrollHeight + "px";
+                            var bodyHeight = document.body.scrollHeight;
+                            var cheight = $control.height();
+                            $modalBody[0].style.minHeight = (bodyHeight + cheight) + "px";
 
                             // force the resizeDetector to fire
                             if ($('#dialog').length && $('#dialog')[0].resizedAttached) {

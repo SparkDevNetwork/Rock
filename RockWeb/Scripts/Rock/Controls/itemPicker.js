@@ -94,9 +94,9 @@
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound', function (evt) {
                         self.updateScrollbar();
                     })
-                    .on('rockTree:rendered', function (evt) {
-                        self.scrollToSelectedItem();
-                    });
+                    // .on('rockTree:rendered', function (evt) {
+                    //     self.scrollToSelectedItem();
+                    // });
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
@@ -223,8 +223,8 @@
             scrollToSelectedItem: function () {
                 var $selectedItem = $('#' + this.options.controlId).find('.picker-menu').find('.selected').first();
                 if ($selectedItem.length && (!this.alreadyScrolledToSelected)) {
-                    this.iScroll.scrollToElement(".selected", "0s");
                     this.updateScrollbar();
+                    this.iScroll.scrollToElement('.selected', '0s');
                     this.alreadyScrolledToSelected = true;
                 } else {
                     // initialize/update the scrollbar
