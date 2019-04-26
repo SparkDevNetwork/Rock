@@ -292,6 +292,10 @@
     <Compile Include="Migrations\201904241838299_SmsActions.Designer.cs">
       <DependentUpon>201904241838299_SmsActions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904252048025_ContentChannelSlugs.cs" />
+    <Compile Include="Migrations\201904252048025_ContentChannelSlugs.Designer.cs">
+      <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -751,6 +755,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201904241838299_SmsActions.resx">
       <DependentUpon>201904241838299_SmsActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904252048025_ContentChannelSlugs.resx">
+      <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
