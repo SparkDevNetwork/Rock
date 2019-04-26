@@ -15,10 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -38,7 +34,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // There was a bug in one of the v7.0 Rock Updates that might have prevented UpdateCommunicationRecords, so make sure that UpdateCommunicationRecords ran.  
-            Rock.Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
+            //Rock.Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
         }
 
         /// <summary>

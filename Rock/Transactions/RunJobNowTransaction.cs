@@ -15,16 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Linq;
-using System.Collections.Generic;
 
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Data;
-using Rock.Model;
 using Rock.Jobs;
+using Rock.Model;
 
 namespace Rock.Transactions
 {

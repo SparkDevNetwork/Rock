@@ -1164,18 +1164,27 @@ mission. We are so grateful for your commitment.</p>
             mergeFields.Add( "GiftTerm", this.GetAttributeValue( AttributeKey.GiftTerm ) ?? "Gift" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "ScheduledTransactionEditPage", LinkedPageRoute( AttributeKey.ScheduledTransactionEditPage ) );
+            linkedPages.Add( "ScheduledTransactionEditPage", LinkedPageRoute( AttributeKey.ScheduledTransactionEditPage ) ?? "" );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             FinancialScheduledTransactionService financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            FinancialGatewayService financialGatewayService = new FinancialGatewayService( rockContext );
 
             // get business giving id
             var givingIdList = targetPerson.GetBusinesses( rockContext ).Select( g => g.GivingId ).ToList();
 
+            // Only list scheduled transactions that use a Hosted Gateway
+            var hostedGatewayIdList = financialGatewayService.Queryable()
+                .Where( a => a.IsActive )
+                .AsNoTracking()
+                .ToList().Where( a => a.GetGatewayComponent() is IHostedGatewayComponent )
+                .Select( a => a.Id )
+                .ToList();
+
             var targetPersonGivingId = targetPerson.GivingId;
             givingIdList.Add( targetPersonGivingId );
             var scheduledTransactionList = financialScheduledTransactionService.Queryable()
-                .Where( a => givingIdList.Contains( a.AuthorizedPersonAlias.Person.GivingId ) && a.IsActive == true )
+                .Where( a => givingIdList.Contains( a.AuthorizedPersonAlias.Person.GivingId ) && a.FinancialGatewayId.HasValue && a.IsActive == true && hostedGatewayIdList.Contains( a.FinancialGatewayId.Value ) )
                 .ToList();
 
             foreach ( var scheduledTransaction in scheduledTransactionList )
@@ -1514,6 +1523,8 @@ mission. We are so grateful for your commitment.</p>
             if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
+                return;
             }
 
             SetInitialTargetPersonControls();
@@ -2122,6 +2133,7 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void UpdateGivingControlsForSelections()
         {
+            nbPromptForAmountsWarning.Visible = false;
             BindPersonSavedAccounts();
 
             int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
@@ -2151,10 +2163,12 @@ mission. We are so grateful for your commitment.</p>
                 dtpStartDate.Label = "Start Giving On";
             }
 
-            // if scheduling recurring, it can't start today since the gateway will be taking care of automated giving, it might have already processed today's transaction. So make sure it is no earlier than tomorrow.
-            if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date <= RockDateTime.Today ) )
+            var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
+
+            // if scheduling recurring, it can't start today since the gateway will be taking care of automated giving, it might have already processed today's transaction. So make sure it is no earlier than the gateway's earliest start date.
+            if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date < earliestScheduledStartDate ) )
             {
-                dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+                dtpStartDate.SelectedDate = earliestScheduledStartDate;
             }
         }
 
@@ -2300,6 +2314,7 @@ mission. We are so grateful for your commitment.</p>
                         gatewayScheduleId = paymentInfo.TransactionCode;
                     }
 
+                    // if an exception occurred, it is possible that an orphaned subscription might be on the Gateway server. Some gateway components will clean-up when there is exception, but log it just in case it needs to be resolved by a human
                     throw new Exception( string.Format( "Error occurred when saving financial scheduled transaction for gateway scheduled payment with a gatewayScheduleId of {0} and FinancialScheduledTransaction with Guid of {1}.", gatewayScheduleId, transactionGuid ), ex );
                 }
             }
@@ -2741,10 +2756,12 @@ mission. We are so grateful for your commitment.</p>
 
             if ( this.IsScheduledTransaction() )
             {
-                if ( dtpStartDate.SelectedDate <= RockDateTime.Today )
+                var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
+                if ( dtpStartDate.SelectedDate < earliestScheduledStartDate )
                 {
                     nbPromptForAmountsWarning.Visible = true;
-                    nbPromptForAmountsWarning.Text = string.Format( "When scheduling a {0}, make sure the starting date is in the future (after today)", giftTerm );
+
+                    nbPromptForAmountsWarning.Text = string.Format( "When scheduling a {0}, the minimum start date is {1}", giftTerm.ToLower(), earliestScheduledStartDate.ToShortDateString() );
                     return;
                 }
             }
@@ -2753,7 +2770,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( dtpStartDate.SelectedDate < RockDateTime.Today )
                 {
                     nbPromptForAmountsWarning.Visible = true;
-                    nbPromptForAmountsWarning.Text = string.Format( "Make sure the process date is not in the past", giftTerm );
+                    nbPromptForAmountsWarning.Text = string.Format( "Make sure the process {0} date is not in the past", giftTerm );
                     return;
                 }
             }

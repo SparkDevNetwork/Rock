@@ -23,9 +23,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using System.Web.Routing;
+
 using ImageResizer;
-using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {

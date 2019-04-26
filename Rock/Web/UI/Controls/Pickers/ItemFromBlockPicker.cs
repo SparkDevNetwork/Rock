@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -277,12 +278,13 @@ namespace Rock.Web.UI.Controls
 
         #region Fields
 
-        private Panel _pickerPanel;
+        private DynamicControlsPanel _pickerPanel;
         private Panel _pnlRolloverContainer;
         private LinkButton _lbShowPicker;
         private LinkButton _btnSelectNone;
         private ModalDialog _pickerDialog;
         private UserControl _pickerBlock;
+        private HiddenField _hfPickerBlockSelectedValue;
 
         #endregion
 
@@ -432,7 +434,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The modal title.
         /// </value>
-        public string ModalTitle {
+        public string ModalTitle
+        {
             get
             {
                 EnsureChildControls();
@@ -513,13 +516,24 @@ namespace Rock.Web.UI.Controls
             _pickerDialog.Visible = this.ShowInModal;
             _pickerDialog.SaveButtonText = "Select";
 
-            _pickerPanel = new Panel();
+            _hfPickerBlockSelectedValue = new HiddenField
+            {
+                ID = "_hfPickerBlockSelectedValue"
+            };
+
+            Controls.Add( _hfPickerBlockSelectedValue );
+
+            _pickerPanel = new DynamicControlsPanel()
+            {
+                ID = "_pickerPanel"
+            };
 
             if ( BlockTypePath.IsNotNullOrWhiteSpace() )
             {
                 var rockPage = System.Web.HttpContext.Current.Handler as RockPage;
                 _pickerBlock = rockPage.TemplateControl.LoadControl( BlockTypePath ) as UserControl;
-                
+                _pickerBlock.ID = "_pickerBlock";
+
                 var pageCache = PageCache.Get( rockPage.PageId );
                 ( _pickerBlock as RockBlock )?.SetBlock( pageCache, null, false, false );
 
@@ -559,8 +573,8 @@ namespace Rock.Web.UI.Controls
         {
             _pickerDialog.Hide();
 
-            // if the picker was in a modal dialog, track the SelectValue and SelectedText in viewstate when saved 
-            ViewState["SelectedValue"] = ( _pickerBlock as IPickerBlock )?.SelectedValue;
+            // if the picker was in a modal dialog, track the SelectValue and SelectedText in a hidden when saved 
+            _hfPickerBlockSelectedValue.Value = ( _pickerBlock as IPickerBlock )?.SelectedValue;
 
             SelectItem?.Invoke( this, e );
         }
@@ -646,14 +660,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                var pickerBlock = _pickerBlock as IPickerBlock;
+
                 if ( this.ShowInModal == true )
                 {
-                    // if shown in a modal, track the SelectedValue in viewstate since the pickerBlock could be cancelled
-                    return ViewState["SelectedValue"] as string;
+                    // if shown in a modal, track the SelectedValue in _hfPickerBlockSelectedValue since the pickerBlock could be cancelled
+                    return _hfPickerBlockSelectedValue.Value;
                 }
                 else
                 {
+                    var pickerBlock = _pickerBlock as IPickerBlock;
                     return pickerBlock?.SelectedValue;
                 }
             }
@@ -661,13 +676,14 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+
                 var pickerBlock = _pickerBlock as IPickerBlock;
                 if ( pickerBlock != null )
                 {
                     pickerBlock.SelectedValue = value;
                 }
 
-                ViewState["SelectedValue"] = value;
+                _hfPickerBlockSelectedValue.Value = value;
             }
         }
 

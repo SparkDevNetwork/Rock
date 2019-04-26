@@ -224,6 +224,18 @@ namespace Rock.TransNational.Pi
             }
         }
 
+        /// <summary>
+        /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
+        {
+            // Pi Gateway requires that a subscription has to have a start date at least 24 after the current UTC Date
+            // This sometimes will make the minimum date 2 days from now if it is already currently tomorrow in UTC (for example after 5PM Arizona Time which is offset by -7 hours from UTC)
+            return DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
+        }
+
         #endregion IHostedGatewayComponent
 
         #region PiGateway Rock Wrappers
@@ -506,12 +518,15 @@ namespace Rock.TransNational.Pi
         /// </summary>
         /// <param name="subscriptionRequestParameters">The subscription request parameters.</param>
         /// <param name="scheduleTransactionFrequencyValueGuid">The schedule transaction frequency value unique identifier.</param>
-        /// <param name="startDateLocal">The start date local.</param>
-        private static void SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDateLocal )
+        /// <param name="startDate">The start date.</param>
+        private static void SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate )
         {
             BillingPlanParameters billingPlanParameters = subscriptionRequestParameters as BillingPlanParameters;
-            billingPlanParameters.NextBillDateUTC = GetBestUTCStartDate( startDateLocal );
+
+            // NOTE: Don't convert startDate to UTC, let the gateway worry about that
+            billingPlanParameters.NextBillDateUTC = startDate;
             BillingFrequency? billingFrequency = null;
+            int billingDuration = 0;
             int billingCycleInterval = 1;
             string billingDays = null;
             int startDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.Day;
@@ -536,8 +551,10 @@ namespace Rock.TransNational.Pi
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY.AsGuid() )
             {
                 // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled
+                var twiceMonthlyDays = new int[2] { startDayOfMonth, twiceMonthlySecondDayOfMonth };
                 billingFrequency = BillingFrequency.twice_monthly;
-                billingDays = $"{startDayOfMonth},{twiceMonthlySecondDayOfMonth}";
+                // twiceMonthly Days have to be in numeric order
+                billingDays = $"{twiceMonthlyDays.OrderBy( a => a ).ToList().AsDelimited( "," )}";
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY.AsGuid() )
             {
@@ -553,11 +570,18 @@ namespace Rock.TransNational.Pi
                 billingFrequency = BillingFrequency.daily;
                 billingDays = "7";
             }
-            
+            else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+            {
+                // if ONE-TIME create a monthly subscription, but with a duration of 1 so that it only does it once
+                billingCycleInterval = 1;
+                billingFrequency = BillingFrequency.monthly;
+                billingDays = $"{startDayOfMonth}";
+            }
+
             billingPlanParameters.BillingFrequency = billingFrequency;
             billingPlanParameters.BillingCycleInterval = billingCycleInterval;
             billingPlanParameters.BillingDays = billingDays;
-            billingPlanParameters.Duration = 0;
+            billingPlanParameters.Duration = billingDuration;
         }
 
         /// <summary>
@@ -719,6 +743,27 @@ namespace Rock.TransNational.Pi
             return ParseResponse<SubscriptionResponse>( response );
         }
 
+        /// <summary>
+        /// Searches the subscriptions.
+        /// (undocumented as of 4/15/2019) /recurring/subscription/search
+        /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="querySubscriptionsRequest">The query subscriptions request.</param>
+        /// <returns></returns>
+        private SubscriptionsSearchResult SearchSubscriptions( string gatewayUrl, string apiKey, QuerySubscriptionsRequest querySubscriptionsRequest )
+        {
+            var restClient = new RestClient( gatewayUrl );
+            RestRequest restRequest = new RestRequest( $"api/recurring/subscription/search", Method.POST );
+            restRequest.AddHeader( "Authorization", apiKey );
+
+            restRequest.AddJsonBody( querySubscriptionsRequest );
+
+            var response = restClient.Execute( restRequest );
+
+            return ParseResponse<SubscriptionsSearchResult>( response );
+        }
+
         #endregion Subscriptions
 
         #endregion PiGateway Rock wrappers
@@ -753,10 +798,7 @@ namespace Rock.TransNational.Pi
             {
                 var values = new List<DefinedValueCache>();
 
-                // Todo: See if PiGateway supports onetime scheduled transactions
-                //values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
-
-
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
@@ -916,7 +958,9 @@ namespace Rock.TransNational.Pi
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            errorMessage = string.Empty;
+            // create a guid to include in the Pi Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
+            var descriptionGuid = Guid.NewGuid();
+
             var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
             if ( referencedPaymentInfo == null )
             {
@@ -924,74 +968,82 @@ namespace Rock.TransNational.Pi
             }
 
             var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+            string subscriptionDescription = $"Subscription Ref: {descriptionGuid}";
 
-            SubscriptionRequestParameters subscriptionParameters = new SubscriptionRequestParameters
-            {
-                Customer = new SubscriptionCustomer { Id = customerId },
-                PlanId = null,
-                Description = $"Subscription for PersonId: {schedule.PersonId }",
-                Duration = 0,
-                Amount = paymentInfo.Amount
-            };
-
-            SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate );
-
-            var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
-            var subscriptionId = subscriptionResult.Data?.Id;
-
-            if ( subscriptionId.IsNullOrWhiteSpace() )
-            {
-                errorMessage = subscriptionResult.Message;
-                return null;
-            }
-
-            // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
-            // this might be handy in case we have an exception and need to know what the subscriptionId is
-            referencedPaymentInfo.TransactionCode = subscriptionId;
-
-            var scheduledTransaction = new FinancialScheduledTransaction();
-            scheduledTransaction.TransactionCode = customerId;
-            scheduledTransaction.GatewayScheduleId = subscriptionId;
-            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
-
-            CustomerResponse customerInfo;
             try
             {
-                customerInfo = this.GetCustomer( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), customerId );
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( $"Exception getting Customer Information for Scheduled Payment. {errorMessage}", ex );
-            }
+                errorMessage = string.Empty;
 
-            scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
-            try
-            {
-                GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
-            }
+                SubscriptionRequestParameters subscriptionParameters = new SubscriptionRequestParameters
+                {
+                    Customer = new SubscriptionCustomer { Id = customerId },
+                    PlanId = null,
+                    Description = subscriptionDescription,
+                    Duration = 0,
+                    Amount = paymentInfo.Amount
+                };
 
-            return scheduledTransaction;
+                SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate );
+
+                var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
+                var subscriptionId = subscriptionResult.Data?.Id;
+
+                if ( subscriptionId.IsNullOrWhiteSpace() )
+                {
+                    errorMessage = subscriptionResult.Message;
+                    return null;
+                }
+
+                // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
+                // this might be handy in case we have an exception and need to know what the subscriptionId is
+                referencedPaymentInfo.TransactionCode = subscriptionId;
+
+                var scheduledTransaction = new FinancialScheduledTransaction();
+                scheduledTransaction.TransactionCode = customerId;
+                scheduledTransaction.GatewayScheduleId = subscriptionId;
+                scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+
+                CustomerResponse customerInfo;
+                try
+                {
+                    customerInfo = this.GetCustomer( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), customerId );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment. {errorMessage}", ex );
+                }
+
+                scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
+                try
+                {
+                    GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                }
+
+                return scheduledTransaction;
+            }
+            catch ( Exception )
+            {
+                // if there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen
+                var subscriptionRequest = new QuerySubscriptionsRequest();
+                subscriptionRequest.CustomerIdSearch = new QuerySearchString { SearchValue = customerId, ComparisonOperator = "=" };
+
+                var subscriptionSearchResult = this.SearchSubscriptions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionRequest );
+                var orphanedSubscription = subscriptionSearchResult?.Data?.FirstOrDefault( a => a.Description == subscriptionDescription );
+
+                if ( orphanedSubscription?.Id != null )
+                {
+                    var subscriptionId = orphanedSubscription.Id;
+                    var subscriptionResult = this.DeleteSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionId );
+                }
+
+                throw;
+            }
         }
 
-        /// <summary>
-        /// Gets the best UTC start date.
-        /// </summary>
-        /// <param name="startDateLocal">The start date local.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// We want to convert the startDate as a UTC Date, so get the UTC Date of the StartDate
-        /// Add a day to the LocalDate before converting to UTC so make sure the UTC Date is on or after the specified date
-        /// Since UTC is 7 hours ahead (AZ time), we need to add a day so that it doesn't post on 5pm on the date *before* the expected date
-        /// </remarks>
-        private static DateTime GetBestUTCStartDate( DateTime startDateLocal )
-        {
-            // Note: see above /// remarks
-            return DateTime.SpecifyKind( startDateLocal, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
-        }
 
         /// <summary>
         /// Updates the scheduled payment.
@@ -1168,39 +1220,27 @@ namespace Rock.TransNational.Pi
 
             var rockContext = new RockContext();
 
-            Dictionary<string, string> scheduleIdLookupFromCustomerId = new Dictionary<string, string>();
-
             foreach ( var transaction in searchResult.Data )
             {
                 var customerId = transaction.CustomerId;
 
-                var gatewayScheduleId = scheduleIdLookupFromCustomerId.GetValueOrNull( customerId );
-                if ( gatewayScheduleId == null )
-                {
-                    // customerId is stored in scheduledTransaction.TransactionCode, so we know the customerId,
-                    // but we might know exactly what scheduled transaction it is since a FinancialPersonSavedAccount (where GatewayPersonId/CustomerID is stored)
-                    // can be used multiple times for charges and scheduled transactions
-                    var customerGatewayScheduleIds = new Rock.Model.FinancialScheduledTransactionService( rockContext ).Queryable().Where( a => a.TransactionCode == customerId ).Select( a => a.GatewayScheduleId ).ToList();
-
-                    // if there is exactly one gatewayScheduleId found for the customerId, then we can assume 
-                    if ( customerGatewayScheduleIds.Count == 1 )
-                    {
-                        gatewayScheduleId = customerGatewayScheduleIds[0];
-                    }
-
-                    if ( gatewayScheduleId.IsNotNullOrWhiteSpace() )
-                    {
-                        scheduleIdLookupFromCustomerId.Add( customerId, gatewayScheduleId );
-                    }
-                }
-
+                var gatewayScheduleId = transaction.SubscriptionId;
                 var payment = new Payment
                 {
-                    AccountNumberMasked = transaction.PaymentMethodResponse.Card.MaskedCard,
+                    TransactionCode = transaction.Id,
                     Amount = transaction.Amount,
                     TransactionDateTime = transaction.CreatedDateTime.Value,
-                    GatewayScheduleId = gatewayScheduleId
+                    GatewayScheduleId = gatewayScheduleId,
                 };
+
+                if (transaction.PaymentType == "ach" )
+                {
+                    payment.AccountNumberMasked = transaction?.PaymentMethodResponse?.ACH?.MaskedAccountNumber;
+                }
+                else
+                {
+                    payment.AccountNumberMasked = transaction?.PaymentMethodResponse?.Card?.MaskedCard;
+                }
 
                 paymentList.Add( payment );
             }

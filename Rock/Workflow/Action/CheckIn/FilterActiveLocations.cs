@@ -21,7 +21,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.CheckIn;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn

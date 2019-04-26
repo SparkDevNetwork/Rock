@@ -94,12 +94,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Site target, Site source )
         {
             target.Id = source.Id;
+            target.AdditionalSettings = source.AdditionalSettings;
             target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
             target.ChangePasswordPageId = source.ChangePasswordPageId;
             target.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             target.CommunicationPageId = source.CommunicationPageId;
             target.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            target.ConfigurationMobilePhoneFileId = source.ConfigurationMobilePhoneFileId;
+            target.ConfigurationMobileTabletFileId = source.ConfigurationMobileTabletFileId;
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
@@ -116,8 +119,10 @@ namespace Rock.Model
             target.IconCssWeight = source.IconCssWeight;
             #pragma warning restore 612, 618
             target.IndexStartingLocation = source.IndexStartingLocation;
+            target.IsActive = source.IsActive;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;
+            target.LatestVersionDateTime = source.LatestVersionDateTime;
             target.LoginPageId = source.LoginPageId;
             target.LoginPageRouteId = source.LoginPageRouteId;
             target.MobilePageId = source.MobilePageId;
@@ -130,7 +135,9 @@ namespace Rock.Model
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
             target.RequiresEncryption = source.RequiresEncryption;
             target.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
+            target.SiteType = source.SiteType;
             target.Theme = source.Theme;
+            target.ThumbnailFileId = source.ThumbnailFileId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

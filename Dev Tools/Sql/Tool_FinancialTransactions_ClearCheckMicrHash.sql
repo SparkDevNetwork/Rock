@@ -1,1 +1,5 @@
-update FinancialTransaction set CheckMicrHash = null where CheckMicrHash is not null
+UPDATE FinancialTransaction
+SET CheckMicrHash = NULL
+	,CheckMicrEncrypted = NULL
+WHERE CheckMicrHash IS NOT NULL
+	OR CheckMicrEncrypted IS NOT NULL

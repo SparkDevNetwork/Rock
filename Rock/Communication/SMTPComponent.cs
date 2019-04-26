@@ -21,10 +21,11 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
