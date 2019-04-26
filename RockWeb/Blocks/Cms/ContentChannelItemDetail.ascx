@@ -14,7 +14,7 @@
             },
             UniqueSlug: {
                 restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentSlug" ) %>',
-                restParams: '/{slug}'
+                restParams: "/" + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}"
             },
             RemoveSlug: {
                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
