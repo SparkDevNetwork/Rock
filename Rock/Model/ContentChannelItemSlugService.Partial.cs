@@ -28,13 +28,12 @@ namespace Rock.Model
     public partial class ContentChannelItemSlugService
     {
         /// <summary>
-        /// Gets the unique slug
+        /// Gets a globally unique slug. In most cases use the override with the content channel item ID to get a unique
+        /// slug for the content channel.
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
         /// <returns></returns>
-        [RockObsolete("1.9")]
-        [Obsolete( "This method does not allow for the creation of slugs unique to only the contentchannel. Use the override with ContentChannelItemId instead." )]
         public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId )
         {
             return GetUniqueContentSlug( slug, contentChannelItemSlugId, null );
