@@ -272,7 +272,10 @@ namespace Rock.Security.ExternalAuthentication
             var recipients = new List<RecipientData>();
             recipients.Add( new RecipientData( phoneNumber ) );
 
-            var smsMessage = new RockSMSMessage();
+            var smsMessage = new RockSMSMessage
+            {
+                CreateCommunicationRecord = false
+            };
             smsMessage.SetRecipients( recipients );
 
             // Get the From value
@@ -286,14 +289,13 @@ namespace Rock.Security.ExternalAuthentication
                 }
             }
 
-            var mergeObjects = new Dictionary<string, object> { { "password", password } };
-            var message = GetAttributeValue( "Message" ).ResolveMergeFields( mergeObjects, null );
+            smsMessage.AdditionalMergeFields = new Dictionary<string, object> { { "password", password } };
 
-            smsMessage.Message = message;
+            smsMessage.Message = GetAttributeValue( "Message" );
 
             var ipAddress = GetIpAddress();
 
-            //Reserve items rate limits the text messages so a bot c
+            //Reserve items rate limits the text messages
             if ( SMSRecords.ReserveItems( ipAddress, phoneNumber ) )
             {
                 var delay = SMSRecords.GetDelay( ipAddress, phoneNumber );
