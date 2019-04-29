@@ -85,7 +85,7 @@ namespace Rock.TransNational.Pi
             }
             else
             {
-                return "https://app.gotnpgateway.co ";
+                return "https://app.gotnpgateway.com";
             }
         }
 
