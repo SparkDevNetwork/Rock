@@ -218,7 +218,15 @@ namespace RockWeb.Blocks.Fundraising
             // GroupMember Attributes (all of them)
             phGroupMemberAttributes.Controls.Clear();
 
-            List<string> excludes = new List<string>();
+            // Exclude any attributes for which the current person has NO EDIT access.
+            // But skip these three special member attributes since they are handled in a special way.
+            List<string> excludes = groupMember.Attributes.Where(
+                a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) &&
+                a.Key != "IndividualFundraisingGoal" &&
+                a.Key != "DisablePublicContributionRequests" &&
+                a.Key != "PersonalOpportunityIntroduction" )
+                .Select( a => a.Key ).ToList();
+
             if ( !groupMember.Group.GetAttributeValue( "AllowIndividualDisablingofContributionRequests" ).AsBoolean() )
             {
                 excludes.Add( "DisablePublicContributionRequests" );
