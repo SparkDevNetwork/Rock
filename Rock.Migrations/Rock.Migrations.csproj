@@ -296,6 +296,10 @@
     <Compile Include="Migrations\201904252048025_ContentChannelSlugs.Designer.cs">
       <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904291735560_AttendanceLabelData.cs" />
+    <Compile Include="Migrations\201904291735560_AttendanceLabelData.Designer.cs">
+      <DependentUpon>201904291735560_AttendanceLabelData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -758,6 +762,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201904252048025_ContentChannelSlugs.resx">
       <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904291735560_AttendanceLabelData.resx">
+      <DependentUpon>201904291735560_AttendanceLabelData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
