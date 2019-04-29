@@ -304,6 +304,10 @@
     <Compile Include="Migrations\201904291843444_AddEnableGroupTagToGroupType.Designer.cs">
       <DependentUpon>201904291843444_AddEnableGroupTagToGroupType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904292230042_AttendanceData.cs" />
+    <Compile Include="Migrations\201904292230042_AttendanceData.Designer.cs">
+      <DependentUpon>201904292230042_AttendanceData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -772,6 +776,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201904291843444_AddEnableGroupTagToGroupType.resx">
       <DependentUpon>201904291843444_AddEnableGroupTagToGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904292230042_AttendanceData.resx">
+      <DependentUpon>201904292230042_AttendanceData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

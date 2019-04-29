@@ -25,9 +25,9 @@ namespace Rock.Model
 {
     [RockDomain( "Event" )]
     [NotAudited]
-    [Table( "AttendanceLabelData" )]
+    [Table( "AttendanceData" )]
     [DataContract]
-    public partial class AttendanceLabelData
+    public partial class AttendanceData
     {
         #region Entity Properties
 
@@ -42,19 +42,19 @@ namespace Rock.Model
         [IncludeForReporting]
         public int Id { get; set; }
 
-        //// ** NOTE:  We need [DataMember] on Content so that REST can GET and POST AttendanceLabelData. 
-        //// ** However, we don't have to worry about Liquid serializing this since Attendance.LabelData is not marked with [DataMember]
-        //// ** So the only way you would get serialized Content if you intentionally requested to serialize AttendanceLabelData
+        //// ** NOTE:  We need [DataMember] on LabelData so that REST can GET and POST LabelData. 
+        //// ** However, we don't have to worry about Liquid serializing this since Attendance.AttendanceData is not marked with [DataMember]
+        //// ** So the only way you would get serialized Content if you intentionally requested to serializeLabelData
 
         /// <summary>
-        /// Gets or sets the data/content of <see cref="Rock.Model.Attendance.LabelData"/>/>
+        /// Gets or sets the LabelData data/content of <see cref="Rock.Model.Attendance.AttendanceData"/>/>
         /// </summary>
         /// <value>
-        /// A <see cref="System.Byte"/> array that contains the data/content of <see cref="Rock.Model.Attendance.LabelData"/>
+        /// A <see cref="System.Byte"/> array that contains the data/content of <see cref="Rock.Model.Attendance.AttendanceData"/>
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public string Data { get; set; }
+        public string LabelData { get; set; }
 
         #endregion
     }
@@ -64,7 +64,7 @@ namespace Rock.Model
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class AttendanceLabelDataConfiguration : EntityTypeConfiguration<AttendanceLabelData>
+    public partial class AttendanceLabelDataConfiguration : EntityTypeConfiguration<AttendanceData>
     {
         public AttendanceLabelDataConfiguration()
         {

@@ -192,13 +192,13 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the data that was used to print the label
+        /// Gets or sets additional data associated with the Attendance, including LabelData
         /// </summary>
         /// <value>
         /// The label data.
         /// </value>
         [LavaInclude]
-        public virtual AttendanceLabelData LabelData { get; set; }
+        public virtual AttendanceData AttendanceData { get; set; }
 
         #endregion
 
@@ -728,7 +728,7 @@ namespace Rock.Model
             this.HasOptional( a => a.SearchResultGroup ).WithMany().HasForeignKey( p => p.SearchResultGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.LabelData ).WithRequired().WillCascadeOnDelete();
+            this.HasOptional( a => a.AttendanceData ).WithRequired().WillCascadeOnDelete();
         }
     }
 
