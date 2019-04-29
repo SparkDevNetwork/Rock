@@ -2031,7 +2031,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             Dictionary<int, Group> familiesLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
-            Dictionary<int, Person> businessLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.recordTypeValueId == _recordTypeBusinessId )
+            Dictionary<int, Person> businessLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.RecordTypeValueId == _recordTypeBusinessId )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
             _defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
@@ -2226,7 +2226,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                                             };
 
             // narrow it down to just person records that we inserted
-            businessIdsForBusinessImport = businessIdsForBusinessImport.Where( a => insertedBusinessesForeignIds.Contains( a.PersonImport.PersonForeignId ) );
+            businessIdsForBusinessImport = businessIdsForBusinessImport.Where( a => insertedBusinessesForeignIds.Contains( a.BusinessImport.PersonForeignId ) );
 
             // Make the GroupMember records for all the imported person (unless they are already have a groupmember record for the family)
             var groupMemberRecordsToInsertQry = from ppi in businessIdsForBusinessImport
@@ -2308,7 +2308,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 foreach ( var phoneNumberImport in businessesIds.BusinessImport.PhoneNumbers )
                 {
                     var phoneNumberToInsert = new PhoneNumber();
-                    phoneNumberToInsert.PersonId = businessesIds.PersonId;
+                    phoneNumberToInsert.PersonId = businessesIds.BusinessId;
                     UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, phoneNumberToInsert, importDateTime );
 
                     phoneNumbersToInsert.Add( phoneNumberToInsert );
@@ -2325,11 +2325,11 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 {
                     var attributeValue = new AttributeValue();
 
-                    attributeValue.EntityId = businessesIds.PersonId;
+                    attributeValue.EntityId = businessesIds.BusinessId;
                     attributeValue.AttributeId = attributeValueImport.AttributeId;
                     attributeValue.Value = attributeValueImport.Value;
-                    attributeValue.CreatedDateTime = businessesIds.PersonImport.CreatedDateTime ?? importDateTime;
-                    attributeValue.ModifiedDateTime = businessesIds.PersonImport.ModifiedDateTime ?? importDateTime;
+                    attributeValue.CreatedDateTime = businessesIds.BusinessImport.CreatedDateTime ?? importDateTime;
+                    attributeValue.ModifiedDateTime = businessesIds.BusinessImport.ModifiedDateTime ?? importDateTime;
                     attributeValuesToInsert.Add( attributeValue );
                 }
             }
