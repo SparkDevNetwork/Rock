@@ -597,6 +597,15 @@ namespace Rock.Model
         public bool EnableGroupHistory { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether group tag should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group tag]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupTag { get; set; } = false;
+
+        /// <summary>
         /// The color used to visually distinguish groups on lists.
         /// </summary>
         /// <value>
