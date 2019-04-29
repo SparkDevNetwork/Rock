@@ -30,7 +30,7 @@
             try {
                 data = JSON.parse($filter.find('input[type="hidden"]').val());
             }
-            catch {
+            catch (ex) {
                 data = null;
             }
 
