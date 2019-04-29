@@ -98,7 +98,33 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        RockRestClient _restClient = null;
 
+        /// <summary>
+        /// Gets the rest client.
+        /// </summary>
+        /// <value>
+        /// The rest client.
+        /// </value>
+        public RockRestClient RestClient
+        {
+            get
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                if ( _restClient == null || !_restClient.rockBaseUri.Equals( new Uri( rockConfig.RockBaseUrl ) ) )
+                {
+                    RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                    client.Login( rockConfig.Username, rockConfig.Password );
+                    _restClient = client;
+                }
+
+                return _restClient;
+            }
+        }
+
+        /// <summary>
+        /// Binds the device to page.
+        /// </summary>
         public void BindDeviceToPage()
         {
             if ( this.micrImage != null )
@@ -221,6 +247,14 @@ namespace Rock.Apps.CheckScannerUtility
         public List<DefinedValue> CurrencyValueList { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus list.
+        /// </summary>
+        /// <value>
+        /// The campus list.
+        /// </value>
+        public List<Campus> CampusList { get; set; }
+
+        /// <summary>
         /// Gets the selected currency value.
         /// </summary>
         /// <value>
@@ -235,7 +269,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// All the possible Transation Source Type, including ones that can't be selected when scanning
+        /// All the possible Transaction Source Type, including ones that can't be selected when scanning
         /// </summary>
         /// <value>
         /// The source type value list.
@@ -327,7 +361,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
 
-            ScanningPage.ShowRangerScannerStatus( xportState, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -374,6 +408,10 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
+
+                //If set to false, Ranger's exception manager will never prompt the user, and
+                // management will be left to the application.
+                rangerScanner.SetGenericOption( "ExceptionHandling", "Enabled", "false" );
 
                 // Ranger assigns a score of 1-255 on how confident it is that the character was read correctly (1 unsure, 255 very sure)
                 // If the score is less than 255, it will assign another score to its next best guess.  
@@ -431,9 +469,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount )
             {
-                if (this.SelectedFinancialBatch != null && this.SelectedFinancialBatch.ControlItemCount > 0)
-                { 
-                    if (this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
+                if ( this.SelectedFinancialBatch?.Transactions != null && this.SelectedFinancialBatch.ControlItemCount > 0 )
+                {
+                    if ( this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
                     {
                         btnScan.IsEnabled = false;
                         btnScan.ToolTip = "Item count equals control count";
@@ -448,20 +486,22 @@ namespace Rock.Apps.CheckScannerUtility
         public void LoadLookups()
         {
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
-            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campuses" );
+            var client = this.RestClient;
+
+            this.CampusList = client.GetData<List<Campus>>( "api/Campuses" );
 
             cboCampus.SelectedValuePath = "Id";
             cboCampus.DisplayMemberPath = "Name";
             cboCampus.Items.Clear();
             cboCampus.Items.Add( null );
+
+            var filteredCampusList = this.CampusList.ToList();
             if ( rockConfig.CampusIdFilter.HasValue )
             {
-                campusList = campusList.Where( a => a.Id == rockConfig.CampusIdFilter.Value ).ToList();
+                filteredCampusList = filteredCampusList.Where( a => a.Id == rockConfig.CampusIdFilter.Value ).ToList();
             }
 
-            foreach ( var campus in campusList.OrderBy( a => a.Name ) )
+            foreach ( var campus in filteredCampusList.OrderBy( a => a.Name ) )
             {
                 cboCampus.Items.Add( campus );
             }
@@ -484,13 +524,17 @@ namespace Rock.Apps.CheckScannerUtility
         {
             int? origSelectedBatchId = this.SelectedFinancialBatch?.Id;
             RockConfig config = RockConfig.Load();
-            RockRestClient client = new RockRestClient( config.RockBaseUrl );
-
-            client.Login( config.Username, config.Password );
+            var client = this.RestClient;
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
             if ( config.CampusIdFilter.HasValue )
             {
+                if ((this.SelectedFinancialBatch?.CampusId.HasValue == true) && (this.SelectedFinancialBatch.CampusId.Value != config.CampusIdFilter.Value) )
+                {
+                    this.SelectedFinancialBatch = null;
+                    origSelectedBatchId = null;
+                }
+
                 pendingBatches = pendingBatches.Where( a => !a.CampusId.HasValue || a.CampusId.Value == config.CampusIdFilter.Value ).ToList();
             }
 
@@ -507,7 +551,7 @@ namespace Rock.Apps.CheckScannerUtility
                     FinancialBatchWithControlVariance financialBatchWithControlVariance = new FinancialBatchWithControlVariance();
                     financialBatchWithControlVariance.CopyPropertiesFrom( pendingBatch );
                     ControlTotalResult controlTotalAmounts;
-                    if (controlTotalsLookup.ContainsKey(pendingBatch.Id))
+                    if ( controlTotalsLookup.ContainsKey( pendingBatch.Id ) )
                     {
                         controlTotalAmounts = controlTotalsLookup[pendingBatch.Id];
                     }
@@ -550,7 +594,13 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( SelectedFinancialBatch != null )
                 {
                     // try to set the selected batch in the grid to our current batch (if it still exists in the database)
-                    grdBatches.SelectedValue = gridDataContext.FirstOrDefault();
+                    var selectedValue = gridDataContext.FirstOrDefault( a => a.Id == SelectedFinancialBatch.Id );
+                    if ( selectedValue == null )
+                    {
+                        selectedValue = gridDataContext.FirstOrDefault();
+                    }
+
+                    grdBatches.SelectedValue = selectedValue;
                     FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
 
                     ScanningPageUtility.ItemsToProcess = selectedBatch == null ? 0 : selectedBatch.ControlItemCount;
@@ -602,7 +652,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = status;
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
 
-            ScanningPage.ShowRangerScannerStatus( connected ? RangerTransportStates.TransportReadyToFeed : RangerTransportStates.TransportShutDown, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -666,22 +716,28 @@ namespace Rock.Apps.CheckScannerUtility
 
         private bool HandleMagTekImageSafe( RockConfig rockConfig )
         {
-            this.Cursor = Cursors.Wait;
-            UpdateScannerStatusForMagtek( false );
-
-            //Port Open Connects
-            var firmware = this.GetImageSafeVersion();
-            if ( firmware.Length > 0 )
+            try
             {
+                this.Cursor = Cursors.Wait;
+                UpdateScannerStatusForMagtek( false );
 
-                UpdateScannerStatusForMagtek( true );
-                ScannerFeederType = FeederType.SingleItem;
-                return true;
+                //Port Open Connects
+                var firmware = this.GetImageSafeVersion();
+                if ( firmware.Length > 0 )
+                {
+
+                    UpdateScannerStatusForMagtek( true );
+                    ScannerFeederType = FeederType.SingleItem;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else
+            finally
             {
-
-                return false;
+                this.Cursor = null;
             }
         }
 
@@ -799,7 +855,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in", rockConfig.ScannerInterfaceType.ConvertToString( true ) ) );
+                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in. You may need to restart the application after reconnecting the device.", rockConfig.ScannerInterfaceType.ConvertToString( true ) ) );
             }
         }
 
@@ -852,6 +908,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             grdBatches.IsEnabled = !showInEditMode;
             btnAddBatch.IsEnabled = !showInEditMode;
+            btnRefreshBatchList.IsEnabled = !showInEditMode;
         }
 
         /// <summary>
@@ -873,8 +930,7 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 RockConfig rockConfig = RockConfig.Load();
-                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                var client = this.RestClient;
 
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
@@ -1065,8 +1121,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( this.SelectedFinancialBatch != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
 
                         var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
                         if ( transactions != null )
@@ -1139,13 +1194,18 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
+            var client = this.RestClient;
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
+            string campusName = null;
+            if ( selectedBatch.CampusId.HasValue )
+            {
+                campusName = this.CampusList.FirstOrDefault( a => a.Id == selectedBatch.CampusId.Value )?.Name;
+            }
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campuses/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
+
+            lblBatchCampusReadOnly.Content = campusName;
             if ( selectedBatch.BatchStartDateTime != null )
             {
                 lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
@@ -1240,7 +1300,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "C" );
 
-                spBatchControlAmountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlAmount  ? Visibility.Visible : Visibility.Collapsed;
+                spBatchControlAmountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlAmount ? Visibility.Visible : Visibility.Collapsed;
                 spBatchControlItemCountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount ? Visibility.Visible : Visibility.Collapsed;
                 spBatchControlItemCountReadOnly.Visibility = selectedBatch.ControlItemCount.HasValue ? Visibility.Visible : Visibility.Hidden;
 
@@ -1291,8 +1351,7 @@ namespace Rock.Apps.CheckScannerUtility
             if ( transactions != null )
             {
                 RockConfig rockConfig = RockConfig.Load();
-                var client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                var client = this.RestClient;
 
                 foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
@@ -1377,8 +1436,8 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( financialTransaction != null )
                 {
                     RockConfig config = RockConfig.Load();
-                    RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                    client.Login( config.Username, config.Password );
+                    var client = this.RestClient;
+
                     financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
                     BatchItemDetailPage.batchPage = this;
                     BatchItemDetailPage.FinancialTransaction = financialTransaction;
@@ -1421,8 +1480,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( financialTransaction != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
                         client.Delete( string.Format( "api/FinancialTransactions/{0}", transactionId ) );
                         UpdateBatchUI( this.SelectedFinancialBatch );
                     }

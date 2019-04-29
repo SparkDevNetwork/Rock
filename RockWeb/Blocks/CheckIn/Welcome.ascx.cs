@@ -36,19 +36,118 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Welcome screen for check-in." )]
 
-    [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
-    [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
+    [LinkedPage(
+        "Family Select Page",
+        Key = AttributeKey.FamilySelectPage,
+        IsRequired = false,
+        Order = 5 )]
 
-    [TextField( "Not Active Title", "Title displayed when there are not any active options today.", false, "Check-in Is Not Active", "Text", 7 )]
-    [TextField( "Not Active Caption", "Caption displayed when there are not any active options today.", false, "There are no current or future schedules for this kiosk today!", "Text", 8 )]
-    [TextField( "Not Active Yet Title", "Title displayed when there are active options today, but none are active now.", false, "Check-in Is Not Active Yet", "Text", 9 )]
-    [TextField( "Not Active Yet Caption", "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.", false, "This kiosk is not active yet.  Countdown until active: {0}.", "Text", 10 )]
-    [TextField( "Closed Title", "", false, "Closed", "Text", 11 )]
-    [TextField( "Closed Caption", "", false, "This location is currently closed.", "Text", 12 )]
-    [TextField( "Check-in Button Text", "The text to display on the check-in button. Defaults to 'Start' if left blank.", false, "", "Text", 13, "CheckinButtonText" )]
-    [TextField( "No Option Caption", "The text to display when there are not any families found matching a scanned identifier (barcode, etc).", false, "Sorry, there were not any families found with the selected identifier.", "Text", 14 )]
+    [LinkedPage(
+        "Scheduled Locations Page",
+        Key = AttributeKey.ScheduledLocationsPage,
+        IsRequired = false,
+        Order = 6 )]
+
+    [TextField(
+        "Not Active Title",
+        Key = AttributeKey.NotActiveTitle,
+        Description = "Title displayed when there are not any active options today.",
+        IsRequired = false,
+        DefaultValue = "Check-in Is Not Active",
+        Category = "Text",
+        Order = 7 )]
+
+    [TextField(
+        "Not Active Caption",
+        Key = AttributeKey.NotActiveCaption,
+        Description = "Caption displayed when there are not any active options today.",
+        IsRequired = false,
+        DefaultValue = "There are no current or future schedules for this kiosk today!",
+        Category = "Text",
+        Order = 8 )]
+
+    [TextField(
+        "Not Active Yet Title",
+        Key = AttributeKey.NotActiveYetTitle,
+        Description = "Title displayed when there are active options today, but none are active now.",
+        IsRequired = false,
+        DefaultValue = "Check-in Is Not Active Yet",
+        Category = "Text",
+        Order = 9 )]
+
+    [TextField(
+        "Not Active Yet Caption",
+        Key = AttributeKey.NotActiveYetCaption,
+        Description = "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.",
+        IsRequired = false,
+        DefaultValue = "This kiosk is not active yet.  Countdown until active: {0}.",
+        Category = "Text",
+        Order = 10 )]
+
+    [TextField(
+        "Closed Title",
+        Key = AttributeKey.ClosedTitle,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "Closed",
+        Category = "Text",
+        Order = 11 )]
+
+    [TextField(
+        "Closed Caption",
+        Key = AttributeKey.ClosedCaption,
+        IsRequired = false,
+        DefaultValue = "This location is currently closed.",
+        Category = "Text",
+        Order = 12 )]
+
+    [TextField(
+        "Check-in Button Text",
+        Key = AttributeKey.CheckinButtonText,
+        Description = "The text to display on the check-in button. Defaults to 'Start' if left blank.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "Text",
+        Order = 13 )]
+
+    [TextField(
+        "No Option Caption",
+        Key = AttributeKey.NoOptionCaption,
+        Description = "The text to display when there are not any families found matching a scanned identifier (barcode, etc).",
+        IsRequired = false,
+        DefaultValue = "Sorry, there were not any families found with the selected identifier.",
+        Category = "Text",
+        Order = 14 )]
+
+    [BooleanField(
+        "Allow Opening and Closing Rooms",
+        Key = AttributeKey.AllowOpeningAndClosingRooms,
+        Description = "Determines if opening and closing rooms should be allowed. If not allowed, the locations only show counts and the open/close toggles are not shown.",
+        DefaultBooleanValue = true,
+        Category = "Manager Settings",
+        Order = 20 )]
+
     public partial class Welcome : CheckInBlock
     {
+        #region Attribute Keys
+
+        protected static class AttributeKey
+        {
+            public const string FamilySelectPage = "FamilySelectPage";
+            public const string ScheduledLocationsPage = "ScheduledLocationsPage";
+            public const string NotActiveTitle = "NotActiveTitle";
+            public const string NotActiveCaption = "NotActiveCaption";
+            public const string NotActiveYetTitle = "NotActiveYetTitle";
+            public const string NotActiveYetCaption = "NotActiveYetCaption";
+            public const string ClosedTitle = "ClosedTitle";
+            public const string ClosedCaption = "ClosedCaption";
+            public const string CheckinButtonText = "CheckinButtonText";
+            public const string NoOptionCaption = "NoOptionCaption";
+            public const string AllowOpeningAndClosingRooms = "AllowOpeningAndClosingRooms";
+        }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -118,17 +217,17 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         RefreshView();
 
-                        lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
-                        lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
-                        lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveYetTitle" );
-                        lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveYetCaption" ), "<span class='countdown-timer'></span>" );
-                        lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
-                        lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
+                        lNotActiveTitle.Text = GetAttributeValue( AttributeKey.NotActiveTitle );
+                        lNotActiveCaption.Text = GetAttributeValue( AttributeKey.NotActiveCaption );
+                        lNotActiveYetTitle.Text = GetAttributeValue( AttributeKey.NotActiveYetTitle );
+                        lNotActiveYetCaption.Text = string.Format( GetAttributeValue( AttributeKey.NotActiveYetCaption ), "<span class='countdown-timer'></span>" );
+                        lClosedTitle.Text = GetAttributeValue( AttributeKey.ClosedTitle );
+                        lClosedCaption.Text = GetAttributeValue( AttributeKey.ClosedCaption );
 
-                        string checkinButtonText = GetAttributeValue( "CheckinButtonText" ).IfEmpty( "Start" );
+                        string checkinButtonText = GetAttributeValue( AttributeKey.CheckinButtonText ).IfEmpty( "Start" );
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                        mergeFields.Add( "CheckinButtonText", checkinButtonText );
+                        mergeFields.Add( AttributeKey.CheckinButtonText, checkinButtonText );
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
 
@@ -238,12 +337,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( AttributeKey.NoOptionCaption ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
                     SaveState();
-                    NavigateToLinkedPage( "FamilySelectPage" );
+                    NavigateToLinkedPage( AttributeKey.FamilySelectPage );
                 }
             }
             else
@@ -428,7 +527,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnScheduleLocations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "ScheduledLocationsPage" );
+            NavigateToLinkedPage( AttributeKey.ScheduledLocationsPage );
         }
 
         /// <summary>
@@ -481,6 +580,9 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ShowManagementDetails()
         {
+            // Only show Schedule Locations if setting is not empty
+            btnScheduleLocations.Visible = GetAttributeValue( AttributeKey.ScheduledLocationsPage ).IsNotNullOrWhiteSpace();
+
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = true;
             btnManager.Visible = false;
@@ -492,6 +594,9 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindManagerLocationsGrid()
         {
+            // Do this only once for efficiency sake vs in the repeater's ItemDataBound
+            hfAllowOpenClose.Value = GetAttributeValue( AttributeKey.AllowOpeningAndClosingRooms );
+
             var rockContext = new RockContext();
             if ( this.CurrentKioskId.HasValue )
             {
@@ -553,23 +658,31 @@ namespace RockWeb.Blocks.CheckIn
             object locationDataItem = e.Item.DataItem;
             if ( locationDataItem != null )
             {
-                var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
-                var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
-                var isActive = ( bool ) locationDataItem.GetPropertyValue( "IsActive" );
-
-                if ( isActive )
+                if ( hfAllowOpenClose.Value.AsBoolean() )
                 {
-                    lbClose.RemoveCssClass( "btn-danger" );
-                    lbClose.RemoveCssClass( "active" );
-                    lbOpen.AddCssClass( "btn-success" );
-                    lbOpen.AddCssClass( "active" );
+                    var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
+                    var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
+                    var isActive = ( bool ) locationDataItem.GetPropertyValue( "IsActive" );
+
+                    if ( isActive )
+                    {
+                        lbClose.RemoveCssClass( "btn-danger" );
+                        lbClose.RemoveCssClass( "active" );
+                        lbOpen.AddCssClass( "btn-success" );
+                        lbOpen.AddCssClass( "active" );
+                    }
+                    else
+                    {
+                        lbOpen.RemoveCssClass( "btn-success" );
+                        lbOpen.RemoveCssClass( "active" );
+                        lbClose.AddCssClass( "btn-danger" );
+                        lbClose.AddCssClass( "active" );
+                    }
                 }
                 else
                 {
-                    lbOpen.RemoveCssClass( "btn-success" );
-                    lbOpen.RemoveCssClass( "active" );
-                    lbClose.AddCssClass( "btn-danger" );
-                    lbClose.AddCssClass( "active" );
+                    var divLocationToggle = e.Item.FindControl( "divLocationToggle" ) as HtmlGenericControl;
+                    divLocationToggle.Visible = false;
                 }
 
                 var lLocationName = e.Item.FindControl( "lLocationName" ) as Literal;

@@ -167,7 +167,38 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( ScanningPageUtility.KeepScanning )
                 {
-                    ScanningPageUtility.ResumeRangerScanning();
+                    if ( this._interfaceType == RockConfig.InterfaceType.RangerApi )
+                    {
+                        ResumeRangerScanning();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resumes the ranger scanning.
+        /// </summary>
+        public void ResumeRangerScanning()
+        {
+            if ( this._batchPage.rangerScanner != null && RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+            {
+                // StartFeeding doesn't work if the Scanner isn't in ReadyToFeed state, so assign StartRangerFeedingWhenReady if it isn't ready yet
+                RangerTransportStates xportState = ( RangerTransportStates ) this._batchPage.rangerScanner.GetTransportState();
+                if ( xportState == RangerTransportStates.TransportReadyToFeed )
+                {
+                    this._batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedOne );
+                }
+                else if ( xportState == RangerTransportStates.TransportShutDown )
+                {
+                    DisplayAlertMessage( AlertMessageType.Warning, "Scanner is not ready. Verify that the scanner is powered on and connected." );
+                    btnStart.IsEnabled = true;
+                    btnStopScanning.IsEnabled = false;
+                }
+                else
+                {
+                    // ensure the event is only registered once
+                    this._batchPage.rangerScanner.TransportReadyToFeedState -= StartRangerFeedingWhenReady;
+                    this._batchPage.rangerScanner.TransportReadyToFeedState += StartRangerFeedingWhenReady;
                 }
             }
         }
@@ -280,7 +311,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( ScanningPageUtility.KeepScanning )
                 {
-                    ScanningPageUtility.ResumeRangerScanning();
+                    ResumeRangerScanning();
                 }
             }
             else
@@ -544,6 +575,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             var rockConfig = RockConfig.Load();
             this._interfaceType = rockConfig.ScannerInterfaceType;
+            this._isBackScan = false;
+            this._currentMagtekScannedDoc = null;
             this.gCheckMICRInfo.Visibility = Visibility.Collapsed;
             this.spScannedItemDisplay.Visibility = Visibility.Collapsed;
             this.spAccounts.Visibility = Visibility.Collapsed;
@@ -602,14 +635,17 @@ namespace Rock.Apps.CheckScannerUtility
             var filteredAccounts = ScanningPageUtility.Accounts.Where( a => rockConfig.SelectedAccountForAmountsIds.Contains( a.Id ) );
             List<DisplayAccountValueModel> displayedAccountList = new List<DisplayAccountValueModel>();
 
-            int index = 0;
-
             foreach ( var account in filteredAccounts )
             {
-                displayedAccountList.Add( new DisplayAccountValueModel( account ) { Index = index++ } );
+                displayedAccountList.Add( new DisplayAccountValueModel( account ));
             }
 
+            int index = 0;
             displayedAccountList = displayedAccountList.OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
+            foreach (var displayedAccount in displayedAccountList)
+            {
+                displayedAccount.Index = index++;
+            }
 
             this.lvAccountDetailsEntry.ItemsSource = displayedAccountList;
             this.lvAccountDetailsDisplay.ItemsSource = displayedAccountList;
@@ -671,12 +707,12 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Shows the scanner status.
         /// </summary>
-        /// <param name="xportStates">The xport states.</param>
         /// <param name="statusColor">Color of the status.</param>
         /// <param name="statusText">The status text.</param>
-        internal void ShowRangerScannerStatus( RangerTransportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
+        internal void ShowScannerStatus( System.Windows.Media.Color statusColor, string statusText )
         {
-            ScanningPageUtility.ShowRangerScannerStatus( xportStates, statusColor, statusText, ref shapeStatus );
+            shapeStatus.ToolTip = statusText;
+            shapeStatus.Fill = new System.Windows.Media.SolidColorBrush( statusColor );
         }
 
         #region Ranger (Canon CR50/80) Scanner Events
@@ -690,7 +726,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             RangerFeedingStoppedReasons rangerFeedingStoppedReason = ( RangerFeedingStoppedReasons ) e.reason;
 
-            bool promptingForSomething = btnNext.Visibility == Visibility.Visible  || pnlPromptForUpload.Visibility == Visibility.Visible;
+            bool promptingForSomething = btnNext.Visibility == Visibility.Visible || pnlPromptForUpload.Visibility == Visibility.Visible;
 
             if ( !promptingForSomething )
             {
@@ -722,7 +758,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            if ( rockConfig.CaptureAmountOnScan)
+            if ( rockConfig.CaptureAmountOnScan )
             {
                 UpdateCaptureProgress();
             }
@@ -899,7 +935,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportIsDead( object sender, EventArgs e )
         {
-            ScanningPageUtility.rangerScanner_TransportIsDead( sender, e, () => { DisplayAlertMessage( AlertMessageType.Warning, "Scanner is not ready. Verify that the scanner is powered on and connected." ); } );
+            Debug.WriteLine( "rangerScanner_TransportIsDead" );
+            ScanningPageUtility.rangerScanner_TransportIsDead( sender, e, () =>
+            {
+                DisplayAlertMessage( AlertMessageType.Warning, "Scanner is not ready. Verify that the scanner is powered on and connected." );
+            } );
         }
 
         #endregion
@@ -907,7 +947,7 @@ namespace Rock.Apps.CheckScannerUtility
         #region Scanner (MagTek MICRImage RS232) Events
 
         /// <summary>
-        /// Handles the MicrDataReceived event of the micrImage control.
+        /// Handles the MicrDataReceived event of the micrImage (RS232) control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
@@ -1069,7 +1109,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideStartScanningPrompts();
             HideUploadResultMessage();
-            
+
             var currentPage = Application.Current.MainWindow.Content;
 
             if ( currentPage != this )
@@ -1125,12 +1165,15 @@ namespace Rock.Apps.CheckScannerUtility
             bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             if ( e.HasError )
             {
-                StringBuilder sb = e.Errors;
-                var timeoutError = sb.ToString().Contains( "Timeout" );
+                var timeoutError = e.ErrorMessage.Contains( "Timeout" );
                 if ( timeoutError )
                 {
                     var noItemfound = string.Format( "No {0} detected in scanner. Make sure {0} are properly in the feed tray.", scanningChecks ? "checks" : "items" );
                     DisplayAlertMessage( AlertMessageType.Warning, noItemfound );
+                }
+                else
+                {
+                    DisplayAlertMessage( AlertMessageType.Danger, e.ErrorMessage );
                 }
 
                 return;
@@ -1166,6 +1209,7 @@ namespace Rock.Apps.CheckScannerUtility
                 // scanning the front image, but still need to scan the back
                 var message = string.Format( "Insert the {0} again facing the other direction to get an image of the back.", scanningChecks ? "checks" : "items" );
                 this.DisplayAlertMessage( AlertMessageType.Info, message );
+                btnStart.IsEnabled = true;
 
                 _currentMagtekScannedDoc.FrontImageData = e.ImageData;
                 _isBackScan = true;
@@ -1317,7 +1361,11 @@ namespace Rock.Apps.CheckScannerUtility
         public void StartScanning()
         {
             ScanningPageUtility.KeepScanning = true;
-            ScanningPageUtility.ResumeRangerScanning();
+
+            if ( this._interfaceType == RockConfig.InterfaceType.RangerApi )
+            {
+                ResumeRangerScanning();
+            }
         }
 
         /// <summary>

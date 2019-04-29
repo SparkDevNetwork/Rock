@@ -20,7 +20,7 @@ namespace ImageSafeInterop
 {
     public struct CheckData
     {
-        public bool HasError { get; set; }
+        
 
         /// <summary>
         /// Gets or sets the image data.
@@ -78,11 +78,19 @@ namespace ImageSafeInterop
         }
 
         /// <summary>
-        /// Gets or sets the errors.
+        /// Gets or sets a value indicating whether this instance has error.
         /// </summary>
         /// <value>
-        /// The errors.
+        ///   <c>true</c> if this instance has error; otherwise, <c>false</c>.
         /// </value>
-        public StringBuilder Errors { get; set; }
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        /// <value>
+        /// The error message.
+        /// </value>
+        public string ErrorMessage { get; set; }
     }
 }

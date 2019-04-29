@@ -69,13 +69,11 @@ namespace Rock.Apps.CheckScannerUtility
         {
             LoadDeviceDropDown();
             LoadBatchCampusDropDown();
-
-            lblAlert.Visibility = Visibility.Collapsed;
+            
             GetConfigValues();
 
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
             lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
-
         }
 
         /// <summary>
@@ -85,6 +83,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadFinancialAccounts( int? campusId )
         {
             var client = this.RestClient;
+            var rockConfig = RockConfig.Load();
             _allAccounts = client.GetData<List<FinancialAccount>>( "api/FinancialAccounts?$filter=IsActive eq true" );
 
             if ( campusId.HasValue )
@@ -92,57 +91,16 @@ namespace Rock.Apps.CheckScannerUtility
                 _allAccounts = _allAccounts.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId ).ToList();
             }
 
-            SetParentChildAccounts( _allAccounts );
+            _displayAccounts = new ObservableCollection<DisplayAccountModel>( _allAccounts.Select( a => new DisplayAccountModel( a, _allAccounts ) ).ToList() );
+
+            foreach( var displayAccount in _displayAccounts )
+            {
+                displayAccount.IsAccountChecked = rockConfig.SelectedAccountForAmountsIds?.Contains( displayAccount.Id ) == true;
+            }
+
             tvAccountsForBatches.ItemsSource = null;
             tvAccountsForBatches.Items.Clear();
             tvAccountsForBatches.ItemsSource = _displayAccounts;
-        }
-
-        private HybridDictionary _map = new HybridDictionary();
-
-        /// <summary>
-        /// Adds the parent child.
-        /// </summary>
-        /// <param name="displayAccount">The display account.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="parentId">The parent identifier.</param>
-        public void AddParentChild( DisplayAccountModel displayAccount, int id, int? parentId )
-        {
-            // keep a map of each id to the node
-            _map.Add( id, displayAccount );
-
-            // if no parentId was given then it's a root node, so just add it
-            if ( parentId == null )
-            {
-                _displayAccounts.Add( displayAccount );
-            }
-            else
-            {
-                // Find the parent in the map and add node as it's child node
-                var parent = ( DisplayAccountModel ) _map[parentId];
-                parent.Children.Add( displayAccount );
-            }
-        }
-
-        /// <summary>
-        /// Sets the parent child accounts.
-        /// </summary>
-        /// <param name="accounts">The accounts.</param>
-        private void SetParentChildAccounts( List<FinancialAccount> accounts )
-        {
-            _displayAccounts = new ObservableCollection<DisplayAccountModel>();
-            _map = new HybridDictionary();
-            foreach ( var account in accounts )
-            {
-                var parentDisplayAccount = new DisplayAccountModel(account);
-                var children = _allAccounts.Where( a => a.ParentAccountId != null && a.ParentAccountId == account.Id ).ToList();
-                if ( _rockConfig.SelectedAccountForAmountsIds != null )
-                {
-                    parentDisplayAccount.IsAccountChecked = _rockConfig.SelectedAccountForAmountsIds.Contains( account.Id );
-                }
-
-                this.AddParentChild( parentDisplayAccount, account.Id, account.ParentAccountId );
-            }
         }
 
         /// <summary>
@@ -500,6 +458,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
+            lblAlert.Visibility = Visibility.Collapsed;
             lblMagTekCommPort.Visibility = Visibility.Collapsed;
             cboMagTekCommPort.Visibility = Visibility.Collapsed;
             ShowDetail();

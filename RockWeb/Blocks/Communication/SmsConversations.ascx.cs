@@ -35,8 +35,8 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     [DisplayName( "SMS Conversations" )]
-    [Category( "Core" )]
-    [Description( "SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
+    [Category( "Communication" )]
+    [Description( "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
     [DefinedValueField( definedTypeGuid: Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         name: "Allowed SMS Numbers",
         description: "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",

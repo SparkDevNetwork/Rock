@@ -33,7 +33,7 @@ namespace Rock.Wpf.Controls
             Behaviors.NumberOnlyBehaviour.SetAllowDecimals( this, true );
             Behaviors.NumberOnlyBehaviour.SetIsEnabled( this, true );
             Style = Application.Current.Resources["textboxStyleCurrency"] as Style;
-            HorizontalContentAlignment = HorizontalAlignment.Right;
+            HorizontalContentAlignment = HorizontalAlignment.Left;
         }
 
         private bool isValid = true;
