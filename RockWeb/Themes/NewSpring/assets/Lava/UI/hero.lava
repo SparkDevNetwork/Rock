@@ -65,7 +65,7 @@ overflow-hidden
 
             {% if url != empty %}
                 <p>
-                    <a href="{{ url }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                 </p>
             {% endif %}
 

@@ -1,0 +1,129 @@
+{% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
+{% assign cciid = Item.Id %}
+{% assign subtitle = Item | Attribute:'Subtitle' %}
+{% assign video = Item | Attribute:'Video','RawValue' %}
+{% assign date = Item.StartDateTime | Date:'MMMM d, yyyy' %}
+{% assign itemimageurl = Item | Attribute:'ImageLandscape','Url' %}
+
+{% capture imageurl %}
+    {% if itemimageurl and itemimageurl != empty %}
+        {{ itemimageurl }}
+    {% elseif Item.ParentItems %}
+        {% for parent in Item.ParentItems %}{[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ratio:'Landscape' ]}{% endfor %}
+    {% endif %}
+{% endcapture %}
+{% assign imageurl = imageurl | Trim %}
+
+
+
+{% if Item.ParentItems %}
+    {% for parent in Item.ParentItems %}
+    {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+        {% for parent in parents %}
+
+            {% assign backgroundColor = parent | Attribute:'BackgroundColor' | Lighten:'15%' %}
+
+            {% if backgroundColor and backgroundColor != empty %}
+            <style>
+                .brand-bg {
+                    background-color: {{ backgroundColor | Darken:'5%' }};
+                }
+            </style>
+            {% endif %}
+
+        {% endfor %}
+    {% endcontentchannelitem %}
+    {% endfor %}
+{% endif %}
+
+
+<div class="md-text-constrained md-mx-auto panel">
+    <div class="editorial-content position-relative panel-body bg-white xs-soft-half hard-bottom">
+
+        {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
+            <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
+                {[ button linkurl:'/page/342?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' ]}
+            </div>
+        {% endif %}
+
+        {% if label and label != empty %}
+            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+        {% endif %}
+        
+        <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
+
+        {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+        {% capture collectionurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+        {% if collectiontext != null and collectiontext != '' %}
+            <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+        {% endif %}
+        
+        {% if subtitle != empty %}
+            <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
+        {% endif %}
+        
+        {[ communicators guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}
+        
+        {% if imageurl and imageurl != empty %}
+            <div class="ratio-landscape background-cover push-bottom" style="background-image:url('{{ imageurl }}'); margin-left: -30px; margin-right: -30px;"></div>
+        {% endif %}
+
+        {% assign scripturesguid = Item | Attribute:'Scriptures','RawValue' %}
+        {% capture scripturereferences %}{[ scriptureReferences guid:'{{ scripturesguid }}' ]}{% endcapture %}
+        {% assign scripturereferences = scripturereferences | Trim %}
+
+        {%  if scripturereferences and scripturereferences != empty %}
+            <div class="text-center soft-ends">
+                <h2 class="h3 flush">Read</h2>
+                <p class="lead">{{ scripturereferences }}</p>
+            </div>
+        {% endif %}
+        
+        {% if video != empty %}
+            <p id="video" class="text-center">
+                <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
+                    <a href="#" class="btn btn-primary">Watch Video <i class="fas fa-xs fa-play"></i></a>
+                </span>
+            </p>
+        
+            <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+            <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
+
+        {% endif %}
+
+        {{ Item.Content }}
+        
+        <div class="push-bottom">
+            <div class="row row-condensed">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share="">Share <i class="fas fa-fw fa-share flush"></i></a>
+                </div><div class="col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom hidden">
+                    <a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like=""><i class="far fa-fw fa-heart flush"></i> 8</a>
+                </div>
+            </div>
+        </div>
+        
+        {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:'', 18, false, 7 %}
+        {% assign shareimageurl = image %}
+        {% assign shareauthor = 'newspring' %}
+        {% assign sharetitle = Item.Title %}
+        {%- capture sharesummary -%}
+            {% if Item.Summary != '' %}
+                {{ Item.Summary | StripHtml }}
+            {% else %}
+                {{ Item.Content | StripHtml | Truncate:140,'...' }}
+            {% endif %}
+        {%- endcapture -%}
+        {% assign sharehashtag = '' %}
+        
+        {[ modalShare ]}
+
+        <div class="row">
+            <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                {[ tags guid:'{{ Item.Guid }}']}
+            </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                <p class="tag-list"><small><b>{{ date }}</b></small></p>
+            </div>
+        </div>
+    </div>
+</div>

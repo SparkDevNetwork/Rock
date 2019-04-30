@@ -1,3 +1,5 @@
+{%- assign swiperid = uniqueid -%}
+
 <section id="{{ id }}" class="shell bg-gray-dark hard-sides rounded shadowed flush-sides">
     <div class="soft-sides xs-soft-half-sides text-center">
         <h2 class="text-white push-half-bottom">{{ title }}</h2>
@@ -5,7 +7,7 @@
     </div>
 
     <!-- Slider main container -->
-    <div class="swiper-container">
+    <div id="{{ swiperid }}" class="swiper-container">
         <!-- Additional required wrapper -->
         <div class="swiper-wrapper" data-locations>
             <!-- Slides -->
@@ -30,40 +32,40 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
 <script>
-var swiper = new Swiper('.swiper-container', {
-    slidesPerView: 3.3,
-    spaceBetween: 15,
-    centeredSlides: true,
-    roundLengths: true,
-    grabCursor: true,
-    keyboard: {
-    enabled: true,
-    onlyInViewport: false,
-    },
-    pagination: {
-    el: '.swiper-pagination',
-    clickable: true,
-    },
-    navigation: {
-    nextEl: '.swiper-next',
-    prevEl: '.swiper-prev',
-    },
-    breakpoints: {
-    1024: {
-      slidesPerView: 2.3,
-    },
-    768: {
-      slidesPerView: 2.3,
-      pagination: {
-        dynamicBullets: true,
+  var swiper = new Swiper('#{{ swiperid }}', {
+      slidesPerView: 3.3,
+      spaceBetween: 15,
+      centeredSlides: true,
+      roundLengths: true,
+      grabCursor: true,
+      keyboard: {
+      enabled: true,
+      onlyInViewport: false,
       },
-    },
-    667: {
-      slidesPerView: 1.15,
       pagination: {
-        dynamicBullets: true,
+      el: '.swiper-pagination',
+      clickable: true,
       },
-    }
-    }
-});
+      navigation: {
+      nextEl: '.swiper-next',
+      prevEl: '.swiper-prev',
+      },
+      breakpoints: {
+      1024: {
+        slidesPerView: 2.3,
+      },
+      768: {
+        slidesPerView: 2.3,
+        pagination: {
+          dynamicBullets: true,
+        },
+      },
+      667: {
+        slidesPerView: 1.15,
+        pagination: {
+          dynamicBullets: true,
+        },
+      }
+      }
+  });
 </script>

@@ -1,0 +1,45 @@
+{% assign offset = offset | AsInteger %}
+{% assign pagesize = pagesize | AsInteger %}
+
+<section>
+    <div class="row">
+    	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            {% assign id = item.Id %}
+            {% assign cciid = item.Id %}
+    	    {% assign guid = item.Guid %}
+    	    {% assign channelNameParts = item.ContentChannel.Name | Split:' - ' %}
+    	    {% assign type = channelNameParts[1] | Singularize %}
+    	    {% assign title = item.Title %}
+            {% assign titlesize = "h4" %}            
+            {% capture subtitle %}{% if type == 'News' %}{{ item.StartDateTime | Date:'MMMM d, yyyy' }}{% endif %}{% endcapture %}
+    	    {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
+    	    {% capture content %}<p class="push-half-bottom">{% if item.Summary != empty %}{{ item.Summary | StripHtml | Truncate:200,'...' }}{% else %}{{ item.Content | StripHtml | Truncate:200,'...' }}{% endif %}</p>{% endcapture %}
+    	    {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+    	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
+    	    
+    	    {% assign parentsCount = item.ParentItems | Size %}
+    	    {% if parentsCount > 0 %}
+        	    {% for parent in item.ParentItems %}
+        	        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+        	            {% for parentItem in parents %}
+        	                {% assign collectiontext = parentItem.Title %}
+        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
+        	                {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+        	                {% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
+        	            {% endfor %}
+        	        {% endcontentchannelitem %}
+        	    {% endfor %}
+        	{% else %}
+        	    {% assign collectiontext = '' %}
+        	    {% assign collectionurl = '' %}
+    	    {% endif %}
+    	    
+            {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+    	    
+    	</div>{% endfor -%}
+    	
+    </div>
+</section>
+
+
+{[ pagination itemcount:'{{ itemcount }}' pagesize:'{{ pagesize }}' ]}
