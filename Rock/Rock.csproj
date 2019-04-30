@@ -1949,6 +1949,7 @@
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartOptions.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Web\UI\Controls\Chart\FlotChart.cs" />
@@ -2483,7 +2484,7 @@ if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\Roc
 
 </PreBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

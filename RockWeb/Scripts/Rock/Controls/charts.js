@@ -9,7 +9,8 @@
             /// handles putting chartData into a Line/Bar/Points chart
             ///
             plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesPartitionNameUrl, combineValues) {
-                
+                console.log(chartOptions.colors);
+                var colorIndex = 0;
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
 
@@ -19,6 +20,9 @@
                     data: []
                 }
 
+                chartOptions['maintainAspectRatio'] = true;
+                chartOptions['responsive'] = true;
+
                 if (chartOptions.customSettings) {
                     chartGoalPoints.color = chartOptions.customSettings.goalSeriesColor;
                 }
@@ -27,7 +31,7 @@
                 for (var i = 0; i < chartData.length; i++) {
                     if (chartData[i].MetricValueType && chartData[i].MetricValueType == 1) {
                         // if the chartdata is marked as a Metric Goal Value Type, populate the chartGoalPoints
-                        chartGoalPoints.data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        chartGoalPoints.data.push([x = chartData[i].DateTimeStamp, y = chartData[i].YValue]);
                         chartGoalPoints.chartData.push(chartData[i]);
                     }
                     else {
@@ -67,85 +71,107 @@
 
                             chartSeriesLookup[lookupKey] = {
                                 label: seriesName,
-                                chartData: [],
+                                borderColor: chartOptions.colors[colorIndex],
+                                fill: false,
                                 data: []
                             };
+
+                            colorIndex++;
                         }
 
-                        chartSeriesLookup[lookupKey].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
-                        chartSeriesLookup[lookupKey].chartData.push(chartData[i]);
+                        chartSeriesLookup[lookupKey].data.push({x: chartData[i].DateTimeStamp, y: chartData[i].YValue});
+                        //chartSeriesLookup[lookupKey].chartData.push(chartData[i]);
                     }
                 }
 
+                chartSeriesList.datasets = [];
                 // setup the series list (goal points last, if they exist)
                 for (var chartSeriesKey in chartSeriesLookup) {
                     var chartMeasurePoints = chartSeriesLookup[chartSeriesKey];
                     if (chartMeasurePoints.data.length) {
-                        chartSeriesList.push(chartMeasurePoints);
+                        chartSeriesList.datasets.push(chartMeasurePoints);
                     }
                 }
 
-                if (combineValues && chartSeriesList.length != 1) {
+                // if (combineValues && chartSeriesList.length != 1) {
 
-                    var combinedDataLookup = {};
-                    var chartMeasurePoints = null;
+                //     var combinedDataLookup = {};
+                //     var chartMeasurePoints = null;
 
-                    for (var chartMeasurePointsId in chartSeriesList) {
+                //     for (var chartMeasurePointsId in chartSeriesList) {
 
-                        chartMeasurePoints = chartSeriesList[chartMeasurePointsId];
+                //         chartMeasurePoints = chartSeriesList[chartMeasurePointsId];
 
-                        $.each(chartMeasurePoints.data, function (indexInArray, dataPair) {
-                            var dateTimeIndex = dataPair[0];
-                            var combinedItem = combinedDataLookup[dateTimeIndex];
-                            if (combinedItem) {
-                                // sum the YValue of the .data
-                                combinedItem.chartData.YValue += chartMeasurePoints.chartData[indexInArray].YValue;
-                                combinedItem.data[1] += dataPair[1];
-                            }
-                            else {
-                                combinedDataLookup[dateTimeIndex] = {
-                                    chartData: chartMeasurePoints.chartData[indexInArray],
-                                    data: dataPair
-                                };
-                            }
-                        });
-                    }
+                //         $.each(chartMeasurePoints.data, function (indexInArray, dataPair) {
+                //             var dateTimeIndex = dataPair[0];
+                //             var combinedItem = combinedDataLookup[dateTimeIndex];
+                //             if (combinedItem) {
+                //                 // sum the YValue of the .data
+                //                 combinedItem.chartData.YValue += chartMeasurePoints.chartData[indexInArray].YValue;
+                //                 combinedItem.data[1] += dataPair[1];
+                //             }
+                //             else {
+                //                 combinedDataLookup[dateTimeIndex] = {
+                //                     chartData: chartMeasurePoints.chartData[indexInArray],
+                //                     data: dataPair
+                //                 };
+                //             }
+                //         });
+                //     }
 
-                    var combinedData = [];
-                    var combinedChartData = [];
+                //     var combinedData = [];
+                //     // var combinedChartData = [];
 
-                    for (var dataLookupId in combinedDataLookup) {
-                        combinedData.push(combinedDataLookup[dataLookupId].data);
-                        combinedChartData.push(combinedDataLookup[dataLookupId].chartData);
-                    }
+                //     for (var dataLookupId in combinedDataLookup) {
+                //         combinedData.push(combinedDataLookup[dataLookupId].data);
+                //     }
 
-                    chartSeriesList = [];
+                //     chartSeriesList = [];
 
-                    // sort data after combining
-                    combinedChartData.sort(function (item1, item2) { return item2.DateTimeStamp - item1.DateTimeStamp });
-                    combinedData.sort(function (item1, item2) { return item2[0] - item1[0]; });
+                //     // sort data after combining
+                //     combinedChartData.sort(function (item1, item2) { return item2.DateTimeStamp - item1.DateTimeStamp });
+                //     combinedData.sort(function (item1, item2) { return item2[0] - item1[0]; });
 
-                    var chartCombinedMeasurePoints = {
-                        label: yaxisLabelText + ' Total',
-                        chartData: combinedChartData,
-                        data: combinedData
-                    };
+                //     var chartCombinedMeasurePoints = {
+                //         label: yaxisLabelText + ' Total',
+                //         data: combinedData
+                //     };
 
 
-                    chartSeriesList.push(chartCombinedMeasurePoints);
-                }
+                //     chartSeriesList.push(chartCombinedMeasurePoints);
+                // }
 
-                if (chartGoalPoints.data.length) {
-                    chartSeriesList.push(chartGoalPoints);
-                }
+                // if (chartGoalPoints.data.length) {
+                //     chartSeriesList.push(chartGoalPoints);
+                // }
 
                 // plot the chart
-                if (chartSeriesList.length > 0) {
-                    $.plot(plotSelector, chartSeriesList, chartOptions);
-                }
-                else {
-                    $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
-                }
+                //if (chartSeriesList.length > 0) {
+                    //$.chart(plotSelector, chartSeriesList, chartOptions);
+                    console.log(chartSeriesList);
+                    var ctx = $('<canvas />').appendTo(plotSelector);
+                    var timeFormat = 'DD/MM/YYYY';
+                    var myLineChart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartSeriesList,
+                        options: {
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            scales: {
+                                xAxes: [{
+                                    type: 'time',
+                                    time: {
+                                        unit: false,
+                                        tooltipFormat: 'll',
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                // }
+                // else {
+                //     $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
+                // }
             },
 
             ///
@@ -166,7 +192,7 @@
 
                 if (pieData.length > 0) {
                     // plot the pie chart
-                    $.plot(plotSelector, pieData, chartOptions);
+                    $.chart(plotSelector, pieData, chartOptions);
                 }
                 else {
                     $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
@@ -233,7 +259,7 @@
                     // plot the bar chart
                     chartOptions.series.chartData = chartData;
                     chartOptions.series.labels = seriesLabels;
-                    $.plot(plotSelector, [barData], chartOptions);
+                    $.chart(plotSelector, [barData], chartOptions);
                 }
                 else {
                     $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
@@ -304,7 +330,7 @@
                         }
 
                         $toolTip.find('.tooltip-inner').html(tooltipText);
-                        
+
                         var tipTop = pos.pageY - $toolTip.height() - 10;
 
                         var windowWidth = $(window).width();

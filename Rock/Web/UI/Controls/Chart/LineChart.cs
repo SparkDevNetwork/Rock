@@ -17,9 +17,9 @@
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class LineChart : FlotChart
+    public class LineChart : ChartJsChart
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LineChart"/> class.
