@@ -56,7 +56,7 @@
 
         <asp:Panel ID="pnlCurrentAttendees" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title">Current Attendees</h3>
+                <h1 class="panel-title">Current Attendees</h1>
             </div>
 
             <div class="panel-body">
