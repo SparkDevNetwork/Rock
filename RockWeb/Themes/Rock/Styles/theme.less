@@ -1365,6 +1365,37 @@ body.navbar-side-open {
 // 6. Components          */
 // -------------------------
 
+.panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
+  .is-fullscreen & {
+    height: 100vh;
+    margin: 0;
+  }
+
+  .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+    .panel-title {
+      margin-right: auto;
+    }
+  }
+
+  .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+}
+
+
 .note-editor.note-frame {
   margin: 0;
   border: 0;
