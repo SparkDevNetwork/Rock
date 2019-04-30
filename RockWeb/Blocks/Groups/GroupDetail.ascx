@@ -19,7 +19,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading panel-follow clearfix">
+                <div class="panel-heading panel-follow">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
