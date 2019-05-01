@@ -72,96 +72,96 @@ namespace Rock.Jobs
 
             Dictionary<string, int> databaseRowsCleanedUp = new Dictionary<string, int>();
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in PurgeExceptionLog", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PurgeExceptionLog", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupExpiredEntitySets", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupExpiredEntitySets", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Old Interaction", CleanupInteractions( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractions", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Old Interaction", CleanupInteractions( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractions", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in PurgeAuditLog", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PurgeAuditLog", ex ) );
+            }
 
-            //try
-            //{
-            //    CleanCachedFileDirectory( context, dataMap );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanCachedFileDirectory", ex ) );
-            //}
+            try
+            {
+                CleanCachedFileDirectory( context, dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanCachedFileDirectory", ex ) );
+            }
 
-            //try
-            //{
-            //    CleanupTemporaryBinaryFiles();
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupTemporaryBinaryFiles", ex ) );
-            //}
+            try
+            {
+                CleanupTemporaryBinaryFiles();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTemporaryBinaryFiles", ex ) );
+            }
 
-            //try
-            //{
-            //    // updates missing person aliases, metaphones, etc (doesn't delete any records)
-            //    PersonCleanup( dataMap );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
-            //}
+            try
+            {
+                // updates missing person aliases, metaphones, etc (doesn't delete any records)
+                PersonCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Workflow", CleanUpWorkflows( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflows", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Workflow", CleanUpWorkflows( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflows", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflowLogs", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflowLogs", ex ) );
+            }
 
             try
             {
@@ -172,57 +172,57 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupOrphanedAttributes", ex ) );
             }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupTransientCommunications", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTransientCommunications", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Missing Financial Transaction Currency", CleanupFinancialTransactionNullCurrency( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupFinancialTransactionNullCurrency", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Missing Financial Transaction Currency", CleanupFinancialTransactionNullCurrency( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupFinancialTransactionNullCurrency", ex ) );
+            }
 
-            //try
-            //{
-            //    databaseRowsCleanedUp.Add( "Person Token", CleanupPersonTokens( dataMap ) );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
-            //}
+            try
+            {
+                databaseRowsCleanedUp.Add( "Person Token", CleanupPersonTokens( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
+            }
 
-            //if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
-            //{
-            //    context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
-            //}
-            //else
-            //{
-            //    context.Result = "Rock Cleanup completed";
-            //}
+            if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
+            {
+                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+            }
+            else
+            {
+                context.Result = "Rock Cleanup completed";
+            }
 
-            //if ( rockCleanupExceptions.Count > 0 )
-            //{
-            //    throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
-            //}
+            if ( rockCleanupExceptions.Count > 0 )
+            {
+                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+            }
 
-            //try
-            //{
-            //    // Search for locations with no country and assign USA or Canada if it match any of the country's states
+            try
+            {
+                // Search for locations with no country and assign USA or Canada if it match any of the country's states
 
-            //    LocationCleanup( dataMap );
-            //}
-            //catch ( Exception ex )
-            //{
-            //    rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
-            //}
+                LocationCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
+            }
         }
 
         /// <summary>
