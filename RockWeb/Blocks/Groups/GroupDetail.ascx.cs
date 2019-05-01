@@ -1580,14 +1580,17 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupType != null )
                 {
-                    dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
-                    if ( groupType.GroupStatusDefinedType != null )
+                    if ( setValues )
                     {
-                        dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
-                    }
+                        dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
+                        if ( groupType.GroupStatusDefinedType != null )
+                        {
+                            dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
+                        }
 
-                    dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
-                    dvpGroupStatus.SetValue( group.StatusValueId );
+                        dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
+                        dvpGroupStatus.SetValue( group.StatusValueId );
+                    }
                 }
                 else
                 {
