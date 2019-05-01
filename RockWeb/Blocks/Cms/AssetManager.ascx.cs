@@ -221,7 +221,7 @@ upnlFiles.ClientID // {2}
             base.OnLoad( e );
 
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
-            var hasAssetStorageId = hfAssetStorageId.Value.IsNotNullOrWhiteSpace();
+            var hasAssetStorageId = hfAssetStorageId.Value.IsNotNullOrWhiteSpace() && hfAssetStorageId.Value != NullSelectedId;
 
             if ( !this.IsPostBack || !hasAssetStorageId )
             {
@@ -229,7 +229,7 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            fupUpload.Enabled = true;
+            fupUpload.Enabled = hasAssetStorageId;
 
             // handle custom postback events
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
