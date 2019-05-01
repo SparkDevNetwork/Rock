@@ -184,8 +184,8 @@ namespace RockWeb.Blocks.Fundraising
             foreach ( var fundraisingOpportunity in fundraisingOpportunityList )
             {
                 fundraisingOpportunity.LoadAttributes( rockContext );
-                var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( fundraisingOpportunity.GetAttributeValue( "OpportunityDateRange" ) );
-                if ( RockDateTime.Now <= ( dateRange.End ?? DateTime.MaxValue ) )
+                var allowDonationsUntil = fundraisingOpportunity.GetAttributeValue( "AllowDonationsUntil" ).AsDateTime();
+                if ( RockDateTime.Now.Date <= ( allowDonationsUntil ?? DateTime.MaxValue ) )
                 {
                     var listItem = new ListItem( fundraisingOpportunity.GetAttributeValue( "OpportunityTitle" ), fundraisingOpportunity.Id.ToString() );
                     if ( listItem.Text.IsNullOrWhiteSpace() )
