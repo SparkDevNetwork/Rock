@@ -614,7 +614,20 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
-	        }
+
+                // The transaction may have been split with details for one contribution going to the person
+                // and the other details going elsewhere.  We only want to show details that match this group member.
+                Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null )
+                {
+                    var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+                    int groupMemberId = hfGroupMemberId.Value.AsInteger();
+                    var amount = financialTransaction.TransactionDetails
+                        .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
+                        .Sum( d => ( decimal? ) d.Amount );
+                    lTransactionDetailAmount.Text = amount.FormatAsCurrency();
+                }
+            }
         }
 
         /// <summary>
