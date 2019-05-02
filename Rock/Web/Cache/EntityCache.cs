@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        public static T Get( string guidString )
+        public static T Get( string guidString ) 
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
@@ -137,17 +137,6 @@ namespace Rock.Web.Cache
         public static int? GetId( Guid guid )
         {
             return Get( guid, null )?.Id;
-        }
-
-        /// <summary>
-        /// Gets the Id for the cache object, or NULL if it doesn't exist
-        /// </summary>
-        /// <param name="guidString">The unique identifier in string form.</param>
-        /// <returns></returns>
-        public static int? GetId( string guidString )
-        {
-            var guid = guidString.AsGuidOrNull();
-            return guid.HasValue ? GetId( guid.Value ) : null;
         }
 
         /// <summary>
