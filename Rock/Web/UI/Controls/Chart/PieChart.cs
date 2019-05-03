@@ -17,9 +17,9 @@
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class PieChart : FlotChart
+    public class PieChart : ChartJsChart
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PieChart"/> class.

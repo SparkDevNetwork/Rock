@@ -146,9 +146,8 @@
                 // }
 
                 // plot the chart
-                //if (chartSeriesList.length > 0) {
-                    //$.chart(plotSelector, chartSeriesList, chartOptions);
-                    console.log(chartSeriesList);
+                console.log(chartSeriesList);
+                if (chartSeriesList.datasets.length > 0) {
                     var ctx = $('<canvas />').appendTo(plotSelector);
                     var timeFormat = 'DD/MM/YYYY';
                     var myLineChart = new Chart(ctx, {
@@ -168,35 +167,69 @@
                             }
                         }
                     });
-                // }
-                // else {
-                //     $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
-                // }
+                }
+                else {
+                    $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
+                }
             },
 
             ///
             /// handles putting chart data into a piechart
             ///
             plotPieChartData: function (chartData, chartOptions, plotSelector, getSeriesPartitionNameUrl) {
-                var pieData = [];
+                var pieData = [],
+                 pieValues = [],
+                 pieLabels = [],
+                 pieColors = [],
+                 datasets = [];
 
+                console.log(chartOptions);
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
                 for (var i = 0; i < chartData.length; i++) {
+                    pieLabels.push(chartData[i].MetricTitle);
+                    pieValues.push(chartData[i].YValueTotal);
+                    // pieData.push({
+                    //     label: chartData[i].MetricTitle,
+                    //     data: chartData[i].YValueTotal,
+                    //     chartData: [chartData[i]]
+                    // });
 
-                    pieData.push({
-                        label: chartData[i].MetricTitle,
-                        data: chartData[i].YValueTotal,
-                        chartData: [chartData[i]]
+                    if ( chartOptions.colors && i < chartOptions.colors.length ) {
+                        pieColors.push(chartOptions.colors[i]);
+                    }
+                }
+                //"backgroundColor":pieColors
+
+                pieData.labels = pieLabels; //.push(['labels'. ])
+                pieData.datasets = [];
+                pieData.datasets.label = "Test";
+                pieData.datasets.data = pieValues;
+                //pieData.datasets.backgroundColor = pieColors;
+
+                //console.log(pieLabels);
+                console.log(pieColors);
+                var obj = {"labels":pieLabels,"datasets":[{"data":pieValues}]}; //, "backgroundColor": pieColors
+
+                //obj["datasets"][0].push({backgroundColor: pieColors});
+                // obj["datasets"]["backgroundColor"].push(pieColors);
+                //console.log(JSON.stringify(obj.datasets));
+                console.log(obj["datasets"][0]);
+                //console.log(JSON.stringify(obj));
+                //if (pieData.length > 0) {
+                    var ctx = $('<canvas />').appendTo(plotSelector);
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: obj,
+                        options: {
+                            maintainAspectRatio: false,
+                            responsive: true
+                        }
                     });
-                }
-
-                if (pieData.length > 0) {
-                    // plot the pie chart
-                    $.chart(plotSelector, pieData, chartOptions);
-                }
-                else {
-                    $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
-                }
+                    //new Chart(ctx,{"type":"pie","data":{"labels":["Check-in Label","Content Channel Item Image","Merge Template","Person Image","Transaction Image","Unsecured"],"datasets":[{"label":"My First Dataset","data":[42,1778,24,2079,27857,4654],"backgroundColor":[]}]}});
+                // }
+                // else {
+                //     $(plotSelector).html('<div class="alert alert-info">No Data Found</div>');
+                // }
             },
 
             ///

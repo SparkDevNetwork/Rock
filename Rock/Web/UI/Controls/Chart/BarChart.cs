@@ -19,9 +19,9 @@ using System;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class BarChart : FlotChart
+    public class BarChart : ChartJsChart
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BarChart"/> class.
