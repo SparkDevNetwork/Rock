@@ -282,17 +282,17 @@ namespace Rock.Reporting.DataSelect.Person
                     {
                         if ( _currentPerson == null )
                         {
-                            e.FormattedValue = phoneNumber.NumberFormatted;
+                            e.FormattedValue = ( phoneNumber.NumberFormatted != null ) ? phoneNumber.NumberFormatted : phoneNumber.Number;
                             return;
                         }
 
                         var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", _currentPerson.Guid, phoneNumber.Number, _currentPerson.FullName, "", phoneNumber.ToString() );
 
-                        e.FormattedValue = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, phoneNumber.NumberFormatted );
+                        e.FormattedValue = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, ( phoneNumber.NumberFormatted != null ) ? phoneNumber.NumberFormatted : phoneNumber.Number );
                     }
                     else
                     {
-                        e.FormattedValue = phoneNumber.NumberFormatted;
+                        e.FormattedValue = ( phoneNumber.NumberFormatted != null ) ? phoneNumber.NumberFormatted : phoneNumber.Number;
                     }
                 }
                 else
