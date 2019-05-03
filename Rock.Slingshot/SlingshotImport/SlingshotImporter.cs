@@ -1618,12 +1618,29 @@ namespace Rock.Slingshot
                 if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
                 {
 
-                    personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation.ToLower()]?.Id;
+                    var titleValue = this.PersonTitleValues
+                        .Where( x => x.Key.Equals( slingshotPerson.Salutation, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault()
+                        .Value;
+
+                    if (titleValue != null )
+                    {
+                        personImport.TitleValueId = titleValue.Id;
+                    }
                 }
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Suffix ) )
                 {
-                    personImport.SuffixValueId = this.PersonSuffixValues[slingshotPerson.Suffix.ToLower()]?.Id;
+
+                    var suffixValue = this.PersonSuffixValues
+                        .Where( x => x.Key.Equals( slingshotPerson.Suffix, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault()
+                        .Value;
+
+                    if ( suffixValue != null )
+                    {
+                        personImport.SuffixValueId = suffixValue.Id;
+                    }
                 }
 
                 personImport.IsDeceased = slingshotPerson.IsDeceased;
@@ -2476,8 +2493,8 @@ namespace Rock.Slingshot
             this.PersonRecordStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() );
             this.RecordStatusReasonValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
             this.PersonConnectionStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
-            this.PersonTitleValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value.ToLower(), v => v );
-            this.PersonSuffixValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value.ToLower(), v => v );
+            this.PersonTitleValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
+            this.PersonSuffixValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.PersonMaritalStatusValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
             this.PhoneNumberTypeValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v );
             this.GroupLocationTypeValues = LoadDefinedValues( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
