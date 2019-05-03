@@ -94,9 +94,9 @@
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound', function (evt) {
                         self.updateScrollbar();
                     })
-                    // .on('rockTree:rendered', function (evt) {
-                    //     self.scrollToSelectedItem();
-                    // });
+                    .on('rockTree:rendered', function (evt) {
+                        self.scrollToSelectedItem();
+                    });
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
