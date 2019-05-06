@@ -1419,7 +1419,7 @@ namespace Rock.Slingshot
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
                 {
-                    personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation]?.Id;
+                    personImport.TitleValueId = this.PersonTitleValues[System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase( slingshotPerson.Salutation.ToLower() )]?.Id;
                 }
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Suffix ) )
