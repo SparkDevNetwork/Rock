@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.Event
             if ( _saveNavigationHistory )
             {
                 // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
-                hfAllowNavigate.Value = true.ToTrueFalse();
+                hfAllowNavigate.Value = ( CurrentPanel == PanelIndex.PanelSummary ? false : true ).ToTrueFalse();
                 try
                 {
                     if ( CurrentPanel != PanelIndex.PanelRegistrant )
@@ -824,6 +824,15 @@ namespace RockWeb.Blocks.Event
                             break;
                         }
                 }
+            }
+            else if ( CurrentPanel == PanelIndex.PanelSummary && !hfAllowNavigate.Value.AsBoolean() )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                if ( RegistrationInstanceState != null )
+                {
+                    qryParams.Add( REGISTRATION_INSTANCE_ID_PARAM_NAME, RegistrationInstanceState.Id.ToString() );
+                }
+                this.NavigateToCurrentPageReference( qryParams );
             }
             else
             {
@@ -1773,7 +1782,7 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null )
             {
-                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees > 0 )
+                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees >= 0 )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
                     var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
@@ -3358,8 +3367,18 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                     batch.ControlAmount = newControlAmount;
 
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                    // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                    if ( batch.Id == 0 )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
                     transaction.BatchId = batch.Id;
-                    batch.Transactions.Add( transaction );
+
+                    // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                    financialTransactionService.Add( transaction );
 
                     rockContext.SaveChanges();
                 } );
@@ -3698,7 +3717,7 @@ namespace RockWeb.Blocks.Event
         /// <returns>true or the value of ShowOnWaitlist</returns>
         private bool FormHasWaitFields()
         {
-            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex )
+            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex && FormCount > CurrentFormIndex )
             {
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )
@@ -4018,7 +4037,7 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanelIndex;
 
-            if ( CurrentPanel == PanelIndex.PanelSummary )
+            if ( CurrentPanel == PanelIndex.PanelSummary && !( RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() ) )
             {
                 AutoApplyDiscounts();
             }

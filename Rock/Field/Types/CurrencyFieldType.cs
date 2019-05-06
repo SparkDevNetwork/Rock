@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Rock;
+
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 

@@ -20,7 +20,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-using System.Linq.Expressions;
 
 using Rock.Chart;
 using Rock.Data;
@@ -196,7 +195,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attendance"/> entities for a specific date and location.</returns>
         public IQueryable<Attendance> GetByDateAndLocation( DateTime date, int locationId )
         {
-            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
                 .Where( a =>
                     a.Occurrence.OccurrenceDate == date.Date &&
                     a.Occurrence.LocationId == locationId &&
@@ -255,6 +254,7 @@ namespace Rock.Model
 
             if ( startDate.HasValue )
             {
+                startDate = startDate.Value.Date;
                 qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value );
             }
 

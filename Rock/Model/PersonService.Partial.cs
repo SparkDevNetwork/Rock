@@ -2079,7 +2079,7 @@ namespace Rock.Model
             }
             return null;
         }
-        
+
         /// <summary>
         /// Get the person associated with the phone number. Filter to any matching phone number, regardless
         /// of type. Then order by those with a matching number and SMS enabled; then further order
@@ -2168,20 +2168,22 @@ namespace Rock.Model
             string key = encryptedKey.Replace( '!', '%' );
             key = System.Web.HttpUtility.UrlDecode( key );
             string concatinatedKeys = Rock.Security.Encryption.DecryptString( key );
-            string[] keyParts = concatinatedKeys.Split( '>' );
-            if ( keyParts.Length == 2 )
+            if ( concatinatedKeys.IsNotNullOrWhiteSpace() )
             {
-                Guid guid = new Guid( keyParts[0] );
-                string actionPart = keyParts[1];
-
-                Person person = Get( guid );
-
-                if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                string[] keyParts = concatinatedKeys.Split( '>' );
+                if ( keyParts.Length == 2 )
                 {
-                    return person;
+                    Guid guid = new Guid( keyParts[0] );
+                    string actionPart = keyParts[1];
+
+                    Person person = Get( guid );
+
+                    if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return person;
+                    }
                 }
             }
-
             return null;
         }
 
@@ -2686,7 +2688,38 @@ namespace Rock.Model
                 .Select( l => l.Location.GeoPoint );
         }
 
-        #region Static Methods 
+        #region Static Methods
+
+        /// <summary>
+        /// Updates Person.BirthDate for each person that is not deceased or inactive, and has a non-null <seealso cref="Person.BirthYear"/> greater than 1800
+        /// </summary>
+        public static void UpdateBirthDateAll( RockContext rockContext = null )
+        {
+            var inactiveStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+
+            // NOTE: if BirthYear is 1800 or earlier, set BirthDate to null so that database Age calculations don't get an exception
+            string sql = $@"
+                UPDATE Person
+                    SET [BirthDate] = (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    FROM Person
+                    WHERE IsDeceased = 0
+                    AND RecordStatusValueId <> {inactiveStatusId}";
+
+            rockContext = rockContext ?? new RockContext();
+            using ( rockContext )
+            {
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+        }
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.

@@ -4,6 +4,8 @@
 @fa-edition: 'free';
 /* stylelint-enable */
 
+@enable-global-custom-controls: false;
+
 // Theme Colors *open* { These default theme colors are provided to prevent compiling errors. Any custom themes should override these. }
 @theme-1:                     #428bca; // bootstrap primary blue
 @theme-1-text:                #fff;
@@ -97,9 +99,30 @@
 @shadow-temporary-nav:        0 8px 16px 0 rgba(0,0,0,.1);
 @shadow-modal:                0 12px 24px 0 rgba(0,0,0,.1);
 
+@custom-control-gutter: 8px;
 
 @custom-control-indicator-size:         20px;
-@custom-control-indicator-offset:       2px;
+@custom-control-indicator-bg: #fff;
+
+@custom-control-indicator-bg-size:      50%;
+
+@custom-control-indicator-border-color: @input-border;
+@custom-control-indicator-border-width: 2px;
+
+
+@custom-control-indicator-offset:       0;
+
+@custom-control-indicator-checked-color: @brand-primary;
+@custom-control-indicator-checked-border-color: @brand-primary;
+
+@custom-control-indicator-active-color: #fff;
+@custom-control-indicator-active-bg: lighten(@brand-primary, 30%);
+
+@custom-control-indicator-focus-box-shadow: 0 0 0 1px #fff, 0 0 0 3px fade(@brand-primary, 20%);
+
+@custom-checkbox-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
+@custom-radio-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
+
 
 //// Scroll Bars
 @scroll-track-color:          #aaa; // Color of the scrollbar track line.

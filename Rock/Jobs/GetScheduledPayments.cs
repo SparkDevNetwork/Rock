@@ -16,8 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,15 +31,75 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to download any scheduled payments that were processed by the payment gateway
     /// </summary>
-    [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
-    [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
-    [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 4 )]
-    [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 5)]
-    [FinancialGatewayField( "Target Gateway", "By default payments will download from all active financial gateways.  Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.", false, "", "", 6 )]
+    [DisplayName( "Download Payments" )]
+    [Category( "Finance" )]
+    [Description( "Job to download any scheduled payments that were processed by the payment gateway." )]
     [DisallowConcurrentExecution]
+
+    #region Job Attributes
+    [IntegerField(
+        "Days Back",
+        Key = AttributeKey.DaysBack,
+        Description = "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.",
+        IsRequired = true,
+        DefaultIntegerValue = 7,
+        Order = 1 )]
+
+    [TextField(
+        "Batch Name Prefix",
+        Key = AttributeKey.BatchNamePrefix,
+        Description = "The batch prefix name to use when creating a new batch.",
+        IsRequired = false,
+        DefaultValue = "Online Giving",
+        Order = 2 )]
+
+    [SystemEmailField( "Receipt Email",
+        Key = AttributeKey.ReceiptEmail,
+        Description = "The system email to use to send the receipts.",
+        IsRequired = false,
+        Order = 3 )]
+
+    [SystemEmailField(
+        "Failed Payment Email",
+        Key = AttributeKey.FailedPaymentEmail,
+        Description = "The system email to use to send a notice about a scheduled payment that failed.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [WorkflowTypeField(
+        "Failed Payment Workflow",
+        Key = AttributeKey.FailedPaymentWorkflow,
+        Description = "An optional workflow to start whenever a scheduled payment has failed.",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 5 )]
+
+    [FinancialGatewayField(
+        "Target Gateway",
+        Key = AttributeKey.TargetGateway,
+        Description = "By default payments will download from all active financial gateways. Optionally select a single gateway to download scheduled payments from.  You will need to set up additional jobs targeting other active gateways.",
+        IsRequired = false,
+        Order = 6 )]
+
+    #endregion Job Attributes
     public class GetScheduledPayments : IJob
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class AttributeKey
+        {
+            public const string DaysBack = "DaysBack";
+            public const string BatchNamePrefix = "Batch Name Prefix";
+            public const string ReceiptEmail = "Receipt Email";
+            public const string FailedPaymentEmail = "Failed Payment Email";
+            public const string FailedPaymentWorkflow = "Failed Payment Workflow";
+            public const string TargetGateway = "TargetGateway";
+        }
+
+        #endregion Attribute Keys
 
         /// <summary> 
         /// Empty constructor for job initialization
@@ -49,13 +113,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Job that updates the JobPulse setting with the current date/time.
-        /// This will allow us to notify an admin if the jobs stop running.
-        ///
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
+        /// Executes the specified context.
         /// </summary>
+        /// <param name="context">The context.</param>
+        /// <exception cref="Exception">
+        /// One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine )
+        /// </exception>
         public virtual void Execute( IJobExecutionContext context )
         {
             var exceptionMsgs = new List<string>();
@@ -64,19 +127,28 @@ namespace Rock.Jobs
             var dataMap = context.JobDetail.JobDataMap;
             var scheduledPaymentsProcessed = 0;
 
+            Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            Guid? failedPaymentEmail = dataMap.GetString( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
+            Guid? failedPaymentWorkflowType = dataMap.GetString( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
+            int daysBack = dataMap.GetString( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+
+            DateTime today = RockDateTime.Today;
+            TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
+
+            string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
+
+
             using ( var rockContext = new RockContext() )
             {
-                var targetGateways = new FinancialGatewayService( rockContext )
-                    .Queryable()
-                    .Where( g => g.IsActive );
+                var targetGatewayQuery = new FinancialGatewayService( rockContext ).Queryable().Where( g => g.IsActive ).AsNoTracking();
 
-                var targetGatewayGuid = dataMap.GetString( "TargetGateway" ).AsGuidOrNull();
-                if (targetGatewayGuid.HasValue)
+                var targetGatewayGuid = dataMap.GetString( AttributeKey.TargetGateway ).AsGuidOrNull();
+                if ( targetGatewayGuid.HasValue )
                 {
-                    targetGateways = targetGateways.Where(g => g.Guid == targetGatewayGuid.Value);
+                    targetGatewayQuery = targetGatewayQuery.Where( g => g.Guid == targetGatewayGuid.Value );
                 }
 
-                foreach ( var financialGateway in targetGateways )
+                foreach ( var financialGateway in targetGatewayQuery.ToList() )
                 {
                     try
                     {
@@ -87,28 +159,19 @@ namespace Rock.Jobs
                         {
                             continue;
                         }
-
-                        int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
-
-                        DateTime today = RockDateTime.Today;
-                        TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                        
                         DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
                         // If the calculated end time has not yet occurred, use the previous day.
                         endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
 
-                        DateTime startDateTime = endDateTime.Subtract( days );
+                        DateTime startDateTime = endDateTime.Subtract( daysBackTimeSpan );
 
                         string errorMessage = string.Empty;
                         var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
-                            Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
-                            Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
-
-                            string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
                             FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
                             scheduledPaymentsProcessed += payments.Count();
                         }

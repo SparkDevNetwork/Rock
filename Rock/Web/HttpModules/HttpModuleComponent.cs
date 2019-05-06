@@ -14,11 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Web;
-using Rock.Attribute;
+
 using Rock.Extension;
-using Rock.Model;
 
 namespace Rock.Web.HttpModules
 {

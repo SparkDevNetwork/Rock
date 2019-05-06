@@ -232,6 +232,58 @@
     <Compile Include="Migrations\201903051854099_Rollup_0305.Designer.cs">
       <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.cs" />
+    <Compile Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.Designer.cs">
+      <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.cs" />
+    <Compile Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.Designer.cs">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.cs" />
+    <Compile Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.Designer.cs">
+      <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.cs" />
+    <Compile Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.Designer.cs">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.cs" />
+    <Compile Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.Designer.cs">
+      <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903151430332_FailedLoginTrackingAttributes.cs" />
+    <Compile Include="Migrations\201903151430332_FailedLoginTrackingAttributes.Designer.cs">
+      <DependentUpon>201903151430332_FailedLoginTrackingAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903191824245_Rollup_0319.cs" />
+    <Compile Include="Migrations\201903191824245_Rollup_0319.Designer.cs">
+      <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.cs" />
+    <Compile Include="Migrations\201903202256547_EFMigrationCleanUp.Designer.cs">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.cs" />
+    <Compile Include="Migrations\201903202308416_ScheduledTransactionHistory.Designer.cs">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903281945210_FixBirthDay.cs" />
+    <Compile Include="Migrations\201903281945210_FixBirthDay.Designer.cs">
+      <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs" />
+    <Compile Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.Designer.cs">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.cs" />
+    <Compile Include="Migrations\201904081825224_AssetManagerInHtmlEditor.Designer.cs">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904092249258_Rollup_0409.cs" />
+    <Compile Include="Migrations\201904092249258_Rollup_0409.Designer.cs">
+      <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -647,6 +699,45 @@
     <EmbeddedResource Include="Migrations\201903051854099_Rollup_0305.resx">
       <DependentUpon>201903051854099_Rollup_0305.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903061837351_PersonGivingLeaderIdUpdate2.resx">
+      <DependentUpon>201903061837351_PersonGivingLeaderIdUpdate2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903070016372_FinancialScheduledTransactionSummary.resx">
+      <DependentUpon>201903070016372_FinancialScheduledTransactionSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903080026181_FundraisingParticipantAddShowAmountSetting.resx">
+      <DependentUpon>201903080026181_FundraisingParticipantAddShowAmountSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903082244558_AddGroupCapacityToGroupDetailLava.resx">
+      <DependentUpon>201903082244558_AddGroupCapacityToGroupDetailLava.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903111551313_WeeklyBatchesDayOfWeek.resx">
+      <DependentUpon>201903111551313_WeeklyBatchesDayOfWeek.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903151430332_FailedLoginTrackingAttributes.resx">
+      <DependentUpon>201903151430332_FailedLoginTrackingAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903191824245_Rollup_0319.resx">
+      <DependentUpon>201903191824245_Rollup_0319.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903202256547_EFMigrationCleanUp.resx">
+      <DependentUpon>201903202256547_EFMigrationCleanUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903202308416_ScheduledTransactionHistory.resx">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903281945210_FixBirthDay.resx">
+      <DependentUpon>201903281945210_FixBirthDay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904051646207_UpdateSiteAndLayoutWithMobileColumns.resx">
+      <DependentUpon>201904051646207_UpdateSiteAndLayoutWithMobileColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904081825224_AssetManagerInHtmlEditor.resx">
+      <DependentUpon>201904081825224_AssetManagerInHtmlEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904092249258_Rollup_0409.resx">
+      <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -909,6 +1000,9 @@
     </Content>
     <Content Include="Migrations\201812111901295_Rollup_1211_FixChartShortcode.sql">
       <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory.sql">
+      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

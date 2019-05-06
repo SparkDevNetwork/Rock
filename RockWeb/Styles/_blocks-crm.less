@@ -1158,6 +1158,11 @@ span.field-value {
   border: 3px solid @photo-border;
 }
 
+/* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
+.merge-personselect .merge-header-summary {
+  cursor: pointer;
+}
+
 // 12. Person Page Views
 // -------------------------
 .panel-widget.pageviewsession {
@@ -1262,28 +1267,28 @@ tr.inactive {
 // 17. DISC & Assessments
 // -------------------------
 .disc-assessment {
-  table-layout: fixed;
-
   th {
     padding: 6px;
 
     &:last-child {
       border-radius: 0 @border-radius-base 0 0;
     }
+
+    &.disc-question {
+      padding: 6px;
+      font-weight: 700;
+      border-radius: @border-radius-base 0 0 0;
+    }
   }
 
-  th.disc-question {
-    padding: 6px;
-    font-weight: 700;
-    border-radius: @border-radius-base 0 0 0;
-  }
-
-  .disc-question {
-    width: 100%;
+  td {
+    vertical-align: middle;
   }
 
   .disc-answer {
-    width: 80px;
+    width: 20%;
+    min-width: (@custom-control-indicator-size + 30px);
+    text-align: center;
   }
 }
 
