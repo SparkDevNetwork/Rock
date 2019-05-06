@@ -1329,7 +1329,7 @@ namespace Rock.Slingshot
             this.ReportProgress( 0, "Preparing BusinessImport..." );
             List<Rock.Slingshot.Model.PersonImport> businessImportList = GetBusinessImportList();
 
-            this.ReportProgress( 0, "Bulk Importing Person..." );
+            this.ReportProgress( 0, "Bulk Importing Business..." );
 
             var result = BulkImporter.BulkBusinessImport( businessImportList, this.ForeignSystemKey );
 
