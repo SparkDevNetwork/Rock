@@ -4,13 +4,13 @@
       <div class="modal-body soft-half">
         <form action="">
           <h2 class="push-half-ends text-center">Hello{% if CurrentPerson != null %}, {{ CurrentPerson.NickName }}{% endif %}.</h2>
-          <input class="form-control input input text-center" type="text" placeholder="What can we help you find?">
+          <input data-search-modal-input class="form-control input input text-center" type="text" placeholder="What can we help you find?">
         </form>
       </div>
       <div class="modal-footer">
         <div class="row row-reverse">
           <div class="col-xs-12 col-md-6">
-            <a href='/results.html' class="btn btn btn-primary btn-block sm-push-half-bottom xs-push-half-bottom">Search</a>
+            <a href='#' data-search-modal-submit class="btn btn btn-primary btn-block sm-push-half-bottom xs-push-half-bottom">Search</a>
           </div><div class="col-xs-12 col-md-6">
             <button type="button" class="btn btn btn-default btn-block" data-dismiss="modal">Cancel</button>
           </div>
@@ -19,3 +19,37 @@
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  // Define what to do when a search modal is interacted with
+  function goToResults() {
+    var query = searchInput.value;
+    window.location = '/search?query=' + query
+  };
+
+  // Find search input
+  var searchInput = document.querySelector('[data-search-modal-input]');
+
+  var searchSubmit = document.querySelector('[data-search-modal-submit]');
+
+  // Listen for return key
+  searchInput.addEventListener('keypress', function (e) {
+      var key = e.which || e.keyCode;
+
+      if (key === 13) { // 13 is enter
+        goToResults();
+      }
+  });
+
+  // Listen for return key
+  searchSubmit.addEventListener('click', function (e) {
+    e.preventDefault();
+    goToResults();
+  });
+
+  
+
+});
+</script>

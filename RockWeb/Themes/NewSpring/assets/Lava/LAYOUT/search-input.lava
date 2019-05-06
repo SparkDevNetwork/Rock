@@ -1,0 +1,18 @@
+<style>
+    .jumbo {
+        font-size: 42px;
+    }
+
+    .input-search::placeholder {
+        color: #fff;
+        opacity: .3;
+    }
+
+    .input-search {
+        background-color: transparent;
+    }
+</style>
+
+<div class="bg-primary soft-sides soft-half-ends xs-soft-half width-full push-bottom xs-push-half-bottom shadowed flush">
+    <input type="text" data-search-input class="input-search hard jumbo text-white sans-serif stronger letter-spacing-condensed form-control input-lg" placeholder="What can we help you find?" style="border: 0px; box-shadow: none;">
+</div>

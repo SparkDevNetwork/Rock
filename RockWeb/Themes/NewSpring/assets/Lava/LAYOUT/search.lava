@@ -1,0 +1,98 @@
+<div id="results">
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // Find search input
+    var searchInput = document.querySelector('[data-search-input]');
+
+    // Get query strings
+    var params = new URLSearchParams(window.location.search)
+
+    // If query exists, go ahead and search
+    if(params.has('query')){
+        var query = params.get('query');
+        searchGoogle(query);
+    }
+
+    // Listen for return key
+    searchInput.addEventListener('keypress', function (e) {
+        var key = e.which || e.keyCode;
+
+        if (key === 13) { // 13 is enter
+            searchGoogle(searchInput.value);
+        }
+    });
+
+
+
+    function populateResults(response) {
+        var resultsContainer = document.getElementById("results");
+
+        // Clear results for each search
+        resultsContainer.innerHTML = ''
+
+        resultsContainer.innerHTML += '<h2 class="h3 xs-h5">We found ' + response.searchInformation.formattedTotalResults + ' results matching "' + response.queries.request[0].searchTerms + '" in ' + response.searchInformation.formattedSearchTime + ' seconds</h2>';
+        for (var i = 0; i < response.items.length; i++) {
+            var item = response.items[i];
+            var layout = `
+                <div class="bg-white soft xs-soft-half push-bottom xs-push-half-bottom rounded shadowed">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-4 col-md-3">
+                            <a href="${item.link}"><img src="${item.pagemap.cse_image[0].src}" class="rounded xs-push-bottom"></a>
+                        </div><div class="col-xs-12 col-sm-8 col-md-9">
+                            <h2 class="h3 xs-h4 push-half-bottom"><a href="${item.link}">${item.htmlTitle}</a></h2>
+                            <p class="push-half-bottom stronger text-gray-lighter"><small><em>${item.link}</em></small></p>
+                            <p class="push-half-bottom">${item.snippet}</p>
+                            <p class="flush"><a href="${item.link}" class="btn btn-sm btn-primary">Read More</a></p>
+                        </div>
+                    </div>
+                </div>`;
+            // in production code, item.htmlTitle should have the HTML entities escaped.
+            resultsContainer.innerHTML += layout;
+        }
+    }
+
+    function searchGoogle(query){
+
+        // Get current base url with out query strings
+        var currentUrl = window.location.href.split('?')[0];
+
+        // Setup parameters
+        var params = new URLSearchParams(location.search)
+        
+        // Delete query parameter if it already exists
+        if(params.has('query')){
+            searchInput.value = query;
+            params.delete('query');
+        }
+
+        // Get query value
+        if(query == ''){
+            var query = searchInput.value;
+        }
+
+        // Setup request
+        var Http = new XMLHttpRequest();
+
+        // Define request url
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key=AIzaSyDC2wC3SObo3uq8cASlEKOUAiHygTQPycc&cx=013000157429705270828:1xk3v_mc9lg&q=' + query;
+        
+        // Open request
+        Http.open("GET", requestUrl);
+
+        // Send it
+        Http.send()
+
+        // When we get a successful response, do things
+        Http.onreadystatechange=function(){
+            if(this.readyState==4 && this.status==200){
+                params.append('query', query);
+                window.history.pushState({"html":Http.response.html,"pageTitle":Http.response.pageTitle},"", currentUrl + '?' + params.toString());
+                populateResults(JSON.parse(Http.response));
+            }
+        }
+    };
+    
+});
+</script>
