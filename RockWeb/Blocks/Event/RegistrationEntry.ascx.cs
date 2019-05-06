@@ -4552,6 +4552,7 @@ namespace RockWeb.Blocks.Event
             Dictionary<string, string> options = ParseOptions( fee );
 
             var numberUpDownGroup = new NumberUpDownGroup();
+            numberUpDownGroup.ID = "fee_" + fee.Id.ToString();
             numberUpDownGroup.Label = fee.Name;
             numberUpDownGroup.Required = fee.IsRequired;
             numberUpDownGroup.ValidationGroup = BlockValidationGroup;
