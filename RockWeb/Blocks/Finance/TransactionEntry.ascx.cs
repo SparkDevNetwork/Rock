@@ -2349,21 +2349,27 @@ TransactionAccountDetails: [
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
-            if ( txtCurrentName.Visible )
+            Person person = GetPerson( false );
+            if ( person != null )
             {
-                Person person = GetPerson( false );
-                if ( person != null )
-                {
-                    paymentInfo.FirstName = person.FirstName;
-                    paymentInfo.LastName = person.LastName;
-                    paymentInfo.Email = person.Email;
-                }
+                paymentInfo.FirstName = person.FirstName;
+                paymentInfo.LastName = person.LastName;
+                paymentInfo.Email = person.Email;
             }
             else
             {
-                paymentInfo.FirstName = txtFirstName.Text;
-                paymentInfo.LastName = txtLastName.Text;
-                paymentInfo.Email = txtEmail.Text;
+                if ( tglGiveAsOption.OnText == "Business" )
+                {
+                    paymentInfo.FirstName = txtBusinessContactFirstName.Text;
+                    paymentInfo.LastName = txtBusinessContactLastName.Text;
+                    paymentInfo.Email = txtBusinessContactEmail.Text;
+                }
+                else
+                {
+                    paymentInfo.FirstName = txtFirstName.Text;
+                    paymentInfo.LastName = txtLastName.Text;
+                    paymentInfo.Email = txtEmail.Text;
+                }
             }
 
             paymentInfo.IPAddress = GetClientIpAddress();
