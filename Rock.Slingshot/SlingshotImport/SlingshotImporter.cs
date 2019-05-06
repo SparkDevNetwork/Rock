@@ -2146,6 +2146,7 @@ namespace Rock.Slingshot
         private void AddPhoneTypes()
         {
             AddDefinedValues( this.SlingshotPersonList.SelectMany( a => a.PhoneNumbers ).Select( a => a.PhoneType ).Distinct().ToList(), this.PhoneNumberTypeValues );
+            AddDefinedValues( this.SlingshotBusinessList.SelectMany( a => a.PhoneNumbers ).Select( a => a.PhoneType ).Distinct().ToList(), this.PhoneNumberTypeValues );
         }
 
         /// <summary>
