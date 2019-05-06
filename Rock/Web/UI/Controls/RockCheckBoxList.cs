@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -345,10 +346,20 @@ namespace Rock.Web.UI.Controls
             // make sure we are dealing with a postback for this control by seeing if the hidden field is included
             if ( postDataKey == _hfCheckListBoxId.UniqueID )
             {
+                bool selectionChanged = false;
                 // Hack to get the selected items on postback.
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
-                    this.Items[i].Selected = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
+                    bool isSelected = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
+                    if ( isSelected != this.Items[i].Selected )
+                    {
+                        selectionChanged = true;
+                    }
+                    this.Items[i].Selected = isSelected;
+                }
+                if ( selectionChanged )
+                {
+                    SelectionChanged( this, new EventArgs() );
                 }
 
                 return false;
@@ -358,6 +369,10 @@ namespace Rock.Web.UI.Controls
                 return base.LoadPostData( postDataKey, postCollection );
             }
         }
+        /// <summary>
+        /// Occurs when an item selection is changed.
+        /// </summary>
+        public event EventHandler SelectionChanged;
 
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
