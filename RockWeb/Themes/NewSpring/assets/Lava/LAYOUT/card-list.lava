@@ -16,7 +16,7 @@
     	    {% capture content %}<p class="push-half-bottom">{% if item.Summary != empty %}{{ item.Summary | StripHtml | Truncate:200,'...' }}{% else %}{{ item.Content | StripHtml | Truncate:200,'...' }}{% endif %}</p>{% endcapture %}
     	    {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
     	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
-    	    
+    	    {% capture trimcopy %}y{% endcapture %}
     	    {% assign parentsCount = item.ParentItems | Size %}
     	    {% if parentsCount > 0 %}
         	    {% for parent in item.ParentItems %}

@@ -9,11 +9,10 @@
     {% if itemimageurl and itemimageurl != empty %}
         {{ itemimageurl }}
     {% elseif Item.ParentItems %}
-        {% for parent in Item.ParentItems %}{[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ratio:'Landscape' ]}{% endfor %}
+        {% for parent in Item.ParentItems %}{[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ratio:'landscape' ]}{% endfor %}
     {% endif %}
 {% endcapture %}
 {% assign imageurl = imageurl | Trim %}
-
 
 
 {% if Item.ParentItems %}
@@ -53,8 +52,9 @@
         <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
 
         {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+        {% assign collectiontext = collectiontext | Trim %}
         {% capture collectionurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
-        {% if collectiontext != null and collectiontext != '' %}
+        {% if collectiontext and collectiontext != empty %}
             <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
         {% endif %}
         

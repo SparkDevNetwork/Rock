@@ -82,7 +82,7 @@
                     {% endif %}
 
                     <div class="{% if imageurl == '' or imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
-                        {% if url != empty %}
+                        {% if url and url != empty %}
                             <p>
                                 {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                             </p>
