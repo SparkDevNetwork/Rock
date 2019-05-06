@@ -26,7 +26,9 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using OfficeOpenXml;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -304,6 +306,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return this.ViewState["RowClickEnabled"] as bool? ?? true; }
             set { ViewState["RowClickEnabled"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [merge template as person].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [merge template as person]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool MergeTemplateAsPerson
+        {
+            get { return this.ViewState["MergeTemplateAsPerson"] as bool? ?? false; }
+            set { ViewState["MergeTemplateAsPerson"] = value; }
         }
 
         /// <summary>
@@ -1653,10 +1667,19 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// <exception cref="System.NotImplementedException"></exception>
         protected void Actions_MergeTemplateClick( object sender, EventArgs e )
         {
-            // disable paging if no specific keys where selected (or if no select option is shown)
-            bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll, true, false );
-            int? entitySetId = GetEntitySetFromGrid( e );
+            int? entitySetId = null;
+            if ( MergeTemplateAsPerson && PersonIdField.IsNotNullOrWhiteSpace() )
+            {
+                entitySetId = GetPersonEntitySet( e );
+            }
+            else
+            {
+                // disable paging if no specific keys where selected (or if no select option is shown)
+                bool selectAll = !SelectedKeys.Any();
+                RebindGrid( e, selectAll, true, false );
+                entitySetId = GetEntitySetFromGrid( e );
+            }
+
             if ( entitySetId.HasValue )
             {
                 Page.Response.Redirect( string.Format( MergeTemplatePageRoute, entitySetId.Value ), false );
@@ -1863,6 +1886,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
+                        if ( gridRowCounter == this.Rows.Count )
+                        {
+                            // Stop when the counter reaches the number of rows displayed in the grid.
+                            break;
+                        }
+
                         var dataKeyValue = this.DataKeys[gridRowCounter].Value;
                         gridRowCounter++;
 
@@ -1937,7 +1966,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
-                
+
 
                 if ( CustomColumns != null && CustomColumns.Any() )
                 {
@@ -2214,7 +2243,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                         }
                     }
 
-                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
@@ -3002,6 +3031,12 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 {
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
+                        if ( gridRowCounter == this.Rows.Count )
+                        {
+                            // Stop when the counter reaches the number of rows displayed in the grid.
+                            break;
+                        }
+
                         var dataKeyValue = this.DataKeys[gridRowCounter].Value;
                         gridRowCounter++;
 
@@ -3103,11 +3138,14 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             string entityIdColumn;
-            bool isPersonEntityType = false;
+            bool isPersonEntityTypeDifferentToKeys = false;
             if ( entityTypeId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<Model.Person>() )
             {
                 entityIdColumn = this.PersonIdField ?? "Id";
-                isPersonEntityType = true;
+                if ( this.DataKeyNames.Any() && this.DataKeyNames.First() != entityIdColumn )
+                {
+                    isPersonEntityTypeDifferentToKeys = true;
+                }
             }
             else
             {
@@ -3118,7 +3156,56 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
             HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
-            if ( selectedKeys == null || !selectedKeys.Any() || isPersonEntityType )
+
+            if ( isPersonEntityTypeDifferentToKeys && selectedKeys.Any() )
+            {
+                var dataKeySelectedKeys = selectedKeys.ToList();
+                PropertyInfo personIdProp = dataSourceObjectType.GetProperty( entityIdColumn );
+                PropertyInfo dataKeyProp = dataSourceObjectType.GetProperty( this.DataKeyNames.First() );
+                if ( personIdProp != null && dataKeyProp != null )
+                {
+                    if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
+                    {
+                        // we know this is an IEntity Type so the datakey is Id
+                        selectedKeys = new HashSet<int>();
+
+                        foreach ( var item in this.DataSourceAsList.OfType<IEntity>() )
+                        {
+                            int? dataKeyValue = dataKeyProp.GetValue( item ) as int?;
+
+                            if ( dataKeyValue.HasValue && dataKeySelectedKeys.Contains( dataKeyValue.Value ) )
+                            {
+                                int? personIdValue = personIdProp.GetValue( item ) as int?;
+                                if ( personIdValue.HasValue )
+                                {
+                                    selectedKeys.Add( personIdValue.Value );
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // this is something else, so try to figure it out from dataKeyColumn
+                        selectedKeys = new HashSet<int>();
+
+                        foreach ( var item in this.DataSourceAsList )
+                        {
+                            int? dataKeyValue = dataKeyProp.GetValue( item ) as int?;
+
+                            if ( dataKeyValue.HasValue && dataKeySelectedKeys.Contains( dataKeyValue.Value ) )
+                            {
+                                int? personIdValue = personIdProp.GetValue( item ) as int?;
+                                if ( personIdValue.HasValue )
+                                {
+                                    selectedKeys.Add( personIdValue.Value );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( selectedKeys == null || !selectedKeys.Any() )
             {
                 if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
                 {

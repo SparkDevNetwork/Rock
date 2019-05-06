@@ -23,6 +23,7 @@ using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -816,7 +817,7 @@ namespace Rock.Web.UI.Controls
             // return if there's no image to crop or if this is a new upload before the image is replaced
             if ( !BinaryFileId.HasValue || ( sender == _lbUploadImage && OriginalBinaryFileId == BinaryFileId ) )
             {
-                // no image to crop. they probably cancelled the image upload dialog
+                // no image to crop. they probably canceled the image upload dialog
                 return;
             }
 
@@ -903,7 +904,6 @@ namespace Rock.Web.UI.Controls
             else
             {
                 imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl );
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
             writer.Write( imageDivHtml );
@@ -938,8 +938,13 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
             _lSaveStatus.RenderControl( writer );
 
-            writer.WriteLine();
-            _aRemove.RenderControl( writer );
+            // Don't render the _aRemove control if there is no BinaryFile to remove.
+            if ( BinaryFileId != null )
+            {
+                writer.WriteLine();
+                _aRemove.RenderControl( writer );
+            }
+
             writer.WriteLine();
             writer.RenderEndTag();
             writer.WriteLine();
@@ -1030,10 +1035,11 @@ $('#{8}').click( function (e, data) {{
     $('#{0}').click();
 }});
 
-// hide/show buttons when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
+// hide/show buttons and remove this button when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
 $('#{5}').click(function () {{
     $('#{8}').show();
     $('#{9}').hide();
+    $('#{5}').remove();
 }});
 
 ",
@@ -1051,7 +1057,6 @@ $('#{5}').click(function () {{
                 this.NoPictureUrl, // {11}
                 maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null"  // {12}
                 );
-
 
             _lbUploadImage.Enabled = false;
 

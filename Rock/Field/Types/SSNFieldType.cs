@@ -16,11 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using System.Web.UI;
-using Rock.Model;
-using Rock.Reporting;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types

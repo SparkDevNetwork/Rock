@@ -182,7 +182,7 @@
                                 PersonIdField="PersonAlias.PersonId" CssClass="js-grid-registration" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockLiteralField ID="lRegisteredBy" HeaderText="Registered By" />
+                                    <Rock:RockLiteralField ID="lRegisteredBy" HeaderText="Registered By" SortExpression="RegisteredBy" />
                                     <Rock:RockBoundField DataField="ConfirmationEmail" HeaderText="Confirmation Email" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockLiteralField ID="lRegistrants" HeaderText="Registrants" />
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />

@@ -66,11 +66,6 @@
     }
   }
 
-  .checkbox-inline:first-child,
-  .radio-inline:first-child {
-    padding-left: 20px;
-  }
-
   // Radio and Checkbox Label Text
   .label-text {
     display: inline-block;
@@ -98,3 +93,163 @@
     margin-left: 0;
   }
 }
+
+.radio-inline,
+.checkbox-inline {
+  label {
+    font-weight: 400;
+  }
+}
+
+// Mixin
+.custom-controls() {
+  // radio buttons & checkboxes - fancy styling
+  .radio,
+  .checkbox {
+    min-height: @custom-control-indicator-size;
+    margin-top: 8px;
+    margin-bottom: 8px;
+
+    // Bootstrap subtracts -5px for .radio + .radio and .checkbox + .checkbox
+
+    label { // Override forms.less
+      padding-left: 0;
+    }
+  }
+
+  // Fix to Show Checkbox in Summernote Modals
+  .modal-body > .checkbox label input {
+    z-index: 0;
+    opacity: 1;
+  }
+
+  .radio-inline,
+  .checkbox-inline {
+    padding-right: 16px;
+    padding-left: 30px;
+    margin-left: 0;
+    label {
+      margin-bottom: 0;
+    }
+
+    .form-align & {
+      .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+      margin-top: (@input-height-base - @max) / 2;
+      margin-bottom: (@input-height-base - @max) / 2;
+
+      .radio-inline+.radio-inline, .checkbox-inline+.checkbox-inline {
+        .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
+        margin-top: (@input-height-base - @max) / 2;
+      }
+    }
+  }
+
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline {
+    padding-left: (@custom-control-gutter + @custom-control-indicator-size);
+    &.deselected {
+      opacity: .5;
+    }
+
+    // Custom control indicators
+    //
+    // Build the custom controls out of psuedo-elements.
+    .label-text {
+
+      // Background-color and (when enabled) gradient
+      &::before {
+        position: absolute;
+        top: @custom-control-indicator-offset;
+        left: 0;
+        display: block;
+        width: @custom-control-indicator-size;
+        height: @custom-control-indicator-size;
+        pointer-events: none;
+        content: "";
+        user-select: none;
+        background-color: @custom-control-indicator-bg;
+        border: @custom-control-indicator-border-width solid @custom-control-indicator-border-color;
+        border-radius: .25rem;
+      }
+
+      // Foreground (icon)
+      &::after {
+        position: absolute;
+        top: @custom-control-indicator-offset;
+        left: 0;
+        display: block;
+        width: @custom-control-indicator-size;
+        height: @custom-control-indicator-size;
+        content: "";
+        background: ~"no-repeat center/50%";
+      }
+    }
+
+    input {
+      position: absolute;
+      z-index: -1; // Put the input behind the label so it doesn't overlay text
+      opacity: 0;
+
+      &:checked ~ .label-text::before {
+        background-color: @custom-control-indicator-checked-color;
+        border-color: @custom-control-indicator-checked-border-color;
+      }
+
+      &:focus ~ .label-text::before {
+        // the mixin is not used here to make sure there is feedback
+        box-shadow: @custom-control-indicator-focus-box-shadow;
+      }
+
+      &:active ~ .label-text::before {
+        color: @custom-control-indicator-active-color;
+        background-color: @custom-control-indicator-active-bg;
+      }
+
+      &:disabled {
+        ~ .label-text {
+          color: #6c757d;
+
+          &::before {
+            background-color: #e9ecef;
+          }
+        }
+      }
+    }
+
+  }
+
+  .checkbox,
+  .checkbox-inline {
+    input:checked ~ .label-text::after {
+      background-image: @custom-checkbox-indicator-icon-checked;
+    }
+  }
+
+  .radio,
+  .radio-inline {
+    .label-text::before {
+      border-radius: 50%;
+    }
+
+    input:checked ~ .label-text::after {
+      background-image: @custom-radio-indicator-icon-checked;
+    }
+  }
+}
+
+
+@enable-global-custom-controls: false;
+
+.global-custom-controls(true) {
+  .custom-controls();
+}
+
+.global-custom-controls(false) {
+  .assessment {
+    .custom-controls();
+  }
+}
+
+.global-custom-controls(@enable-global-custom-controls);

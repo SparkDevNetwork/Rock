@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -392,7 +393,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlCountry.SelectedValue;
+                if ( _ddlCountry.SelectedValue.IsNotNullOrWhiteSpace() )
+                {
+                    return _ddlCountry.SelectedValue;
+                }
+                else
+                {
+                    return GetDefaultCountry();
+                }
             }
 
             set
@@ -794,7 +802,7 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the values. Use SetValues(null) to set defaults.
         /// </summary>
         /// <param name="location">The location.</param>
         public void SetValues( Rock.Model.Location location )

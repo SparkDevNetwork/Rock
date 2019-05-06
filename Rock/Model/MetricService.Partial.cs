@@ -21,9 +21,8 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+
 using Rock.Data;
-using Rock.Reporting;
 using Rock.Web.Cache;
 
 namespace Rock.Model

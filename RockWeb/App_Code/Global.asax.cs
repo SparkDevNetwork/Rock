@@ -137,6 +137,10 @@ namespace RockWeb
         {
             try
             {
+                // register the App_Code assembly in the Rock.Reflection helper so that Reflection methods can search for types in it
+                var appCodeAssembly = typeof( Global ).Assembly;
+                Rock.Reflection.SetAppCodeAssembly( appCodeAssembly );
+
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
                 

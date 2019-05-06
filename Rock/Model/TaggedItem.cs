@@ -124,6 +124,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            
+            if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId == person.Id )
+            {
+                // always allow people to do anything with their own tags
+                return true;
+            }
+            else if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId != person.Id )
+            {
+                // always prevent people from doing anything with someone else's tags
+                return false;
+            }
+            else
+            {
+                return base.IsAuthorized( action, person );
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this TagItem.
         /// </summary>
         /// <returns>

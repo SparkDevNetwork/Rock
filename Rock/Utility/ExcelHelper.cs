@@ -16,13 +16,15 @@
 //
 using System;
 using System.Data;
-using OfficeOpenXml;
-using Rock.Model;
-using Rock.Data;
-using System.IO;
 using System.Drawing;
-using Rock.Web.UI.Controls;
+using System.IO;
 using System.Linq;
+
+using OfficeOpenXml;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Utility
 {

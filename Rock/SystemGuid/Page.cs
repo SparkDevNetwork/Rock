@@ -283,6 +283,11 @@ namespace Rock.SystemGuid
         public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
 
         /// <summary>
+        /// Gets the htmleditor RockAssetManager Plugin Frame page guid
+        /// </summary>
+        public const string HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389";
+
+        /// <summary>
         /// Gets the HtmlEditor RockMergeField Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>
@@ -1398,7 +1403,7 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         [Obsolete("Use SMS_PHONE_NUMBERS instead")]
-        [RockObsolete("9.0")]
+        [RockObsolete("1.9")]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>

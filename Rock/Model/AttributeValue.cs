@@ -20,10 +20,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -370,7 +373,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Get( this.AttributeId );
             if ( attributeCache != null )
@@ -474,7 +477,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        protected void PreSaveBinaryFile( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        protected void PreSaveBinaryFile( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             Guid? newBinaryFileGuid = null;
             Guid? oldBinaryFileGuid = null;
@@ -516,7 +519,7 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         /// <param name="attributeCache">The attribute cache.</param>
         /// <param name="saveToHistoryTable">if set to <c>true</c> [save to history table].</param>
-        protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
+        protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
         {
             string oldValue = string.Empty;
             string newValue = string.Empty;
@@ -554,7 +557,7 @@ namespace Rock.Model
             if ( saveToHistoryTable )
             {
                 HistoryChanges = new History.HistoryChangeList();
-                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue );
+                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
             }
 
             if ( !attributeCache.EnableHistory )
@@ -615,7 +618,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             AttributeCache cacheAttribute = AttributeCache.Get( this.AttributeId, dbContext as RockContext );
 

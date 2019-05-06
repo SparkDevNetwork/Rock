@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Financial
 {
@@ -51,6 +52,14 @@ namespace Rock.Financial
         public string LastName { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the business (if giving as a business)
+        /// </summary>
+        /// <value>
+        /// The name of the business.
+        /// </value>
+        public string BusinessName { get; set; }
+
+        /// <summary>
         /// Gets the full name.
         /// </summary>
         public string FullName
@@ -76,7 +85,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// The billing street.
-        /// NOTE: If this is a <see cref="CreditCardPaymentInfo>" /> and the Gateway is configured to prompt for a separate Billing Address (like NMI), <see cref="CreditCardPaymentInfo.BillingStreet1" />, etc, might be different then <see cref="PaymentInfo.Street1"/>, etc
+        /// NOTE: If this is a <see cref="CreditCardPaymentInfo" /> and the Gateway is configured to prompt for a separate Billing Address (like NMI), <see cref="CreditCardPaymentInfo.BillingStreet1" />, etc, might be different then <see cref="PaymentInfo.Street1"/>, etc
         /// </summary>
         public string Street1 { get; set; }
 
@@ -139,7 +148,7 @@ namespace Rock.Financial
         public virtual string Comment1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the first comment line.
+        /// Gets or sets the second comment line.
         /// </summary>
         public virtual string Comment2 { get; set; }
 
@@ -184,6 +193,20 @@ namespace Rock.Financial
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Updates the address fields from an address control.
+        /// </summary>
+        /// <param name="addressControl">The address control.</param>
+        public void UpdateAddressFieldsFromAddressControl( AddressControl addressControl )
+        {
+            Street1 = addressControl.Street1;
+            Street2 = addressControl.Street2;
+            City = addressControl.City;
+            State = addressControl.State;
+            PostalCode = addressControl.PostalCode;
+            Country = addressControl.Country;
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -87,6 +88,27 @@ namespace Rock.Financial
             _financialScheduledTransactionService = new FinancialScheduledTransactionService( _rockContext );
 
             _payment = null;
+        }
+
+        /// <summary>
+        /// Allow access to the automated gateway's most recent exception property.
+        /// </summary>
+        /// <returns></returns>
+        public Exception GetMostRecentException()
+        {
+            if ( _automatedGatewayComponent == null )
+            {
+                return null;
+            }
+
+            var castedComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
+
+            if ( castedComponent == null )
+            {
+                return null;
+            }
+
+            return castedComponent.MostRecentException;
         }
 
         /// <summary>
@@ -596,36 +618,44 @@ namespace Rock.Financial
 
             financialTransaction.SetApportionedFeesOnDetails( _payment.FeeAmount );
 
+            // Get an existing or new batch according to the name prefix and payment type
             var batch = _financialBatchService.Get(
                 _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
+                string.Empty,
                 _referencePaymentInfo.CurrencyTypeValue,
                 _referencePaymentInfo.CreditCardTypeValue,
                 financialTransaction.TransactionDateTime.Value,
-                _financialGateway.GetBatchTimeOffset() );
+                _financialGateway.GetBatchTimeOffset(),
+                _financialGateway.BatchDayOfWeek );
 
             var batchChanges = new History.HistoryChangeList();
+            var isNewBatch = batch.Id == 0;
 
-            if ( batch.Id == 0 )
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id and also
+            // add history entries about the batch creation
+            if ( isNewBatch )
             {
                 batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                 History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+
+                _rockContext.SaveChanges();
             }
 
+            // Add the new transaction amount into the batch control amount
             var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
             History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
             batch.ControlAmount = newControlAmount;
 
+            // use the financialTransactionService to add the transaction instead of batch.Transactions
+            // to avoid lazy-loading the transactions already associated with the batch
             financialTransaction.BatchId = batch.Id;
-            financialTransaction.LoadAttributes( _rockContext );
-
-            batch.Transactions.Add( financialTransaction );
-
+            _financialTransactionService.Add( financialTransaction );
             _rockContext.SaveChanges();
-            financialTransaction.SaveAttributeValues();
 
+            // Save the changes history for the batch
             HistoryService.SaveChanges(
                 _rockContext,
                 typeof( FinancialBatch ),
