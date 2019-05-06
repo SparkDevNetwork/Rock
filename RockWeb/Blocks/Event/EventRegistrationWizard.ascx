@@ -1,13 +1,36 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventRegistrationWizard.ascx.cs" Inherits="RockWeb.Blocks.Event.EventRegistrationWizard" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Always" Visible="true">
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=hfActiveDialog.ClientID %>').val('');
+    }
+
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').tooltip();
+    });
+</script>
+
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
 
-             <div id="divRegistration" runat="server" class="wizard-item complete">
-                <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
+             <div id="divTemplate" runat="server" class="wizard-item">
+                <asp:LinkButton ID="lbTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false" >
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-file"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Registration Template
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+             <div id="divRegistration" runat="server" class="wizard-item">
+                <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
                             <i class="fa fa-fw fa-clipboard"></i>
@@ -19,7 +42,7 @@
                 </asp:LinkButton>
             </div>
     
-            <div id="divGroup" runat="server" class="wizard-item complete">
+            <div id="divGroup" runat="server" class="wizard-item">
                 <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
@@ -32,7 +55,7 @@
                 </asp:LinkButton>
             </div>
     
-            <div id="divEvent" runat="server" class="wizard-item active">
+            <div id="divEvent" runat="server" class="wizard-item">
                 <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
@@ -88,21 +111,20 @@
                                 </Rock:DataDropDownList>
                             </div>
                             <div class="col-md-6">
-                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" />
+                                <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
+                                <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbContactEmail" runat="server" Label="Contact Email" Required="true" />
+                                <Rock:EmailBox ID="tbContactEmail" runat="server" Label="Contact Email" />
                             </div>
-
                             <div class="col-md-6">
-                                <Rock:PhoneNumberBox ID="tbContactPhone" runat="server" Label="Contact Phone" Required="true" />
+                                <Rock:PhoneNumberBox ID="tbContactPhone" runat="server" Label="Contact Phone" />
                             </div>
                         </div>
                         <div class="actions">
@@ -129,7 +151,8 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbRegistrationName" runat="server" Label="Registration Name" Required="true" />
+                                <Rock:RockTextBox ID="tbRegistrationName" runat="server" Label="Registration Name" Required="true" OnTextChanged="tbRegistrationName_TextChanged" />
+                                <asp:HiddenField ID="hfPreviousName" runat="server" Value="" />
                             </div>
                         </div>
                         <div class="row">
@@ -206,7 +229,7 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbGroupName" runat="server" Label="New Group Name" Required="true" />
+                                <Rock:RockTextBox ID="tbGroupName" runat="server" Label="New Group Name" />
                             </div>
                         </div>
                         <div class="row">
@@ -234,13 +257,16 @@
                     <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
                     <fieldset>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:Toggle ID="tglEventSelection" runat="server" ActiveButtonCssClass="btn-primary" OnText="New Event" OffText="Existing Event"
-                                    OnCheckedChanged="tglEventSelection_CheckedChanged" />
-                                <hr />
+                        <!-- Hide if allowcreating.. is false -->
+                        <asp:Panel ID="pnlNewEventSelection" runat="server">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:Toggle ID="tglEventSelection" runat="server" ActiveButtonCssClass="btn-primary" OnText="New Event" OffText="Existing Event"
+                                        OnCheckedChanged="tglEventSelection_CheckedChanged" />
+                                    <hr />
+                                </div>
                             </div>
-                        </div>
+                        </asp:Panel>
                         <asp:Panel ID="pnlExistingEvent" runat="server">
                             <div class="row">
                                 <div class="col-md-6">
@@ -282,9 +308,10 @@
                                             </Rock:Grid>
                                         </div>
                                     </Rock:RockControlWrapper>
+                                    
                                     <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" 
                                         Help="Calendars that this item should be added to (at least one is required)."
-                                        OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
+                                        OnSelectionChanged="cblCalendars_SelectionChanged" AutoPostBack="true"
                                         RepeatDirection="Horizontal" Required="true" />
                                     <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
                                         Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
@@ -324,7 +351,7 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbLocationDescription" runat="server" Label="Location Description" Required="true" />
+                                <Rock:RockTextBox ID="tbLocationDescription" runat="server" Label="Location Description" />
                             </div>
                         </div>
                         <div class="row">
@@ -398,6 +425,17 @@
                 </div>
             </div>
         </asp:Panel>
+
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgAudience" runat="server" ScrollbarEnabled="false" ValidationGroup="Audience" SaveButtonText="Add" OnCancelScript="clearActiveDialog();" OnSaveClick="btnSaveAudience_Click" Title="Select Audience">
+            <Content>
+                <asp:ValidationSummary ID="vsAudience" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Audience" />
+                <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" Required="true" DataValueField="Id" DataTextField="Value" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <asp:Literal ID="litTest" runat="server" />
 
         <asp:Label ID="lblDebug" runat="server" />
     </ContentTemplate>
