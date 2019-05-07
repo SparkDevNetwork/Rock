@@ -148,8 +148,6 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
-
             // create all the parameters from the shortcode with their default values
             var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
             foreach (var shortcodeParm in shortcodeParms )
@@ -161,7 +159,7 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -171,7 +169,11 @@ namespace Rock.Lava.Shortcodes
                 var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                    var itemKey = itemParts[0].Trim().ToLower();
+                    var itemValue = itemParts[1].Trim( '\'' ).Trim();
+                    var resolvedItemValue = itemValue.ResolveMergeFields( _internalMergeFields );
+
+                    parms.AddOrReplace( itemKey, resolvedItemValue );
                 }
             }
             return parms;
