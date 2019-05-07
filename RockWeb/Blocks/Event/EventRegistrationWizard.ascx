@@ -8,6 +8,30 @@
     Sys.Application.add_load( function () {
         $('.js-follow-status').tooltip();
     });
+
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest( function () {
+        $(document).ready(function () {
+
+            var tbRegistrationNameId = '<%=tbRegistrationName.ClientID %>';
+            if ($('#' + tbRegistrationNameId).length) {
+
+                var tbPublicNameNameId = '<%=tbPublicName.ClientID %>';
+                var previousRegistrationName = $('#' + tbRegistrationNameId).val();
+
+                $('#' + tbRegistrationNameId).keyup(function () {
+                    var registrationNameValue = $('#' + tbRegistrationNameId).val();
+                    var publicNameValue = $('#' + tbPublicNameNameId).val();
+
+                    if ((publicNameValue == '') || (publicNameValue == previousRegistrationName))
+                    {
+                        $('#' + tbPublicNameNameId).val(registrationNameValue);
+                    }
+                    previousRegistrationName = registrationNameValue;
+                });
+            }
+
+        });
+    });
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -186,14 +210,14 @@
                                 <div class="col-md-6">
                                     <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
                                 </div>
-                                <div class="col-md-6">
-                                    <Rock:RockTextBox ID="tbBatchPrefix" runat="server" Label="Batch Prefix" />
-                                </div>
                             </div>
                         </asp:Panel>
 
                         <div class="row">
-                            <div class="col-md-6 col-md-offset-6">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbPublicName" runat="server" Label="Public Name" Required="true" />
+                            </div>
+                            <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbSlug" runat="server" Label="Slug" />
                             </div>
                         </div>
@@ -357,7 +381,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" >
-                                    <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule"/>
+                                    <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
                                 </Rock:RockControlWrapper>
                             </div>
@@ -416,10 +440,10 @@
                         <hr />
 
                         <ul>
-                            <li><asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
-                            <li><asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
-                            <li><asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
-                            <li><asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
+                            <li id="liRegistrationLink" runat="server"><asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
+                            <li id="liGroupLink" runat="server"><asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
+                            <li id="liEventLink" runat="server"><asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
+                            <li id="liEventOccurrenceLink" runat="server"><asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
                         </ul>
                     </div>
                 </div>
