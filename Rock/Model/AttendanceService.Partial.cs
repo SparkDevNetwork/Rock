@@ -1181,7 +1181,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Automatically schedules people for attendance for the specified attendanceOccurrence. See summary of <see cref="SchedulePersonsAutomatically(List{int}, PersonAlias)"/> for how this works,
+        /// Automatically schedules people for attendance for the specified attendanceOccurrence. See summary of <see cref="SchedulePersonsAutomatically(int, DateTime, PersonAlias)"/> for how this works,
         /// </summary>
         /// <param name="attendanceOccurrence">The attendance occurrence.</param>
         /// <param name="scheduledByPersonAlias">The scheduled by person alias.</param>

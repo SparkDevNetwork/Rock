@@ -21,6 +21,10 @@ using Rock.Model;
 
 namespace Rock.Communication.SmsActions
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Lava.ILiquidizable" />
     public class SmsMessage : Lava.ILiquidizable
     {
         /// <summary>

@@ -254,6 +254,7 @@ namespace Rock.Model
         [DataMember]
         public int? ScheduledByPersonAliasId { get; set; }
 
+        /// <summary>
         /// Gets or sets additional data associated with the Attendance, including LabelData
         /// </summary>
         /// <value>

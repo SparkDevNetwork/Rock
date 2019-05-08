@@ -2858,6 +2858,7 @@ Sys.Application.add_load(function () {
         /// Adds a script tag with the specified id and source to head (if it doesn't already exist)
         /// </summary>
         /// <param name="page">The page.</param>
+        /// <param name="scriptId">The script identifier.</param>
         /// <param name="src">The source.</param>
         public static void AddScriptSrcToHead( Page page, string scriptId, string src )
         {

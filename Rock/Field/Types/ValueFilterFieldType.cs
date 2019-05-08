@@ -31,7 +31,14 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
+        /// <summary>
+        /// The hide filter mode
+        /// </summary>
         public const string HIDE_FILTER_MODE = "hidefiltermode";
+
+        /// <summary>
+        /// The comparison types
+        /// </summary>
         public const string COMPARISON_TYPES = "comparisontypes";
 
         /// <summary>

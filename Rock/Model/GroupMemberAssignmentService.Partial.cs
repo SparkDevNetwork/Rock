@@ -25,9 +25,15 @@ namespace Rock.Model
     /// <summary>
     /// Data access service class for <see cref="Rock.Model.GroupMemberAssignment"/> entity objects.
     /// </summary>
-    /// <seealso cref="Rock.Data.Service{Rock.Model.GroupMemberAssignment}" />
     public partial class GroupMemberAssignmentService
     {
+        /// <summary>
+        /// Adds the or update.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
         public GroupMemberAssignment AddOrUpdate( int groupMemberId, int scheduleId, int? locationId = null )
         {
             GroupMemberAssignment groupMemberAssignment = null;
@@ -58,6 +64,11 @@ namespace Rock.Model
             return groupMemberAssignment;
         }
 
+        /// <summary>
+        /// Deletes the by group member and schedule.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
         public void DeleteByGroupMemberAndSchedule( int groupMemberId, int scheduleId )
         {
             var groupMemberAssignment = Queryable()

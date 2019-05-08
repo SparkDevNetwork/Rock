@@ -25,6 +25,10 @@ using Rock.Model;
 
 namespace Rock.Jobs
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [DisplayName( "Send Group Schedule Confirmation and Reminder Emails" )]
     [Description( "Sends Group Scheduling Confirmation and Reminder emails to people that haven't been notified yet." )]
@@ -44,6 +48,9 @@ namespace Rock.Jobs
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The root group
+            /// </summary>
             public const string RootGroup = "RootGroup";
         }
 

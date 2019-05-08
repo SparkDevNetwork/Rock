@@ -29,9 +29,17 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.Data.Service{Rock.Model.PersonScheduleExclusion}" />
     public partial class PersonScheduleExclusionService
     {
+        /// <summary>
+        /// Determines whether [is exclusion date] [the specified person identifier].
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="date">The date.</param>
+        /// <returns>
+        ///   <c>true</c> if [is exclusion date] [the specified person identifier]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsExclusionDate( int personId, int groupId, DateTime date )
         {
             var exclusions = Queryable()
