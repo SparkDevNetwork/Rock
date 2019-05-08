@@ -1131,7 +1131,13 @@ namespace Rock.Model
                 if ( new Service<RegistrationRegistrant>( this.Context ).Queryable().Any( r => r.GroupMember.GroupId == item.Id ) )
                 {
                     errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
-                    canDelete = false;
+                    return false;
+                }
+
+                if ( new Service<EventItemOccurrence>( this.Context ).Queryable().Any( o => o.Linkages.Any( l => l.GroupId == item.Id ) ) )
+                {
+                    errorMessage += string.Format( "This {0} is assigned to a {1} linkage.", Group.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                    return false;
                 }
             }
 
