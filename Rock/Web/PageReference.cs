@@ -305,7 +305,7 @@ namespace Rock.Web
             // skipping those parms that are already in the dictionary
             if ( QueryString != null )
             {
-                foreach ( string key in QueryString.AllKeys )
+                foreach ( string key in QueryString.AllKeys.Where(a => a.IsNotNullOrWhiteSpace() ) )
                 {
                     if ( !removeMagicToken || key.ToLower() != "rckipid" )
                     {

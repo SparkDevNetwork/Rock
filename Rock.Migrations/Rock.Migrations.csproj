@@ -312,6 +312,10 @@
     <Compile Include="Migrations\201905081642588_AddIsActiveToPersonalDevice.Designer.cs">
       <DependentUpon>201905081642588_AddIsActiveToPersonalDevice.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201905081957016_GroupScheduling.cs" />
+    <Compile Include="Migrations\201905081957016_GroupScheduling.Designer.cs">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -787,6 +791,9 @@
     <EmbeddedResource Include="Migrations\201905081642588_AddIsActiveToPersonalDevice.resx">
       <DependentUpon>201905081642588_AddIsActiveToPersonalDevice.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905081957016_GroupScheduling.resx">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -1055,6 +1062,9 @@
     </Content>
     <Content Include="Migrations\201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob.sql">
       <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201905081957016_GroupScheduling_PopulateScheduleTemplates.sql">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

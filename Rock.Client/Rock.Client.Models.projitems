@@ -125,9 +125,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationScheduleConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberAssignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberScheduleTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirementType.cs" />
@@ -179,6 +182,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />

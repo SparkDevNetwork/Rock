@@ -436,6 +436,7 @@ namespace Rock.Web.UI.Controls
 
             _namedPicker = new LocationItemPicker();
             _namedPicker.ID = this.ID + "_namedPicker";
+            _namedPicker.SelectItem += _namedPicker_SelectItem;
 
             _addressPicker = new LocationAddressPicker();
             _addressPicker.ID = this.ID + "_addressPicker";
@@ -464,6 +465,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the SelectItem event of the _namedPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _namedPicker_SelectItem( object sender, EventArgs e )
+        {
+            LocationSelected( sender, e );
+        }
+
+        /// <summary>
+        /// Locations the selected.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void LocationSelected( object sender, EventArgs e )
+        {
+            SelectLocation?.Invoke( sender, e );
+        }
+
+        /// <summary>
         /// Handles the SelectGeography event of the _addressPicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -471,6 +492,7 @@ namespace Rock.Web.UI.Controls
         protected void _addressPicker_SelectGeography( object sender, EventArgs e )
         {
             Location = _addressPicker.Location;
+            LocationSelected( sender, e );
         }
 
         /// <summary>
@@ -481,6 +503,7 @@ namespace Rock.Web.UI.Controls
         protected void _pointPicker_SelectGeography( object sender, EventArgs e )
         {
             Location = new LocationService( new RockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
+            LocationSelected( sender, e );
         }
 
         /// <summary>
@@ -491,6 +514,7 @@ namespace Rock.Web.UI.Controls
         protected void _polygonPicker_SelectGeography( object sender, EventArgs e )
         {
             Location = new LocationService( new RockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
+            LocationSelected( sender, e );
         }
 
         /// <summary>
@@ -549,6 +573,16 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Occurs when [select location].
+        /// </summary>
+        public event EventHandler SelectLocation;
+
+        #endregion
+
 
         /// <summary>
         /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.

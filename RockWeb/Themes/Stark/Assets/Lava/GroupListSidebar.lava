@@ -55,6 +55,8 @@
 
 </div>
 
+<a href='/ScheduleToolbox' class='btn btn-primary btn-xs pull-right'><i class='fa fa-calendar'></i> Schedule Toolbox</a>
+
 <script type="text/javascript">
 
   $( document ).ready(function() {
