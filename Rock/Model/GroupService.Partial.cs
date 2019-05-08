@@ -1097,6 +1097,12 @@ namespace Rock.Model
                 registration.GroupId = null;
             }
 
+            var registrantService = new RegistrationRegistrantService( this.Context as RockContext );
+            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMember.GroupId == item.Id ) )
+            {
+                registrant.GroupMemberId = null;
+            }
+
             string message;
             if ( !CanDelete( item, out message ) )
             {
