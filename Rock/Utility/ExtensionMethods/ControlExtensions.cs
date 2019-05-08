@@ -157,6 +157,31 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Finds the first parent control matching the specified condition
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="condition">The condition.</param>
+        /// <returns></returns>
+        public static System.Web.UI.Control FindFirstParentWhere( this System.Web.UI.Control control, Func<System.Web.UI.Control, bool> condition )
+        {
+            if ( control != null )
+            {
+                var parentControl = control.Parent;
+                while ( parentControl != null )
+                {
+                    if ( condition( parentControl ) )
+                    {
+                        return parentControl;
+                    }
+
+                    parentControl = parentControl.Parent;
+                }
+            }
+
+            return null;
+        }
+
         #endregion Control Extensions
 
         #region WebControl Extensions

@@ -65,6 +65,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AttendanceRecordRequiredForCheckIn
+    {
+        AllShow = 0x0,
+        RequireAttendanceRecord = 0x1,
+        RequireAttendanceRecordAsPreference = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceRule
     {
         None = 0x0,

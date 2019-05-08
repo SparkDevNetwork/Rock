@@ -171,9 +171,20 @@ namespace Rock.Rest.Controllers
                 if ( itemsQry != null )
                 {
                     // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
-                    var itemsList = itemsQry.ToList();
+                    List<ICategorized> itemsList = itemsQry.ToList();
 
-                    foreach ( var categorizedItem in itemsList.OrderBy( i => i.Name ) )
+                    List<ICategorized> sortedItemsList;
+
+                    if ( itemsList.OfType<Rock.Model.Schedule>() != null)
+                    {
+                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
+                    }
+                    else
+                    {
+                        sortedItemsList = itemsList.OrderBy( i => i.Name ).ToList();
+                    }
+
+                    foreach ( var categorizedItem in sortedItemsList )
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
