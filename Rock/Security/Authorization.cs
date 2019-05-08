@@ -88,6 +88,7 @@ namespace Rock.Security
         /// </summary>
         public const string SCHEDULE = "Schedule";
 
+        /// <summary>
         /// Authorization action for using (tagging with) the Tag.
         /// </summary>
         public const string TAG = "Tag";

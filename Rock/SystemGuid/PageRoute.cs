@@ -16,6 +16,9 @@
 //
 namespace Rock.SystemGuid
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class PageRoute
     {
         /// <summary>

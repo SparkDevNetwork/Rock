@@ -1199,7 +1199,6 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the preference values for the current user and the current block
         /// </summary>
-        /// </summary>
         /// <returns></returns>
         public Dictionary<string, string> GetBlockUserPreferences()
         {
