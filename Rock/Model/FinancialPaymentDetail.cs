@@ -124,11 +124,16 @@ namespace Rock.Model
         /// The name on card.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public string NameOnCard
         {
             get
             {
-                return Rock.Security.Encryption.DecryptString( this.NameOnCardEncrypted );
+                return Encryption.DecryptString( NameOnCardEncrypted );
+            }
+            set
+            {
+                NameOnCardEncrypted = Encryption.EncryptString( value );
             }
         }
 
@@ -139,11 +144,16 @@ namespace Rock.Model
         /// The expiration month.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? ExpirationMonth
         {
             get
             {
-                return Rock.Security.Encryption.DecryptString( this.ExpirationMonthEncrypted ).AsIntegerOrNull();
+                return Encryption.DecryptString( ExpirationMonthEncrypted ).AsIntegerOrNull();
+            }
+            set
+            {
+                ExpirationMonthEncrypted = Encryption.EncryptString( value.ToStringSafe() );
             }
         }
 
@@ -154,11 +164,16 @@ namespace Rock.Model
         /// The expiration year.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? ExpirationYear
         {
             get
             {
-                return Rock.Security.Encryption.DecryptString( this.ExpirationYearEncrypted ).AsIntegerOrNull();
+                return Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
+            }
+            set
+            {
+                ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
             }
         }
 
@@ -463,6 +478,12 @@ namespace Rock.Model
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.BillingLocation ).WithMany().HasForeignKey( t => t.BillingLocationId ).WillCascadeOnDelete( false );
+
+            // This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
+            // even though they are ignored at the database level
+            Ignore( fpd => fpd.NameOnCard );
+            Ignore( fpd => fpd.ExpirationMonth );
+            Ignore( fpd => fpd.ExpirationYear );
         }
     }
 

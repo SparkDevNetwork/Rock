@@ -57,13 +57,20 @@ namespace RockWeb.Blocks.Finance
         Category = AttributeCategory.None,
         Order = 1 )]
 
+    [BooleanField(
+        "Enable Credit Card",
+        Key = AttributeKey.EnableCreditCard,
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.None,
+        Order = 2 )]
+
     [TextField(
         "Batch Name Prefix",
         Key = AttributeKey.BatchNamePrefix,
         Description = "The batch prefix name to use when creating a new batch.",
         DefaultValue = "Online Giving",
         Category = AttributeCategory.None,
-        Order = 2 )]
+        Order = 3 )]
 
     [DefinedValueField(
         "Source",
@@ -72,7 +79,7 @@ namespace RockWeb.Blocks.Finance
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
         DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
         Category = AttributeCategory.None,
-        Order = 3 )]
+        Order = 4 )]
 
     [AccountsField(
         "Accounts",
@@ -594,6 +601,8 @@ mission. We are so grateful for your commitment.</p>
 
             public const string EnableACH = "EnableACH";
 
+            public const string EnableCreditCard = "EnableCreditCard";
+
             public const string EnableCommentEntry = "EnableCommentEntry";
 
             public const string CommentEntryLabel = "CommentEntryLabel";
@@ -865,9 +874,10 @@ mission. We are so grateful for your commitment.</p>
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, enableACH, "_hostedPaymentInfoControl" );
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, "_hostedPaymentInfoControl", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
                 this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
             }
@@ -1523,6 +1533,19 @@ mission. We are so grateful for your commitment.</p>
             if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
+                return;
+            }
+
+            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+
+            if ( enableACH == false && enableCreditCard == false )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Enable ACH and/or Enable Credit Card needs to be enabled." );
+                ;
+                pnlTransactionEntry.Visible = false;
+                return;
             }
 
             SetInitialTargetPersonControls();
@@ -2025,18 +2048,30 @@ mission. We are so grateful for your commitment.</p>
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
-            DefinedValueCache[] allowedCurrencyTypes = {
-                DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()),
-                DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid())
-                };
-
-            int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
-
             var financialGateway = this.FinancialGateway;
-            if ( financialGateway == null )
+            var financialGatewayComponent = this.FinancialGatewayComponent;
+            if ( financialGateway == null || financialGatewayComponent == null )
             {
                 return;
             }
+
+            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid());
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid());
+            List<DefinedValueCache> allowedCurrencyTypes = new List<DefinedValueCache>();
+
+            if ( enableCreditCard && financialGatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+            {
+                allowedCurrencyTypes.Add( creditCardCurrency );
+            }
+
+            if ( enableACH && financialGatewayComponent.SupportsSavedAccount( achCurrency ) )
+            {
+                allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
 
             personSavedAccountsQuery = personSavedAccountsQuery.Where( a =>
                 a.FinancialGatewayId == financialGateway.Id
@@ -2312,6 +2347,7 @@ mission. We are so grateful for your commitment.</p>
                         gatewayScheduleId = paymentInfo.TransactionCode;
                     }
 
+                    // if an exception occurred, it is possible that an orphaned subscription might be on the Gateway server. Some gateway components will clean-up when there is exception, but log it just in case it needs to be resolved by a human
                     throw new Exception( string.Format( "Error occurred when saving financial scheduled transaction for gateway scheduled payment with a gatewayScheduleId of {0} and FinancialScheduledTransaction with Guid of {1}.", gatewayScheduleId, transactionGuid ), ex );
                 }
             }

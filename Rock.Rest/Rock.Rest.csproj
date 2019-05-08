@@ -103,6 +103,7 @@
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />
