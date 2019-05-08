@@ -164,12 +164,16 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual ICollection<Schedule> Schedules
-        {
-            get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }
-            set { _schedules = value; }
-        }
-        private ICollection<Schedule> _schedules;
+        public virtual ICollection<Schedule> Schedules { get; set; } = new Collection<Schedule>();
+
+        /// <summary>
+        /// Gets or sets properties that are specific to Group+Location+Schedule 
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; } = new Collection<GroupLocationScheduleConfig>();
 
         /// <summary>
         /// Gets or sets the history changes.

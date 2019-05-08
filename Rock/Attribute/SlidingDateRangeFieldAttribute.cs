@@ -69,12 +69,25 @@ namespace Rock.Attribute
         {
             if ( enabledSlidingDateRangeTypes != null )
             {
-                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( enabledSlidingDateRangeTypes ) );
+                EnabledSlidingDateRangeTypes = enabledSlidingDateRangeTypes;
             }
             if ( enabledSlidingDateRangeUnits != null )
             {
-                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( enabledSlidingDateRangeUnits ) );
+                EnabledSlidingDateRangeUnits = EnabledSlidingDateRangeUnits;
             }
         }
+
+        public string EnabledSlidingDateRangeTypes
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENABLED_SLIDING_DATE_RANGE_TYPES );
+            set => FieldConfigurationValues.AddOrReplace( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( value ) );
+        }
+
+        public string EnabledSlidingDateRangeUnits
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENABLED_SLIDING_DATE_RANGE_UNITS );
+            set => FieldConfigurationValues.AddOrReplace( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( value ) );
+        }
+
     }
 }

@@ -204,5 +204,24 @@ namespace Rock.Model
 
             return null;
         }
+
+        /// <summary>
+        /// Deletes the specified item.  Will try to determine current person
+        /// alias from HttpContext.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( BlockType item )
+        {
+            // block has a cascading delete on BlockType, but lets delete it manually so that the BlockCache gets updated correctly
+            var blockService = new BlockService( this.Context as RockContext );
+            var blocks = blockService.Queryable().Where( a => a.BlockTypeId == item.Id ).ToList();
+            foreach ( var block in blocks )
+            {
+                blockService.Delete( block );
+            }
+
+            return base.Delete( item );
+        }
     }
 }
