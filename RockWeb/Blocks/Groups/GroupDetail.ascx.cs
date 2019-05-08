@@ -2646,7 +2646,7 @@ namespace RockWeb.Blocks.Groups
 
                 rptGroupLocationScheduleCapacities.DataSource = groupLocationScheduleConfigList.OrderBy( s => s.ScheduleId );
                 rptGroupLocationScheduleCapacities.DataBind();
-
+                rptGroupLocationScheduleCapacities.Visible = true;
                 rcwGroupLocationScheduleCapacities.Visible = groupLocationScheduleConfigList.Any();
             }
 
