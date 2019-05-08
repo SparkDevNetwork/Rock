@@ -356,7 +356,7 @@
                     console.log('fail');
                     $loadingNotification.hide();
                 });
-                
+
             },
             /**  populates the resource element (both scheduled and unscheduled) */
             populateResourceDiv: function ($resourceDiv, schedulerResource, state) {
@@ -366,9 +366,10 @@
                 $resourceDiv.attr('data-has-blackout-conflict', schedulerResource.HasBlackoutConflict);
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
 
-                $resourceDiv.find('.js-resource-scheduling-conflict').tooltip({ container: 'body' });
-                $resourceDiv.find('.js-resource-blackout-status').tooltip({ container: 'body' });
-                $resourceDiv.find('.js-resource-requirements-conflict').tooltip({ container: 'body' });
+                if (schedulerResource.HasBlackoutConflict) {
+                    $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
+                    $resourceDiv.tooltip({ container: 'body' });
+                }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
                 if (schedulerResource.Note) {
@@ -381,7 +382,6 @@
 
                 if (schedulerResource.LastAttendanceDateTime) {
                     var $lastAttendedDate = $resourceDiv.find('.js-resource-lastattendeddate');
-                    $lastAttendedDate.tooltip({ container: 'body' });
                     $lastAttendedDate.attr('data-datetime', schedulerResource.LastAttendanceDateTime);
                     $lastAttendedDate.text(schedulerResource.LastAttendanceDateTimeFormatted);
                 }
