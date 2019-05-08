@@ -175,7 +175,9 @@ namespace Rock.Rest.Controllers
 
                     List<ICategorized> sortedItemsList;
 
-                    if ( itemsList.OfType<Rock.Model.Schedule>() != null)
+                    bool isSchedule = cachedEntityType.Id == EntityTypeCache.GetId<Rock.Model.Schedule>();
+
+                    if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
                     {
                         sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
                     }
