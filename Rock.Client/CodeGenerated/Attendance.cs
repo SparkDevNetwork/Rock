@@ -100,7 +100,7 @@ namespace Rock.Client
         public bool? RequestedToAttend { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.RSVP RSVP { get; set; }
+        public Rock.Client.Enums.RSVP RSVP { get; set; } = Rock.Client.Enums.RSVP.Unknown;
 
         /// <summary />
         public DateTime? RSVPDateTime { get; set; }

@@ -60,6 +60,7 @@
     <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="CodeGenerated\AttendanceData.cs" />
     <Compile Include="CodeGenerated\AttendanceOccurrence.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
     <Compile Include="CodeGenerated\AttributeMatrix.cs" />
@@ -171,6 +172,7 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\IncomingSMSRoute.cs" />
     <Compile Include="CodeGenerated\Interaction.cs" />
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
@@ -236,6 +238,7 @@
     <Compile Include="CodeGenerated\RestController.cs" />
     <Compile Include="CodeGenerated\Schedule.cs" />
     <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
+    <Compile Include="CodeGenerated\SchedulerResourceParameters.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
