@@ -71,6 +71,9 @@ namespace Rock.Client
         public bool EnableGroupHistory { get; set; }
 
         /// <summary />
+        public bool EnableGroupTag { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
@@ -318,16 +321,16 @@ namespace Rock.Client
         public int? ScheduleCancellationWorkflowTypeId { get; set; }
 
         /// <summary />
-        public int? ScheduleConfirmationEmailOffsetDays { get; set; }
+        public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
 
         /// <summary />
-        public int? ScheduledCommunicationTemplateId { get; set; }
+        public int? ScheduleConfirmationSystemEmailId { get; set; }
 
         /// <summary />
-        public int? ScheduleReminderCommunicationTemplateId { get; set; }
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
 
         /// <summary />
-        public int? ScheduleReminderEmailOffsetDays { get; set; }
+        public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary />
         public bool SendAttendanceReminder { get; set; }
@@ -395,6 +398,7 @@ namespace Rock.Client
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
             this.Description = source.Description;
             this.EnableGroupHistory = source.EnableGroupHistory;
+            this.EnableGroupTag = source.EnableGroupTag;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             this.ForeignGuid = source.ForeignGuid;
@@ -423,9 +427,9 @@ namespace Rock.Client
             this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
-            this.ScheduledCommunicationTemplateId = source.ScheduledCommunicationTemplateId;
-            this.ScheduleReminderCommunicationTemplateId = source.ScheduleReminderCommunicationTemplateId;
+            this.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
             this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
+            this.ScheduleReminderSystemEmailId = source.ScheduleReminderSystemEmailId;
             this.SendAttendanceReminder = source.SendAttendanceReminder;
             this.ShowAdministrator = source.ShowAdministrator;
             this.ShowConnectionStatus = source.ShowConnectionStatus;
@@ -470,10 +474,10 @@ namespace Rock.Client
         public WorkflowType ScheduleCancellationWorkflowType { get; set; }
 
         /// <summary />
-        public CommunicationTemplate ScheduledCommunicationTemplate { get; set; }
+        public SystemEmail ScheduleConfirmationSystemEmail { get; set; }
 
         /// <summary />
-        public CommunicationTemplate ScheduleReminderCommunicationTemplate { get; set; }
+        public SystemEmail ScheduleReminderSystemEmail { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

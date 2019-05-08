@@ -44,7 +44,7 @@ namespace Rock.Client
         public int GroupMemberId { get; set; }
 
         /// <summary />
-        public int LocationId { get; set; }
+        public int? LocationId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -52,7 +52,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int ScheduleId { get; set; }
+        public int? ScheduleId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
