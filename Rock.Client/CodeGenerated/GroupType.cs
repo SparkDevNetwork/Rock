@@ -71,6 +71,9 @@ namespace Rock.Client
         public bool EnableGroupHistory { get; set; }
 
         /// <summary />
+        public bool EnableGroupTag { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
@@ -292,6 +295,9 @@ namespace Rock.Client
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
+        public bool IsSchedulingEnabled { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -307,6 +313,24 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public bool RequiresReasonIfDeclineSchedule { get; set; }
+
+        /// <summary />
+        public int? ScheduleCancellationWorkflowTypeId { get; set; }
+
+        /// <summary />
+        public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
+
+        /// <summary />
+        public int? ScheduleConfirmationSystemEmailId { get; set; }
+
+        /// <summary />
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
+
+        /// <summary />
+        public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary />
         public bool SendAttendanceReminder { get; set; }
@@ -374,6 +398,7 @@ namespace Rock.Client
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
             this.Description = source.Description;
             this.EnableGroupHistory = source.EnableGroupHistory;
+            this.EnableGroupTag = source.EnableGroupTag;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             this.ForeignGuid = source.ForeignGuid;
@@ -393,11 +418,18 @@ namespace Rock.Client
             this.IgnorePersonInactivated = source.IgnorePersonInactivated;
             this.InheritedGroupTypeId = source.InheritedGroupTypeId;
             this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsSchedulingEnabled = source.IsSchedulingEnabled;
             this.IsSystem = source.IsSystem;
             this.LocationSelectionMode = source.LocationSelectionMode;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
+            this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
+            this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            this.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
+            this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
+            this.ScheduleReminderSystemEmailId = source.ScheduleReminderSystemEmailId;
             this.SendAttendanceReminder = source.SendAttendanceReminder;
             this.ShowAdministrator = source.ShowAdministrator;
             this.ShowConnectionStatus = source.ShowConnectionStatus;
@@ -437,6 +469,15 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<GroupTypeRole> Roles { get; set; }
+
+        /// <summary />
+        public WorkflowType ScheduleCancellationWorkflowType { get; set; }
+
+        /// <summary />
+        public SystemEmail ScheduleConfirmationSystemEmail { get; set; }
+
+        /// <summary />
+        public SystemEmail ScheduleReminderSystemEmail { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

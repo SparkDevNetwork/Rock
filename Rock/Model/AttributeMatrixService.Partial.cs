@@ -23,8 +23,15 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class AttributeMatrixService : Service<AttributeMatrix>
     {
+        /// <summary>
+        /// Gets the orphaned attribute matrices.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<AttributeMatrix> GetOrphanedAttributeMatrices()
         {
             string sql = @"

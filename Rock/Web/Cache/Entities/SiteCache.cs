@@ -559,6 +559,12 @@ namespace Rock.Web.Cache
         /// </value>
         public string ConfigurationMobileTabletFileUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
         public string ThumbnailFileUrl { get; set; }
 
         #endregion

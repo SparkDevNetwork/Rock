@@ -1804,7 +1804,7 @@ namespace RockWeb.Blocks.Examples
                             Schedule schedule = scheduleService.Get( scheduleGuid );
                             groupLocation.Schedules.Add( schedule );
 
-                            // TODO -- once volunteer Group Scheduling is in develop, add the GroupLocationScheduleConfig
+                            // TODO -- once Group Scheduling is in develop, add the GroupLocationScheduleConfig
                             // data (minimumCapacity, desiredCapacity, maximumCapacity) if any was given.
 
                         }

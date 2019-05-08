@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
-    public partial class GroupTypes : RockBlock, IDetailBlock
+    public partial class GroupTypeDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -526,6 +526,15 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
+            // Scheduling
+            groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
+            groupType.ScheduleConfirmationSystemEmailId = ddlScheduleConfirmationSystemEmail.SelectedValue.AsIntegerOrNull();
+            groupType.RequiresReasonIfDeclineSchedule = cbRequiresReasonIfDeclineSchedule.Checked;
+            groupType.ScheduleConfirmationEmailOffsetDays = nbScheduleConfirmationEmailOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleCancellationWorkflowTypeId = wtpScheduleCancellationWorkflowType.SelectedValueAsId();
+            groupType.ScheduleReminderSystemEmailId = ddlScheduleReminderSystemEmail.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.Text.AsIntegerOrNull();
+
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
             if ( groupType.EnableGroupHistory && cbEnableGroupHistory.Checked == false )
@@ -861,6 +870,16 @@ namespace RockWeb.Blocks.Groups
             cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
+            // Scheduling
+            cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
+
+            ddlScheduleConfirmationSystemEmail.SetValue( groupType.ScheduleConfirmationSystemEmailId );
+            cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
+            nbScheduleConfirmationEmailOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
+            wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
+            ddlScheduleReminderSystemEmail.SetValue( groupType.ScheduleReminderSystemEmailId );
+            nbScheduleReminderEmailOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
@@ -999,6 +1018,26 @@ namespace RockWeb.Blocks.Groups
             foreach ( var definedType in DefinedTypeCache.All().OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 ddlGroupStatusDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
+            }
+
+            ddlScheduleConfirmationSystemEmail.Items.Clear();
+            ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem() );
+            ddlScheduleReminderSystemEmail.Items.Clear();
+            ddlScheduleReminderSystemEmail.Items.Add( new ListItem() );
+
+            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( t => t.Title ).Select( a => new
+            {
+                a.Id,
+                a.Title
+            } );
+
+            if ( systemEmails.Any() )
+            {
+                foreach ( var template in systemEmails )
+                {
+                    ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem( template.Title, template.Id.ToString() ) );
+                    ddlScheduleReminderSystemEmail.Items.Add( new ListItem( template.Title, template.Id.ToString() ) );
+                }
             }
         }
 
@@ -2824,7 +2863,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-        
     }
 }

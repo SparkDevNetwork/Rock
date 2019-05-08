@@ -91,6 +91,7 @@ namespace Rock.Model
             target.AttendanceCodeId = source.AttendanceCodeId;
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
+            target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
             #pragma warning disable 612, 618
@@ -110,10 +111,16 @@ namespace Rock.Model
             target.PersonAliasId = source.PersonAliasId;
             target.Processed = source.Processed;
             target.QualifierValueId = source.QualifierValueId;
+            target.RequestedToAttend = source.RequestedToAttend;
             target.RSVP = source.RSVP;
+            target.RSVPDateTime = source.RSVPDateTime;
+            target.ScheduleConfirmationSent = source.ScheduleConfirmationSent;
+            target.ScheduledByPersonAliasId = source.ScheduledByPersonAliasId;
+            target.ScheduledToAttend = source.ScheduledToAttend;
             #pragma warning disable 612, 618
             target.ScheduleId = source.ScheduleId;
             #pragma warning restore 612, 618
+            target.ScheduleReminderSent = source.ScheduleReminderSent;
             target.SearchResultGroupId = source.SearchResultGroupId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.SearchValue = source.SearchValue;

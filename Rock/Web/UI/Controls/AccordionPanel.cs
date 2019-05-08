@@ -21,6 +21,10 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     [ToolboxData( "<{0}:AccordionPanel runat=server></{0}:AccordionPanel" )]
     [ParseChildren( true )]
     [PersistChildren( false )]

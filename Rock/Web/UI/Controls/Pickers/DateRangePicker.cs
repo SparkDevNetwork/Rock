@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || ( !string.IsNullOrWhiteSpace( _tbLowerValue.Text ) && !string.IsNullOrWhiteSpace( _tbUpperValue.Text ) );
+                return !Required || CustomValidator.IsValid;
             }
         }
 

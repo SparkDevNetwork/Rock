@@ -1617,7 +1617,6 @@ namespace Rock.Slingshot
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
                 {
-
                     personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation.ToLower()]?.Id;
                 }
 

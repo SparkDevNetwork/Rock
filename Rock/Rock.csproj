@@ -397,6 +397,9 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
     <Compile Include="Field\Types\ValueFilterFieldType.cs" />
     <Compile Include="Financial\HostedPaymentInfoControlOptions.cs" />
     <Compile Include="Financial\IGatewayComponent.cs" />
@@ -415,6 +418,11 @@
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
     <Compile Include="Model\CodeGenerated\SmsActionService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonScheduleExclusionService.cs" />
+    <Compile Include="Model\GroupLocationScheduleConfig.cs" />
+    <Compile Include="Model\GroupMemberAssignment.cs" />
+    <Compile Include="Model\GroupMemberAssignmentService.Partial.cs" />
+    <Compile Include="Model\GroupMemberScheduleTemplate.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CommunicationResponse.cs" />
     <Compile Include="Model\CommunicationResponseService.partial.cs" />
@@ -422,6 +430,8 @@
     <Compile Include="Model\SmsActionService.Partial.cs" />
     <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
+    <Compile Include="Model\PersonScheduleExclusionService.Partial.cs" />
+    <Compile Include="Model\PersonScheduleExclusion.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
     <Compile Include="BulkExport\AttributesExport.cs" />
@@ -513,6 +523,7 @@
     <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />

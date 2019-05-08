@@ -79,10 +79,23 @@ achieve our mission.  We are so grateful for your commitment.
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 12 )]
 
+    [WorkflowTypeField(
+        name: "Workflow Trigger",
+        description: "Workflow types to trigger when an edit is submitted for a schedule.",
+        allowMultiple: true,
+        required: false,
+        order: 13,
+        key: AttributeKeys.WorkflowType )]
+
     #endregion
 
     public partial class ScheduledTransactionEdit : RockBlock
     {
+        private class AttributeKeys
+        {
+            public const string WorkflowType = "WorkflowType";
+        }
+
         #region Fields
 
         protected bool FluidLayout { get; set; }
@@ -1119,6 +1132,8 @@ achieve our mission.  We are so grateful for your commitment.
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
 
+                TriggerWorkflows( scheduledTransaction );
+
                 return true;
             }
             else
@@ -1426,6 +1441,35 @@ achieve our mission.  We are so grateful for your commitment.
                 GlobalAttributesCache.Value( "CurrencySymbol") // {4}
                 );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
+        }
+
+        /// <summary>
+        /// Trigger an instance of each active workflow type selected in the block attributes
+        /// </summary>
+        private void TriggerWorkflows( FinancialScheduledTransaction schedule )
+        {
+            if ( schedule == null )
+            {
+                return;
+            }
+
+            var workflowTypeGuids = GetAttributeValues( AttributeKeys.WorkflowType ).AsGuidList();
+
+            if ( workflowTypeGuids.Any() )
+            {
+                // Make sure the workflow types are active and then trigger an instance of each
+                var rockContext = new RockContext();
+                var service = new WorkflowTypeService( rockContext );
+                var workflowTypes = service.Queryable()
+                    .AsNoTracking()
+                    .Where( wt => wt.IsActive == true && workflowTypeGuids.Contains( wt.Guid ) )
+                    .ToList();
+
+                foreach ( var workflowType in workflowTypes )
+                {
+                    schedule.LaunchWorkflow( workflowType.Guid );
+                }
+            }
         }
 
         #endregion
