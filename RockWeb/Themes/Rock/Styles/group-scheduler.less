@@ -8,14 +8,9 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 
-// .group-scheduler {
-//   position: fixed;
-//   top: 0;
-//   left:0;
-//   right: 0;
-//   bottom:0;
-//   z-index: 9999;
-// }
+@confirmed-icon-color: @brand-success;
+@pending-icon-color: @brand-warning;
+@declined-icon-color: @brand-danger;
 
 .viewport {
   max-height: 50vh;
@@ -23,7 +18,7 @@
 
   &::-webkit-scrollbar {
     width: 6px;
-    background-color: transparent;
+    background-color: fade(@panel-heading-bg, 40%);
   }
 
   &::-webkit-scrollbar-thumb {
@@ -48,6 +43,10 @@
   border-radius: 4px;
   box-shadow: 0 1px 0 hsl(228, 7%, 83%);
 
+  &:hover {
+    background: rgba(85,150,230,.1);
+  }
+
   &[data-state="scheduled"] {
     display: inline-block;
   }
@@ -60,14 +59,29 @@
 
   &[data-has-scheduling-conflict="true"] {
     background-color: @state-warning-bg;
+
+    .resource-scheduling-conflict {
+      display: block;
+    }
   }
 
   &[data-has-blackout-conflict="true"] {
+    cursor: default;
     background-color: @state-warning-bg;
+    &:hover {
+      background-color: @state-warning-bg;
+    }
+
+    .resource-blackout-status {
+      display: block;
+    }
   }
 
   &[data-has-requirements-conflict="true"] {
     background-color: @state-warning-bg;
+    .resource-requirements-conflict {
+      display: block;
+    }
   }
 
   .resource-section:hover {
@@ -88,32 +102,14 @@
     margin-left: 5px;
   }
 
-  &[data-has-blackout-conflict="true"] {
-    .resource-blackout-status {
-      display: block;
-    }
-  }
-
   .resource-requirements-conflict {
     display: none;
     margin-left: 5px;
   }
 
-  &[data-has-requirements-conflict="true"] {
-    .resource-requirements-conflict {
-      display: block;
-    }
-  }
-
   .resource-scheduling-conflict {
     display: none;
     margin-left: 5px;
-  }
-
-  &[data-has-scheduling-conflict="true"] {
-    .resource-scheduling-conflict {
-      display: block;
-    }
   }
 
   .resource-lastattendeddate {
@@ -217,9 +213,6 @@
     content: "";
   }
 
-  .resource:hover {
-    background: rgba(85,150,230,.1);
-  }
 }
 
 .resource-search {
@@ -235,15 +228,15 @@
   border-radius: 50%;
 
   &[data-status="pending"] {
-    background-color: #009cdf;
+    background-color: @pending-icon-color;
   }
 
   &[data-status="confirmed"] {
-    background-color: #25c58e;
+    background-color: @confirmed-icon-color;
   }
 
   &[data-status="declined"] {
-    background-color: #d24838;
+    background-color: @declined-icon-color;
   }
 }
 
@@ -258,6 +251,7 @@
 /* Resource List */
 .group-scheduler-resourcelist {
   // width: 350px;
+
   /* Resource List Scroller */
   .scroll-container-resourcelist {
     width: 320px;
@@ -307,15 +301,15 @@
     width: 100px;
 
     .scheduling-progress-confirmed {
-      background-color: #25c58e;
+      background-color: @confirmed-icon-color;
     }
 
     .scheduling-progress-pending {
-      background-color: #009cdf;
+      background-color: @pending-icon-color;
     }
 
     .scheduling-progress-declined {
-      background-color: #d24838;
+      background-color: @declined-icon-color;
     }
 
     .minimum-indicator {
@@ -338,20 +332,20 @@
     float: right;
     width: 24px;
     height: 24px;
-    margin-right: 7.5px;
+    margin-left: 8px;
     border: 1px solid #d8d8d8;
     border-radius: 50%;
 
     &[data-status="below-minimum"] {
-      background-color: #d24838;
+      background-color: @state-danger-bg;
     }
 
     &[data-status="below-desired"] {
-      background-color: #ffc870;
+      background-color: @state-warning-bg;
     }
 
     &[data-status="meets-desired"] {
-      background-color: #25c58e;
+      background-color: @state-success-bg;
     }
 
     &[data-status="none"] {
@@ -418,15 +412,15 @@ elements with nested rules, like .list .item { padding: 10px; }. */
 }
 
 .scrollable {
+  position: relative;
   overflow-x: auto;
   overflow-y: auto;
-  position: relative;
 }
 
 .schedule-status-board {
   width: inherit;
-  table-layout: fixed;
   min-width: 100%;
+  table-layout: fixed;
 
   > tbody > tr > td {
     padding: 0;
@@ -448,8 +442,8 @@ elements with nested rules, like .list .item { padding: 10px; }. */
     text-align: right;
 
     > div {
-      padding: 4px 8px !important;
       height: 100%;
+      padding: 4px 8px !important;
     }
   }
 
@@ -505,52 +499,20 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   margin: 0 3px 0 0;
 
   &::before {
-    font-family: "FontAwesome";
+    font-family: 'FontAwesome';
     font-style: normal;
-    font-weight: 900;
-    color: @brand-warning;
-    content: "\f059";
+    font-weight: @fa-theme-weight;
+    color: @pending-icon-color;
+    content: @fa-var-question-circle;
   }
 
   .declined &::before {
-    color: @brand-danger;
-    content: "\f057";
+    color: @declined-icon-color;
+    content: @fa-var-times-circle;
   }
 
   .confirmed &::before {
-    color: @brand-success;
-    content: "\f058";
+    color: @confirmed-icon-color;
+    content: @fa-var-check-circle;
   }
 }
-
-
-
-
-
-// .declined {
-//   position: relative;
-// }
-
-//   .declined:before {
-//       content: "\f057";
-//       font-family: 'FontAwesome';
-//       font-weight: 900;
-//       left: -24px;
-//       color: #992222;
-//       position: absolute;
-//       top: 0;
-//   }
-
-// .confirmed {
-//   position: relative;
-// }
-
-//   .confirmed:before {
-//       content: "\f058";
-//       font-family: 'FontAwesome';
-//       font-weight: 900;
-//       left: -24px;
-//       color: #22aa22;
-//       position: absolute;
-//       top: 0;
-//   }
