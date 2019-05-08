@@ -666,6 +666,65 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the DataBound event of the lVarianceAmount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lVarianceAmount_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lVarianceAmount = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            if (batchRow.AmountVariance != 0.00M)
+            {
+                lVarianceAmount.Text = string.Format( "<span class='label label-danger'>{0}</span>", batchRow.AmountVariance.FormatAsCurrency() );
+            }
+            else
+            {
+                lVarianceAmount.Text = string.Format( "<span class=''>{0}</span>", batchRow.AmountVariance.FormatAsCurrency() );
+            }
+            
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lVarianceItemCount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lVarianceItemCount_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lVarianceItemCount = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            if ( batchRow.ItemCountVariance.HasValue )
+            {
+                if ( batchRow.ItemCountVariance != 0 )
+                {
+                    lVarianceItemCount.Text = string.Format( "<span class='label label-danger'>{0}</span>", batchRow.ItemCountVariance );
+                }
+                else
+                {
+                    lVarianceItemCount.Text = string.Format( "<span class=''>{0}</span>", batchRow.ItemCountVariance );
+                }
+            }
+            else
+            {
+                // doesn't apply
+                lVarianceItemCount.Text = "-";
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lBatchStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lBatchStatus_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lBatchStatus = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            lBatchStatus.Text = string.Format( "<span class='{0}'>{1}</span>", batchRow.StatusLabelClass, batchRow.StatusText );
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid( bool isExporting = false )
@@ -706,6 +765,7 @@ namespace RockWeb.Blocks.Finance
                     AccountingSystemCode = b.AccountingSystemCode,
                     TransactionCount = b.Transactions.Count(),
                     ControlAmount = b.ControlAmount,
+                    ControlItemCount = b.ControlItemCount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
@@ -936,6 +996,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             public decimal ControlAmount { get; set; }
+
+            public int? ControlItemCount { get; set; }
+
             public List<BatchAccountSummary> AccountSummaryList
             {
                 get
@@ -954,11 +1017,38 @@ namespace RockWeb.Blocks.Finance
             public bool UnMatchedTxns { get; set; }
             public string BatchNote { get; set; }
 
-            public decimal Variance
+            /// <summary>
+            /// Gets the amount variance.
+            /// </summary>
+            /// <value>
+            /// The amount variance.
+            /// </value>
+            public decimal AmountVariance
             {
                 get
                 {
                     return TransactionAmount - ControlAmount;
+                }
+            }
+
+            /// <summary>
+            /// Gets the item count variance.
+            /// </summary>
+            /// <value>
+            /// The item count variance.
+            /// </value>
+            public int? ItemCountVariance
+            {
+                get
+                {
+                    if ( ControlItemCount.HasValue )
+                    {
+                        return TransactionCount - ControlItemCount;
+                    }
+                    else
+                    {
+                        return ( int? ) null;
+                    }
                 }
             }
 

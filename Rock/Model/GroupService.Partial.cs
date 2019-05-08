@@ -783,7 +783,7 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
                         }
                     }
@@ -1048,6 +1048,12 @@ namespace Rock.Model
                     this.Archive( item, null, false );
                     return true;
                 }
+            }
+
+            var registrationService = new RegistrationService( this.Context as RockContext );
+            foreach ( var registration in registrationService.Queryable().Where(a => a.GroupId == item.Id) )
+            {
+                registration.GroupId = null;
             }
 
             string message;
