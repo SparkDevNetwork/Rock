@@ -23,6 +23,9 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [RockDomain( "Event" )]
     [NotAudited]
     [Table( "AttendanceData" )]
@@ -66,6 +69,9 @@ namespace Rock.Model
     /// </summary>
     public partial class AttendanceLabelDataConfiguration : EntityTypeConfiguration<AttendanceData>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttendanceLabelDataConfiguration"/> class.
+        /// </summary>
         public AttendanceLabelDataConfiguration()
         {
         }

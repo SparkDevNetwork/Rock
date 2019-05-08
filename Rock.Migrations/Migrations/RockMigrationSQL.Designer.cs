@@ -1476,5 +1476,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @WeeklySundayScheduleGuid UNIQUEIDENTIFIER = &apos;04A17BB3-B3E8-4E4B-B575-22CB7E81D5F4&apos;,
+        ///	@EveryOtherWeekSundayScheduleGuid UNIQUEIDENTIFIER = &apos;07F1D164-F8D7-4FA4-B98B-B7480CC40457&apos;,
+        ///	@FirstAndThirdSundayScheduleGuid UNIQUEIDENTIFIER = &apos;8342535C-A48B-4AE6-8522-33C33BFBBFFC&apos;,
+        ///	@SecondAndFourthSundayScheduleGuid UNIQUEIDENTIFIER = &apos;34448AF0-ECA2-40E5-89C9-66C1739A8828&apos;,
+        ///	@WeeklySundayScheduleId INT,
+        ///	@EveryOtherWeekSundayScheduleId INT,
+        ///	@FirstAndThirdSundayScheduleId INT,
+        ///	@SecondAndFourthSundaySc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201905081957016_GroupScheduling_PopulateScheduleTemplates {
+            get {
+                return ResourceManager.GetString("_201905081957016_GroupScheduling_PopulateScheduleTemplates", resourceCulture);
+            }
+        }
     }
 }

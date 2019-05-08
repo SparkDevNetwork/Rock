@@ -1374,8 +1374,10 @@ body.navbar-side-open {
   min-width: 0;
 
   .is-fullscreen & {
-    height: 100vh;
+    height: 100vh !important;
     margin: 0;
+    overflow: auto;
+    background-color: #fff;
   }
 
   .panel-heading {

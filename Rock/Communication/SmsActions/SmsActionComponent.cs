@@ -25,6 +25,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Extension.Component" />
     [TextValueFilterField( "Phone Numbers", "The phone numbers that this action will run on.", false, order: 0, category: "Filter", hideFilterMode: true )]
     public abstract class SmsActionComponent : Component
     {

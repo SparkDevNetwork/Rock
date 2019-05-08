@@ -44,6 +44,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
         /// <returns></returns>
         public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId, int? contentChannelItemId )
         {

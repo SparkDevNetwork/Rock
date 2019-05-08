@@ -72,6 +72,16 @@ namespace Rock.SystemGuid
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
+        /// The scheduling response
+        /// </summary>
+        public const string SCHEDULING_RESPONSE = "D095F78D-A5CF-4EF6-A038-C7B07E250611";
+
+        /// <summary>
+        /// The scheduling update
+        /// </summary>
+        public const string SCHEDULING_UPDATE = "F8E4CE07-68F5-4169-A865-ECE915CF421C";
+
+        /// <summary>
         /// Gets the template guid for workflow form notifications
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
@@ -79,7 +89,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for digital signature invite
         /// </summary>
-        public const string DIGITAL_SIGNATURE_INVITE  = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
+        public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
         /// <summary>
         /// Gets the template guid for a notewatch notification

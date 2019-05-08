@@ -18,12 +18,49 @@ using System;
 
 namespace Rock.Communication.SmsActions
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SmsActionOutcome
     {
+        /// <summary>
+        /// Gets or sets the name of the action.
+        /// </summary>
+        /// <value>
+        /// The name of the action.
+        /// </value>
         public string ActionName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [should process].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [should process]; otherwise, <c>false</c>.
+        /// </value>
         public bool ShouldProcess { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
         public SmsMessage Response { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        /// <value>
+        /// The error message.
+        /// </value>
         public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exception.
+        /// </summary>
+        /// <value>
+        /// The exception.
+        /// </value>
         public Exception Exception { get; set; }
     }
 }
