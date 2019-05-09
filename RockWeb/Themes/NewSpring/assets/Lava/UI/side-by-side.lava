@@ -42,8 +42,9 @@
             <div class="ratio-{{ ratio }} xs-ratio-none sm-ratio-none bg-white">
                 <div class="soft-double-sides soft-top soft-half-bottom sm-soft-sides sm-soft-double-top xs-soft-half-sides xs-soft-double-top floating floating-left ratio-item top-zero xs-position-relative sm-position-relative">
                     <div class="floating-item {% if video and video != empty and imagealignment == 'Left' %}soft-left{% elseif video and video != empty %}soft-right{% endif %} sm-hard-sides sm-soft-half-top xs-hard-sides xs-soft-half-top text-left sm-text-center xs-text-center">
+                        
                         {% if label != null and label != '' %}
-                            <p><small class="label label-default sans-serif circular">{{ label }}</small></p>
+                            <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
                         {% endif %}
                         
                         {% if title != null and title != '' %}
@@ -58,20 +59,13 @@
                             <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
                         {% endif %}
 
-                        {% assign tagCount = tags | length %}
-                        {% if tagCount != 0 %}
-                            <p class="tag-list sans-serif text-gray-darker push-half-bottom">
-                                <small>{% for id, title in tags %}
-                                    <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
-                                {% endfor %}</small>
-                            </p>
-                        {% endif %}
+                        {[ tags guid:'{{ guid }}' ]}
                         
                         {% if content != null and content != '' %}
                             <div>
                                 {% if trimcopy == 'Yes' %}
                                     {% assign length = content | Size %}
-                                    {{ content | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
+                                    <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}</p>
                                 {% else %}
                                     {{ content }}
                                 {% endif %}
@@ -81,7 +75,7 @@
 
                         {% if url != empty %}                        
                             <p>
-                                <a href="{{ url | Trim }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                                {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                             </p>
                         {% endif %}
                     </div>
@@ -127,7 +121,7 @@
                 {% if video != null and video != '' %}<div class="{% if imagealignment == 'Left' %}soft-left{% else %}soft-right{% endif %} sm-hard-sides sm-soft-top xs-hard-sides xs-soft-top">{% endif %}
                     
                     {% if label != null and label != '' %}
-                        <p><small class="label label-default sans-serif circular">{{ label }}</small></p>
+                        <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
                     {% endif %}
                     
                     {% if title != null and title != '' %}
@@ -142,20 +136,14 @@
                         <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
                     {% endif %}
 
-                    {% assign tagCount = tags | length %}
-                    {% if tagCount != 0 %}
-                        <p class="tag-list sans-serif text-gray-darker push-half-bottom">
-                            <small>{% for id, title in tags %}
-                                <a href="#" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ title }}</a>
-                            {% endfor %}</small>
-                        </p>
-                    {% endif %}
+                    {[ tags guid:'{{ guid }}' ]}
                     
-                    {% if content != null and content != '' %}
+                    {% if content and content != empty %}
                         <div>
                             {% if trimcopy == 'Yes' %}
                                 {% assign length = content | Size %}
-                                {{ content | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
+                                
+                                <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}</p>
                             {% else %}
                                 {{ content }}
                             {% endif %}
@@ -165,7 +153,7 @@
 
                     {% if url != empty %}                        
                         <p>
-                            <a href="{{ url | Trim }}" class="btn btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                            {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                         </p>
                     {% endif %}
 

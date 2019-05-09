@@ -4,7 +4,7 @@
     {% if CurrentPerson | HasRightsTo:'Edit' %}
     <div class="position-absolute top-zero right-zero push-top push-right bring-forward text-right">
         <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
-        <a href="https://newspringchurch.wistia.com/medias/{{ id }}" class="btn btn-sm btn-info">Edit This Video</a>
+        <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
     </div>
     {% endif %}
     <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">

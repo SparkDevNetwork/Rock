@@ -15,7 +15,9 @@
 }
 
 // SM Breakpoint
-@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+@media only screen 
+	and (min-width: @screen-sm-min) 
+	and (max-width: @screen-sm-max) {
 
 	.jumbo {
 		font-size: 46px;
@@ -153,7 +155,8 @@
 }
 
 // XS Breakpoint
-@media (max-width: @screen-sm-min) {
+@media only screen 
+	and (max-width: @screen-sm-min) {
 
 	// Font Size Adjustments
 	body {
@@ -201,7 +204,7 @@
 	}
 
 	blockquote {
-		margin-left: -@base-spacing-unit !important;
+		margin-left: -@base-spacing-unit/2 !important;
 		margin-right: 0 !important;
 		padding-left: @base-spacing-unit/3*2.5 !important;
 		font-size: floor((@font-size-base * 1.1)) !important;

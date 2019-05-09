@@ -12,9 +12,11 @@
 
 {% assign url = url | Trim %}
 
-<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
-        {% if CurrentPerson | HasRightsTo:'Edit' and id and id != empty %}
-            <a href="/page/342?contentItemId={{ id }}" class="position-absolute top-zero right-zero push-half-top push-right btn btn-sm btn-info shadowed bring-forward">Edit This</a>
+<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
+    {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
+        <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
+            {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' ]}
+        </div>
     {% endif %}
     {% if imageurl != null and imageurl != '' %}
         {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
@@ -23,7 +25,7 @@
             {% endif %}
 
             <div class="position-relative ratio-landscape">
-                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
             </div>
 
             {% if type != null and type != '' %}
@@ -35,8 +37,8 @@
 
     <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
 
-        {% if label != null and label != '' %}
-            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif circular">{{ label }}</small></p>
+        {% if label and label != empty %}
+            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
         {% endif %}
         
         {% if title != null and title != '' %}
@@ -51,7 +53,7 @@
             <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-half-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
         {% endif %}
 
-        {% if subtitle != null and subtitle != '' %}
+        {% if subtitle and subtitle != empty %}
             <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
         {% endif %}
 
@@ -72,7 +74,7 @@
 
         {% if url != empty %}
             <p>
-                <a href="{{ url }}" class="btn btn-sm btn-primary" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                {[ button linkurl:'{{ url }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
             </p>
         {% endif %}
 

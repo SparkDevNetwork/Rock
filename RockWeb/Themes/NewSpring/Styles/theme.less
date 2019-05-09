@@ -24,6 +24,7 @@
 @import '_labels';
 @import '_buttons';
 @import '_images';
+@import '_search';
 @import '_colors';
 @import '_helpers';
 // @import '_breakpoint-visual-utility';
@@ -177,6 +178,12 @@ mark, .mark {
 
 ul, ol {
 	padding-left: @base-spacing-unit/3*2;
+
+	.text-center &,
+	.sm-text-center &,
+	.xs-text-center & {
+		text-align: left;
+	}
 }
 
 .hero {
@@ -200,6 +207,12 @@ ul, ol {
 		background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
 		opacity: .7;
+	}
+}
+
+.editorial-content {
+	img {
+		border-radius: @border-radius-large;
 	}
 }
 

@@ -1,0 +1,21 @@
+{% if itemid != empty and channelid != empty and sincedatetime != empty %}
+    {% sql %}
+        SELECT COUNT(i.Id)
+        FROM InteractionComponent ic
+        INNER JOIN Interaction i
+        ON ic.Id = i.InteractionComponentId
+        WHERE 
+            i.InteractionDateTime >= Cast('{{ sincedatetime }}' as datetime) AND
+            ic.EntityId = {{ itemid }} AND 
+            ic.ChannelId = (
+                SELECT Id 
+                FROM InteractionChannel ich 
+                WHERE ich.ComponentEntityTypeId = 209 AND 
+                ich.ChannelEntityId = {{ channelid }}
+            )
+    {% endsql %}
+    
+    {% for item in results %}
+        {{ item.Column1 }}
+    {% endfor %}
+{% endif %}

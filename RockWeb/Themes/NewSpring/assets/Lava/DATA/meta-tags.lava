@@ -1,0 +1,56 @@
+<!-- Facebook Card -->
+{{ site_name | AddMetaTagToHead:'property','og:site_name' }}
+{% if url and url != empty %}{{ url | AddMetaTagToHead:'property','og:url' }}{% endif %}
+{% if title and title != empty %}{{ title | AddMetaTagToHead:'property','og:title' }}{% endif %}
+{% if description and description != empty %}{{ description | AddMetaTagToHead:'property','og:description' }}{% endif %}
+{% if image and image != empty %}{{ image | AddMetaTagToHead:'property','og:image' }}{% endif %}
+{% if article_published_time and article_published_time != empty %}{{ article_published_time | AddMetaTagToHead:'property','article:published_time' }}{% endif %}
+{{ article_author | AddMetaTagToHead:'property','article:author' }}
+
+<!-- Twitter Card -->
+{{ twitter_site | AddMetaTagToHead:'property','twitter:site' }} <!-- @newspring -->
+{{ twitter_creator | AddMetaTagToHead:'property','twitter:creator' }} <!-- @newspring -->
+{% if title and title != empty %}{{ title | AddMetaTagToHead:'property','twitter:title' }}{% endif %}
+{% if description and description != empty %}{{ description | AddMetaTagToHead:'property','twitter:description' }}{% endif %}
+{% if image and image != empty %}{{ image | AddMetaTagToHead:'property','twitter:image' }}{% endif %}
+
+{% if article_published_time and article_published_type != empty %}
+    {{ 'article' | AddMetaTagToHead:'property','og:type' }}
+{% else %}
+    {{ 'website' | AddMetaTagToHead:'property','og:type' }}
+{% endif %}
+
+{% if video and video != empty %}
+    {{ 'player' | AddMetaTagToHead:'property','twitter:card' }}
+{% elseif app and app != empty %}
+    {{ 'app' | AddMetaTagToHead:'property','twitter:card' }}
+{% endif %}
+
+{% if video and video != empty %}
+
+    <!-- Facebook Video Card -->
+    {{ video | AddMetaTagToHead:'property','og:video' }} <!-- URL to video -->
+    {{ video_type | AddMetaTagToHead:'property','og:video:type' }}
+    {{ video_width | AddMetaTagToHead:'property','og:video:width' }}
+    {{ video_height | AddMetaTagToHead:'property','og:video:height' }}
+    
+    <!-- Twitter Video Card -->
+    {{ video | AddMetaTagToHead:'property','twitter:player' }} <!-- URL to video -->
+    {{ video_width | AddMetaTagToHead:'property','twitter:player:width' }}
+    {{ video_height | AddMetaTagToHead:'property','twitter:player:height' }}
+    
+{% endif %}
+
+{% if app and app != empty %}
+    <!-- Twitter App Card -->
+    {{ 'US' | AddMetaTagToHead:'property','twitter:app:country' }}
+    {{ 'NewSpring' | AddMetaTagToHead:'property','twitter:app:name:iphone' }}
+    {{ 'NewSpring' | AddMetaTagToHead:'property','twitter:app:name:ipad' }}
+    {{ 'NewSpring' | AddMetaTagToHead:'property','twitter:app:name:googleplay' }}
+    {{ '492113528' | AddMetaTagToHead:'property','twitter:app:id:iphone' }}
+    {{ '492113528' | AddMetaTagToHead:'property','twitter:app:id:ipad' }}
+    {{ 'cc.newspring.newspringapp' | AddMetaTagToHead:'property','twitter:app:id:googleplay' }}
+    {{ 'https://itunes.apple.com/us/app/newspring-church/id492113528#?platform=iphone' | AddMetaTagToHead:'property','twitter:app:url:iphone' }}
+    {{ 'https://itunes.apple.com/us/app/newspring-church/id492113528#?platform=ipad' | AddMetaTagToHead:'property','twitter:app:url:ipad' }}
+    {{ 'https://play.google.com/store/apps/details?id=cc.newspring.newspringapp' | AddMetaTagToHead:'property','twitter:app:url:googleplay' }}
+{% endif %}

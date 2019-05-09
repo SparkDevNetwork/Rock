@@ -1,0 +1,9 @@
+{%- capture parentName -%}{% contentchannelitemassociation where:'ChildContentChannelItemId == {{ id }}' iterator:'associations' %}
+    {% for association in associations %}
+        {%- contentchannelitem Id:'{{ association.ContentChannelItemId }}' iterator:'items' -%}
+            {% for item in items %}
+                {{ item.Title }}
+            {% endfor %}
+        {%- endcontentchannelitem -%}
+    {% endfor %}
+{%- endcontentchannelitemassociation -%}{% endcapture %}{{ parentName | Trim }}
