@@ -75,6 +75,7 @@
     <Compile Include="Migrations\007_AddCheckinFilterGroupsByDataView.cs" />
     <Compile Include="Migrations\009_KVILabelAndMergeFields.cs" />
     <Compile Include="Migrations\008_CreateCheckinUser.cs" />
+    <Compile Include="Migrations\015_CreateLCBCCheckInPages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workflow\Action\Checkin\LCBCCreateLabels.cs" />
     <Compile Include="Workflow\Action\Checkin\SaveAttendanceAndPagerNumber.cs" />
