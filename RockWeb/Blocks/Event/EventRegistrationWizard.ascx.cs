@@ -32,6 +32,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Constants;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Event
 {
@@ -137,7 +138,7 @@ namespace RockWeb.Blocks.Event
     [MemoField(
         "Instructions Lava Template",
         Key = AttributeKey.InstructionsLavaTemplate,
-        Description = "Instructions added here will appear at the top of each page.",
+        Description = AttributeHint.LavaHintText,
         Category = "",
         IsRequired = false,
         DefaultValue = "",
@@ -175,6 +176,36 @@ namespace RockWeb.Blocks.Event
             public const string InstructionsLavaTemplate = "InstructionsLavaTemplate";
             public const string CompletionWorkflow = "CompletionWorkflow";
         }
+        protected static class AttributeHint
+        {
+            public const string LavaHintText = @"
+Instructions added here will appear at the top of each page.  You can control which page specific instructions appear on by referencing the ""Page"" number (1 through 7)
+or the ""ActiveWizardStep"" name (see below).
+
+{% case Page %}
+    {% when 1 %}
+        Page 1 text
+    {% when 2 %}
+        Page 2 text
+{% endcase %}
+
+{% case ActiveWizardStep %}
+    {% when 'InitiateWizard' %}
+        Please select a registration template.
+    {% when 'Registration' %}
+        Please fill in the details of this registration instance.
+    {% when 'Group' %}
+        Please enter the name of a group for registrants to be assigned to.
+    {% when 'Event' %}
+        Please select or create a calendar event for this registration.
+    {% when 'EventOccurrence' %}
+        Please enter details for the event occurrence.
+    {% when 'Summary' %}
+        Please confirm that you are ready to make the following changes.
+    {% when 'Finished' %}
+        You're done!
+{% endcase %}";
+        }
 
         #region Control Methods
 
@@ -196,7 +227,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Retrieve event calendar items state from ViewState.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns a List of EventCalendarItem objects.</returns>
         private List<EventCalendarItem> GetCalendarItemState()
         {
             List<EventCalendarItem> itemState;
@@ -222,6 +253,7 @@ namespace RockWeb.Blocks.Event
 
             ViewState["SelectedTemplate"] = JsonConvert.SerializeObject( template, Formatting.None, jsonSetting );
         }
+
         private RegistrationTemplate GetSelectedTemplate()
         {
             RegistrationTemplate template;
@@ -373,15 +405,17 @@ namespace RockWeb.Blocks.Event
 
         public class CommitResult
         {
-            public string RegistrationInstanceId, GroupId, EventId, EventOccurrenceId;
+            public string RegistrationInstanceId, GroupId, EventId, EventOccurrenceId, RegistrationTitle;
             public CommitResult()
             {
                 RegistrationInstanceId = "";
                 GroupId = "";
                 EventId = "";
                 EventOccurrenceId = "";
+                RegistrationTitle = "";
             }
         }
+
         /// <summary>
         /// This method commits all changes to the database at once.
         /// </summary>
@@ -448,6 +482,7 @@ namespace RockWeb.Blocks.Event
             registrationInstanceService.Add( registrationInstance );
             rockContext.SaveChanges();
             result.RegistrationInstanceId = registrationInstance.Id.ToString();
+            result.RegistrationTitle = registrationInstance.Name;
 
             // Create Linkage.
             var linkage = new EventItemOccurrenceGroupMap();
@@ -597,6 +632,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetResultLinks( CommitResult result )
         {
+            lblEventRegistrationTitle.Text = result.RegistrationTitle;
             if ( string.IsNullOrWhiteSpace( result.RegistrationInstanceId ) )
             {
                 liRegistrationLink.Visible = false;
@@ -648,10 +684,82 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="pageGuid">The Guid of the page.</param>
         /// <param name="queryParams">Optional query parameters to be included in the URL.</param>
-        /// <returns></returns>
+        /// <returns>Returns a string representing a specific page URL from a PageReference.</returns>
         private string GetPageUrl( string pageGuid, Dictionary<string, string> queryParams = null )
         {
             return new PageReference( pageGuid, queryParams ).BuildUrl();
+        }
+
+        /// <summary>
+        /// Checks to see if the selected RegistrationTemplate has a GroupTypeId.
+        /// </summary>
+        /// <returns>Returns true if the RegistrationTemplate has a GroupTypeId.</returns>
+        private bool SelectedTemplateHasGroupType()
+        {
+            var registrationTemplate = GetSelectedTemplate();
+            if (registrationTemplate == null)
+            {
+                return false;
+            }
+            return registrationTemplate.GroupTypeId.HasValue;
+        }
+
+        private bool ValidateParentGroupSelection( RockContext rockContext )
+        {
+            nbNotAuthorized.Visible = false;
+            nbNotPermitted.Visible = false;
+
+            if (tbGroupName.Text == string.Empty)
+            {
+                return true;
+            }
+
+            Group parentGroup = null;
+            var parentGroupId = gpParentGroup.SelectedValueAsId();
+            if (parentGroupId != null)
+            {
+                var groupService = new GroupService( rockContext );
+                parentGroup = groupService.Get( parentGroupId.Value );
+            }
+            else
+            {
+                Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+                if (rootGroupGuid != null)
+                {
+                    var groupService = new GroupService( rockContext );
+                    parentGroup = groupService.Get( rootGroupGuid.Value );
+                }
+            }
+
+            if (parentGroup != null)
+            {
+                bool isAuthorized = parentGroup.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ||
+                    parentGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+                if (!isAuthorized)
+                {
+                    nbNotAuthorized.Visible = true;
+                    return false;
+                }
+                else
+                {
+                    var registrationTemplateService = new RegistrationTemplateService( rockContext );
+                    var registrationTemplate = registrationTemplateService.Get( ddlTemplate.SelectedValueAsInt().Value );
+                    var groupTypeService = new GroupTypeService( rockContext );
+                    var templateGroupType = groupTypeService.Get( registrationTemplate.GroupTypeId.Value );
+                    var parentGroupType = groupTypeService.Get( parentGroup.GroupTypeId );
+
+                    bool isChildPermitted = parentGroupType.ChildGroupTypes.Contains( templateGroupType );
+                    if (!isChildPermitted)
+                    {
+                        nbNotPermitted.Text = string.Format( "Groups of type \"{0}\" are not permitted under the parent \"{1}\".", templateGroupType.Name, parentGroup.Name );
+                        nbNotPermitted.Visible = true;
+                        return false;
+                    }
+
+                }
+            }
+
+            return true;
         }
 
         #region Control Initialization
@@ -673,7 +781,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                SetActiveWizardStep( ActiveWizardStep.Initiate );
+                SetActiveWizardStep( ActiveWizardStep.InitiateWizard );
 
                 using (var rockContext = new RockContext())
                 {
@@ -844,7 +952,7 @@ namespace RockWeb.Blocks.Event
 
         #region Wizard Navigation Control
 
-        private enum ActiveWizardStep { Initiate, Registration, Group, Event, EventOccurrence, Summary, Finished }
+        private enum ActiveWizardStep { InitiateWizard, Registration, Group, Event, EventOccurrence, Summary, Finished }
 
         private void SetActiveWizardStep( ActiveWizardStep step )
         {
@@ -868,9 +976,23 @@ namespace RockWeb.Blocks.Event
                 SetResultLinks( result );
             }
 
+            SetLavaInstructions( step );
             SetupWizardCSSClasses( step );
             ShowInputPanel( step );
             SetupWizardButtons( step );
+        }
+        private void SetLavaInstructions( ActiveWizardStep step )
+        {
+            pnlLavaInstructions.Visible = false;
+            string lavaTemplate = GetAttributeValue( AttributeKey.InstructionsLavaTemplate );
+            if ( !string.IsNullOrEmpty( lavaTemplate ) )
+            {
+                pnlLavaInstructions.Visible = true;
+                var mergeObjects = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeObjects.Add( "ActiveWizardStep", step.ToString() );
+                mergeObjects.Add( "Page", ( int ) step + 1 );
+                lLavaInstructions.Text = lavaTemplate.ResolveMergeFields( mergeObjects );
+            }
         }
 
         /// <summary>
@@ -890,7 +1012,7 @@ namespace RockWeb.Blocks.Event
             pnlWizard.Visible = true;
             switch ( step )
             {
-                case ActiveWizardStep.Initiate:
+                case ActiveWizardStep.InitiateWizard:
                     initiateClass = baseClass + " active";
                     break;
                 case ActiveWizardStep.Registration:
@@ -960,7 +1082,7 @@ namespace RockWeb.Blocks.Event
 
             switch ( step )
             {
-                case ActiveWizardStep.Initiate:
+                case ActiveWizardStep.InitiateWizard:
                     pnlInitiate.Visible = true;
                     break;
                 case ActiveWizardStep.Registration:
@@ -999,7 +1121,7 @@ namespace RockWeb.Blocks.Event
 
             switch ( step )
             {
-                case ActiveWizardStep.Initiate: break;
+                case ActiveWizardStep.InitiateWizard: break;
                 case ActiveWizardStep.Registration: break;
                 case ActiveWizardStep.Group:
                     lbRegistration.Enabled = true;
@@ -1050,7 +1172,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbTemplate_Click( object sender, EventArgs e )
         {
-            SetActiveWizardStep( ActiveWizardStep.Initiate );
+            SetActiveWizardStep( ActiveWizardStep.InitiateWizard );
         }
 
         protected void lbRegistration_Click( object sender, EventArgs e )
@@ -1080,7 +1202,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbPrev_Registration_Click( object sender, EventArgs e )
         {
-            SetActiveWizardStep( ActiveWizardStep.Initiate );
+            SetActiveWizardStep( ActiveWizardStep.InitiateWizard );
         }
 
         protected void lbNext_Registration_Click( object sender, EventArgs e )
@@ -1106,7 +1228,18 @@ namespace RockWeb.Blocks.Event
 
         protected void lbNext_Group_Click( object sender, EventArgs e )
         {
-            if ( GetAttributeValue( AttributeKey.EnableCalendarEvents ).AsBoolean() )
+            bool groupSelectionIsValid = false;
+
+            using ( var rockContext = new RockContext() )
+            {
+                groupSelectionIsValid = ValidateParentGroupSelection( rockContext );
+            }
+
+            if ( !groupSelectionIsValid )
+            {
+                SetActiveWizardStep( ActiveWizardStep.Group );
+            }
+            else if ( GetAttributeValue( AttributeKey.EnableCalendarEvents ).AsBoolean() )
             {
                 SetActiveWizardStep( ActiveWizardStep.Event );
             }
@@ -1153,7 +1286,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbPrev_Summary_Click( object sender, EventArgs e )
         {
-            if (GetAttributeValue( AttributeKey.EnableCalendarEvents ).AsBoolean())
+            if ( GetAttributeValue( AttributeKey.EnableCalendarEvents ).AsBoolean() )
             {
                 if ( ( tglEventSelection.Checked ) || ( eipSelectedEvent.SelectedValueAsId() != null ) )
                 {
@@ -1225,7 +1358,7 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplateService = new RegistrationTemplateService( rockContext );
                 var registrationTemplate = registrationTemplateService.Get( selectedTemplateId.Value );
                 SaveSelectedTemplate( registrationTemplate );
-                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? true ;
+                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false ;
                 if ( !registrationTemplate.GroupTypeId.HasValue )
                 {
                     tbGroupName.Text = string.Empty;
@@ -1233,16 +1366,6 @@ namespace RockWeb.Blocks.Event
             }
 
             // V9 code should show the description when this is selected.
-        }
-
-        private bool SelectedTemplateHasGroupType()
-        {
-            var registrationTemplate = GetSelectedTemplate();
-            if ( registrationTemplate == null )
-            {
-                return false;
-            }
-            return registrationTemplate.GroupTypeId.HasValue;
         }
 
         protected void tglEventSelection_CheckedChanged( object sender, EventArgs e )
@@ -1285,6 +1408,14 @@ namespace RockWeb.Blocks.Event
         {
             Session["CurrentCalendars"] = cblCalendars.SelectedValuesAsInt;
             ShowItemAttributes();
+        }
+
+        protected void gpParentGroup_SelectItem( object sender, EventArgs e )
+        {
+            using (var rockContext = new RockContext())
+            {
+                ValidateParentGroupSelection( rockContext );
+            }
         }
 
         #region Audience Grid/Dialog Events

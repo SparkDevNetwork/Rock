@@ -359,7 +359,10 @@ namespace Rock.Web.UI.Controls
                 }
                 if ( selectionChanged )
                 {
-                    SelectionChanged( this, new EventArgs() );
+                    if (SelectionChanged != null)
+                    {
+                        SelectionChanged( this, new EventArgs() );
+                    }
                 }
 
                 return false;
