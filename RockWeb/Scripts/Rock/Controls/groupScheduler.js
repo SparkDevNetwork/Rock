@@ -76,10 +76,15 @@
                         $('body').removeClass('state-drag');
                     })
                     .on('drop', function (el, target, source, sibling) {
+                        if (source == target) {
+                            // don't do anything if a person is dragged around within the same occurrence
+                            return;
+                        }
+
                         if (target.classList.contains('js-scheduler-source-container')) {
                             // deal with the resource that was dragged back into the unscheduled resources
                             var $unscheduledResource = $(el);
-                            $unscheduledResource.attr('data-state', 'unscheduled');
+                            $unscheduledResource.attr('data-status', 'unscheduled');
 
                             var personId = $unscheduledResource.attr('data-person-id')
 
@@ -97,7 +102,9 @@
                             var scheduledPersonAddPendingUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddPending';
                             var scheduledPersonAddConfirmedUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddConfirmed';
                             var $scheduledResource = $(el);
-                            $scheduledResource.attr('data-state', 'scheduled');
+
+                            // set the data-status, but it'll get updated again after posting to scheduledPersonAddUrl
+                            $scheduledResource.attr('data-status', 'pending');
                             var personId = $scheduledResource.attr('data-person-id')
                             var attendanceOccurrenceId = $(target).closest('.js-scheduled-occurrence').find('.js-attendanceoccurrence-id').val();
                             var $occurrence = $(el).closest('.js-scheduled-occurrence');
@@ -109,8 +116,8 @@
                                 var attendanceId = $scheduledResource.attr('data-attendance-id')
 
                                 // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
-                                var sourceConfirmationStatus = $scheduledResource.attr('data-state');
-                                if (sourceConfirmationStatus == 'scheduled') {
+                                var sourceConfirmationStatus = $scheduledResource.attr('data-status');
+                                if (sourceConfirmationStatus == 'confirmed') {
                                     scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
                                 }
                                 var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
@@ -220,7 +227,7 @@
                         }
 
                         var $resourceDiv = $('.js-scheduled-resource-template').find('.js-resource').clone();
-                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem, 'scheduled');
+                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem );
                         $schedulerTargetContainer.append($resourceDiv);
                     });
 
@@ -340,7 +347,7 @@
                     for (var i = 0; i < schedulerResources.length; i++) {
                         var schedulerResource = schedulerResources[i];
                         var $resourceDiv = $resourceTemplate.clone();
-                        self.populateResourceDiv($resourceDiv, schedulerResource, 'unscheduled');
+                        self.populateResourceDiv($resourceDiv, schedulerResource );
                         $resourceContainer.append($resourceDiv);
                     }
 
@@ -359,8 +366,8 @@
 
             },
             /**  populates the resource element (both scheduled and unscheduled) */
-            populateResourceDiv: function ($resourceDiv, schedulerResource, state) {
-                $resourceDiv.attr('data-state', state);
+            populateResourceDiv: function ($resourceDiv, schedulerResource) {
+                $resourceDiv.attr('data-status', schedulerResource.ConfirmationStatus);
                 $resourceDiv.attr('data-person-id', schedulerResource.PersonId);
                 $resourceDiv.attr('data-has-scheduling-conflict', schedulerResource.HasSchedulingConflict);
                 $resourceDiv.attr('data-has-blackout-conflict', schedulerResource.HasBlackoutConflict);
@@ -384,11 +391,6 @@
                     var $lastAttendedDate = $resourceDiv.find('.js-resource-lastattendeddate');
                     $lastAttendedDate.attr('data-datetime', schedulerResource.LastAttendanceDateTime);
                     $lastAttendedDate.text(schedulerResource.LastAttendanceDateTimeFormatted);
-                }
-
-
-                if (schedulerResource.ConfirmationStatus) {
-                    $resourceDiv.find('.js-resource-status').attr('data-status', schedulerResource.ConfirmationStatus);
                 }
 
                 // stuff that only applies to unscheduled resource

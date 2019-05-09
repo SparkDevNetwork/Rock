@@ -85,9 +85,9 @@
                                         <Rock:HiddenFieldWithClass ID="hfResourceAdditionalPersonIds" CssClass="js-resource-additional-person-ids" runat="server" />
 
                                         <div class="js-unscheduled-resource-template" style="display: none">
-                                            <%-- template that groupScheduler.js uses to populate unscheduled resources --%>
+                                            <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
 
-                                            <div class="js-resource resource clearfix" data-state="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
+                                            <div class="js-resource resource clearfix" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
                                                 <span class="resource-name js-resource-name"></span>
                                                 <div class="resource-note pull-left">
                                                     <span class="js-resource-note"></span>
@@ -158,16 +158,16 @@
                                 <div class="col-md-8">
 
                                     <div class="js-scheduled-resource-template" style="display: none">
-                                        <%-- template that groupScheduler.js uses to populate scheduled resources --%>
+                                        <%-- template that groupScheduler.js uses to populate scheduled resources, possible data-status values: pending, confirmed, declined --%>
 
-                                        <div class="meta js-resource resource" data-state="scheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
+                                        <div class="meta js-resource resource" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
                                             <div class="meta-figure">
                                             </div>
                                             <div class="meta-body">
                                                 <div class="flex">
 
                                                     <div class="resource-status pull-left">
-                                                        <span class="js-resource-status pull-left resource-scheduled-status" data-status="pending"></span>
+                                                        <span class="js-resource-status pull-left resource-scheduled-status"></span>
                                                     </div>
                                                     <div class="resource-name pull-left">
                                                         <span class="js-resource-name"></span>
