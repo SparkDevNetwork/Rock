@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -3173,4 +3173,3 @@ Sys.Application.add_load(function () {
     #endregion
 
 }
-

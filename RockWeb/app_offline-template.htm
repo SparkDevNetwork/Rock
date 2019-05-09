@@ -3,46 +3,88 @@
     <head runat="server">
         <meta charset="utf-8">
         <title></title>
-
         <script src="Scripts/modernizr.js"></script>
         <script src="Scripts/jquery-3.3.1.min.js"></script>
+<!--
 
-        <link rel="stylesheet" href="Themes/Stark/Styles/bootstrap.css"/>
-        <link rel="stylesheet" href="Themes/Stark/Styles/theme.css" />
 
-        <!-- Set the viewport width to device width for mobile -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  @@@   @@@@@@@@    @@@@@@@@         @@@@@@@@    @@@@@@@@    @@@@@@@@
+ @@@@  @@@@@@@@@@  @@@@@@@@@@       @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
+@@@!!  @@!   @@@@  @@!   @@@@       @@!   @@@@  @@!   @@@@  @@!   @@@@
+  !@!  !@!  @!@!@  !@!  @!@!@       !@!  @!@!@  !@!  @!@!@  !@!  @!@!@
+  @!@  @!@ @! !@!  @!@ @! !@!       @!@ @! !@!  @!@ @! !@!  @!@ @! !@!
+  !@!  !@!!!  !!!  !@!!!  !!!       !@!!!  !!!  !@!!!  !!!  !@!!!  !!!
+  !!:  !!:!   !!!  !!:!   !!!       !!:!   !!!  !!:!   !!!  !!:!   !!!
+  :!:  :!:    !:!  :!:    !:!  :!:  :!:    !:!  :!:    !:!  :!:    !:!
+  :::  ::::::: ::  ::::::: ::   ::  ::::::: ::  ::::::: ::  ::::::: ::
+   ::   : : :  :    : : :  :   ::    : : :  :    : : :  :    : : :  :
 
-        <style>
-            .offline-icon-col {
-                text-align: center;
-            }
+-->
 
-            .offline-icon-col i {
-                font-size: 200px;
-                color: #777;
-            }
-        </style>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8">
+    <title>Restarting | Rock RMS</title>
+    <link rel="stylesheet" href="https://newspring.cc/assets/css/newspring/master.css?v=1457531582" />
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/favicon.ico?v=4" rel="shortcut icon" type="image/x-icon">
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/apple.touch.png" rel="apple-touch-icon" type="image/x-icon">
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/apple.touch.small.png" rel="apple-touch-icon" sizes="72x72" type="image/x-icon">
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/apple.touch.medium.png" rel="apple-touch-icon" sizes="114x114" type="image/x-icon">
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/apple.touch.large.png" rel="apple-touch-icon" sizes="196x196" type="image/x-icon">
+    <link href="//dg0ddngxdz549.cloudfront.net/newspring/icons/apple.touch.large.png" rel="shortcut icon" sizes="196x196">
+    <style>
+      #logo {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        height: 99px;
+        width: 99px;
+      }
 
-    </head>
-    <body>
+      #content-box {
+        margin: auto;
+        margin-top: 40px;
+        padding: 20px;
+      }
 
-        <div class="jumbotron">
-            <div class="row">
-                <div class="col-md-4 offline-icon-col">
-                    <i class="fa fa-cog fa-spin"></i>
-                </div>
-                <div class="col-md-8">
-                    <h1>Updates in Progress...</h1>
-                    <p>Our website is unavailable for the moment. We'll be back and running before long so please try again soon.</p>
-                    <p><em>Thanks for your patience!</em></p>
-
-                    <!-- Consider adding information you think a person might want that's somewhat urgent to their need. -->
-                </div>
-            </div>
-            
+      i {
+        font-size: 40px;
+      }
+    </style>
+  </head>
+  <body id="splash" class="error">
+    <div id="content">
+      <div id="logo">
+        <svg width="99px" height="99px" viewBox="0 0 99 99" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+          <!-- Generator: Sketch 3.3.3 (12081) - http://www.bohemiancoding.com/sketch -->
+          <title>ns_logo</title>
+          <desc>Created with Sketch.</desc>
+          <defs></defs>
+          <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+            <g id="ns_logo" sketch:type="MSLayerGroup">
+              <path d="M49.1754098,98.3655738 C15.8032787,98.3655738 0.00163934426,76.342623 0.00163934426,49.1786885 C0.00163934426,22.0180328 22.0180328,0.00163934426 49.1754098,0.00163934426 C76.3393443,0.00163934426 98.3622951,16.3852459 98.3622951,49.1786885 L98.3622951,98.3655738 L49.1754098,98.3655738" id="Fill-1" fill="#6BAC43" sketch:type="MSShapeGroup"></path>
+              <path d="M28.5786885,28.8836066 L58.1590164,28.8836066 C63.3540984,28.8836066 67.4901639,30.5278689 70.5770492,33.695082 C73.657377,36.7836066 74.6245902,39.7688525 74.6245902,45.7393443 L74.6245902,73.4606557 L59.2163934,73.4606557 L59.2163934,51.4098361 C59.2163934,46.9852459 59.1147541,46.1278689 58.242623,44.4836066 C57.295082,42.4606557 54.7852459,41.1098361 52.0885246,41.1098361 C46.9819672,41.1098361 44.0016393,44.3868852 44.0016393,50.0688525 L44.0016393,73.4606557 L28.5967213,73.4606557 L28.5967213,29.8491803 L28.5786885,28.8836066" id="Fill-2" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div id="content-box">
+        <div class="row">
+          <div class="col-md-12 centered light">
+            <h1 class="light">Rock is Restarting</h1>
+            <p class="info">
+              <i class="fa fa-rocket"></i>
+            </p>
+            <p>
+              Just give it a minute - it's going to space!
+            </p>
+            <p>
+            Thanks for your patience!
+            </p>
+          </div>
         </div>
-
-        
-    </body>
+      </div>
+    </div>
+  </body>
 </html>

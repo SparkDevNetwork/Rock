@@ -18,10 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.Http;
 
 using Rock.Chart;
+using Rock.Model;
 using Rock.Rest.Filters;
+using SharpRaven;
+using SharpRaven.Data;
 
 namespace Rock.Rest.Controllers
 {
@@ -76,11 +80,53 @@ namespace Rock.Rest.Controllers
         public void LogException( Exception ex )
         {
             var personAlias = this.GetPersonAlias();
-            Rock.Model.ExceptionLogService.LogException( ex, System.Web.HttpContext.Current, null, null, personAlias );
+            Model.ExceptionLogService.LogException( ex, HttpContext.Current, null, null, personAlias );
+
+            // send the event to Sentry if configured
+            var sentryDSN = Web.Cache.GlobalAttributesCache.Read().GetValue( "SentryDSN" ) ?? string.Empty;
+            var sentryClient = new RavenClient( sentryDSN );
+            if ( !string.IsNullOrEmpty( sentryDSN ) && sentryClient != null )
+            {
+                //var exceptionLog = new ExceptionLog
+                //{
+                //    HasInnerException = ex.InnerException != null,
+                //    ExceptionType = ex.GetType().ToString(),
+                //    Description = ex.Message,
+                //    Source = ex.Source,
+                //    StackTrace = ex.StackTrace,
+                //    CreatedByPersonAliasId = personAlias.Id,
+                //    ModifiedByPersonAliasId = personAlias.Id,
+                //    CreatedDateTime = RockDateTime.Now,
+                //    ModifiedDateTime = RockDateTime.Now,
+                //};
+
+                //var context = HttpContext.Current;
+                //if ( context != null && context.Request != null && context.Response != null )
+                //{
+                //    exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+                //    exceptionLog.PageUrl = context.Request.Url.ToString();
+                //    exceptionLog.QueryString = context.Request.Url.Query;
+
+                //    var formItems = context.Request.Form;
+                //    if ( formItems.Keys.Count > 0 )
+                //    {
+                //        exceptionLog.Form = formItems.AllKeys.ToDictionary( k => k, k => formItems[k] ).ToString();
+                //    }
+
+                //    var serverVars = context.Request.ServerVariables;
+                //    if ( serverVars.Keys.Count > 0 )
+                //    {
+                //        exceptionLog.ServerVariables = serverVars.AllKeys.ToDictionary( k => k, k => serverVars[k] ).ToString();
+                //    }
+                //}
+
+                //ex.Data.Add( "context", exceptionLog );
+                sentryClient.Capture( new SentryEvent( ex ) );
+            }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ExceptionChartData : IChartData
         {

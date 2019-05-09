@@ -1,0 +1,9 @@
+{% taggeditem where:'EntityGuid == "{{ guid }}"' iterator:'tags' limit:'7' %}
+<p class="tag-list sans-serif push-half-bottom">
+    <small>
+        {% for tag in tags %}
+            <a href="/{{ tag.Tag.Name | Replace:' ','-' | Downcase }}" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ tag.Tag.Name }}</a>
+        {% endfor %}
+    </small>
+</p>
+{% endtaggeditem %}

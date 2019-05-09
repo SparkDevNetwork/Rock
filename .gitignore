@@ -19,18 +19,26 @@ pageviews.csv
 RockLogster.csv
 Quartz.xml
 StyleCop.Cache
+RockWeb/App_Code/ClassDiagram.cd
+RockWeb/App_Code/ClassDiagram2.cd
+RockWeb/prepros-6.config
+RockWeb/Bin/EntityFramework.SqlServer.dll.refresh
+RockWeb/Bin/EntityFramework.dll.refresh
 
 #specific folders
 [Oo]bj/
 RockWeb/Cache/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
+RockWeb/.well-known/*
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
-
 Packages/*
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/cc_newspring
+RockWeb/documents/**/*
 
 # javascript deps
 node_modules
