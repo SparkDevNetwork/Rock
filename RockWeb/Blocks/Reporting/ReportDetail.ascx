@@ -109,15 +109,10 @@
 
                     <div class="panel panel-block">
                         <div class="panel-heading">
-                            <div class="row margin-t-sm">
-                                <div class="col-md-6">
-                                    <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
-                                </div>
-                                <div class="col-md-6 pull-right">
-                                    <div class="pull-right">
-                                        <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" OnClick="btnToggleResults_Click" />
-                                    </div>
-                                </div>
+                            <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
+                                
+                            <div class="panel-labels">
+                                <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
                             </div>
                         </div>
                       

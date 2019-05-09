@@ -1,4 +1,4 @@
-﻿//17
+﻿//19
 // ^^^ This number above is the build number used by the T4 template responsible for generating this file. 
 // Do Not Remove!
 //
@@ -42,9 +42,9 @@ using System.Reflection;
 // The AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
-[assembly: AssemblyVersion( "1.9.0.17" )]
+[assembly: AssemblyVersion( "1.9.0.19" )]
 
-[assembly: AssemblyFileVersion( "1.9.0.17" )]
+[assembly: AssemblyFileVersion( "1.9.0.19" )]
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.

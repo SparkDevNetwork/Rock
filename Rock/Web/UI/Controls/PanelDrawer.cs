@@ -23,7 +23,7 @@ using Rock.Data;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A pull-down drawer for hiding/exposing additional details on various detail blocks.  
+    /// A pull-down drawer for hiding/exposing additional details on various detail blocks.
     /// Just call SetEntity() passing in a IModel entity and the Rock RootUrl to create the
     /// the Created By and Last Modified By audit details.
     /// </summary>
@@ -219,7 +219,7 @@ $('.js-date-rollover').tooltip();
             if ( this.Visible )
             {
                 // panel-drawer div
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

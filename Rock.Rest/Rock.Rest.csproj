@@ -106,12 +106,15 @@
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupMemberAssignmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupMemberScheduleTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupSyncsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
@@ -119,6 +122,7 @@
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
@@ -130,6 +134,7 @@
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\DataViewsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />

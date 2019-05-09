@@ -1,0 +1,76 @@
+{% if cciid and cciid != empty %}
+    {% contentchannelitem id:'{{ cciid }}' iterator:'Items' %}
+        {% for Item in Items %}
+            
+        
+
+            {% capture childIdsConditional %}
+                {% for childItem in Item.ChildItems %}
+                    {% if forloop.first %}
+                        {%- capture childType -%}
+                            {% assign childTypeParts = childItem.ChildContentChannelItem.ContentChannel.Name | Split:' - ' %}
+                            {{ childTypeParts[1] }}
+                        {%- endcapture -%}
+                        {% assign childType = childType | Trim %}
+                    {% endif %}
+                    Id == {{ childItem.ChildContentChannelItem.Id }}{% if forloop.last != true %} || {% endif %}
+                {% endfor %}
+            {% endcapture %}
+
+            {% if childIdsConditional and childIdsConditional != empty %}
+            {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
+            {% contentchannelitem where:'{{ childIdsConditional }}' sort:'{{ sort }}' iterator:'childItems' %}
+
+            {[ swiper id:'entries' ]}
+                {% for child in childItems %}[[ item data:'' ]]
+                    {% capture guid %}{{ child.Guid }}{% endcapture %}
+                    {% capture id %}{{ child.Id }}{% endcapture %}
+                    {% capture cciid %}{{ child.Id }}{% endcapture %}
+                    {% capture type %}{{ childType | Singularize }}{% endcapture %}
+                    {% capture title %}{{ child.Title | Replace:"'","’" }}{% endcapture %}
+                    {% capture titlesize %}h4{% endcapture %}
+                    {% capture content %}{% endcapture %}
+                    {% capture textalignment %}{% endcapture %}
+                    {% capture label %}{% if childType contains "Devotional" %}Session {{ forloop.index }}{% endif %}{% endcapture %}
+                    {% if childType contains "Sermon" or childType contains "Series" %}
+                        {% capture subtitle %}{{ child | Attribute:'ActualDate' | Date:'MMM d, yyyy' }} &middot; {[ communicatorNames guid:'{{ child | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+                    {% endif %}
+                    {% capture video %}{{ child | Attribute:'Video','RawValue' }}{% endcapture %}
+                    {% capture childimage %}{{ child | Attribute:'ImageLandscape','Url' }}{% endcapture %}
+                    {% capture imageurl %}
+                        {% if childType != "Devotionals" %}
+                            {% if childimage and childimage != empty %}
+                                {{ childimage }}
+                            {% elseif video and video != empty %}
+                                {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                            {% endif %}
+                        {% endif %}
+                    {% endcapture %}
+                    {% assign imageurl = imageurl | Trim %}
+                    {% capture imageoverlayurl %}{% endcapture %}
+                    {% capture imagealignment %}{% endcapture %}
+                    {% capture imageopacity %}{% endcapture %}
+                    {% capture grayscale %}{% endcapture %}
+                    {% capture backgroundvideourl %}{% endcapture %}
+                    {% capture lava %}{% endcapture %}
+                    {% capture ratio %}{% endcapture %}
+                    {% capture trimcopy %}y{% endcapture %}
+                    {% capture linkcolor %}{% endcapture %}
+                    {% capture backgroundcolor %}{% endcapture %}
+                    {% capture linkurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ child.Id }}' ]}/{[ getSlugFromId id:'{{ child.Id }}' ]}{% endcapture %}
+                    {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
+                    
+                    {[ card id:'{{ id }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+                    
+                [[ enditem ]]{% endfor %}
+            {[ endswiper ]}
+
+            {% endcontentchannelitem %}
+            {% endif %}
+        {% endfor %}
+    {% endcontentchannelitem %}
+{% else %}
+    <div class="alert alert-danger">
+        <p>No parent content channel item id <strong>(cciid)</strong> parameter value was provided.</p>
+    </div>
+{% endif %}

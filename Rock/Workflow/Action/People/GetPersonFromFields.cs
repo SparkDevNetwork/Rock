@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// Sets an attribute's value to the selected person 
     /// </summary>
     [ActionCategory( "People" )]
-    [Description( "Sets an attribute to a person with matching name and email. If single match is not found a new person will be created." )]
+    [Description( "Sets an attribute to a person that matches based on any given name, email, mobile number, and birth date. If match is not found a new person will be created. Note: If a match is found, it does NOT update the person record with any of the supplied values except the email address (the others are only used to find a match)." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Attribute From Fields" )]
 

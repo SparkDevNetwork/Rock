@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
-    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_5_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
+    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_6_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata_1_6_0.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
@@ -479,6 +479,7 @@ namespace RockWeb.Blocks.Examples
 
                 var elemFamilies = xdoc.Element( "data" ).Element( "families" );
                 var elemGroups = xdoc.Element( "data" ).Element( "groups" );
+                var elemLocations = xdoc.Element( "data" ).Element( "locations" );
                 var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
                 var elemConnections = xdoc.Element( "data" ).Element( "connections" );
                 var elemFollowing = xdoc.Element( "data" ).Element( "following" );
@@ -502,8 +503,6 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                TimeSpan ts;
-
                 //// First delete any sample data that might exist already 
                 // using RockContext in case there are multiple saves (like Attributes)
                 rockContext.WrapTransaction( () =>
@@ -517,12 +516,12 @@ namespace RockWeb.Blocks.Examples
                 // Now we'll clean up by deleting any previously created data such as
                 // families, addresses, people, photos, attendance data, etc.
                 DeleteExistingGroups( elemGroups, rockContext );
-                    DeleteExistingFamilyData( elemFamilies, rockContext );
+                DeleteExistingFamilyData( elemFamilies, rockContext );
 
                 //rockContext.ChangeTracker.DetectChanges();
                 //rockContext.SaveChanges( disablePrePostProcessing: true );
-                ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                LogElapsed( "data deleted" );
+
                 } );
 
                 // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
@@ -532,74 +531,61 @@ namespace RockWeb.Blocks.Examples
                 // using RockContext in case there are multiple saves (like Attributes)
                 rockContext.WrapTransaction( () =>
                 {
-                // Now we can add the families (and people) and then groups.
-                AddFamilies( elemFamilies, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    // Now we can add the families (and people) and then groups.... etc.
+                    AddFamilies( elemFamilies, rockContext );
+                    LogElapsed( "families added" );
 
                     AddRelationships( elemRelationships, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "relationships added" );
+
+                    AddLocations( elemLocations, rockContext );
+                    LogElapsed( "locations added" );
 
                     AddGroups( elemGroups, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "groups added" );
 
                     AddConnections( elemConnections, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} people connection requests added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "people connection requests added" );
 
                     AddFollowing( elemFollowing, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} people following added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "people following added" );
 
                     AddToSecurityGroups( elemSecurityGroups, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "people added to security roles" );
 
-                // Add Registration Templates
-                AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} registration templates added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    LogElapsed( "registration templates added" );
 
-                // Add Registration Instances
-                AddRegistrationInstances( elemRegistrationInstances, rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} registration instances added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    AddRegistrationInstances( elemRegistrationInstances, rockContext );
+                    LogElapsed( "registration instances added..." );
 
                     rockContext.ChangeTracker.DetectChanges();
                     rockContext.SaveChanges( disablePrePostProcessing: true );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "...changes saved" );
 
-                // add logins, but only if we were supplied a password
-                if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                    // add logins, but only if we were supplied a password
+                    if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
                     {
                         AddPersonLogins( rockContext );
-                        ts = _stopwatch.Elapsed;
-                        AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                        LogElapsed( "person logins added" );
                     }
 
-                // Add Person Notes
-                AddPersonNotes( elemFamilies, rockContext );
+                    // Add Person Notes
+                    AddPersonNotes( elemFamilies, rockContext );
                     rockContext.SaveChanges( disablePrePostProcessing: true );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "notes added" );
 
-                // Add Person Previous LastNames
-                AddPeoplesPreviousNames( elemFamilies, rockContext );
+                    // Add Person Previous LastNames
+                    AddPeoplesPreviousNames( elemFamilies, rockContext );
                     rockContext.SaveChanges( disablePrePostProcessing: true );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} previous names added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "previous names added" );
 
-                // Add Person Metaphone/Sounds-like stuff
-                AddMetaphone();
-
+                    // Add Person Metaphone/Sounds-like stuff
+                    AddMetaphone();
                 } );
 
                 // done.
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} done.<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                LogElapsed( "done" );
 
                 if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
                 {
@@ -621,7 +607,17 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// 
+        /// Send the elapsed time and message to the output log.
+        /// </summary>
+        /// <param name="message"></param>
+        private void LogElapsed( string message )
+        {
+            var ts = _stopwatch.Elapsed;
+            AppendFormat( "{0:00}:{1:00}.{2:00} {3}<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10, message );
+        }
+
+        /// <summary>
+        /// Append the formatted content to the client hub (log).
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
@@ -895,6 +891,7 @@ namespace RockWeb.Blocks.Examples
                                 formField.PreText = formFieldElement.Attribute( "preText" ) != null ? formFieldElement.Attribute( "preText" ).Value : string.Empty;
                                 formField.PostText = formFieldElement.Attribute( "postText" ) != null ? formFieldElement.Attribute( "postText" ).Value : string.Empty;
                                 formField.IsGridField = formFieldElement.Attribute( "showOnGrid" ) != null ? formFieldElement.Attribute( "showOnGrid" ).Value.AsBoolean() : false;
+                                formField.ShowOnWaitlist = formFieldElement.Attribute( "showOnWaitList" ) != null ? formFieldElement.Attribute( "showOnWaitList" ).Value.AsBoolean() : false;
                                 formField.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
                                 formField.Order = ffOrder;
                                 formField.CreatedDateTime = RockDateTime.Now;
@@ -1541,6 +1538,99 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles adding locations from the given XML element snippet.
+        /// </summary>
+        /// <param name="elemLocations"></param>
+        /// <param name="rockContext"></param>
+        private void AddLocations( XElement elemLocations, RockContext rockContext )
+        {
+            if ( elemLocations == null )
+            {
+                return;
+            }
+
+            var allLocations = from n in elemLocations.Elements( "location" )
+                                select new
+                                {
+                                    Type = n.Attribute( "type" ).Value,
+                                    Name = n.Attribute( "name" ).Value,
+                                    Guid = n.Attribute( "guid" ).Value.AsGuid(),
+                                    ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
+                                };
+
+            foreach ( var l in allLocations )
+            {
+                AddLocation( l.ParentLocationGuid, l.Guid, l.Type, l.Name, rockContext );
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a location if the guid does not already exist.
+        /// </summary>
+        /// <param name="parentLocationGuid"></param>
+        /// <param name="locationGuid"></param>
+        /// <param name="type"></param>
+        /// <param name="name"></param>
+        /// <param name="rockContext"></param>
+        private void AddLocation( string parentLocationGuid, Guid locationGuid, string type, string name, RockContext rockContext )
+        {
+            var service = new LocationService( rockContext );
+
+            var existingLocation = service.GetNoTracking( locationGuid );
+
+            // Don't re-add an existing location
+            if ( existingLocation != null )
+            {
+                return;
+            }
+
+            Guid locationTypeGuid = new Guid();
+
+            switch ( type )
+            {
+                case "room":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid();
+                    break;
+
+                case "building":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_BUILDING.AsGuid();
+                    break;
+
+                case "campus":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid();
+                    break;
+
+                default:
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid();
+                    break;
+            }
+
+            var locationTypeValueId = DefinedValueCache.Get( locationTypeGuid ).Id;
+
+            var location = new Location()
+            {
+                Name = name,
+                Guid = locationGuid,
+                LocationTypeValueId = locationTypeValueId,
+                IsActive = true,
+                CreatedDateTime = RockDateTime.Now,
+                ModifiedDateTime = RockDateTime.Now
+            };
+
+            // Set the location's parent location if given
+            if ( ! string.IsNullOrEmpty( parentLocationGuid ) )
+            {
+                // save changes in case the location was just added prior.
+                rockContext.SaveChanges();
+                // The given parent location guid must be valid.
+                location.ParentLocation = service.Get( parentLocationGuid.AsGuid() );
+            }
+
+            service.Add( location );
+        }
+
+        /// <summary>
         /// Handles adding groups from the given XML element snippet.
         /// </summary>
         /// <param name="elemGroups">The elem groups.</param>
@@ -1713,12 +1803,15 @@ namespace RockWeb.Blocks.Examples
                             Guid scheduleGuid = elemSchedule.Attribute( "guid" ).Value.Trim().AsGuid();
                             Schedule schedule = scheduleService.Get( scheduleGuid );
                             groupLocation.Schedules.Add( schedule );
+
+                            // TODO -- once Group Scheduling is in develop, add the GroupLocationScheduleConfig
+                            // data (minimumCapacity, desiredCapacity, maximumCapacity) if any was given.
+
                         }
                         catch
                         { }
                     }
-                    TimeSpan ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "group location schedules added" );
                 }
              }
         }
@@ -2883,7 +2976,6 @@ namespace RockWeb.Blocks.Examples
 
             return familyMembers;
         }
-
 
         /// <summary>
         /// Gets or adds a new DefinedValue to the given DefinedTypeCache and returns the Id of the value.

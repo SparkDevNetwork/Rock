@@ -284,6 +284,42 @@
     <Compile Include="Migrations\201904092249258_Rollup_0409.Designer.cs">
       <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904231856504_Rollup_0423.cs" />
+    <Compile Include="Migrations\201904231856504_Rollup_0423.Designer.cs">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904241838299_SmsActions.cs" />
+    <Compile Include="Migrations\201904241838299_SmsActions.Designer.cs">
+      <DependentUpon>201904241838299_SmsActions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904252048025_ContentChannelSlugs.cs" />
+    <Compile Include="Migrations\201904252048025_ContentChannelSlugs.Designer.cs">
+      <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904291735560_AttendanceLabelData.cs" />
+    <Compile Include="Migrations\201904291735560_AttendanceLabelData.Designer.cs">
+      <DependentUpon>201904291735560_AttendanceLabelData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904291843444_AddEnableGroupTagToGroupType.cs" />
+    <Compile Include="Migrations\201904291843444_AddEnableGroupTagToGroupType.Designer.cs">
+      <DependentUpon>201904291843444_AddEnableGroupTagToGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904292230042_AttendanceData.cs" />
+    <Compile Include="Migrations\201904292230042_AttendanceData.Designer.cs">
+      <DependentUpon>201904292230042_AttendanceData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905081642588_AddIsActiveToPersonalDevice.cs" />
+    <Compile Include="Migrations\201905081642588_AddIsActiveToPersonalDevice.Designer.cs">
+      <DependentUpon>201905081642588_AddIsActiveToPersonalDevice.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905081957016_GroupScheduling.cs" />
+    <Compile Include="Migrations\201905081957016_GroupScheduling.Designer.cs">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905082317243_Rollup_0508.cs" />
+    <Compile Include="Migrations\201905082317243_Rollup_0508.Designer.cs">
+      <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -738,6 +774,33 @@
     <EmbeddedResource Include="Migrations\201904092249258_Rollup_0409.resx">
       <DependentUpon>201904092249258_Rollup_0409.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904231856504_Rollup_0423.resx">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904241838299_SmsActions.resx">
+      <DependentUpon>201904241838299_SmsActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904252048025_ContentChannelSlugs.resx">
+      <DependentUpon>201904252048025_ContentChannelSlugs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904291735560_AttendanceLabelData.resx">
+      <DependentUpon>201904291735560_AttendanceLabelData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904291843444_AddEnableGroupTagToGroupType.resx">
+      <DependentUpon>201904291843444_AddEnableGroupTagToGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904292230042_AttendanceData.resx">
+      <DependentUpon>201904292230042_AttendanceData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905081642588_AddIsActiveToPersonalDevice.resx">
+      <DependentUpon>201905081642588_AddIsActiveToPersonalDevice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905081957016_GroupScheduling.resx">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905082317243_Rollup_0508.resx">
+      <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -1003,6 +1066,15 @@
     </Content>
     <Content Include="Migrations\201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory.sql">
       <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob.sql">
+      <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201905081957016_GroupScheduling_PopulateScheduleTemplates.sql">
+      <DependentUpon>201905081957016_GroupScheduling.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201905082317243_Rollup_0508_FixLavaChartShortcode.sql">
+      <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

@@ -38,6 +38,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:CurrencyBox ID="tbControlAmount" runat="server" Label="Control Amount" />
+                            <Rock:NumberBox ID="nbControlItemCount" runat="server" Label="Control Item Count" NumberType="Integer" />
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="AccountingSystemCode"
                                 Help="Optional id or code from an external accounting system." />

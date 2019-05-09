@@ -7,7 +7,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-tag"></i>Tag List</h1>
                 <div class="form-inline pull-right">
-                    <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Type" CssClass="input-width-lg" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Type" CssClass="input-width-lg input-sm" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 </div>
             </div>
             <div class="panel-body">
