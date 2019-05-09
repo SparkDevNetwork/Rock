@@ -434,6 +434,12 @@ namespace Rock.Model
         [DataMember]
         public int? SiteLogoBinaryFileId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the latest version date time.
+        /// </summary>
+        /// <value>
+        /// The latest version date time.
+        /// </value>
         [DataMember]
         public DateTime? LatestVersionDateTime { get; set; }
 
@@ -469,6 +475,12 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
         [NotMapped]
         public string ThumbnailFileUrl
         {
@@ -896,7 +908,12 @@ namespace Rock.Model
     /// </summary>
     public enum SiteType
     {
+        /// <summary>
+        /// </summary>
         Web,
+
+        /// <summary>
+        /// </summary>
         Mobile
     }
 

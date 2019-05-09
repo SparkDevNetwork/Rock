@@ -17,6 +17,12 @@
 
     <div class="personprofile">
 
+        <!-- Ajax Error -->
+        <div class="alert alert-danger ajax-error no-index" style="display:none">
+            <p><strong>Error</strong></p>
+            <span class="ajax-error-message"></span>
+        </div>
+
         <div class="personprofilebar-bio">
                 <Rock:Zone Name="Individual Detail" runat="server" />
         </div>

@@ -934,12 +934,28 @@ namespace Rock.Data
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location schedule configs.
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        public DbSet<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member assignments.
+        /// </summary>
+        /// <value>
+        /// The group member assignments.
+        /// </value>
+        public DbSet<GroupMemberAssignment> GroupMemberAssignments { get; set; }
 
         /// <summary>
         /// Gets or sets the group member historicals.
@@ -956,6 +972,14 @@ namespace Rock.Data
         /// The group member requirements.
         /// </value>
         public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member schedule templates.
+        /// </summary>
+        /// <value>
+        /// The group member schedule templates.
+        /// </value>
+        public DbSet<GroupMemberScheduleTemplate> GroupMemberScheduleTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the group member workflow triggers.
@@ -1036,6 +1060,14 @@ namespace Rock.Data
         /// the Html Contents.
         /// </value>
         public DbSet<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS actions.
+        /// </summary>
+        /// <value>
+        /// The SMS actions.
+        /// </value>
+        public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
         /// Gets or sets the Interactions.
@@ -1308,6 +1340,14 @@ namespace Rock.Data
         /// The person previous names.
         /// </value>
         public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The person schedule exclusions.
+        /// </value>
+        public DbSet<PersonScheduleExclusion> PersonScheduleExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Signals.

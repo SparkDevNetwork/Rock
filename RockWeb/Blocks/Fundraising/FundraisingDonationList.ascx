@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-money"></i> Fundraising Donations</h3>
+                <h1 class="panel-title"><i class="fa fa-money"></i> Fundraising Donations</h1>
             </div>
 
             <div class="panel-body">

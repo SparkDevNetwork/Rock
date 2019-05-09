@@ -223,8 +223,8 @@
             scrollToSelectedItem: function () {
                 var $selectedItem = $('#' + this.options.controlId).find('.picker-menu').find('.selected').first();
                 if ($selectedItem.length && (!this.alreadyScrolledToSelected)) {
-                    this.iScroll.scrollToElement(".selected", "0s");
                     this.updateScrollbar();
+                    this.iScroll.scrollToElement('.selected', '0s');
                     this.alreadyScrolledToSelected = true;
                 } else {
                     // initialize/update the scrollbar

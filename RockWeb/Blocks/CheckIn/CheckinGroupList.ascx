@@ -4,8 +4,8 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
-            <div class="panel-heading clearfix">
+
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-check-square-o"></i>
                     Check-in Areas
@@ -16,7 +16,7 @@
                 <asp:Literal ID="lWarnings" runat="server" />
                 <asp:Literal ID="lContent" runat="server" />
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

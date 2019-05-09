@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
+using System.Web.Configuration;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
@@ -213,12 +214,8 @@ namespace RockWeb
                     }
 
                     // Register Routes
-                    stopwatch.Restart();
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "RegisterRoutes - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
+                    RouteTable.Routes.Clear();
+                    Rock.Web.RockRouteHandler.RegisterRoutes();
 
                     // Configure Rock Rest API
                     stopwatch.Restart();
@@ -226,7 +223,6 @@ namespace RockWeb
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                        stopwatch.Restart();
                     }
 
                     // setup and launch the jobs infrastructure if running under IIS
@@ -380,6 +376,42 @@ namespace RockWeb
 
             } ).Start();
             
+        }
+
+        /// <summary>
+        /// Handles the EndRequest event of the Application control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void Application_EndRequest( object sender, EventArgs e )
+        {
+            /*
+	        4/28/2019 - JME 
+	        The goal of the code below is to ensure that all cookies are set to be secured if
+            the request is HTTPS. This is a bit tricky as we don't want to always make them
+            secured as the server may not support SSL (development or small organizations).
+            https://www.hanselman.com/blog/HowToForceAllCookiesToSecureUnderASPNET11.aspx
+
+            Also, if the Request starts as HTTP and then the site redirects to HTTPS because it
+            is required the Session cookie will have been created as unsecured. The code that does
+            this redirection has been updated to clear the session cookie so it will be recreated
+            as secured.	
+	
+            Reason: Life.Church Request to increase security
+            */
+
+
+            // Set cookies to be secured if the site has SSL
+            // https://www.hanselman.com/blog/HowToForceAllCookiesToSecureUnderASPNET11.aspx
+            if ( !Request.IsSecureConnection || Response.Cookies.Count == 0 )
+            {
+                return;
+            }
+
+            foreach ( string key in Response.Cookies.AllKeys )
+            {
+                Response.Cookies[key].Secure = true;
+            }
         }
 
         /// <summary>
@@ -844,37 +876,6 @@ namespace RockWeb
 
                 rockContext.SaveChanges();
             }
-        }
-
-        /// <summary>
-        /// Registers the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
-        {
-            routes.Clear();
-
-            PageRouteService pageRouteService = new PageRouteService( rockContext );
-
-            // Add ingore rule for asp.net ScriptManager files. 
-            routes.Ignore("{resource}.axd/{*pathInfo}");
-
-            //Add page routes
-            var pageRoutes = pageRouteService.Queryable().OrderBy( r => r.Route).ToList();
-
-            foreach ( var pageRoute in pageRoutes )
-            {
-                routes.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
-            }
-
-            // Add a default page route
-            routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for when no parameters are passed
-            routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for shortlinks
-            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
         }
 
         /// <summary>

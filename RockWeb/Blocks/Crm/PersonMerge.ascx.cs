@@ -418,6 +418,7 @@ validity of the request before completing this merge." :
                         primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
                         primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote" );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote" );
+                        primaryPerson.ContributionFinancialAccountId = GetNewIntValue( "ContributionFinancialAccountId" );
 
                         primaryPerson.CreatedDateTime = MergeData.People
                                                         .Min( a => a.CreatedDateTime );
@@ -1246,6 +1247,9 @@ validity of the request before completing this merge." :
             AddProperty( "EmailPreference", person.Id, person.EmailPreference );
             AddProperty( "InactiveReasonNote", person.Id, person.InactiveReasonNote );
             AddProperty( "SystemNote", person.Id, person.SystemNote );
+            AddProperty( "ContributionFinancialAccountId", "Contribution Financial Account", person.Id,
+                person.ContributionFinancialAccountId.ToStringSafe(),
+                person.ContributionFinancialAccount != null ? person.ContributionFinancialAccount.PublicName : string.Empty );
         }
 
         private void AddProperty( string key, int personId, string value, bool selected = false )

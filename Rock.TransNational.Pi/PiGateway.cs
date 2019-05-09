@@ -53,7 +53,7 @@ namespace Rock.TransNational.Pi
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class PiGateway : GatewayComponent, IHostedGatewayComponent
+    public class PiGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
     {
         #region Attribute Keys
 
@@ -85,7 +85,7 @@ namespace Rock.TransNational.Pi
             }
             else
             {
-                return "https://app.gotnpgateway.co ";
+                return "https://app.gotnpgateway.com";
             }
         }
 
@@ -112,6 +112,79 @@ namespace Rock.TransNational.Pi
         {
             return this.GetAttributeValue( financialGateway, AttributeKey.PrivateApiKey );
         }
+
+        #region IAutomatedGatewayComponent
+
+        /// <summary>
+        /// The most recent exception thrown by the gateway's remote API
+        /// </summary>
+        public Exception MostRecentException { get; private set; }
+
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        /// <exception cref="ReferencePaymentInfoRequired"></exception>
+        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
+        {
+            // TODO - Fees? If Pi provides fee info, we won't be able to use the Charge method as the transaction it returns
+            // doesn't have the capacity to relay fee info (also the reason this method returns a Payment rather than a
+            // transaction.
+
+            // payment.FeeAmount and payment.NetAmount
+
+            MostRecentException = null;
+
+            try
+            {
+                var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    MostRecentException = new Exception( errorMessage );
+                    return null;
+                }
+
+                var paymentDetail = transaction.FinancialPaymentDetail;
+
+                var payment = new Payment
+                {
+                    AccountNumberMasked = paymentDetail.AccountNumberMasked,
+                    Amount = paymentInfo.Amount,
+                    ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted,
+                    ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted,
+                    IsSettled = transaction.IsSettled,
+                    SettledDate = transaction.SettledDate,
+                    NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted,
+                    Status = transaction.Status,
+                    StatusMessage = transaction.StatusMessage,
+                    TransactionCode = transaction.TransactionCode,
+                    TransactionDateTime = transaction.TransactionDateTime ?? RockDateTime.Now
+                };
+
+                if ( paymentDetail.CreditCardTypeValueId.HasValue )
+                {
+                    payment.CreditCardTypeValue = DefinedValueCache.Get( paymentDetail.CreditCardTypeValueId.Value );
+                }
+
+                if ( paymentDetail.CurrencyTypeValueId.HasValue )
+                {
+                    payment.CurrencyTypeValue = DefinedValueCache.Get( paymentDetail.CurrencyTypeValueId.Value );
+                }
+
+                return payment;
+            }
+            catch ( Exception e )
+            {
+                MostRecentException = e;
+                throw;
+            }
+        }
+
+        #endregion IAutomatedGatewayComponent
 
         #region IHostedGatewayComponent
 

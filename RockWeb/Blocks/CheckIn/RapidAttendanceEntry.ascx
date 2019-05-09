@@ -6,12 +6,12 @@
 
         <asp:Panel ID="pnlEntry" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-calendar-check-o"></i> Rapid Attendance</h1>
                 <div class="pull-right">
                     <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Info" Text="Current Attendance: 0" />
                 </div>
-                <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i> Rapid Attendance</h3> 
             </div>
-            
+
             <div class="panel-body">
                 <div class="row">
                     <asp:Panel ID="pnlGroupPicker" runat="server" CssClass="col-md-4">
@@ -28,7 +28,7 @@
                 </div>
 
                 <Rock:DatePicker ID="dpAttendanceDate" runat="server" Required="true" Label="Attendance Date" Help="The date to use when recording the person as having attended." OnTextChanged="dpAttendanceDate_TextChanged" AutoPostBack="true" />
-                
+
                 <hr />
 
                 <div class="row">
@@ -56,7 +56,7 @@
 
         <asp:Panel ID="pnlCurrentAttendees" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title">Current Attendees</h3>
+                <h1 class="panel-title">Current Attendees</h1>
             </div>
 
             <div class="panel-body">

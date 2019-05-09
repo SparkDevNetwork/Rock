@@ -700,6 +700,12 @@ namespace Rock.SystemGuid
         public const string GENERAL_SETTINGS = "0B213645-FA4E-44A5-8E4C-B2D8EF054985";
 
         /// <summary>
+        /// Gets the Give page guid (give now parent)
+        /// ParentPage: Give
+        /// </summary>
+        public const string GIVE = "8BB303AF-743C-49DC-A7FF-CC1236B4B1D9";
+
+        /// <summary>
         /// Gets the Give Now page guid
         /// ParentPage: Give
         /// </summary>
@@ -1501,6 +1507,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Manage
         /// </summary>
         public const string TAGS_MANAGE = "2654EBE9-F585-4E64-93F3-102357F89660";
+
+        /// <summary>
+        /// Gets the Text To Give Setup page guid
+        /// </summary>
+        public const string TEXT_TO_GIVE_SETUP = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1";
 
         /// <summary>
         /// Gets the Time Select page guid

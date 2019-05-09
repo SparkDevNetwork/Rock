@@ -16,6 +16,8 @@ declare
     @EndDateTime datetime,
     @DidAttend int,
     @CampusId int,
+	@OccurrenceDate date,
+	@AttendanceOccurrenceId int,
     @categoryServiceTimes int = (select id from Category where [Guid] = '4FECC91B-83F9-4269-AE03-A006F401C47E'),
     @randomDateInc decimal = 0.5,
 	@yearsBack int = 10
@@ -34,25 +36,15 @@ declare
 
 declare
      @attendanceTable TABLE(
-   	    [LocationId] [int] NULL,
-	    [ScheduleId] [int] NULL,
-	    [GroupId] [int] NULL,
 	    [PersonAliasId] [int] NULL,
 	    [DeviceId] [int] NULL,
-	    [SearchTypeValueId] [int] NULL,
 	    [AttendanceCodeId] [int] NULL,
 	    [QualifierValueId] [int] NULL,
 	    [StartDateTime] [datetime] NOT NULL,
-	    [EndDateTime] [datetime] NULL,
 	    [DidAttend] [bit] NOT NULL,
-	    [Note] [nvarchar](max) NULL,
 	    [Guid] [uniqueidentifier] NOT NULL,
-	    [CreatedDateTime] [datetime] NULL,
-	    [ModifiedDateTime] [datetime] NULL,
-	    [CreatedByPersonAliasId] [int] NULL,
-	    [ModifiedByPersonAliasId] [int] NULL,
-	    [ForeignId] [nvarchar](50) NULL,
-	    [CampusId] [int] NULL
+	    [CampusId] [int] NULL,
+		[OccurrenceId] [int]
     );
 
 begin
@@ -78,9 +70,16 @@ begin
         end
 
 		set @StartDateTime = DATEADD(ss, (86000*@daysBack/@maxAttendanceCount), @StartDateTime);
+		set @OccurrenceDate = convert(date, @StartDateTime);
         set @DidAttend = (select case when FLOOR(rand() * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
         set @CampusId = (select top 1 Id from Campus order by newid()) 
         set @AttendanceCodeId = (select top 1 Id from @attendanceCodeIds order by newid())
+
+		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
+		if (@AttendanceOccurrenceId is null) begin
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, newid());
+			set @AttendanceOccurrenceId = @@IDENTITY;
+		end
 
 		if ( FLOOR(rand() * 10) = 5) begin
 			-- randomly set CampusId to null since some types of attendance don't have a campus (like neighborhood groups )
@@ -88,32 +87,23 @@ begin
 		end
 
         INSERT INTO @attendanceTable
-                   ([LocationId]
-                    ,[ScheduleId]
-                    ,[GroupId]
-                    ,[PersonAliasId]
+                   ([PersonAliasId]
                     ,[DeviceId] 
-                    --,[SearchTypeValueId]
                     ,[AttendanceCodeId]
-                    --,[QualifierValueId]
                     ,[StartDateTime]
-                    --,[EndDateTime]
                     ,[DidAttend]
                     ,[CampusId]
+					,[OccurrenceId]
                     ,[Guid])
              VALUES
-                   (@LocationId
-                    ,@ScheduleId
-                    ,@GroupId
-                    ,@PersonAliasId
+                   (
+                    @PersonAliasId
                     ,@DeviceId
-                    --,@SearchTypeValueId
                     ,@AttendanceCodeId
-                    --,@QualifierValueId
                     ,@StartDateTime
-                    --,@EndDateTime
                     ,@DidAttend
                     ,@CampusId
+					,@AttendanceOccurrenceId
                    ,NEWID()
         )
 
@@ -123,8 +113,10 @@ begin
 
     --truncate table Attendance    
     insert into Attendance 
-        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
-    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
+        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
+    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
+
+	select count(*) from Attendance
 end;
 
 

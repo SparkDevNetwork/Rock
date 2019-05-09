@@ -19,7 +19,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading panel-follow clearfix">
+                <div class="panel-heading panel-follow">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -94,7 +94,7 @@
 
                         <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
-                                <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
+                                <Rock:Grid ID="gLocations" runat="server" AllowPaging="false"  DisplayType="Light" RowItemText="Location">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
@@ -125,6 +125,20 @@
                                     </div>
                                 </div>
                             </asp:Panel>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbSchedulingMustMeetRequirements" runat="server" Label="Scheduling Must Meet Requirements" Help="Indicates whether group members must meet the group member requirements before they can be scheduled." />
+
+                                    <Rock:RockDropDownList ID="ddlAttendanceRecordRequiredForCheckIn" runat="server" Label="Attendance Record Required For Check-in" Help="Determines if the person must be scheduled prior to checking in." />
+
+                                    <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
@@ -249,6 +263,7 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                <asp:HyperLink ID="hlGroupScheduler" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Scheduler"><i class="fa fa-calendar-alt"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="fa fa-history"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Fundraising"><i class="fa fa-line-chart"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
@@ -273,11 +288,13 @@
             </Content>
         </Rock:ModalDialog>
 
-        <!-- Locations Modal Dialog -->
-        <Rock:ModalDialog ID="dlgLocations" runat="server" Title="Group Location" OnSaveClick="dlgLocations_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
+        <!-- Group Location Modal Dialog -->
+        <Rock:ModalDialog ID="dlgLocations" runat="server" Title="Group Location" SaveButtonText="Ok" OnSaveClick="dlgLocations_OkClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
             <Content>
 
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
+                <asp:HiddenField ID="hfAction" runat="server" />
+                <Rock:NotificationBox ID="nbGroupLocationEditMessage" runat="server" NotificationBoxType="Info" />
 
                 <asp:ValidationSummary ID="valLocationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Location" />
 
@@ -297,13 +314,61 @@
                         <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
                     </asp:Panel>
                     <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
-                        <Rock:LocationPicker ID="locpGroupLocation" runat="server" Label="Location" ValidationGroup="Location" />
+                        <Rock:LocationPicker ID="locpGroupLocation"  runat="server" Label="Location" ValidationGroup="Location"  OnSelectLocation="locpGroupLocation_SelectLocation" />
                     </asp:Panel>
                 </div>
 
                 <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Value" ValidationGroup="Location" />
 
-                <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
+                <div class="row">
+                    <div class="col-md-3">
+                       <asp:HiddenField ID="hfLocationGuid" runat="server" />
+                       <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
+                    </div>
+                    <div class="col-md-9">
+                        <%-- Group Location Schedule Capacities (if Group Scheduling Enabled) --%>
+                        <Rock:RockControlWrapper ID="rcwGroupLocationScheduleCapacities" runat="server" Label="Capacities" Help="Set the capacities to use when scheduling people to this location.">
+                            <asp:Repeater ID="rptGroupLocationScheduleCapacities" runat="server" OnItemDataBound="rptGroupLocationScheduleCapacities_ItemDataBound">
+                                <HeaderTemplate>
+                                    <div class="row">
+                                        <div></div>
+                                        <div class="col-xs-3">
+                                            <span class="control-label"></span>
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <span class="control-label">Minimum</span>
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <span class="control-label">Desired</span>
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <span class="control-label">Maximum</span>
+                                        </div>
+                                    </div>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <div class="row margin-t-sm">
+                                        <div>
+                                         <asp:HiddenField ID="hfScheduleId" runat="server" />
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <asp:Literal ID="lScheduleName" runat="server" />
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <Rock:NumberBox ID="nbMinimumCapacity" CssClass="input-width-sm" runat="server" NumberType="Integer" MinimumValue="0" />
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <Rock:NumberBox ID="nbDesiredCapacity" CssClass="input-width-sm" runat="server" NumberType="Integer" MinimumValue="0" />
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <Rock:NumberBox ID="nbMaximumCapacity" CssClass="input-width-sm" runat="server" NumberType="Integer" MinimumValue="0" />
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </Rock:RockControlWrapper>
+                    </div>
+                </div>
 
             </Content>
         </Rock:ModalDialog>

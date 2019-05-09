@@ -28,7 +28,7 @@ namespace Rock.Financial
     {
         /// <summary>
         /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
-        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControl" />
+        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControlTokenEvent" />
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="controlId">The control identifier.</param>
@@ -71,12 +71,13 @@ namespace Rock.Financial
         string LearnMoreURL { get; }
 
         /// <summary>
-        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl(FinancialGateway, bool, string)"/>
+        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl" />
         /// and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentToken">The payment token.</param>
         /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         string CreateCustomerAccount( FinancialGateway financialGateway, string paymentToken, PaymentInfo paymentInfo, out string errorMessage );
 
