@@ -116,6 +116,10 @@
 
         </asp:Panel>
 
+        <asp:Panel ID="pnlLavaInstructions" runat="server" Visible="false" >
+            <asp:Literal ID="lLavaInstructions" runat="server" />
+        </asp:Panel>
+
         <asp:Panel ID="pnlInitiate" runat="server">
             <div class="panel panel-block">
                 <div class="panel-heading">
@@ -258,7 +262,16 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:GroupPicker ID="gpParentGroup" runat="server" Label="Parent Group" />
+                                <Rock:GroupPicker ID="gpParentGroup" runat="server" Label="Parent Group" OnSelectItem="gpParentGroup_SelectItem" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Not Authorized">
+                                    You are not authorized to modify the selected group.  Please choose another parent group.
+                                </Rock:NotificationBox>
+                                <Rock:NotificationBox ID="nbNotPermitted" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type Not Permitted">
+                                </Rock:NotificationBox>
                             </div>
                         </div>
                         <div class="actions">
@@ -281,7 +294,6 @@
                     <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
                     <fieldset>
-                        <!-- Hide if allowcreating.. is false -->
                         <asp:Panel ID="pnlNewEventSelection" runat="server">
                             <div class="row">
                                 <div class="col-md-12">
@@ -314,11 +326,6 @@
                                     <Rock:HtmlEditor ID="htmlEventDescription" runat="server" Label="Description" Toolbar="Light" />
                                 </div>
                             </div>
-
-                            <!--
-                                Reminder:
-                                Copy Audiences and Attributes Logic From \Blocks\Event\EventItemDetail.ascx
-                                -->
 
                             <div class="row">
                                 <div class="col-md-6">
