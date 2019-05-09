@@ -1,3 +1,4 @@
+{%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture url %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
@@ -62,7 +63,7 @@
         {% if content != null and content != '' %}
             {% if trimcopy != null and trimcopy != '' %}
                 {% assign length = content | Size %}
-                {{ content | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#modal-{{ id }}">read more</a>{% endif %}
+                {{ content | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
             {% else %}
                 {{ content }}
             {% endif %}
@@ -83,7 +84,7 @@
 
 {% if trimcopy != null and trimcopy != '' %}
     {% if length > 140 %}
-    <div class="modal fade" id="modal-{{ id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
