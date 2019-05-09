@@ -4,7 +4,7 @@
       <div class="modal-body soft-half">
         <form action="">
           <h2 class="push-half-ends text-center">Hello{% if CurrentPerson != null %}, {{ CurrentPerson.NickName }}{% endif %}.</h2>
-          <input data-search-modal-input class="form-control input input text-center" type="text" placeholder="What can we help you find?">
+          <input id="search-modal-input" data-search-modal-input class="form-control input input text-center" type="text" placeholder="What can we help you find?">
         </form>
       </div>
       <div class="modal-footer">

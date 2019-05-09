@@ -1,70 +1,90 @@
-<div id="results">
+<div id="results" class="row">
 </div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
     // Find search input
     var searchInput = document.querySelector('[data-search-input]');
 
+    // Focus on search input
+    searchInput.focus();
+
+    // Find clear button
+    var searchInputClear = document.querySelector('[data-search-input-clear]');
+
     // Get query strings
-    var params = new URLSearchParams(window.location.search)
+    var params = new URLSearchParams(window.location.search);
+
+    // Define results container
+    var resultsContainer = document.getElementById("results");
 
     // If query exists, go ahead and search
     if(params.has('query')){
-        var query = params.get('query');
+        searchInputClear.classList.remove('hidden');
+        var query = params.get('query').toLowerCase();
+        searchInput.value = query;
         searchGoogle(query);
     }
 
-    // Listen for return key
-    searchInput.addEventListener('keypress', function (e) {
-        var key = e.which || e.keyCode;
-
-        if (key === 13) { // 13 is enter
-            searchGoogle(searchInput.value);
-        }
+    // Clear search input when clear button is clicked
+    searchInputClear.addEventListener('click', function (e) {
+        searchInputClear.classList.add('hidden');
+        resultsContainer.innerHTML = '';
+        searchInput.value = "";
+        Stretchy.resize(searchInput,searchInput.parentElement);
+        searchInput.focus();
     });
 
 
+    // Listen for window resize
+    window.addEventListener('resize', function(){
+        Stretchy.resize(searchInput,searchInput.parentElement);
+    });
 
-    function populateResults(response) {
-        var resultsContainer = document.getElementById("results");
+    
+    // Listen for return key
+    searchInput.addEventListener('keyup', function(e) {
+        var key = e.which || e.keyCode;
+        var query = searchInput.value;
+        
+        if (key === 13) { // 13 is enter
 
-        // Clear results for each search
-        resultsContainer.innerHTML = ''
+            if(query == '') {
+                searchInput.parentElement.parentElement.classList.remove('bg-gray-dark');
+                searchInput.parentElement.parentElement.classList.add('bg-info');
+                searchInput.placeholder='Please type a word or phrase';
+                Stretchy.resize(searchInput,searchInput.parentElement);
+            } else {
+                searchInput.blur();
+                searchInput.parentElement.parentElement.classList.remove('bg-info');
+                searchInput.parentElement.parentElement.classList.add('bg-gray-dark');
+                searchGoogle(query);
+                history.pushState(null, '', '?query=' + query); 
+            };
+            
+        } else {
 
-        resultsContainer.innerHTML += '<h2 class="h3 xs-h5">We found ' + response.searchInformation.formattedTotalResults + ' results matching "' + response.queries.request[0].searchTerms + '" in ' + response.searchInformation.formattedSearchTime + ' seconds</h2>';
-        for (var i = 0; i < response.items.length; i++) {
-            var item = response.items[i];
-            var layout = `
-                <div class="bg-white soft xs-soft-half push-bottom xs-push-half-bottom rounded shadowed">
-                    <div class="row">
-                        <div class="col-xs-12 col-sm-4 col-md-3">
-                            <a href="${item.link}"><img src="${item.pagemap.cse_image[0].src}" class="rounded xs-push-bottom"></a>
-                        </div><div class="col-xs-12 col-sm-8 col-md-9">
-                            <h2 class="h3 xs-h4 push-half-bottom"><a href="${item.link}">${item.htmlTitle}</a></h2>
-                            <p class="push-half-bottom stronger text-gray-lighter"><small><em>${item.link}</em></small></p>
-                            <p class="push-half-bottom">${item.snippet}</p>
-                            <p class="flush"><a href="${item.link}" class="btn btn-sm btn-primary">Read More</a></p>
-                        </div>
-                    </div>
-                </div>`;
-            // in production code, item.htmlTitle should have the HTML entities escaped.
-            resultsContainer.innerHTML += layout;
+            if(searchInput.value != '') {
+                searchInputClear.classList.remove('hidden');
+            } else {
+                searchInputClear.classList.add('hidden');
+            }
+
         }
-    }
 
-    function searchGoogle(query){
+    });
+    
+
+    function searchGoogle(query, startIndex){
 
         // Get current base url with out query strings
         var currentUrl = window.location.href.split('?')[0];
 
-        // Setup parameters
-        var params = new URLSearchParams(location.search)
-        
-        // Delete query parameter if it already exists
-        if(params.has('query')){
-            searchInput.value = query;
-            params.delete('query');
+        if(startIndex) {
+            var startIndex = '&start=' + startIndex;
+        } else {
+            var startIndex = '';
         }
 
         // Get query value
@@ -72,11 +92,17 @@ document.addEventListener("DOMContentLoaded", function() {
             var query = searchInput.value;
         }
 
+        // Delete query parameter if it already exists
+        if(params.has('query')){
+            searchInput.value = query;
+            params.delete('query');
+        }
+
         // Setup request
         var Http = new XMLHttpRequest();
 
         // Define request url
-        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key=AIzaSyDC2wC3SObo3uq8cASlEKOUAiHygTQPycc&cx=013000157429705270828:1xk3v_mc9lg&q=' + query;
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=9&q=' + query + startIndex;
         
         // Open request
         Http.open("GET", requestUrl);
@@ -88,11 +114,101 @@ document.addEventListener("DOMContentLoaded", function() {
         Http.onreadystatechange=function(){
             if(this.readyState==4 && this.status==200){
                 params.append('query', query);
-                window.history.pushState({"html":Http.response.html,"pageTitle":Http.response.pageTitle},"", currentUrl + '?' + params.toString());
-                populateResults(JSON.parse(Http.response));
+                populateResults(JSON.parse(Http.response), query);
             }
         }
     };
+
+    function populateResults(response, query) {
+
+        console.log(response);
+        
+        var scroll = new SmoothScroll();
+
+        var totalResults = response.searchInformation.totalResults;
+
+        if(totalResults < 1) {
+            resultsContainer.innerHTML = '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">No results found for <span class="text-info">'+ query +'<span></h2>'
+            return false;
+        }
+
+        // Clear results container for each search
+        resultsContainer.innerHTML = ''
+
+        if (totalResults > 9) {
+            if(response.queries.nextPage) {
+                console.log(response.searchInformation.formattedTotalResults);
+                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing results <span class="text-info">' + (response.queries.nextPage[0].startIndex - response.queries.nextPage[0].count) + '-' + (response.queries.nextPage[0].startIndex - 1) + '</span> of <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+            } else {
+                // Last Page
+                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing results <span class="text-info">' + (response.searchInformation.totalResults - response.items.length + 1) + '-' + response.searchInformation.totalResults + '</span> of <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+            }
+        } else {
+            resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> results matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+        }
+
+        if (response.items) {
+            for (var i = 0; i < response.items.length; i++) {
+                var item = response.items[i];
+                
+                if(item.pagemap.cse_image){
+                    itemImage = item.pagemap.cse_image[0].src;
+                } else {
+                    itemImage = 'https://s3.amazonaws.com/ns.images/all/heroes/Player.Default.jpg';
+                }
+
+                var layout = `<div class="col-md-4">{[ card title:'${ item.title }' titlesize:'h4' imageurl:'${ itemImage }' content:'<p class="push-half-bottom">${item.snippet}</p>' linkurl:'${item.link}' ]}</div>`;
+                // in production code, item.htmlTitle should have the HTML entities escaped.
+                resultsContainer.innerHTML += layout;
+            }
+
+            window.scrollTo(0, 0);
+
+            var pagination = '<div class="soft-half-sides xs-push-half-top text-center" data-search-pagination-wrapper></div>';
+
+            resultsContainer.innerHTML += pagination
+
+            var paginationWrapper = document.querySelector('[data-search-pagination-wrapper]');
+
+            if (response.queries.previousPage) {
+                var prevButton = document.createElement('a');
+                prevButton.setAttribute('data-search-prev','');
+                prevButton.classList.add('btn','btn-primary','push-half-right');
+                prevButton.innerHTML = '<i class="position-relative fas fa-angle-left" style="top: 2px;"></i> &nbsp;Previous'
+                paginationWrapper.appendChild(prevButton);
+            }
+
+            if (response.queries.nextPage && response.queries.nextPage[0].startIndex <= 100) {
+                var nextButton = document.createElement('a');
+                nextButton.setAttribute('data-search-next','');
+                nextButton.classList.add('btn','btn-primary');
+                nextButton.innerHTML = 'Next &nbsp;<i class="position-relative fas fa-angle-right" style="top: 2px;"></i>'
+                paginationWrapper.appendChild(nextButton);
+            }
+
+            var resultsSource = `
+            <div class="soft-half text-center sans-serif stronger letter-spacing-condensed push-ends xs-push-half-ends">
+                Results By <img src="//s3.amazonaws.com/ns.images/all/google/google-logo-full.png" width="80px" class="display-inline-block mx-auto" />
+            </div>
+            `
+            resultsContainer.innerHTML += resultsSource;
+        }
+
+        if (response.queries.nextPage && response.queries.nextPage[0].startIndex <= 100) {
+            var nextButton = document.querySelector('[data-search-next]');
+            nextButton.addEventListener('click', function(e){
+                searchGoogle(response.queries.nextPage[0].searchTerms, response.queries.nextPage[0].startIndex);
+            });
+        }
+
+        if (response.queries.previousPage) {
+            var prevButton = document.querySelector('[data-search-prev]');
+            prevButton.addEventListener('click', function(e){
+                searchGoogle(response.queries.previousPage[0].searchTerms, response.queries.previousPage[0].startIndex);
+            });
+        }
+        
+    }
     
 });
 </script>

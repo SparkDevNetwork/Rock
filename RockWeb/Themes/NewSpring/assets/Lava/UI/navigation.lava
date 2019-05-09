@@ -9,7 +9,7 @@
 	</li><li>
 		<a href="/locations" title="Locations"><i class="fas fa-fw fa-lg fa-map-marker-alt"></i></a>
 	</li><li>
-		<a href="#" data-toggle="modal" data-target="#search-modal" title="Search"><i class="fas fa-fw fa-lg fa-search"></i></a>
+		<a href="/search" title="Search"><i class="fas fa-fw fa-lg fa-search"></i></a>
 	</li><li>
 		{% assign personPhoto = CurrentPerson.PhotoUrl %}
 		{% if CurrentPerson != null %}
@@ -27,3 +27,11 @@
 		{% endif %}
 	</li></span>
 </ul>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	$('#search-trigger').click(function() {
+		$('#search-modal-input').focus();
+	});
+});
+</script>

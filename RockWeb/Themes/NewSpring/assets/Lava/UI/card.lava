@@ -12,7 +12,7 @@
 
 {% assign url = url | Trim %}
 
-<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="position-relative panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
+<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
     {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
         <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
             {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' ]}
