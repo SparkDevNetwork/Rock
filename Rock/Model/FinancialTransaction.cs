@@ -98,6 +98,12 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
+        /// </summary>
+        [DataMember]
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
         /// For Credit Card transactions, this is the response code that the gateway returns. 
         /// For Scanned Checks, this is the check number.
         /// </summary>

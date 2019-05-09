@@ -73,6 +73,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [limit to scheduling enabled groups].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [limit to scheduling enabled groups]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToSchedulingEnabledGroups
+        {
+            get => ViewState["LimitToSchedulingEnabledGroups"] as bool? ?? false;
+            set
+            {
+                ViewState["LimitToSchedulingEnabledGroups"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the included group type ids.
         /// </summary>
         /// <value>
@@ -322,9 +338,15 @@ namespace Rock.Web.UI.Controls
             {
                 extraParams.Append( $"&rootGroupId={RootGroupId.Value}" );
             }
+
             if ( IncludedGroupTypeIds != null && IncludedGroupTypeIds.Any() )
             {
                 extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited(",")}" );
+            }
+
+            if ( LimitToSchedulingEnabledGroups )
+            {
+                extraParams.Append( $"&limitToSchedulingEnabled={LimitToSchedulingEnabledGroups.ToTrueFalse()}" );
             }
 
             ItemRestUrlExtraParams = extraParams.ToString();

@@ -7,7 +7,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-map-marker"></i> Group Finder
                 </h1>
