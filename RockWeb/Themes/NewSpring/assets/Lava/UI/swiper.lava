@@ -1,0 +1,71 @@
+{%- assign swiperid = uniqueid -%}
+
+<section id="{{ id }}" class="shell bg-gray-dark hard-sides rounded shadowed flush-sides">
+    <div class="soft-sides xs-soft-half-sides text-center">
+        <h2 class="text-white push-half-bottom">{{ title }}</h2>
+        <p class="lead text-primary italic"><span class="hidden-xs hidden-sm">Drag</span><span class="hidden-md hidden-lg">Swipe</span> to Discover More</p>
+    </div>
+
+    <!-- Slider main container -->
+    <div id="{{ swiperid }}" class="swiper-container">
+        <!-- Additional required wrapper -->
+        <div class="swiper-wrapper" data-locations>
+            <!-- Slides -->
+            {%- for item in items -%}
+                <div class="swiper-slide" {{ item.data }}>
+                    {{ item.content }}
+                </div>
+            {%- endfor -%}
+        </div>
+
+        <!-- Add Arrows -->
+        <div class="hidden-sm hidden-xs">
+            <div class="swiper-next"><i class="fas fa-fw fa-2x fa-angle-right"></i></div>
+            <div class="swiper-prev"><i class="fas fa-fw fa-2x fa-angle-left"></i></div>
+        </div>
+
+        <!-- If we need pagination -->
+        <div class="swiper-pagination"></div>
+    </div>
+
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
+<script>
+  var swiper = new Swiper('#{{ swiperid }}', {
+      slidesPerView: 3.3,
+      spaceBetween: 15,
+      centeredSlides: true,
+      roundLengths: true,
+      grabCursor: true,
+      keyboard: {
+      enabled: true,
+      onlyInViewport: false,
+      },
+      pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+      },
+      navigation: {
+      nextEl: '.swiper-next',
+      prevEl: '.swiper-prev',
+      },
+      breakpoints: {
+      1024: {
+        slidesPerView: 2.3,
+      },
+      768: {
+        slidesPerView: 2.3,
+        pagination: {
+          dynamicBullets: true,
+        },
+      },
+      667: {
+        slidesPerView: 1.15,
+        pagination: {
+          dynamicBullets: true,
+        },
+      }
+      }
+  });
+</script>

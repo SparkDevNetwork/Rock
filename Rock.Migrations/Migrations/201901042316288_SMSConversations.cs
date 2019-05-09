@@ -210,7 +210,7 @@ namespace Rock.Migrations
         private void PagesAndBlocksUp()
         {
             RockMigrationHelper.AddPage( true, "7F79E512-B9DB-4780-9887-AD6D63A39050","D65F783D-87A9-4CC9-8110-E83466A0EADB","SMS Conversations","","275A5175-60E0-40A2-8C63-4E9D9CD39036","fa fa-comments"); // Site:Rock RMS
-            RockMigrationHelper.UpdateBlockType("Communication > SMS Conversations","","~/Blocks/Communication/SmsConversations.ascx","","3497603B-3BE6-4262-B7E9-EC01FC7140EB");
+            RockMigrationHelper.UpdateBlockType( "SMS Conversations", "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false.", "~/Blocks/Communication/SmsConversations.ascx", "Communication", "3497603B-3BE6-4262-B7E9-EC01FC7140EB");
             // Add Block to Page: SMS Conversations Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "275A5175-60E0-40A2-8C63-4E9D9CD39036".AsGuid(),null,Rock.SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(),"3497603B-3BE6-4262-B7E9-EC01FC7140EB".AsGuid(), "Sms Conversations","Main",@"",@"",0,"24CAFC0B-3C23-45EB-B69C-BEC68BB21B97"); 
         }

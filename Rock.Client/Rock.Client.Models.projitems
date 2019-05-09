@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceOccurrence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrix.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ControlTotalResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewPersistedValue.cs" />
@@ -125,9 +127,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocationScheduleConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberAssignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberScheduleTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupRequirementType.cs" />
@@ -138,6 +143,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\History.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\IncomingSMSRoute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Interaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
@@ -179,6 +185,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />
@@ -202,6 +209,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SchedulerResourceParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
@@ -210,6 +218,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />

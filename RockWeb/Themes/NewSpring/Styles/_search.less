@@ -1,0 +1,48 @@
+.input-search {
+    position: relative;
+    background-color: transparent;
+    border: 0;
+    width: auto;
+    padding-right: 15px !important;
+
+    &.jumbo {
+        font-size: 42px;
+        letter-spacing: -1.5px !important;
+    }
+
+    &::placeholder {
+        color: @white;
+        opacity: .2;
+    }
+
+}
+
+.input-clear {
+    top: 50%;
+    margin-top: -29px;
+    right: -70px;
+    opacity: .2;
+    height: 60px;
+    width: 70px;
+    line-height: 60px;
+    text-align: center;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 900;
+    padding-top: 10px;
+
+    &:hover {
+        opacity: 1;
+        font-weight: 900;
+        color: #c64f55;
+    }
+}
+
+@media only screen and (max-width: @screen-sm-min) {
+    .input-search {
+        &.jumbo {
+            font-size: 24px;
+            letter-spacing: -1px !important;
+        }
+    }
+}

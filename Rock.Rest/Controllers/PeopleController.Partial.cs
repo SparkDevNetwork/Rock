@@ -395,6 +395,85 @@ namespace Rock.Rest.Controllers
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
+        /// <summary>
+        /// Allows setting a configuration for the person for text-to-give.
+        /// </summary>
+        /// <param name="personId">The person to configure text-to-give options</param>
+        /// <param name="args">The options to set</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
+        public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody]ConfigureTextToGiveArgs args )
+        {
+            // Validate the person
+            var person = Service.Get( personId );
+
+            if ( person == null )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The person ID is not valid" );
+            }
+
+            // Load the person's saved accounts
+            var rockContext = Service.Context as RockContext;
+            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personsSavedAccounts = savedAccountService.Queryable()
+                .Include( sa => sa.PersonAlias )
+                .Where( sa => sa.PersonAlias.PersonId == personId )
+                .ToList();
+
+            // Loop through each saved account. Set default to false unless the args dictate that it is the default
+            var foundDefaultAccount = false;
+
+            foreach ( var savedAccount in personsSavedAccounts )
+            {
+                if ( !foundDefaultAccount && savedAccount.Id == args.FinancialPersonSavedAccountId )
+                {
+                    savedAccount.IsDefault = true;
+                    foundDefaultAccount = true;
+                }
+                else
+                {
+                    savedAccount.IsDefault = false;
+                }
+            }
+
+            // If the args specified an account to be default but it was not found, then return an error
+            if ( args.FinancialPersonSavedAccountId.HasValue && !foundDefaultAccount )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The saved account ID is not valid" );
+            }
+
+            // Validate the account if it is being set
+            if ( args.ContributionFinancialAccountId.HasValue )
+            {
+                var accountService = new FinancialAccountService( rockContext );
+                var account = accountService.Get( args.ContributionFinancialAccountId.Value );
+
+                if ( account == null )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The financial account ID is not valid" );
+                }
+
+                if ( !account.IsActive )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not active" );
+                }
+
+                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not public" );
+                }
+            }
+
+            // Set the person's contribution account ID
+            person.ContributionFinancialAccountId = args.ContributionFinancialAccountId;
+
+            // Success
+            rockContext.SaveChanges();
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
+        }
+
         #endregion
 
         #region Search
@@ -1055,5 +1134,23 @@ namespace Rock.Rest.Controllers
         /// The picker item details person information HTML.
         /// </value>
         public string PickerItemDetailsPersonInfoHtml { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ConfigureTextToGiveArgs
+    {
+        /// <summary>
+        /// The Financial Account Id that will be the default gift designation for the person. Null value
+        /// clears the setting and requires the user to set before text-to-give will work for them.
+        /// </summary>
+        public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// The Saved Account associated with the person that will be used as the default payment method for
+        /// the person throughout Rock
+        /// </summary>
+        public int? FinancialPersonSavedAccountId { get; set; }
     }
 }

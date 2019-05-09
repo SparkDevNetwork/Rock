@@ -204,6 +204,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
         public const string FUNDRAISING_OPPORTUNITY_TYPE = "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D";
         public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
+        public const string GROUP_SCHEDULE_DECLINE_REASON = "70C9F9C4-20CC-43DD-888D-9243853A0E52";
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
         public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
@@ -274,6 +275,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE_KIOSK = "260EEA80-821A-4F79-973F-49DF79C955F7";
         public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
         public const string FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION = "BE7ECF50-52BC-4774-808D-574BA842DB98";
+        public const string FINANCIAL_SOURCE_TYPE_SMS_GIVE = "8BA95E24-D291-499E-A535-4DCAC365689B";
         public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
         public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
@@ -630,6 +632,14 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class Layout
+    {
+        public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
+        public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+    }
+
+    /// <summary>
+    /// </summary>
     public class NoteType
     {
         public const string FUNDRAISING_OPPORTUNITY_COMMENT = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95";
@@ -755,6 +765,7 @@ namespace Rock.Client.SystemGuid
         public const string FUNCTIONS_FINANCE = "142627AE-6590-48E3-BFCA-3669260B8CF2";
         public const string GATEWAY_DETAIL = "24DE6092-CE91-468C-8E49-94DB3875B9B7";
         public const string GENERAL_SETTINGS = "0B213645-FA4E-44A5-8E4C-B2D8EF054985";
+        public const string GIVE = "8BB303AF-743C-49DC-A7FF-CC1236B4B1D9";
         public const string GIVE_NOW = "1615E090-1889-42FF-AB18-5F7BE9F24498";
         public const string GLOBAL_ATTRIBUTES = "A2753E03-96B1-4C83-AA11-FCD68C631571";
         public const string GROUP_ATTENDANCE_DETAIL = "0C00CD89-BF4C-4B19-9B0D-E1FA2CFF5DD7";
@@ -892,6 +903,7 @@ namespace Rock.Client.SystemGuid
         public const string TAG_DETAILS = "D258BF5B-B585-4C5B-BDCD-99F7519D45E2";
         public const string TAGS_GENERAL_SETTINGS = "F111791B-6A58-4388-8533-00E913F48F41";
         public const string TAGS_MANAGE = "2654EBE9-F585-4E64-93F3-102357F89660";
+        public const string TEXT_TO_GIVE_SETUP = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1";
         public const string TIME_SELECT = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC";
         public const string TOOLS = "98163C8B-5C91-4A68-BB79-6AD948A604CE";
         public const string TRANSACTION_DETAIL_FINANCIAL_BATCH_DETAIL = "97716641-D003-4663-9EA2-D9BB94E7955B";
@@ -915,11 +927,19 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class PageRoute
+    {
+        public const string TEXT_TO_GIVE_SETUP = "58592279-6CD7-47FD-BD0C-E35784FF69FF";
+    }
+
+    /// <summary>
+    /// </summary>
     public class ServiceJob
     {
         public const string DATA_MIGRATIONS_74 = "FF760EF9-66BD-4A4D-AF95-749AA789ACAF";
         public const string DATA_MIGRATIONS_80 = "AF760EF9-66BD-4A4D-AF95-749AA789ACAA";
         public const string DATA_MIGRATIONS_84 = "79FBDA04-ADFD-40D4-824F-E07D660F7858";
+        public const string DATA_MIGRATIONS_90 = "3F279016-C7D1-490F-835D-8FFE6D943A32";
         public const string DATA_MIGRATIONS_90_DISC = "A839DFEC-B1A3-499C-9BB3-03241E8E5305";
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
         public const string JOB_PULSE = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7";
@@ -951,6 +971,8 @@ namespace Rock.Client.SystemGuid
         public const string NOTEWATCH_NOTIFICATION = "21B92DE2-6825-45F3-BD27-43B47FE490D8";
         public const string REGISTRATION_CONFIRMATION = "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259";
         public const string REGISTRATION_NOTIFICATION = "158607D1-0772-4947-ADD6-EA31AB6ABC2F";
+        public const string SCHEDULING_RESPONSE = "D095F78D-A5CF-4EF6-A038-C7B07E250611";
+        public const string SCHEDULING_UPDATE = "F8E4CE07-68F5-4169-A865-ECE915CF421C";
         public const string SECURITY_ACCOUNT_CREATED = "84e373e9-3aaf-4a31-b3fb-a8e3f0666710";
         public const string SECURITY_CONFIRM_ACCOUNT = "17aaceef-15ca-4c30-9a3a-11e6cf7e6411";
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";

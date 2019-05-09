@@ -33,8 +33,6 @@
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/theme.css", true) %>"/>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/bootstrap.min.js", true) %>" ></script>
-
 </head>
 <body id="splash">
 

@@ -219,7 +219,15 @@ namespace RockWeb.Blocks.Fundraising
             // GroupMember Attributes (all of them)
             phGroupMemberAttributes.Controls.Clear();
 
-            List<string> excludes = new List<string>();
+            // Exclude any attributes for which the current person has NO EDIT access.
+            // But skip these three special member attributes since they are handled in a special way.
+            List<string> excludes = groupMember.Attributes.Where(
+                a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) &&
+                a.Key != "IndividualFundraisingGoal" &&
+                a.Key != "DisablePublicContributionRequests" &&
+                a.Key != "PersonalOpportunityIntroduction" )
+                .Select( a => a.Key ).ToList();
+
             if ( !groupMember.Group.GetAttributeValue( "AllowIndividualDisablingofContributionRequests" ).AsBoolean() )
             {
                 excludes.Add( "DisablePublicContributionRequests" );
@@ -406,7 +414,14 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            if ( !string.IsNullOrWhiteSpace( photoGuid ) )
+            {
+                imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            }
+            else
+            {
+                imgOpportunityPhoto.Visible = false;
+            }
 
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
@@ -567,10 +582,14 @@ namespace RockWeb.Blocks.Fundraising
         /// </summary>
         protected void BindContributionsGrid()
         {
+            // Hide the whole Amount column if the block setting is set to hide
             var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
-            gContributions.ColumnsOfType<CurrencyField>()
-                .First( c => c.DataField == "TotalAmount" )
-                .Visible = showAmount;
+            var amountCol = gContributions.ColumnsOfType<RockLiteralField>()
+                .FirstOrDefault( c => c.ID == "lTransactionDetailAmount" );
+            if ( amountCol != null )
+            {
+                amountCol.Visible = showAmount;
+            }
 
             var rockContext = new RockContext();
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
@@ -594,9 +613,6 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-			var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-            int groupMemberId = hfGroupMemberId.Value.AsInteger();
-			
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
             if ( financialTransaction != null &&
                 financialTransaction.AuthorizedPersonAlias != null &&
@@ -615,17 +631,20 @@ namespace RockWeb.Blocks.Fundraising
 	            {
 	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
 	            }
-				
-				Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
-                if ( lTransactionDetailAmount != null )
+
+                // The transaction may have been split with details for one contribution going to the person
+                // and the other details going elsewhere.  We only want to show details that match this group member.
+                Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
+                if ( lTransactionDetailAmount != null && lTransactionDetailAmount.Visible )
                 {
-					var amount = financialTransaction.TransactionDetails
+                    var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+                    int groupMemberId = hfGroupMemberId.Value.AsInteger();
+                    var amount = financialTransaction.TransactionDetails
                         .Where( d => d.EntityTypeId.HasValue && d.EntityTypeId == entityTypeIdGroupMember && d.EntityId == groupMemberId )
-                        .Sum( d => ( decimal? ) d.Amount )
-                        .ToString();
-                    lTransactionDetailAmount.Text = string.Format( "${0}", amount );
+                        .Sum( d => ( decimal? ) d.Amount );
+                    lTransactionDetailAmount.Text = amount.FormatAsCurrency();
                 }
-	        }
+            }
         }
 
         /// <summary>

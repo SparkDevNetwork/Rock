@@ -918,16 +918,21 @@
     
   </relationships>
 
+  <locations>
+    <location type="building" name="Worship Center" guid="777777c6-dea3-40d5-a2e9-60f9abe3c41a" parentLocationGuid="d5171d44-c801-4b7d-9335-d23fb4ea0e60"></location>
+    <location type="room" name="A/V Booth" guid="17382278-9bf4-45b2-bc6a-021605680fef" parentLocationGuid="777777c6-dea3-40d5-a2e9-60f9abe3c41a"></location>
+  </locations>
+  
   <groups>
-    <group type="serving" name="Ushers" guid="0BA93D66-21B1-4229-979D-F76CEB57666D">
+    <group type="serving" name="A/V Team" guid="0BA93D66-21B1-4229-979D-F76CEB57666D" description="Responsible for all A/V equipment. Useful for testing volunteer Group Scheduling." parentGroupGuid="31730962-4c7b-425b-bd73-4185331f37ef">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
-      <location guid="D5171D44-C801-4B7D-9335-D23FB4EA0E60">
-        <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1"/>
-        <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A"/>
-        <schedule guid="FF6FB240-0C32-4542-BE40-159C522F7E51"/>
-        <schedule guid="4628D917-EC9C-4269-B39C-5BCBEF3658E7"/>
-        <schedule guid="1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45"/>
+      <location guid="17382278-9bf4-45b2-bc6a-021605680fef">
+        <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
+        <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
+        <schedule guid="FF6FB240-0C32-4542-BE40-159C522F7E51" minimumCapacity="1" desiredCapacity="3" maximumCapacity="6" />
+        <schedule guid="4628D917-EC9C-4269-B39C-5BCBEF3658E7" minimumCapacity="3" desiredCapacity="4" maximumCapacity="6" />
+        <schedule guid="1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45" minimumCapacity="3" desiredCapacity="4" maximumCapacity="6" />
       </location>
     </group>
 
@@ -1034,8 +1039,8 @@
       <forms>
         <form name="Default" guid="1709fc85-e539-40af-a3bc-3b7ac6c4dc72">
           <formFields>
-            <field name="First Name" source="Person Field" isRequired="true" showOnGrid="true"></field>
-            <field name="Last Name" source="Person Field" isRequired="true" showOnGrid="true"></field>
+            <field name="First Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
+            <field name="Last Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
             <field name="Birthdate" source="Person Field" isRequired="true" showOnGrid="false"></field>
             <field name="Gender" source="Person Field" isRequired="true" showOnGrid="false"></field>
             <field name="Leader Preference" source="Registration Attribute" guid="2721ad1e-e941-467f-a984-4c50cdd348f5" type="Text" isCommon="true" isRequired="true" isInternal="false" showOnGrid="false" showCurrentValue="false" preText="" postText=""></field>

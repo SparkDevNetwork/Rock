@@ -310,4 +310,13 @@
   <data name="_201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201903202308416_scheduledtransactionhistory_migratescheduledtransactionnotestohistory.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201904231856504_rollup_0423_createpost90datamigrationservicejob.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201905081957016_GroupScheduling_PopulateScheduleTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201905081957016_groupscheduling_populatescheduletemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201905082317243_Rollup_0508_FixLavaChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201905082317243_rollup_0508_fixlavachartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -22,24 +22,25 @@
     <ContentTemplate>
 
         <div class="panel panel-block panel-analytics">
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
                     <i class="fa fa-check-square-o"></i>
                     Giving Analytics
                 </h1>
 
                 <div class="panel-labels">
-                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
+
+                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()" class="btn btn-xs btn-square btn-link margin-l-sm">
                         <i class='fa fa-question-circle'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        class="btn btn-xs btn-square btn-default margin-l-sm btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
                 </div>
-
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <div class="panel-info">
@@ -127,7 +128,7 @@
                                             </div>
                                         </Rock:RockControlWrapper>
                                     </div>
-                                
+
                                     <div class="pull-right">
                                         <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
                                             <div class="controls">
@@ -265,6 +266,8 @@
             }
 
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+
                 // Graph-By button group
                 $('.js-graph-by .btn').on('click', function (e) {
                     setActiveButtonGroupButton($(this));
