@@ -65,6 +65,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AttendanceRecordRequiredForCheckIn
+    {
+        AllShow = 0x0,
+        RequireAttendanceRecord = 0x1,
+        UseAttendanceRecordAsPreference = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceRule
     {
         None = 0x0,
@@ -606,6 +615,33 @@ namespace Rock.Client.Enums
         No = 0x0,
         Yes = 0x1,
         Maybe = 0x2,
+        Unknown = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduledAttendanceItemStatus
+    {
+        Pending = 0x0,
+        Confirmed = 0x1,
+        Declined = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceGroupMemberFilterType
+    {
+        ShowMatchingPreference = 0x0,
+        ShowAllGroupMembers = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceListSourceType
+    {
+        Group = 0x0,
+        AlternateGroup = 0x1,
+        DataView = 0x2,
     }
 
     /// <summary>

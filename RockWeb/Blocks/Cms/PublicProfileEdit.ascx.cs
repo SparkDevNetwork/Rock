@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Cms
             public const string ShowFamilyMembers = "ShowFamilyMembers";
             public const string AddressType = "AddressType";
             public const string ShowPhoneNumbers = "ShowPhoneNumbers";
-            public const string PhoneTypes = "PhoneTypes";
+            public const string PhoneTypes = "PhoneNumbers";
             public const string RequiredAdultPhoneTypes = "RequiredAdultPhoneTypes";
             public const string RequireAdultEmailAddress = "RequireAdultEmailAddress";
             public const string ShowCommunicationPreference = "ShowCommunicationPreference";

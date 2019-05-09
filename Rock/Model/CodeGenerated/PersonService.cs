@@ -101,6 +101,7 @@ namespace Rock.Model
             target.BirthYear = source.BirthYear;
             target.CommunicationPreference = source.CommunicationPreference;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            target.ContributionFinancialAccountId = source.ContributionFinancialAccountId;
             target.DeceasedDate = source.DeceasedDate;
             target.Email = source.Email;
             target.EmailNote = source.EmailNote;

@@ -374,6 +374,70 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool ShowMaritalStatus { get; private set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is scheduling enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsSchedulingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The schedule cancellation workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleCancellationWorkflowTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationEmailOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupMember.ScheduleReminderEmailOffsetDays"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderEmailOffsetDays { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires reason if decline schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresReasonIfDeclineSchedule { get; private set; }
+
         /// <summary>
         /// Gets or sets the administrator term for the group of this GroupType.
         /// </summary>
@@ -391,6 +455,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember( IsRequired = true )]
         public bool ShowAdministrator { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether group tag should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group tag]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupTag { get; private set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -501,7 +574,8 @@ namespace Rock.Web.Cache
                 }
 
 
-                if ( ChildGroupTypeIds == null ) return childGroupTypes;
+                if ( ChildGroupTypeIds == null )
+                    return childGroupTypes;
 
                 foreach ( var id in ChildGroupTypeIds )
                 {
@@ -548,7 +622,8 @@ namespace Rock.Web.Cache
                     }
                 }
 
-                if ( _parentGroupTypeIds == null ) return parentGroupTypes;
+                if ( _parentGroupTypeIds == null )
+                    return parentGroupTypes;
 
                 foreach ( var id in _parentGroupTypeIds )
                 {
@@ -584,7 +659,8 @@ namespace Rock.Web.Cache
             get
             {
                 var locationTypeValues = new List<DefinedValueCache>();
-                if ( LocationTypeValueIDs == null ) return null;
+                if ( LocationTypeValueIDs == null )
+                    return null;
 
                 foreach ( var id in LocationTypeValueIDs.ToList() )
                 {
@@ -617,7 +693,8 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var groupType = entity as GroupType;
-            if ( groupType == null ) return;
+            if ( groupType == null )
+                return;
 
             IsSystem = groupType.IsSystem;
             Name = groupType.Name;
@@ -655,7 +732,15 @@ namespace Rock.Web.Cache
             ShowMaritalStatus = groupType.ShowMaritalStatus;
             AdministratorTerm = groupType.AdministratorTerm;
             ShowAdministrator = groupType.ShowAdministrator;
+            EnableGroupTag = groupType.EnableGroupTag;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
+            IsSchedulingEnabled = groupType.IsSchedulingEnabled;
+            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
+            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+            ScheduleCancellationWorkflowTypeId = groupType.ScheduleCancellationWorkflowTypeId;
+            ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
+            ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
+            RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
         }
 
         /// <summary>
@@ -675,7 +760,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead")]
+        [Obsolete( "Use Get Instead" )]
         public static GroupTypeCache Read( string guid )
         {
             return Get( new Guid( guid ) );

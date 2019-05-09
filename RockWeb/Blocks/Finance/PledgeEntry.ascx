@@ -10,7 +10,7 @@
         <asp:Panel ID="pnlAddPledge" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h3 class="panel-title"></h3>
+                <h1 class="panel-title"></h1>
             </div>
             <div class="panel-body">
                 <fieldset>

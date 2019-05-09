@@ -59,7 +59,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading panel-follow clearfix">
+                <div class="panel-heading panel-follow">
                     <h1 class="panel-title">
                         <i class="fa fa-file-o"></i>
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />

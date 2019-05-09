@@ -623,5 +623,17 @@ namespace Rock.Model
     INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
             ", deviceId, childQuery ) );
         }
+
+        /// <summary>
+        /// Gets the locations for the Group and Schedule
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Location> GetByGroupSchedule( int scheduleId, int groupId )
+        {
+            var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).Queryable().Where( gl => gl.Schedules.Any( s => s.Id == scheduleId ) && gl.GroupId == groupId );
+            return this.Queryable().Where( l => groupLocationQuery.Any( gl => gl.LocationId == l.Id ) );
+        }
     }
 }

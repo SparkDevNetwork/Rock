@@ -9,24 +9,24 @@
     var exports = {
       clientValidate: function (validator, args)
       {
-        var $numberUpDownGroup = $(validator).closest('.number-up-down-group');
+        var $numberUpDownGroup = $(validator).closest('.js-number-up-down-group');
         var isValid = true;
 
-        if ($numberUpDownGroup.hasClass('required') == true) {
-            isValid = false;
+        if ($numberUpDownGroup.hasClass('required') === true) {
+          isValid = false;
 
-            $numberUpDownGroup.find('.numberincrement-value').each(function (i) {
-                if (parseInt(this.outerText, 10) > 0) {
-                    isValid = true;
-                }
-            });
+          $numberUpDownGroup.find('.js-number-up-down-lbl').each(function (i) {
+            if (parseInt(this.outerText, 10) > 0) {
+              isValid = true;
+            }
+          });
         }
 
-        if (isValid == false) {
-            validator.errormessage = $numberUpDownGroup.find('label').text() + " is required";
+        if (isValid === false) {
+          validator.errormessage = $numberUpDownGroup.find('label').text() + " is required";
         }
 
-        var control = $numberUpDownGroup
+        var control = $numberUpDownGroup;
         if (isValid)
         {
           control.removeClass('has-error');

@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 using Rock.Data;
@@ -128,6 +129,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupId { get; set; }
 
         /// <summary>

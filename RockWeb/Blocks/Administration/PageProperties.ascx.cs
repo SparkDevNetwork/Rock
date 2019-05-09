@@ -739,54 +739,7 @@ namespace RockWeb.Blocks.Administration
                     page.SaveAttributeValues( rockContext );
                 } );
 
-                // remove any routes for this page that are no longer configured
-                var existingRoutes = RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ).ToList();
-                foreach ( var existingRoute in existingRoutes )
-                {
-                    if ( !editorRoutes.Any( a => a == existingRoute.Url ) )
-                    {
-                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != page.Id ).ToList();
-                        if ( pageAndRouteIds.Any() )
-                        {
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            RouteTable.Routes.Remove( existingRoute );
-                        }
-                    }
-                }
-
-                // Remove the '{shortlink}' route (will be added back after specific routes)
-                var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
-                if ( shortLinkRoute != null )
-                {
-                    RouteTable.Routes.Remove( shortLinkRoute );
-                }
-
-                // Add any routes that were added
-                foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
-                {
-                    if ( addedRoutes.Contains( pageRoute.Route ) )
-                    {
-                        var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
-
-                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
-                        if ( existingRoute != null )
-                        {
-                            var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                            pageAndRouteIds.Add( pageAndRouteId );
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteId );
-                        }
-                    }
-                }
-
-                RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+                Rock.Web.RockRouteHandler.ReregisterRoutes();
 
                 if ( orphanedIconFileId.HasValue )
                 {

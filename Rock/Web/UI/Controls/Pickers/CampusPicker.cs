@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
                 .Where( c =>
                     ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
                     ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
-                .OrderBy( c => c.Name )
+                .OrderBy( c => c.Order )
                 .ToList();
 
             foreach ( CampusCache campus in campuses )

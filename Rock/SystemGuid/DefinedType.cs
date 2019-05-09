@@ -332,9 +332,13 @@ namespace Rock.SystemGuid
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
 
         /// <summary>
+        /// The group schedule decline reason
+        /// </summary>
+        public const string GROUP_SCHEDULE_DECLINE_REASON = "70C9F9C4-20CC-43DD-888D-9243853A0E52";
+
+        /// <summary>
         /// Used to store various liquid templates for features in Rock.
         /// </summary>
         public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
-
     }
 }
