@@ -1,20 +1,6 @@
 # This script is run by AppVeyor's deploy agent after the deploy
 Import-Module WebAdministration
 
-# Get the application (web root) and the root folder
-$webroot = $env:RockWebRootPath
-$rootfolder = Split-Path -Parent $webroot
-
-Write-Output "Running post-deploy script"
-Write-Output "--------------------------------------------------"
-Write-Output "Root folder: $rootfolder"
-Write-Output "Web root folder: $webroot"
-Write-Output "Running script as: $env:userdomain\$env:username"
-
-####################################################################################################
-####################################################################################################
-# Borrowed from NewPointe deploy script
-
 if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
     Write-Error "APPLICATION_PATH is not set, aborting!";
     exit;
@@ -24,8 +10,29 @@ if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
     exit;
 }
 
+# Get the application (web root), application_path, and tempLocation for use in copying files around
+$webroot = $env:RockWebRootPath
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
+$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
+# $rootfolder = Split-Path -Parent $webroot
+
+Write-Output "Running post-deploy script"
+Write-Output "--------------------------------------------------"
+Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
+Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
+Write-Host "Job ID: $env:APPVEYOR_JOB_ID";
+Write-Host "Deploy Location: $RootLocation";
+Write-Host "Temp Location: $TempLocation";
+Write-Host "File Backup Location: $FileBackupLocation";
+# Write-Output "Root folder: $rootfolder"
+Write-Output "Web root folder: $webroot"
+Write-Output "Running script as: $env:userdomain\$env:username"
+Write-Host "====================================================";
+
+####################################################################################################
+####################################################################################################
+# Functions borrowed from NewPointe deploy script
 
 function Join-Paths {
     $path, $parts= $args;
@@ -96,19 +103,18 @@ function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $Directo
 #     Write-Host "Working Directories: $(Get-Location)";
 #     Write-Host "Environment:";
 #     Get-ChildItem "env:";
-# }
+# # }
 
-Write-Host "Mode: Post-deploy";
-Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
-Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
-Write-Host "Deploy Location: $RootLocation";
-Write-Host "==========================================";
+# Write-Host "Mode: Post-deploy";
+# Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
+# Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
+# Write-Host "Deploy Location: $RootLocation";
+# Write-Host "==========================================";
 
 
 # 1. Restore server-specific files like static files, logs, plugin packages, and caches
 
 Write-Host "Restoring server-specific files";
-$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
 Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $FileBackupLocation $RootLocation;
 
 # 2. Reinstall plugins

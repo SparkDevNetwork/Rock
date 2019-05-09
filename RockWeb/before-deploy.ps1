@@ -1,15 +1,41 @@
 # This script is run by AppVeyor's deploy agent before the deploy
 Import-Module WebAdministration
 
-# Get the application (web root) and the root folder
+
+# $rootfolder = Split-Path -Parent $webroot
+
+if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
+    Write-Error "APPLICATION_PATH is not set, aborting!";
+    exit;
+}
+if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
+    Write-Error "APPVEYOR_JOB_ID is not set, aborting!";
+    exit;
+}
+
+# Get the application (web root), application_path, and tempLocation for use in copying files around
 $webroot = $env:RockWebRootPath
-$rootfolder = Split-Path -Parent $webroot
+$RootLocation = $env:APPLICATION_PATH;
+$TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
+New-Item $TempLocation -ItemType Directory | Out-Null;
+$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
+
 
 Write-Output "Running pre-deploy script"
 Write-Output "--------------------------------------------------"
-Write-Output "Root folder: $rootfolder"
+Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
+Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
+Write-Host "Job ID: $env:APPVEYOR_JOB_ID";
+Write-Host "Deploy Location: $RootLocation";
+Write-Host "Temp Location: $TempLocation";
+Write-Host "File Backup Location: $FileBackupLocation";
+# Write-Output "Root folder: $rootfolder"
 Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
+Write-Host "====================================================";
+
+
+# 1. Stop Server and App Pool
 
 # stop execution of the deploy if the moves fail
 $ErrorActionPreference = "Stop"
@@ -34,6 +60,7 @@ write-output "$(Get-Date -Format G) Waiting 10 seconds for IIS to shutdown..."
 Start-Sleep -s 10
 write-output "$(Get-Date -Format G) Continuing on..."
 
+# TODO: Figure out if this really works...
 # load the app offline template
 If (Test-Path "$webroot\app_offline-template.htm"){
 	Write-Host "Loading the app offline template"
@@ -42,20 +69,7 @@ If (Test-Path "$webroot\app_offline-template.htm"){
 
 ####################################################################################################
 ####################################################################################################
-# Borrowed from NewPointe deploy script
-
-if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
-    Write-Error "APPLICATION_PATH is not set, aborting!";
-    exit;
-}
-if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
-    Write-Error "APPVEYOR_JOB_ID is not set, aborting!";
-    exit;
-}
-
-$RootLocation = $env:APPLICATION_PATH;
-$TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
-New-Item $TempLocation -ItemType Directory | Out-Null;
+# Functions borrowed from NewPointe deploy script
 
 function Join-Paths {
     $path, $parts= $args;
@@ -65,7 +79,6 @@ function Join-Paths {
     return $path;
 }
 
-$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
 function Backup-RockFile([string] $RockWebFile) {
     $RockLocation = Join-Path $RootLocation $RockWebFile;
     $BackupLocation = Join-Path $FileBackupLocation $RockWebFile;
@@ -104,11 +117,11 @@ function Backup-RockFile([string] $RockWebFile) {
 #     Get-ChildItem "env:";
 # }
 
-Write-Host "Mode: Pre-deploy";
-Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
-Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
-Write-Host "Deploy Location: $RootLocation";
-Write-Host "==========================================";
+# Write-Host "Mode: Pre-deploy";
+# Write-Host "Application: $env:APPVEYOR_PROJECT_NAME";
+# Write-Host "Build Number: $env:APPVEYOR_BUILD_VERSION";
+# Write-Host "Deploy Location: $RootLocation";
+# Write-Host "==========================================";
 
 # 1. Save or restore a backup of the website folder
 
@@ -124,7 +137,7 @@ Write-Host "==========================================";
 # }
 
 
-# 2. Save server-specifig files like static files, logs, plugin packages, and caches
+# 2. Save server-specifig files like configs, FontAwesome assets, and built theme files
 
 Write-Host "Saving server-specific files";
 
