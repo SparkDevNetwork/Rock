@@ -120,8 +120,6 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function populateResults(response, query) {
-
-        console.log(response);
         
         var scroll = new SmoothScroll();
 
@@ -137,7 +135,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (totalResults > 9) {
             if(response.queries.nextPage) {
-                console.log(response.searchInformation.formattedTotalResults);
                 resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing results <span class="text-info">' + (response.queries.nextPage[0].startIndex - response.queries.nextPage[0].count) + '-' + (response.queries.nextPage[0].startIndex - 1) + '</span> of <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
             } else {
                 // Last Page
