@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "A wizard to simplify creation of Event Registrations." )]
 
-    #region "Block Attribute Settings"
+    #region Block Attribute Settings
 
     [AccountField(
         "Default Account",
@@ -135,16 +135,7 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = true,
         Order = 8 )]
 
-    [MemoField(
-        "Instructions Lava Template",
-        Key = AttributeKey.InstructionsLavaTemplate,
-        Description = AttributeHint.LavaHintText,
-        Category = "",
-        IsRequired = false,
-        DefaultValue = "",
-        Order = 9 )]
-
-    [WorkflowTypeField( "Completion Workflow", "One or more workflow(s) that will be launched when a new registration is created.", false, false, "", "", 10, AttributeKey.CompletionWorkflow )]
+    [WorkflowTypeField( "Completion Workflow", "One or more workflow(s) that will be launched when a new registration is created.", false, false, "", "", 9, AttributeKey.CompletionWorkflow )]
 
     //// The attribute below should replace the attribute above in V9 code.
     //[WorkflowTypeField(
@@ -155,9 +146,76 @@ namespace RockWeb.Blocks.Event
     //    IsRequired = false,
     //    DefaultValue = "",
     //    AllowMultiple = false,
-    //    Order = 10 )]
+    //    Order = 9 )]
 
-    #endregion
+    #region Advanced Block Attribute Settings 
+
+    [MemoField(
+        "Registration Template Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_InitiateWizard,
+        Description = "Instructions here will show up on the first panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 1 )]
+
+    [MemoField(
+        "Registration Instance Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_Registration,
+        Description = "Instructions here will show up on the second panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 2 )]
+
+    [MemoField(
+        "Group Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_Group,
+        Description = "Instructions here will show up on the third panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 3 )]
+
+    [MemoField(
+        "Event Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_Event,
+        Description = "Instructions here will show up on the fourth panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 4 )]
+
+    [MemoField(
+        "Event Occurrence Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_EventOccurrence,
+        Description = "Instructions here will show up on the fifth panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 5 )]
+
+    [MemoField(
+        "Summary Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_Summary,
+        Description = "Instructions here will show up on the sixth panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 6 )]
+
+    [MemoField(
+        "Wizard Finished Instructions Lava Template",
+        Key = AttributeKey.LavaInstruction_Finished,
+        Description = "Instructions here will show up on the final panel of the wizard.",
+        Category = "Advanced",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 7 )]
+
+    #endregion Advanced Block Attribute Settings
+
+    #endregion Block Attribute Settings
 
     public partial class EventRegistrationWizard : RockBlock
     {
@@ -173,38 +231,15 @@ namespace RockWeb.Blocks.Event
             public const string EnableCalendarEvents = "EnableCalendarEvents";
             public const string AllowCreatingNewCalendarEvents = "AllowCreatingNewCalendarEvents";
             public const string RequireCalendarEvents = "RequireCalendarEvents";
-            public const string InstructionsLavaTemplate = "InstructionsLavaTemplate";
             public const string CompletionWorkflow = "CompletionWorkflow";
-        }
-        protected static class AttributeHint
-        {
-            public const string LavaHintText = @"
-Instructions added here will appear at the top of each page.  You can control which page specific instructions appear on by referencing the ""Page"" number (1 through 7)
-or the ""ActiveWizardStep"" name (see below).
 
-{% case Page %}
-    {% when 1 %}
-        Page 1 text
-    {% when 2 %}
-        Page 2 text
-{% endcase %}
-
-{% case ActiveWizardStep %}
-    {% when 'InitiateWizard' %}
-        Please select a registration template.
-    {% when 'Registration' %}
-        Please fill in the details of this registration instance.
-    {% when 'Group' %}
-        Please enter the name of a group for registrants to be assigned to.
-    {% when 'Event' %}
-        Please select or create a calendar event for this registration.
-    {% when 'EventOccurrence' %}
-        Please enter details for the event occurrence.
-    {% when 'Summary' %}
-        Please confirm that you are ready to make the following changes.
-    {% when 'Finished' %}
-        You're done!
-{% endcase %}";
+            public const string LavaInstruction_InitiateWizard = "LavaInstruction_InitiateWizard";
+            public const string LavaInstruction_Registration = "LavaInstruction_Registration";
+            public const string LavaInstruction_Group = "LavaInstruction_Group";
+            public const string LavaInstruction_Event = "LavaInstruction_Event";
+            public const string LavaInstruction_EventOccurrence = "LavaInstruction_EventOccurrence";
+            public const string LavaInstruction_Summary = "LavaInstruction_Summary";
+            public const string LavaInstruction_Finished = "LavaInstruction_Finished";
         }
 
         #region Control Methods
@@ -984,8 +1019,33 @@ or the ""ActiveWizardStep"" name (see below).
         private void SetLavaInstructions( ActiveWizardStep step )
         {
             pnlLavaInstructions.Visible = false;
-            string lavaTemplate = GetAttributeValue( AttributeKey.InstructionsLavaTemplate );
-            if ( !string.IsNullOrEmpty( lavaTemplate ) )
+            string lavaTemplate = string.Empty;
+            switch ( step )
+            {
+                case ActiveWizardStep.InitiateWizard:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_InitiateWizard );
+                    break;
+                case ActiveWizardStep.Registration:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_Registration );
+                    break;
+                case ActiveWizardStep.Group:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_Group );
+                    break;
+                case ActiveWizardStep.Event:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_Event );
+                    break;
+                case ActiveWizardStep.EventOccurrence:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_EventOccurrence );
+                    break;
+                case ActiveWizardStep.Summary:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_Summary );
+                    break;
+                case ActiveWizardStep.Finished:
+                    lavaTemplate = GetAttributeValue( AttributeKey.LavaInstruction_Finished );
+                    break;
+            }
+
+            if ( lavaTemplate != string.Empty )
             {
                 pnlLavaInstructions.Visible = true;
                 var mergeObjects = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
