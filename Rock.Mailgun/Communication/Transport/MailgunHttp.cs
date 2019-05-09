@@ -501,6 +501,12 @@ namespace Rock.Communication.Transport
                         recipient.StatusNote = "No Email Address";
                         valid = false;
                     }
+                    else if ( !person.IsEmailActive )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Recipient Email Address is not active";
+                        valid = false;
+                    }
                     else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
