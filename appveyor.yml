@@ -47,6 +47,8 @@ install:
 
     git clone -q --depth=1 https://github.com/NewSpring/rock-attended-checkin.git c:\projects\rock-attended-checkin
 
+    git clone -q --depth=1 https://github.com/ApollosProject/apollos-onesignal.git c:\projects\apollos-onesignal
+
 
 # directories to preserve between builds
 cache:
