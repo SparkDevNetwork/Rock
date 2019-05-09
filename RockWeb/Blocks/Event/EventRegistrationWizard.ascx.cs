@@ -598,7 +598,7 @@ or the ""ActiveWizardStep"" name (see below).
                     eventItemOccurrence.Note = htmlOccurrenceNote.Text;
 
                     // Set Calendar.
-                    string iCalendarContent = sbSchedule.iCalendarContent;
+                    string iCalendarContent = sbSchedule.iCalendarContent ?? string.Empty;
                     var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
                     if ( calEvent != null && calEvent.DTStart != null )
                     {
