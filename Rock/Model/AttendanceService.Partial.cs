@@ -1007,6 +1007,8 @@ namespace Rock.Model
                     schedulerResource.LastAttendanceDateTime = personIdLastAttendedDateTimeLookup.GetValueOrNull( schedulerResource.PersonId );
                     var scheduledForGroupIds = scheduledAttendanceGroupIdsLookup.GetValueOrNull( schedulerResource.PersonId );
 
+                    schedulerResource.ConfirmationStatus = ScheduledAttendanceItemStatus.Unscheduled.ConvertToString( false ).ToLower();
+
                     // see if they are scheduled for some other group during this occurrence
                     schedulerResource.HasSchedulingConflict = scheduledForGroupIds?.Any( groupId => groupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ) ?? false;
 
@@ -1224,8 +1226,6 @@ namespace Rock.Model
                  && a.Occurrence.GroupId == attendanceOccurrence.GroupId
                  && a.Occurrence.OccurrenceDate == attendanceOccurrence.OccurrenceDate
                 && a.Occurrence.LocationId == null ).ToList();
-
-//##TODO## test
 
             if ( unspecifiedLocationResourceAttendanceList.Any() )
             {
@@ -1530,14 +1530,6 @@ namespace Rock.Model
         /// The attendance identifier.
         /// </value>
         public int AttendanceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="ScheduledAttendanceItemStatus"/> as a lowercase string
-        /// </summary>
-        /// <value>
-        /// The status.
-        /// </value>
-        public string ConfirmationStatus { get; set; }
     }
 
     /// <summary>
@@ -1552,6 +1544,14 @@ namespace Rock.Model
         /// The person identifier.
         /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ScheduledAttendanceItemStatus"/> as a lowercase string
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string ConfirmationStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the GroupMemberId.
@@ -1697,7 +1697,12 @@ namespace Rock.Model
         /// <summary>
         /// declined
         /// </summary>
-        Declined
+        Declined,
+
+        /// <summary>
+        /// Person isn't Scheduled (they would be in the list of Unscheduled resources)
+        /// </summary>
+        Unscheduled,
     }
 
     /// <summary>
