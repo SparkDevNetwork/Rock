@@ -1,8 +1,23 @@
-<div id="results" class="row">
+<div id="results" class="row text-center">
+    
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+
+    var initialResultsHTML = `
+    <div class="col-md-12">
+    {[ section title:'Not sure what to search? Start here!' ]}
+        <p style="line-height: 41px;">
+            {% definedvalue where:'DefinedTypeId == 103' iterator:'values' %}
+                {% for value in values %}
+                    {[ button linktext:'{{ value.Value }}' linkurl:'/search?query={{ value.Value }}' ]}
+                {% endfor %}
+            {% enddefinedvalue %}
+        </p>
+    {[ endsection ]}
+    </div>
+    `
 
     // Find search input
     var searchInput = document.querySelector('[data-search-input]');
@@ -12,6 +27,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Find clear button
     var searchInputClear = document.querySelector('[data-search-input-clear]');
+
+    // Get current base url with out query strings
+    var currentUrl = window.location.href.split('?')[0];
 
     // Get query strings
     var params = new URLSearchParams(window.location.search);
@@ -25,17 +43,19 @@ document.addEventListener("DOMContentLoaded", function() {
         var query = params.get('query').toLowerCase();
         searchInput.value = query;
         searchGoogle(query);
+    } else {
+        resultsContainer.innerHTML = initialResultsHTML;
     }
 
     // Clear search input when clear button is clicked
     searchInputClear.addEventListener('click', function (e) {
         searchInputClear.classList.add('hidden');
-        resultsContainer.innerHTML = '';
+        resultsContainer.innerHTML = initialResultsHTML;
         searchInput.value = "";
+        params.delete('query');
         Stretchy.resize(searchInput,searchInput.parentElement);
         searchInput.focus();
     });
-
 
     // Listen for window resize
     window.addEventListener('resize', function(){
@@ -60,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchInput.parentElement.parentElement.classList.remove('bg-info');
                 searchInput.parentElement.parentElement.classList.add('bg-gray-dark');
                 searchGoogle(query);
-                history.pushState(null, '', '?query=' + query); 
             };
             
         } else {
@@ -102,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var Http = new XMLHttpRequest();
 
         // Define request url
-        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=9&q=' + query + startIndex;
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=8&q=' + query + startIndex;
         
         // Open request
         Http.open("GET", requestUrl);
@@ -126,35 +145,40 @@ document.addEventListener("DOMContentLoaded", function() {
         var totalResults = response.searchInformation.totalResults;
 
         if(totalResults < 1) {
-            resultsContainer.innerHTML = '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">No results found for <span class="text-info">'+ query +'<span></h2>'
+            resultsContainer.innerHTML = '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends xs-push-half-top">No results found for <span class="text-info">'+ query +'<span></h2>'
             return false;
         }
 
         // Clear results container for each search
         resultsContainer.innerHTML = ''
 
-        if (totalResults > 9) {
+        if (totalResults > 100) {
+            totalResults = 100;
+        }
+
+        if (totalResults > 8) {
             if(response.queries.nextPage) {
-                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing results <span class="text-info">' + (response.queries.nextPage[0].startIndex - response.queries.nextPage[0].count) + '-' + (response.queries.nextPage[0].startIndex - 1) + '</span> of <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-push-half-top xs-hard-bottom">Showing results <span class="text-info">' + (response.queries.nextPage[0].startIndex - response.queries.nextPage[0].count) + '-' + (response.queries.nextPage[0].startIndex - 1) + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
             } else {
                 // Last Page
-                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing results <span class="text-info">' + (response.searchInformation.totalResults - response.items.length + 1) + '-' + response.searchInformation.totalResults + '</span> of <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+                resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-push-half-top xs-hard-bottom">Showing results <span class="text-info">' + (response.searchInformation.totalResults - response.items.length + 1) + '-' + response.searchInformation.totalResults + '</span>  matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
             }
         } else {
-            resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-hard-ends text-center">Showing <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> results matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
+            resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-push-half-top xs-hard-bottom">Showing <span class="text-info">' + response.searchInformation.formattedTotalResults + '</span> results matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
         }
 
         if (response.items) {
             for (var i = 0; i < response.items.length; i++) {
                 var item = response.items[i];
                 
-                if(item.pagemap.cse_image){
+                if(item.pagemap && item.pagemap.cse_image && item.pagemap.cse_image[0].src != 'null'){
                     itemImage = item.pagemap.cse_image[0].src;
                 } else {
                     itemImage = 'https://s3.amazonaws.com/ns.images/all/heroes/Player.Default.jpg';
                 }
 
-                var layout = `<div class="col-md-4">{[ card title:'${ item.title }' titlesize:'h4' imageurl:'${ itemImage }' content:'<p class="push-half-bottom">${item.snippet}</p>' linkurl:'${item.link}' ]}</div>`;
+                var layout = `<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 search-result text-left">{[ card title:'${ item.htmlTitle }' titlesize:'h4' imageurl:'${ itemImage }' content:'<p class="push-half-bottom">${item.htmlSnippet}</p>' linkurl:'${item.link}' ]}</div>`;
+
                 // in production code, item.htmlTitle should have the HTML entities escaped.
                 resultsContainer.innerHTML += layout;
             }
