@@ -1181,7 +1181,7 @@ $('#{0}').tooltip();
         /// <param name="groupName">Name of the group.</param>
         private void CreateGroupHeader( string groupName )
         {
-            LiteralControl lc = new LiteralControl( string.Format( "<h3>{0} Schedules</h3>", groupName ) );
+            LiteralControl lc = new LiteralControl( string.Format( "<h4>{0} Schedules</h4><hr class='margin-t-sm margin-b-sm'>", groupName ) );
             phSignUpSchedules.Controls.Add( lc );
         }
 
@@ -1207,24 +1207,23 @@ $('#{0}').tooltip();
         private void CreateScheduleSignUpRow( PersonScheduleSignup personScheduleSignup, List<PersonScheduleSignup> availableGroupLocationSchedules )
         {
             var scheduleSignUpRowItem = new HtmlGenericContainer();
+            scheduleSignUpRowItem.Attributes.Add( "class", "row" );
+            scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
+            scheduleSignUpRowItem.AddCssClass( "margin-b-sm" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 
-            var scheduleSignUpContainer = new HtmlGenericContainer();
-            scheduleSignUpContainer.Attributes.Add( "class", "row" );
-            scheduleSignUpContainer.AddCssClass( "js-person-schedule-signup-row" );
-            scheduleSignUpContainer.AddCssClass( "margin-b-sm" );
 
             var hfGroupId = new HiddenField { ID = "hfGroupId", Value = personScheduleSignup.GroupId.ToString() };
             var hfScheduleId = new HiddenField { ID = "hfScheduleId", Value = personScheduleSignup.ScheduleId.ToString() };
             var hfOccurrenceDate = new HiddenField { ID = "hfOccurrenceDate", Value = personScheduleSignup.ScheduledDateTime.Date.ToISO8601DateString() };
             var hfAttendanceId = new HiddenField { ID = "hfAttendanceId" };
-            scheduleSignUpContainer.Controls.Add( hfGroupId );
-            scheduleSignUpContainer.Controls.Add( hfScheduleId );
-            scheduleSignUpContainer.Controls.Add( hfOccurrenceDate );
-            scheduleSignUpContainer.Controls.Add( hfAttendanceId );
+            scheduleSignUpRowItem.Controls.Add( hfGroupId );
+            scheduleSignUpRowItem.Controls.Add( hfScheduleId );
+            scheduleSignUpRowItem.Controls.Add( hfOccurrenceDate );
+            scheduleSignUpRowItem.Controls.Add( hfAttendanceId );
 
             var pnlCheckboxCol = new Panel();
-            pnlCheckboxCol.Attributes.Add( "class", "col-md-1" );
+            pnlCheckboxCol.Attributes.Add( "class", "col-md-4" );
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
@@ -1248,7 +1247,6 @@ $('#{0}').tooltip();
             ddlSignupLocations.Enabled = false;
 
             ddlSignupLocations.AddCssClass( "js-person-schedule-signup-ddl" );
-            ddlSignupLocations.AddCssClass( "input-width-xl" );
             ddlSignupLocations.Items.Insert( 0, new ListItem( "No Location Preference", string.Empty ) );
             foreach ( var location in locations )
             {
@@ -1259,16 +1257,16 @@ $('#{0}').tooltip();
             ddlSignupLocations.SelectedIndexChanged += DdlSignupLocations_SelectedIndexChanged;
 
             var pnlLocationCol = new Panel();
-            pnlLocationCol.Attributes.Add( "class", "col-md-11" );
+            pnlLocationCol.Attributes.Add( "class", "col-md-8" );
             pnlLocationCol.Controls.Add( ddlSignupLocations );
 
             var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='fa fa-check-square'></i> Saved" };
             hlSignUpSaved.Visible = false;
             pnlLocationCol.Controls.Add( hlSignUpSaved );
 
-            scheduleSignUpContainer.Controls.Add( pnlCheckboxCol );
-            scheduleSignUpContainer.Controls.Add( pnlLocationCol );
-            scheduleSignUpRowItem.Controls.Add( scheduleSignUpContainer );
+            scheduleSignUpRowItem.Controls.Add( pnlCheckboxCol );
+            scheduleSignUpRowItem.Controls.Add( pnlLocationCol );
+            //scheduleSignUpRowItem.Controls.Add( scheduleSignUpContainer );
         }
 
         /// <summary>
