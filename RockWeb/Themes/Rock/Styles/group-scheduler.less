@@ -25,6 +25,10 @@
     width: 6px;
     background-color: rgba(0,0,0, .2);
     border-radius: 3px;
+
+    &:hover {
+      background-color: rgba(0,0,0, .3);
+    }
   }
 }
 
@@ -42,6 +46,41 @@
   border: 1px solid @btn-default-border;
   border-radius: 4px;
   box-shadow: 0 1px 0 hsl(228, 7%, 83%);
+
+  .flex {
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-direction: row !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+
+    &::before {
+      display: block;
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      margin-right: 7.5px;
+      content: " ";
+      background-color: #fff;
+      border: 1px solid #d8d8d8;
+      border-radius: 50%;
+    }
+  }
+
+  .btn {
+    height: 16px;
+    padding: 0;
+    line-height: 16px;
+    color: #d8d8d8;
+
+
+    &:hover,
+    &:focus {
+      color: #767676;
+      outline: 0;
+    }
+  }
 
   &:hover {
     background: rgba(85,150,230,.1);
@@ -84,8 +123,9 @@
   }
 
   .resource-name {
-    display: block;
+    //display: block;
     margin-right: 20px;
+    white-space: nowrap;
   }
 
   .dropdown-menu {
@@ -109,6 +149,20 @@
 
   .resource-lastattendeddate {
     margin-left: 5px;
+  }
+}
+
+.flex::before {
+  .resource[data-status="pending"] & {
+    background-color: @pending-icon-color;
+  }
+
+  .resource[data-status="confirmed"] & {
+    background-color: @confirmed-icon-color;
+  }
+
+  .resource[data-status="declined"] & {
+    background-color: @declined-icon-color;
   }
 }
 
@@ -187,8 +241,12 @@
   }
 
   .resource {
-    margin-right: 8px;
     display: inline-block;
+    margin-right: 8px;
+
+    .resource-meta {
+      display: none;
+    }
   }
 }
 
@@ -215,87 +273,38 @@
   border-bottom: 1px solid @panel-default-border;
 }
 
-.resource-scheduled-status {
-  width: 24px;
-  height: 24px;
-  margin-right: 7.5px;
-  background-color: #fff;
-  border: 1px solid #d8d8d8;
-  border-radius: 50%;
-  display: block;
-
-  .resource[data-status="pending"] & {
-    background-color: @pending-icon-color;
-  }
-
-  .resource[data-status="confirmed"] & {
-    background-color: @confirmed-icon-color;
-  }
-
-  .resource[data-status="declined"] & {
-    background-color: @declined-icon-color;
-  }
-}
-
 .resource-lastattendeddate {
   font-size: 80%;
 }
 
 .resource-note {
-  line-height: 16px;
-  max-height: 32px;
-  text-overflow: ellipsis;
   display: -webkit-box;
+  max-height: 32px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  text-overflow: ellipsis;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  font-size: 12px;
-  overflow: hidden;
 }
 
 /* Resource List */
 .group-scheduler-resourcelist {
-  // width: 350px;
 
-  /* Resource List Scroller */
-  .scroll-container-resourcelist {
-    width: 320px;
+  .resource {
+    .flex {
+      -ms-flex-direction: column !important;
+      flex-direction: column !important;
 
-    .viewport {
-      width: 300px;
-      height: 375px;
-    }
-
-    .overview {
-      width: 100%;
-    }
-
-    .scrollbar {
-      position: relative;
-      float: right;
-      width: 15px;
-      height: 120px;
-    }
-
-    .track {
-      width: 1px;
-      height: 100%;
-      border-radius: 4px;
-    }
-
-    .thumb {
-      top: 0;
-      width: 13px;
-      height: 20px;
-      margin-left: -6px;
+      &::before {
+        display: none;
+      }
     }
   }
 }
 
 /* Location (Attendance Occurrence) */
 .scheduling-status {
-  // width: 135px;
-  // height: 24px;
-  // display: inline-block;
   .progress {
     margin-bottom: 0;
   }
@@ -395,18 +404,7 @@ elements with nested rules, like .list .item { padding: 10px; }. */
 /* Is added to the source element when its mirror image is dragged. It just adds opacity to it. */
 .gu-transit {
   box-sizing: border-box;
-  //display: block;
-  float: none !important; /* added to override the float from the resource */
-  // width: 100% !important;
-  //height: 100%;
-  // margin: 0 !important;
-  // background: repeating-linear-gradient(
-  //   -55deg,
-  //   rgba(35, 79, 65, 0.1),
-  //   rgba(35, 79, 65, 0.1) 3px,
-  //   rgba(35, 79, 65, 0) 3px,
-  //   rgba(35, 79, 65, 0) 6px
-  // ) !important;
+  float: none !important;
   opacity: .5;
 }
 
@@ -460,8 +458,6 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   }
 }
 
-
-
 .location-scheduled-list {
   padding: 0;
   margin: 0;
@@ -503,7 +499,7 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   margin: 0 3px 0 0;
 
   &::before {
-    font-family: 'FontAwesome';
+    font-family: FontAwesome;
     font-style: normal;
     font-weight: @fa-theme-weight;
     color: @pending-icon-color;
@@ -521,16 +517,13 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   }
 }
 
-
-
-
 .scheduler-target-container .resource.gu-transit,
 .resource.gu-mirror {
   max-height: 38px;
 
-  .resource-name {
-    margin-right: 30px;
-  }
+  // .resource-name {
+  //   margin-right: 50px;
+  // }
 
   .hide-transit {
     display: none;

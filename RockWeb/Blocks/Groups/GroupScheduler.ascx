@@ -87,7 +87,8 @@
                                         <div class="js-unscheduled-resource-template" style="display: none">
                                             <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
 
-                                            <div class="js-resource resource" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
+                                            <div class="js-resource resource unselectable" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
+                                                <div class="flex">
                                                 <span class="resource-name js-resource-name"></span>
                                                 <div class="resource-meta">
                                                     <div class="resource-note js-resource-note hide-transit"></div>
@@ -95,11 +96,12 @@
                                                     <div class="js-resource-meta text-right">
 
                                                     </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="panel panel-block">
+                                        <div class="panel panel-block resource-list">
 
                                             <div class="panel-heading">
                                                 <h1 class="panel-title">
@@ -121,7 +123,7 @@
                                                 </div>
 
 
-                                                <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" />
+                                                <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
                                                 <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
                                                     <div class="thumb">
                                                         <div class="end"></div>
@@ -149,11 +151,8 @@
                                     <div class="js-scheduled-resource-template" style="display: none">
                                         <%-- template that groupScheduler.js uses to populate scheduled resources, possible data-status values: pending, confirmed, declined --%>
 
-                                        <div class="js-resource resource meta" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
-                                            <div class="meta-body">
+                                        <div class="js-resource resource unselectable" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
                                                 <div class="flex">
-                                                    <div class="js-resource-status resource-scheduled-status"></div>
-
                                                     <div class="js-resource-name resource-name"></div>
 
                                                     <div class="resource-warning pull-left">
@@ -191,7 +190,6 @@
                                                     </div>
 
                                                 </div>
-                                            </div>
                                         </div>
                                     </div>
 
@@ -233,7 +231,7 @@
                                                                     </div>
                                                                 </div>
 
-                                                                <div class="autoscheduler-warning js-autoscheduler-warning pull-right margin-r-md" data-original-title="Auto Schedule requires that a desired capacity is configured for this location.">
+                                                                <div class="autoscheduler-warning js-autoscheduler-warning pull-right margin-r-md" data-original-title="Auto Schedule requires a desired capacity for this location.">
                                                                     <i class="fa fa-exclamation-triangle"></i>
                                                                 </div>
                                                             </asp:Panel>
