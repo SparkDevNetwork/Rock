@@ -47,12 +47,7 @@
     background: rgba(85,150,230,.1);
   }
 
-  &[data-state="scheduled"] {
-    display: inline-block;
-  }
-  // &[data-state="unscheduled"] {
-  //
-  // }
+
   &[data-state="unscheduled"][data-is-scheduled="true"] {
     background-color: @state-danger-bg;
   }
@@ -73,7 +68,7 @@
     }
 
     .resource-blackout-status {
-      display: block;
+      display: inline;
     }
   }
 
@@ -193,6 +188,7 @@
 
   .resource {
     margin-right: 8px;
+    display: inline-block;
   }
 }
 
@@ -226,16 +222,17 @@
   background-color: #fff;
   border: 1px solid #d8d8d8;
   border-radius: 50%;
+  display: block;
 
-  &[data-status="pending"] {
+  .resource[data-status="pending"] & {
     background-color: @pending-icon-color;
   }
 
-  &[data-status="confirmed"] {
+  .resource[data-status="confirmed"] & {
     background-color: @confirmed-icon-color;
   }
 
-  &[data-status="declined"] {
+  .resource[data-status="declined"] & {
     background-color: @declined-icon-color;
   }
 }
@@ -245,7 +242,14 @@
 }
 
 .resource-note {
-  font-size: 80%;
+  line-height: 16px;
+  max-height: 32px;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: 12px;
+  overflow: hidden;
 }
 
 /* Resource List */
@@ -514,5 +518,21 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   .confirmed &::before {
     color: @confirmed-icon-color;
     content: @fa-var-check-circle;
+  }
+}
+
+
+
+
+.scheduler-target-container .resource.gu-transit,
+.resource.gu-mirror {
+  max-height: 38px;
+
+  .resource-name {
+    margin-right: 30px;
+  }
+
+  .hide-transit {
+    display: none;
   }
 }

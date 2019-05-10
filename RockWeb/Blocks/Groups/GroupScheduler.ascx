@@ -87,25 +87,14 @@
                                         <div class="js-unscheduled-resource-template" style="display: none">
                                             <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
 
-                                            <div class="js-resource resource clearfix" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
+                                            <div class="js-resource resource" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
                                                 <span class="resource-name js-resource-name"></span>
-                                                <div class="resource-note pull-left">
-                                                    <span class="js-resource-note"></span>
-                                                </div>
-                                                <div class="resource-warning pull-left">
-                                                    <span class="js-resource-warning"></span>
-                                                </div>
-                                                <div class="resource-lastattendeddate pull-right" >
-                                                    <span class="js-resource-lastattendeddate" data-original-title="Last Attended"></span>
-                                                </div>
-                                                <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" data-original-title="Scheduling Conflict">
-                                                    <i class="fa fa-user-clock"></i>
-                                                </div>
-                                                <div class="js-resource-blackout-status resource-blackout-status pull-right" data-original-title="Blackout">
-                                                    <i class="fa fa-user-times"></i>
-                                                </div>
-                                                <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" data-original-title="Group Requirements Not Met">
-                                                    <i class="fa fa-exclamation-triangle"></i>
+                                                <div class="resource-meta">
+                                                    <div class="resource-note js-resource-note hide-transit"></div>
+
+                                                    <div class="js-resource-meta text-right">
+
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -160,46 +149,44 @@
                                     <div class="js-scheduled-resource-template" style="display: none">
                                         <%-- template that groupScheduler.js uses to populate scheduled resources, possible data-status values: pending, confirmed, declined --%>
 
-                                        <div class="meta js-resource resource" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
-                                            <div class="meta-figure">
-                                            </div>
+                                        <div class="js-resource resource meta" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
                                             <div class="meta-body">
                                                 <div class="flex">
+                                                    <div class="js-resource-status resource-scheduled-status"></div>
 
-                                                    <div class="resource-status pull-left">
-                                                        <span class="js-resource-status pull-left resource-scheduled-status"></span>
-                                                    </div>
-                                                    <div class="resource-name pull-left">
-                                                        <span class="js-resource-name"></span>
-                                                    </div>
+                                                    <div class="js-resource-name resource-name"></div>
 
                                                     <div class="resource-warning pull-left">
                                                         <span class="js-resource-warning"></span>
                                                     </div>
 
-                                                    <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" data-original-title="Scheduling Conflict">
+                                                    <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" title="Scheduling Conflict">
                                                         <i class="fa fa-user-clock"></i>
                                                     </div>
 
-                                                    <div class="js-resource-blackout-status resource-blackout-status pull-right" data-original-title="Blackout">
+                                                    <div class="js-resource-blackout-status resource-blackout-status pull-right" title="Blackout">
                                                         <i class="fa fa-user-times"></i>
                                                     </div>
 
-                                                    <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" data-original-title="Group Requirements Not Met">
+                                                    <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" title="Group Requirements Not Met">
                                                         <i class="fa fa-exclamation-triangle"></i>
                                                     </div>
 
-                                                    <div class="dropdown js-resource-actions">
+                                                    <div class="dropdown js-resource-actions hide-transit">
                                                         <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
                                                         <ul class="dropdown-menu">
                                                             <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button></li>
+                                                                <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
+                                                            </li>
                                                             <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button></li>
+                                                                <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button>
+                                                            </li>
                                                             <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button></li>
+                                                                <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button>
+                                                            </li>
                                                             <li>
-                                                                <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button></li>
+                                                                <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button>
+                                                            </li>
                                                         </ul>
                                                     </div>
 
