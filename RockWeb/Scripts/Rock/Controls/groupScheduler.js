@@ -372,6 +372,7 @@
                 $resourceDiv.attr('data-has-scheduling-conflict', schedulerResource.HasSchedulingConflict);
                 $resourceDiv.attr('data-has-blackout-conflict', schedulerResource.HasBlackoutConflict);
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
+                var $resourceMeta = $resourceDiv.find('.js-resource-meta');
 
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
@@ -384,13 +385,23 @@
                 }
 
                 if (schedulerResource.ConflictNote) {
-                    $resourceDiv.find('.js-resource-warning').text(schedulerResource.ConflictNote);
+                    $resourceMeta.append('<span class="resource-warning hide-transit">'+schedulerResource.ConflictNote+'</span>')
+                }
+
+                if (schedulerResource.HasSchedulingConflict) {
+                    $resourceMeta.append('<span class="resource-scheduling-conflict hide-transit" title="Scheduling Conflict"><i class="fa fa-user-clock"></i></span>');
+                }
+
+                if (schedulerResource.HasBlackoutConflict) {
+                    $resourceMeta.append('<span class="resource-blackout-status hide-transit" title="Blackout"><i class="fa fa-user-times"></i></span>');
+                }
+
+                if (schedulerResource.HasGroupRequirementsConflict) {
+                    $resourceMeta.append('<span class="resource-requirements-conflict hide-transit" title="Group Requirements Not Met"><i class="fa fa-exclamation-triangle"></i></span>');
                 }
 
                 if (schedulerResource.LastAttendanceDateTime) {
-                    var $lastAttendedDate = $resourceDiv.find('.js-resource-lastattendeddate');
-                    $lastAttendedDate.attr('data-datetime', schedulerResource.LastAttendanceDateTime);
-                    $lastAttendedDate.text(schedulerResource.LastAttendanceDateTimeFormatted);
+                    $resourceMeta.append('<span class="resource-lastattendeddate hide-transit" title="Last Attended" data-datetime="'+schedulerResource.LastAttendanceDateTime+'">' + schedulerResource.LastAttendanceDateTimeFormatted + '</span>');
                 }
 
                 // stuff that only applies to unscheduled resource
