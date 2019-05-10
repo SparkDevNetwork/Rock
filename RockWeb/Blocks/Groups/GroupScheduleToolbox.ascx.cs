@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Groups
             /// <summary>
             /// Sign-up tab
             /// </summary>
-            [Description( "Sign-up" )]
+            [Description( "Sign Up" )]
             SignUp = 2
         }
 
@@ -1016,7 +1016,7 @@ $('#{0}').tooltip();
 
                 cblBlackoutPersons.Items[0].Selected = true;
 
-                // if there is only one person in the family, don't show the checkbox list since it'll always just be the individual 
+                // if there is only one person in the family, don't show the checkbox list since it'll always just be the individual
                 cblBlackoutPersons.Visible = cblBlackoutPersons.Items.Count > 1;
             }
         }
