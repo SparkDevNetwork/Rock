@@ -44,7 +44,7 @@
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-file"></i>
+                            <i class="fa fa-fw fa-clipboard"></i>
                         </div>
                         <div class="wizard-item-label">
                             Registration Template
@@ -57,7 +57,7 @@
                 <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-clipboard"></i>
+                            <i class="fa fa-fw fa-file-o"></i>
                         </div>
                         <div class="wizard-item-label">
                             Registration
@@ -65,7 +65,7 @@
                     </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
-    
+
             <div id="divGroup" runat="server" class="wizard-item">
                 <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
@@ -78,12 +78,12 @@
                     </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
-    
+
             <div id="divEvent" runat="server" class="wizard-item">
                 <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar-plus"></i>
+                            <i class="fa fa-fw fa-calendar-check-o"></i>
                         </div>
                         <div class="wizard-item-label">
                             Event
@@ -91,12 +91,12 @@
                     </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
-    
+
             <div id="divEventOccurrence" runat="server" class="wizard-item">
                 <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-clock"></i>
+                            <i class="fa fa-fw fa-clock-o"></i>
                         </div>
                         <div class="wizard-item-label">
                             Event Occurrence
@@ -126,7 +126,7 @@
                     <h1 class="panel-title"><i class="fa fa-magic"></i>
                         Event Registration Wizard - Choose a Template</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
@@ -172,7 +172,7 @@
                     <h1 class="panel-title"><i class="fa fa-clipboard"></i>
                         Event Registration Wizard - Registration</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
@@ -250,7 +250,7 @@
                     <h1 class="panel-title"><i class="fa fa-users"></i>
                         Event Registration Wizard - Group</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
@@ -289,7 +289,7 @@
                     <h1 class="panel-title"><i class="fa fa-calendar-plus"></i>
                         Event Registration Wizard - Event</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
@@ -339,12 +339,12 @@
                                             </Rock:Grid>
                                         </div>
                                     </Rock:RockControlWrapper>
-                                    
-                                    <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" 
+
+                                    <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars"
                                         Help="Calendars that this item should be added to (at least one is required)."
                                         OnSelectionChanged="cblCalendars_SelectionChanged" AutoPostBack="true"
                                         RepeatDirection="Horizontal" Required="true" />
-                                    <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
+                                    <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL"
                                         Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                                 </div>
                                 <div class="col-md-6">
@@ -375,7 +375,7 @@
                     <h1 class="panel-title"><i class="fa fa-clock"></i>
                         Event Registration Wizard - Event Occurrence</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
 
@@ -413,7 +413,7 @@
                     <h1 class="panel-title"><i class="fa fa-list-ul"></i>
                         Event Registration Wizard - Summary</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <div class="alert alert-info">
                         <div><strong>Please confirm the following changes:</strong></div>
@@ -436,7 +436,7 @@
                     <h1 class="panel-title"><i class="fa fa-check"></i>
                         Event Registration Wizard - Finished</h1>
                 </div>
-                
+
                 <div class="panel-body">
                     <div class="alert alert-success">
                         <div><strong>Success</strong></div>
