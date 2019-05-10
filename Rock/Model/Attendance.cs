@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -649,20 +650,44 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Pres the save changes.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            var previousDidAttendValue = entry.Property( "DidAttend" )?.OriginalValue as bool? ?? false;
+
+            // get original value of RSVP so we can detect whether the value changed
+            _originalDeclinedValue = ( entry.Property( "RSVP" )?.OriginalValue as RSVP? ) == RSVP.No;
+
+            if ( previousDidAttendValue == false && this.DidAttend == true )
+            {
+                new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
+            }
 
 #pragma warning disable 612, 618
             ProcessObsoleteOccurrenceFields( entry );
 #pragma warning restore 612, 618
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        private bool? _originalDeclinedValue = null;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            // if the record was changed to Declined, queue a GroupScheduleCancellationTransaction 
+            if ( _originalDeclinedValue == false && this.IsScheduledPersonDeclined() )
+            {
+                new GroupScheduleCancellationTransaction( this ).Enqueue();
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>
