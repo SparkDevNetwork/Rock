@@ -823,7 +823,7 @@ WHERE p.Id NOT IN (
         @EtlDate [EffectiveDate],
         @MaxExpireDate [ExpireDate],
         family.GroupId [PrimaryFamilyId],
-        convert(INT, (convert(CHAR(8), DateFromParts(BirthYear, BirthMonth, BirthDay), 112))) [BirthDateKey],
+        convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
         dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
         1 [Count],
 " + populatePersonValueFROMClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",

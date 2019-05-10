@@ -13,7 +13,7 @@
 
             <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
 
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-clock-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -77,9 +77,9 @@
                     </div>
 
                     <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
-                
+
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
-                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server"></Rock:DynamicPlaceholder>
                     </Rock:PanelWidget>
 
                     <div class="actions">
@@ -138,8 +138,8 @@
                 <asp:ValidationSummary ID="vsExistingLinkage" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ExistingLinkage" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage" 
-                            AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false" 
+                        <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false"
                             Required="true" EnhanceForLongLists="true" />
                         <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage"
                             Required="true" EnhanceForLongLists="true" />

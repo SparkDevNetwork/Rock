@@ -92,8 +92,9 @@ namespace Rock.Security.ExternalAuthentication
         {
             string returnUrl = request.QueryString["returnurl"];
             string redirectUri = GetRedirectUrl( request );
+            string scopeUserFriends = ( GetAttributeValue( "SyncFriends" ).AsBoolean( false ) ) ? ",user_friends" : string.Empty;
 
-            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email,user_friends",
+            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
                 GetAttributeValue( "AppID" ),
                 HttpUtility.UrlEncode( redirectUri ),
                 HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );

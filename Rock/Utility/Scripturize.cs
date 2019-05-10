@@ -777,7 +777,6 @@ namespace Rock.Utility
 		""name"": ""Mark"",
         ""aliases"": [
             ""Mrk"",
-            ""Mar"",
             ""Mk"",
             ""Mr"",
             ""Mr?k""

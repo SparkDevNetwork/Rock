@@ -91,11 +91,34 @@ namespace Rock.Jobs
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The days back
+            /// </summary>
             public const string DaysBack = "DaysBack";
+
+            /// <summary>
+            /// The batch name prefix
+            /// </summary>
             public const string BatchNamePrefix = "Batch Name Prefix";
+
+            /// <summary>
+            /// The receipt email
+            /// </summary>
             public const string ReceiptEmail = "Receipt Email";
+
+            /// <summary>
+            /// The failed payment email
+            /// </summary>
             public const string FailedPaymentEmail = "Failed Payment Email";
+
+            /// <summary>
+            /// The failed payment workflow
+            /// </summary>
             public const string FailedPaymentWorkflow = "Failed Payment Workflow";
+
+            /// <summary>
+            /// The target gateway
+            /// </summary>
             public const string TargetGateway = "TargetGateway";
         }
 

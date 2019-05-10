@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Rock.Financial;
 
 /// <summary>
 /// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
@@ -1705,6 +1704,57 @@ namespace Rock.TransNational.Pi
         public IDictionary<string, Newtonsoft.Json.Linq.JToken> _additionalData { get; set; }
     }
 
+    /// <summary>
+    /// (undocumented as of 4/15/2019, but was told about it in an email)
+    /// URL ~api//recurring/subscription/search.
+    /// Search body example: {"customer":{"id":{"value":"&lt;customer id here&gt;","operator":"="}}}
+    /// </summary>
+    public class QuerySubscriptionsRequest
+    {
+        /// <summary>
+        /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
+        /// </summary>
+        /// <value>
+        /// The limit.
+        /// </value>
+        [JsonProperty( "limit" )]
+        public int Limit { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the customer identifier search (optional)
+        /// </summary>
+        /// <value>
+        /// The customer identifier search.
+        /// </value>
+        [JsonProperty( "customer_id", NullValueHandling = NullValueHandling.Ignore )]
+        public QuerySearchString CustomerIdSearch { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SubscriptionsSearchResult : BaseResponseData
+    {
+        /// <summary>
+        /// Gets or sets the total count.
+        /// </summary>
+        /// <value>
+        /// The total count.
+        /// </value>
+        [JsonProperty( "total_count" )]
+        public int TotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data.
+        /// </summary>
+        /// <value>
+        /// The data.
+        /// </value>
+        [JsonProperty( "data" )]
+        public SubscriptionData[] Data { get; set; }
+    }
+
+
     #endregion Subscriptions
 
     #region Query Transaction Status
@@ -1752,13 +1802,14 @@ namespace Rock.TransNational.Pi
 
         /// <summary>
         /// Maximum records to return (0-100, optional)
+        /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
         /// https://sandbox.gotnpgateway.com/docs/api/#query-transactions
         /// </summary>
         /// <value>
         /// The limit.
         /// </value>
         [JsonProperty( "limit", NullValueHandling = NullValueHandling.Ignore )]
-        public int? Limit { get; set; }
+        public int? Limit { get; set; } = 0;
 
         /// <summary>
         /// Number of records to offset the return by (optional)
@@ -1778,7 +1829,7 @@ namespace Rock.TransNational.Pi
     {
         /// <summary>
         /// Gets or sets the comparison operator.
-        /// Possible values are "=, !="
+        /// Possible values are "=, !=". Integer searches support "=, !=, &lt;, &gt;".
         /// </summary>
         /// <value>
         /// The comparison operator.
@@ -2013,7 +2064,7 @@ namespace Rock.TransNational.Pi
         public string PaymentMethod { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the payment.
+        /// Gets or sets the type of the payment, for example: 'ach' or 'card'
         /// </summary>
         /// <value>
         /// The type of the payment.
@@ -2119,6 +2170,15 @@ namespace Rock.TransNational.Pi
         /// </value>
         [JsonProperty( "customer_id" )]
         public string CustomerId { get; set; }
+
+        /// <summary>
+        /// If this transaction is a result of a subscription, this is the id of the subscription
+        /// </summary>
+        /// <value>
+        /// The subscription identifier.
+        /// </value>
+        [JsonProperty( "subscription_id" )]
+        public string SubscriptionId { get; set; }
 
         /// <summary>
         /// Gets or sets the referenced transaction identifier.

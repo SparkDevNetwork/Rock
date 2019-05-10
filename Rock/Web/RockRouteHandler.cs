@@ -296,7 +296,6 @@ namespace Rock.Web
         /// <summary>
         /// Registers the routes from PageRoute and default routes.
         /// </summary>
-        /// <param name="routes">The routes.</param>
         public static void RegisterRoutes()
         {
             RouteCollection routes = RouteTable.Routes;

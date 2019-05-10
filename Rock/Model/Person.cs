@@ -513,6 +513,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? DeceasedDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the person's default financial account gift designation.
+        /// </summary>
+        /// <value>
+        /// The financial account id.
+        /// </value>
+        [DataMember]
+        public int? ContributionFinancialAccountId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -1005,6 +1014,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Group PrimaryFamily { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's default financial account gift designation.
+        /// </summary>
+        /// <value>
+        /// The financial account.
+        /// </value>
+        [LavaIgnore]
+        public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
@@ -3007,6 +3025,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
         }
     }
 

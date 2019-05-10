@@ -108,6 +108,7 @@
     <Compile Include="Rock\Model\PageRouteTests.cs" />
     <Compile Include="Rock\Model\PageTests.cs" />
     <Compile Include="Rock\Model\PersonTests.cs" />
+    <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="Rock\StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupTypes" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupTypeDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -120,23 +120,25 @@
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
                                 <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing"
                                     Help="Determines if groups of this type should be indexed." />
-                         <div class="row">
-                           <div class="col-xs-6">
-                                <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"
-                                    Help="Determines if groups of this type are allowed to have their own Group Member Attributes. This will show/hide the Member Attributes section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
-                                <Rock:RockCheckBox ID="cbEnableSpecificGroupReq" runat="server" Label="Enable Specific Group Requirements"
-                                    Help="Determines if groups of this type are allowed to have Group Requirements. This will show/hide the Group Requirements section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
-                               <Rock:NotificationBox ID="nbGroupHistoryWarning" runat="server" NotificationBoxType="Warning" Text="Turning off group history will delete history for all groups and group members of this group type." Visible="false" />
-                                <Rock:RockCheckBox ID="cbEnableGroupHistory" runat="server" Label="Enable Group History" 
-                                    Help="Determines if groups of this type will keep a history of group and group member changes." AutoPostBack="true" OnCheckedChanged="cbEnableGroupHistory_CheckedChanged" />
-                           </div>
-                           <div class="col-xs-6">
-                                <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
-                                    Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
-                                <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
-                                    Help="Determines if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
-                               
-                           </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"
+                                            Help="Determines if groups of this type are allowed to have their own Group Member Attributes. This will show/hide the Member Attributes section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
+                                        <Rock:RockCheckBox ID="cbEnableSpecificGroupReq" runat="server" Label="Enable Specific Group Requirements"
+                                            Help="Determines if groups of this type are allowed to have Group Requirements. This will show/hide the Group Requirements section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
+                                        <Rock:NotificationBox ID="nbGroupHistoryWarning" runat="server" NotificationBoxType="Warning" Text="Turning off group history will delete history for all groups and group members of this group type." Visible="false" />
+                                        <Rock:RockCheckBox ID="cbEnableGroupHistory" runat="server" Label="Enable Group History"
+                                            Help="Determines if groups of this type will keep a history of group and group member changes." AutoPostBack="true" OnCheckedChanged="cbEnableGroupHistory_CheckedChanged" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
+                                            Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
+                                        <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
+                                            Help="Determines if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
+                                        <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag" 
+                                            Help="Determines if groups of this type should be allowed to manage tags." />
+
+                                    </div>
                         </div>
                             </div>
                         </div>
@@ -195,6 +197,29 @@
                                     <asp:ListItem Text="Device Printer" Value="1" />
                                     <asp:ListItem Text="Location Printer" Value="2" />
                                 </Rock:RockDropDownList>
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbSchedulingEnabled" runat="server" Label="Scheduling Enabled" Help="Indicates whether scheduling is enabled for groups of this type."/>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemEmail" runat="server" Label="Schedule Confirmation Email" Help="The system email to use when a person is scheduled or when the schedule has been updated." />
+                                <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason if Decline Schedule" Help="Indicates whether a person must specify a reason when declining/cancelling." />
+                                <Rock:NumberBox ID="nbScheduleConfirmationEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Email Offset Days" Help="The number of days prior to the schedule to send a confirmation email." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow Type" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />
+
+                                <Rock:RockDropDownList ID="ddlScheduleReminderSystemEmail" runat="server" Label="Schedule Reminder Email" Help="The system email to use when sending a schedule reminder." />
+                                <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The default number of days prior to the schedule to send a reminder email." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -367,7 +392,7 @@
                                     Help="This setting allows you to customize the term used for the administrator of the group." />
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
                                     Help="The Font Awesome icon class to use when displaying groups of this group type." />
-                                <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color" 
+                                <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color"
                                     Help="The color used to visually distinguish groups on lists." />
                             </div>
                             <div class="col-md-6">

@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Administration
         {
             var pageService = new PageService( new RockContext() );
             
-            var routes = new SortedDictionary<string, System.Web.Routing.Route>();
+            var routes = new Dictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
                 if ( !routes.ContainsKey( route.Url ) )

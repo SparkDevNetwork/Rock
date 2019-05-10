@@ -11,14 +11,13 @@
     <ContentTemplate>
 
         <div class="panel panel-block panel-analytics">
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    <i class="fa fa-check-square-o"></i>
-                    Attendance Analytics<asp:Literal ID="lSpecificGroupName" runat="server" />
+                    <i class="fa fa-check-square-o"></i> Attendance Analytics<asp:Literal ID="lSpecificGroupName" runat="server" />
                 </h1>
 
                 <div class="panel-labels">
-                    <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
+                    <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
                     <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
                         <i class='fa fa-question-circle'></i>
                     </a>
@@ -29,6 +28,7 @@
                         <i class='fa fa-clipboard'></i>
                     </button>
                 </div>
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <Rock:NotificationBox ID="nbInvalidGroup" runat="server" NotificationBoxType="Warning" Heading="Sorry" Visible="false"
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="panel-body">
-                    <div class="row">
+                    <div class="row row-eq-height">
                         <div class="col-md-3 filter-options">
 
                             <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
@@ -322,6 +322,8 @@
             }
 
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+
                 // Graph-By button group
                 $('.js-graph-by .btn').on('click', function (e) {
                     setActiveButtonGroupButton($(this));

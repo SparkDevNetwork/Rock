@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
 
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-check-square-o"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />

@@ -1446,5 +1446,70 @@ namespace Rock.Migrations.Migrations {
                         "story", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///		SELECT [Id]
+        ///		FROM [ServiceJob]
+        ///		WHERE [Class] = &apos;Rock.Jobs.PostV90DataMigrations&apos;
+        ///			AND [Guid] = &apos;3F279016-C7D1-490F-835D-8FFE6D943A32&apos;
+        ///		)
+        ///BEGIN
+        ///	INSERT INTO [ServiceJob] (
+        ///		[IsSystem]
+        ///		,[IsActive]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[Class]
+        ///		,[CronExpression]
+        ///		,[NotificationStatus]
+        ///		,[Guid]
+        ///		)
+        ///	VALUES (
+        ///		0
+        ///		,1
+        ///		,&apos;Runs data updates that need to occur after updating to v9.0&apos;
+        ///		,&apos;This job will take care of any data migrations that need to occur after updating to v [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob {
+            get {
+                return ResourceManager.GetString("_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @WeeklySundayScheduleGuid UNIQUEIDENTIFIER = &apos;04A17BB3-B3E8-4E4B-B575-22CB7E81D5F4&apos;,
+        ///	@EveryOtherWeekSundayScheduleGuid UNIQUEIDENTIFIER = &apos;07F1D164-F8D7-4FA4-B98B-B7480CC40457&apos;,
+        ///	@FirstAndThirdSundayScheduleGuid UNIQUEIDENTIFIER = &apos;8342535C-A48B-4AE6-8522-33C33BFBBFFC&apos;,
+        ///	@SecondAndFourthSundayScheduleGuid UNIQUEIDENTIFIER = &apos;34448AF0-ECA2-40E5-89C9-66C1739A8828&apos;,
+        ///	@WeeklySundayScheduleId INT,
+        ///	@EveryOtherWeekSundayScheduleId INT,
+        ///	@FirstAndThirdSundayScheduleId INT,
+        ///	@SecondAndFourthSundaySc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201905081957016_GroupScheduling_PopulateScheduleTemplates {
+            get {
+                return ResourceManager.GetString("_201905081957016_GroupScheduling_PopulateScheduleTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201905082317243_Rollup_0508_FixLavaChartShortcode {
+            get {
+                return ResourceManager.GetString("_201905082317243_Rollup_0508_FixLavaChartShortcode", resourceCulture);
+            }
+        }
     }
 }
