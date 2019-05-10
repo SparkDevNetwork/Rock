@@ -53,7 +53,7 @@
                                 <ol class="drag-container js-drag-container">
                                     <asp:Repeater ID="rptrComponents" runat="server">
                                         <ItemTemplate>
-                                            <li class="component" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
+                                            <li class="component unselectable" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
                                                 <i class="<%# Eval( "IconCssClass" ) %>"></i>
                                                 <span><%# Eval( "Title" ) %></span>
                                             </li>
@@ -72,7 +72,7 @@
                         <ol class="drag-container js-drag-container list-unstyled">
                             <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
                                 <ItemTemplate>
-                                    <li class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
+                                    <li class="sms-action unselectable<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                         <%# Eval( "Name" ) %>
                                         <div class="pull-right">
