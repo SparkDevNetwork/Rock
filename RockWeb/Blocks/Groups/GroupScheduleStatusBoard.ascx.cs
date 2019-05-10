@@ -71,6 +71,8 @@ public partial class GroupScheduleStatusBoard : RockBlock
     {
         base.OnLoad( e );
 
+        RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
+
         if ( !this.IsPostBack )
         {
             var rootGroupGuid = this.GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
