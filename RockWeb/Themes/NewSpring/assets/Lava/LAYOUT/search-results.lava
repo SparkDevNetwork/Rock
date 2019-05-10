@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <div class="col-md-12">
     {[ section title:'Not sure what to search? Start here!' ]}
         <p style="line-height: 41px;">
-            {% definedvalue where:'DefinedTypeId == 103' iterator:'values' %}
+            {% definedvalue where:'DefinedTypeId == 103' sort:'Order' iterator:'values' %}
                 {% for value in values %}
                     {[ button linktext:'{{ value.Value }}' linkurl:'/search?query={{ value.Value }}' ]}
                 {% endfor %}
