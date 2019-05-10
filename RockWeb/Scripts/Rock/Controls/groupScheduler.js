@@ -377,6 +377,9 @@
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
                     $resourceDiv.tooltip({ container: 'body' });
+                } else if (schedulerResource.HasGroupRequirementsConflict) {
+                    $resourceDiv.attr('title', schedulerResource.PersonName + " does not meet the requirements for this group.");
+                    $resourceDiv.tooltip({ container: 'body' });
                 }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
