@@ -126,11 +126,13 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Registration>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            if ( new Service<PersonScheduleExclusion>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Registration.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, PersonScheduleExclusion.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring Registration,GroupId 
  
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
@@ -177,6 +179,7 @@ namespace Rock.Model
             target.AllowGuests = source.AllowGuests;
             target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             target.ArchivedDateTime = source.ArchivedDateTime;
+            target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
@@ -193,7 +196,9 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             target.ScheduleId = source.ScheduleId;
+            target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

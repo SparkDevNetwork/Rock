@@ -53,7 +53,7 @@ namespace Rock.TransNational.Pi
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class PiGateway : GatewayComponent, IHostedGatewayComponent
+    public class PiGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
     {
         #region Attribute Keys
 
@@ -85,7 +85,7 @@ namespace Rock.TransNational.Pi
             }
             else
             {
-                return "https://app.gotnpgateway.co ";
+                return "https://app.gotnpgateway.com";
             }
         }
 
@@ -113,6 +113,79 @@ namespace Rock.TransNational.Pi
             return this.GetAttributeValue( financialGateway, AttributeKey.PrivateApiKey );
         }
 
+        #region IAutomatedGatewayComponent
+
+        /// <summary>
+        /// The most recent exception thrown by the gateway's remote API
+        /// </summary>
+        public Exception MostRecentException { get; private set; }
+
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        /// <exception cref="ReferencePaymentInfoRequired"></exception>
+        public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
+        {
+            // TODO - Fees? If Pi provides fee info, we won't be able to use the Charge method as the transaction it returns
+            // doesn't have the capacity to relay fee info (also the reason this method returns a Payment rather than a
+            // transaction.
+
+            // payment.FeeAmount and payment.NetAmount
+
+            MostRecentException = null;
+
+            try
+            {
+                var transaction = Charge( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    MostRecentException = new Exception( errorMessage );
+                    return null;
+                }
+
+                var paymentDetail = transaction.FinancialPaymentDetail;
+
+                var payment = new Payment
+                {
+                    AccountNumberMasked = paymentDetail.AccountNumberMasked,
+                    Amount = paymentInfo.Amount,
+                    ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted,
+                    ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted,
+                    IsSettled = transaction.IsSettled,
+                    SettledDate = transaction.SettledDate,
+                    NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted,
+                    Status = transaction.Status,
+                    StatusMessage = transaction.StatusMessage,
+                    TransactionCode = transaction.TransactionCode,
+                    TransactionDateTime = transaction.TransactionDateTime ?? RockDateTime.Now
+                };
+
+                if ( paymentDetail.CreditCardTypeValueId.HasValue )
+                {
+                    payment.CreditCardTypeValue = DefinedValueCache.Get( paymentDetail.CreditCardTypeValueId.Value );
+                }
+
+                if ( paymentDetail.CurrencyTypeValueId.HasValue )
+                {
+                    payment.CurrencyTypeValue = DefinedValueCache.Get( paymentDetail.CurrencyTypeValueId.Value );
+                }
+
+                return payment;
+            }
+            catch ( Exception e )
+            {
+                MostRecentException = e;
+                throw;
+            }
+        }
+
+        #endregion IAutomatedGatewayComponent
+
         #region IHostedGatewayComponent
 
         /// <summary>
@@ -122,19 +195,23 @@ namespace Rock.TransNational.Pi
         /// <param name="enableACH">if set to <c>true</c> [enable ach]. (Credit Card is always enabled)</param>
         /// <param name="controlId">The control identifier.</param>
         /// <returns></returns>
-        public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, bool enableACH, string controlId )
+        public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
         {
             PiHostedPaymentControl piHostedPaymentControl = new PiHostedPaymentControl { ID = controlId };
             piHostedPaymentControl.PiGateway = this;
             piHostedPaymentControl.GatewayBaseUrl = this.GetGatewayUrl( financialGateway );
-            if ( enableACH )
+            List<PiPaymentType> enabledPaymentTypes = new List<PiPaymentType>();
+            if (options?.EnableACH ?? true)
             {
-                piHostedPaymentControl.EnabledPaymentTypes = new PiPaymentType[] { PiPaymentType.card, PiPaymentType.ach };
+                enabledPaymentTypes.Add( PiPaymentType.ach );
             }
-            else
+
+            if ( options?.EnableCreditCard ?? true )
             {
-                piHostedPaymentControl.EnabledPaymentTypes = new PiPaymentType[] { PiPaymentType.card };
+                enabledPaymentTypes.Add( PiPaymentType.card );
             }
+
+            piHostedPaymentControl.EnabledPaymentTypes = enabledPaymentTypes.ToArray();
 
             piHostedPaymentControl.PublicApiKey = this.GetPublicApiKey( financialGateway );
 
@@ -743,6 +820,27 @@ namespace Rock.TransNational.Pi
             return ParseResponse<SubscriptionResponse>( response );
         }
 
+        /// <summary>
+        /// Searches the subscriptions.
+        /// (undocumented as of 4/15/2019) /recurring/subscription/search
+        /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="querySubscriptionsRequest">The query subscriptions request.</param>
+        /// <returns></returns>
+        private SubscriptionsSearchResult SearchSubscriptions( string gatewayUrl, string apiKey, QuerySubscriptionsRequest querySubscriptionsRequest )
+        {
+            var restClient = new RestClient( gatewayUrl );
+            RestRequest restRequest = new RestRequest( $"api/recurring/subscription/search", Method.POST );
+            restRequest.AddHeader( "Authorization", apiKey );
+
+            restRequest.AddJsonBody( querySubscriptionsRequest );
+
+            var response = restClient.Execute( restRequest );
+
+            return ParseResponse<SubscriptionsSearchResult>( response );
+        }
+
         #endregion Subscriptions
 
         #endregion PiGateway Rock wrappers
@@ -937,7 +1035,9 @@ namespace Rock.TransNational.Pi
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            errorMessage = string.Empty;
+            // create a guid to include in the Pi Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
+            var descriptionGuid = Guid.NewGuid();
+
             var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
             if ( referencedPaymentInfo == null )
             {
@@ -945,60 +1045,82 @@ namespace Rock.TransNational.Pi
             }
 
             var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+            string subscriptionDescription = $"Subscription Ref: {descriptionGuid}";
 
-            SubscriptionRequestParameters subscriptionParameters = new SubscriptionRequestParameters
-            {
-                Customer = new SubscriptionCustomer { Id = customerId },
-                PlanId = null,
-                Description = $"Subscription for PersonId: {schedule.PersonId }",
-                Duration = 0,
-                Amount = paymentInfo.Amount
-            };
-
-            SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate );
-
-            var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
-            var subscriptionId = subscriptionResult.Data?.Id;
-
-            if ( subscriptionId.IsNullOrWhiteSpace() )
-            {
-                errorMessage = subscriptionResult.Message;
-                return null;
-            }
-
-            // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
-            // this might be handy in case we have an exception and need to know what the subscriptionId is
-            referencedPaymentInfo.TransactionCode = subscriptionId;
-
-            var scheduledTransaction = new FinancialScheduledTransaction();
-            scheduledTransaction.TransactionCode = customerId;
-            scheduledTransaction.GatewayScheduleId = subscriptionId;
-            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
-
-            CustomerResponse customerInfo;
             try
             {
-                customerInfo = this.GetCustomer( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), customerId );
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( $"Exception getting Customer Information for Scheduled Payment. {errorMessage}", ex );
-            }
+                errorMessage = string.Empty;
 
-            scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
-            try
-            {
-                GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
-            }
+                SubscriptionRequestParameters subscriptionParameters = new SubscriptionRequestParameters
+                {
+                    Customer = new SubscriptionCustomer { Id = customerId },
+                    PlanId = null,
+                    Description = subscriptionDescription,
+                    Duration = 0,
+                    Amount = paymentInfo.Amount
+                };
 
-            return scheduledTransaction;
+                SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate );
+
+                var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
+                var subscriptionId = subscriptionResult.Data?.Id;
+
+                if ( subscriptionId.IsNullOrWhiteSpace() )
+                {
+                    errorMessage = subscriptionResult.Message;
+                    return null;
+                }
+
+                // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
+                // this might be handy in case we have an exception and need to know what the subscriptionId is
+                referencedPaymentInfo.TransactionCode = subscriptionId;
+
+                var scheduledTransaction = new FinancialScheduledTransaction();
+                scheduledTransaction.TransactionCode = customerId;
+                scheduledTransaction.GatewayScheduleId = subscriptionId;
+                scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+
+                CustomerResponse customerInfo;
+                try
+                {
+                    customerInfo = this.GetCustomer( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), customerId );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment. {errorMessage}", ex );
+                }
+
+                scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
+                try
+                {
+                    GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                }
+
+                return scheduledTransaction;
+            }
+            catch ( Exception )
+            {
+                // if there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen
+                var subscriptionRequest = new QuerySubscriptionsRequest();
+                subscriptionRequest.CustomerIdSearch = new QuerySearchString { SearchValue = customerId, ComparisonOperator = "=" };
+
+                var subscriptionSearchResult = this.SearchSubscriptions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionRequest );
+                var orphanedSubscription = subscriptionSearchResult?.Data?.FirstOrDefault( a => a.Description == subscriptionDescription );
+
+                if ( orphanedSubscription?.Id != null )
+                {
+                    var subscriptionId = orphanedSubscription.Id;
+                    var subscriptionResult = this.DeleteSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionId );
+                }
+
+                throw;
+            }
         }
 
-       
 
         /// <summary>
         /// Updates the scheduled payment.
@@ -1175,39 +1297,27 @@ namespace Rock.TransNational.Pi
 
             var rockContext = new RockContext();
 
-            Dictionary<string, string> scheduleIdLookupFromCustomerId = new Dictionary<string, string>();
-
             foreach ( var transaction in searchResult.Data )
             {
                 var customerId = transaction.CustomerId;
 
-                var gatewayScheduleId = scheduleIdLookupFromCustomerId.GetValueOrNull( customerId );
-                if ( gatewayScheduleId == null )
-                {
-                    // customerId is stored in scheduledTransaction.TransactionCode, so we know the customerId,
-                    // but we might know exactly what scheduled transaction it is since a FinancialPersonSavedAccount (where GatewayPersonId/CustomerID is stored)
-                    // can be used multiple times for charges and scheduled transactions
-                    var customerGatewayScheduleIds = new Rock.Model.FinancialScheduledTransactionService( rockContext ).Queryable().Where( a => a.TransactionCode == customerId ).Select( a => a.GatewayScheduleId ).ToList();
-
-                    // if there is exactly one gatewayScheduleId found for the customerId, then we can assume 
-                    if ( customerGatewayScheduleIds.Count == 1 )
-                    {
-                        gatewayScheduleId = customerGatewayScheduleIds[0];
-                    }
-
-                    if ( gatewayScheduleId.IsNotNullOrWhiteSpace() )
-                    {
-                        scheduleIdLookupFromCustomerId.Add( customerId, gatewayScheduleId );
-                    }
-                }
-
+                var gatewayScheduleId = transaction.SubscriptionId;
                 var payment = new Payment
                 {
-                    AccountNumberMasked = transaction.PaymentMethodResponse.Card.MaskedCard,
+                    TransactionCode = transaction.Id,
                     Amount = transaction.Amount,
                     TransactionDateTime = transaction.CreatedDateTime.Value,
-                    GatewayScheduleId = gatewayScheduleId
+                    GatewayScheduleId = gatewayScheduleId,
                 };
+
+                if (transaction.PaymentType == "ach" )
+                {
+                    payment.AccountNumberMasked = transaction?.PaymentMethodResponse?.ACH?.MaskedAccountNumber;
+                }
+                else
+                {
+                    payment.AccountNumberMasked = transaction?.PaymentMethodResponse?.Card?.MaskedCard;
+                }
 
                 paymentList.Add( payment );
             }

@@ -415,6 +415,18 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();

@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.DeclineReasonValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.QualifierValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );

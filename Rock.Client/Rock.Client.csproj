@@ -60,6 +60,7 @@
     <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="CodeGenerated\AttendanceData.cs" />
     <Compile Include="CodeGenerated\AttendanceOccurrence.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
     <Compile Include="CodeGenerated\AttributeMatrix.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="CodeGenerated\ContentChannelItemSlug.cs" />
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
+    <Compile Include="CodeGenerated\ControlTotalResult.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
     <Compile Include="CodeGenerated\DataViewPersistedValue.cs" />
@@ -154,9 +156,12 @@
     <Compile Include="CodeGenerated\GroupLocation.cs" />
     <Compile Include="CodeGenerated\GroupLocationHistorical.cs" />
     <Compile Include="CodeGenerated\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="CodeGenerated\GroupLocationScheduleConfig.cs" />
     <Compile Include="CodeGenerated\GroupMember.cs" />
+    <Compile Include="CodeGenerated\GroupMemberAssignment.cs" />
     <Compile Include="CodeGenerated\GroupMemberHistorical.cs" />
     <Compile Include="CodeGenerated\GroupMemberRequirement.cs" />
+    <Compile Include="CodeGenerated\GroupMemberScheduleTemplate.cs" />
     <Compile Include="CodeGenerated\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\GroupRequirement.cs" />
     <Compile Include="CodeGenerated\GroupRequirementType.cs" />
@@ -167,6 +172,7 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\IncomingSMSRoute.cs" />
     <Compile Include="CodeGenerated\Interaction.cs" />
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
@@ -208,6 +214,7 @@
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonExport.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="CodeGenerated\PersonSearchKey.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
@@ -231,6 +238,7 @@
     <Compile Include="CodeGenerated\RestController.cs" />
     <Compile Include="CodeGenerated\Schedule.cs" />
     <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
+    <Compile Include="CodeGenerated\SchedulerResourceParameters.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceJobHistory.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
@@ -239,6 +247,7 @@
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
+    <Compile Include="CodeGenerated\SmsAction.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />

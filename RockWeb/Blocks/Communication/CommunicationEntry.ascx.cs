@@ -1163,6 +1163,8 @@ namespace RockWeb.Blocks.Communication
 
                 // copy all communication details from the Template to CommunicationData
                 CommunicationDetails.Copy( template, CommunicationData );
+                CommunicationData.FromName = template.FromName.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson ) );
+                CommunicationData.FromEmail = template.FromEmail.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson ) );
 
                 // if the FromName was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
                 // Otherwise, if the template does have a FromName, we want to template's FromName to overwrite it (which CommunicationDetails.Copy already did)

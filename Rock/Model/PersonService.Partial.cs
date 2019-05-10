@@ -1234,20 +1234,51 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return Queryable( includeDeceased, includeBusinesses )
-                        .Where( p =>
-                            p.LastName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+                    // Originally written as:
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .Where( p =>
+                    //        p.LastName.StartsWith( singleName ) ||
+                    //        previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+
+                    // The LEFT OUTER JOIN version below is faster than the original
+                    // because SQL uses a different index for the WHERE EXISTS version
+                    // due to the fact that it will require the entire table to be scanned
+                    // and return 1 where the criteria match.
+                    //
+                    // The query below could have been written in fluent syntax, but it's a
+                    // bit more complicated like this (they produce the exact same SQL):
+                    //
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .GroupJoin(
+                    //            previousNamesQry,
+                    //            Person => Person.Id,
+                    //            PrevName => PrevName.PersonAlias.PersonId,
+                    //            ( x, y ) => new { Person = x, PrevNames = y } )
+                    //    .SelectMany(
+                    //            x => x.PrevNames.DefaultIfEmpty(),
+                    //            ( x, y ) => new { Person = x.Person, PrevName = y } )
+                    //    .Where( x => x.Person.LastName.StartsWith( singleName ) || x.PrevName.LastName.StartsWith( singleName ) )
+                    //    .Select( x => x.Person );
+
+                    return from person in Queryable( includeDeceased, includeBusinesses )
+                           join personPreviousName in previousNamesQry
+                                on person.Id equals personPreviousName.PersonAlias.PersonId into pnQuery
+                           from ppn in pnQuery.DefaultIfEmpty()
+                           where person.LastName.StartsWith( singleName ) || ppn.LastName.StartsWith( singleName )
+                           select person;
                 }
             }
             else
             {
                 if ( firstNames.Any() && lastNames.Any() )
                 {
-                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    // Find all matching First and LastName, or LastName, but only select the person IDs to reduce
+                    // the pressure that the UNION below would otherwise have (SELECT DISTINCT * issue).
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses )
+                        .Select( p => p.Id );
                     for ( var i = 1; i < firstNames.Count; i++ )
                     {
-                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
                     // always include a search for just last name using the last two parts of name search
@@ -1255,18 +1286,18 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    //
                     // If searching for businesses, search by the full name as well to handle "," in the name
-                    //
                     if ( includeBusinesses )
                     {
-                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    return qry;
+                    // Lastly, return all people with those person Ids using the base Queryable used
+                    // initially by the GetByFirstLastName() call.
+                    return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
                 else
                 {

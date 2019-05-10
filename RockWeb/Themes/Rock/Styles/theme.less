@@ -351,10 +351,6 @@ textarea,
   .box-shadow(none);
 }
 
-.control-label {
-  font-weight: @font-weight-semibold;
-}
-
 .badge-circle {
   width: @line-height-computed;
   border-radius: 50%;
@@ -443,8 +439,7 @@ textarea,
 }
 
 .group-member-list .panel,
-.panel-widget,
-.panel-drawer {
+.panel-widget {
   .box-shadow(none);
 }
 
@@ -1369,6 +1364,39 @@ body.navbar-side-open {
 /*#region
 // 6. Components          */
 // -------------------------
+
+.panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: #fff;
+  }
+
+  .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+    .panel-title {
+      margin-right: auto;
+    }
+  }
+
+  .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+}
+
 
 .note-editor.note-frame {
   margin: 0;

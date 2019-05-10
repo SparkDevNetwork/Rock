@@ -334,8 +334,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
+        /// Initializes a new instance of the <see cref="SSNBox"/> class.
         /// </summary>
         public SSNBox()
             : base()

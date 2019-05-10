@@ -345,5 +345,38 @@ namespace Rock.Model
 
     #endregion
 
+    #region Batch Classes
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [RockClientInclude( "Control Total Result from ~api/FinancialBatches/GetControlTotals/{id}" )]
+    public class ControlTotalResult
+    {
+        /// <summary>
+        /// Gets or sets the financial batch identifier.
+        /// </summary>
+        /// <value>
+        /// The financial batch identifier.
+        /// </value>
+        public int FinancialBatchId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total count.
+        /// </summary>
+        /// <value>
+        /// The control total count.
+        /// </value>
+        public int ControlTotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total amount.
+        /// </summary>
+        /// <value>
+        /// The control total amount.
+        /// </value>
+        public decimal ControlTotalAmount { get; set; }
+    }
+
+    #endregion Batch Classes
 }

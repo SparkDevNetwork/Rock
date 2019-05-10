@@ -107,71 +107,121 @@ namespace Rock.Utility
                 // Get the template for the workflow name
                 string nameTemplate = dvWorkflow.GetAttributeValue( "WorkflowNameTemplate" );
 
+                // Create list of the keyword expressions that matched the received message
+                var matchGroups = new List<string>();
+                foreach ( var matchItem in match.Groups )
+                {
+                    matchGroups.Add( matchItem.ToString() );
+                }
+
+                // Try to find a person associated with phone number received
+                Person fromPerson;
                 using ( var rockContext = new RockContext() )
                 {
-                    // Try to find a person associated with phone number received
-                    var fromPerson = GetPerson( fromPhone, rockContext );
-
-                    // Activate a new workflow
-                    var workflow = Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ), rockContext );
-
-                    // Set the workflow initiator
-                    if ( fromPerson != null )
-                    {
-                        workflow.InitiatorPersonAliasId = fromPerson.PrimaryAliasId;
-                    }
-
-                    // Format the phone number that was received
-                    var formattedPhoneNumber = PhoneNumber.CleanNumber( PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), fromPhone ) );
-
-                    // Create list of the keyword expressions that matched the received message
-                    var matchGroups = new List<string>();
-                    foreach ( var matchItem in match.Groups )
-                    {
-                        matchGroups.Add( matchItem.ToString() );
-                    }
-
-                    // Create a list of mergefields used to update workflow attribute values and the workflow name
-                    var mergeValues = new Dictionary<string, object>
-                    {
-                        {"FromPhone", formattedPhoneNumber},
-                        {"ToPhone", toPhone},
-                        {"MessageBody", message},
-                        {"MatchedGroups", matchGroups},
-                        {"ReceivedTime", RockDateTime.Now.ToString("HH:mm:ss")},
-                        {"ReceivedDate", RockDateTime.Now.ToShortDateString()},
-                        {"ReceivedDateTime", RockDateTime.Now.ToString("o")},
-                        {"FromPerson", fromPerson}
-                    };
-
-                    // Set the workflow's FromPhone attribute 
-                    workflow.SetAttributeValue( "FromPhone", fromPhone );
-
-                    // Set any other workflow attributes that could have lava
-                    foreach ( var attribute in workflowAttributesSettings )
-                    {
-                        workflow.SetAttributeValue( attribute.Key,
-                            attribute.Value.ToString().ResolveMergeFields( mergeValues ) );
-                    }
-
-                    // Set the workflow name
-                    var name = nameTemplate.ResolveMergeFields( mergeValues );
-                    if ( name.IsNotNullOrWhiteSpace() )
-                    {
-                        workflow.Name = name;
-                    }
-
-                    // Process the workflow
-                    List<string> workflowErrors;
-                    new WorkflowService( rockContext ).Process( workflow, out workflowErrors );
-
-                    // Check to see if there is a response to return
-                    var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
-                    response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : string.Empty;
+                    fromPerson = GetPerson( fromPhone, rockContext );
                 }
+
+                LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
 
                 // once we find one match stop processing
                 break;
+            }
+        }
+
+        /// <summary>
+        /// Launches the workflow in response to an incoming SMS message.
+        /// </summary>
+        /// <param name="workflowType">Type of the workflow to launch.</param>
+        /// <param name="nameTemplate">The name template to use to resolve into the workflow name.</param>
+        /// <param name="fromPerson">The person who sent the message.</param>
+        /// <param name="fromPhone">The phone number the message came from.</param>
+        /// <param name="toPhone">The phone number the message was sent to.</param>
+        /// <param name="message">The message text.</param>
+        /// <param name="attachments">The files that were attached to the message.</param>
+        /// <param name="workflowAttributesSettings">The workflow attributes to set on the workflow.</param>
+        /// <param name="response">The response to be sent back to the user.</param>
+        public static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
+        {
+            LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, null, workflowAttributesSettings, out response );
+        }
+
+        /// <summary>
+        /// Launches the workflow in response to an incoming SMS message.
+        /// </summary>
+        /// <param name="workflowType">Type of the workflow to launch.</param>
+        /// <param name="nameTemplate">The name template to use to resolve into the workflow name.</param>
+        /// <param name="fromPerson">The person who sent the message.</param>
+        /// <param name="fromPhone">The phone number the message came from.</param>
+        /// <param name="toPhone">The phone number the message was sent to.</param>
+        /// <param name="message">The message text.</param>
+        /// <param name="matchGroups">The match groups found in the deprecated defined value.</param>
+        /// <param name="attachments">The files that were attached to the message.</param>
+        /// <param name="workflowAttributesSettings">The workflow attributes to set on the workflow.</param>
+        /// <param name="response">The response to be sent back to the user.</param>
+        private static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<string> matchGroups, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Activate a new workflow
+                var workflow = Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ), rockContext );
+
+                // Set the workflow initiator
+                if ( fromPerson != null )
+                {
+                    workflow.InitiatorPersonAliasId = fromPerson.PrimaryAliasId;
+                }
+
+                attachments = attachments ?? new List<BinaryFile>();
+
+                // Format the phone number that was received
+                var formattedPhoneNumber = PhoneNumber.CleanNumber( PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), fromPhone ) );
+
+                // Create a list of mergefields used to update workflow attribute values and the workflow name
+                var mergeValues = new Dictionary<string, object>
+                {
+                    { "FromPhone", formattedPhoneNumber },
+                    { "ToPhone", toPhone },
+                    { "MessageBody", message },
+                    { "MatchedGroups", matchGroups },
+                    { "ReceivedTime", RockDateTime.Now.ToString("HH:mm:ss") },
+                    { "ReceivedDate", RockDateTime.Now.ToShortDateString() },
+                    { "ReceivedDateTime", RockDateTime.Now.ToString("o") },
+                    { "Attachments", attachments },
+                    { "FromPerson", fromPerson }
+                };
+
+                // Set the workflow's FromPhone attribute 
+                workflow.SetAttributeValue( "FromPhone", fromPhone );
+
+                // Set any other workflow attributes that could have lava
+                foreach ( var attribute in workflowAttributesSettings )
+                {
+                    workflow.SetAttributeValue( attribute.Key,
+                        attribute.Value.ToString().ResolveMergeFields( mergeValues ) );
+                }
+
+                //
+                // Set the attachments as workflow attributes as well.
+                //
+                for ( int i = 0; i < attachments.Count; i++ )
+                {
+                    workflow.SetAttributeValue( $"Attachment{ i + 1 }", attachments[i].Guid.ToString() );
+                }
+
+                // Set the workflow name
+                var name = nameTemplate.ResolveMergeFields( mergeValues );
+                if ( name.IsNotNullOrWhiteSpace() )
+                {
+                    workflow.Name = name;
+                }
+
+                // Process the workflow
+                List<string> workflowErrors;
+                new WorkflowService( rockContext ).Process( workflow, out workflowErrors );
+
+                // Check to see if there is a response to return
+                var responseAttribute = workflow.GetAttributeValue( "SMSResponse" );
+                response = !string.IsNullOrWhiteSpace( responseAttribute ) ? responseAttribute : string.Empty;
             }
         }
 
@@ -239,7 +289,6 @@ namespace Rock.Utility
             }
 
             return fromPerson;
-
         }
     }
 }

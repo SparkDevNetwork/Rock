@@ -102,6 +102,7 @@ namespace Rock.Model
             target.ExpireDateTime = source.ExpireDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.ItemGlobalKey = source.ItemGlobalKey;
             target.Order = source.Order;
             target.Permalink = source.Permalink;
             target.Priority = source.Priority;
