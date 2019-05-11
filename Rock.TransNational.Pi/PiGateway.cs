@@ -201,7 +201,7 @@ namespace Rock.TransNational.Pi
             piHostedPaymentControl.PiGateway = this;
             piHostedPaymentControl.GatewayBaseUrl = this.GetGatewayUrl( financialGateway );
             List<PiPaymentType> enabledPaymentTypes = new List<PiPaymentType>();
-            if (options?.EnableACH ?? true)
+            if ( options?.EnableACH ?? true )
             {
                 enabledPaymentTypes.Add( PiPaymentType.ach );
             }
@@ -828,13 +828,18 @@ namespace Rock.TransNational.Pi
         /// <param name="apiKey">The API key.</param>
         /// <param name="querySubscriptionsRequest">The query subscriptions request.</param>
         /// <returns></returns>
-        private SubscriptionsSearchResult SearchSubscriptions( string gatewayUrl, string apiKey, QuerySubscriptionsRequest querySubscriptionsRequest )
+        public SubscriptionsSearchResult SearchCustomerSubscriptions( FinancialGateway financialGateway, string customerId )
         {
+            string gatewayUrl = this.GetGatewayUrl( financialGateway );
+            string apiKey = this.GetPrivateApiKey( financialGateway );
+
+            var queryCustomerSubscriptionsRequest = new QueryCustomerSubscriptionsRequest( customerId );
+
             var restClient = new RestClient( gatewayUrl );
             RestRequest restRequest = new RestRequest( $"api/recurring/subscription/search", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
 
-            restRequest.AddJsonBody( querySubscriptionsRequest );
+            restRequest.AddJsonBody( queryCustomerSubscriptionsRequest );
 
             var response = restClient.Execute( restRequest );
 
@@ -1045,7 +1050,7 @@ namespace Rock.TransNational.Pi
             }
 
             var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
-            string subscriptionDescription = $"Subscription Ref: {descriptionGuid}";
+            string subscriptionDescription = $"{referencedPaymentInfo.Description}|Subscription Ref: {descriptionGuid}";
 
             try
             {
@@ -1105,10 +1110,7 @@ namespace Rock.TransNational.Pi
             catch ( Exception )
             {
                 // if there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen
-                var subscriptionRequest = new QuerySubscriptionsRequest();
-                subscriptionRequest.CustomerIdSearch = new QuerySearchString { SearchValue = customerId, ComparisonOperator = "=" };
-
-                var subscriptionSearchResult = this.SearchSubscriptions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionRequest );
+                var subscriptionSearchResult = this.SearchCustomerSubscriptions( financialGateway, customerId );
                 var orphanedSubscription = subscriptionSearchResult?.Data?.FirstOrDefault( a => a.Description == subscriptionDescription );
 
                 if ( orphanedSubscription?.Id != null )
@@ -1310,7 +1312,7 @@ namespace Rock.TransNational.Pi
                     GatewayScheduleId = gatewayScheduleId,
                 };
 
-                if (transaction.PaymentType == "ach" )
+                if ( transaction.PaymentType == "ach" )
                 {
                     payment.AccountNumberMasked = transaction?.PaymentMethodResponse?.ACH?.MaskedAccountNumber;
                 }
