@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField(
         "Enable Credit Card",
         Key = AttributeKey.EnableCreditCard,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = AttributeCategory.None,
         Order = 2 )]
 
@@ -940,13 +940,11 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _hostedPaymentInfoControl_TokenReceived( object sender, EventArgs e )
+        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
         {
-            string errorMessage = null;
-            string token = this.FinancialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-            if ( errorMessage.IsNotNullOrWhiteSpace() )
+            if ( !e.IsValid )
             {
-                nbPaymentTokenError.Text = errorMessage;
+                nbPaymentTokenError.Text = e.ErrorMessage;
                 nbPaymentTokenError.Visible = true;
             }
             else
@@ -2256,8 +2254,8 @@ mission. We are so grateful for your commitment.</p>
 
             if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {
-                var paymentToken = financialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentToken, paymentInfo, out errorMessage );
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
                     nbProcessTransactionError.Text = errorMessage ?? "Unknown Error";

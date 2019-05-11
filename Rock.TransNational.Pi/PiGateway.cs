@@ -224,7 +224,7 @@ namespace Rock.TransNational.Pi
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
         /// <returns></returns>
-        public string GetHostedPaymentInfoToken( FinancialGateway financialGateway, Control hostedPaymentInfoControl, out string errorMessage )
+        public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
             errorMessage = null;
             var tokenResponse = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<Pi.TokenizerResponse>();
@@ -235,16 +235,15 @@ namespace Rock.TransNational.Pi
                     if ( tokenResponse.Invalid.Any() )
                     {
                         errorMessage = $"Invalid {tokenResponse.Invalid.ToList().AsDelimited( "," ) }";
-                        return null;
                     }
                 }
 
                 errorMessage = $"Failure: {tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken"}";
-                return null;
+                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoToken;
             }
             else
             {
-                return ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoToken;
             }
         }
 
@@ -285,9 +284,9 @@ namespace Rock.TransNational.Pi
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public string CreateCustomerAccount( FinancialGateway financialGateway, string paymentToken, PaymentInfo paymentInfo, out string errorMessage )
+        public string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
         {
-            var createCustomerResponse = this.CreateCustomer( GetGatewayUrl( financialGateway ), GetPrivateApiKey( financialGateway ), paymentToken, paymentInfo );
+            var createCustomerResponse = this.CreateCustomer( GetGatewayUrl( financialGateway ), GetPrivateApiKey( financialGateway ), paymentInfo );
 
             if ( createCustomerResponse?.IsSuccessStatus() != true )
             {
@@ -361,7 +360,7 @@ namespace Rock.TransNational.Pi
         /// <param name="tokenizerToken">The tokenizer token.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private CustomerResponse CreateCustomer( string gatewayUrl, string apiKey, string tokenizerToken, PaymentInfo paymentInfo )
+        private CustomerResponse CreateCustomer( string gatewayUrl, string apiKey, ReferencePaymentInfo paymentInfo )
         {
             var restClient = new RestClient( gatewayUrl );
             RestRequest restRequest = new RestRequest( "api/customer", Method.POST );
@@ -370,7 +369,7 @@ namespace Rock.TransNational.Pi
             var createCustomer = new CreateCustomerRequest
             {
                 Description = paymentInfo.FullName,
-                PaymentMethod = new PaymentMethodRequest( tokenizerToken ),
+                PaymentMethod = new PaymentMethodRequest( paymentInfo.ReferenceNumber ),
                 BillingAddress = CreateBillingAddress<BillingAddress>( paymentInfo )
             };
 
