@@ -9,7 +9,7 @@
 
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-filter"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
-                    
+
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblEditDataViewId" runat="server" />
                         <div class="label label-primary"><asp:LinkButton ID="lbCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
@@ -34,7 +34,7 @@
                                     Help="To persist this dataview, enter how often this dataview should be persisted (in minutes). A persisted dataview can improve performance by writing the filtered results to the database, especially for complex dataviews. Leave this blank to not persist this dataview." />
                             </div>
                         </div>
-                        
+
                     </fieldset>
 
                     <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
@@ -85,11 +85,11 @@
 
                             <div class="actions">
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" /> 
+                                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Data View" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
-                                </div>                           
+                                </div>
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             </div>
 
@@ -100,13 +100,9 @@
 
                 <div class="panel panel-block">
                     <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
-                            </div>
-                            <div class="col-md-6 text-right">
-                                    <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
-                            </div>
+                        <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
+                        <div class="panel-labels">
+                            <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
                         </div>
                     </div>
                     <asp:Panel ID="pnlResultsGrid" runat="server">
