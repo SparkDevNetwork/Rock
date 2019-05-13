@@ -1133,35 +1133,49 @@ namespace RockWeb.Blocks.Event
         private void ShowInputPanel( ActiveWizardStep step )
         {
             pnlInitiate.Visible = false;
+            pnlInitiate_Header.Visible = false;
             pnlRegistration.Visible = false;
+            pnlRegistration_Header.Visible = false;
             pnlGroup.Visible = false;
+            pnlGroup_Header.Visible = false;
             pnlEvent.Visible = false;
+            pnlEvent_Header.Visible = false;
             pnlEventOccurrence.Visible = false;
+            pnlEventOccurrence_Header.Visible = false;
             pnlSummary.Visible = false;
+            pnlSummary_Header.Visible = false;
             pnlFinished.Visible = false;
+            pnlFinished_Header.Visible = false;
 
             switch ( step )
             {
                 case ActiveWizardStep.InitiateWizard:
                     pnlInitiate.Visible = true;
+                    pnlInitiate_Header.Visible = true;
                     break;
                 case ActiveWizardStep.Registration:
                     pnlRegistration.Visible = true;
+                    pnlRegistration_Header.Visible = true;
                     break;
                 case ActiveWizardStep.Group:
                     pnlGroup.Visible = true;
+                    pnlGroup_Header.Visible = true;
                     break;
                 case ActiveWizardStep.Event:
                     pnlEvent.Visible = true;
+                    pnlEvent_Header.Visible = true;
                     break;
                 case ActiveWizardStep.EventOccurrence:
                     pnlEventOccurrence.Visible = true;
+                    pnlEventOccurrence_Header.Visible = true;
                     break;
                 case ActiveWizardStep.Summary:
                     pnlSummary.Visible = true;
+                    pnlSummary_Header.Visible = true;
                     break;
                 case ActiveWizardStep.Finished:
                     pnlFinished.Visible = true;
+                    pnlFinished_Header.Visible = true;
                     break;
                 default:
                     break;
