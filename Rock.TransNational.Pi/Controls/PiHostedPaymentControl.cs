@@ -221,6 +221,8 @@ namespace Rock.TransNational.Pi.Controls
                             hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
                         }
 
+                        hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
+
                         TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
                     }
                 }
