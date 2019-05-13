@@ -552,6 +552,7 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
+            Guid? contentChannelGuid = GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
 
             ContentChannelItem contentChannelItem = null;
 
@@ -561,7 +562,7 @@ Guid - ContentChannelItem Guid
                 return null;
             }
 
-            string itemCacheKey = ITEM_CACHE_KEY_PREFIX + contentChannelItemKey;
+            string itemCacheKey = ITEM_CACHE_KEY_PREFIX + contentChannelGuid + "_" + contentChannelItemKey;
 
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
@@ -587,7 +588,16 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                contentChannelItem = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelItemSlugs.Any( s => s.Slug == contentChannelItemKey ) ).FirstOrDefault();
+                var contentChannelQuery = new ContentChannelItemService( rockContext ).Queryable();
+                if ( contentChannelGuid.HasValue )
+                {
+
+                    contentChannelQuery = contentChannelQuery.Where( c => c.ContentChannel.Guid == contentChannelGuid );
+                }
+
+                contentChannelItem = contentChannelQuery
+                    .Where( a => a.ContentChannelItemSlugs.Any( s => s.Slug == contentChannelItemKey ) )
+                    .FirstOrDefault();
             }
 
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
