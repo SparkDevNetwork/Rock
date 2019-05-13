@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var groupMember in qry.ToList() )
             {
-                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) && groupMember.GroupRole.CanView )
                 {
                     groups.Add( new GroupInvolvementSummary
                     {
