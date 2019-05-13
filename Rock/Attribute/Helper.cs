@@ -220,15 +220,13 @@ namespace Rock.Attribute
                 }
 
                 // Check category
-                else if ( attribute.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attribute.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attribute.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() )
                 {
                     updated = true;
                 }
 
                 // Check the qualifier values
-                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
-                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attribute.AttributeQualifiers.Select( q => q.Key ) ).Any() )
+                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() )
                 {
                     updated = true;
                 }
