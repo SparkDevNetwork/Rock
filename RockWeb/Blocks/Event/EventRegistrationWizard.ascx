@@ -113,7 +113,6 @@
                     Summary
                 </div>
             </div>
-
         </asp:Panel>
 
         <asp:Panel ID="pnlLavaInstructions" runat="server" Visible="false" >
@@ -161,9 +160,6 @@
                     </fieldset>
                 </div>
             </div>
-
-
-
         </asp:Panel>
 
         <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
@@ -465,10 +461,6 @@
                 <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" Required="true" DataValueField="Id" DataTextField="Value" />
             </Content>
         </Rock:ModalDialog>
-
-        <asp:Literal ID="litTest" runat="server" />
-
-        <asp:Label ID="lblDebug" runat="server" />
     </ContentTemplate>
 </asp:UpdatePanel>
 
