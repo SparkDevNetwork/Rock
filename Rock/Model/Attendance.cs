@@ -656,10 +656,25 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var previousDidAttendValue = entry.Property( "DidAttend" )?.OriginalValue as bool? ?? false;
+            bool previousDidAttendValue;
 
-            // get original value of RSVP so we can detect whether the value changed
-            _originalDeclinedValue = ( entry.Property( "RSVP" )?.OriginalValue as RSVP? ) == RSVP.No;
+            bool previouslyDeclined;
+
+            if ( entry.State == EntityState.Added )
+            {
+                previousDidAttendValue = false;
+                previouslyDeclined = false;
+            }
+            else
+            {
+                previousDidAttendValue = entry.Property( "DidAttend" )?.OriginalValue as bool? ?? false;
+
+                // get original value of RSVP so we can detect whether the value changed
+                previouslyDeclined = ( entry.Property( "RSVP" )?.OriginalValue as RSVP? ) == RSVP.No;
+            }
+
+            // if the record was changed to Declined, queue a GroupScheduleCancellationTransaction in PostSaveChanges
+            _declinedScheduledAttendance = ( previouslyDeclined == false ) && this.IsScheduledPersonDeclined();
 
             if ( previousDidAttendValue == false && this.DidAttend == true )
             {
@@ -673,7 +688,7 @@ namespace Rock.Model
             base.PreSaveChanges( dbContext, entry );
         }
 
-        private bool? _originalDeclinedValue = null;
+        private bool _declinedScheduledAttendance = false;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -681,8 +696,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            // if the record was changed to Declined, queue a GroupScheduleCancellationTransaction 
-            if ( _originalDeclinedValue == false && this.IsScheduledPersonDeclined() )
+            if ( _declinedScheduledAttendance )
             {
                 new GroupScheduleCancellationTransaction( this ).Enqueue();
             }
@@ -789,7 +803,7 @@ namespace Rock.Model
                 {
                     verb = "has been requested to attend";
                 }
-                else if (this.DeclineReasonValueId.HasValue )
+                else if ( this.DeclineReasonValueId.HasValue )
                 {
                     verb = "has declined to attend";
                 }
