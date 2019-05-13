@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Groups
             {
                 attendanceOccurrencesOrderedList.Insert( 0, new AttendanceOccurrenceRowItem
                 {
-                    LocationName = "(Not Specified)",
+                    LocationName = "No Location Preference",
                     LocationId = null,
                     AttendanceOccurrenceId = unassignedLocationOccurrence.Id,
                     CapacityInfo = new CapacityInfo()
