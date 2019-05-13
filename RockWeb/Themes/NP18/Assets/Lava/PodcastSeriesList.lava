@@ -23,20 +23,21 @@
 	  					<h2 class="series-title">{{ item.Title }}</h2>
 	  					<div class="series-summary">{{ item.Content }}</div>
 	  					<ul class="sermons-list">
-	  						{% for message in item.ChildItems reversed %}
-	  						{% assign startDate = message.ChildContentChannelItem.StartDateTime | Date:'yyyyMMdd' %}
-	  						{% assign speaker = message.ChildContentChannelItem | Attribute:'Speaker' %}
-	  						{% assign speakerTitle = message.ChildContentChannelItem | Attribute:'SpeakerTitle' %}
-	  						{% assign scripture = message.ChildContentChannelItem | Attribute:'ScripturePassage' %}
-	  						{% assign dateNow = 'Now' | Date:'yyyyMMdd' %}
-	  						{% if startDate <= dateNow %}
-	  							<li>
-		  							<p class="date">{{ message.ChildContentChannelItem.StartDateTime | Date:'MMM d, yyyy' }}</p>
-		  							<h3><a href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">{{ message.ChildContentChannelItem.Title }}</a></h3>
-		  							<p class="speaker">{{ speaker }} {% if speakerTitle != "" %}| {{ speakerTitle }}{% endif %} {% if scripture != "" %}| {{ scripture }}{% endif %}</p>
-		  							<p class="readmore"><a class="btn btn-outline-primary" href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">Watch</a></p>
-	  							</li>
-	  						{% endif %}
+	  						{% for ChildItemAssociation in item.ChildItems reversed %}
+                                {% assign ChildItem = ChildItemsAssociation.ChildContentChannelItem %}
+	  						    {% assign startDateTime = ChildItem.StartDateTime | Date:'yyyyMMddHHmmss' %}
+	  						    {% assign speaker = ChildItem | Attribute:'Speaker' %}
+	  						    {% assign speakerTitle = ChildItem | Attribute:'SpeakerTitle' %}
+	  						    {% assign scripture = ChildItem | Attribute:'ScripturePassage' %}
+	  						    {% assign dateTimeNow = 'Now' | Date:'yyyyMMddHHmmss' %}
+	  						    {% if startDate <= dateNow %}
+	  							    <li>
+		  							    <p class="date">{{ ChildItem.StartDateTime | Date:'MMM d, yyyy' }}</p>
+		  							    <h3><a href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">{{ ChildItem.Title }}</a></h3>
+		  							    <p class="speaker">{{ speaker }} {% if speakerTitle != "" %}| {{ speakerTitle }}{% endif %} {% if scripture != "" %}| {{ scripture }}{% endif %}</p>
+		  							    <p class="readmore"><a class="btn btn-outline-primary" href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">Watch</a></p>
+	  							    </li>
+	  						    {% endif %}
 	  						{% endfor %}
 	  					</ul>
 	  				</div>
