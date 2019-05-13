@@ -98,19 +98,17 @@
                             self.removeResource(attendanceId, $occurrence);
                         }
                         else {
-                            // deal with the resource that was dragged into an scheduled occurrence (location)
+                            // deal with the resource that was dragged into an scheduled occurrence (location) 
                             var scheduledPersonAddPendingUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddPending';
                             var scheduledPersonAddConfirmedUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddConfirmed';
                             var $scheduledResource = $(el);
 
-                            // set the data-status, but it'll get updated again after posting to scheduledPersonAddUrl
-                            $scheduledResource.attr('data-status', 'pending');
                             var personId = $scheduledResource.attr('data-person-id')
                             var attendanceOccurrenceId = $(target).closest('.js-scheduled-occurrence').find('.js-attendanceoccurrence-id').val();
                             var $occurrence = $(el).closest('.js-scheduled-occurrence');
                             var scheduledPersonAddUrl = scheduledPersonAddPendingUrl;
 
-                            // if they were dragged from another occurrence, unschedule from that first
+                            // if they were dragged from another occurrence, remove them from that first
                             if (source.classList.contains('js-scheduler-target-container')) {
 
                                 var attendanceId = $scheduledResource.attr('data-attendance-id')
@@ -122,6 +120,10 @@
                                 }
                                 var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
                                 self.removeResource(attendanceId, $sourceOccurrence);
+                            }
+                            else {
+                                // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
+                                $scheduledResource.attr('data-status', 'pending');
                             }
 
                             // add as pending (or confirmed if already confirmed) to target occurrence
@@ -227,7 +229,7 @@
                         }
 
                         var $resourceDiv = $('.js-scheduled-resource-template').find('.js-resource').clone();
-                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem );
+                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem);
                         $schedulerTargetContainer.append($resourceDiv);
                     });
 
@@ -347,7 +349,7 @@
                     for (var i = 0; i < schedulerResources.length; i++) {
                         var schedulerResource = schedulerResources[i];
                         var $resourceDiv = $resourceTemplate.clone();
-                        self.populateResourceDiv($resourceDiv, schedulerResource );
+                        self.populateResourceDiv($resourceDiv, schedulerResource);
                         $resourceContainer.append($resourceDiv);
                     }
 
@@ -388,7 +390,7 @@
                 }
 
                 if (schedulerResource.ConflictNote) {
-                    $resourceMeta.append('<span class="resource-warning hide-transit">'+schedulerResource.ConflictNote+'</span>')
+                    $resourceMeta.append('<span class="resource-warning hide-transit">' + schedulerResource.ConflictNote + '</span>')
                 }
 
                 if (schedulerResource.HasSchedulingConflict) {
@@ -404,7 +406,7 @@
                 }
 
                 if (schedulerResource.LastAttendanceDateTime) {
-                    $resourceMeta.append('<span class="resource-lastattendeddate hide-transit" title="Last Attended" data-datetime="'+schedulerResource.LastAttendanceDateTime+'">' + schedulerResource.LastAttendanceDateTimeFormatted + '</span>');
+                    $resourceMeta.append('<span class="resource-lastattendeddate hide-transit" title="Last Attended" data-datetime="' + schedulerResource.LastAttendanceDateTime + '">' + schedulerResource.LastAttendanceDateTimeFormatted + '</span>');
                 }
 
                 // stuff that only applies to unscheduled resource
