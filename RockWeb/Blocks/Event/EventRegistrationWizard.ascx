@@ -123,7 +123,7 @@
         <asp:Panel ID="pnlInitiate" runat="server">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-magic"></i>
+                    <h1 class="panel-title"><i class="fa fa-clipboard"></i>
                         Event Registration Wizard - Choose a Template</h1>
                 </div>
 
@@ -169,7 +169,7 @@
         <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                    <h1 class="panel-title"><i class="fa fa-file-o"></i>
                         Event Registration Wizard - Registration</h1>
                 </div>
 
@@ -286,7 +286,7 @@
         <asp:Panel ID="pnlEvent" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-calendar-plus"></i>
+                    <h1 class="panel-title"><i class="fa fa-calendar-check-o"></i>
                         Event Registration Wizard - Event</h1>
                 </div>
 
@@ -372,7 +372,7 @@
         <asp:Panel ID="pnlEventOccurrence" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-clock"></i>
+                    <h1 class="panel-title"><i class="fa fa-clock-o"></i>
                         Event Registration Wizard - Event Occurrence</h1>
                 </div>
 
