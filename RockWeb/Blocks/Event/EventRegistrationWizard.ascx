@@ -72,85 +72,85 @@
                         Event Registration Wizard - Finished</h1>
                 </asp:Panel>
 
+                <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
+
+                    <div id="divTemplate" runat="server" class="wizard-item">
+                        <asp:LinkButton ID="lbTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false" >
+                            <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                            <asp:PlaceHolder runat="server">
+                                <div class="wizard-item-icon">
+                                    <i class="fa fa-fw fa-clipboard"></i>
+                                </div>
+                                <div class="wizard-item-label">
+                                    Registration Template
+                                </div>
+                            </asp:PlaceHolder>
+                        </asp:LinkButton>
+                    </div>
+
+                    <div id="divRegistration" runat="server" class="wizard-item">
+                        <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
+                            <asp:PlaceHolder runat="server">
+                                <div class="wizard-item-icon">
+                                    <i class="fa fa-fw fa-file-o"></i>
+                                </div>
+                                <div class="wizard-item-label">
+                                    Registration
+                                </div>
+                            </asp:PlaceHolder>
+                        </asp:LinkButton>
+                    </div>
+
+                    <div id="divGroup" runat="server" class="wizard-item">
+                        <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
+                            <asp:PlaceHolder runat="server">
+                                <div class="wizard-item-icon">
+                                    <i class="fa fa-fw fa-users"></i>
+                                </div>
+                                <div class="wizard-item-label">
+                                    Group
+                                </div>
+                            </asp:PlaceHolder>
+                        </asp:LinkButton>
+                    </div>
+
+                    <div id="divEvent" runat="server" class="wizard-item">
+                        <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
+                            <asp:PlaceHolder runat="server">
+                                <div class="wizard-item-icon">
+                                    <i class="fa fa-fw fa-calendar-check-o"></i>
+                                </div>
+                                <div class="wizard-item-label">
+                                    Event
+                                </div>
+                            </asp:PlaceHolder>
+                        </asp:LinkButton>
+                    </div>
+
+                    <div id="divEventOccurrence" runat="server" class="wizard-item">
+                        <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false" >
+                            <asp:PlaceHolder runat="server">
+                                <div class="wizard-item-icon">
+                                    <i class="fa fa-fw fa-clock-o"></i>
+                                </div>
+                                <div class="wizard-item-label">
+                                    Event Occurrence
+                                </div>
+                            </asp:PlaceHolder>
+                        </asp:LinkButton>
+                    </div>
+
+                    <div id="divSummary" runat="server" class="wizard-item">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-list-ul"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Summary
+                        </div>
+                    </div>
+                </asp:Panel>
+
                 <div class="panel-body">
-
-                    <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
-
-                         <div id="divTemplate" runat="server" class="wizard-item">
-                            <asp:LinkButton ID="lbTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false" >
-                                <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
-                                <asp:PlaceHolder runat="server">
-                                    <div class="wizard-item-icon">
-                                        <i class="fa fa-fw fa-clipboard"></i>
-                                    </div>
-                                    <div class="wizard-item-label">
-                                        Registration Template
-                                    </div>
-                                </asp:PlaceHolder>
-                            </asp:LinkButton>
-                        </div>
-
-                         <div id="divRegistration" runat="server" class="wizard-item">
-                            <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
-                                <asp:PlaceHolder runat="server">
-                                    <div class="wizard-item-icon">
-                                        <i class="fa fa-fw fa-file-o"></i>
-                                    </div>
-                                    <div class="wizard-item-label">
-                                        Registration
-                                    </div>
-                                </asp:PlaceHolder>
-                            </asp:LinkButton>
-                        </div>
-
-                        <div id="divGroup" runat="server" class="wizard-item">
-                            <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
-                                <asp:PlaceHolder runat="server">
-                                    <div class="wizard-item-icon">
-                                        <i class="fa fa-fw fa-users"></i>
-                                    </div>
-                                    <div class="wizard-item-label">
-                                        Group
-                                    </div>
-                                </asp:PlaceHolder>
-                            </asp:LinkButton>
-                        </div>
-
-                        <div id="divEvent" runat="server" class="wizard-item">
-                            <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
-                                <asp:PlaceHolder runat="server">
-                                    <div class="wizard-item-icon">
-                                        <i class="fa fa-fw fa-calendar-check-o"></i>
-                                    </div>
-                                    <div class="wizard-item-label">
-                                        Event
-                                    </div>
-                                </asp:PlaceHolder>
-                            </asp:LinkButton>
-                        </div>
-
-                        <div id="divEventOccurrence" runat="server" class="wizard-item">
-                            <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false" >
-                                <asp:PlaceHolder runat="server">
-                                    <div class="wizard-item-icon">
-                                        <i class="fa fa-fw fa-clock-o"></i>
-                                    </div>
-                                    <div class="wizard-item-label">
-                                        Event Occurrence
-                                    </div>
-                                </asp:PlaceHolder>
-                            </asp:LinkButton>
-                        </div>
-
-                        <div id="divSummary" runat="server" class="wizard-item">
-                            <div class="wizard-item-icon">
-                                <i class="fa fa-fw fa-list-ul"></i>
-                            </div>
-                            <div class="wizard-item-label">
-                                Summary
-                            </div>
-                        </div>
-                    </asp:Panel>
 
                     <asp:Panel ID="pnlInitiate" runat="server">
                         <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
