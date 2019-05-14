@@ -16,6 +16,7 @@
                         <i class="fa fa-envelope"></i>
                         Send Now
                     </asp:LinkButton>
+                    <Rock:ModalAlert ID="maSendNowResults" runat="server" />
                     <asp:LinkButton ID="btnAutoSchedule" runat="server" CssClass="js-autoschedule btn btn-default btn-xs" OnClick="btnAutoSchedule_Click">
                         <i class="fa fa-magic"></i>
                         Auto Schedule
@@ -44,10 +45,11 @@
                         <Rock:NotificationBox ID="nbGroupWarning" runat="server" NotificationBoxType="Warning" />
                         <asp:Panel ID="pnlGroupScheduleLocations" runat="server">
                             <Rock:RockRadioButtonList ID="rblSchedule" runat="server" Label="Schedule" AutoPostBack="true" OnSelectedIndexChanged="rblSchedule_SelectedIndexChanged" />
-                            <Rock:RockCheckBoxList ID="cblGroupLocations" runat="server" Label="Locations" AutoPostBack="true" OnSelectedIndexChanged="cblGroupLocations_SelectedIndexChanged" />
+                            <label class="control-label js-location-label">Locations</label>
+                            <Rock:RockCheckBoxList ID="cblGroupLocations" runat="server" AutoPostBack="true" OnSelectedIndexChanged="cblGroupLocations_SelectedIndexChanged" />
                         </asp:Panel>
 
-                        <Rock:RockControlWrapper ID="rcwResourceListSource" runat="server" Label="Resource List Source">
+                        <Rock:RockControlWrapper ID="rcwResourceListSource" runat="server" Label="Source of People">
 
                             <Rock:ButtonGroup ID="bgResourceListSource" runat="server" CssClass="margin-b-md" SelectedItemClass="btn btn-xs btn-primary" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgResourceListSource_SelectedIndexChanged" />
 
@@ -89,13 +91,12 @@
 
                                             <div class="js-resource resource unselectable" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="">
                                                 <div class="flex">
-                                                <span class="resource-name js-resource-name"></span>
-                                                <div class="resource-meta">
-                                                    <div class="resource-note js-resource-note hide-transit"></div>
+                                                    <span class="resource-name js-resource-name"></span>
+                                                    <div class="resource-meta">
+                                                        <div class="resource-note js-resource-note hide-transit"></div>
 
-                                                    <div class="js-resource-meta text-right">
-
-                                                    </div>
+                                                        <div class="js-resource-meta text-right">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -106,22 +107,21 @@
                                             <div class="panel-heading">
                                                 <h1 class="panel-title">
                                                     <i class="fa fa-user"></i>
-                                                    Resource List
+                                                    People
                                                 </h1>
 
                                                 <div class="panel-labels">
-                                                    <div class="btn btn-xs btn-default btn-square js-add-resource" title="Add Person">
+                                                    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-default btn-square js-add-resource" ToolTip="Add Person">
                                                         <i class="fa fa-plus"></i>
-                                                    </div>
+                                                    </asp:Panel>
                                                 </div>
                                             </div>
 
                                             <div class="panel-body padding-all-none">
 
                                                 <div class="js-add-resource-picker margin-all-sm" style="display: none">
-                                                    <Rock:PersonPicker ID="ppAddResource" runat="server" Label="Select Person" OnSelectPerson="ppAddResource_SelectPerson" />
+                                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                                                 </div>
-
 
                                                 <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
                                                 <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
@@ -152,44 +152,44 @@
                                         <%-- template that groupScheduler.js uses to populate scheduled resources, possible data-status values: pending, confirmed, declined --%>
 
                                         <div class="js-resource resource unselectable" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
-                                                <div class="flex">
-                                                    <div class="js-resource-name resource-name"></div>
+                                            <div class="flex">
+                                                <div class="js-resource-name resource-name"></div>
 
-                                                    <div class="resource-warning pull-left">
-                                                        <span class="js-resource-warning"></span>
-                                                    </div>
-
-                                                    <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" title="Scheduling Conflict">
-                                                        <i class="fa fa-user-clock"></i>
-                                                    </div>
-
-                                                    <div class="js-resource-blackout-status resource-blackout-status pull-right" title="Blackout">
-                                                        <i class="fa fa-user-times"></i>
-                                                    </div>
-
-                                                    <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" title="Group Requirements Not Met">
-                                                        <i class="fa fa-exclamation-triangle"></i>
-                                                    </div>
-
-                                                    <div class="dropdown js-resource-actions hide-transit">
-                                                        <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
-                                                        <ul class="dropdown-menu">
-                                                            <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
-                                                            </li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button>
-                                                            </li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button>
-                                                            </li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-
+                                                <div class="resource-warning pull-left">
+                                                    <span class="js-resource-warning"></span>
                                                 </div>
+
+                                                <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" title="Scheduling Conflict">
+                                                    <i class="fa fa-user-clock"></i>
+                                                </div>
+
+                                                <div class="js-resource-blackout-status resource-blackout-status pull-right" title="Blackout">
+                                                    <i class="fa fa-user-times"></i>
+                                                </div>
+
+                                                <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" title="Group Requirements Not Met">
+                                                    <i class="fa fa-exclamation-triangle"></i>
+                                                </div>
+
+                                                <div class="dropdown js-resource-actions hide-transit">
+                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
 
@@ -217,9 +217,6 @@
                                                                             </div>
                                                                             <div class="progress-bar scheduling-progress-pending js-scheduling-progress-pending" style="width: 0%">
                                                                                 <span class="sr-only"><span class="js-progress-text-percent"></span>% Complete (pending)</span>
-                                                                            </div>
-                                                                            <div class="progress-bar scheduling-progress-declined js-scheduling-progress-declined" style="width: 0%">
-                                                                                <span class="sr-only"><span class="js-progress-text-percent"></span>% Complete (declined)</span>
                                                                             </div>
                                                                             <div class="minimum-indicator js-minimum-indicator" data-minimum-value="0" style="margin-left: 0%">
                                                                             </div>
@@ -258,6 +255,11 @@
                 $('.js-add-resource').on('click', function () {
                     $('.js-add-resource-picker').slideToggle();
                 });
+
+                $('.js-location-label').on('click', function () {
+                    // NOTE: this is doing a postback because it gets applied automatically (there isn't a Apply Filter button)
+                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', 'select-all-locations')";
+                })
 
                 // filter the search list when stuff is typed in the search box
                 $('.js-resource-search').on('keyup', function () {
