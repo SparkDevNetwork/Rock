@@ -31,13 +31,13 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
     /// A block for a person to use to manage their group scheduling. View schedule, change preferences, and sign-up for available needs
     /// </summary>
     [DisplayName( "Group Schedule Toolbox" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Allows management of group scheduling for a specific person (worker)." )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]

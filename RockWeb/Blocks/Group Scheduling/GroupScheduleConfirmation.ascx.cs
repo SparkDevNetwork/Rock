@@ -29,10 +29,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     [DisplayName( "Group Schedule Confirmation" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Allows a person to confirm a schedule RSVP and view pending schedules." )]
 
     [CodeEditorField( "Confirm Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,

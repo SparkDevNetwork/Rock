@@ -23,13 +23,13 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
     /// 
     /// </summary>
     [DisplayName( "Group Member Schedule Template Detail" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Displays the details of a group member schedule template." )]
     public partial class GroupMemberScheduleTemplateDetail : RockBlock, IDetailBlock
     {

@@ -31,13 +31,13 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
     ///
     /// </summary>
     [DisplayName( "Group Scheduler Analytics" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Provides some visibility into scheduling accountability. Shows check-ins, missed confirmations, declines, and decline reasons with ability to filter by group, date range, data view, and person." )]
 
     [TextField(

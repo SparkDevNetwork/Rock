@@ -30,7 +30,7 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
     ///

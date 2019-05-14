@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberScheduleTemplateList.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMemberScheduleTemplateList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberScheduleTemplateList.ascx.cs" Inherits="RockWeb.Blocks.GroupScheduling.GroupMemberScheduleTemplateList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
