@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Description = " Determines if reprinting labels should be allowed.",
         DefaultBooleanValue = false,
         Category = "Manager Settings",
-        Order = 21 )]
+        Order = 5 )]
 
     public partial class Person : Rock.Web.UI.RockBlock
     {
