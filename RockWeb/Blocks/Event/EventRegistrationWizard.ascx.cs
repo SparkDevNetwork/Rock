@@ -868,11 +868,21 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            var registrationTemplateQuery = new RegistrationTemplateService( rockContext ).GetByGuids( registrationTemplateGuids ).AsNoTracking();
+            var registrationTemplateService = new RegistrationTemplateService( rockContext );
+            var registrationTemplateQuery = registrationTemplateService.GetByGuids( registrationTemplateGuids ).AsNoTracking();
+
+            // If no registration templates were selected in the block settings, all active registration templates will be available.
+            if (registrationTemplateGuids.Count == 0)
+            {
+                registrationTemplateQuery = registrationTemplateService.Queryable().AsNoTracking().Where( rt => rt.IsActive == true );
+            }
+
+            // If Group is required, only registration templates with a GroupType set will be available.
             if ( GetAttributeValue( AttributeKey.RequireGroup ).AsBoolean() )
             {
                 registrationTemplateQuery = registrationTemplateQuery.Where( rt => rt.GroupTypeId.HasValue );
             }
+
 
             var registrationTemplates = registrationTemplateQuery.ToList();
             ddlTemplate.DataSource = registrationTemplates;
