@@ -19,15 +19,15 @@
     {% for parent in Item.ParentItems %}
     {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
         {% for parent in parents %}
+            {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
 
-            {% assign backgroundColor = parent | Attribute:'BackgroundColor' | Lighten:'15%' %}
-
-            {% if backgroundColor and backgroundColor != empty %}
-            <style>
-                .brand-bg {
-                    background-color: {{ backgroundColor | Darken:'5%' }};
-                }
-            </style>
+            {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
+                <style>
+                    .brand-bg {
+                        background-color: {{ backgroundColor | Darken:'5%' }};
+                    }
+                </style>
             {% endif %}
 
         {% endfor %}
@@ -62,7 +62,7 @@
             <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
         {% endif %}
         
-        {[ communicators guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}
+        <p class="stronger">{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}</p>
         
         {% if imageurl and imageurl != empty %}
             <div class="ratio-landscape background-cover push-bottom" style="background-image:url('{{ imageurl }}'); margin-left: -30px; margin-right: -30px;"></div>
