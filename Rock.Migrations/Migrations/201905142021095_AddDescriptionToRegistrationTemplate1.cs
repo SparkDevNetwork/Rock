@@ -22,18 +22,15 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddDescriptionToRegistrationTemplate : Rock.Migrations.RockMigration
+    public partial class AddDescriptionToRegistrationTemplate1 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
+            AddColumn("dbo.RegistrationTemplate", "Description", c => c.String());
             Sql(@"
--- Add Column to table.
-ALTER TABLE [dbo].[RegistrationTemplate] ADD [Description] NVARCHAR(MAX);
-GO 
-
 -- Set values to blank instead of null.
 UPDATE [dbo].[RegistrationTemplate] SET [Description] = '';
 GO
@@ -43,17 +40,13 @@ ALTER TABLE [dbo].[RegistrationTemplate] ALTER COLUMN [Description] NVARCHAR(MAX
 GO
 ");
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            Sql(@"
--- Drop column.
-ALTER TABLE [dbo].[RegistrationTemplate] DROP COLUMN [Description]
-GO
-");
+            DropColumn("dbo.RegistrationTemplate", "Description");
         }
     }
 }

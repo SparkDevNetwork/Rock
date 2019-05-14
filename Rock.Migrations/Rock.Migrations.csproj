@@ -320,9 +320,9 @@
     <Compile Include="Migrations\201905082317243_Rollup_0508.Designer.cs">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201905140059478_AddDescriptionToRegistrationTemplate.cs" />
-    <Compile Include="Migrations\201905140059478_AddDescriptionToRegistrationTemplate.Designer.cs">
-      <DependentUpon>201905140059478_AddDescriptionToRegistrationTemplate.cs</DependentUpon>
+    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.cs" />
+    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.Designer.cs">
+      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -805,8 +805,8 @@
     <EmbeddedResource Include="Migrations\201905082317243_Rollup_0508.resx">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905140059478_AddDescriptionToRegistrationTemplate.resx">
-      <DependentUpon>201905140059478_AddDescriptionToRegistrationTemplate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.resx">
+      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
