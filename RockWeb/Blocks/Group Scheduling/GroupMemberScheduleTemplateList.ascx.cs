@@ -26,13 +26,13 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Groups
+namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
     /// 
     /// </summary>
     [DisplayName( "Group Member Schedule Template List" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Lists group member schedule templates." )]
 
     [LinkedPage( "Detail Page" )]
