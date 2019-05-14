@@ -45,9 +45,7 @@
         <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
         <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
-
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-
     </head>
     <body runat="server" id="body">
 

@@ -5,6 +5,7 @@
         {% assign parentTitle = parent.Title | Replace:"'","’" %}
         {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
         {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+        {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
         {% assign backgroundColor = parent | Attribute:'BackgroundColor' | Lighten:'15%' %}
         {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
         {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
@@ -78,7 +79,7 @@
 {% capture textalignment %}{% endcapture %}
 {% capture label %}{{ parentType }}{% endcapture %}
 {% capture subtitle %}{% endcapture %}
-{% capture imageurl %}{{ parentImage }}{% endcapture %}
+{% capture imageurl %}{{ parentImageSquare }}{% endcapture %}
 {% capture imageoverlayurl %}{% endcapture %}
 {% capture imagealignment %}Left{% endcapture %}
 {% capture imageopacity %}{% endcapture %}
