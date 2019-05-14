@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Group Scheduler Analytics" )]
     [Category( "Groups" )]
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Groups
         "Decline Chart Colors",
         Description = "A comma-delimited list of colors that the decline reason chart will use. You will want as many colors as there are decline reasons.",
         IsRequired = false,
-        DefaultValue = "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766",
+        DefaultValue = "#01B8AA,#374649,#FD625E,#F2C80F,#5F6B6D,#8AD4EB,#FE9666,#A66999",
         Order = 0,
         Key = AttributeKeys.DeclineChartColors )]
 
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Groups
         "Scheduled",
         Description = "Choose the color to show the number of scheduled persons.",
         IsRequired = true,
-        DefaultValue = "#66B2FF",
+        DefaultValue = "#009CE3",
         Category = "Bar Chart Colors",
         Order = 1,
         Key = AttributeKeys.BarChartScheduledColor)]
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Groups
         "No Response",
         Description = "Choose the color to show the number of schedule requests where the person did not respond.",
         IsRequired = true,
-        DefaultValue = "#FFFF66",
+        DefaultValue = "#FFC870",
         Category = "Bar Chart Colors",
         Order = 2,
         Key = AttributeKeys.BarChartNoResponseColor)]
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Groups
         "Declines",
         Description = "Choose the color to show the number of schedule requests where the person declined.",
         IsRequired = true,
-        DefaultValue = "#FFB266",
+        DefaultValue = "#D4442E",
         Category = "Bar Chart Colors",
         Order = 3,
         Key = AttributeKeys.BarChartDeclinesColor)]
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Groups
         "Attended",
         Description = "Choose the color to show the number of schedule requests where the person attended.",
         IsRequired = true,
-        DefaultValue = "#66FF66",
+        DefaultValue = "#16C98D",
         Category = "Bar Chart Colors",
         Order = 4,
         Key = AttributeKeys.BarChartAttendedColor)]
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Groups
         "Committed No Show",
         Description = "Choose the color to show the number of schedule requests where the person committed but did not attend.",
         IsRequired = true,
-        DefaultValue = "#FF6666",
+        DefaultValue = "#484848",
         Category = "Bar Chart Colors",
         Order = 5,
         Key = AttributeKeys.BarChartCommittedNoShowColor)]
@@ -218,7 +218,7 @@ var dnutChart = new Chart(dnutCtx, {{
                 DoughnutChartDeclineLabelsJSON,
                 DoughnutChartDeclineValuesJSON,
                 colors
-                
+
             );
 
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "groupSchedulerDoughnutChartScript", script, true );
@@ -345,9 +345,9 @@ var barChart = new Chart(barCtx, {{
                         var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
                         var personsFromDv = dataView.GetQuery( null, rockContext, null, out _errorMessages ) as IQueryable<Person>;
                         var personAliasIds = personsFromDv.Select( d => d.Aliases.Where( a => a.AliasPersonId == d.Id ).Select( a => a.Id ).FirstOrDefault() ).ToList();
-                        
+
                         groupAttendances = groupAttendances.Where( a => personAliasIds.Contains( a.PersonAliasId.Value ) );
-                        
+
                         break;
                     default:
                         break;
@@ -482,7 +482,7 @@ var barChart = new Chart(barCtx, {{
                 //if more than 1 month summarize by week
                 CreateBarChartGroupedByWeek( daysCount, firstDateTime );
             }
-            else 
+            else
             {
                 // Otherwise summarize by day
                 CreateBarChartGroupedByDay( daysCount, firstDateTime );
@@ -512,8 +512,8 @@ var barChart = new Chart(barCtx, {{
                 var monthsCount = ( ( lastDateTime.Year - firstDateTime.Year ) * 12 ) + ( lastDateTime.Month - firstDateTime.Month ) + 1;
                 var months = Enumerable.Range( 0, monthsCount )
                     .Select(x => new
-                    { 
-                        year = firstDateTime.AddMonths(x).Year, 
+                    {
+                        year = firstDateTime.AddMonths(x).Year,
                         month = firstDateTime.AddMonths(x).Month
                     } );
 
@@ -572,7 +572,7 @@ var barChart = new Chart(barCtx, {{
 
             var weeks = Enumerable.Range( 0, ( int ) Math.Ceiling( ( daysCount / 7.0 ) + 1 ) )
                 .Select(x => new
-                { 
+                {
                     date = firstDateTime.StartOfWeek(DayOfWeek.Monday).AddDays(x * 7)
                 } );
 
@@ -629,7 +629,7 @@ var barChart = new Chart(barCtx, {{
 
             var days = Enumerable.Range( 0, daysCount + 1 )
                 .Select(x => new
-                { 
+                {
                     date = firstDateTime.AddDays(x)
                 } );
 
@@ -757,14 +757,14 @@ var barChart = new Chart(barCtx, {{
 
             gData.Visible = false;
         }
-        
+
         #region Control Events
 
         protected void gpGroups_SelectItem( object sender, EventArgs e )
         {
             ResetCommonControls();
-            
-            if ( !ValidateFilter() )                
+
+            if ( !ValidateFilter() )
             {
                 return;
             }
@@ -777,7 +777,7 @@ var barChart = new Chart(barCtx, {{
 
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
-            if ( !ValidateFilter() )                
+            if ( !ValidateFilter() )
             {
                 return;
             }
@@ -789,7 +789,7 @@ var barChart = new Chart(barCtx, {{
 
         protected void dvDataViews_SelectItem( object sender, EventArgs e )
         {
-            if ( !ValidateFilter() )                
+            if ( !ValidateFilter() )
             {
                 return;
             }
