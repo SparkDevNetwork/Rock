@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -500,7 +501,10 @@ namespace Rock
                 }
                 else
                 {
-                    dictionary.Add( Convert.ToInt32( value ), name.SplitCase() );
+                    // if the Enum has a [Description] attribute, use the description text
+                    var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+
+                    dictionary.Add( Convert.ToInt32( value ), description );
                 }
             }
 
