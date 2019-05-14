@@ -50,6 +50,11 @@
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        </div>
+                    </div>
 
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
@@ -398,6 +403,11 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockLiteral ID="lDescription" runat="server" Label="Description" />
                         </div>
                     </div>
 
