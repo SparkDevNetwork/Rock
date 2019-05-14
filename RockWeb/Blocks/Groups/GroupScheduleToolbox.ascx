@@ -175,28 +175,30 @@
 
                         <%-- Blackout Dates --%>
                         <div class="col-md-6">
-                            <h4>
-                                <asp:Literal runat="server" ID="lBlackoutDates" Text="Blackout Dates" />
-                            </h4>
-                            <hr class="margin-t-sm margin-b-sm" />
-                            <p>
-                                <asp:Literal runat="server" ID="lBlackoutDatesHelp" Text="Please provide any dates you will not be able to attend." />
-                            </p>
+                            <div class="well">
+                                <h4>
+                                    <asp:Literal runat="server" ID="lBlackoutDates" Text="Blackout Dates" />
+                                </h4>
+                                <hr class="margin-t-sm margin-b-sm" />
+                                <p>
+                                    <asp:Literal runat="server" ID="lBlackoutDatesHelp" Text="Please provide any dates you will not be able to attend." />
+                                </p>
 
-                            <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
-                                <Columns>
-                                    <Rock:RockBoundField DataField="ExclusionId" Visible="false"></Rock:RockBoundField>
-                                    <Rock:RockBoundField DataField="PersonAliasId" Visible="false"></Rock:RockBoundField>
-                                    <Rock:RockTemplateField>
-                                        <ItemTemplate>
-                                            <asp:Literal ID="litExclusionDateRange" runat="server" Text='<%# Eval("DateRange")%>'></asp:Literal><span> - </span>
-                                            <asp:Literal ID="litExclusionFullName" runat="server" Text='<%# Eval("FullName") %>'></asp:Literal><span> - </span>
-                                            <asp:Literal ID="litExclusionGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
-                                    <Rock:DeleteField ID="gBlackoutDatesDelete" runat="server" OnClick="gBlackoutDatesDelete_Click"></Rock:DeleteField>
-                                </Columns>
-                            </Rock:Grid>
+                                <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="ExclusionId" Visible="false"></Rock:RockBoundField>
+                                        <Rock:RockBoundField DataField="PersonAliasId" Visible="false"></Rock:RockBoundField>
+                                        <Rock:RockTemplateField>
+                                            <ItemTemplate>
+                                                <asp:Literal ID="litExclusionDateRange" runat="server" Text='<%# Eval("DateRange")%>'></asp:Literal><span> - </span>
+                                                <asp:Literal ID="litExclusionFullName" runat="server" Text='<%# Eval("FullName") %>'></asp:Literal><span> - </span>
+                                                <asp:Literal ID="litExclusionGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
+                                        <Rock:DeleteField ID="gBlackoutDatesDelete" runat="server" OnClick="gBlackoutDatesDelete_Click"></Rock:DeleteField>
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
                         </div>
                     </div>
                 </asp:Panel>
