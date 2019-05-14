@@ -73,8 +73,8 @@ namespace RockWeb.Blocks.Communication
                     .Where( a => a.EntityTypeId == smsActionEntityTypeId )
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
-                avcAttributes.ExcludedCategoryNames = new string[] { "Filter" };
-                avcFilters.IncludedCategoryNames = new string[] { "Filter" };
+                avcAttributes.ExcludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };
+                avcFilters.IncludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };
 
                 tbFromNumber.Text = "+16235553322"; // Ted Decker's cell
                 tbToNumber.Text = "+15559991234"; // Fake church number
