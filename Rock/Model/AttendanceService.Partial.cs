@@ -16,11 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
@@ -635,12 +635,23 @@ namespace Rock.Model
 
         /// <summary>
         /// Sends the scheduled attendance confirmation emails and marks ScheduleConfirmationSent = true, then returns the number of emails sent.
+        /// Make sure to call rockContext.SaveChanges() after running this.
+        /// NOTE: This doesn't check <see cref="Attendance.ScheduleConfirmationSent" />, so you'll need to add that condition to the sendConfirmationAttendancesQuery parameter
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery )
+        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
         {
             int emailsSent = 0;
+            errorMessages = new List<string>();
+
+            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a =>
+                a.PersonAlias.Person.Email != null
+                && a.PersonAlias.Person.Email != string.Empty
+                && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                && a.PersonAlias.Person.IsEmailActive );
+
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
             var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
             {
@@ -649,6 +660,8 @@ namespace Rock.Model
             } ).ToList();
 
             var rockContext = this.Context as RockContext;
+
+            List<Exception> exceptionList = new List<Exception>();
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
@@ -664,28 +677,45 @@ namespace Rock.Model
                 {
                     try
                     {
-
                         var emailMessage = new RockEmailMessage( scheduleConfirmationSystemEmail );
                         var recipient = attendancesByPerson.Person.Email;
                         var attendances = attendancesByPerson.Attendances;
-
-                        foreach ( var attendance in attendances )
-                        {
-                            attendance.ScheduleConfirmationSent = true;
-                        }
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
                         mergeFields.Add( "Attendances", attendances );
                         emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
-                        emailMessage.Send();
-                        emailsSent++;
+                        List<string> sendErrors;
+                        bool sendSuccess = emailMessage.Send( out sendErrors );
+
+                        if ( sendSuccess )
+                        {
+                            emailsSent++;
+                            foreach ( var attendance in attendances )
+                            {
+                                attendance.ScheduleConfirmationSent = true;
+                            }
+                        }
+                        else
+                        {
+                            errorMessages.AddRange( sendErrors );
+                        }
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send ScheduleConfirmationSystemEmailId to { attendancesByPerson.Person }", ex ) );
+                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { attendancesByPerson.Person }", ex );
+                        errorMessages.Add( emailException.Message );
+                        exceptionList.Add( emailException );
                     }
                 }
+            }
+
+            // group messages that are exactly the same and put a count of those in the message
+            errorMessages = errorMessages.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( exceptionList.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmation emails", exceptionList ) );
             }
 
             return emailsSent;
@@ -1718,6 +1748,7 @@ namespace Rock.Model
         /// <summary>
         /// The alternate group
         /// </summary>
+        [Description("Alt Group")]
         AlternateGroup,
 
         /// <summary>

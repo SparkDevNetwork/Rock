@@ -253,7 +253,7 @@
 
                     // set the progressbar max range to desired capacity if known
                     var progressMax = desiredCapacity;
-                    var totalScheduled = (totalPending + totalConfirmed + totalDeclined);
+                    var totalScheduled = (totalPending + totalConfirmed );
                     if (!progressMax) {
                         // desired capacity isn't known, so just have it act as a stacked bar based on the sum of pending,confirmed,declined
                         progressMax = totalScheduled;
@@ -271,7 +271,6 @@
 
                     var confirmedPercent = !progressMax || (totalConfirmed * 100 / progressMax);
                     var pendingPercent = !progressMax || (totalPending * 100 / progressMax);
-                    var declinedPercent = !progressMax || (totalDeclined * 100 / progressMax);
                     var minimumPercent = !progressMax || (minimumCapacity * 100 / progressMax);
                     var desiredPercent = !progressMax || (desiredCapacity * 100 / progressMax);
 
@@ -300,11 +299,6 @@
                     var $progressPending = $schedulingStatusContainer.find('.js-scheduling-progress-pending');
                     $progressPending.css({ 'width': pendingPercent + '%' });
                     $progressPending.find('.js-progress-text-percent').val(pendingPercent);
-
-                    var $progressDeclined = $schedulingStatusContainer.find('.js-scheduling-progress-declined');
-                    $progressDeclined.css({ 'width': declinedPercent + '%' });
-                    $progressDeclined.find('.js-progress-text-percent').val(declinedPercent);
-
 
                 });
             },

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -35,7 +36,7 @@ namespace RockWeb.Blocks.Groups
     ///
     /// </summary>
     [DisplayName( "Group Scheduler" )]
-    [Category( "Groups" )]
+    [Category( "Group Scheduling" )]
     [Description( "Allows group schedules for groups and locations to be managed by a scheduler." )]
 
     [IntegerField(
@@ -160,6 +161,26 @@ namespace RockWeb.Blocks.Groups
                 LoadFilterFromUserPreferencesOrURL();
                 ApplyFilter();
             }
+
+            if ( Page.IsPostBack )
+            {
+                // handle manual __doPostback events
+                string postbackArgs = Request.Params["__EVENTARGUMENT"];
+                if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+                {
+                    if ( postbackArgs == "select-all-locations" )
+                    {
+                        var locationItems = cblGroupLocations.Items.OfType<ListItem>().ToList();
+                        bool selected = locationItems.All( a => !a.Selected );
+                        foreach ( var cbLocation in locationItems )
+                        {
+                            cbLocation.Selected = selected;
+                        }
+
+                        ApplyFilter();
+                    }
+                }
+            }
         }
 
         #endregion
@@ -258,6 +279,12 @@ namespace RockWeb.Blocks.Groups
                         listItem.Selected = selectedScheduleId.HasValue && selectedScheduleId.Value == schedule.Id;
                         rblSchedule.Items.Add( listItem );
                     }
+
+                    if ( rblSchedule.SelectedItem == null )
+                    {
+                        rblSchedule.SetValue( sortedScheduleList.FirstOrDefault() );
+                    }
+
                 }
             }
         }
@@ -317,7 +344,7 @@ namespace RockWeb.Blocks.Groups
             var resouceListSourceType = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedResourceListSourceType ).ConvertToEnumOrNull<SchedulerResourceListSourceType>() ?? SchedulerResourceListSourceType.Group;
             bgResourceListSource.SetValue( resouceListSourceType.ConvertToInt() );
 
-            var groupMemberFilterType = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.GroupMemberFilterType ).ConvertToEnumOrNull<SchedulerResourceGroupMemberFilterType>() ?? SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
+            var groupMemberFilterType = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.GroupMemberFilterType ).ConvertToEnumOrNull<SchedulerResourceGroupMemberFilterType>() ?? SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
             rblGroupMemberFilter.SetValue( groupMemberFilterType.ConvertToInt() );
 
             gpResourceListAlternateGroup.SetValue( this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.AlternateGroupId ).AsIntegerOrNull() );
@@ -345,7 +372,13 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void ApplyFilter()
         {
-            int groupId = hfGroupId.Value.AsInteger();
+            var group = this.GetSelectedGroup();
+            int groupId = 0;
+            if ( group != null )
+            {
+                groupId = group.Id;
+            }
+
             int scheduleId = rblSchedule.SelectedValue.AsInteger();
             var groupLocationIdList = cblGroupLocations.SelectedValues.AsIntegerList();
 
@@ -354,10 +387,24 @@ namespace RockWeb.Blocks.Groups
             this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupLocationIds, groupLocationIdList.AsDelimited( "," ) );
             this.SetBlockUserPreference( UserPreferenceKey.SelectedScheduleId, rblSchedule.SelectedValue );
 
-            var resourceListSourceType = bgResourceListSource.SelectedValueAsEnum<SchedulerResourceListSourceType>();
+            if ( group != null && group.SchedulingMustMeetRequirements )
+            {
+                bgResourceListSource.Visible = false;
+                bgResourceListSource.SetValue( ( int ) SchedulerResourceListSourceType.Group );
+                pnlAddPerson.Visible = false;
+                ppAddPerson.Visible = false;
+            }
+            else
+            {
+                bgResourceListSource.Visible = true;
+                pnlAddPerson.Visible = true;
+                ppAddPerson.Visible = true;
+            }
+
+            var resourceListSourceType = bgResourceListSource.SelectedValueAsEnumOrNull<SchedulerResourceListSourceType>();
             this.SetBlockUserPreference( UserPreferenceKey.SelectedResourceListSourceType, resourceListSourceType.ToString() );
 
-            var groupMemberFilterType = rblGroupMemberFilter.SelectedValueAsEnum<SchedulerResourceGroupMemberFilterType>();
+            var groupMemberFilterType = rblGroupMemberFilter.SelectedValueAsEnumOrNull<SchedulerResourceGroupMemberFilterType>();
             this.SetBlockUserPreference( UserPreferenceKey.GroupMemberFilterType, groupMemberFilterType.ToString() );
 
             this.SetBlockUserPreference( UserPreferenceKey.AlternateGroupId, gpResourceListAlternateGroup.SelectedValue );
@@ -427,17 +474,17 @@ namespace RockWeb.Blocks.Groups
                 var rockContext = new RockContext();
                 var groupLocationsQuery = new GroupLocationService( rockContext ).Queryable()
                     .Where( a => a.GroupId == group.Id && a.Schedules.Any( s => s.Id == scheduleId ) )
-                    .OrderBy(a => new { a.Order, a.Location.Name } )
+                    .OrderBy( a => new { a.Order, a.Location.Name } )
                     .AsNoTracking();
 
                 var groupLocationsList = groupLocationsQuery.ToList();
 
-                if (!groupLocationsList.Any() && scheduleId != 0)
+                if ( !groupLocationsList.Any() && scheduleId != 0 )
                 {
                     nbGroupWarning.Text = "Group does not have any locations for the selected schedule";
                     nbGroupWarning.Visible = true;
                 }
-                else
+                else if ( scheduleId != 0 )
                 {
                     nbGroupWarning.Visible = false;
                 }
@@ -454,6 +501,15 @@ namespace RockWeb.Blocks.Groups
                     var groupLocationItem = new ListItem( groupLocation.Location.ToString(), groupLocation.Id.ToString() );
                     groupLocationItem.Selected = selectedLocationIds.Contains( groupLocation.LocationId );
                     cblGroupLocations.Items.Add( groupLocationItem );
+                }
+
+                // if there aren't any locations select, default to selecting all
+                if ( !cblGroupLocations.SelectedValues.Any() )
+                {
+                    foreach ( var item in cblGroupLocations.Items.OfType<ListItem>() )
+                    {
+                        item.Selected = true;
+                    }
                 }
             }
         }
@@ -815,29 +871,58 @@ namespace RockWeb.Blocks.Groups
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery );
+            List<string> errorMessages;
+            var emailsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
             rockContext.SaveChanges();
+
+            StringBuilder summaryMessageBuilder = new StringBuilder();
+            ModalAlertType alertType;
+
+            if ( errorMessages.Any() )
+            {
+                alertType = ModalAlertType.Alert;
+
+                var logException = new Exception( "One or more errors occurred when sending confirmation emails: " + Environment.NewLine + errorMessages.AsDelimited( Environment.NewLine ) );
+
+                ExceptionLogService.LogException( logException );
+
+                summaryMessageBuilder.AppendLine( logException.Message );
+            }
+            else
+            {
+                alertType = ModalAlertType.Information;
+                if ( emailsSent > 0 && sendConfirmationAttendancesQuery.Any() )
+                {
+                    summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} confirmation {1}", emailsSent, "email".PluralizeIf( emailsSent != 1 ) ) );
+                }
+                else
+                {
+                    summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation email. No additional confirmation emails sent." );
+                }
+            }
+
+            maSendNowResults.Show( summaryMessageBuilder.ToString().ConvertCrLfToHtmlBr(), alertType );
         }
 
         #endregion
 
         /// <summary>
-        /// Handles the SelectPerson event of the ppAddResource control.
+        /// Handles the SelectPerson event of the ppAddPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ppAddResource_SelectPerson( object sender, EventArgs e )
+        protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
         {
             var additionPersonIds = hfResourceAdditionalPersonIds.Value.SplitDelimitedValues().AsIntegerList();
-            if ( ppAddResource.PersonId.HasValue )
+            if ( ppAddPerson.PersonId.HasValue )
             {
-                additionPersonIds.Add( ppAddResource.PersonId.Value );
+                additionPersonIds.Add( ppAddPerson.PersonId.Value );
             }
 
             hfResourceAdditionalPersonIds.Value = additionPersonIds.AsDelimited( "," );
 
             // clear on the selected person
-            ppAddResource.SetValue( null );
+            ppAddPerson.SetValue( null );
         }
     }
 }
