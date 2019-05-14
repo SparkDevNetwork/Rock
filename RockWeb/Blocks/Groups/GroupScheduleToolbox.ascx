@@ -70,10 +70,10 @@
                             <%-- Upcoming Schedules Grid --%>
                             <asp:Panel ID="pnlUpcomingSchedules" runat="server" CssClass="confirmed margin-t-md">
                                 <span class="control-label">
-                                    <asp:Literal runat="server" ID="lUpcomingSchedules" Text="Upcoming Schedules" />&nbsp;&nbsp;
+                                    <asp:Literal runat="server" ID="lUpcomingSchedules" Text="Upcoming Schedules" />
                                 <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                                     data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
-                                    class="btn btn-info btn-xs btn-copy-to-clipboard"
+                                    class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
                                     onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                                     <i class="fa fa-calendar-alt"></i>Copy Calendar Link
                                 </button>
