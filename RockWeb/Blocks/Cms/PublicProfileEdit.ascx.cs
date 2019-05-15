@@ -938,8 +938,7 @@ namespace RockWeb.Blocks.Cms
                 }
             } );
 
-            //NavigateToCurrentPage();
-            ShowDetail();
+            NavigateToCurrentPage();
         }
 
         /// <summary>
