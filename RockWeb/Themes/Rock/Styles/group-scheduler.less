@@ -18,8 +18,13 @@
 
 .resource-list {
   position: sticky !important;
-  top: @navbar-top-height + 16px;
-  max-height: ~"calc(100vh - 112px)";
+  max-height: ~"calc(100vh - 32px)";
+  top: 16px;
+
+  @media (min-width: @screen-md-min) {
+    top: @navbar-top-height + 16px;
+    max-height: ~"calc(100vh - 112px)";
+  }
 
   .is-fullscreen & {
     max-height: ~"calc(100vh - 100px)";
