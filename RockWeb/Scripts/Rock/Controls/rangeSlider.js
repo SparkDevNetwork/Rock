@@ -12,7 +12,6 @@
 
                 Sys.Application.add_load(function () {
                     var cssFile = Rock.settings.get('baseUrl') + 'Scripts/ion.rangeSlider/css/ion.rangeSlider.Rock.css';
-                    var jsFile = Rock.settings.get('baseUrl') + 'Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js';
 
                     // ensure that css for rangeSlider is added to page
                     if (!$('#rangeSliderCss').length) {
