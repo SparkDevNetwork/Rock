@@ -124,10 +124,10 @@ namespace Rock.Model
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
-            }
-
-            // We're purposely not checking Registration records because the delete will remove those GroupId references on any Registration records.
-
+            }  
+            
+            // ignoring Registration,GroupId 
+ 
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
