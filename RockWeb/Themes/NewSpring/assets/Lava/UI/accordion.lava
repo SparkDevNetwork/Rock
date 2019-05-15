@@ -1,6 +1,6 @@
 {%- assign wrapperId = uniqueid -%}
 
-<div class="panel-group" id="accordion-{{ wrapperId }}" role="tablist" aria-multiselectable="true">
+<div class="panel-group text-left" id="accordion-{{ wrapperId }}" role="tablist" aria-multiselectable="true">
 
     {%- for item in items -%}
 

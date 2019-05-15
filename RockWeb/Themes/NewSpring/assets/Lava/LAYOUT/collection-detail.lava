@@ -1,11 +1,11 @@
-{% assign backgroundColor = Item | Attribute:'BackgroundColor' | Lighten:'15%' %}
-
-{% if backgroundColor and backgroundColor != empty %}
-<style>
-    .brand-bg {
-        background-color: {{ backgroundColor | Darken:'5%' }};
-    }
-</style>
+{% assign baseBackgroundColor = Item | Attribute:'BackgroundColor' %}
+{% if baseBackgroundColor and baseBackgroundColor != empty %}
+    {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
+    <style>
+        .brand-bg {
+            background-color: {{ backgroundColor | Darken:'5%' }};
+        }
+    </style>
 {% endif %}
 
 

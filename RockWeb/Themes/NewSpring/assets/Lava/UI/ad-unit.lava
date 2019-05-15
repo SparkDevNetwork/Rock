@@ -1,3 +1,4 @@
+{%- assign modalid = uniqueid -%}
 {% assign textalignment = textalignment | Trim %}
 
 {% if id != null and id != '' %}
@@ -74,7 +75,7 @@
                     {% if content and content != empty %}
                         <div class="">
                             {% if trimcopy == 'Yes' %}
-                                {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ id }}-modal">Read More</a>{% endif %}
+                                {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}
                             {% else %}
                                 {{ content }}
                             {% endif %}
@@ -105,7 +106,7 @@
 
 {% if trimcopy == 'Yes' %}
     {% if length > 200 %}
-    <div class="modal fade" id="{{ id }}-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">

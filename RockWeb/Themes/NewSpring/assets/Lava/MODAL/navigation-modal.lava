@@ -24,15 +24,17 @@
           </li>
         </ul>
         
-        <hr class="push-ends">
+        <div class="hidden">
+          <hr class="push-ends">
 
-        <ul class="list-style-none hard xs-flush">
-          <li>
-            <span class="label label-sm label-default sans-serif">{{ personCampus.Name }}</span><br>
-            <h3 class="text-primary push-half-bottom push-half-top"><a href="/news?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-newspaper display-none"></i>News</a></h3>
-            <h3 class="text-primary push-half-bottom"><a href="/events?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-calendar-alt display-none"></i>Events</a></h3>
-          </li>
-        </ul>
+          <ul class="list-style-none hard xs-flush">
+            <li>
+              <span class="label label-sm label-default sans-serif">{{ personCampus.Name }}</span><br>
+              <h3 class="text-primary push-half-bottom push-half-top"><a href="/news?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-newspaper display-none"></i>News</a></h3>
+              <h3 class="text-primary push-half-bottom"><a href="/events?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-calendar-alt display-none"></i>Events</a></h3>
+            </li>
+          </ul>
+        </div>
         
         <hr class="push-ends">
         {% endif %}

@@ -1,0 +1,22 @@
+<div id="locations">
+{[ swiper title:'Find a Location' subtitle:'Swipe to Discover More' ]}
+
+    <!-- Slides -->
+    {% campus where:'IsActive == true && Public == true' sort:'Name, asc' iterator:'campuses' %}
+        {% for campus in campuses %}
+            {% assign serviceTimesMatrixGuid = campus | Attribute:'ServiceTimes1','RawValue' %}
+            [[ item data:'data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}"' ]]
+
+                {% capture content %}
+                    <p class="push-half-bottom">{{ campus | Attribute:'ServiceTimes1' | Trim }}</p>
+                    <p><a href="#">Get Directions</a></p>
+                {% endcapture %}
+            
+                {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linkurl:'/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campus | Attribute:'ImageLandscape' }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
+                
+            [[ enditem ]]
+        {% endfor %}
+    {% endcampus %}
+    
+{[ endswiper ]}
+</div>
