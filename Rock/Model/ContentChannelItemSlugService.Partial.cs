@@ -88,7 +88,7 @@ namespace Rock.Model
 
                 if ( contentChannelId != null )
                 {
-                    qry = qry.Where( b => b.ContentChannelItemId == contentChannelId );
+                    qry = qry.Where( b => b.ContentChannelItem.ContentChannelId == contentChannelId );
                 }
 
                 isValid = !qry.Any();
