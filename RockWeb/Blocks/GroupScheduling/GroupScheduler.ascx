@@ -4,13 +4,20 @@
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-groupscheduler">
             <%-- Panel Header --%>
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
                     <i class="fa fa-calendar-alt"></i>
                     Group Scheduler
                 </h1>
 
                 <div class="panel-labels">
+                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
+                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
+
                     <asp:HiddenField ID="hfDisplayedOccurrenceIds" runat="server" />
                     <asp:LinkButton ID="btnSendNow" runat="server" CssClass="js-sendnow btn btn-default btn-xs" OnClick="btnSendNow_Click">
                         <i class="fa fa-envelope"></i>
@@ -21,14 +28,8 @@
                         <i class="fa fa-magic"></i>
                         Auto Schedule
                     </asp:LinkButton>
-
-                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
-                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
-                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                        <i class='fa fa-clipboard'></i>
-                    </button>
                 </div>
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <%-- Panel Body --%>
@@ -73,7 +74,7 @@
 
                         <%-- Scheduling: container for the scheduler scheduled containers --%>
                         <asp:Panel ID="pnlScheduler" runat="server" CssClass="resource-area">
-                            <div class="row">
+                            <div class="row row-eq-height">
                                 <div class="col-md-4">
 
                                     <div class="group-scheduler-resourcelist">
@@ -124,22 +125,16 @@
                                                 </div>
 
                                                 <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
-                                                <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
-                                                    <div class="thumb">
-                                                        <div class="end"></div>
-                                                    </div>
-                                                </asp:Panel>
+
                                                 <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
-                                                    <div class="overview">
 
-                                                        <%-- loading indicator --%>
-                                                        <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
+                                                    <%-- loading indicator --%>
+                                                    <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 
-                                                        <%-- container for list of resources --%>
+                                                    <%-- container for list of resources --%>
 
-                                                        <asp:Panel ID="pnlResourceListContainer" CssClass="js-scheduler-source-container resource-container dropzone" runat="server">
-                                                        </asp:Panel>
-                                                    </div>
+                                                    <asp:Panel ID="pnlResourceListContainer" CssClass="js-scheduler-source-container resource-container dropzone" runat="server">
+                                                    </asp:Panel>
                                                 </asp:Panel>
                                             </div>
                                         </div>
@@ -251,6 +246,7 @@
 
         <script>
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
                 // toggle the person picker
                 $('.js-add-resource').on('click', function () {
                     $('.js-add-resource-picker').slideToggle();
