@@ -144,7 +144,7 @@
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
                         <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
-                        <table class="table table-condensed table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
+                        <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
                                     <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
