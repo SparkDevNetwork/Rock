@@ -4,14 +4,19 @@
     <!-- Slides -->
     {% campus where:'IsActive == true && Public == true' sort:'Name, asc' iterator:'campuses' %}
         {% for campus in campuses %}
+            {% assign directionsURL = campus | Attribute:'GetDirectionsURL','RawValue' %}
+            {% assign fuseDirectionsUrl = campus | Attribute:'FuseGetDirectionsURL','RawValue' %}
+            
             [[ item data:'data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}"' ]]
 
                 {% capture content %}
                     <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' serviceTimesType:'{{ serviceType }}' ]}</p>
-                    <p><a href="#">Get Directions</a></p>
+                    {% if directionsURL and directionsURL != empty %}
+                        <p><a href="{% if fuseDirectionsUrl and fuseDirectionsUrl != empty and serviceType == 'Fuse' %}{{ fuseDirectionsUrl }}{% else %}{{ directionsURL }}{% endif %}" target="_blank">Get Directions</a></p>
+                    {% endif %}
                 {% endcapture %}
             
-                {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linkurl:'/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campus | Attribute:'ImageLandscape' }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
+                {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linkurl:'{% if serviceType == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campus | Attribute:'ImageLandscape' }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
                 
             [[ enditem ]]
         {% endfor %}

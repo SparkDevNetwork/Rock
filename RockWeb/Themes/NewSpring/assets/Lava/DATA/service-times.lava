@@ -9,9 +9,9 @@
     
     {% for service in servicesJSON %}
         {% if service.ServiceType == serviceType %}
-            {% if service.ServiceDay != serviceDay %}{% if forloop.first != true %}<br>{% endif %}{{ service.ServiceDay }} {% endif %}{{ service.ServiceTime }}
-            {% if service.DoorsOpenTime and service.DoorsOpenTime != empty %}<br><small>Doors Open at {{ service.DoorsOpenTime }}</small>{% endif %}
-            {% if service.PickUpTime and service.PickUpTime != empty %}<br><small>Pick Up Students at {{ service.PickUpTime }}</small>{% endif %}
+            {{ service.ServiceDay }} {{ service.ServiceTime | Remove:':00' | Remove:' ' | Downcase }}<br>
+            {% if service.DoorsOpenTime and service.DoorsOpenTime != empty %}<span class="text-gray-light">Doors Open at {{ service.DoorsOpenTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}
+            {% if service.PickUpTime and service.PickUpTime != empty %}<span class="text-gray-light">Pick Up Students at {{ service.PickUpTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}
             {% assign serviceDay = service.ServiceDay %}
         {% endif %}
     {% endfor %}
