@@ -12,22 +12,53 @@
 @pending-icon-color: @brand-warning;
 @declined-icon-color: @brand-danger;
 
-.viewport {
-  max-height: 50vh;
-  overflow-y: scroll;
+.group-scheduler-resourcelist {
+  height: 100%;
+}
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    background-color: fade(@panel-heading-bg, 40%);
+.resource-list {
+  position: sticky !important;
+  top: @navbar-top-height + 16px;
+  max-height: ~"calc(100vh - 112px)";
+
+  .is-fullscreen & {
+    max-height: ~"calc(100vh - 100px)";
+    top: 16px;
   }
 
-  &::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0,0,0, .2);
-    border-radius: 3px;
+  .panel-body {
+    position: relative;
+    display: -ms-flexbox!important;
+    display: flex!important;
+    -ms-flex-direction: column!important;
+    flex-direction: column!important;
+    flex: 0 1 auto !important;
+  }
 
-    &:hover {
-      background-color: rgba(0,0,0, .3);
+  .viewport {
+    height: 100%;
+    min-height: 0;
+    -ms-flex-positive: 1!important;
+    flex-grow: 1!important;
+    -ms-flex-negative: 1!important;
+    flex-shrink: 1!important;
+    overflow-y: scroll;
+    padding: 12px;
+    background-color: fade(@panel-heading-bg, 40%);
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: fade(@panel-heading-bg, 40%);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0, .2);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(0,0,0, .3);
+      }
     }
   }
 }
@@ -38,7 +69,6 @@
   margin-bottom: 12px;
   font-family: @font-family-sans-serif;
   color: @btn-default-color;
-  //overflow: auto;
   cursor: move;
   cursor: -webkit-grab;
   cursor: grab;
@@ -74,18 +104,17 @@
     line-height: 16px;
     color: #d8d8d8;
 
-
     &:hover,
-    &:focus {
+    &:focus,
+    &:active:focus {
       color: #767676;
-      outline: 0;
+      outline: none;
     }
   }
 
   &:hover {
     background: rgba(85,150,230,.1);
   }
-
 
   &[data-state="unscheduled"][data-is-scheduled="true"] {
     background-color: @state-danger-bg;
@@ -170,6 +199,7 @@
 .panel-groupscheduler .resource-area {
   padding-top: 15px;
   padding-bottom: 15px;
+  height: 100%;
 
   > .row {
     height: 100%;
@@ -248,25 +278,6 @@
       display: none;
     }
   }
-}
-
-.resource-container {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 12px 12px 0 12px;
-  overflow: auto;
-  font-family: @font-family-sans-serif;
-  color: @text-color;
-  color: var(--text-color);
-  background-color: fade(@panel-heading-bg, 40%);
-
-  &::after {
-    display: table;
-    clear: both;
-    content: "";
-  }
-
 }
 
 .resource-search {
@@ -420,7 +431,7 @@ elements with nested rules, like .list .item { padding: 10px; }. */
 }
 
 .schedule-status-board {
-  width: inherit;
+  width: inherit !important;
   min-width: 100%;
   table-layout: fixed;
 
@@ -520,10 +531,6 @@ elements with nested rules, like .list .item { padding: 10px; }. */
 .scheduler-target-container .resource.gu-transit,
 .resource.gu-mirror {
   max-height: 38px;
-
-  // .resource-name {
-  //   margin-right: 50px;
-  // }
 
   .hide-transit {
     display: none;
