@@ -4,11 +4,10 @@
     <!-- Slides -->
     {% campus where:'IsActive == true && Public == true' sort:'Name, asc' iterator:'campuses' %}
         {% for campus in campuses %}
-            {% assign serviceTimesMatrixGuid = campus | Attribute:'ServiceTimes1','RawValue' %}
             [[ item data:'data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}"' ]]
 
                 {% capture content %}
-                    <p class="push-half-bottom">{{ campus | Attribute:'ServiceTimes1' | Trim }}</p>
+                    <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' serviceTimesType:'{{ serviceType }}' ]}</p>
                     <p><a href="#">Get Directions</a></p>
                 {% endcapture %}
             
