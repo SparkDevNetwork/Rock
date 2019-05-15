@@ -1,4 +1,4 @@
-﻿//19
+//19
 // ^^^ This number above is the build number used by the T4 template responsible for generating this file. 
 // Do Not Remove!
 //
@@ -30,7 +30,7 @@ using System.Reflection;
 [assembly: AssemblyDescription( "Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes." )]
 [assembly: AssemblyCompany( "Spark Development Network" )]
 [assembly: AssemblyProduct( "Rock" )]
-[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2018" )]
+[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2019" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 [assembly: AssemblyConfiguration( "" )]
