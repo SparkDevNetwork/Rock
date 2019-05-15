@@ -299,35 +299,36 @@ namespace Rock.Web
         public static void RegisterRoutes()
         {
             RouteCollection routes = RouteTable.Routes;
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
 
-            // Add ingore rule for asp.net ScriptManager files. 
-            routes.Ignore("{resource}.axd/{*pathInfo}");
+            var routesToInsert = new RouteCollection();
+
+            // Add ignore rule for asp.net ScriptManager files. 
+            routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
 
             //Add page routes, order is very important here as IIS takes the first match
-            var pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
-            //var pageRoutes = pageRouteService.Queryable().OrderBy( r => r.Route ).ToList();
+            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
 
             foreach ( var pageRoute in pageRoutes )
             {
-                routes.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
+                routesToInsert.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
             }
 
             // Add a default page route
-            routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
+            routesToInsert.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
 
             // Add a default route for when no parameters are passed
-            routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
+            routesToInsert.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
 
             // Add a default route for shortlinks
-            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+            routesToInsert.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
 
-            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            // Insert the list of routes to the beginning of the Routes so that PageRoutes, etc are before OdataRoutes. Even when Re-Registering routes
+            // Since we are inserting at 0, reverse the list to they end up in the original order
+            foreach ( var pageRoute in routesToInsert.Reverse() )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "RegisterRoutes - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                stopwatch.Restart();
+                routes.Insert( 0, pageRoute );
             }
         }
 
