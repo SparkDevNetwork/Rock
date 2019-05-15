@@ -93,17 +93,17 @@
 
                             self.$additionalPersonIds.val(additionalPersonIds);
 
-                            var attendanceId = $unscheduledResource.attr('data-attendance-id')
+                            var attendanceId = $unscheduledResource.attr('data-attendance-id');
                             var $occurrence = $(source).closest('.js-scheduled-occurrence');
                             self.removeResource(attendanceId, $occurrence);
                         }
                         else {
-                            // deal with the resource that was dragged into an scheduled occurrence (location) 
+                            // deal with the resource that was dragged into an scheduled occurrence (location)
                             var scheduledPersonAddPendingUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddPending';
                             var scheduledPersonAddConfirmedUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddConfirmed';
                             var $scheduledResource = $(el);
 
-                            var personId = $scheduledResource.attr('data-person-id')
+                            var personId = $scheduledResource.attr('data-person-id');
                             var attendanceOccurrenceId = $(target).closest('.js-scheduled-occurrence').find('.js-attendanceoccurrence-id').val();
                             var $occurrence = $(el).closest('.js-scheduled-occurrence');
                             var scheduledPersonAddUrl = scheduledPersonAddPendingUrl;
@@ -244,7 +244,7 @@
                         $statusLight.attr('data-status', 'below-desired');
                     }
                     else if (desiredCapacity && (totalPendingOrConfirmed >= desiredCapacity)) {
-                        $statusLight.attr('data-status', 'meets-desired'); ``
+                        $statusLight.attr('data-status', 'meets-desired');
                     }
                     else {
                         // no capacities defined, so just hide it
@@ -437,7 +437,6 @@
                         return;
                     }
 
-                    var attendanceId = $resource.attr('data-attendance-id')
                     $.ajax({
                         method: "PUT",
                         url: scheduledPersonUrl + '?attendanceId=' + attendanceId
