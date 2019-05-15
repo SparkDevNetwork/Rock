@@ -115,8 +115,8 @@
                                     <asp:HiddenField ID="hfPreferencesGroupId" runat="server" />
                                     <asp:HiddenField ID="hfPreferencesGroupMemberList" runat="server" />
 
-                                    <h4>
-                                        <asp:Literal runat="server" ID="lGroupPreferencesGroupName" Text='<%# Eval("Name") %>' /></h4>
+                                    <h3>
+                                        <asp:Literal runat="server" ID="lGroupPreferencesGroupName" Text='<%# Eval("Name") %>' /></h3>
                                     <hr class="margin-t-sm margin-b-sm" />
 
                                     <div class="row">
@@ -176,9 +176,9 @@
                         <%-- Blackout Dates --%>
                         <div class="col-md-6">
                             <div class="well">
-                                <h4>
+                                <h3>
                                     <asp:Literal runat="server" ID="lBlackoutDates" Text="Blackout Dates" />
-                                </h4>
+                                </h3>
                                 <hr class="margin-t-sm margin-b-sm" />
                                 <p>
                                     <asp:Literal runat="server" ID="lBlackoutDatesHelp" Text="Please provide any dates you will not be able to attend." />
