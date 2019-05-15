@@ -143,11 +143,10 @@
                 <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
                         <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
-                                    <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
+                                    <th class="disc-question">Question <%# Eval( "QuestionNumber") %> <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' /></th>
                                     <th class="disc-answer grid-select-field disc-more">Most</th>
                                     <th class="disc-answer grid-select-field disc-less">Least</th>
                                 </tr>
