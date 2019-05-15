@@ -4000,6 +4000,11 @@ namespace Rock.Lava
                 {
                     case "Title":
                         {
+                            return page.PageTitle;
+                        }
+
+                    case "BrowserTitle":
+                        {
                             return page.BrowserTitle;
                         }
 
