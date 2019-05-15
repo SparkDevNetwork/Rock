@@ -369,16 +369,13 @@ namespace Rock.Migrations
         private void CreateAssessmentRequestSystemEmail()
         {
 		            // Assessment Request
-            RockMigrationHelper.UpdateSystemEmail( "System", "Assessment Request", "", "", "", "", "", "Assessments Are Ready To Take", @"{% capture assessmentsLink %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}/Assessments{% endcapture %}
+            RockMigrationHelper.UpdateSystemEmail( "System", "Assessment Request", "", "", "", "", "", "Assessments Are Ready To Take", @"{% capture assessmentsLink %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}/Assessments?{{ Person.ImpersonationParameter }}{% endcapture %}
 
 {{ 'Global' | Attribute:'EmailHeader' }}
 {{ Person.NickName }},
 
 <p>
     We're each a unique creation. We'd love to learn more about you through a simple and quick online personality profile. Your results will help us tailor our ministry to you and can also be used for building healthier teams and groups.
-</p>
-<p>
-    The assessment takes less than ten minutes and will go a long way toward helping us get to know you better. Thanks in advance!
 </p>
 <p>
 	<div><!--[if mso]>
@@ -600,7 +597,9 @@ SELECT  CASE
             RockMigrationHelper.AddActionTypeAttributeValue("C8DE19DB-106A-4AFA-9069-C420B45B976C","36197160-7D3D-490D-AB42-7E29105AFE91",@"False"); // Request Assessment:Save And Send:Send Assessment Custom Message Email:Active
             RockMigrationHelper.AddActionTypeAttributeValue("C8DE19DB-106A-4AFA-9069-C420B45B976C","0C4C13B8-7076-4872-925A-F950886B5E16",@"a201eb57-0ad0-4b98-ad44-9d3a7c0f16ba"); // Request Assessment:Save And Send:Send Assessment Custom Message Email:Send To Email Addresses|Attribute Value
             RockMigrationHelper.AddActionTypeAttributeValue("C8DE19DB-106A-4AFA-9069-C420B45B976C","5D9B13B6-CD96-4C7C-86FA-4512B9D28386",@"Assessments Are Ready To Take"); // Request Assessment:Save And Send:Send Assessment Custom Message Email:Subject
-            RockMigrationHelper.AddActionTypeAttributeValue("C8DE19DB-106A-4AFA-9069-C420B45B976C","4D245B9E-6B03-46E7-8482-A51FBA190E4D",@"{% capture assessmentsLink %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}/assessments{% endcapture %}
+            RockMigrationHelper.AddActionTypeAttributeValue("C8DE19DB-106A-4AFA-9069-C420B45B976C","4D245B9E-6B03-46E7-8482-A51FBA190E4D",@"{% capture assessmentsLink %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}/assessments?{{ Person.ImpersonationParameter }}{% endcapture %}
+{% assign assessmentsCount = Workflow | Attribute:'AssessmentsToTake' | Split:', ' | Size %}
+{% assign buttonText = 'Take Assessment' | PluralizeForQuantity:assessmentsCount %}
 
 {{ 'Global' | Attribute:'EmailHeader' }}
 {{ Person.NickName }},
@@ -610,10 +609,10 @@ SELECT  CASE
 	<div><!--[if mso]>
 	  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ assessmentsLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
 		<w:anchorlock/>
-		<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">Take Assessment</center>
+		<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{ buttonText }}</center>
 	  </v:roundrect>
 	<![endif]--><a href=""{{ assessmentsLink }}""
-	style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">Take Assessment</a></div>
+	style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">{{ buttonText }}</a></div>
 </p>
 <br />
 <br />
