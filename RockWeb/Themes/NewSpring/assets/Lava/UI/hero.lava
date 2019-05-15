@@ -12,7 +12,6 @@
 
 {% assign url = url | Trim %}
 
-
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="
 shell
 hero
@@ -102,17 +101,9 @@ overflow-hidden
 {% capture metadescription %}{% endcapture %}
 {% capture metaimage %}{% endcapture %}
 
-{% comment %} have to use the entity command for now because CurrentPage is not in the lava context for the content component block {% endcomment %}
-
-{% assign pageid = 'Global' | Page:'Id' %}
-
-{% page id:'{{ pageid }}' iterator:'pages' %}
-    {% for page in pages %}
-        {% assign pagemetatitle = page | Attribute:'PageMetaTitle' %}
-        {% assign pagemetadescription = page | Attribute:'PageMetaDescription' %}
-        {% assign pagemetaimage = page | Attribute:'PageMetaImage','Url' %}
-    {% endfor %}
-{% endpage %}
+{% assign pagemetatitle = CurrentPage | Attribute:'PageMetaTitle' %}
+{% assign pagemetadescription = CurrentPage | Attribute:'PageMetaDescription' %}
+{% assign pagemetaimage = CurrentPage | Attribute:'PageMetaImage','Url' %}
 
 {% capture metatitle %}{% if pagemetatitle and pagemetatitle != empty %}{{ pagemetatitle }}{% else %}{{ title }}{% endif %}{% endcapture %}
 {% capture metadescription %}{% if pagemetadescription and pagemetadescription != empty %}{{ pagemetadescription }}{% else %}{{ content | StripHtml | StripNewlines | Truncate:160,'...' }}{% endif %}{% endcapture %}
