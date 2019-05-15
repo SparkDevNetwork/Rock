@@ -54,6 +54,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AssessmentRequestStatus
+    {
+        Pending = 0x0,
+        Complete = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,

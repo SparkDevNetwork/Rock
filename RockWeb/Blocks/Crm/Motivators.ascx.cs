@@ -31,168 +31,21 @@ using Rock.Web.UI.Controls;
 namespace Rockweb.Blocks.Crm
 {
     /// <summary>
-    /// Calculates a person's spiritual gift assessment score based on a series of question answers.
+    /// Calculates a person's motivators assessment score based on a series of questions and answers.
     /// </summary>
-    [DisplayName( "Gifts Assessment" )]
+    [DisplayName( "Motivators Assessment" )]
     [Category( "CRM" )]
-    [Description( "Allows you to take a spiritual gifts test and saves your spiritual gifts score." )]
+    [Description( "Allows you to take a Motivators Assessment test and saves your results." )]
 
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, InstructionsDefaultValue, order: 0 )]
-    [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultsMessageDefaultValue, order: 1 )]
-    [TextField( "Set Page Title", "The text to display as the heading.", false, "Spiritual Gifts Assessment", order: 2 )]
-    [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 3 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 17, order: 4 )]
+    [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultMessageDefaultValue, order: 1 )]
+[TextField( "Set Page Title", "The text to display as the heading.", false, "Motivators Assessment", order: 2 )]
+    [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "", order: 3 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 20, order: 4 )]
     [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
-    public partial class GiftsAssessment : Rock.Web.UI.RockBlock
-    {
-        #region AttributeDefaultValues
-        private const string InstructionsDefaultValue = @"
-<h2>Welcome to Your Spiritual Gifts Assessment</h2>
-<p>
-    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
-    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
-    seen in action for most churches and most people.
-</p>
-<p>
-    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
-    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
-</p>
-<ol>
-    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
-    <li>Learn what these gifts are and what they are not.</li>
-    <li>See where these gifts fit into the functioning of the body. </li>
-</ol>
-<p>
-    When you are working within your Spirit-given gifts, you will be most effective for the body
-    of Christ in your local setting.
-</p>
-<p>
-    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
-    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
-    on each item. Your first instinct is probably your best response.
-</p>";
-        private const string ResultsMessageDefaultValue = @"
-<div class='row'>
-    <div class='col-md-12'>
-    <h2 class='h2'> Dominant Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-    <table class='table table-bordered table-responsive'>
-    <thead>
-        <tr>
-            <th>
-                Spiritual Gift
-            </th>
-            <th>
-                You are uniquely wired to:
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if DominantGifts != empty %}
-            {% for dominantGift in DominantGifts %}
-                <tr>
-                    <td>
-                        {{ dominantGift.Value }}
-                    </td>
-                    <td>
-                        {{ dominantGift.Description }}    
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan='2'>
-                    You did not have any Dominant Gifts
-                </td>
-            </tr>
-        {% endif %}
-    </tbody>
-    </table>
-    </div>
-</div>
     
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Supportive Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if SupportiveGifts != empty %}
-                    {% for supportiveGift in SupportiveGifts %}
-                        <tr>
-                            <td>
-                                {{ supportiveGift.Value }}
-                            </td>
-                            <td>
-                                {{ supportiveGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Supportive Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div?
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Other Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if OtherGifts != empty %}
-                    {% for otherGift in OtherGifts %}
-                        <tr>
-                            <td>
-                                {{ otherGift.Value }}
-                            </td>
-                            <td>
-                                {{ otherGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Other Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-           </tbody>
-        </table>
-    </div>
-</div>";
-
-        #endregion AttributeDefaultValues
-
+    public partial class Motivators : Rock.Web.UI.RockBlock
+    {
         #region Fields
 
         //block attribute keys
@@ -219,6 +72,87 @@ namespace Rockweb.Blocks.Crm
 
         #endregion
 
+        #region Attribute Default values
+        private const string InstructionsDefaultValue = @"
+<h2>Welcome to the Motivators Assessment</h2>
+<p>
+    {{ Person.NickName }}, this assessment was developed and researched by Dr. Gregory A. Wiens and is intended to help identify the things that you value. These motivators influence your personal, professional, social and every other part of your life because they influence what you view as important and what should or should not be paid attention to. They impact the way you lead or even if you lead. They directly sway how you view your current situation.
+</p>
+<p>
+   We all have internal mechanisms that cause us to view life very differently from others. Some of this could be attributed to our personality. However, a great deal of research has been done to identify different values, motivators or internal drivers which cause each of us to have a different perspective on people, places, and events. These values cause you to construe one situation very differently from another who value things differently.
+</p>
+<p>
+    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
+    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
+    on each item. Your first instinct is probably your best response.
+</p>";
+
+        private const string ResultMessageDefaultValue = @"<p>
+   This assessment identifies 22 different motivators (scales) which illustrate different things to which we all assign importance. These motivators listed in descending order on the report from the highest to the lowest. No one motivator is better than another. They are all critical and essential for the health of an organization. There are over 1,124,000,727,777,607,680,000 different combinations of these 22 motivators so we would hope you realize that your exceptional combination is clearly unique. We believe it is as important for you to know the motivators which are at the top as well as the ones at the bottom of your list. This is because you would best be advised to seek roles and responsibilities where your top motivators are needed. On the other hand, it would be advisable to <i>avoid roles or responsibilities where your bottom motivators would be required</i>. 
+</p>
+
+<h2>Influential, Organizational, Intellectual, and Operational</h2>
+<p>
+Each of the 22 motivators are grouped into one of four clusters: Influential, Organizational, Intellectual, and Operational. The clusters, graphed below, include the motivators that fall within each grouping.
+</p>
+<!--  Cluster Chart -->
+    <div class=""panel panel-default"">
+      <div class=""panel-heading"">
+        <h2 class=""panel-title""><b>Composite Score</b></h2>
+      </div>
+      <div class=""panel-body"">
+    {[chart type:'horizontalBar' chartheight:'200px' ]}
+    {% for motivatorClusterScore in MotivatorClusterScores %}
+        [[dataitem label:'{{ motivatorClusterScore.DefinedValue.Value }}' value:'{{ motivatorClusterScore.Value }}' fillcolor:'{{ motivatorClusterScore.DefinedValue | Attribute:'Color' }}' ]] 
+        [[enddataitem]]
+    {% endfor %}
+    {[endchart]}
+    
+        Source: <a href=""https://healthygrowingleaders.com"">https://healthygrowingleaders.com</a>
+      </div>
+    </div>
+<p>
+This graph is based on the average composite score for each cluster of Motivators.
+</p>
+{% for motivatorClusterScore in MotivatorClusterScores %}
+<p>
+<b>{{ motivatorClusterScore.DefinedValue.Value }}</b>
+</br>
+{{ motivatorClusterScore.DefinedValue.Description }}
+</br>
+{{ motivatorClusterScore.DefinedValue | Attribute:'Summary' }}
+</p>
+
+ {% endfor %}
+<p>
+   The following graph shows your motivators ranked from top to bottom.
+</p>
+
+  <div class=""panel panel-default"">
+    <div class=""panel-heading"">
+      <h2 class=""panel-title""><b>Ranked Motivators</b></h2>
+    </div>
+    <div class=""panel-body"">
+
+      {[ chart type:'horizontalBar' ]}
+        {% for motivatorScore in MotivatorScores %}
+        {% assign cluster = motivatorScore.DefinedValue | Attribute:'Cluster' %}
+            {% if cluster and cluster != empty %}
+                [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]] 
+                [[enddataitem]]
+            {% endif %}
+        {% endfor %}
+        {[endchart]}
+    </div>
+  </div>
+<p>
+    Your motivators will no doubt shift and morph throughout your life.For instance, #4 may drop to #7 and vice versa.  However, it is very doubtful that #22 would ever become #1. For that reason, read through all of the motivators and appreciate the ones that you have. Seek input from those who know you to see if they agree or disagree with these results.
+</p>
+";
+
+
+        #endregion Attribute Default values
+
         #region Properties
 
         /// <summary>
@@ -229,11 +163,13 @@ namespace Rockweb.Blocks.Crm
         /// </value>
         public decimal PercentComplete
         {
-            get {
+            get
+            {
                 return _percentComplete;
             }
 
-            set {
+            set
+            {
                 _percentComplete = value;
             }
         }
@@ -303,6 +239,8 @@ namespace Rockweb.Blocks.Crm
                     nbError.Text = "There is an issue locating the person associated with the request.";
                 }
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -314,7 +252,7 @@ namespace Rockweb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
-                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.MOTIVATORS.AsGuid() );
                 Assessment assessment = null;
 
                 if ( _targetPerson != null )
@@ -327,6 +265,7 @@ namespace Rockweb.Blocks.Crm
                                             .OrderByDescending( a => a.CreatedDateTime )
                                             .FirstOrDefault();
 
+
                     if ( assessment != null )
                     {
                         hfAssessmentId.SetValue( assessment.Id );
@@ -338,7 +277,7 @@ namespace Rockweb.Blocks.Crm
 
                     if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
                     {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                        MotivatorService.AssessmentResults savedScores = MotivatorService.LoadSavedAssessmentResults( _targetPerson );
                         ShowResult( savedScores, assessment );
 
                     }
@@ -352,19 +291,7 @@ namespace Rockweb.Blocks.Crm
                         pnlQuestion.Visible = false;
                         pnlResult.Visible = false;
                         nbError.Visible = true;
-                        nbError.Text = "You can take the test without the request.";
-                    }
-                }
-                else
-                {
-                    pnlInstructions.Visible = false;
-                    pnlQuestion.Visible = false;
-                    pnlResult.Visible = false;
-                    nbError.Visible = true;
-
-                    if ( _isQuerystringPersonKey )
-                    {
-                        nbError.Text = "There is an issue locating the person associated with the request.";
+                        nbError.Text = "Sorry, this test requires a request from someone before it can be taken.";
                     }
                 }
             }
@@ -386,6 +313,20 @@ namespace Rockweb.Blocks.Crm
             ViewState[ASSESSMENT_STATE] = AssessmentResponses;
 
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// We need to reload the page for the charts to appear.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            if ( pnlResult.Visible == true )
+            {
+                this.NavigateToCurrentPageReference();
+            }
         }
 
         #endregion
@@ -433,8 +374,8 @@ namespace Rockweb.Blocks.Crm
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
-                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
+                MotivatorService.AssessmentResults result = MotivatorService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                MotivatorService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -447,7 +388,7 @@ namespace Rockweb.Blocks.Crm
 
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.MOTIVATORS.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
@@ -458,10 +399,12 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
+                assessment.AssessmentResultData = result.AssessmentData.ToJson();
                 rockContext.SaveChanges();
 
-                ShowResult( result, assessment );
+                //ShowResult( result, assessment );
+                // Since we are rendering chart.js we have to register the script or reload the page.
+                this.NavigateToCurrentPageReference();
             }
         }
 
@@ -486,6 +429,31 @@ namespace Rockweb.Blocks.Crm
         {
             var assessmentResponseRow = e.Item.DataItem as AssessmentResponse;
             RockRadioButtonList rblQuestion = e.Item.FindControl( "rblQuestion" ) as RockRadioButtonList;
+
+            if ( assessmentResponseRow.OptionType == MotivatorService.OptionType.Frequency )
+            {
+                rblQuestion.DataSource = MotivatorService.Frequency_Option;
+            }
+            else
+            {
+                rblQuestion.DataSource = MotivatorService.Agreement_Option;
+            }
+
+            rblQuestion.DataTextField = "Name";
+
+            if ( assessmentResponseRow.Code.EndsWith( "N" ) )
+            {
+                rblQuestion.DataValueField = "Negative";
+
+            }
+            else
+            {
+                rblQuestion.DataValueField = "Positive";
+            }
+            
+            rblQuestion.DataBind();
+
+            rblQuestion.Label = assessmentResponseRow.Question;
 
             if ( assessmentResponseRow != null && assessmentResponseRow.Response.HasValue )
             {
@@ -539,7 +507,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// Shows the result.
         /// </summary>
-        private void ShowResult( SpiritualGiftsService.AssessmentResults result, Assessment assessment )
+        private void ShowResult( MotivatorService.AssessmentResults result, Assessment assessment )
         {
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
@@ -556,16 +524,16 @@ namespace Rockweb.Blocks.Crm
             {
                 btnRetakeTest.Visible = false;
             }
-            var spiritualGifts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SPIRITUAL_GIFTS );
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 _targetPerson.LoadAttributes();
                 mergeFields.Add( "Person", _targetPerson );
-                mergeFields.Add( "DominantGifts", spiritualGifts.DefinedValues.Where( a => result.DominantGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
+
+                // The five Mode scores
+                mergeFields.Add( "MotivatorClusterScores", result.MotivatorClusterScores );
+                mergeFields.Add( "MotivatorScores", result.MotivatorScores );
             }
             lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
         }
@@ -578,11 +546,12 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            AssessmentResponses = SpiritualGiftsService.GetQuestions()
+            AssessmentResponses = MotivatorService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
-                                        Code = a.Key,
-                                        Question = a.Value
+                                        Code = a.Id,
+                                        Question = a.Question,
+                                        OptionType = a.OptionType
                                     } ).ToList();
 
             // If _maxQuestions has not been set yet...
@@ -665,6 +634,7 @@ namespace Rockweb.Blocks.Crm
         {
             public string Code { get; set; }
             public string Question { get; set; }
+            public MotivatorService.OptionType OptionType { get; set; }
             public int? Response { get; set; }
         }
 
