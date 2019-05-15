@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -36,7 +37,6 @@ namespace Rockweb.Blocks.Crm
     [DisplayName( "DISC" )]
     [Category( "CRM" )]
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
-    [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
             <h2>Welcome!</h2>
             <p>
@@ -63,9 +63,9 @@ namespace Rockweb.Blocks.Crm
             <p>
                 When you are ready, click the 'Start' button to proceed.
             </p>
-" )]
-    [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 5 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 6 )]
+", order: 0 )]
+    [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 1 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 2 )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -73,6 +73,8 @@ namespace Rockweb.Blocks.Crm
         private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
         // used for private variables
         Person _targetPerson = null;
+        int? _assessmentId = null;
+        bool _isQuerystringPersonKey = false;
 
         private decimal _percentComplete = 0;
 
@@ -94,11 +96,13 @@ namespace Rockweb.Blocks.Crm
         /// </value>
         public decimal PercentComplete
         {
-            get {
+            get
+            {
                 return _percentComplete;
             }
 
-            set {
+            set
+            {
                 _percentComplete = value;
             }
         }
@@ -136,29 +140,35 @@ namespace Rockweb.Blocks.Crm
             base.OnInit( e );
 
             // otherwise use the currently logged in person
-            if ( CurrentPerson != null )
+            string personKey = PageParameter( "Person" );
+            if ( !string.IsNullOrEmpty( personKey ) )
+            {
+                try
+                {
+                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                    _isQuerystringPersonKey = true;
+                }
+                catch ( Exception )
+                {
+                    nbError.Visible = true;
+                }
+            }
+            else if ( CurrentPerson != null )
             {
                 _targetPerson = CurrentPerson;
             }
-            else
+
+            _assessmentId = PageParameter( "AssessmentId" ).AsIntegerOrNull();
+
+            if ( _targetPerson == null )
             {
-                nbError.Visible = true;
                 pnlInstructions.Visible = false;
                 pnlQuestions.Visible = false;
                 pnlResults.Visible = false;
-            }
-
-            if ( _targetPerson != null )
-            {
-                DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
-
-                if ( savedScores.LastSaveDate <= DateTime.MinValue || !string.IsNullOrWhiteSpace( PageParameter( "RetakeDisc" ) ) )
+                nbError.Visible = true;
+                if ( _isQuerystringPersonKey )
                 {
-                    ShowInstructions();
-                }
-                else
-                {
-                    ShowResults( savedScores );
+                    nbError.Text = "There is an issue locating the person associated with the request.";
                 }
             }
         }
@@ -169,6 +179,57 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( !Page.IsPostBack )
+            {
+                var rockContext = new RockContext();
+                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
+                Assessment assessment = null;
+
+                if ( _targetPerson != null )
+                {
+                    var primaryAliasId = _targetPerson.PrimaryAliasId;
+                    assessment = new AssessmentService( rockContext )
+                                            .Queryable()
+                                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) ||
+                                                         ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
+                                            .OrderByDescending( a => a.CreatedDateTime )
+                                            .FirstOrDefault();
+
+
+                    if ( assessment != null )
+                    {
+                        hfAssessmentId.SetValue( assessment.Id );
+                    }
+                    else
+                    {
+                        hfAssessmentId.SetValue( 0 );
+                    }
+
+                    if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
+                    {
+                        DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+                        ShowResults( savedScores, assessment );
+
+                    }
+                    else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
+                    {
+                        ShowInstructions();
+                    }
+                    else
+                    {
+                        pnlInstructions.Visible = false;
+                        pnlQuestions.Visible = false;
+                        pnlResults.Visible = false;
+                        nbError.Visible = true;
+                        nbError.Text = "You can take the test without the request.";
+                    }
+                }
+            }
+            else
+            {
+                // Hide notification panels on every postback
+                nbError.Visible = false;
+            }
         }
 
         /// <summary>
@@ -244,7 +305,35 @@ namespace Rockweb.Blocks.Crm
                         results.NaturalBehaviorC.ToString(),
                         results.PersonalityType
                     );
-                    ShowResults( results );
+
+                    var assessmentData = AssessmentResponses.ToDictionary( a => a.QuestionNumber, b => new { Most = new string[2] { b.MostScore, b.Questions[b.MostScore] }, Least = new string[2] { b.LeastScore, b.Questions[b.LeastScore] } } );
+                    var rockContext = new RockContext();
+
+                    var assessmentService = new AssessmentService( rockContext );
+                    Assessment assessment = null;
+
+                    if ( hfAssessmentId.ValueAsInt() != 0 )
+                    {
+                        assessment = assessmentService.Get( int.Parse( hfAssessmentId.Value ) );
+                    }
+
+                    if ( assessment == null )
+                    {
+                        var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
+                        assessment = new Assessment()
+                        {
+                            AssessmentTypeId = assessmentType.Id,
+                            PersonAliasId = _targetPerson.PrimaryAliasId.Value
+                        };
+                        assessmentService.Add( assessment );
+                    }
+
+                    assessment.Status = AssessmentRequestStatus.Complete;
+                    assessment.CompletedDateTime = RockDateTime.Now;
+                    assessment.AssessmentResultData = assessmentData.ToJson();
+                    rockContext.SaveChanges();
+
+                    ShowResults( results, assessment );
                 }
                 catch ( Exception ex )
                 {
@@ -333,6 +422,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRetakeTest_Click( object sender, EventArgs e )
         {
+            hfAssessmentId.SetValue( 0 );
             btnRetakeTest.Visible = false;
             ShowInstructions();
         }
@@ -426,7 +516,7 @@ namespace Rockweb.Blocks.Crm
         /// Shows the results of the assessment test.
         /// </summary>
         /// <param name="savedScores">The saved scores.</param>
-        private void ShowResults( DiscService.AssessmentResults savedScores )
+        private void ShowResults( DiscService.AssessmentResults savedScores, Assessment assessment )
         {
             pnlInstructions.Visible = false;
             pnlQuestions.Visible = false;
@@ -440,7 +530,12 @@ namespace Rockweb.Blocks.Crm
 
             // Show re-take test button if MinDaysToRetake has passed...
             double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
-            if ( ( savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now ) || GetAttributeValue( "AlwaysAllowRetakes" ).AsBoolean() )
+            if ( days == 0 )
+            {
+                days = assessment.AssessmentType.MinimumDaysToRetake;
+            }
+
+            if ( !_isQuerystringPersonKey && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( days ) <= RockDateTime.Now )
             {
                 btnRetakeTest.Visible = true;
             }
@@ -579,6 +674,25 @@ namespace Rockweb.Blocks.Crm
             public Dictionary<string, string> Questions { get; set; }
             public string MostScore { get; set; }
             public string LeastScore { get; set; }
+        }
+
+        public class AssessmentData
+        {
+            /// <summary>
+            /// Gets or sets the most.
+            /// </summary>
+            /// <value>
+            /// The most.
+            /// </value>
+            public string Most { get; set; }
+
+            /// <summary>
+            /// Gets or sets the least.
+            /// </summary>
+            /// <value>
+            /// The least.
+            /// </value>
+            public string Least { get; set; }
         }
 
         #endregion

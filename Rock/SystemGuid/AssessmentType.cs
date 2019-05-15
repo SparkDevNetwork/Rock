@@ -14,26 +14,39 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Workflow Type Guids
+    /// Assessment types.  
     /// </summary>
-    public class WorkflowType
+    public class AssessmentType
     {
         /// <summary>
-        /// The Protect My Ministry workflow action.
+        /// The DISC assessment types guid
         /// </summary>
-        public const string PROTECTMYMINISTRY = "16D12EF7-C546-4039-9036-B73D118EDC90";
+        public const string DISC = "A5CB2E3D-118A-41F2-972B-325A328B0B54";
 
         /// <summary>
-        /// Unattended Checkin Workflow Type
+        /// The Spiritual Gifts assessment types guid
         /// </summary>
-        public const string UNATTENDED_CHECKIN = "011E9F5A-60D4-4FF5-912A-290881E37EAF";
+        public const string GIFTS = "B8FBD371-6B32-4BE5-872F-51400D16EC5D";
 
         /// <summary>
-        /// The Request Assessment Workflow Type
+        /// The conflict profile assessment types guid
         /// </summary>
-        public const string REQUEST_ASSESSMENT = "31DDC001-C91A-4418-B375-CAB1475F7A62";
+        public const string CONFLICT = "CE7E1986-FDC3-4A3F-9464-26A65D684E29";
+
+        /// <summary>
+        /// The Emotional Intelligence assessment types guid
+        /// </summary>
+        public const string EQ = "DE2D65A3-FC36-4472-B5DF-FAD30EEC27A0";
+
+        /// <summary>
+        /// The Motivators assessment types guid
+        /// </summary>
+        public const string MOTIVATORS = "EABE1ABA-4A23-44FF-8C7F-6B71383BED09";
     }
 }

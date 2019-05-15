@@ -33,163 +33,70 @@ namespace Rockweb.Blocks.Crm
     /// <summary>
     /// Calculates a person's spiritual gift assessment score based on a series of question answers.
     /// </summary>
-    [DisplayName( "Gifts Assessment" )]
+    [DisplayName( "Conflict Profile" )]
     [Category( "CRM" )]
-    [Description( "Allows you to take a spiritual gifts test and saves your spiritual gifts score." )]
+    [Description( "Allows you to take a conflict profile test and saves your conflict profile score." )]
 
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, InstructionsDefaultValue, order: 0 )]
     [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultsMessageDefaultValue, order: 1 )]
-    [TextField( "Set Page Title", "The text to display as the heading.", false, "Spiritual Gifts Assessment", order: 2 )]
+    [TextField( "Set Page Title", "The text to display as the heading.", false, "Conflict Profile", order: 2 )]
     [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 3 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 17, order: 4 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 7, order: 4 )]
     [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
-    public partial class GiftsAssessment : Rock.Web.UI.RockBlock
+    public partial class ConflictProfile : Rock.Web.UI.RockBlock
     {
         #region AttributeDefaultValues
         private const string InstructionsDefaultValue = @"
-<h2>Welcome to Your Spiritual Gifts Assessment</h2>
+<h2>Welcome to the Conflict Profile Assessment</h2>
 <p>
-    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
-    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
-    seen in action for most churches and most people.
+    {{ Person.NickName }}, this assessment was developed and researched by Dr. Gregory A. Wiens and Al Ells and is based on the work and writings of Kenneth Thomas and Ralph Kilmann. When dealing with conflict, one way isn’t always the right way to solve a problem. All five of the modes evaluated in this assessment are appropriate at different times. The challenge is to know which approach is appropriate at what times. It is also important to understand how to use each approach.
 </p>
 <p>
-    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
-    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
-</p>
-<ol>
-    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
-    <li>Learn what these gifts are and what they are not.</li>
-    <li>See where these gifts fit into the functioning of the body. </li>
-</ol>
-<p>
-    When you are working within your Spirit-given gifts, you will be most effective for the body
-    of Christ in your local setting.
+   Most people feel comfortable using a few approaches and these approaches are often what we saw demonstrated in our culture of origin. This may not have been a healthy method of dealing with conflict.
 </p>
 <p>
     Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
     calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
     on each item. Your first instinct is probably your best response.
 </p>";
+
         private const string ResultsMessageDefaultValue = @"
-<div class='row'>
-    <div class='col-md-12'>
-    <h2 class='h2'> Dominant Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-    <table class='table table-bordered table-responsive'>
-    <thead>
-        <tr>
-            <th>
-                Spiritual Gift
-            </th>
-            <th>
-                You are uniquely wired to:
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if DominantGifts != empty %}
-            {% for dominantGift in DominantGifts %}
-                <tr>
-                    <td>
-                        {{ dominantGift.Value }}
-                    </td>
-                    <td>
-                        {{ dominantGift.Description }}    
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan='2'>
-                    You did not have any Dominant Gifts
-                </td>
-            </tr>
-        {% endif %}
-    </tbody>
-    </table>
-    </div>
-</div>
-    
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Supportive Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if SupportiveGifts != empty %}
-                    {% for supportiveGift in SupportiveGifts %}
-                        <tr>
-                            <td>
-                                {{ supportiveGift.Value }}
-                            </td>
-                            <td>
-                                {{ supportiveGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Supportive Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div?
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Other Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if OtherGifts != empty %}
-                    {% for otherGift in OtherGifts %}
-                        <tr>
-                            <td>
-                                {{ otherGift.Value }}
-                            </td>
-                            <td>
-                                {{ otherGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Other Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-           </tbody>
-        </table>
-    </div>
-</div>";
+<p>
+   Your scores on this report are how YOU see yourself currently dealing with conflict in the environment chosen. This may or may not be accurate depending on how you are aware of yourself in the midst of conflict. It is most helpful to discuss your scores with someone who understands both you and this assessment.  Remember, in the future, the way you approach conflict should be dictated by the situation, not just how you are used to dealing with conflict. In doing so, everyone benefits, including you.
+</p>
+
+<h2>Conflict Engagement Profile</h2>
+{[ chart type:'pie' ]}
+    [[ dataitem label:'Solving' value:'{{EngagementProfileSolving}}' fillcolor:'#FFCD56' ]] [[ enddataitem ]]
+    [[ dataitem label:'Accommodating' value:'{{EngagementProfileAccommodating}}' fillcolor:'#4BC0C0' ]] [[ enddataitem ]]
+    [[ dataitem label:'Winning' value:'{{EngagementProfileWinning}}' fillcolor:'#FF3D67' ]] [[ enddataitem ]]
+{[ endchart ]}
+
+<h4>Brief Definitions for Conflict Engagement Modes</h4>
+
+<p>
+    <b>SOLVING</b> describes those who seek to use both RESOLVING and COMPROMISING modes for solving conflict. By combining these two modes, those who seek to solve problems as a team. Their leadership styles are highly cooperative and empowering for the benefit of the entire group.<br>
+    <b>ACCOMMODATING</b> combines AVOIDING and YIELDING modes for solving conflict. Those who are ACCOMMODATING are most effective in roles where allowing others to have their way is better for the team. They are often most effective in support roles or roles where an emphasis on the contribution of others is significant.<br>
+    A <b>WINNING</b> engagement profile relates to the WINNING mode for solving conflict. Depending on your role, WINNING engagement is important for times when quick decisions need to be made and essential for sole-proprietors.
+</p>
+
+<h2>Your Results Across All Five Modes</h2>
+{[ chart type:'bar' ]}
+    [[ dataitem label:'Winning' value:'{{Winning}}' fillcolor:'#FF3D67' ]] [[ enddataitem ]]
+    [[ dataitem label:'Resolving' value:'{{Resolving}}' fillcolor:'#059BFF' ]] [[ enddataitem ]]
+    [[ dataitem label:'Compromising' value:'{{Compromising}}' fillcolor:'#4BC0C0' ]] [[ enddataitem ]]
+    [[ dataitem label:'Avoiding' value:'{{Avoiding}}' fillcolor:'#FFCD56' ]] [[ enddataitem ]]
+    [[ dataitem label:'Yielding' value:'{{Yielding}}' fillcolor:'#880D37' ]] [[ enddataitem ]]
+{[ endchart ]}
+
+<h4>Brief Definitions for Conflict Profile Modes</h4>
+<p>
+    <b>WINNING</b> is competing and uncooperative. You believe you have the right answer and you must prove you are right whatever it takes. This may be standing up for your own rights, beliefs or position.<br>
+    <b>RESOLVING</b> is attempting to work with the other person in depth to find the best solution regardless of where it may lie on the continuum. This involves digging beneath the presenting issue to find a way out that benefits both parties.<br>
+    <b>COMPROMISING</b> is finding a middle ground in the conflict. This often involves meeting in the middle or finding some mutually agreeable point between both positions and is useful for quick solutions.<br>
+    <b>AVOIDING</b> is not pursuing your own rights or those of the other person. You do not address the conflict. This may be diplomatically sidestepping an issue or avoiding a threatening situation.<br>
+    <b>YIELDING</b> is neglecting your own interests and giving in to those of the other person. This is self-sacrifice and may be charity, serving or choosing to obey another when you prefer not to.
+</p>";
 
         #endregion AttributeDefaultValues
 
@@ -303,6 +210,8 @@ namespace Rockweb.Blocks.Crm
                     nbError.Text = "There is an issue locating the person associated with the request.";
                 }
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -314,7 +223,7 @@ namespace Rockweb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
-                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.CONFLICT.AsGuid() );
                 Assessment assessment = null;
 
                 if ( _targetPerson != null )
@@ -327,6 +236,7 @@ namespace Rockweb.Blocks.Crm
                                             .OrderByDescending( a => a.CreatedDateTime )
                                             .FirstOrDefault();
 
+
                     if ( assessment != null )
                     {
                         hfAssessmentId.SetValue( assessment.Id );
@@ -338,7 +248,7 @@ namespace Rockweb.Blocks.Crm
 
                     if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
                     {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                        ConflictProfileService.AssessmentResults savedScores = ConflictProfileService.LoadSavedAssessmentResults( _targetPerson );
                         ShowResult( savedScores, assessment );
 
                     }
@@ -352,19 +262,7 @@ namespace Rockweb.Blocks.Crm
                         pnlQuestion.Visible = false;
                         pnlResult.Visible = false;
                         nbError.Visible = true;
-                        nbError.Text = "You can take the test without the request.";
-                    }
-                }
-                else
-                {
-                    pnlInstructions.Visible = false;
-                    pnlQuestion.Visible = false;
-                    pnlResult.Visible = false;
-                    nbError.Visible = true;
-
-                    if ( _isQuerystringPersonKey )
-                    {
-                        nbError.Text = "There is an issue locating the person associated with the request.";
+                        nbError.Text = "Sorry, this test requires a request from someone before it can be taken.";
                     }
                 }
             }
@@ -386,6 +284,20 @@ namespace Rockweb.Blocks.Crm
             ViewState[ASSESSMENT_STATE] = AssessmentResponses;
 
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// We need to reload the page for the charts to appear.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            if ( pnlResult.Visible == true )
+            {
+                this.NavigateToCurrentPageReference();
+            }
         }
 
         #endregion
@@ -433,8 +345,8 @@ namespace Rockweb.Blocks.Crm
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
-                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
+                ConflictProfileService.AssessmentResults result = ConflictProfileService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                ConflictProfileService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -447,7 +359,7 @@ namespace Rockweb.Blocks.Crm
 
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.CONFLICT.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
@@ -458,10 +370,12 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
+                assessment.AssessmentResultData = result.AssessmentData.ToJson();
                 rockContext.SaveChanges();
 
-                ShowResult( result, assessment );
+                //ShowResult( result, assessment );
+                // Since we are rendering chart.js we have to register the script or reload the page.
+                this.NavigateToCurrentPageReference();
             }
         }
 
@@ -539,7 +453,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// Shows the result.
         /// </summary>
-        private void ShowResult( SpiritualGiftsService.AssessmentResults result, Assessment assessment )
+        private void ShowResult( ConflictProfileService.AssessmentResults result, Assessment assessment )
         {
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
@@ -556,16 +470,24 @@ namespace Rockweb.Blocks.Crm
             {
                 btnRetakeTest.Visible = false;
             }
-            var spiritualGifts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SPIRITUAL_GIFTS );
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 _targetPerson.LoadAttributes();
                 mergeFields.Add( "Person", _targetPerson );
-                mergeFields.Add( "DominantGifts", spiritualGifts.DefinedValues.Where( a => result.DominantGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
+
+                // The five Mode scores
+                mergeFields.Add( "Winning", result.ModeWinningScore );
+                mergeFields.Add( "Avoiding", result.ModeAvoidingScore );
+                mergeFields.Add( "Compromising", result.ModeCompromisingScore );
+                mergeFields.Add( "Yielding", result.ModeYieldingScore );
+                mergeFields.Add( "Resolving", result.ModeResolvingScore );
+                // The optional 'Conflict Engagement Profile' scores:
+                mergeFields.Add( "EngagementProfileSolving", result.EngagementSolvingScore );
+                mergeFields.Add( "EngagementProfileAccommodating", result.EngagementAccommodatingScore );
+                mergeFields.Add( "EngagementProfileWinning", result.EngagementWinningScore );
+
             }
             lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
         }
@@ -578,7 +500,7 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            AssessmentResponses = SpiritualGiftsService.GetQuestions()
+            AssessmentResponses = ConflictProfileService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
                                         Code = a.Key,

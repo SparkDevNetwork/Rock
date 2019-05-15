@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GiftsAssessment.ascx.cs" Inherits="Rockweb.Blocks.Crm.GiftsAssessment" ViewStateMode="Enabled" EnableViewState="true" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConflictProfile.ascx.cs" Inherits="Rockweb.Blocks.Crm.ConflictProfile" ViewStateMode="Enabled" EnableViewState="true" %>
 <script type="text/javascript">
     ///<summary>
     /// Fade-in effect for the panel.
@@ -59,14 +59,14 @@
 </script>
 <asp:UpdatePanel ID="upAssessment" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
-        <asp:HiddenField ID="hfAssessmentId" runat="server" />
+        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Warning">You must be signed in to take the assessment.</Rock:NotificationBox>
         <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
+                <asp:HiddenField ID="hfAssessmentId" runat="server" />
                 <asp:Panel ID="pnlInstructions" runat="server">
                     <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
@@ -89,11 +89,10 @@
                             <div class="question-row">
                                 <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "Code") %>' />
                                 <Rock:RockRadioButtonList ID="rblQuestion" runat="server" RepeatDirection="Horizontal" Label='<%# Eval( "Question") %>' FormGroupCssClass="likert" CssClass="js-gift-questions">
-                                    <asp:ListItem Text="Strongly Agree" Value="4"></asp:ListItem>
+                                    <asp:ListItem Text="Strongly Disagree" Value="1"></asp:ListItem>
+                                    <asp:ListItem Text="Disagree" Value="2"></asp:ListItem>
                                     <asp:ListItem Text="Agree" Value="3"></asp:ListItem>
-                                    <asp:ListItem Text="Somewhat Agree" Value="2"></asp:ListItem>
-                                    <asp:ListItem Text="Neutral" Value="1"></asp:ListItem>
-                                    <asp:ListItem Text="Disagree" Value="0"></asp:ListItem>
+                                    <asp:ListItem Text="Strongly Agree" Value="4"></asp:ListItem>
                                 </Rock:RockRadioButtonList>
                             </div>
                         </ItemTemplate>
@@ -102,7 +101,7 @@
                          Please answer all questions before continuing.
                      </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();"/>
+                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();" />
                         <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
                     </div>
                 </asp:Panel>

@@ -31,167 +31,228 @@ using Rock.Web.UI.Controls;
 namespace Rockweb.Blocks.Crm
 {
     /// <summary>
-    /// Calculates a person's spiritual gift assessment score based on a series of question answers.
+    /// Calculates a person's EQ Inventory assessment score based on a series of question answers.
     /// </summary>
-    [DisplayName( "Gifts Assessment" )]
+    [DisplayName( "EQ Assessment" )]
     [Category( "CRM" )]
-    [Description( "Allows you to take a spiritual gifts test and saves your spiritual gifts score." )]
+    [Description( "Allows you to take a EQ Inventory test and saves your EQ Inventory score." )]
 
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, InstructionsDefaultValue, order: 0 )]
     [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultsMessageDefaultValue, order: 1 )]
-    [TextField( "Set Page Title", "The text to display as the heading.", false, "Spiritual Gifts Assessment", order: 2 )]
+    [TextField( "Set Page Title", "The text to display as the heading.", false, "EQ Inventory Assessment", order: 2 )]
     [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 3 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 17, order: 4 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 7, order: 4 )]
     [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
-    public partial class GiftsAssessment : Rock.Web.UI.RockBlock
+    public partial class EQInventory : Rock.Web.UI.RockBlock
     {
-        #region AttributeDefaultValues
+        #region Attribute Default values
+
         private const string InstructionsDefaultValue = @"
-<h2>Welcome to Your Spiritual Gifts Assessment</h2>
+<h2>Welcome to the EQ Inventory Assessment</h2>
 <p>
-    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
-    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
-    seen in action for most churches and most people.
+    {{ Person.NickName }}, this assessment was developed and researched by Dr. Gregory A. Wiens.
 </p>
 <p>
-    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
-    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
-</p>
-<ol>
-    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
-    <li>Learn what these gifts are and what they are not.</li>
-    <li>See where these gifts fit into the functioning of the body. </li>
-</ol>
-<p>
-    When you are working within your Spirit-given gifts, you will be most effective for the body
-    of Christ in your local setting.
+ Our TrueWiring Emotional Intelligence Inventory (EQ-W) assesses your developed skills in two domains:
+   <ol>
+      <li> understanding your own emotions </li>
+      <li> understanding the emotions of others. This instrument identifies your ability to appropriately express your emotions while encouraging others to do the same. </li>
+   </ol>
 </p>
 <p>
     Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
     calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
     on each item. Your first instinct is probably your best response.
 </p>";
-        private const string ResultsMessageDefaultValue = @"
-<div class='row'>
-    <div class='col-md-12'>
-    <h2 class='h2'> Dominant Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-    <table class='table table-bordered table-responsive'>
-    <thead>
-        <tr>
-            <th>
-                Spiritual Gift
-            </th>
-            <th>
-                You are uniquely wired to:
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if DominantGifts != empty %}
-            {% for dominantGift in DominantGifts %}
-                <tr>
-                    <td>
-                        {{ dominantGift.Value }}
-                    </td>
-                    <td>
-                        {{ dominantGift.Description }}    
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan='2'>
-                    You did not have any Dominant Gifts
-                </td>
-            </tr>
-        {% endif %}
-    </tbody>
-    </table>
-    </div>
-</div>
-    
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Supportive Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if SupportiveGifts != empty %}
-                    {% for supportiveGift in SupportiveGifts %}
-                        <tr>
-                            <td>
-                                {{ supportiveGift.Value }}
-                            </td>
-                            <td>
-                                {{ supportiveGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Supportive Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div?
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Other Gifts</h2>
-    </div>
-    <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
-                    <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if OtherGifts != empty %}
-                    {% for otherGift in OtherGifts %}
-                        <tr>
-                            <td>
-                                {{ otherGift.Value }}
-                            </td>
-                            <td>
-                                {{ otherGift.Description }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Other Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-           </tbody>
-        </table>
-    </div>
-</div>";
 
-        #endregion AttributeDefaultValues
+        private const string ResultsMessageDefaultValue = @"
+
+{%- assign chartColor = '#5c8ae7' -%}
+{%- assign chartHeight = '100px' -%}
+{%- assign includeFurtherReading = true -%}
+
+{%- assign includeFurtherReading = includeFurtherReading | AsBoolean -%}
+
+
+<h1 class='text-center'>EQ Inventory Assessment Results</h1>
+
+<h3 id='eq-SelfAwareness'>Self Awareness</h3>
+<p>
+    Self Awareness is being aware of what emotions you are experiencing and why you
+    are experiencing these emotions. This skill is demonstrated in real time. In other
+    words, when you are in the midst of a discussion or even a disagreement with someone
+    else, ask yourself these questions:
+    <ul>
+        <li>Are you aware of what emotions you are experiencing?</li>
+        <li>Are you aware of why you are experiencing these emotions?</li>
+    </ul>
+
+    More than just knowing you are angry, our goal is to understand what has caused the
+    anger, such as frustration, hurt, pain, confusion, etc.
+</p>
+
+<!-- Graph -->
+{[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+    [[ dataitem label:'Self Awareness' value:'{{SelfAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+{[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the Self Awareness scale indicate the score for the
+    ability to be aware of your own emotions is equal to or better than {{ SelfAwareness }}%
+    of those who completed this instrument.
+</blockquote>
+
+<h3 id='eq-selfregulating'>Self Regulating</h3>
+<p>
+    Self Regulating is appropriately expressing your emotions in the context of relationships
+    around you. Don’t confuse this with learning to suppress your emotions; rather, think of Self
+    Regulating as the ability to express your emotions appropriately. Healthy human beings
+    experience a full range of emotions and these are important for family, friends, and
+    co-workers to understand. Self Regulating is learning to tell others what you are
+    feeling in the moment.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Self Regulating' value:'{{SelfRegulating}}' fillcolor:'{{chartColor}}']] [[ enddataitem ]]
+    {[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the Self Regulation scale indicate the score for the
+    ability to appropriately express your own emotions is equal to or better than {{ SelfRegulating }}%
+    of those who completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-othersawareness'>Others Awareness</h3>
+<p>
+    Others Awareness is being aware of what emotions others are experiencing around you and
+    why they are experiencing these emotions. As with understanding your own emotions, this
+    skill is knowing in real time what another is experiencing. This skill involves reading
+    cues to their emotional state through their eyes, facial expressions, body posture, the
+    tone of voice or many other ways. It is critical you learn to pay attention to these
+    cues for you to enhance your awareness of others' emotions.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Others Awareness' value:'{{OthersAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the Others Awareness scale indicate the score for the
+    ability to be aware of others emotions is equal to or better than {{ OthersAwareness }}%
+    of those who completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-othersregulating'>Others Regulating</h3>
+<p>
+    Others Regulating is helping those around you express their emotions appropriately
+    in the context of your relationship with them. This skill centers on helping others
+    know what emotions they are experiencing and then asking questions or giving permission
+    to them to freely and appropriately express their emotions in the context of your relationship.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'Others Regulating' value:'{{OthersRegulating}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the Others Regulation scale indicate the score for
+    the ability to enable others to appropriately express their emotions in the context
+    of your relationship is equal to or better than {{OthersRegulating}}% of those who
+    completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-additionalscales'>Additional Scales</h3>
+<p>
+    The EQ*i includes two additional scales which are particularly useful for those in
+    leadership roles: 1) EQ in Problem Solving and 2) EQ under stress. Frequently we
+    find it difficult to appreciate that conflicting emotions exacerbate most problems
+    we experience in life. The solution, therefore, must account for these emotions, not
+    just logic or doing the “right” thing.
+</p>
+
+<h3 id='eq-problemsolving'>EQ in Problem Solving</h3>
+<p>
+    The EQ in Problem Solving identifies how proficient you are in using emotions to
+    solve problems. This skill requires first being aware of what emotions are involved
+    in the problem and what is the source of those emotions. It also includes helping
+    others (and yourself) express those emotions within the discussion.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'EQ in Problem Solving' value:'{{EQinProblemSolving}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the EQ in Problem Solving scale indicate the score for
+    the ability to use emotions in resolving problems is equal to or better than {{ EQinProblemSolving }}%
+    of those who completed this instrument.
+</blockquote>
+
+
+<h3 id='eq-understress'>EQ Under Stress</h3>
+<p>
+    It is more difficult to maintain high EQ under high stress than at any other time,
+    so EQ Under Stress identifies how capable you are to keep high EQ under high-stress
+    moments. This skill requires highly developed Self and Others awareness to understand
+    how the stress is impacting yourself and others. It also involves being able to
+    articulate the appropriate emotions under pressure which may be different from
+    articulating them when not under stress.
+</p>
+
+    {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
+        [[ dataitem label:'EQ Under Stress' value:'{{EQUnderStress}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
+    {[ endchart ]}
+<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
+
+<blockquote>
+    Your responses to the items on the EQ in Under Stress scale indicate the score
+    for the ability to maintain EQ under significant stress is equal to or better than {{ EQUnderStress }}%
+    of those who completed this instrument.
+</blockquote>
+
+<h3 id='eq-beforeyougo'>Before You Go</h3>
+
+<p>
+Your scores on each of these scales are simply a reflection on the skill sets you have
+developed in each of these areas. You should not take pride or feel shame for any of the
+scores. Instead, we should each commit to working
+on our lowest scores or that which is most troublesome. Take a look at the list below for a number of resources which are
+helpful as a place to begin</p>
+
+<p>However, as we said in the introduction to this instrument, EQ is developed through
+intentional effort, coaching and practice. The remarkable aspect of EQ is that research has
+shown that individuals well into their 90s have the capacity to increase their EQ in any of
+the six scales.</p>
+
+<p>We have personally seen individuals raise their EQ significantly in a few short years.
+You are not destined to retain your current EQ, but it is simply a launching point for where you can
+go from this point forward.</p>
+
+{% if includeFurtherReading %}
+<h3>Further Reading</h3>
+
+<p>Developing your EQ is like riding a bike. While it may be helpful to read a book on bike riding, it is even more useful to watch videos. But, the only way to learn to ride a bike is to DO IT! You must develop the kinesthetic sense to feel the balance by your senses, coordinated by your nerves and implemented by many muscles. The same is true with EQ--it is intentionally developed, seen in others, coached in real time, and practiced in relationships.</p>
+<p>Here are a few books which we believe are great resources for developing your EQ:</p>
+
+<ul>
+<li><a href='https://www.goodreads.com/book/show/151881.A_Failure_of_Nerve'>A Failure of Nerve: Leadership in the Age of the Quick Fix</a>, by Edwin Friedman</li>
+<li><a href='https://www.goodreads.com/book/show/336913.Coaching_for_Emotional_Intelligence'>Coaching for Emotional Intelligence: The Secret to Developing the Star Potential in Your Employees</a>, by Bob Wall</li>
+<li><a href='https://www.goodreads.com/book/show/15014.Crucial_Conversations'>Crucial Conversations: Tools for Talking When Stakes Are High</a> by Kerry Patterson, Joseph Grenny, Ron McMillan, Al Switzler, Stephen R. Covey (Foreword)</li>
+<li><a href='https://www.goodreads.com/book/show/6788858-emotional-intelligence-for-dummies'>Emotional Intelligence for Dummies</a> by Steven J. Stein</li>
+<li><a href='https://www.goodreads.com/book/show/180463.Leadership_and_Self_Deception'>Leadership and Self-Deception: Getting Out of the Box</a> by The Arbinger Group</li>
+<li><a href='https://www.goodreads.com/book/show/163106.Primal_Leadership'>Primal Leadership: Realizing the Power of Emotional Intelligence</a> by Daniel Goleman</li>
+</ul>
+{% endif %}";
+
+        #endregion Attribute Default values
 
         #region Fields
 
@@ -202,7 +263,25 @@ namespace Rockweb.Blocks.Crm
         private const string SET_PAGE_ICON = "SetPageIcon";
         private const string RESULTS_MESSAGE = "ResultsMessage";
         private const string ALLOW_RETAKES = "AllowRetakes";
-        
+
+        private Dictionary<int, string> NEGATIVE_OPTION = new Dictionary<int, string>
+        {
+            { 5, "Never" },
+            { 4, "Rarely" },
+            { 3, "Sometimes" },
+            { 2, "Usually" },
+            { 1, "Always" }
+        };
+
+        private Dictionary<int, string> POSITIVE_OPTION = new Dictionary<int, string>
+        {
+            { 1, "Never" },
+            { 2, "Rarely" },
+            { 3, "Sometimes" },
+            { 4, "Usually" },
+            { 5, "Always" }
+        };
+
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
 
@@ -229,11 +308,13 @@ namespace Rockweb.Blocks.Crm
         /// </value>
         public decimal PercentComplete
         {
-            get {
+            get
+            {
                 return _percentComplete;
             }
 
-            set {
+            set
+            {
                 _percentComplete = value;
             }
         }
@@ -303,6 +384,8 @@ namespace Rockweb.Blocks.Crm
                     nbError.Text = "There is an issue locating the person associated with the request.";
                 }
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -314,7 +397,7 @@ namespace Rockweb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
-                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.EQ.AsGuid() );
                 Assessment assessment = null;
 
                 if ( _targetPerson != null )
@@ -327,6 +410,7 @@ namespace Rockweb.Blocks.Crm
                                             .OrderByDescending( a => a.CreatedDateTime )
                                             .FirstOrDefault();
 
+
                     if ( assessment != null )
                     {
                         hfAssessmentId.SetValue( assessment.Id );
@@ -338,7 +422,7 @@ namespace Rockweb.Blocks.Crm
 
                     if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
                     {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                        EQInventoryService.AssessmentResults savedScores = EQInventoryService.LoadSavedAssessmentResults( _targetPerson );
                         ShowResult( savedScores, assessment );
 
                     }
@@ -352,19 +436,7 @@ namespace Rockweb.Blocks.Crm
                         pnlQuestion.Visible = false;
                         pnlResult.Visible = false;
                         nbError.Visible = true;
-                        nbError.Text = "You can take the test without the request.";
-                    }
-                }
-                else
-                {
-                    pnlInstructions.Visible = false;
-                    pnlQuestion.Visible = false;
-                    pnlResult.Visible = false;
-                    nbError.Visible = true;
-
-                    if ( _isQuerystringPersonKey )
-                    {
-                        nbError.Text = "There is an issue locating the person associated with the request.";
+                        nbError.Text = "Sorry, this test requires a request from someone before it can be taken.";
                     }
                 }
             }
@@ -386,6 +458,20 @@ namespace Rockweb.Blocks.Crm
             ViewState[ASSESSMENT_STATE] = AssessmentResponses;
 
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// We need to reload the page for the charts to appear.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            if ( pnlResult.Visible == true )
+            {
+                this.NavigateToCurrentPageReference();
+            }
         }
 
         #endregion
@@ -433,8 +519,8 @@ namespace Rockweb.Blocks.Crm
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
-                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
+                EQInventoryService.AssessmentResults result = EQInventoryService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                EQInventoryService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -447,7 +533,7 @@ namespace Rockweb.Blocks.Crm
 
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
+                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.EQ.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
@@ -458,10 +544,12 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
+                assessment.AssessmentResultData = result.AssessmentData.ToJson();
                 rockContext.SaveChanges();
 
-                ShowResult( result, assessment );
+                //ShowResult( result, assessment );
+                // Since we are rendering chart.js we have to register the script or reload the page.
+                this.NavigateToCurrentPageReference();
             }
         }
 
@@ -486,6 +574,21 @@ namespace Rockweb.Blocks.Crm
         {
             var assessmentResponseRow = e.Item.DataItem as AssessmentResponse;
             RockRadioButtonList rblQuestion = e.Item.FindControl( "rblQuestion" ) as RockRadioButtonList;
+
+            if ( assessmentResponseRow.Code.EndsWith( "N" ) )
+            {
+                rblQuestion.DataSource = NEGATIVE_OPTION;
+
+            }
+            else
+            {
+                rblQuestion.DataSource = POSITIVE_OPTION;
+            }
+            rblQuestion.DataTextField = "Value";
+            rblQuestion.DataValueField = "Key";
+            rblQuestion.DataBind();
+
+            rblQuestion.Label = assessmentResponseRow.Question;
 
             if ( assessmentResponseRow != null && assessmentResponseRow.Response.HasValue )
             {
@@ -539,7 +642,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// Shows the result.
         /// </summary>
-        private void ShowResult( SpiritualGiftsService.AssessmentResults result, Assessment assessment )
+        private void ShowResult( EQInventoryService.AssessmentResults result, Assessment assessment )
         {
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
@@ -556,16 +659,20 @@ namespace Rockweb.Blocks.Crm
             {
                 btnRetakeTest.Visible = false;
             }
-            var spiritualGifts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SPIRITUAL_GIFTS );
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 _targetPerson.LoadAttributes();
                 mergeFields.Add( "Person", _targetPerson );
-                mergeFields.Add( "DominantGifts", spiritualGifts.DefinedValues.Where( a => result.DominantGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
-                mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
+
+                // The five Mode scores
+                mergeFields.Add( "SelfAwareness", result.SelfAwareConstruct );
+                mergeFields.Add( "SelfRegulating", result.SelfRegulatingConstruct );
+                mergeFields.Add( "OthersAwareness", result.OtherAwarenessContruct );
+                mergeFields.Add( "OthersRegulating", result.OthersRegulatingConstruct );
+                mergeFields.Add( "EQinProblemSolving", result.EQ_ProblemSolvingScale );
+                mergeFields.Add( "EQUnderStress", result.EQ_UnderStressScale );
             }
             lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
         }
@@ -578,7 +685,7 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            AssessmentResponses = SpiritualGiftsService.GetQuestions()
+            AssessmentResponses = EQInventoryService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
                                         Code = a.Key,

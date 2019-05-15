@@ -119,6 +119,7 @@
 
             </div>
             <div class="panel-body">
+                <asp:HiddenField ID="hfAssessmentId" runat="server" />
                 <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
                 <div class="actions">
@@ -142,13 +143,11 @@
                 <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
+                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
+                        <table class="table table-condensed table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
                             <thead>
                                 <tr>
-                                    <th class="disc-question">
-                                        Question <%# Eval( "QuestionNumber") %>
-                                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
-                                    </th>
+                                    <th class="disc-question">Question <%# Eval( "QuestionNumber") %></th>
                                     <th class="disc-answer grid-select-field disc-more">Most</th>
                                     <th class="disc-answer grid-select-field disc-less">Least</th>
                                 </tr>
@@ -199,7 +198,7 @@
                     <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; }" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
                 </div>
 
-                <div class="disc-attribution">
+                <div class="disc-attribution margin-t-lg">
                     <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
                 </div>
             </div>
@@ -244,7 +243,7 @@
                     <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
                 </div>
 
-                <div class="disc-attribution">
+                <div class="disc-attribution margin-t-lg">
                     <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
                 </div>
             </div>
