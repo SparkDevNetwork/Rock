@@ -816,6 +816,23 @@ namespace Rock.Data
             Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
         }
 
+        /// <summary>
+        /// Values the tuple.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="layoutGuid">The layout unique identifier.</param>
+        public void UpdatePageLayout( string pageGuid, string layoutGuid )
+        {
+            string sql = $@"
+                DECLARE @layoutId INT = (SELECT [Id] FROM [dbo].[Layout] WHERE [Guid] = '{layoutGuid}' )
+                IF EXISTS(SELECT [Id] FROM [Page] WHERE [Guid] = '{pageGuid}' AND  [LayoutId] <> @layoutId )
+                BEGIN
+	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
+                END";
+
+            Migration.Sql( sql );
+        }
+
         #endregion
 
         #region Block Methods
