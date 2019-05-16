@@ -10,7 +10,7 @@
                     Group Scheduler
                 </h1>
 
-                <div class="panel-labels">
+                <div class="panel-labels hidden-xs">
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
                         class="btn btn-link padding-all-none btn-copy-to-clipboard"
@@ -35,8 +35,12 @@
             <%-- Panel Body --%>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbNotice" runat="server" />
-
-                <div class="row row-eq-height">
+                <div class="visible-xs-block">
+                    <div class="alert alert-warning">
+                        This block is not supported on mobile.
+                    </div>
+                </div>
+                <div class="row row-eq-height hidden-xs">
                     <%-- Filter Options --%>
                     <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />
