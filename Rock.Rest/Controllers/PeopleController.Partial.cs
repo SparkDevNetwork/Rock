@@ -383,7 +383,7 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             var person = this.Get( personId );
-            CheckCanEdit( person );
+            CheckCanEdit( (Person)System.Web.HttpContext.Current.Items["CurrentPerson"] );
 
             PersonService.AddPersonToFamily( person, false, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
