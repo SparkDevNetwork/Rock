@@ -43,7 +43,7 @@ namespace Rockweb.Blocks.Crm
     [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "", order: 3 )]
     [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 20, order: 4 )]
     [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
-    
+
     public partial class Motivators : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -55,7 +55,7 @@ namespace Rockweb.Blocks.Crm
         private const string SET_PAGE_ICON = "SetPageIcon";
         private const string RESULTS_MESSAGE = "ResultsMessage";
         private const string ALLOW_RETAKES = "AllowRetakes";
-        
+
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
 
@@ -88,7 +88,7 @@ namespace Rockweb.Blocks.Crm
 </p>";
 
         private const string ResultMessageDefaultValue = @"<p>
-   This assessment identifies 22 different motivators (scales) which illustrate different things to which we all assign importance. These motivators listed in descending order on the report from the highest to the lowest. No one motivator is better than another. They are all critical and essential for the health of an organization. There are over 1,124,000,727,777,607,680,000 different combinations of these 22 motivators so we would hope you realize that your exceptional combination is clearly unique. We believe it is as important for you to know the motivators which are at the top as well as the ones at the bottom of your list. This is because you would best be advised to seek roles and responsibilities where your top motivators are needed. On the other hand, it would be advisable to <i>avoid roles or responsibilities where your bottom motivators would be required</i>. 
+   This assessment identifies 22 different motivators (scales) which illustrate different things to which we all assign importance. These motivators listed in descending order on the report from the highest to the lowest. No one motivator is better than another. They are all critical and essential for the health of an organization. There are over 1,124,000,727,777,607,680,000 different combinations of these 22 motivators so we would hope you realize that your exceptional combination is clearly unique. We believe it is as important for you to know the motivators which are at the top as well as the ones at the bottom of your list. This is because you would best be advised to seek roles and responsibilities where your top motivators are needed. On the other hand, it would be advisable to <i>avoid roles or responsibilities where your bottom motivators would be required</i>.
 </p>
 
 <h2>Influential, Organizational, Intellectual, and Operational</h2>
@@ -101,14 +101,12 @@ Each of the 22 motivators are grouped into one of four clusters: Influential, Or
         <h2 class=""panel-title""><b>Composite Score</b></h2>
       </div>
       <div class=""panel-body"">
-    {[chart type:'horizontalBar' chartheight:'200px' ]}
-    {% for motivatorClusterScore in MotivatorClusterScores %}
-        [[dataitem label:'{{ motivatorClusterScore.DefinedValue.Value }}' value:'{{ motivatorClusterScore.Value }}' fillcolor:'{{ motivatorClusterScore.DefinedValue | Attribute:'Color' }}' ]] 
-        [[enddataitem]]
-    {% endfor %}
-    {[endchart]}
-    
-        Source: <a href=""https://healthygrowingleaders.com"">https://healthygrowingleaders.com</a>
+        {[chart type:'horizontalBar' chartheight:'200px' ]}
+        {% for motivatorClusterScore in MotivatorClusterScores %}
+            [[dataitem label:'{{ motivatorClusterScore.DefinedValue.Value }}' value:'{{ motivatorClusterScore.Value }}' fillcolor:'{{ motivatorClusterScore.DefinedValue | Attribute:'Color' }}' ]]
+            [[enddataitem]]
+        {% endfor %}
+        {[endchart]}
       </div>
     </div>
 <p>
@@ -138,7 +136,7 @@ This graph is based on the average composite score for each cluster of Motivator
         {% for motivatorScore in MotivatorScores %}
         {% assign cluster = motivatorScore.DefinedValue | Attribute:'Cluster' %}
             {% if cluster and cluster != empty %}
-                [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]] 
+                [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]]
                 [[enddataitem]]
             {% endif %}
         {% endfor %}
@@ -450,7 +448,7 @@ This graph is based on the average composite score for each cluster of Motivator
             {
                 rblQuestion.DataValueField = "Positive";
             }
-            
+
             rblQuestion.DataBind();
 
             rblQuestion.Label = assessmentResponseRow.Question;
