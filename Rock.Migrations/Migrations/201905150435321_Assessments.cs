@@ -1296,7 +1296,7 @@ SELECT  CASE
 
         private void AddMotivatorsAssessmenPage()
         {
-            RockMigrationHelper.AddPage( true, "BE15B7BC-6D64-4880-991D-FDE962F91196", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Motivators Assessment", "", "0E6AECD6-675F-4908-9FA3-C7E46040527C" ); // Site:External Website
+            RockMigrationHelper.AddPage( true, "FCF44690-D74C-4FB7-A01B-0EFCA6EA9E1E", "BE15B7BC-6D64-4880-991D-FDE962F91196", "Motivators Assessment", "", "0E6AECD6-675F-4908-9FA3-C7E46040527C" ); // Site:External Website
             RockMigrationHelper.UpdateBlockType( "Motivators Assessment", "Allows you to take a Motivators Assessment test and saves your results.", "~/Blocks/Crm/Motivators.ascx", "CRM", "18CF8DA8-5DE0-49EC-A279-D5507CFA5713" );
             
             // Add Block to Page: Motivator Assessment Site: External Website
