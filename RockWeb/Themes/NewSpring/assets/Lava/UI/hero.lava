@@ -64,7 +64,7 @@ overflow-hidden
 
             {% if url != empty %}
                 <p>
-                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
                 </p>
             {% endif %}
 
@@ -97,9 +97,6 @@ overflow-hidden
 -->
 
 {% assign url = 'Global' | Page:'Url' %}
-{% capture metatitle %}{% endcapture %}
-{% capture metadescription %}{% endcapture %}
-{% capture metaimage %}{% endcapture %}
 
 {% assign pagemetatitle = CurrentPage | Attribute:'PageMetaTitle' %}
 {% assign pagemetadescription = CurrentPage | Attribute:'PageMetaDescription' %}

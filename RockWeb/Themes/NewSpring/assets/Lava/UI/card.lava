@@ -26,7 +26,7 @@
             {% endif %}
 
             <div class="position-relative ratio-landscape">
-                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
             </div>
 
             {% if type != null and type != '' %}

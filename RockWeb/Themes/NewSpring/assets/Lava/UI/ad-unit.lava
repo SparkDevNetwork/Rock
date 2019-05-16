@@ -52,7 +52,7 @@
     {% endif %}
     
                 {% if imageurl != null and imageurl != '' %}
-                    <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != empty %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
+                    <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
                 {% endif %}
 
                 <div class="bring-forward text-constrained {% if textalignment == 'Center' or imageurl == '' %}mx-auto{% endif %} {% if textalignment == 'Center' and imageurl == '' %}text-center{% elseif textalignment == 'Right' and imageurl != '' %}pull-right{% elseif imageurl == '' and textalignment == 'Right' %}text-center{% endif %} xs-text-center soft-top soft-double-sides clearfix xs-soft-top xs-soft-half-sides xs-soft-bottom">

@@ -41,7 +41,7 @@
 
     <li class="list-group-item">
       {% if group.Group.IsActive == true %}
-      <a href="/groups/{{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+      <a href="/groups/{{group.Group.Id}}/toolbox" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
         {{ content }}
       </a>
       {% else %}

@@ -8,7 +8,7 @@
     {% assign servicesJSON = servicesJSON | FromJSON %}
     
     {% for service in servicesJSON %}
-        {% if service.ServiceType == serviceType %}
+        {% if service.ServiceType == servicetype %}
             {{ service.ServiceDay }} {{ service.ServiceTime | Remove:':00' | Remove:' ' | Downcase }}<br>
             {% if service.DoorsOpenTime and service.DoorsOpenTime != empty %}<span class="text-gray-light">Doors Open at {{ service.DoorsOpenTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}
             {% if service.PickUpTime and service.PickUpTime != empty %}<span class="text-gray-light">Pick Up Students at {{ service.PickUpTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}

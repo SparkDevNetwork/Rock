@@ -1,7 +1,7 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
 
 <!-- Secondary Nav -->
-<section class="bg-gray-dark hard flush shadowed hidden-xs hidden-sm">
+<section class="nav-secondary bg-gray-dark hard flush shadowed hidden-xs hidden-sm">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
