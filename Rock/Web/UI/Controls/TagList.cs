@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -259,13 +260,13 @@ Rock.controls.tagList.initialize({{
                     EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
                     .Where( c => c.Tag.IsActive || ( ShowInActiveTags ) );
 
-                var items = qry
+                var itemList = qry
                     .Select( a => a.Tag )
-                    .OrderBy( a => a.Name );
+                    .OrderBy( a => a.Name ).AsNoTracking().ToList();
 
                 var person = GetCurrentPerson();
 
-                foreach ( var item in items )
+                foreach ( var item in itemList )
                 {
                     if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
