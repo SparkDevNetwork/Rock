@@ -103,6 +103,10 @@
         initQuestionValidation();
     }
 
+    function scrollToTop() {
+        window.scrollTo(0, 0);
+    }
+
     $(document).ready(function () {
         fadePanelIn();
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(fadePanelIn);
@@ -193,8 +197,8 @@
                     Please answer question(s) before proceeding further.
                 </div>
                 <div class="actions clearfix">
-                    <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" />
-                    <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; }" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
+                    <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();" />
+                    <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
                 </div>
             </div>
         </asp:Panel>
