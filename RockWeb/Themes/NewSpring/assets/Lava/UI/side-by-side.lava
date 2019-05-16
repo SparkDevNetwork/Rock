@@ -23,7 +23,7 @@
     <div class="row floating flush {% if imagealignment == 'Right' %}row-reverse{% endif %}">
         <div class="floating-item col-xs-12 col-sm-12 col-md-6 hard">
             <div class="ratio-{{ ratio }}">
-                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
                 <div class="full-screen">
                     {% if video != null and video != '' %}
                         <div class="btn btn-play position-absolute 
@@ -32,7 +32,7 @@
                             position-right-boundry margin-right-negative
                         {% else %}
                             position-left-boundry margin-left-negative sm-margin-top-auto
-                        {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xFs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
+                        {% endif %} margin-top-negative sm-margin-bottom-negative sm-margin-left-negative xs-margin-bottom-negative xs-margin-left-negative sm-position-bottom-boundry xs-position-bottom-boundry text-white"><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><i class="fas fa-fw fa-lg fa-play"></i></span></div>
 
                         <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
                         <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
@@ -95,7 +95,7 @@
 
             {% if imageurl != null and imageurl != '' %}
                 <div class="full-screen overflow-hidden">
-                    <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                    <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
                 </div>
             {% endif %}
 
