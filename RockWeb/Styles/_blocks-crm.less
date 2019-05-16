@@ -1337,21 +1337,22 @@ tr.inactive {
 
   .discbar-label {
     position: absolute;
-    bottom: 20px;
+    bottom: 10px;
     width: 100%;
     overflow: hidden;
     font-size: 28px;
     font-weight: @font-weight-bold;
+    text-shadow: 0 0 3px @brand-primary;
   }
 
   .discbar {
     &::before {
       position: absolute;
-      top: 5%;
+      top: -25px;
       right: 0;
       left: 0;
+      color: @text-color;
       display: block;
-      padding: 5px 0;
       font-size: 20px;
       line-height: 1em;
       text-align: center;
