@@ -152,9 +152,9 @@ namespace Rock.Migrations
         private void AddAssessmentTypes()
         {
             AddAssessmentType( "DISC", "/DISC", SystemGuid.AssessmentType.DISC );
-            AddAssessmentType( "Spiritual Gifts", "/GiftsAssessment", SystemGuid.AssessmentType.GIFTS );
+            AddAssessmentType( "Spiritual Gifts", "/SpiritualGifts", SystemGuid.AssessmentType.GIFTS );
             AddAssessmentType( "Conflict Profile", "/ConflictProfile", SystemGuid.AssessmentType.CONFLICT );
-            AddAssessmentType( "Emotional Intelligence", "/EQAssessment", SystemGuid.AssessmentType.EQ );
+            AddAssessmentType( "Emotional Intelligence", "/EQ", SystemGuid.AssessmentType.EQ );
             AddAssessmentType( "Motivators", "/Motivators", SystemGuid.AssessmentType.MOTIVATORS );
         }
 
@@ -935,8 +935,8 @@ SELECT  CASE
              
             // Emotional Intelligence Assessment
             RockMigrationHelper.AddPage( true, "FCF44690-D74C-4FB7-A01B-0EFCA6EA9E1E","BE15B7BC-6D64-4880-991D-FDE962F91196","Emotional Intelligence Assessment","","BE5F3984-C25E-47CA-A602-EE1CED99E9AC",""); // Site:External Website
-            RockMigrationHelper.AddPageRoute("BE5F3984-C25E-47CA-A602-EE1CED99E9AC","EQAssessment","8C5F1CF8-8AC1-4123-B7FD-E57EA36CFBBF");// for Page:Emotional Intelligence Assessment
-            RockMigrationHelper.AddPageRoute("BE5F3984-C25E-47CA-A602-EE1CED99E9AC","EQAssessment/{rckipid}","C97D4D5A-F082-4F2B-A873-71F734B539CC");// for Page:Emotional Intelligence Assessment
+            RockMigrationHelper.AddPageRoute("BE5F3984-C25E-47CA-A602-EE1CED99E9AC","EQ","8C5F1CF8-8AC1-4123-B7FD-E57EA36CFBBF");// for Page:Emotional Intelligence Assessment
+            RockMigrationHelper.AddPageRoute("BE5F3984-C25E-47CA-A602-EE1CED99E9AC","EQ/{rckipid}","C97D4D5A-F082-4F2B-A873-71F734B539CC");// for Page:Emotional Intelligence Assessment
             RockMigrationHelper.UpdateBlockType("EQ Assessment","Allows you to take a EQ Inventory test and saves your EQ Inventory score.","~/Blocks/Crm/EQInventory.ascx","CRM","040CFD6D-5155-4BC9-BAEE-A53219A7BECE");
             RockMigrationHelper.AddBlock( true, "BE5F3984-C25E-47CA-A602-EE1CED99E9AC".AsGuid(),null,"F3F82256-2D66-432B-9D67-3552CD2F4C2B".AsGuid(),"040CFD6D-5155-4BC9-BAEE-A53219A7BECE".AsGuid(), "EQ Assessment","Main",@"",@"",0,"71BE6A7A-7D51-4149-AFB1-3307DF04B2DF"); // Add Block to Page: Emotional Intelligence Assessment Site: External Website
             #region Attrib for BlockType: EQ Assessment:Instructions
@@ -1296,7 +1296,7 @@ SELECT  CASE
 
         private void AddMotivatorsAssessmenPage()
         {
-            RockMigrationHelper.AddPage( true, "BE15B7BC-6D64-4880-991D-FDE962F91196", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Motivators Assessment", "", "0E6AECD6-675F-4908-9FA3-C7E46040527C", "" ); // Site:External Website
+            RockMigrationHelper.AddPage( true, "BE15B7BC-6D64-4880-991D-FDE962F91196", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Motivators Assessment", "", "0E6AECD6-675F-4908-9FA3-C7E46040527C" ); // Site:External Website
             RockMigrationHelper.UpdateBlockType( "Motivators Assessment", "Allows you to take a Motivators Assessment test and saves your results.", "~/Blocks/Crm/Motivators.ascx", "CRM", "18CF8DA8-5DE0-49EC-A279-D5507CFA5713" );
             
             // Add Block to Page: Motivator Assessment Site: External Website
