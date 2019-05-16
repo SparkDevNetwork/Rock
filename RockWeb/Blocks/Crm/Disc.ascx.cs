@@ -64,8 +64,7 @@ namespace Rockweb.Blocks.Crm
                 When you are ready, click the 'Start' button to proceed.
             </p>
 ", order: 0 )]
-    [BooleanField( "Always Allow Retakes", "Determines if the retake button should be shown.", false, order: 1 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 2 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 1 )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -528,12 +527,7 @@ namespace Rockweb.Blocks.Crm
             }
             lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
 
-            // Show re-take test button if MinDaysToRetake has passed...
-            double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
-            if ( days == 0 )
-            {
-                days = assessment.AssessmentType.MinimumDaysToRetake;
-            }
+            double days = assessment.AssessmentType.MinimumDaysToRetake;
 
             if ( !_isQuerystringPersonKey && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( days ) <= RockDateTime.Now )
             {
