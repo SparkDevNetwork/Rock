@@ -447,6 +447,27 @@
                     })
                 });
 
+                // add autoscroll capabilities during dragging
+                $(window).mousemove(function (e) {
+                    if (self.resourceListDrake.dragging) {
+                        // editor scrollbar
+                        // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragger
+                        var $editorScrollWindow = $(window);
+                        var editorScrollHeight = window.innerHeight;
+                        var editorScrollLevel = $editorScrollWindow.scrollTop()
+                        var editorMouseY = e.clientY;
+                        var editorMousePositionProportion = editorMouseY / editorScrollHeight;
+                        if (editorMousePositionProportion > .90) {
+                            editorScrollLevel += 20;
+                            $editorScrollWindow.scrollTop(editorScrollLevel);
+                        }
+                        else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
+                            editorScrollLevel -= 20;
+                            $editorScrollWindow.scrollTop(editorScrollLevel);
+                        }
+                    }
+                });
+
             }
         };
 
