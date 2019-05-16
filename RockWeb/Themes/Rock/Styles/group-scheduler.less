@@ -127,10 +127,6 @@
 
   &[data-has-scheduling-conflict="true"] {
     background-color: @state-warning-bg;
-
-    .resource-scheduling-conflict {
-      display: block;
-    }
   }
 
   &[data-has-blackout-conflict="true"] {
@@ -167,17 +163,14 @@
   }
 
   .resource-blackout-status {
-    display: none;
     margin-left: 5px;
   }
 
   .resource-requirements-conflict {
-    display: none;
     margin-left: 5px;
   }
 
   .resource-scheduling-conflict {
-    display: none;
     margin-left: 5px;
   }
 
@@ -312,11 +305,14 @@
       -ms-flex-direction: column !important;
       flex-direction: column !important;
 
-      &::before {
+      &::before,
+      .btn {
         display: none;
       }
     }
   }
+
+
 }
 
 /* Location (Attendance Occurrence) */
@@ -381,47 +377,6 @@
       display: none;
     }
   }
-}
-
-/*
--=-=- Dragula Classes
-*/
-
-/* Is added to the mirror image. It handles fixed positioning and z-index (and removes any prior margins on the element). Note
-that the mirror image is appended to the mirrorContainer, not to its initial container. Keep that in mind when styling your
-elements with nested rules, like .list .item { padding: 10px; }. */
-.gu-mirror {
-  position: fixed !important;
-  z-index: 9999 !important;
-  max-width: 560px;
-  margin: 0 !important;
-  font-family: Arial, Helvetica, sans-serif;
-  cursor: move !important;
-  cursor: -webkit-grabbing !important;
-  cursor: grabbing !important;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-  filter: alpha(opacity=80);
-  opacity: .8;
-}
-
-/* Is a helper class to apply display: none to an element. */
-.gu-hide {
-  display: none !important;
-}
-
-/* Is added to the mirrorContainer element when dragging. You can use it to style the mirrorContainer while something is being dragged. */
-.gu-unselectable {
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
-}
-
-/* Is added to the source element when its mirror image is dragged. It just adds opacity to it. */
-.gu-transit {
-  box-sizing: border-box;
-  float: none !important;
-  opacity: .5;
 }
 
 /* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
@@ -540,4 +495,10 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   .hide-transit {
     display: none;
   }
+}
+
+.resource.gu-mirror {
+  box-shadow: 0 5px 20px 0 rgba(21,27,38,.08);
+  background: rgba(255,255,255,.8);
+  opacity: 1;
 }
