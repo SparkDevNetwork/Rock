@@ -48,15 +48,15 @@ overflow-hidden
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-        <div class="bring-forward center-block text-constrained text-center soft-top sm-flush-bottom xs-flush-bottom push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" {% if ratio != null and ratio != '' %}style="margin-bottom: 90px;"{% endif %}>
+        <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
 
             {% if imageoverlayurl != null and imageoverlayurl != '' %}
-                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
+                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 750px;">
             {% endif %}
 
 
             {% if title != null and title != '' %}
-                <h1>{{ title }}</h1>
+                <h1 {% if imageoverlayurl and imageoverlayurl != empty %}class="hidden"{% endif %}>{{ title }}</h1>
             {% endif %}
 
             {{ content }}
