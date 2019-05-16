@@ -38,7 +38,7 @@
 
                 <div class="row row-eq-height">
                     <%-- Filter Options --%>
-                    <div class="col-lg-2 col-md-3 filter-options">
+                    <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />
                         <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" LimitToSchedulingEnabledGroups="true" OnValueChanged="gpGroup_ValueChanged" />
                         <Rock:RockDropDownList ID="ddlWeek" runat="server" Label="Week" AutoPostBack="true" OnSelectedIndexChanged="ddlWeek_SelectedIndexChanged" />
@@ -75,7 +75,7 @@
                         <%-- Scheduling: container for the scheduler scheduled containers --%>
                         <asp:Panel ID="pnlScheduler" runat="server" CssClass="resource-area">
                             <div class="row row-eq-height">
-                                <div class="col-md-4 hidden-xs hidden-sm">
+                                <div class="col-md-4 hidden-xs">
 
                                     <div class="group-scheduler-resourcelist">
 
