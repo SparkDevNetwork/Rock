@@ -20,9 +20,10 @@
                     return;
                 }
 
+                var $blockInstance = $control.closest('.block-instance')[0];
                 self.$groupScheduler = $control;
                 self.$resourceList = $('.group-scheduler-resourcelist', $control);
-                self.$additionalPersonIds = $('.js-resource-additional-person-ids', self.$resourceList)
+                self.$additionalPersonIds = $('.js-resource-additional-person-ids', self.$resourceList);
 
                 // initialize dragula
                 var containers = [];
@@ -60,20 +61,12 @@
                         return isMenu;
                     },
                     ignoreInputTextSelection: true,
-                    mirrorContainer: $control.closest('.block-instance')[0]
+                    mirrorContainer: $blockInstance
                 })
                     .on('drag', function (el) {
-                        if (self.resourceScroll) {
-                            // disable the scroller while dragging so that the scroller doesn't move while we are dragging
-                            //self.resourceScroll.disable();
-                        }
                         $('body').addClass('state-drag');
                     })
                     .on('dragend', function (el) {
-                        if (self.resourceScroll) {
-                            // re-enable the scroller when done dragging
-                            //self.resourceScroll.enable();
-                        }
                         $('body').removeClass('state-drag');
                     })
                     .on('drop', function (el, target, source, sibling) {
@@ -195,7 +188,7 @@
                 var $autoschedulerWarning = $occurrence.find('.js-autoscheduler-warning');
                 if (!desiredCapacity) {
                     $autoschedulerWarning.show();
-                    $autoschedulerWarning.tooltip({ container: 'body' });
+                    $autoschedulerWarning.tooltip();
                 }
                 else {
                     $autoschedulerWarning.hide();
@@ -268,7 +261,7 @@
                     var toolTipHtml = '<div>Confirmed: ' + totalConfirmed + '<br/>Pending: ' + totalPending + '<br/>Declined: ' + totalDeclined + '</div>';
 
                     $schedulingStatusContainer.attr('data-original-title', toolTipHtml);
-                    $schedulingStatusContainer.tooltip({ 'html': 'true', container: 'body' });
+                    $schedulingStatusContainer.tooltip({ html: true });
 
                     var confirmedPercent = !progressMax || (totalConfirmed * 100 / progressMax);
                     var pendingPercent = !progressMax || (totalPending * 100 / progressMax);
@@ -352,7 +345,6 @@
 
                     setTimeout(function () {
                         $loadingNotification.hide();
-                        //self.resourceScroll.refresh();
                     }, 0)
 
                 }).fail(function (a, b, c) {
@@ -373,15 +365,19 @@
 
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
-                    $resourceDiv.tooltip({ container: 'body' });
+                    $resourceDiv.tooltip();
                 } else if (schedulerResource.HasGroupRequirementsConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " does not meet the requirements for this group.");
-                    $resourceDiv.tooltip({ container: 'body' });
+                    $resourceDiv.tooltip();
+                } else if (schedulerResource.HasSchedulingConflict) {
+                    $resourceDiv.attr('title', schedulerResource.PersonName + " has a scheduling conflict.");
+                    $resourceDiv.tooltip();
                 }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
                 if (schedulerResource.Note) {
-                    $resourceDiv.find('.js-resource-note').text(schedulerResource.Note);
+                    $resourceDiv.addClass('has-note');
+                    $resourceMeta.parent().prepend('<div class="resource-note js-resource-note hide-transit">'+ schedulerResource.Note +'</div>');
                 }
 
                 if (schedulerResource.ConflictNote) {

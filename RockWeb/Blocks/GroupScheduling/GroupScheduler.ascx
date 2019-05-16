@@ -75,7 +75,7 @@
                         <%-- Scheduling: container for the scheduler scheduled containers --%>
                         <asp:Panel ID="pnlScheduler" runat="server" CssClass="resource-area">
                             <div class="row row-eq-height">
-                                <div class="col-md-4">
+                                <div class="col-md-4 hidden-xs hidden-sm">
 
                                     <div class="group-scheduler-resourcelist">
 
@@ -94,10 +94,8 @@
                                                 <div class="flex">
                                                     <span class="resource-name js-resource-name"></span>
                                                     <div class="resource-meta">
-                                                        <div class="resource-note js-resource-note hide-transit"></div>
 
-                                                        <div class="js-resource-meta text-right">
-                                                        </div>
+                                                        <div class="js-resource-meta text-right"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -126,8 +124,7 @@
 
                                                 <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
 
-                                                <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
-
+                                                <div class="viewport">
                                                     <%-- loading indicator --%>
                                                     <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 
@@ -135,7 +132,7 @@
 
                                                     <asp:Panel ID="pnlResourceListContainer" CssClass="js-scheduler-source-container resource-container dropzone" runat="server">
                                                     </asp:Panel>
-                                                </asp:Panel>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -147,44 +144,32 @@
                                         <%-- template that groupScheduler.js uses to populate scheduled resources, possible data-status values: pending, confirmed, declined --%>
 
                                         <div class="js-resource resource unselectable" data-status="pending" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-attendance-id="" data-person-id="">
-                                            <div class="flex">
-                                                <div class="js-resource-name resource-name"></div>
 
-                                                <div class="resource-warning pull-left">
-                                                    <span class="js-resource-warning"></span>
+                                                <div class="flex">
+                                                    <span class="resource-name js-resource-name"></span>
+                                                    <div class="resource-meta">
+
+                                                        <div class="js-resource-meta text-right"></div>
+                                                    </div>
+                                                    <div class="dropdown js-resource-actions hide-transit">
+                                                        <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </div>
 
-                                                <div class="js-resource-scheduling-conflict resource-scheduling-conflict pull-right" title="Scheduling Conflict">
-                                                    <i class="fa fa-user-clock"></i>
-                                                </div>
-
-                                                <div class="js-resource-blackout-status resource-blackout-status pull-right" title="Blackout">
-                                                    <i class="fa fa-user-times"></i>
-                                                </div>
-
-                                                <div class="js-resource-requirements-conflict resource-requirements-conflict pull-right" title="Group Requirements Not Met">
-                                                    <i class="fa fa-exclamation-triangle"></i>
-                                                </div>
-
-                                                <div class="dropdown js-resource-actions hide-transit">
-                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
-                                                    <ul class="dropdown-menu">
-                                                        <li>
-                                                            <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
-                                                        </li>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item btn-link js-markpending">Mark Pending</button>
-                                                        </li>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item btn-link js-markdeclined">Mark Declined</button>
-                                                        </li>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item btn-link js-resendconfirmation">Resend Confirmation</button>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-                                            </div>
                                         </div>
                                     </div>
 
