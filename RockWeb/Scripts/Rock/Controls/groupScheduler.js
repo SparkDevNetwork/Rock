@@ -59,7 +59,8 @@
                         var isMenu = $(el).closest('.js-resource-actions').length;
                         return isMenu;
                     },
-                    ignoreInputTextSelection: true
+                    ignoreInputTextSelection: true,
+                    mirrorContainer: $control.closest('.block-instance')[0]
                 })
                     .on('drag', function (el) {
                         if (self.resourceScroll) {
