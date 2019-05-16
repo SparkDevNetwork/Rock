@@ -95,7 +95,6 @@ namespace Rockweb.Blocks.Crm
 {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
     [[ dataitem label:'Self Awareness' value:'{{SelfAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
 {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the Self Awareness scale indicate the score for the
@@ -116,7 +115,6 @@ namespace Rockweb.Blocks.Crm
     {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
         [[ dataitem label:'Self Regulating' value:'{{SelfRegulating}}' fillcolor:'{{chartColor}}']] [[ enddataitem ]]
     {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the Self Regulation scale indicate the score for the
@@ -138,7 +136,6 @@ namespace Rockweb.Blocks.Crm
     {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
         [[ dataitem label:'Others Awareness' value:'{{OthersAwareness}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
     {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the Others Awareness scale indicate the score for the
@@ -158,7 +155,6 @@ namespace Rockweb.Blocks.Crm
     {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
         [[ dataitem label:'Others Regulating' value:'{{OthersRegulating}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
     {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the Others Regulation scale indicate the score for
@@ -188,7 +184,6 @@ namespace Rockweb.Blocks.Crm
     {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
         [[ dataitem label:'EQ in Problem Solving' value:'{{EQinProblemSolving}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
     {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the EQ in Problem Solving scale indicate the score for
@@ -210,7 +205,6 @@ namespace Rockweb.Blocks.Crm
     {[ chart type:'horizontalBar' legendshow:'false' tooltipshow:'false' chartheight:'{{chartHeight}}' xaxistype:'linearhorizontal0to100' ]}
         [[ dataitem label:'EQ Under Stress' value:'{{EQUnderStress}}' fillcolor:'{{chartColor}}' ]] [[ enddataitem ]]
     {[ endchart ]}
-<p class='text-center text-muted small'><cite>Source: https://healthygrowingleaders.com</cite></p>
 
 <blockquote>
     Your responses to the items on the EQ in Under Stress scale indicate the score
