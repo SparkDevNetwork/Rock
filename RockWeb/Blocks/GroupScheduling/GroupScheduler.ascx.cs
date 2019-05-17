@@ -140,12 +140,13 @@ namespace RockWeb.Blocks.GroupScheduling
 
             btnCopyToClipboard.Visible = true;
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
-            string script = string.Format( @"
-    new ClipboardJS('#{0}');
+            string script = string.Format(
+@"new ClipboardJS('#{0}');
     $('#{0}').tooltip();
-", btnCopyToClipboard.ClientID );
-            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+",
+btnCopyToClipboard.ClientID );
 
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
         }
 
         /// <summary>
@@ -256,6 +257,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 {
                     pnlGroupScheduleLocations.Visible = true;
                     pnlScheduler.Visible = true;
+
                     // if a schedule is already selected, set it as the selected schedule (if it still exists for this group)
                     var selectedScheduleId = rblSchedule.SelectedValue.AsIntegerOrNull();
 
@@ -284,7 +286,6 @@ namespace RockWeb.Blocks.GroupScheduling
                     {
                         rblSchedule.SetValue( sortedScheduleList.FirstOrDefault() );
                     }
-
                 }
             }
         }
@@ -489,8 +490,6 @@ namespace RockWeb.Blocks.GroupScheduling
                     nbGroupWarning.Visible = false;
                 }
 
-                //var groupLocations = group.GroupLocations.OrderBy( a => a.Order ).ThenBy( a => a.Location.Name ).ToList();
-
                 // get the location ids of the selected group locations so that we can keep the selected locations even if the group changes
                 var selectedGroupLocationIds = cblGroupLocations.SelectedValuesAsInt;
                 var selectedLocationIds = new GroupLocationService( new RockContext() ).GetByIds( selectedGroupLocationIds ).Select( a => a.LocationId ).ToList();
@@ -634,13 +633,15 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( unassignedLocationOccurrence != null )
             {
-                attendanceOccurrencesOrderedList.Insert( 0, new AttendanceOccurrenceRowItem
-                {
-                    LocationName = "No Location Preference",
-                    LocationId = null,
-                    AttendanceOccurrenceId = unassignedLocationOccurrence.Id,
-                    CapacityInfo = new CapacityInfo()
-                } );
+                attendanceOccurrencesOrderedList.Insert(
+                    0,
+                    new AttendanceOccurrenceRowItem
+                    {
+                        LocationName = "No Location Preference",
+                        LocationId = null,
+                        AttendanceOccurrenceId = unassignedLocationOccurrence.Id,
+                        CapacityInfo = new CapacityInfo()
+                    } );
             }
 
             rptAttendanceOccurrences.DataSource = attendanceOccurrencesOrderedList;

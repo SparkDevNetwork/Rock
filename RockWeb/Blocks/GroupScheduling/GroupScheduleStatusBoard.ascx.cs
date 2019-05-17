@@ -28,7 +28,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.GroupScheduling
 {
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.RockBlock" />
     [DisplayName( "Group Schedule Status Board" )]
     [Category( "Group Scheduling" )]
     [Description( "Scheduler can see overview of current schedules by groups and dates." )]
