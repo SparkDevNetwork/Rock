@@ -789,7 +789,7 @@ namespace Rock.Data
                 IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}') AND @pageId IS NOT NULL)
                 BEGIN
                     UPDATE [dbo].[PageRoute]
-                    SET [PageId] = @pageId, [Route] = {route}
+                    SET [PageId] = @pageId, [Route] = '{route}'
                     WHERE [Guid] = '{pageRouteGuid}'
                 END";
 
