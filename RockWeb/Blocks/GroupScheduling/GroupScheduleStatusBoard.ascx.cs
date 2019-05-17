@@ -246,10 +246,13 @@ namespace RockWeb.Blocks.GroupScheduling
 
                         if ( occurrenceScheduledAttendances != null && occurrenceScheduledAttendances.ScheduledAttendees.Any() )
                         {
+                            // sort so that it is Yes, then Pending, then Denied
                             var scheduledPersonList = occurrenceScheduledAttendances
                                 .ScheduledAttendees
-                                .OrderBy( a => a.ScheduledToAttend == true )
-                                .ThenBy( a => a.RequestedToAttend ).ToList();
+                                .OrderBy( a => a.RSVP == RSVP.Yes ? 0 : 1 )
+                                .ThenBy( a => ( a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown ) ? 0 : 1 )
+                                .ThenBy( a => a.RSVP == RSVP.No ? 0 : 1 )
+                                .ToList();
 
                             foreach ( var scheduledPerson in scheduledPersonList )
                             {
