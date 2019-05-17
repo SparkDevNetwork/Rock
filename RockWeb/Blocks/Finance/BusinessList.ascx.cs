@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            var workLocationTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+            var workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() ).Id;
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
             var businessList = queryable.Select( b => new

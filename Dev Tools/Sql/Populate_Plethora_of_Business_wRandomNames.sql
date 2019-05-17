@@ -3817,6 +3817,7 @@ BEGIN
             )
 
         SET @groupId = SCOPE_IDENTITY()
+		UPDATE Person SET GivingGroupId = @groupId WHERE Id = @personId;
 
         INSERT INTO [GroupMember] (
             IsSystem
