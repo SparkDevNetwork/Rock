@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -55,7 +53,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#009CE3",
         Category = "Bar Chart Colors",
         Order = 1,
-        Key = AttributeKeys.BarChartScheduledColor)]
+        Key = AttributeKeys.BarChartScheduledColor )]
 
     [ColorField(
         "No Response",
@@ -64,7 +62,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#FFC870",
         Category = "Bar Chart Colors",
         Order = 2,
-        Key = AttributeKeys.BarChartNoResponseColor)]
+        Key = AttributeKeys.BarChartNoResponseColor )]
 
     [ColorField(
         "Declines",
@@ -73,7 +71,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#D4442E",
         Category = "Bar Chart Colors",
         Order = 3,
-        Key = AttributeKeys.BarChartDeclinesColor)]
+        Key = AttributeKeys.BarChartDeclinesColor )]
 
     [ColorField(
         "Attended",
@@ -82,7 +80,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#16C98D",
         Category = "Bar Chart Colors",
         Order = 4,
-        Key = AttributeKeys.BarChartAttendedColor)]
+        Key = AttributeKeys.BarChartAttendedColor )]
 
     [ColorField(
         "Committed No Show",
@@ -91,7 +89,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#484848",
         Category = "Bar Chart Colors",
         Order = 5,
-        Key = AttributeKeys.BarChartCommittedNoShowColor)]
+        Key = AttributeKeys.BarChartCommittedNoShowColor )]
 
     public partial class GroupSchedulerAnalytics : RockBlock
     {
@@ -106,18 +104,25 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         #region Properties
-        protected List<Attendance> attendances = new List<Attendance>();
 
         protected string SeriesColorsJSON { get; set; }
+
         protected string BarChartLabelsJSON { get; set; }
+
         protected string BarChartScheduledJSON { get; set; }
+
         protected string BarChartNoResponseJSON { get; set; }
+
         protected string BarChartDeclinesJSON { get; set; }
+
         protected string BarChartAttendedJSON { get; set; }
+
         protected string BarChartCommittedNoShowJSON { get; set; }
+
         protected int? BarChartMaxValue { get; set; }
 
         protected string DoughnutChartDeclineLabelsJSON { get; set; }
+
         protected string DoughnutChartDeclineValuesJSON { get; set; }
 
         private List<string> _errorMessages;
@@ -134,6 +139,7 @@ namespace RockWeb.Blocks.GroupScheduling
             base.OnInit( e );
 
             dvDataViews.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON ).Id;
+
             // NOTE: moment.js needs to be loaded before chartjs
             RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
@@ -141,7 +147,6 @@ namespace RockWeb.Blocks.GroupScheduling
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
         }
 
         /// <summary>
@@ -151,7 +156,7 @@ namespace RockWeb.Blocks.GroupScheduling
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if (!IsPostBack)
+            if ( !IsPostBack )
             {
                 hfTabs.Value = "group";
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now ) +
@@ -175,7 +180,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         protected void RegisterDoughnutChartScript()
         {
-            if (DoughnutChartDeclineValuesJSON.IsNullOrWhiteSpace() )
+            if ( DoughnutChartDeclineValuesJSON.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -188,7 +193,8 @@ namespace RockWeb.Blocks.GroupScheduling
                 colors = "['" + string.Join( "','", this.GetAttributeValue( "DeclineChartColors" ).Split( ',' ).Take( valLength ) ) + "']";
             }
 
-            string script = string.Format( @"
+            string script = string.Format(
+@"
 var dnutCtx = $('#{0}')[0].getContext('2d');
 
 var dnutChart = new Chart(dnutCtx, {{
@@ -217,9 +223,7 @@ var dnutChart = new Chart(dnutCtx, {{
                 doughnutChartCanvas.ClientID,
                 DoughnutChartDeclineLabelsJSON,
                 DoughnutChartDeclineValuesJSON,
-                colors
-
-            );
+                colors );
 
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "groupSchedulerDoughnutChartScript", script, true );
         }
@@ -233,12 +237,13 @@ var dnutChart = new Chart(dnutCtx, {{
 
             // This is to prevent chart.js displaying decimal values in the y-axis for low numbers. Forces the step size to 1.
             // for larger numbers we'll let chart.js scale as it does not display decimals for large numbers.
-            if (BarChartMaxValue != null && BarChartMaxValue.Value < 9 )
+            if ( BarChartMaxValue != null && BarChartMaxValue.Value < 9 )
             {
                 steps = "ticks: { stepSize: 1 },";
             }
 
-            string script = string.Format( @"
+            string script = string.Format(
+@"
 var barCtx = $('#{0}')[0].getContext('2d');
 
 var barChart = new Chart(barCtx, {{
@@ -291,18 +296,17 @@ var barChart = new Chart(barCtx, {{
 }});",
             barChartCanvas.ClientID,
             BarChartLabelsJSON,
-            GetAttributeValue(AttributeKeys.BarChartScheduledColor),
+            GetAttributeValue( AttributeKeys.BarChartScheduledColor ),
             BarChartScheduledJSON,
-            GetAttributeValue(AttributeKeys.BarChartNoResponseColor),
+            GetAttributeValue( AttributeKeys.BarChartNoResponseColor ),
             BarChartNoResponseJSON,
-            GetAttributeValue(AttributeKeys.BarChartDeclinesColor),
+            GetAttributeValue( AttributeKeys.BarChartDeclinesColor ),
             BarChartDeclinesJSON,
-            GetAttributeValue(AttributeKeys.BarChartAttendedColor),
+            GetAttributeValue( AttributeKeys.BarChartAttendedColor ),
             BarChartAttendedJSON,
-            GetAttributeValue(AttributeKeys.BarChartCommittedNoShowColor),
+            GetAttributeValue( AttributeKeys.BarChartCommittedNoShowColor ),
             BarChartCommittedNoShowJSON,
-            steps
-            );
+            steps );
 
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "groupSchedulerBarChartScript", script, true );
         }
@@ -321,9 +325,8 @@ var barChart = new Chart(barCtx, {{
         /// Clears the existing data from class var attendances and repopulates it with data for the selected group and filter criteria.
         /// Data is organized by each person in the group.
         /// </summary>
-        private void GetAttendanceData()
+        private List<Attendance> GetAttendanceData()
         {
-            attendances.Clear();
             // Source data for all tables and graphs
             using ( var rockContext = new RockContext() )
             {
@@ -354,7 +357,7 @@ var barChart = new Chart(barCtx, {{
                 }
 
                 // parse the date range and add to query
-                if ( sdrpDateRange.DelimitedValues.IsNotNullOrWhiteSpace())
+                if ( sdrpDateRange.DelimitedValues.IsNotNullOrWhiteSpace() )
                 {
                     var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
                     if ( dateRange.Start.HasValue )
@@ -375,12 +378,12 @@ var barChart = new Chart(barCtx, {{
                 }
 
                 // add selected schedules to the query
-                if (cblSchedules.SelectedValues.Any() )
+                if ( cblSchedules.SelectedValues.Any() )
                 {
                     groupAttendances = groupAttendances.Where( a => cblSchedules.SelectedValuesAsInt.Contains( a.Occurrence.ScheduleId ?? -1 ) );
                 }
 
-                attendances = groupAttendances.ToList();
+                return groupAttendances.ToList();
             }
         }
 
@@ -447,7 +450,8 @@ var barChart = new Chart(barCtx, {{
         /// <summary>
         /// Shows the bar graph.
         /// </summary>
-        protected void ShowBarGraph()
+        /// <param name="attendances">The attendances.</param>
+        protected void ShowBarGraph( List<Attendance> attendances )
         {
             if ( !attendances.Any() )
             {
@@ -475,17 +479,17 @@ var barChart = new Chart(barCtx, {{
             if ( daysCount / 7 > 26 )
             {
                 // if more than 6 months summarize by month
-                CreateBarChartGroupedByMonth( firstDateTime, lastDateTime );
+                CreateBarChartGroupedByMonth( firstDateTime, lastDateTime, attendances );
             }
             else if ( daysCount > 31 )
             {
-                //if more than 1 month summarize by week
-                CreateBarChartGroupedByWeek( daysCount, firstDateTime );
+                // if more than 1 month summarize by week
+                CreateBarChartGroupedByWeek( daysCount, firstDateTime, attendances );
             }
             else
             {
                 // Otherwise summarize by day
-                CreateBarChartGroupedByDay( daysCount, firstDateTime );
+                CreateBarChartGroupedByDay( daysCount, firstDateTime, attendances );
             }
         }
 
@@ -494,13 +498,14 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         /// <param name="firstDateTime">The first date time.</param>
         /// <param name="lastDateTime">The last date time.</param>
-        protected void CreateBarChartGroupedByMonth( DateTime firstDateTime, DateTime lastDateTime )
+        /// <param name="attendances">The attendances.</param>
+        protected void CreateBarChartGroupedByMonth( DateTime firstDateTime, DateTime lastDateTime, List<Attendance> attendances )
         {
             List<SchedulerGroupMember> barchartdata = attendances
-                .GroupBy( a => new { StartYear = a.StartDateTime.Year, StartMonth = a.StartDateTime.Month  } )
+                .GroupBy( a => new { StartYear = a.StartDateTime.Year, StartMonth = a.StartDateTime.Month } )
                 .Select( a => new SchedulerGroupMember
                 {
-                    StartDateTime = new DateTime(a.Key.StartYear, a.Key.StartMonth, 1 ),
+                    StartDateTime = new DateTime( a.Key.StartYear, a.Key.StartMonth, 1 ),
                     Scheduled = a.Count(),
                     NoResponse = a.Count( aa => aa.RSVP == RSVP.Unknown ),
                     Declines = a.Count( aa => aa.RSVP == RSVP.No ),
@@ -509,45 +514,46 @@ var barChart = new Chart(barCtx, {{
                 } )
                 .ToList();
 
-                var monthsCount = ( ( lastDateTime.Year - firstDateTime.Year ) * 12 ) + ( lastDateTime.Month - firstDateTime.Month ) + 1;
-                var months = Enumerable.Range( 0, monthsCount )
-                    .Select(x => new
+            var monthsCount = ( ( lastDateTime.Year - firstDateTime.Year ) * 12 ) + ( lastDateTime.Month - firstDateTime.Month ) + 1;
+            var months = Enumerable.Range( 0, monthsCount )
+                .Select( x => new
+                {
+                    year = firstDateTime.AddMonths( x ).Year,
+                    month = firstDateTime.AddMonths( x ).Month
+                } );
+
+            var groupedByMonth = months
+                .GroupJoin(
+                    barchartdata,
+                    m => new { m.month, m.year },
+                    a => new { month = a.StartDateTime.Month, year = a.StartDateTime.Year },
+                    ( g, d ) => new
                     {
-                        year = firstDateTime.AddMonths(x).Year,
-                        month = firstDateTime.AddMonths(x).Month
+                        Month = g.month,
+                        Year = g.year,
+                        Scheduled = d.Sum( a => a.Scheduled ),
+                        NoResponse = d.Sum( a => a.NoResponse ),
+                        Declines = d.Sum( a => a.Declines ),
+                        Attended = d.Sum( a => a.Attended ),
+                        CommittedNoShow = d.Sum( a => a.CommittedNoShow ),
+                        Total = d.Sum( a => a.Scheduled ) + d.Sum( a => a.NoResponse ) + d.Sum( a => a.Declines ) + d.Sum( a => a.Attended ) + d.Sum( a => a.CommittedNoShow )
                     } );
 
-                var groupedByMonth = months
-                    .GroupJoin( barchartdata, m => new { m.month, m.year },
-                        a => new { month = a.StartDateTime.Month, year = a.StartDateTime.Year },
-                        ( g, d ) => new
-                        {
-                            Month = g.month,
-                            Year = g.year,
-                            Scheduled = d.Sum( a => a.Scheduled ),
-                            NoResponse = d.Sum( a => a.NoResponse ),
-                            Declines = d.Sum( a => a.Declines ),
-                            Attended = d.Sum( a => a.Attended ),
-                            CommittedNoShow = d.Sum( a => a.CommittedNoShow ),
-                            Total = d.Sum( a => a.Scheduled ) + d.Sum( a => a.NoResponse ) + d.Sum( a => a.Declines ) + d.Sum( a => a.Attended ) + d.Sum( a => a.CommittedNoShow )
-                        }
-                    );
+            this.BarChartLabelsJSON = "['" + groupedByMonth
+                .OrderBy( a => a.Year )
+                .ThenBy( a => a.Month )
+                .Select( a => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName( a.Month ) + " " + a.Year )
+                .ToList()
+                .AsDelimited( "','" ) + "']";
 
-                this.BarChartLabelsJSON = "['" + groupedByMonth
-                    .OrderBy(a => a.Year)
-                    .ThenBy( a => a.Month)
-                    .Select( a => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName( a.Month ) + " " + a.Year )
-                    .ToList()
-                    .AsDelimited( "','" ) + "']";
+            nbNoData.Visible = !barchartdata.Any();
 
-                nbNoData.Visible = !barchartdata.Any();
-
-                BarChartMaxValue = groupedByMonth.Max( x => x.Total );
-                BarChartScheduledJSON = groupedByMonth.OrderBy(a => a.Year).ThenBy( a => a.Month).Select( d => d.Scheduled ).ToJson();
-                BarChartNoResponseJSON = groupedByMonth.OrderBy(a => a.Year).ThenBy( a => a.Month).Select( d => d.NoResponse ).ToJson();
-                BarChartDeclinesJSON = groupedByMonth.OrderBy(a => a.Year).ThenBy( a => a.Month).Select( d => d.Declines ).ToJson();
-                BarChartAttendedJSON = groupedByMonth.OrderBy(a => a.Year).ThenBy( a => a.Month).Select( d => d.Attended ).ToJson();
-                BarChartCommittedNoShowJSON = groupedByMonth.OrderBy(a => a.Year).ThenBy( a => a.Month).Select( d => d.CommittedNoShow ).ToJson();
+            BarChartMaxValue = groupedByMonth.Max( x => x.Total );
+            BarChartScheduledJSON = groupedByMonth.OrderBy( a => a.Year ).ThenBy( a => a.Month ).Select( d => d.Scheduled ).ToJson();
+            BarChartNoResponseJSON = groupedByMonth.OrderBy( a => a.Year ).ThenBy( a => a.Month ).Select( d => d.NoResponse ).ToJson();
+            BarChartDeclinesJSON = groupedByMonth.OrderBy( a => a.Year ).ThenBy( a => a.Month ).Select( d => d.Declines ).ToJson();
+            BarChartAttendedJSON = groupedByMonth.OrderBy( a => a.Year ).ThenBy( a => a.Month ).Select( d => d.Attended ).ToJson();
+            BarChartCommittedNoShowJSON = groupedByMonth.OrderBy( a => a.Year ).ThenBy( a => a.Month ).Select( d => d.CommittedNoShow ).ToJson();
         }
 
         /// <summary>
@@ -555,10 +561,11 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         /// <param name="daysCount">The days count.</param>
         /// <param name="firstDateTime">The first date time.</param>
-        protected void CreateBarChartGroupedByWeek( int daysCount, DateTime firstDateTime )
+        /// <param name="attendances">The attendances.</param>
+        protected void CreateBarChartGroupedByWeek( int daysCount, DateTime firstDateTime, List<Attendance> attendances )
         {
             List<SchedulerGroupMember> barchartdata = attendances
-                .GroupBy( a => new { StartWeek = a.StartDateTime.StartOfWeek(DayOfWeek.Monday) } )
+                .GroupBy( a => new { StartWeek = a.StartDateTime.StartOfWeek( DayOfWeek.Monday ) } )
                 .Select( a => new SchedulerGroupMember
                 {
                     StartDateTime = a.Key.StartWeek,
@@ -571,13 +578,15 @@ var barChart = new Chart(barCtx, {{
                 .ToList();
 
             var weeks = Enumerable.Range( 0, ( int ) Math.Ceiling( ( daysCount / 7.0 ) + 1 ) )
-                .Select(x => new
+                .Select( x => new
                 {
-                    date = firstDateTime.StartOfWeek(DayOfWeek.Monday).AddDays(x * 7)
+                    date = firstDateTime.StartOfWeek( DayOfWeek.Monday ).AddDays( x * 7 )
                 } );
 
             var groupedByDate = weeks
-                .GroupJoin( barchartdata, m => new { m.date },
+                .GroupJoin(
+                    barchartdata,
+                    m => new { m.date },
                     a => new { date = a.StartDateTime.Date },
                     ( g, d ) => new
                     {
@@ -588,11 +597,10 @@ var barChart = new Chart(barCtx, {{
                         Attended = d.Sum( a => a.Attended ),
                         CommittedNoShow = d.Sum( a => a.CommittedNoShow ),
                         Total = d.Sum( a => a.Scheduled ) + d.Sum( a => a.NoResponse ) + d.Sum( a => a.Declines ) + d.Sum( a => a.Attended ) + d.Sum( a => a.CommittedNoShow )
-                    }
-                );
+                    } );
 
             this.BarChartLabelsJSON = "['" + groupedByDate
-                .OrderBy(a => a.Date)
+                .OrderBy( a => a.Date )
                 .Select( a => a.Date.ToShortDateString() )
                 .ToList()
                 .AsDelimited( "','" ) + "']";
@@ -600,11 +608,11 @@ var barChart = new Chart(barCtx, {{
             nbNoData.Visible = !barchartdata.Any();
 
             BarChartMaxValue = groupedByDate.Max( x => x.Total );
-            BarChartScheduledJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Scheduled ).ToJson();
-            BarChartNoResponseJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.NoResponse ).ToJson();
-            BarChartDeclinesJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Declines ).ToJson();
-            BarChartAttendedJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Attended ).ToJson();
-            BarChartCommittedNoShowJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.CommittedNoShow ).ToJson();
+            BarChartScheduledJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Scheduled ).ToJson();
+            BarChartNoResponseJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.NoResponse ).ToJson();
+            BarChartDeclinesJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Declines ).ToJson();
+            BarChartAttendedJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Attended ).ToJson();
+            BarChartCommittedNoShowJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.CommittedNoShow ).ToJson();
         }
 
         /// <summary>
@@ -612,10 +620,11 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         /// <param name="daysCount">The days count.</param>
         /// <param name="firstDateTime">The first date time.</param>
-        protected void CreateBarChartGroupedByDay( int daysCount, DateTime firstDateTime )
+        /// <param name="attendances">The attendances.</param>
+        protected void CreateBarChartGroupedByDay( int daysCount, DateTime firstDateTime, List<Attendance> attendances )
         {
             List<SchedulerGroupMember> barchartdata = attendances
-                .GroupBy( a => new { StartYear = a.StartDateTime.Year, StartMonth = a.StartDateTime.Month, StartDay = a.StartDateTime.Day  } )
+                .GroupBy( a => new { StartYear = a.StartDateTime.Year, StartMonth = a.StartDateTime.Month, StartDay = a.StartDateTime.Day } )
                 .Select( a => new SchedulerGroupMember
                 {
                     StartDateTime = new DateTime( a.Key.StartYear, a.Key.StartMonth, a.Key.StartDay ),
@@ -628,13 +637,15 @@ var barChart = new Chart(barCtx, {{
                 .ToList();
 
             var days = Enumerable.Range( 0, daysCount + 1 )
-                .Select(x => new
+                .Select( x => new
                 {
-                    date = firstDateTime.AddDays(x)
+                    date = firstDateTime.AddDays( x )
                 } );
 
             var groupedByDate = days
-                .GroupJoin( barchartdata, m => new { m.date },
+                .GroupJoin(
+                    barchartdata,
+                    m => new { m.date },
                     a => new { date = a.StartDateTime.Date },
                     ( g, d ) => new
                     {
@@ -645,11 +656,10 @@ var barChart = new Chart(barCtx, {{
                         Attended = d.Sum( a => a.Attended ),
                         CommittedNoShow = d.Sum( a => a.CommittedNoShow ),
                         Total = d.Sum( a => a.Scheduled ) + d.Sum( a => a.NoResponse ) + d.Sum( a => a.Declines ) + d.Sum( a => a.Attended ) + d.Sum( a => a.CommittedNoShow )
-                    }
-                );
+                    } );
 
             this.BarChartLabelsJSON = "['" + groupedByDate
-                .OrderBy(a => a.Date)
+                .OrderBy( a => a.Date )
                 .Select( a => a.Date.ToShortDateString() )
                 .ToList()
                 .AsDelimited( "','" ) + "']";
@@ -657,11 +667,11 @@ var barChart = new Chart(barCtx, {{
             nbNoData.Visible = !barchartdata.Any();
 
             BarChartMaxValue = groupedByDate.Max( x => x.Total );
-            BarChartScheduledJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Scheduled ).ToJson();
-            BarChartNoResponseJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.NoResponse ).ToJson();
-            BarChartDeclinesJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Declines ).ToJson();
-            BarChartAttendedJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.Attended ).ToJson();
-            BarChartCommittedNoShowJSON = groupedByDate.OrderBy(a => a.Date).Select( d => d.CommittedNoShow ).ToJson();
+            BarChartScheduledJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Scheduled ).ToJson();
+            BarChartNoResponseJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.NoResponse ).ToJson();
+            BarChartDeclinesJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Declines ).ToJson();
+            BarChartAttendedJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.Attended ).ToJson();
+            BarChartCommittedNoShowJSON = groupedByDate.OrderBy( a => a.Date ).Select( d => d.CommittedNoShow ).ToJson();
         }
 
         /// <summary>
@@ -687,7 +697,8 @@ var barChart = new Chart(barCtx, {{
         /// <summary>
         /// Shows the doughnut graph.
         /// </summary>
-        protected void ShowDoughnutGraph()
+        /// <param name="attendances">The attendances.</param>
+        protected void ShowDoughnutGraph( List<Attendance> attendances )
         {
             if ( !attendances.Any() )
             {
@@ -700,9 +711,9 @@ var barChart = new Chart(barCtx, {{
             {
                 DoughnutChartDeclineLabelsJSON = "['" + declines
                 .OrderByDescending( d => d.Count )
-                .Select( d => DefinedValueCache.Get( d.Reason.Value ).Value)
+                .Select( d => DefinedValueCache.Get( d.Reason.Value ).Value )
                 .ToList()
-                .AsDelimited("','") + "']";
+                .AsDelimited( "','" ) + "']";
 
                 DoughnutChartDeclineValuesJSON = declines.OrderByDescending( d => d.Count ).Select( d => d.Count ).ToJson();
             }
@@ -716,7 +727,8 @@ var barChart = new Chart(barCtx, {{
         /// <summary>
         /// Shows the grid.
         /// </summary>
-        protected void ShowGrid()
+        /// <param name="attendances">The attendances.</param>
+        protected void ShowGrid( List<Attendance> attendances )
         {
             gData.Visible = true;
             var schedulerGroupMembers = new List<SchedulerGroupMember>();
@@ -731,7 +743,7 @@ var barChart = new Chart(barCtx, {{
                     schedulerGroupMember.Name = personAliasService.GetPerson( personAliasId.Value ).FullName;
                     schedulerGroupMember.Scheduled = attendances.Where( a => a.PersonAliasId == personAliasId.Value ).Count();
                     schedulerGroupMember.NoResponse = attendances.Where( a => a.PersonAliasId == personAliasId.Value && a.RSVP == RSVP.Unknown ).Count();
-                    schedulerGroupMember.Declines = attendances.Where( a => a.PersonAliasId == personAliasId.Value && a.RSVP == RSVP.No).Count();
+                    schedulerGroupMember.Declines = attendances.Where( a => a.PersonAliasId == personAliasId.Value && a.RSVP == RSVP.No ).Count();
                     schedulerGroupMember.Attended = attendances.Where( a => a.PersonAliasId == personAliasId.Value && a.DidAttend == true ).Count();
                     schedulerGroupMember.CommittedNoShow = attendances.Where( a => a.PersonAliasId == personAliasId.Value && a.RSVP == RSVP.Yes && a.DidAttend == false ).Count();
 
@@ -760,6 +772,11 @@ var barChart = new Chart(barCtx, {{
 
         #region Control Events
 
+        /// <summary>
+        /// Handles the SelectItem event of the gpGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gpGroups_SelectItem( object sender, EventArgs e )
         {
             ResetCommonControls();
@@ -770,11 +787,16 @@ var barChart = new Chart(barCtx, {{
             }
 
             ppPerson.SetValue( null );
-            dvDataViews.SetValue( null);
+            dvDataViews.SetValue( null );
             LoadLocations();
             LoadSchedules();
         }
 
+        /// <summary>
+        /// Handles the SelectPerson event of the ppPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
             if ( !ValidateFilter() )
@@ -787,6 +809,11 @@ var barChart = new Chart(barCtx, {{
             ResetCommonControls();
         }
 
+        /// <summary>
+        /// Handles the SelectItem event of the dvDataViews control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dvDataViews_SelectItem( object sender, EventArgs e )
         {
             if ( !ValidateFilter() )
@@ -799,6 +826,11 @@ var barChart = new Chart(barCtx, {{
             ResetCommonControls();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
             nbBarChartMessage.Visible = false;
@@ -808,13 +840,18 @@ var barChart = new Chart(barCtx, {{
                 return;
             }
 
-            GetAttendanceData();
-            ShowGrid();
-            ShowBarGraph();
-            ShowDoughnutGraph();
+            var attendances = GetAttendanceData();
+            ShowGrid( attendances );
+            ShowBarGraph( attendances );
+            ShowDoughnutGraph( attendances );
             RegisterChartScripts();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblLocations_SelectedIndexChanged( object sender, EventArgs e )
         {
             LoadSchedules();
@@ -825,11 +862,17 @@ var barChart = new Chart(barCtx, {{
         protected class SchedulerGroupMember
         {
             public string Name { get; set; }
+
             public DateTime StartDateTime { get; set; }
+
             public int Scheduled { get; set; }
+
             public int NoResponse { get; set; }
+
             public int Declines { get; set; }
+
             public int Attended { get; set; }
+
             public int CommittedNoShow { get; set; }
         }
     }
