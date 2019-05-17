@@ -174,7 +174,7 @@ namespace Rock.Communication.Transport
                     }
 
                     // Subject
-                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Remove(998);
                     restRequest.AddParameter( "subject", subject );
 
                     // Body (html)

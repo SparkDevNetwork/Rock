@@ -226,7 +226,7 @@ namespace Rock.Communication.Transport
                             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
-                            message.Subject = subject;
+                            message.Subject = subject.Remove(998);
                             message.Body = body;
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
