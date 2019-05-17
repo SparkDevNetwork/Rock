@@ -855,7 +855,7 @@ namespace Rock.Model
                 if ( dataView != null )
                 {
                     List<string> errorMessages;
-                    personQry = dataView.GetQuery( null, null, out errorMessages ) as IQueryable<Person>;
+                    personQry = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<Person>;
                 }
             }
 
@@ -999,11 +999,13 @@ namespace Rock.Model
 
                 if ( groupMemberQry != null )
                 {
-                    lastAttendedDateTimeQuery.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
+                    lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
                 }
                 else if ( personQry != null )
                 {
-                    lastAttendedDateTimeQuery.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
+                    lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
                 }
 
                 var personIdLastAttendedDateTimeLookup = lastAttendedDateTimeQuery
@@ -1028,9 +1030,20 @@ namespace Rock.Model
                     } )
                     .ToDictionary( k => k.PersonId, v => v.ScheduledOccurrenceGroupIds );
 
-                var resourcePersonIds = schedulerResourceList.Select( a => a.PersonId ).Distinct().ToArray();
+                // select personScheduleExclusionQueryForOccurrence into a List just in case resourcePersonIds is large (10000+ ids) , so we don't an exception when building personScheduleExclusionQueryForOccurrencePersonIds
+                var personScheduleExclusionForOccurrencePersonIdList = personScheduleExclusionQueryForOccurrence.Select( s => s.PersonAlias.PersonId ).ToList();
 
-                HashSet<int> personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>( personScheduleExclusionQueryForOccurrence.Where( a => resourcePersonIds.Contains( a.PersonAlias.PersonId ) ).Select( a => a.PersonAlias.PersonId ).Distinct().ToList() );
+                HashSet<int> personScheduleExclusionQueryForOccurrencePersonIds;
+
+                if ( true || personScheduleExclusionForOccurrencePersonIdList.Any() )
+                {
+                    var resourcePersonIdHash = new HashSet<int>( schedulerResourceList.Select( a => a.PersonId ).Distinct().ToArray() );
+                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>( personScheduleExclusionForOccurrencePersonIdList.Where( personId => resourcePersonIdHash.Contains( personId ) ).Distinct().ToList() );
+                }
+                else
+                {
+                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>();
+                }
 
                 foreach ( var schedulerResource in schedulerResourceList )
                 {
