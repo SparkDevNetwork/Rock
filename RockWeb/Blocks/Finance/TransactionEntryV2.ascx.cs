@@ -672,7 +672,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region Attribute Categories
 
-        public static class AttributeCategory
+        protected static class AttributeCategory
         {
             public const string None = "";
 
@@ -693,7 +693,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region PageParameterKeys
 
-        public static class PageParameterKey
+        protected static class PageParameterKey
         {
             public const string Person = "Person";
 
@@ -2898,5 +2898,9 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion navigation
+    }
+
+    public interface IPageParameterClass
+    {
     }
 }
