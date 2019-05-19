@@ -46,6 +46,7 @@
                             {% endif %}
                         {% endif %}
                     {% endcapture %}
+                    {{ child | Attribute:'Video','Url' }}
                     {% assign imageurl = imageurl | Trim %}
                     {% capture imageoverlayurl %}{% endcapture %}
                     {% capture imagealignment %}{% endcapture %}
