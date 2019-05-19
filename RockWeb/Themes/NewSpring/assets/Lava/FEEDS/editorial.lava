@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:admin="http://webns.net/mvcb/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:media="http://search.yahoo.com/mrss/">
+{% assign PublicApplicationRoot = "https://newspring.cc" %}
+
+<channel>
+
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+    {% assign channelNameParts = Channel.Name | Split:' - ' %}
+    <title>{{ channelNameParts[1] }} - {{ 'Global' | Attribute:'OrganizationName' }}</title>
+    <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+    {% if Channel.Description and Channel.Description != empty %}
+        <description><![CDATA[{{ Channel.Description }}]]></description>
+    {% endif %}
+    <language>en-US</language>
+    <copyright>Copyright {{ 'Now' | Date:'yyyy' }}, {{ 'Global' | Attribute:'OrganizationName' }}</copyright>
+    <webMaster>web@newspring.cc (NewSpring Web)</webMaster>
+    <pubDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:00:00 EST' }}</pubDate>
+    <category>{{ channelNameParts[1] }}</category>
+    <generator>Rock RMS, https://www.rockrms.com/</generator>
+    
+    {% if Channel.TimeToLive > 0 %}
+        <ttl>{{ Channel.TimeToLive }}</ttl>
+    {% endif %}
+    
+    {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
+    {% if channelImage and channelImage != empty %}
+        <image>
+            <url>{{ channelImage }}</url>
+            <title>{{ channelNameParts[1] }} - {{ 'Global' | Attribute:'OrganizationName' }}</title>
+            <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+        </image>
+    {% endif %}
+
+{% for item in Items -%}
+
+    {% capture itemSlug %}
+        {% contentchannelitemslug where:'ContentChannelItemId == {{ item.Id }}' iterator:'slugs' limit:'1' %}
+            {% for slug in slugs %}
+                {{ slug.Slug }}
+            {% endfor %}
+        {% endcontentchannelitemslug %}
+    {% endcapture %}
+
+    {% if itemSlug and itemSlug != empty %}
+        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}/{{ itemSlug | Trim }}{% endcapture %}
+        {% assign itemImage = item | Attribute:'ImageLandscape','Url' %}
+        <item>
+            <title><![CDATA[{{ item.Title }}]]></title>
+            <link>{{ itemLink | Trim }}</link>
+            <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}</pubDate>
+            <category>{{ channelNameParts[1] }}</category>
+            
+            {% if itemImage and itemImage != empty %}
+                <media:content
+                  url="{{ itemImage | Escape }}"
+                  medium="image"
+                  isDefault="true"/>
+            {% endif %}
+
+            <description><![CDATA[{{ item.Content }}]]></description>
+            <guid>{{ itemLink | Trim }}</guid>
+            
+
+        </item>
+    {% endif %}
+{% endfor -%}
+
+{[ endscripturize ]}
+
+</channel>
+</rss>
