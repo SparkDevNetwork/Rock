@@ -12,7 +12,6 @@
 
 {% assign url = url | Trim %}
 
-
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="
 shell
 hero
@@ -40,24 +39,24 @@ overflow-hidden
     
     <!-- Background Image -->
     {% if imageurl != null and imageurl != '' %}
-        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
     {% endif %}
 
     {% if mobileimageurl != null and mobileimageurl != '' %}
-        <span class="hidden-md hidden-lg full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+        <span class="hidden-md hidden-lg full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
     {% endif %}
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-        <div class="bring-forward center-block text-constrained text-center soft-top sm-flush-bottom xs-flush-bottom push-half-top xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" {% if ratio != null and ratio != '' %}style="margin-bottom: 90px;"{% endif %}>
+        <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
 
             {% if imageoverlayurl != null and imageoverlayurl != '' %}
-                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 250px;">
+                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 750px;">
             {% endif %}
 
 
             {% if title != null and title != '' %}
-                <h1>{{ title }}</h1>
+                <h1 {% if imageoverlayurl and imageoverlayurl != empty %}class="hidden"{% endif %}>{{ title }}</h1>
             {% endif %}
 
             {{ content }}
@@ -65,7 +64,7 @@ overflow-hidden
 
             {% if url != empty %}
                 <p>
-                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
                 </p>
             {% endif %}
 
@@ -98,21 +97,10 @@ overflow-hidden
 -->
 
 {% assign url = 'Global' | Page:'Url' %}
-{% capture metatitle %}{% endcapture %}
-{% capture metadescription %}{% endcapture %}
-{% capture metaimage %}{% endcapture %}
 
-{% comment %} have to use the entity command for now because CurrentPage is not in the lava context for the content component block {% endcomment %}
-
-{% assign pageid = 'Global' | Page:'Id' %}
-
-{% page id:'{{ pageid }}' iterator:'pages' %}
-    {% for page in pages %}
-        {% assign pagemetatitle = page | Attribute:'PageMetaTitle' %}
-        {% assign pagemetadescription = page | Attribute:'PageMetaDescription' %}
-        {% assign pagemetaimage = page | Attribute:'PageMetaImage','Url' %}
-    {% endfor %}
-{% endpage %}
+{% assign pagemetatitle = CurrentPage | Attribute:'PageMetaTitle' %}
+{% assign pagemetadescription = CurrentPage | Attribute:'PageMetaDescription' %}
+{% assign pagemetaimage = CurrentPage | Attribute:'PageMetaImage','Url' %}
 
 {% capture metatitle %}{% if pagemetatitle and pagemetatitle != empty %}{{ pagemetatitle }}{% else %}{{ title }}{% endif %}{% endcapture %}
 {% capture metadescription %}{% if pagemetadescription and pagemetadescription != empty %}{{ pagemetadescription }}{% else %}{{ content | StripHtml | StripNewlines | Truncate:160,'...' }}{% endif %}{% endcapture %}

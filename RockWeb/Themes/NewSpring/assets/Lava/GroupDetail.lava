@@ -25,28 +25,29 @@
         {% endif %}
     </section>
 
-
     {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+        {% capture rosterPage %}/{{ LinkedPages.RosterPage | Replace:groupIdSlug,PageParameter.GroupId }}{% endcapture %}
+        {% capture attendancePage %}/{{ LinkedPages.AttendancePage | Replace:groupIdSlug,PageParameter.GroupId }}{% endcapture %}
         <ul class="nav nav-pills push-bottom xs-push-half-bottom">
             {% if LinkedPages.RosterPage != '' %}
-                {% if '/{{ LinkedPages.RosterPage | Replace:groupIdSlug,PageParameter.GroupId }}' == '{{ CurrentPage.Path }}' %}
-                    <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+                {% if rosterPage == CurrentPage.Path %}
+                    <li role="presentation" class="active"><a href="{{ rosterPage }}">Roster</a></li>
                 {% else %}
-                    <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+                    <li role="presentation"><a href="{{ rosterPage }}">Roster</a></li>
                 {% endif %}
             {% endif %}
 
             {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
-                {% if '/{{ LinkedPages.AttendancePage | Replace:groupIdSlug,PageParameter.GroupId }}' == '{{ CurrentPage.Path }}' %}
-                    <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+                {% if attendancePage == CurrentPage.Path %}
+                    <li role="presentation" class="active"><a href="{{ attendancePage }}">Attendance</a></li>
                 {% else %}
-                    <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+                    <li role="presentation"><a href="{{ attendancePage }}">Attendance</a></li>
                 {% endif %}
             {% endif %}
         </ul>
     {% endif %}    
 
-    {% if LinkedPages.RosterPage | Replace:groupIdSlug,PageParameter.GroupId == CurrentPage.Path %}
+    {% if rosterPage == CurrentPage.Path %}
     <section class="soft xs-soft-half bg-white rounded shadowed hard-bottom clearfix push-bottom xs-push-half-bottom">
         
         <h3>Group Roster</h3>

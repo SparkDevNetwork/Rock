@@ -4,15 +4,22 @@
     <!-- Slides -->
     {% campus where:'IsActive == true && Public == true' sort:'Name, asc' iterator:'campuses' %}
         {% for campus in campuses %}
-            {% assign serviceTimesMatrixGuid = campus | Attribute:'ServiceTimes1','RawValue' %}
+            {% assign directionsURL = campus | Attribute:'GetDirectionsURL','RawValue' %}
+            {% assign fuseDirectionsUrl = campus | Attribute:'FuseGetDirectionsURL','RawValue' %}
+            
             [[ item data:'data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}"' ]]
+                {% assign nsImageUrl = campus | Attribute:'ImageLandscape' %}
+                {% assign fuseImageUrl = campus | Attribute:'FuseImageLandscape' %}
+                {% capture campusImageUrl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
 
                 {% capture content %}
-                    <p class="push-half-bottom">{{ campus | Attribute:'ServiceTimes1' | Trim }}</p>
-                    <p><a href="#">Get Directions</a></p>
+                    <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
+                    {% if directionsURL and directionsURL != empty %}
+                        <p><a href="{% if fuseDirectionsUrl and fuseDirectionsUrl != empty and servicetype == 'Fuse' %}{{ fuseDirectionsUrl }}{% else %}{{ directionsURL }}{% endif %}" target="_blank">Get Directions</a></p>
+                    {% endif %}
                 {% endcapture %}
             
-                {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linkurl:'/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campus | Attribute:'ImageLandscape' }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
+                {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
                 
             [[ enditem ]]
         {% endfor %}

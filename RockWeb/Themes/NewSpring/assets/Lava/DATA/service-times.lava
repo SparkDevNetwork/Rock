@@ -1,31 +1,20 @@
-{% capture servicesJSON %}[
-{% for attributeMatrixItem in AttributeMatrixItems %}{
-    {% for itemAttribute in ItemAttributes %}
-        {% assign attributeValue = attributeMatrixItem | Attribute:itemAttribute.Key %}
-        {% if itemAttribute.Key != 'ServiceLocation' %}
-            "{{ itemAttribute.Key }}":"{{ attributeValue }}"
-        {% elseif itemAttribute.Key == 'ServiceLocation' and attributeValue != '' %}
-            {% assign serviceLocation = attributeMatrixItem | Attribute:itemAttribute.Key,'Object' %}
-            "{{ itemAttribute.Key }}":{
-                {% if serviceLocation.Street1 != '' %}"Street1":"{{ serviceLocation.Street1 }}",{% endif %}
-                {% if serviceLocation.Street2 != '' %}"Street2":"{{ serviceLocation.Street2 }}",{% endif %}
-                {% if serviceLocation.City != '' %}"City":"{{ serviceLocation.City }}",{% endif %}
-                {% if serviceLocation.State != '' %}"State":"{{ serviceLocation.State }}",{% endif %}
-                {% if serviceLocation.PostalCode != '' %}"PostalCode":"{{ serviceLocation.PostalCode }}"{% endif %}
-            }
-        {% endif %}{% if forloop.last != true %},{% endif %}
+{% if campusid and campusid != empty %}
+    {% campus id:'{{ campusid }}' iterator:'campuses' %}
+        {% for campus in campuses %}
+            {% capture servicesJSON %}{{ campus | Attribute:'ServiceTimes1' }}{% endcapture %}
+        {% endfor %}
+    {% endcampus %}
+    
+    {% assign servicesJSON = servicesJSON | FromJSON %}
+    
+    {% for service in servicesJSON %}
+        {% if service.ServiceType == servicetype %}
+            {{ service.ServiceDay }} {{ service.ServiceTime | Remove:':00' | Remove:' ' | Downcase }}<br>
+            {% if service.DoorsOpenTime and service.DoorsOpenTime != empty %}<span class="text-gray-light">Doors Open at {{ service.DoorsOpenTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}
+            {% if service.PickUpTime and service.PickUpTime != empty %}<span class="text-gray-light">Pick Up Students at {{ service.PickUpTime | Remove:':00' | Remove:' ' | Downcase }}</span><br>{% endif %}
+            {% assign serviceDay = service.ServiceDay %}
+        {% endif %}
     {% endfor %}
-}{% if forloop.last != true %},{% endif %}{% endfor %}
-]{% endcapture %}
+    {% assign serviceDay = '' %}
 
-{% assign servicesJSON = servicesJSON | FromJSON %}
-
-
-
-{% for service in servicesJSON %}
-    {% if service.ServiceType == 'NewSpring' %}
-        {% if service.ServiceDay != serviceDay %}{% if forloop.first != true %}<br>{% endif %}{{ service.ServiceDay }} {% endif %}{{ service.ServiceTime }}
-        {% assign serviceDay = service.ServiceDay %}
-    {% endif %}
-{% endfor %}
-{% assign serviceDay = '' %}
+{% endif %}
