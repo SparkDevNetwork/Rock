@@ -45,13 +45,13 @@ namespace RockWeb.Blocks.GroupScheduling
         IsRequired = true,
         DefaultIntegerValue = 6,
         Order = 0,
-        Key = AttributeKeys.FutureWeeksToShow )]
+        Key = AttributeKey.FutureWeeksToShow )]
     public partial class GroupScheduler : RockBlock
     {
         /// <summary>
         /// 
         /// </summary>
-        protected class AttributeKeys
+        protected class AttributeKey
         {
             /// <summary>
             /// The future weeks to show
@@ -196,7 +196,7 @@ btnCopyToClipboard.ClientID );
             bgResourceListSource.BindToEnum<SchedulerResourceListSourceType>();
             rblGroupMemberFilter.BindToEnum<SchedulerResourceGroupMemberFilterType>();
 
-            int numOfWeeks = GetAttributeValue( AttributeKeys.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
+            int numOfWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
 
             ddlWeek.Items.Clear();
 

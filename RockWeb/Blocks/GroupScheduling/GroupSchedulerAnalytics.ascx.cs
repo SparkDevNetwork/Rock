@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.GroupScheduling
         IsRequired = false,
         DefaultValue = "#01B8AA,#374649,#FD625E,#F2C80F,#5F6B6D,#8AD4EB,#FE9666,#A66999",
         Order = 0,
-        Key = AttributeKeys.DeclineChartColors )]
+        Key = AttributeKey.DeclineChartColors )]
 
     [ColorField(
         "No Response",
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#FFC870",
         Category = "Bar Chart Colors",
         Order = 2,
-        Key = AttributeKeys.BarChartNoResponseColor )]
+        Key = AttributeKey.BarChartNoResponseColor )]
 
     [ColorField(
         "Declines",
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#D4442E",
         Category = "Bar Chart Colors",
         Order = 3,
-        Key = AttributeKeys.BarChartDeclinesColor )]
+        Key = AttributeKey.BarChartDeclinesColor )]
 
     [ColorField(
         "Attended",
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#16C98D",
         Category = "Bar Chart Colors",
         Order = 4,
-        Key = AttributeKeys.BarChartAttendedColor )]
+        Key = AttributeKey.BarChartAttendedColor )]
 
     [ColorField(
         "Committed No Show",
@@ -80,11 +80,11 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "#484848",
         Category = "Bar Chart Colors",
         Order = 5,
-        Key = AttributeKeys.BarChartCommittedNoShowColor )]
+        Key = AttributeKey.BarChartCommittedNoShowColor )]
 
     public partial class GroupSchedulerAnalytics : RockBlock
     {
-        protected static class AttributeKeys
+        protected static class AttributeKey
         {
             public const string DeclineChartColors = "DeclineChartColors";
             public const string BarChartNoResponseColor = "BarChartNoResponseColor";
@@ -92,6 +92,51 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string BarChartAttendedColor = "BarChartAttendedColor";
             public const string BarChartCommittedNoShowColor = "BarChartCommittedNoShowColor";
         }
+
+        #region UserPreferenceKeys
+
+        /// <summary>
+        /// Keys to use for UserPreferences
+        /// </summary>
+        protected static class UserPreferenceKey
+        {
+            /// <summary>
+            /// The selected Date Range
+            /// </summary>
+            public const string SelectedDateRange = "SelectedDateRange";
+
+            /// <summary>
+            /// The selected View By
+            /// </summary>
+            public const string SelectedViewBy = "ViewBy";
+
+            /// <summary>
+            /// The selected group identifier
+            /// </summary>
+            public const string SelectedGroupId = "SelectedGroupId";
+
+            /// <summary>
+            /// The selected group location ids
+            /// </summary>
+            public const string SelectedLocationIds = "SelectedLocationIds";
+
+            /// <summary>
+            /// The selected schedule ids
+            /// </summary>
+            public const string SelectedScheduleIds = "SelectedScheduleIds";
+
+            /// <summary>
+            /// The selected data view identifier
+            /// </summary>
+            public const string SelectedDataViewId = "SelectedDataViewId";
+
+            /// <summary>
+            /// The selected person identifier
+            /// </summary>
+            public const string SelectedPersonId = "SelectedPersonId";
+        }
+
+        #endregion UserPreferanceKeys
 
         #region Properties
 
@@ -132,6 +177,16 @@ namespace RockWeb.Blocks.GroupScheduling
             RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
 
+            btnCopyToClipboard.Visible = true;
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format(
+@"new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+",
+btnCopyToClipboard.ClientID );
+
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -146,6 +201,8 @@ namespace RockWeb.Blocks.GroupScheduling
             base.OnLoad( e );
             if ( !IsPostBack )
             {
+                LoadFilterFromUserPreferencesOrURL();
+
                 hfTabs.Value = "group";
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now ) +
                     "<h3>Doughnut Chart</h3><p>This chart represents the combined total of decline reasons that were selected.  In some cases, decline reasons are provided so this chart may be empty.</p>";
@@ -279,13 +336,13 @@ var barChart = new Chart(barCtx, {{
 }});",
             barChartCanvas.ClientID,
             BarChartLabelsJSON,
-            GetAttributeValue( AttributeKeys.BarChartNoResponseColor ),
+            GetAttributeValue( AttributeKey.BarChartNoResponseColor ),
             BarChartNoResponseJSON,
-            GetAttributeValue( AttributeKeys.BarChartDeclinesColor ),
+            GetAttributeValue( AttributeKey.BarChartDeclinesColor ),
             BarChartDeclinesJSON,
-            GetAttributeValue( AttributeKeys.BarChartAttendedColor ),
+            GetAttributeValue( AttributeKey.BarChartAttendedColor ),
             BarChartAttendedJSON,
-            GetAttributeValue( AttributeKeys.BarChartCommittedNoShowColor ),
+            GetAttributeValue( AttributeKey.BarChartCommittedNoShowColor ),
             BarChartCommittedNoShowJSON,
             steps );
 
@@ -303,18 +360,81 @@ var barChart = new Chart(barCtx, {{
         }
 
         /// <summary>
+        /// Loads the filter from user preferences or the URL
+        /// </summary>
+        private void LoadFilterFromUserPreferencesOrURL()
+        {
+
+            sdrpDateRange.DelimitedValues = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedDateRange );
+            hfTabs.Value = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedViewBy );
+            gpGroups.GroupId = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
+
+            LoadLocations();
+            LoadSchedules();
+
+            cblLocations.SetValues( this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedLocationIds ).SplitDelimitedValues() );
+            cblSchedules.SetValues( this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedScheduleIds ).SplitDelimitedValues() );
+            dvDataViews.SetValue( this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedDataViewId ).AsIntegerOrNull() );
+            Person selectedPerson = null;
+            int? selectedPersonId = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedPersonId ).AsIntegerOrNull();
+            if ( selectedPersonId.HasValue )
+            {
+                selectedPerson = new PersonService( new RockContext() ).GetNoTracking( selectedPersonId.Value );
+            }
+
+            ppPerson.SetValue( selectedPerson );
+
+            
+        }
+
+        /// <summary>
+        /// Gets the URL setting (if there is one) or block user preference.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetUrlSettingOrBlockUserPreference( string key )
+        {
+            string setting = Request.QueryString[key];
+            if ( setting != null )
+            {
+                return setting;
+            }
+
+            return this.GetBlockUserPreference( key );
+        }
+
+        /// <summary>
         /// Clears the existing data from class var attendances and repopulates it with data for the selected group and filter criteria.
         /// Data is organized by each person in the group.
         /// </summary>
         private List<Attendance> GetAttendanceData()
         {
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedDateRange, sdrpDateRange.DelimitedValues );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedViewBy, hfTabs.Value );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, gpGroups.GroupId.ToString() );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedLocationIds, cblLocations.SelectedValues.AsDelimited( "," ) );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedScheduleIds, cblSchedules.SelectedValues.AsDelimited( "," ) );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedDataViewId, dvDataViews.SelectedValue );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedPersonId, ppPerson.SelectedValue.ToString() );
+
+            // Create URL for selected settings
+            var pageReference = CurrentPageReference;
+            foreach ( var setting in GetBlockUserPreferences() )
+            {
+                pageReference.Parameters.AddOrReplace( setting.Key, setting.Value );
+            }
+
+            Uri uri = new Uri( Request.Url.ToString() );
+            btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
+            btnCopyToClipboard.Disabled = false;
+
             // Source data for all tables and graphs
             using ( var rockContext = new RockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
                 var groupAttendances = attendanceService
                     .Queryable()
-                    .Include(a => a.PersonAlias )
+                    .Include( a => a.PersonAlias )
                     .AsNoTracking()
                     .Where( a => a.RequestedToAttend == true );
 
@@ -322,9 +442,22 @@ var barChart = new Chart(barCtx, {{
                 {
                     case "group":
                         groupAttendances = groupAttendances.Where( a => a.Occurrence.GroupId == gpGroups.GroupId );
+
+                        // add selected locations to the query
+                        if ( cblLocations.SelectedValues.Any() )
+                        {
+                            groupAttendances = groupAttendances.Where( a => cblLocations.SelectedValuesAsInt.Contains( a.Occurrence.LocationId ?? -1 ) );
+                        }
+
+                        // add selected schedules to the query
+                        if ( cblSchedules.SelectedValues.Any() )
+                        {
+                            groupAttendances = groupAttendances.Where( a => cblSchedules.SelectedValuesAsInt.Contains( a.Occurrence.ScheduleId ?? -1 ) );
+                        }
+
                         break;
                     case "person":
-                        groupAttendances = groupAttendances.Where( a => a.PersonAliasId == ppPerson.PersonAliasId );
+                        groupAttendances = groupAttendances.Where( a => a.PersonAlias.PersonId == ppPerson.PersonId );
                         break;
                     case "dataview":
                         var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
@@ -353,18 +486,6 @@ var barChart = new Chart(barCtx, {{
                     }
                 }
 
-                // add selected locations to the query
-                if ( cblLocations.SelectedValues.Any() )
-                {
-                    groupAttendances = groupAttendances.Where( a => cblLocations.SelectedValuesAsInt.Contains( a.Occurrence.LocationId ?? -1 ) );
-                }
-
-                // add selected schedules to the query
-                if ( cblSchedules.SelectedValues.Any() )
-                {
-                    groupAttendances = groupAttendances.Where( a => cblSchedules.SelectedValuesAsInt.Contains( a.Occurrence.ScheduleId ?? -1 ) );
-                }
-
                 return groupAttendances.ToList();
             }
         }
@@ -376,6 +497,9 @@ var barChart = new Chart(barCtx, {{
         {
             using ( var rockContext = new RockContext() )
             {
+                // keep any selected locations that exist for the currently selected group
+                var selectedLocationIds = cblLocations.SelectedValuesAsInt;
+
                 var groupLocationService = new GroupLocationService( rockContext );
                 var groupLocationQuery = groupLocationService
                     .Queryable()
@@ -387,14 +511,13 @@ var barChart = new Chart(barCtx, {{
 
                 var source = groupLocationQuery.Select( gl => new { Id = gl.LocationId, gl.Location.Name } ).ToList();
 
-                if ( source.Any() )
-                {
-                    cblLocations.Visible = true;
-                    cblLocations.DataValueField = "Id";
-                    cblLocations.DataTextField = "Name";
-                    cblLocations.DataSource = source;
-                    cblLocations.DataBind();
-                }
+                cblLocations.Visible = true;
+                cblLocations.DataValueField = "Id";
+                cblLocations.DataTextField = "Name";
+                cblLocations.DataSource = source;
+                cblLocations.DataBind();
+
+                cblLocations.SetValues( selectedLocationIds );
             }
         }
 
@@ -695,7 +818,7 @@ var barChart = new Chart(barCtx, {{
         protected void ShowGrid( List<Attendance> attendances )
         {
             gData.Visible = true;
-            var schedulerGroupMembers = new List<SchedulerSummaryData>();
+            var schedulerSummaryDataList = new List<SchedulerSummaryData>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -710,27 +833,17 @@ var barChart = new Chart(barCtx, {{
                 {
                     var personAttendances = attendancesByPersonLookup.GetValueOrNull( person.Id ) ?? new List<Attendance>();
                     var schedulerGroupMember = new SchedulerSummaryData( person, personAttendances );
-                    schedulerGroupMembers.Add( schedulerGroupMember );
+                    schedulerSummaryDataList.Add( schedulerGroupMember );
                 }
             }
 
-            gData.DataSource = schedulerGroupMembers;
+            if (gData.SortProperty != null)
+            {
+                schedulerSummaryDataList = schedulerSummaryDataList.AsQueryable().Sort( gData.SortProperty ).ToList();
+            }
+
+            gData.DataSource = schedulerSummaryDataList;
             gData.DataBind();
-        }
-
-        /// <summary>
-        /// Resets values for common controls. Should be called when selecting a group, person, or dataview.
-        /// </summary>
-        protected void ResetCommonControls()
-        {
-            // sdrpDateRange we'll leave the date alone since it is not derived from any other data.
-            cblLocations.Items.Clear();
-            cblLocations.Visible = false;
-
-            cblSchedules.Items.Clear();
-            cblSchedules.Visible = false;
-
-            gData.Visible = false;
         }
 
         #region Control Events
@@ -742,15 +855,11 @@ var barChart = new Chart(barCtx, {{
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gpGroups_SelectItem( object sender, EventArgs e )
         {
-            ResetCommonControls();
-
             if ( !ValidateFilter() )
             {
                 return;
             }
 
-            ppPerson.SetValue( null );
-            dvDataViews.SetValue( null );
             LoadLocations();
             LoadSchedules();
         }
@@ -766,10 +875,6 @@ var barChart = new Chart(barCtx, {{
             {
                 return;
             }
-
-            gpGroups.SetValue( null );
-            dvDataViews.SetValue( null );
-            ResetCommonControls();
         }
 
         /// <summary>
@@ -783,10 +888,6 @@ var barChart = new Chart(barCtx, {{
             {
                 return;
             }
-
-            gpGroups.SetValue( null );
-            ppPerson.SetValue( null );
-            ResetCommonControls();
         }
 
         /// <summary>
@@ -803,6 +904,14 @@ var barChart = new Chart(barCtx, {{
                 return;
             }
 
+            ShowData();
+        }
+
+        /// <summary>
+        /// Shows the data.
+        /// </summary>
+        private void ShowData()
+        {
             var attendances = GetAttendanceData();
             ShowGrid( attendances );
             ShowBarGraph( attendances );
@@ -824,7 +933,7 @@ var barChart = new Chart(barCtx, {{
 
         protected class SchedulerSummaryData
         {
-            public SchedulerSummaryData( DateTime startDateTime, List<Attendance> attendances)
+            public SchedulerSummaryData( DateTime startDateTime, List<Attendance> attendances )
             {
                 this.StartDateTime = startDateTime;
                 SetCountFields( attendances );
@@ -836,7 +945,7 @@ var barChart = new Chart(barCtx, {{
                 SetCountFields( attendances );
             }
 
-            private void SetCountFields ( List<Attendance> attendances )
+            private void SetCountFields( List<Attendance> attendances )
             {
                 ScheduledCount = attendances.Count();
                 NoResponseCount = attendances.Count( aa => aa.RSVP == RSVP.Unknown & aa.DidAttend == false );
@@ -850,14 +959,59 @@ var barChart = new Chart(barCtx, {{
             public DateTime StartDateTime { get; private set; }
 
             public int ScheduledCount { get; private set; }
+            public string ScheduledCountText
+            {
+                get
+                {
+                    return ScheduledCount == 0 ? "-" : ScheduledCount.ToString();
+                }
+            }
 
             public int NoResponseCount { get; private set; }
+            public string NoResponseCountText
+            {
+                get
+                {
+                    return NoResponseCount == 0 ? "-" : NoResponseCount.ToString();
+                }
+            }
 
             public int DeclineCount { get; private set; }
+            public string DeclineCountText
+            {
+                get
+                {
+                    return DeclineCount == 0 ? "-" : DeclineCount.ToString();
+                }
+            }
 
             public int AttendedCount { get; private set; }
+            public string AttendedCountText
+            {
+                get
+                {
+                    return AttendedCount == 0 ? "-" : AttendedCount.ToString();
+                }
+            }
 
             public int CommittedNoShowCount { get; private set; }
+            public string CommittedNoShowCountText
+            {
+                get
+                {
+                    return CommittedNoShowCount == 0 ? "-" : CommittedNoShowCount.ToString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gData control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected void gData_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            ShowData();
         }
     }
 }
