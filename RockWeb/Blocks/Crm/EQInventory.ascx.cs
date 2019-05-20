@@ -454,7 +454,7 @@ go from this point forward.</p>
                 }
                 else
                 {
-                    HidePanelsAndShowError( "You must be signed in to take the assessment..");
+                    HidePanelsAndShowError( "You must be signed in to take the assessment.");
                 }
             }
         }

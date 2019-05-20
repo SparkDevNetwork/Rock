@@ -272,12 +272,21 @@ This graph is based on the average composite score for each cluster of Motivator
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            this.BlockUpdated += Block_BlockUpdated;
 
             SetPanelTitleAndIcon();
 
-            // otherwise use the currently logged in person
+            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             string personKey = PageParameter( PageParameterKey.Person );
-            if ( !string.IsNullOrEmpty( personKey ) )
+            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+            // set the target person according to the parameter or use Current user if not provided.
+            if ( personId.HasValue )
+            {
+                // Try the person ID first.
+                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
+            }
+            else if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 try
                 {
@@ -294,20 +303,19 @@ This graph is based on the average composite score for each cluster of Motivator
                 _targetPerson = CurrentPerson;
             }
 
-            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             if ( _targetPerson == null )
             {
-                pnlInstructions.Visible = false;
-                pnlQuestion.Visible = false;
-                pnlResult.Visible = false;
-                nbError.Visible = true;
                 if ( _isQuerystringPersonKey )
                 {
-                    nbError.Text = "There is an issue locating the person associated with the request.";
+                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
+                }
+                else
+                {
+                    HidePanelsAndShowError( "You must be signed in to take the assessment.");
                 }
             }
 
-            this.BlockUpdated += Block_BlockUpdated;
+            
         }
 
         /// <summary>
@@ -347,15 +355,19 @@ This graph is based on the average composite score for each cluster of Motivator
                     }
                     else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
                     {
-                        ShowInstructions();
+                        if ( _targetPerson.Id != CurrentPerson.Id )
+                        {
+                            // If the current person is not the target person and there are no results to show then show a not taken message.
+                            HidePanelsAndShowError( string.Format("{0} does not have results for the Conflict Profile Assessment.", _targetPerson.FullName ) );
+                        }
+                        else
+                        {
+                            ShowInstructions();
+                        }
                     }
                     else
                     {
-                        pnlInstructions.Visible = false;
-                        pnlQuestion.Visible = false;
-                        pnlResult.Visible = false;
-                        nbError.Visible = true;
-                        nbError.Text = "Sorry, this test requires a request from someone before it can be taken.";
+                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
                     }
                 }
             }
@@ -530,6 +542,15 @@ This graph is based on the average composite score for each cluster of Motivator
         #endregion
 
         #region Methods
+
+        private void HidePanelsAndShowError( string errorMessage )
+        {
+            pnlInstructions.Visible = false;
+            pnlQuestion.Visible = false;
+            pnlResult.Visible = false;
+            nbError.Visible = true;
+            nbError.Text = errorMessage;
+        }
 
         /// <summary>
         /// Sets the page title and icon.
