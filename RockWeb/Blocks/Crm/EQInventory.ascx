@@ -59,13 +59,13 @@
 </script>
 <asp:UpdatePanel ID="upAssessment" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Warning">You must be signed in to take the assessment.</Rock:NotificationBox>
         <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Warning">You must be signed in to take the assessment.</Rock:NotificationBox>
                 <asp:HiddenField ID="hfAssessmentId" runat="server" />
                 <asp:Panel ID="pnlInstructions" runat="server">
                     <asp:Literal ID="lInstructions" runat="server"></asp:Literal>

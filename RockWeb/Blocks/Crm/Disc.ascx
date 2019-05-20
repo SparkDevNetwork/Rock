@@ -115,14 +115,14 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
-
+        
         <asp:Panel ID="pnlInstructions" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
 
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
                 <asp:HiddenField ID="hfAssessmentId" runat="server" />
                 <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
