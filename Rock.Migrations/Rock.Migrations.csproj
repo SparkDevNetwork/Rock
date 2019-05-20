@@ -336,6 +336,10 @@
     <Compile Include="Migrations\201905171602180_Assessments2.Designer.cs">
       <DependentUpon>201905171602180_Assessments2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201905202137447_AttributeAbbrName.cs" />
+    <Compile Include="Migrations\201905202137447_AttributeAbbrName.Designer.cs">
+      <DependentUpon>201905202137447_AttributeAbbrName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -828,6 +832,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905171602180_Assessments2.resx">
       <DependentUpon>201905171602180_Assessments2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905202137447_AttributeAbbrName.resx">
+      <DependentUpon>201905202137447_AttributeAbbrName.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
