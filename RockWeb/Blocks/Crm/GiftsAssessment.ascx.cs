@@ -238,7 +238,7 @@ namespace Rockweb.Blocks.Crm
 
         #region Fields
 
-        protected class AttributeKeys
+        protected static class AttributeKeys
         {
             public const string NumberofQuestions = "NumberofQuestions";
             public const string Instructions = "Instructions";
@@ -248,7 +248,7 @@ namespace Rockweb.Blocks.Crm
             public const string AllowRetakes = "AllowRetakes";
         }
 
-        protected class PageParameterKey
+        protected static class PageParameterKey
         {
             public const string Person = "Person";
             public const string AssessmentId = "AssessmentId";
@@ -550,6 +550,19 @@ namespace Rockweb.Blocks.Crm
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Hides the Instructions and Questions panels and shows the specified error.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        private void HidePanelsAndShowError( string errorMessage )
+        {
+            pnlInstructions.Visible = false;
+            pnlQuestion.Visible = false;
+            pnlResult.Visible = false;
+            nbError.Visible = true;
+            nbError.Text = errorMessage;
+        }
 
         /// <summary>
         /// Sets the page title and icon.
