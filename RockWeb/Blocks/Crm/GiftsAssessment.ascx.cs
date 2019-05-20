@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,12 +37,54 @@ namespace Rockweb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows you to take a spiritual gifts test and saves your spiritual gifts score." )]
 
-    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, InstructionsDefaultValue, order: 0 )]
-    [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultsMessageDefaultValue, order: 1 )]
-    [TextField( "Set Page Title", "The text to display as the heading.", false, "Spiritual Gifts Assessment", order: 2 )]
-    [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 3 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 17, order: 4 )]
-    [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
+    #region Block Attributes
+    [CodeEditorField( "Instructions",
+        Key = AttributeKeys.Instructions,
+        Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = InstructionsDefaultValue,
+        Order = 0 )]
+
+    [CodeEditorField( "Results Message",
+        Key = AttributeKeys.ResultsMessage,
+        Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = ResultsMessageDefaultValue,
+        Order = 1 )]
+
+    [TextField( "Set Page Title",
+        Key = AttributeKeys.SetPageTitle,
+        Description = "The text to display as the heading.",
+        IsRequired = false,
+        DefaultValue = "Spiritual Gifts Assessment",
+        Order = 2 )]
+
+    [TextField( "Set Page Icon",
+        Key = AttributeKeys.SetPageIcon,
+        Description = "The css class name to use for the heading icon.",
+        IsRequired = false,
+        DefaultValue = "fa fa-gift",
+        Order = 3 )]
+
+    [IntegerField( "Number of Questions",
+        Key = AttributeKeys.NumberofQuestions,
+        Description = "The number of questions to show per page while taking the test",
+        IsRequired = true,
+        DefaultIntegerValue = 17,
+        Order = 4 )]
+
+    [BooleanField( "Allow Retakes",
+        Key = AttributeKeys.AllowRetakes,
+        Description = "If enabled, the person can retake the test after the minimum days passes.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+    #endregion Block Attributes
     public partial class GiftsAssessment : Rock.Web.UI.RockBlock
     {
         #region AttributeDefaultValues
@@ -71,6 +113,7 @@ namespace Rockweb.Blocks.Crm
     calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
     on each item. Your first instinct is probably your best response.
 </p>";
+
         private const string ResultsMessageDefaultValue = @"
 <div class='row'>
     <div class='col-md-12'>
@@ -195,24 +238,33 @@ namespace Rockweb.Blocks.Crm
 
         #region Fields
 
-        //block attribute keys
-        private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
-        private const string INSTRUCTIONS = "Instructions";
-        private const string SET_PAGE_TITLE = "SetPageTitle";
-        private const string SET_PAGE_ICON = "SetPageIcon";
-        private const string RESULTS_MESSAGE = "ResultsMessage";
-        private const string ALLOW_RETAKES = "AllowRetakes";
-        
+        protected class AttributeKeys
+        {
+            public const string NumberofQuestions = "NumberofQuestions";
+            public const string Instructions = "Instructions";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string SetPageIcon = "SetPageIcon";
+            public const string ResultsMessage = "ResultsMessage";
+            public const string AllowRetakes = "AllowRetakes";
+        }
+
+        protected class PageParameterKey
+        {
+            public const string Person = "Person";
+            public const string AssessmentId = "AssessmentId";
+            public const string PersonId = "PersonId";
+        }
+
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
 
         // View State Variables
-        private List<AssessmentResponse> AssessmentResponses;
+        private List<AssessmentResponse> _assessmentResponses;
 
         // used for private variables
-        Person _targetPerson = null;
-        int? _assessmentId = null;
-        bool _isQuerystringPersonKey = false;
+        private Person _targetPerson = null;
+        private int? _assessmentId = null;
+        private bool _isQuerystringPersonKey = false;
 
         // protected variables
         private decimal _percentComplete = 0;
@@ -243,8 +295,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
-            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
+            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
+            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
         }
 
         #endregion
@@ -259,7 +311,7 @@ namespace Rockweb.Blocks.Crm
         {
             base.LoadViewState( savedState );
 
-            AssessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
+            _assessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
         }
 
         /// <summary>
@@ -271,9 +323,10 @@ namespace Rockweb.Blocks.Crm
             base.OnInit( e );
 
             SetPanelTitleAndIcon();
-
+            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
+            string personKey = PageParameter( PageParameterKey.Person );
+            
             // otherwise use the currently logged in person
-            string personKey = PageParameter( "Person" );
             if ( !string.IsNullOrEmpty( personKey ) )
             {
                 try
@@ -291,7 +344,6 @@ namespace Rockweb.Blocks.Crm
                 _targetPerson = CurrentPerson;
             }
 
-            _assessmentId = PageParameter( "AssessmentId" ).AsIntegerOrNull();
             if ( _targetPerson == null )
             {
                 pnlInstructions.Visible = false;
@@ -321,11 +373,10 @@ namespace Rockweb.Blocks.Crm
                 {
                     var primaryAliasId = _targetPerson.PrimaryAliasId;
                     assessment = new AssessmentService( rockContext )
-                                            .Queryable()
-                                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) ||
-                                                         ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
-                                            .OrderByDescending( a => a.CreatedDateTime )
-                                            .FirstOrDefault();
+                        .Queryable()
+                        .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
+                        .OrderByDescending( a => a.CreatedDateTime )
+                        .FirstOrDefault();
 
                     if ( assessment != null )
                     {
@@ -340,7 +391,6 @@ namespace Rockweb.Blocks.Crm
                     {
                         SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
                         ShowResult( savedScores, assessment );
-
                     }
                     else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
                     {
@@ -383,7 +433,7 @@ namespace Rockweb.Blocks.Crm
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ASSESSMENT_STATE] = AssessmentResponses;
+            ViewState[ASSESSMENT_STATE] = _assessmentResponses;
 
             return base.SaveViewState();
         }
@@ -427,13 +477,13 @@ namespace Rockweb.Blocks.Crm
             string commandArgument = btn.CommandArgument;
 
             var totalQuestion = pageNumber * QuestionCount;
-            if ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => a.Response.HasValue ) || "Next".Equals( commandArgument ) )
+            if ( ( _assessmentResponses.Count > totalQuestion && !_assessmentResponses.All( a => a.Response.HasValue ) ) || "Next".Equals( commandArgument ) )
             {
                 BindRepeater( pageNumber );
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
                 SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
@@ -458,7 +508,7 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
+                assessment.AssessmentResultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
                 rockContext.SaveChanges();
 
                 ShowResult( result, assessment );
@@ -506,13 +556,13 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( SET_PAGE_TITLE );
+            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( SET_PAGE_ICON );
+            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -527,13 +577,15 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = true;
             pnlQuestion.Visible = false;
             pnlResult.Visible = false;
+
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
-            lInstructions.Text = GetAttributeValue( INSTRUCTIONS ).ResolveMergeFields( mergeFields );
+
+            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -545,7 +597,7 @@ namespace Rockweb.Blocks.Crm
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
 
-            var allowRetakes = GetAttributeValue( ALLOW_RETAKES ).AsBoolean();
+            var allowRetakes = GetAttributeValue( AttributeKeys.AllowRetakes ).AsBoolean();
             var minDays = assessment.AssessmentType.MinimumDaysToRetake;
 
             if ( !_isQuerystringPersonKey && allowRetakes && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
@@ -556,7 +608,9 @@ namespace Rockweb.Blocks.Crm
             {
                 btnRetakeTest.Visible = false;
             }
+
             var spiritualGifts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SPIRITUAL_GIFTS );
+
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
@@ -567,7 +621,8 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
             }
-            lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
+
+            lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -578,7 +633,7 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            AssessmentResponses = SpiritualGiftsService.GetQuestions()
+            _assessmentResponses = SpiritualGiftsService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
                                         Code = a.Key,
@@ -586,11 +641,11 @@ namespace Rockweb.Blocks.Crm
                                     } ).ToList();
 
             // If _maxQuestions has not been set yet...
-            if ( QuestionCount == 0 && AssessmentResponses != null )
+            if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
-                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
+                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
+                QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 
             BindRepeater( 0 );
@@ -603,12 +658,12 @@ namespace Rockweb.Blocks.Crm
         {
             hfPageNo.SetValue( pageNumber );
 
-            var answeredQuestionCount = AssessmentResponses.Where( a => a.Response.HasValue ).Count();
-            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
+            var answeredQuestionCount = _assessmentResponses.Where( a => a.Response.HasValue ).Count();
+            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( _assessmentResponses.Count ) ) * 100.0m, 2 );
 
             var skipCount = pageNumber * QuestionCount;
 
-            var questions = AssessmentResponses
+            var questions = _assessmentResponses
                 .Skip( skipCount )
                 .Take( QuestionCount + 1 )
                 .ToList();
@@ -648,7 +703,7 @@ namespace Rockweb.Blocks.Crm
             {
                 HiddenField hfQuestionCode = item.FindControl( "hfQuestionCode" ) as HiddenField;
                 RockRadioButtonList rblQuestion = item.FindControl( "rblQuestion" ) as RockRadioButtonList;
-                var assessment = AssessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
+                var assessment = _assessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
                 if ( assessment != null )
                 {
                     assessment.Response = rblQuestion.SelectedValueAsInt( false );
@@ -663,8 +718,28 @@ namespace Rockweb.Blocks.Crm
         [Serializable]
         public class AssessmentResponse
         {
+            /// <summary>
+            /// Gets or sets the code.
+            /// </summary>
+            /// <value>
+            /// The code.
+            /// </value>
             public string Code { get; set; }
+
+            /// <summary>
+            /// Gets or sets the question.
+            /// </summary>
+            /// <value>
+            /// The question.
+            /// </value>
             public string Question { get; set; }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            /// <value>
+            /// The response.
+            /// </value>
             public int? Response { get; set; }
         }
 
