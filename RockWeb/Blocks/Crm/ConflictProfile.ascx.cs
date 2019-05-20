@@ -177,7 +177,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// A defined list of page parameter keys used by this block.
         /// </summary>
-        protected class PageParameterKey
+        protected static class PageParameterKey
         {
             /// <summary>
             /// The person identifier. Use this to get a person's Conflict Profile results.

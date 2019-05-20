@@ -290,9 +290,8 @@ go from this point forward.</p>
 
         #endregion Attribute Default values
 
-        #region Fields
-
-        protected class AttributeKeys
+        
+        protected static class AttributeKeys
         {
             public const string NumberofQuestions = "NumberofQuestions";
             public const string Instructions = "Instructions";
@@ -302,12 +301,14 @@ go from this point forward.</p>
             public const string AllowRetakes = "AllowRetakes";
         }
 
-        protected class PageParameterKey
+        protected static class PageParameterKey
         {
             public const string Person = "Person";
             public const string AssessmentId = "AssessmentId";
             public const string PersonId = "PersonId";
         }
+
+        #region Fields
 
         private Dictionary<int, string> _negativeOption = new Dictionary<int, string>
         {
