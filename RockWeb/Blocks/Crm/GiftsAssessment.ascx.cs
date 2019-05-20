@@ -236,8 +236,7 @@ namespace Rockweb.Blocks.Crm
 
         #endregion AttributeDefaultValues
 
-        #region Fields
-
+        #region Attribute Keys
         protected static class AttributeKeys
         {
             public const string NumberofQuestions = "NumberofQuestions";
@@ -248,12 +247,33 @@ namespace Rockweb.Blocks.Crm
             public const string AllowRetakes = "AllowRetakes";
         }
 
+        #endregion Attribute Keys
+
+        #region PageParameterKeys
+        /// <summary>
+        /// A defined list of page parameter keys used by this block.
+        /// </summary>
         protected static class PageParameterKey
         {
-            public const string Person = "Person";
-            public const string AssessmentId = "AssessmentId";
+            /// <summary>
+            /// The person identifier. Use this to get a person's Spiritual Gifts results.
+            /// </summary>
             public const string PersonId = "PersonId";
+
+            /// <summary>
+            /// The assessment identifier
+            /// </summary>
+            public const string AssessmentId = "AssessmentId";
+
+            /// <summary>
+            /// The ULR encoded key for a person
+            /// </summary>
+            public const string Person = "Person";
         }
+
+        #endregion PageParameterKeys
+
+        #region Fields
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";

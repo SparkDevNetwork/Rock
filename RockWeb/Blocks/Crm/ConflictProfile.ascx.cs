@@ -154,7 +154,7 @@ namespace Rockweb.Blocks.Crm
             public const string ResultsMessage = "ResultsMessage";
             public const string AllowRetakes = "AllowRetakes";
         }
-        #endregion block attribute keys
+        #endregion Attribute keys
 
         #region Fields
         
@@ -174,6 +174,7 @@ namespace Rockweb.Blocks.Crm
 
         #endregion
 
+        #region PageParameterKeys
         /// <summary>
         /// A defined list of page parameter keys used by this block.
         /// </summary>
@@ -194,6 +195,8 @@ namespace Rockweb.Blocks.Crm
             /// </summary>
             public const string Person = "Person";
         }
+
+        #endregion PageParameterKeys
 
         #region Properties
 
