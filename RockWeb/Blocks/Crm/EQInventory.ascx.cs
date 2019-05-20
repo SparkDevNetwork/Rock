@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,12 +37,54 @@ namespace Rockweb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows you to take a EQ Inventory test and saves your EQ Inventory score." )]
 
-    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, InstructionsDefaultValue, order: 0 )]
-    [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, ResultsMessageDefaultValue, order: 1 )]
-    [TextField( "Set Page Title", "The text to display as the heading.", false, "EQ Inventory Assessment", order: 2 )]
-    [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 3 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 7, order: 4 )]
-    [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 5 )]
+    #region Block Attributes
+    [CodeEditorField( "Instructions",
+        Key = AttributeKeys.Instructions,
+        Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = InstructionsDefaultValue,
+        Order = 0 )]
+
+    [CodeEditorField( "Results Message",
+        Key = AttributeKeys.ResultsMessage,
+        Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = ResultsMessageDefaultValue,
+        Order = 1 )]
+
+    [TextField( "Set Page Title",
+        Key = AttributeKeys.SetPageTitle,
+        Description = "The text to display as the heading.",
+        IsRequired = false,
+        DefaultValue = "EQ Inventory Assessment",
+        Order = 2 )]
+
+    [TextField( "Set Page Icon",
+        Key = AttributeKeys.SetPageIcon,
+        Description = "The css class name to use for the heading icon.",
+        IsRequired = false,
+        DefaultValue = "fa fa-theater-masks",
+        Order = 3 )]
+
+    [IntegerField( "Number of Questions",
+        Key = AttributeKeys.NumberofQuestions,
+        Description = "The number of questions to show per page while taking the test",
+        IsRequired = true,
+        DefaultIntegerValue = 7,
+        Order = 4 )]
+
+    [BooleanField( "Allow Retakes",
+        Key = AttributeKeys.AllowRetakes,
+        Description = "If enabled, the person can retake the test after the minimum days passes.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+    #endregion Block Attributes
     public partial class EQInventory : Rock.Web.UI.RockBlock
     {
         #region Attribute Default values
@@ -250,15 +292,23 @@ go from this point forward.</p>
 
         #region Fields
 
-        //block attribute keys
-        private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
-        private const string INSTRUCTIONS = "Instructions";
-        private const string SET_PAGE_TITLE = "SetPageTitle";
-        private const string SET_PAGE_ICON = "SetPageIcon";
-        private const string RESULTS_MESSAGE = "ResultsMessage";
-        private const string ALLOW_RETAKES = "AllowRetakes";
+        protected class AttributeKeys
+        {
+            public const string NumberofQuestions = "NumberofQuestions";
+            public const string Instructions = "Instructions";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string SetPageIcon = "SetPageIcon";
+            public const string ResultsMessage = "ResultsMessage";
+            public const string AllowRetakes = "AllowRetakes";
+        }
 
-        private Dictionary<int, string> NEGATIVE_OPTION = new Dictionary<int, string>
+        protected class PageParameterKey
+        {
+            public const string Person = "Person";
+            public const string AssessmentId = "AssessmentId";
+        }
+
+        private Dictionary<int, string> _negativeOption = new Dictionary<int, string>
         {
             { 5, "Never" },
             { 4, "Rarely" },
@@ -267,7 +317,7 @@ go from this point forward.</p>
             { 1, "Always" }
         };
 
-        private Dictionary<int, string> POSITIVE_OPTION = new Dictionary<int, string>
+        private Dictionary<int, string> _positiveOption = new Dictionary<int, string>
         {
             { 1, "Never" },
             { 2, "Rarely" },
@@ -280,12 +330,12 @@ go from this point forward.</p>
         private const string ASSESSMENT_STATE = "AssessmentState";
 
         // View State Variables
-        private List<AssessmentResponse> AssessmentResponses;
+        private List<AssessmentResponse> _assessmentResponses;
 
         // used for private variables
-        Person _targetPerson = null;
-        int? _assessmentId = null;
-        bool _isQuerystringPersonKey = false;
+        private Person _targetPerson = null;
+        private int? _assessmentId = null;
+        private bool _isQuerystringPersonKey = false;
 
         // protected variables
         private decimal _percentComplete = 0;
@@ -318,8 +368,8 @@ go from this point forward.</p>
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
-            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
+            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
+            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
         }
 
         #endregion
@@ -334,7 +384,7 @@ go from this point forward.</p>
         {
             base.LoadViewState( savedState );
 
-            AssessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
+            _assessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
         }
 
         /// <summary>
@@ -348,7 +398,7 @@ go from this point forward.</p>
             SetPanelTitleAndIcon();
 
             // otherwise use the currently logged in person
-            string personKey = PageParameter( "Person" );
+            string personKey = PageParameter( PageParameterKey.Person );
             if ( !string.IsNullOrEmpty( personKey ) )
             {
                 try
@@ -366,7 +416,7 @@ go from this point forward.</p>
                 _targetPerson = CurrentPerson;
             }
 
-            _assessmentId = PageParameter( "AssessmentId" ).AsIntegerOrNull();
+            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             if ( _targetPerson == null )
             {
                 pnlInstructions.Visible = false;
@@ -404,7 +454,6 @@ go from this point forward.</p>
                                             .OrderByDescending( a => a.CreatedDateTime )
                                             .FirstOrDefault();
 
-
                     if ( assessment != null )
                     {
                         hfAssessmentId.SetValue( assessment.Id );
@@ -418,7 +467,6 @@ go from this point forward.</p>
                     {
                         EQInventoryService.AssessmentResults savedScores = EQInventoryService.LoadSavedAssessmentResults( _targetPerson );
                         ShowResult( savedScores, assessment );
-
                     }
                     else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
                     {
@@ -449,7 +497,7 @@ go from this point forward.</p>
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ASSESSMENT_STATE] = AssessmentResponses;
+            ViewState[ASSESSMENT_STATE] = _assessmentResponses;
 
             return base.SaveViewState();
         }
@@ -507,13 +555,13 @@ go from this point forward.</p>
             string commandArgument = btn.CommandArgument;
 
             var totalQuestion = pageNumber * QuestionCount;
-            if ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => a.Response.HasValue ) || "Next".Equals( commandArgument ) )
+            if ( ( _assessmentResponses.Count > totalQuestion && !_assessmentResponses.All( a => a.Response.HasValue ) ) || "Next".Equals( commandArgument ) )
             {
                 BindRepeater( pageNumber );
             }
             else
             {
-                EQInventoryService.AssessmentResults result = EQInventoryService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                EQInventoryService.AssessmentResults result = EQInventoryService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
                 EQInventoryService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
@@ -541,7 +589,6 @@ go from this point forward.</p>
                 assessment.AssessmentResultData = result.AssessmentData.ToJson();
                 rockContext.SaveChanges();
 
-                //ShowResult( result, assessment );
                 // Since we are rendering chart.js we have to register the script or reload the page.
                 this.NavigateToCurrentPageReference();
             }
@@ -571,13 +618,13 @@ go from this point forward.</p>
 
             if ( assessmentResponseRow.Code.EndsWith( "N" ) )
             {
-                rblQuestion.DataSource = NEGATIVE_OPTION;
-
+                rblQuestion.DataSource = _negativeOption;
             }
             else
             {
-                rblQuestion.DataSource = POSITIVE_OPTION;
+                rblQuestion.DataSource = _positiveOption;
             }
+
             rblQuestion.DataTextField = "Value";
             rblQuestion.DataValueField = "Key";
             rblQuestion.DataBind();
@@ -603,13 +650,13 @@ go from this point forward.</p>
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( SET_PAGE_TITLE );
+            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( SET_PAGE_ICON );
+            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -624,13 +671,15 @@ go from this point forward.</p>
             pnlInstructions.Visible = true;
             pnlQuestion.Visible = false;
             pnlResult.Visible = false;
+
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
-            lInstructions.Text = GetAttributeValue( INSTRUCTIONS ).ResolveMergeFields( mergeFields );
+
+            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -642,7 +691,7 @@ go from this point forward.</p>
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
 
-            var allowRetakes = GetAttributeValue( ALLOW_RETAKES ).AsBoolean();
+            var allowRetakes = GetAttributeValue( AttributeKeys.AllowRetakes ).AsBoolean();
             var minDays = assessment.AssessmentType.MinimumDaysToRetake;
 
             if ( !_isQuerystringPersonKey && allowRetakes && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
@@ -653,6 +702,7 @@ go from this point forward.</p>
             {
                 btnRetakeTest.Visible = false;
             }
+
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
@@ -668,7 +718,8 @@ go from this point forward.</p>
                 mergeFields.Add( "EQinProblemSolving", result.EQ_ProblemSolvingScale );
                 mergeFields.Add( "EQUnderStress", result.EQ_UnderStressScale );
             }
-            lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
+
+            lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -679,7 +730,7 @@ go from this point forward.</p>
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            AssessmentResponses = EQInventoryService.GetQuestions()
+            _assessmentResponses = EQInventoryService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
                                         Code = a.Key,
@@ -687,11 +738,11 @@ go from this point forward.</p>
                                     } ).ToList();
 
             // If _maxQuestions has not been set yet...
-            if ( QuestionCount == 0 && AssessmentResponses != null )
+            if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
-                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
+                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
+                QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 
             BindRepeater( 0 );
@@ -704,12 +755,12 @@ go from this point forward.</p>
         {
             hfPageNo.SetValue( pageNumber );
 
-            var answeredQuestionCount = AssessmentResponses.Where( a => a.Response.HasValue ).Count();
-            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
+            var answeredQuestionCount = _assessmentResponses.Where( a => a.Response.HasValue ).Count();
+            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( _assessmentResponses.Count ) ) * 100.0m, 2 );
 
             var skipCount = pageNumber * QuestionCount;
 
-            var questions = AssessmentResponses
+            var questions = _assessmentResponses
                 .Skip( skipCount )
                 .Take( QuestionCount + 1 )
                 .ToList();
@@ -749,7 +800,7 @@ go from this point forward.</p>
             {
                 HiddenField hfQuestionCode = item.FindControl( "hfQuestionCode" ) as HiddenField;
                 RockRadioButtonList rblQuestion = item.FindControl( "rblQuestion" ) as RockRadioButtonList;
-                var assessment = AssessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
+                var assessment = _assessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
                 if ( assessment != null )
                 {
                     assessment.Response = rblQuestion.SelectedValueAsInt( false );
@@ -764,8 +815,28 @@ go from this point forward.</p>
         [Serializable]
         public class AssessmentResponse
         {
+            /// <summary>
+            /// Gets or sets the code.
+            /// </summary>
+            /// <value>
+            /// The code.
+            /// </value>
             public string Code { get; set; }
+
+            /// <summary>
+            /// Gets or sets the question.
+            /// </summary>
+            /// <value>
+            /// The question.
+            /// </value>
             public string Question { get; set; }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            /// <value>
+            /// The response.
+            /// </value>
             public int? Response { get; set; }
         }
 
