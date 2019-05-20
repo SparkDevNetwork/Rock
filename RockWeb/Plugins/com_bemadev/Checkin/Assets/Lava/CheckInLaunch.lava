@@ -14,11 +14,11 @@
 
 {% assign motsURL = urlPattern %}
 
-{% assign campusName = 'Global' | PageParameter:'campus' %}
+{% assign campusShortCode = 'Global' | PageParameter:'campus' %}
 
 <!-- Get Campus from ShortCode in URLParameter-->
 {% for campus in Campuses %}
-    {% if campus.ShortCode == campusName %}
+    {% if campus.ShortCode == campusShortCode %}
         {% assign campusName = campus.Name %}
     {% endif %}
 {% endfor %}
@@ -355,6 +355,20 @@ Build up string of check-in areas
     </div>
 </div>
 
+<div class="panel panel-warning list-as-blocks clearfix">
+    <div class="panel-heading">Test Configurations</div>
+    <div class="panel-body">
+        <p class="text-warning">This button will direct you to a portal with all the test check-in configurations. Only use this for training/testing purposes.</p>
+        <ul>
+            <li>
+                <a href="https://rockstage.lcbcchurch.com/launch-{{campusShortCode}}">
+                <i class="fas fa-directions"></i>
+                <h3>Test Check-In</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
 
 <div class="panel panel-default">
      <div class="panel-heading">
@@ -400,3 +414,45 @@ Build up string of check-in areas
         </div>
       </div>
   </div>
+
+
+{% assign host = 'Global' | Page: 'Host' %}
+{% if host == 'rockstage.lcbcchurch.com' %}
+    <style>
+        @media (min-width: 1024px) {
+            .environment-warning {
+                float: left;
+                color: #fff;
+                box-sizing: border-box;
+                position: absolute;
+                top: 23px;
+                left: 98px;
+                font-size: x-large;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1023px) {
+            .environment-warning {
+                float: left;
+                color: #fff;
+                box-sizing: border-box;
+                position: absolute;
+                top: 27px;
+                left: 98px;
+                font-size: medium;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .environment-warning {
+                display: none;
+            }
+        }
+    </style>
+
+    <script>
+    $(document).ready(
+    function() {
+        $('#fixed-header > div').append('<div class="environment-warning"><i class="fas fa-exclamation-triangle"></i><span style="padding: 0 10px; display: inline-block">Check-In Test Environment</span><i class="fas fa-exclamation-triangle"></i></div>');
+    });
+    </script>
+{% endif %}
