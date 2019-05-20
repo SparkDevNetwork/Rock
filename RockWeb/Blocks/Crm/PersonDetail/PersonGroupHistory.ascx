@@ -112,7 +112,7 @@
 
 </style>
 
-<script src="/scripts/rock-swimlanes.min.js"></script>
+<script src="<%=this.RockPage.ResolveRockUrl("~/scripts/rock-swimlanes.min.js", true) %>"></script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -147,7 +147,10 @@
             </asp:Panel>
 
             <div class="panel-body">
-                <asp:Panel ID="groupHistorySwimlanes" CssClass="panel-fullwidth" runat="server" />
+                <div class="js-no-group-history" style="display:none">
+                    <Rock:NotificationBox ID="nbNoGroupHistoryFound" runat="server" NotificationBoxType="Info" Text="No Group History Available" />
+                </div>
+                 <asp:Panel ID="groupHistorySwimlanes" CssClass="panel-fullwidth" runat="server" />
 
                 <div class="grouptype-legend">
                     <label>Group Types</label>
@@ -192,12 +195,22 @@
                     restUrl += '&groupTypeIds=' + groupTypeIds
                 }
 
+                var $swimlanesContainer = $('#<%=groupHistorySwimlanes.ClientID%>');
+                var $noGroupHistory = $('.js-no-group-history');
+
                 $.ajax({
                     url: restUrl,
                     dataType: 'json',
                     contentType: 'application/json'
                 }).done(function (data) {
-                    var swimlanes_vis = new Swimlanes('#<%=groupHistorySwimlanes.ClientID%>', data);
+                    if (data.length) {
+                        var swimlanes_vis = new Swimlanes($swimlanesContainer[0], data);
+                        $swimlanesContainer.show();
+                        $noGroupHistory.hide();
+                    } else {
+                        $swimlanesContainer.hide();
+                        $noGroupHistory.show();
+                    }
                 });
 
 
