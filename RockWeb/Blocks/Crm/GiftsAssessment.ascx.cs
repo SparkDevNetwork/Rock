@@ -323,11 +323,18 @@ namespace Rockweb.Blocks.Crm
             base.OnInit( e );
 
             SetPanelTitleAndIcon();
+
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             string personKey = PageParameter( PageParameterKey.Person );
-            
-            // otherwise use the currently logged in person
-            if ( !string.IsNullOrEmpty( personKey ) )
+            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+            // set the target person according to the parameter or use Current user if not provided.
+            if ( personId.HasValue )
+            {
+                // Try the person ID first.
+                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
+            }
+            else if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 try
                 {
@@ -346,13 +353,13 @@ namespace Rockweb.Blocks.Crm
 
             if ( _targetPerson == null )
             {
-                pnlInstructions.Visible = false;
-                pnlQuestion.Visible = false;
-                pnlResult.Visible = false;
-                nbError.Visible = true;
                 if ( _isQuerystringPersonKey )
                 {
-                    nbError.Text = "There is an issue locating the person associated with the request.";
+                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
+                }
+                else
+                {
+                    HidePanelsAndShowError( "You must be signed in to take the assessment.");
                 }
             }
         }
@@ -394,27 +401,19 @@ namespace Rockweb.Blocks.Crm
                     }
                     else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
                     {
-                        ShowInstructions();
+                        if ( _targetPerson.Id != CurrentPerson.Id )
+                        {
+                            // If the current person is not the target person and there are no results to show then show a not taken message.
+                            HidePanelsAndShowError( string.Format("{0} does not have results for the Conflict Profile Assessment.", _targetPerson.FullName ) );
+                        }
+                        else
+                        {
+                            ShowInstructions();
+                        }
                     }
                     else
                     {
-                        pnlInstructions.Visible = false;
-                        pnlQuestion.Visible = false;
-                        pnlResult.Visible = false;
-                        nbError.Visible = true;
-                        nbError.Text = "You can take the test without the request.";
-                    }
-                }
-                else
-                {
-                    pnlInstructions.Visible = false;
-                    pnlQuestion.Visible = false;
-                    pnlResult.Visible = false;
-                    nbError.Visible = true;
-
-                    if ( _isQuerystringPersonKey )
-                    {
-                        nbError.Text = "There is an issue locating the person associated with the request.";
+                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
                     }
                 }
             }
