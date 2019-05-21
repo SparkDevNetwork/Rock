@@ -147,7 +147,7 @@
                             {% if trimcopy == 'Yes' %}
                                 {% assign length = content | Size %}
                                 
-                                <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}</p>
+                                <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}</p>
                             {% else %}
                                 {{ content }}
                             {% endif %}
