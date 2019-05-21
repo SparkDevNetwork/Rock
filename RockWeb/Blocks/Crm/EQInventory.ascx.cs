@@ -450,11 +450,11 @@ go from this point forward.</p>
             {
                 if ( _isQuerystringPersonKey )
                 {
-                    HidePanelsAndShowError( "There is an issue locating the person associated with the request.");
+                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
                 }
                 else
                 {
-                    HidePanelsAndShowError( "You must be signed in to take the assessment.");
+                    HidePanelsAndShowError( "You must be signed in to take the assessment." );
                 }
             }
         }
@@ -499,7 +499,7 @@ go from this point forward.</p>
                         if ( _targetPerson.Id != CurrentPerson.Id )
                         {
                             // If the current person is not the target person and there are no results to show then show a not taken message.
-                            HidePanelsAndShowError( string.Format("{0} does not have results for the Conflict Profile Assessment.", _targetPerson.FullName ) );
+                            HidePanelsAndShowError( string.Format("{0} does not have results for the EQ Inventory Assessment.", _targetPerson.FullName ) );
                         }
                         else
                         {
@@ -675,7 +675,7 @@ go from this point forward.</p>
 
         #region Methods
 
-                /// <summary>
+        /// <summary>
         /// Hides the Instructions and Questions panels and shows the specified error.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
