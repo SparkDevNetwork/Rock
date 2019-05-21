@@ -1783,7 +1783,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState != null )
             {
                 // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
-                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees != 0 )
+                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
                     var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
