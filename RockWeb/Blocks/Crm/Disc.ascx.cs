@@ -37,47 +37,102 @@ namespace Rockweb.Blocks.Crm
     [DisplayName( "DISC" )]
     [Category( "CRM" )]
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
-    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
-            <h2>Welcome!</h2>
-            <p>
-                {{ Person.NickName }}, in this assessment you are given a series of questions, each containing four phrases.
-                Select one phrase that MOST describes you and one phrase that LEAST describes you.
-            </p>
-            <p>
-                This assessment is environmentally sensitive, which means that you may score differently
-                in different situations. In other words, you may act differently at home than you
-                do on the job. So, as you complete the assessment you should focus on one environment
-                for which you are seeking to understand yourself. For instance, if you are trying
-                to understand yourself in marriage, you should only think of your responses to situations
-                in the context of your marriage. On the other hand, if you want to know your behavioral
-                needs on the job, then only think of how you would respond in the job context.
-            </p>
-            <p>
-                One final thought as you give your responses. On these kinds of assessments, it
-                is often best and easiest if you respond quickly and do not deliberate too long
-                on each question. Your response on one question will not unduly influence your scores,
-                so simply answer as quickly as possible and enjoy the process. Don't get too hung
-                up, if none of the phrases describe you or if there are some phrases that seem too
-                similar, just go with your instinct.
-            </p>
-            <p>
-                When you are ready, click the 'Start' button to proceed.
-            </p>
-", order: 0 )]
-    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 5, order: 1 )]
+
+    #region Block Attributes
+    [CodeEditorField( "Instructions",
+        Key = AttributeKeys.Instructions,
+        Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = InstructionsDefaultValue,
+        Order = 0 )]
+
+    [IntegerField( "Number of Questions",
+        Key = AttributeKeys.NumberofQuestions,
+        Description = "The number of questions to show per page while taking the test",
+        IsRequired = true,
+        DefaultIntegerValue = 5,
+        Order = 1 )]
+    #endregion Block Attributes
     public partial class Disc : Rock.Web.UI.RockBlock
     {
+        #region Attribute Default Values
+        private const string InstructionsDefaultValue = @"
+<h2>Welcome!</h2>
+<p>
+    {{ Person.NickName }}, in this assessment you are given a series of questions, each containing four phrases.
+    Select one phrase that MOST describes you and one phrase that LEAST describes you.
+</p>
+<p>
+    This assessment is environmentally sensitive, which means that you may score differently
+    in different situations. In other words, you may act differently at home than you
+    do on the job. So, as you complete the assessment you should focus on one environment
+    for which you are seeking to understand yourself. For instance, if you are trying
+    to understand yourself in marriage, you should only think of your responses to situations
+    in the context of your marriage. On the other hand, if you want to know your behavioral
+    needs on the job, then only think of how you would respond in the job context.
+</p>
+<p>
+    One final thought as you give your responses. On these kinds of assessments, it
+    is often best and easiest if you respond quickly and do not deliberate too long
+    on each question. Your response on one question will not unduly influence your scores,
+    so simply answer as quickly as possible and enjoy the process. Don't get too hung
+    up, if none of the phrases describe you or if there are some phrases that seem too
+    similar, just go with your instinct.
+</p>
+<p>
+    When you are ready, click the 'Start' button to proceed.
+</p>";
+
+        #endregion Attribute Default Values
+
+        #region Attribute Keys
+        protected static class AttributeKeys
+        {
+            public const string NumberofQuestions = "NumberofQuestions";
+            public const string Instructions = "Instructions";
+            public const string Strengths = "Strengths";
+            public const string Challenges = "Challenges";
+        }
+
+        #endregion Attribute Keys
+
+        #region PageParameterKeys
+        /// <summary>
+        /// A defined list of page parameter keys used by this block.
+        /// </summary>
+        protected static class PageParameterKey
+        {
+            /// <summary>
+            /// The person identifier. Use this to get a person's DISC results.
+            /// </summary>
+            public const string PersonId = "PersonId";
+
+            /// <summary>
+            /// The assessment identifier
+            /// </summary>
+            public const string AssessmentId = "AssessmentId";
+
+            /// <summary>
+            /// The ULR encoded key for a person
+            /// </summary>
+            public const string Person = "Person";
+        }
+
+        #endregion PageParameterKeys
+
         #region Fields
 
-        private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
         // used for private variables
-        Person _targetPerson = null;
-        int? _assessmentId = null;
-        bool _isQuerystringPersonKey = false;
+        private Person _targetPerson = null;
+        private int? _assessmentId = null;
+        private bool _isQuerystringPersonKey = false;
 
         private decimal _percentComplete = 0;
 
-        private List<AssessmentResponse> AssessmentResponses;
+        private List<AssessmentResponse> _assessmentResponses;
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
@@ -111,8 +166,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
-            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
+            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
+            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
         }
 
         #endregion
@@ -127,7 +182,7 @@ namespace Rockweb.Blocks.Crm
         {
             base.LoadViewState( savedState );
 
-            AssessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
+            _assessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
         }
 
         /// <summary>
@@ -138,9 +193,17 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
 
-            // otherwise use the currently logged in person
-            string personKey = PageParameter( "Person" );
-            if ( !string.IsNullOrEmpty( personKey ) )
+            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
+            string personKey = PageParameter( PageParameterKey.Person );
+            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+            // set the target person according to the parameter or use Current user if not provided.
+            if ( personId.HasValue )
+            {
+                // Try the person ID first.
+                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
+            }
+            else if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 try
                 {
@@ -156,18 +219,16 @@ namespace Rockweb.Blocks.Crm
             {
                 _targetPerson = CurrentPerson;
             }
-
-            _assessmentId = PageParameter( "AssessmentId" ).AsIntegerOrNull();
-
+            
             if ( _targetPerson == null )
             {
-                pnlInstructions.Visible = false;
-                pnlQuestions.Visible = false;
-                pnlResults.Visible = false;
-                nbError.Visible = true;
                 if ( _isQuerystringPersonKey )
                 {
-                    nbError.Text = "There is an issue locating the person associated with the request.";
+                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
+                }
+                else
+                {
+                    HidePanelsAndShowError( "You must be signed in to take the assessment." );
                 }
             }
         }
@@ -188,12 +249,10 @@ namespace Rockweb.Blocks.Crm
                 {
                     var primaryAliasId = _targetPerson.PrimaryAliasId;
                     assessment = new AssessmentService( rockContext )
-                                            .Queryable()
-                                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) ||
-                                                         ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
-                                            .OrderByDescending( a => a.CreatedDateTime )
-                                            .FirstOrDefault();
-
+                        .Queryable()
+                        .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
+                        .OrderByDescending( a => a.CreatedDateTime )
+                        .FirstOrDefault();
 
                     if ( assessment != null )
                     {
@@ -207,20 +266,23 @@ namespace Rockweb.Blocks.Crm
                     if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
                     {
                         DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
-                        ShowResults( savedScores, assessment );
-
+                        ShowResult( savedScores, assessment );
                     }
                     else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
                     {
-                        ShowInstructions();
+                        if ( _targetPerson.Id != CurrentPerson.Id )
+                        {
+                            // If the current person is not the target person and there are no results to show then show a not taken message.
+                            HidePanelsAndShowError( string.Format("{0} does not have results for the EQ Inventory Assessment.", _targetPerson.FullName ) );
+                        }
+                        else
+                        {
+                            ShowInstructions();
+                        }
                     }
                     else
                     {
-                        pnlInstructions.Visible = false;
-                        pnlQuestions.Visible = false;
-                        pnlResults.Visible = false;
-                        nbError.Visible = true;
-                        nbError.Text = "You can take the test without the request.";
+                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
                     }
                 }
             }
@@ -239,7 +301,7 @@ namespace Rockweb.Blocks.Crm
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ASSESSMENT_STATE] = AssessmentResponses;
+            ViewState[ASSESSMENT_STATE] = _assessmentResponses;
 
             return base.SaveViewState();
         }
@@ -272,7 +334,7 @@ namespace Rockweb.Blocks.Crm
             string commandArgument = btn.CommandArgument;
 
             var totalQuestion = pageNumber * QuestionCount;
-            if ( ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ) ) || "Next".Equals( commandArgument ) )
+            if ( ( _assessmentResponses.Count > totalQuestion && !_assessmentResponses.All( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ) ) || "Next".Equals( commandArgument ) )
             {
                 BindRepeater( pageNumber );
             }
@@ -280,14 +342,14 @@ namespace Rockweb.Blocks.Crm
             {
                 try
                 {
-                    var moreD = AssessmentResponses.Where( a => a.MostScore == "D" ).Count();
-                    var moreI = AssessmentResponses.Where( a => a.MostScore == "I" ).Count();
-                    var moreS = AssessmentResponses.Where( a => a.MostScore == "S" ).Count();
-                    var moreC = AssessmentResponses.Where( a => a.MostScore == "C" ).Count();
-                    var lessD = AssessmentResponses.Where( a => a.LeastScore == "D" ).Count();
-                    var lessI = AssessmentResponses.Where( a => a.LeastScore == "I" ).Count();
-                    var lessS = AssessmentResponses.Where( a => a.LeastScore == "S" ).Count();
-                    var lessC = AssessmentResponses.Where( a => a.LeastScore == "C" ).Count();
+                    var moreD = _assessmentResponses.Where( a => a.MostScore == "D" ).Count();
+                    var moreI = _assessmentResponses.Where( a => a.MostScore == "I" ).Count();
+                    var moreS = _assessmentResponses.Where( a => a.MostScore == "S" ).Count();
+                    var moreC = _assessmentResponses.Where( a => a.MostScore == "C" ).Count();
+                    var lessD = _assessmentResponses.Where( a => a.LeastScore == "D" ).Count();
+                    var lessI = _assessmentResponses.Where( a => a.LeastScore == "I" ).Count();
+                    var lessS = _assessmentResponses.Where( a => a.LeastScore == "S" ).Count();
+                    var lessC = _assessmentResponses.Where( a => a.LeastScore == "C" ).Count();
                     // Score the responses and return the results
                     DiscService.AssessmentResults results = DiscService.Score( moreD, moreI, moreS, moreC, lessD, lessI, lessS, lessC );
 
@@ -305,7 +367,7 @@ namespace Rockweb.Blocks.Crm
                         results.PersonalityType
                     );
 
-                    var assessmentData = AssessmentResponses.ToDictionary( a => a.QuestionNumber, b => new { Most = new string[2] { b.MostScore, b.Questions[b.MostScore] }, Least = new string[2] { b.LeastScore, b.Questions[b.LeastScore] } } );
+                    var assessmentData = _assessmentResponses.ToDictionary( a => a.QuestionNumber, b => new { Most = new string[2] { b.MostScore, b.Questions[b.MostScore] }, Least = new string[2] { b.LeastScore, b.Questions[b.LeastScore] } } );
                     var rockContext = new RockContext();
 
                     var assessmentService = new AssessmentService( rockContext );
@@ -332,7 +394,7 @@ namespace Rockweb.Blocks.Crm
                     assessment.AssessmentResultData = assessmentData.ToJson();
                     rockContext.SaveChanges();
 
-                    ShowResults( results, assessment );
+                    ShowResult( results, assessment );
                 }
                 catch ( Exception ex )
                 {
@@ -431,6 +493,19 @@ namespace Rockweb.Blocks.Crm
         #region Methods
 
         /// <summary>
+        /// Hides the Instructions and Questions panels and shows the specified error.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        private void HidePanelsAndShowError( string errorMessage )
+        {
+            pnlInstructions.Visible = false;
+            pnlQuestion.Visible = false;
+            pnlResult.Visible = false;
+            nbError.Visible = true;
+            nbError.Text = errorMessage;
+        }
+
+        /// <summary>
         /// Gets the selected value from the given radiobuttonlists.
         /// </summary>
         /// <param name="rbl1">The first RadioButtonList.</param>
@@ -499,8 +574,8 @@ namespace Rockweb.Blocks.Crm
         private void ShowInstructions()
         {
             pnlInstructions.Visible = true;
-            pnlQuestions.Visible = false;
-            pnlResults.Visible = false;
+            pnlQuestion.Visible = false;
+            pnlResult.Visible = false;
 
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
@@ -508,18 +583,18 @@ namespace Rockweb.Blocks.Crm
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
-            lInstructions.Text = GetAttributeValue( "Instructions" ).ResolveMergeFields( mergeFields );
+            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
         /// Shows the results of the assessment test.
         /// </summary>
         /// <param name="savedScores">The saved scores.</param>
-        private void ShowResults( DiscService.AssessmentResults savedScores, Assessment assessment )
+        private void ShowResult( DiscService.AssessmentResults savedScores, Assessment assessment )
         {
             pnlInstructions.Visible = false;
-            pnlQuestions.Visible = false;
-            pnlResults.Visible = true;
+            pnlQuestion.Visible = false;
+            pnlResult.Visible = true;
 
             if ( CurrentPersonId == _targetPerson.Id )
             {
@@ -550,8 +625,8 @@ namespace Rockweb.Blocks.Crm
             if ( personalityValue != null )
             {
                 lDescription.Text = personalityValue.Description;
-                lStrengths.Text = personalityValue.GetAttributeValue( "Strengths" );
-                lChallenges.Text = personalityValue.GetAttributeValue( "Challenges" );
+                lStrengths.Text = personalityValue.GetAttributeValue( AttributeKeys.Strengths );
+                lChallenges.Text = personalityValue.GetAttributeValue( AttributeKeys.Challenges );
             }
         }
 
@@ -561,11 +636,11 @@ namespace Rockweb.Blocks.Crm
         private void ShowQuestions()
         {
             pnlInstructions.Visible = false;
-            pnlQuestions.Visible = true;
+            pnlQuestion.Visible = true;
 
             Random r = new Random();
 
-            AssessmentResponses = DiscService.GetResponses()
+            _assessmentResponses = DiscService.GetResponses()
                                     .GroupBy( a => a.QuestionNumber )
                                     .Select( a => new AssessmentResponse()
                                     {
@@ -574,11 +649,11 @@ namespace Rockweb.Blocks.Crm
                                     } ).ToList();
 
             // If _maxQuestions has not been set yet...
-            if ( QuestionCount == 0 && AssessmentResponses != null )
+            if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
-                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
+                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
+                QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 
             BindRepeater( 0 );
@@ -592,12 +667,12 @@ namespace Rockweb.Blocks.Crm
         {
             hfPageNo.SetValue( pageNumber );
 
-            var answeredQuestionCount = AssessmentResponses.Where( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ).Count();
-            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
+            var answeredQuestionCount = _assessmentResponses.Where( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ).Count();
+            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( _assessmentResponses.Count ) ) * 100.0m, 2 );
 
             var skipCount = pageNumber * QuestionCount;
 
-            var questions = AssessmentResponses
+            var questions = _assessmentResponses
                 .Skip( skipCount )
                 .Take( QuestionCount + 1 )
                 .ToList();
@@ -647,7 +722,7 @@ namespace Rockweb.Blocks.Crm
                 RockRadioButtonList rblLess3 = item.FindControl( "rblLess3" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess4 = item.FindControl( "rblLess4" ) as RockRadioButtonList;
 
-                var assessment = AssessmentResponses.SingleOrDefault( a => a.QuestionNumber == hfQuestionCode.Value );
+                var assessment = _assessmentResponses.SingleOrDefault( a => a.QuestionNumber == hfQuestionCode.Value );
 
                 if ( assessment != null )
                 {

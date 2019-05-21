@@ -132,7 +132,7 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
+        <asp:Panel ID="pnlQuestion" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
 
@@ -203,7 +203,7 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlResults" CssClass="panel panel-block" runat="server">
+        <asp:Panel ID="pnlResult" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
             </div>
