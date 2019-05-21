@@ -893,7 +893,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
             registrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
             registrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
-            registrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsIntegerOrNull();
+            registrationTemplate.MaxRegistrants = cbMultipleRegistrants.Checked ? nbMaxRegistrants.Text.AsIntegerOrNull() : null;
             registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             registrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
@@ -986,10 +986,10 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            //if ( registrationTemplate.WaitListEnabled && registrationTemplate.MaxRegistrants == 0 )
-            //{
-            //    validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
-            //}
+            if ( registrationTemplate.WaitListEnabled && !registrationTemplate.MaxRegistrants.HasValue )
+            {
+                validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
+            }
 
             if ( validationErrors.Any() )
             {
