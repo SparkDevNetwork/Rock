@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -571,11 +572,22 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupMemberScheduleTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            // Save the preference. For now this acts as a note to the scheduler and does not effect the list of assignments presented to the user.
             var repeaterItem = ( ( DropDownList ) sender ).BindingContainer as RepeaterItem;
+            SaveGroupMemberSchedule( repeaterItem );
+        }
+
+        /// <summary>
+        /// Saves the group member schedule.
+        /// </summary>
+        /// <param name="repeaterItem">The repeater item.</param>
+        private void SaveGroupMemberSchedule( RepeaterItem repeaterItem )
+        {
+            // Save the preference. For now this acts as a note to the scheduler and does not effect the list of assignments presented to the user.
             var hfGroupId = repeaterItem.FindControl( "hfPreferencesGroupId" ) as HiddenField;
+            var dpGroupMemberScheduleTemplateStartDate = repeaterItem.FindControl( "dpGroupMemberScheduleTemplateStartDate" ) as DatePicker;
+            var ddlGroupMemberScheduleTemplate = repeaterItem.FindControl( "ddlGroupMemberScheduleTemplate" ) as DropDownList;
             var groupId = hfGroupId.ValueAsInt();
-            int? scheduleTemplateId = ( ( DropDownList ) sender ).SelectedValueAsInt( true );
+            int? scheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValueAsInt( true );
 
             using ( var rockContext = new RockContext() )
             {
@@ -590,17 +602,24 @@ $('#{0}').tooltip();
 
                     // make sure there is a StartDate so the schedule can be based off of something
                     var currentDate = RockDateTime.Now.Date;
-                    if ( !groupMember.ScheduleStartDate.HasValue || groupMember.ScheduleStartDate > currentDate )
-                    {
-                        groupMember.ScheduleStartDate = currentDate;
-                    }
-
+                    groupMember.ScheduleStartDate = dpGroupMemberScheduleTemplateStartDate.SelectedDate ?? currentDate;
                     rockContext.SaveChanges();
                 }
             }
 
             var pnlGroupPreferenceAssignment = repeaterItem.FindControl( "pnlGroupPreferenceAssignment" ) as Panel;
             pnlGroupPreferenceAssignment.Visible = scheduleTemplateId.HasValue;
+        }
+
+        /// <summary>
+        /// Handles the ValueChanged event of the dpGroupMemberScheduleTemplateStartDate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dpGroupMemberScheduleTemplateStartDate_ValueChanged( object sender, EventArgs e )
+        {
+            var repeaterItem = ( ( DatePicker ) sender ).BindingContainer as RepeaterItem;
+            SaveGroupMemberSchedule( repeaterItem );
         }
 
         /// <summary>
@@ -616,9 +635,20 @@ $('#{0}').tooltip();
                 return;
             }
 
-            var lGroupPreferencesGroupName = ( Literal ) e.Item.FindControl( "lGroupPreferencesGroupName" );
+            var lGroupPreferencesGroupNameHtml = ( Literal ) e.Item.FindControl( "lGroupPreferencesGroupNameHtml" );
             var hfPreferencesGroupId = ( HiddenField ) e.Item.FindControl( "hfPreferencesGroupId" );
             var rptGroupPreferenceAssignments = ( Repeater ) e.Item.FindControl( "rptGroupPreferenceAssignments" );
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            if ( groupType != null && groupType.IconCssClass.IsNotNullOrWhiteSpace() )
+            {
+                lGroupPreferencesGroupNameHtml.Text = string.Format( "<i class='{0}'></i> {1}", groupType.IconCssClass, group.Name );
+            }
+            else
+            {
+                lGroupPreferencesGroupNameHtml.Text = group.Name;
+            }
+
 
             hfPreferencesGroupId.Value = group.Id.ToString();
 
@@ -698,7 +728,7 @@ $('#{0}').tooltip();
             ddlGroupPreferenceAssignmentLocation.DataTextField = "Name";
             ddlGroupPreferenceAssignmentLocation.DataBind();
             ddlGroupPreferenceAssignmentLocation.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            ddlGroupPreferenceAssignmentLocation.Enabled = groupmemberAssignment != null;
+            ddlGroupPreferenceAssignmentLocation.Visible = cbGroupPreferenceAssignmentScheduleTime.Checked;
 
             if ( groupmemberAssignment != null )
             {
@@ -719,7 +749,7 @@ $('#{0}').tooltip();
             var ddlGroupPreferenceAssignmentLocation = ( DropDownList ) repeaterItemSchedule.FindControl( "ddlGroupPreferenceAssignmentLocation" );
             var hfScheduleId = ( HiddenField ) repeaterItemSchedule.FindControl( "hfScheduleId" );
 
-            ddlGroupPreferenceAssignmentLocation.Enabled = scheduleCheckBox.Checked;
+            ddlGroupPreferenceAssignmentLocation.Visible = scheduleCheckBox.Checked;
             ddlGroupPreferenceAssignmentLocation.Items[0].Text = scheduleCheckBox.Checked ? "No Location Preference" : string.Empty;
 
             var repeaterItemGroup = repeaterItemSchedule.FindFirstParentWhere( p => p is RepeaterItem );
@@ -789,6 +819,7 @@ $('#{0}').tooltip();
         protected void rptGroupPreferencesBindDropDowns( Group group, RepeaterItemEventArgs e )
         {
             var ddlGroupMemberScheduleTemplate = e.Item.FindControl( "ddlGroupMemberScheduleTemplate" ) as RockDropDownList;
+            var dpGroupMemberScheduleTemplateStartDate = e.Item.FindControl( "dpGroupMemberScheduleTemplateStartDate" ) as DatePicker;
             var ddlSendRemindersDaysOffset = e.Item.FindControl( "ddlSendRemindersDaysOffset" ) as RockDropDownList;
             var pnlGroupPreferenceAssignment = e.Item.FindControl( "pnlGroupPreferenceAssignment" ) as Panel;
 
@@ -825,7 +856,14 @@ $('#{0}').tooltip();
                 ddlGroupMemberScheduleTemplate.DataBind();
 
                 ddlGroupMemberScheduleTemplate.SelectedValue = groupMember.ScheduleTemplateId == null ? string.Empty : groupMember.ScheduleTemplateId.ToString();
+                dpGroupMemberScheduleTemplateStartDate.Visible = groupMember.ScheduleTemplateId.HasValue;
                 pnlGroupPreferenceAssignment.Visible = groupMember.ScheduleTemplateId.HasValue;
+
+                dpGroupMemberScheduleTemplateStartDate.SelectedDate = groupMember.ScheduleStartDate;
+                if ( dpGroupMemberScheduleTemplateStartDate.SelectedDate == null )
+                {
+                    dpGroupMemberScheduleTemplateStartDate.SelectedDate = RockDateTime.Today;
+                }
             }
         }
 
@@ -1156,7 +1194,7 @@ $('#{0}').tooltip();
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
                     currentGroupId = availableSchedule.GroupId;
-                    CreateGroupHeader( availableSchedule.GroupName );
+                    CreateGroupHeader( availableSchedule.GroupName, availableSchedule.GroupType );
                 }
 
                 if ( availableSchedule.ScheduledDateTime.Date != currentOccurrenceDate.Date )
@@ -1179,9 +1217,9 @@ $('#{0}').tooltip();
         /// Creates the group section header for the sign-up tab controls
         /// </summary>
         /// <param name="groupName">Name of the group.</param>
-        private void CreateGroupHeader( string groupName )
+        private void CreateGroupHeader( string groupName, GroupTypeCache groupType )
         {
-            LiteralControl lc = new LiteralControl( string.Format( "<h4>{0} Schedules</h4><hr class='margin-t-sm margin-b-sm'>", groupName ) );
+            LiteralControl lc = new LiteralControl( string.Format( "<h3><i class='{0}'></i> {1} Schedules</h3><hr class='margin-t-sm margin-b-sm'>", groupType.IconCssClass, groupName ) );
             phSignUpSchedules.Controls.Add( lc );
         }
 
@@ -1244,7 +1282,7 @@ $('#{0}').tooltip();
 
             var ddlSignupLocations = new RockDropDownList();
             ddlSignupLocations.ID = "ddlSignupLocations";
-            ddlSignupLocations.Enabled = false;
+            ddlSignupLocations.Visible = false;
 
             ddlSignupLocations.AddCssClass( "js-person-schedule-signup-ddl" );
             ddlSignupLocations.Items.Insert( 0, new ListItem( "No Location Preference", string.Empty ) );
@@ -1266,7 +1304,6 @@ $('#{0}').tooltip();
 
             scheduleSignUpRowItem.Controls.Add( pnlCheckboxCol );
             scheduleSignUpRowItem.Controls.Add( pnlLocationCol );
-            //scheduleSignUpRowItem.Controls.Add( scheduleSignUpContainer );
         }
 
         /// <summary>
@@ -1305,7 +1342,7 @@ $('#{0}').tooltip();
                 var ddlSignupLocations = scheduleSignUpContainer.FindControl( "ddlSignupLocations" ) as RockDropDownList;
                 var cbSignupSchedule = scheduleSignUpContainer.FindControl( "cbSignupSchedule" ) as RockCheckBox;
                 var hlSignUpSaved = scheduleSignUpContainer.FindControl( "hlSignUpSaved" ) as HighlightLabel;
-                ddlSignupLocations.Enabled = cbSignupSchedule.Checked;
+                ddlSignupLocations.Visible = cbSignupSchedule.Checked;
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -1390,6 +1427,7 @@ $('#{0}').tooltip();
                                 GroupId = personGroupLocation.Group.Id,
                                 GroupOrder = personGroupLocation.Group.Order,
                                 GroupName = personGroupLocation.Group.Name,
+                                GroupType = GroupTypeCache.Get( personGroupLocation.Group.GroupTypeId ),
                                 LocationId = personGroupLocation.Location.Id,
                                 LocationName = personGroupLocation.Location.Name,
                                 LocationOrder = personGroupLocation.Order,
@@ -1410,12 +1448,13 @@ $('#{0}').tooltip();
             public int GroupId { get; set; }
             public int GroupOrder { get; set; }
             public string GroupName { get; set; }
+            public GroupTypeCache GroupType { get; set; }
             public int LocationId { get; set; }
             public int ScheduleId { get; set; }
             public DateTime ScheduledDateTime { get; set; }
             public string ScheduleName { get; set; }
             public string LocationName { get; set; }
-            public int LocationOrder { get; internal set; }
+            public int LocationOrder { get; set; }
         }
 
 
