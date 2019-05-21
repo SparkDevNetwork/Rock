@@ -305,7 +305,7 @@ This graph is based on the average composite score for each cluster of Motivator
 
             if ( _targetPerson == null )
             {
-                if ( _isQuerystringPersonKey )
+                if ( _isQuerystringPersonKey || personId.HasValue )
                 {
                     HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
                 }

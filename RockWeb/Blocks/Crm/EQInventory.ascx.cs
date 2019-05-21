@@ -448,7 +448,7 @@ go from this point forward.</p>
 
             if ( _targetPerson == null )
             {
-                if ( _isQuerystringPersonKey )
+                if ( _isQuerystringPersonKey || personId.HasValue )
                 {
                     HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
                 }
