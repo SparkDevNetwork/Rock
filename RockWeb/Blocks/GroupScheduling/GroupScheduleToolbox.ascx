@@ -71,12 +71,12 @@
                             <asp:Panel ID="pnlUpcomingSchedules" runat="server" CssClass="confirmed margin-t-md">
                                 <span class="control-label">
                                     <asp:Literal runat="server" ID="lUpcomingSchedules" Text="Upcoming Schedules" />
-                                <button id="btnCopyToClipboard" runat="server" disabled="disabled"
-                                    data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
-                                    class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
-                                    onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                                    <i class="fa fa-calendar-alt"></i>Copy Calendar Link
-                                </button>
+                                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
+                                        class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
+                                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
+                                        <i class="fa fa-calendar-alt"></i>Copy Calendar Link
+                                    </button>
                                 </span>
                                 <table class="table table-borderless">
                                     <tbody>
@@ -113,10 +113,9 @@
                             <asp:Repeater ID="rptGroupPreferences" runat="server" OnItemDataBound="rptGroupPreferences_ItemDataBound">
                                 <ItemTemplate>
                                     <asp:HiddenField ID="hfPreferencesGroupId" runat="server" />
-                                    <asp:HiddenField ID="hfPreferencesGroupMemberList" runat="server" />
 
                                     <h3>
-                                        <asp:Literal runat="server" ID="lGroupPreferencesGroupName" Text='<%# Eval("Name") %>' /></h3>
+                                        <asp:Literal runat="server" ID="lGroupPreferencesGroupNameHtml" /></h3>
                                     <hr class="margin-t-sm margin-b-sm" />
 
                                     <div class="row">
@@ -138,9 +137,19 @@
                                                 <asp:ListItem Value="13" Text="13 days before"></asp:ListItem>
                                                 <asp:ListItem Value="14" Text="14 days before"></asp:ListItem>
                                             </Rock:RockDropDownList>
+
+                                        </div>
+                                        <div class="col-md-6">
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
                                             <Rock:RockDropDownList ID="ddlGroupMemberScheduleTemplate" runat="server" Label="Current Schedule" OnSelectedIndexChanged="ddlGroupMemberScheduleTemplate_SelectedIndexChanged" AutoPostBack="true" />
                                         </div>
                                         <div class="col-md-6">
+                                            <Rock:DatePicker ID="dpGroupMemberScheduleTemplateStartDate" runat="server" Label="Starting On" OnValueChanged="dpGroupMemberScheduleTemplateStartDate_ValueChanged" AutoPostBack="true" />
                                         </div>
                                     </div>
 
