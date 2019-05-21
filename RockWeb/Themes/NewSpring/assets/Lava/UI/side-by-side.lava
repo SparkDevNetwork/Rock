@@ -3,7 +3,7 @@
 
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -14,7 +14,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 
 {% if ratio and ratio != empty %}
@@ -77,9 +77,9 @@
                         {% endif %}
 
 
-                        {% if url != empty %}                        
+                        {% if linkurl and linkurl != empty %}                        
                             <p>
-                                {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                                {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                             </p>
                         {% endif %}
                     </div>
@@ -155,9 +155,9 @@
                     {% endif %}
 
 
-                    {% if url != empty %}                        
+                    {% if linkurl and linkurl != empty %}                        
                         <p>
-                            {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                            {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                         </p>
                     {% endif %}
 

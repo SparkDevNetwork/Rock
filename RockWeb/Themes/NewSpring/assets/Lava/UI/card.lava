@@ -3,7 +3,7 @@
 
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -14,7 +14,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 <div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
     {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
@@ -76,9 +76,9 @@
             {{ lava }}
         {% endif %}
 
-        {% if url != empty %}
+        {% if linkurl and linkurl != empty %}
             <p>
-                {[ button linkurl:'{{ url }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
+                {[ button linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
             </p>
         {% endif %}
 
