@@ -64,7 +64,6 @@ overflow-hidden
 
             {{ content }}
 
-            {{ linkurl }}
             {% if linkurl and linkurl != empty %}
                 <p>
                     {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
