@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -139,9 +139,8 @@ namespace Rockweb.Blocks.Crm
 
         #endregion
 
-        #region Properties
+        #region Public and Protected Properties
 
-        // used for public / protected properties
         /// <summary>
         /// Gets or sets the percent complete.
         /// </summary>
@@ -319,7 +318,6 @@ namespace Rockweb.Blocks.Crm
             ShowQuestions();
         }
 
-
         /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
@@ -350,6 +348,7 @@ namespace Rockweb.Blocks.Crm
                     var lessI = _assessmentResponses.Where( a => a.LeastScore == "I" ).Count();
                     var lessS = _assessmentResponses.Where( a => a.LeastScore == "S" ).Count();
                     var lessC = _assessmentResponses.Where( a => a.LeastScore == "C" ).Count();
+
                     // Score the responses and return the results
                     DiscService.AssessmentResults results = DiscService.Score( moreD, moreI, moreS, moreC, lessD, lessI, lessS, lessC );
 
@@ -364,8 +363,7 @@ namespace Rockweb.Blocks.Crm
                         results.NaturalBehaviorI.ToString(),
                         results.NaturalBehaviorS.ToString(),
                         results.NaturalBehaviorC.ToString(),
-                        results.PersonalityType
-                    );
+                        results.PersonalityType );
 
                     var assessmentData = _assessmentResponses.ToDictionary( a => a.QuestionNumber, b => new { Most = new string[2] { b.MostScore, b.Questions[b.MostScore] }, Least = new string[2] { b.LeastScore, b.Questions[b.LeastScore] } } );
                     var rockContext = new RockContext();
@@ -444,7 +442,7 @@ namespace Rockweb.Blocks.Crm
                 RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
 
-                var assessment = ( ( AssessmentResponse ) ( e.Item.DataItem ) );
+                var assessment = ( AssessmentResponse ) e.Item.DataItem;
                 ListItem m1 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 0 ) );
                 ListItem m2 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 1 ) );
                 ListItem m3 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 2 ) );
@@ -532,9 +530,8 @@ namespace Rockweb.Blocks.Crm
             {
                 return rbl4.SelectedValue;
             }
-            {
-                return string.Empty;
-            }
+
+            return string.Empty;
         }
 
         private void SetSelectedValue( string value, RadioButtonList rbl1, RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
@@ -564,8 +561,16 @@ namespace Rockweb.Blocks.Crm
         private void PlotGraph( DiscService.AssessmentResults results )
         {
             // Plot the Natural graph
-            DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 100 );
+            DiscService.PlotOneGraph(
+                discNaturalScore_D,
+                discNaturalScore_I,
+                discNaturalScore_S,
+                discNaturalScore_C,
+                results.NaturalBehaviorD,
+                results.NaturalBehaviorI,
+                results.NaturalBehaviorS,
+                results.NaturalBehaviorC,
+                100 );
         }
 
         /// <summary>
@@ -583,6 +588,7 @@ namespace Rockweb.Blocks.Crm
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
+
             lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
         }
 
@@ -600,6 +606,7 @@ namespace Rockweb.Blocks.Crm
             {
                 lPrintTip.Visible = true;
             }
+
             lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
 
             double days = assessment.AssessmentType.MinimumDaysToRetake;
@@ -659,7 +666,6 @@ namespace Rockweb.Blocks.Crm
             BindRepeater( 0 );
         }
 
-
         /// <summary>
         /// Binds the question data to the rQuestions repeater control.
         /// </summary>
@@ -701,7 +707,6 @@ namespace Rockweb.Blocks.Crm
             {
                 btnPrevious.Visible = btnPrevious.Enabled = true;
             }
-
         }
 
         /// <summary>
@@ -739,9 +744,36 @@ namespace Rockweb.Blocks.Crm
         [Serializable]
         public class AssessmentResponse
         {
+            /// <summary>
+            /// Gets or sets the question number.
+            /// </summary>
+            /// <value>
+            /// The question number.
+            /// </value>
             public string QuestionNumber { get; set; }
+
+            /// <summary>
+            /// Gets or sets the questions.
+            /// </summary>
+            /// <value>
+            /// The questions.
+            /// </value>
             public Dictionary<string, string> Questions { get; set; }
+
+            /// <summary>
+            /// Gets or sets the most score.
+            /// </summary>
+            /// <value>
+            /// The most score.
+            /// </value>
             public string MostScore { get; set; }
+
+            /// <summary>
+            /// Gets or sets the least score.
+            /// </summary>
+            /// <value>
+            /// The least score.
+            /// </value>
             public string LeastScore { get; set; }
         }
 
