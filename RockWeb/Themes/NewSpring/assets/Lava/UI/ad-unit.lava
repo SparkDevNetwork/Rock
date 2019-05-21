@@ -1,3 +1,6 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {%- assign modalid = uniqueid -%}
 {% assign textalignment = textalignment | Trim %}
 
@@ -31,7 +34,7 @@
 {% endif %}
 
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -41,6 +44,8 @@
         {% endif %}
     {% endcapture %}
 {% endif %}
+
+{% assign linkurl = linkurl | Trim %}
 
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-half-sides xs-soft-top xs-hard-bottom xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
     
@@ -73,7 +78,7 @@
 
                     {% assign length = content | Size %}
                     {% if content and content != empty %}
-                        <div class="">
+                        <div class="{% if imageurl and imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
                             {% if trimcopy == 'Yes' %}
                                 {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}
                             {% else %}
@@ -83,9 +88,9 @@
                     {% endif %}
 
                     <div class="{% if imageurl == '' or imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
-                        {% if url and url != empty %}
+                        {% if linkurl and linkurl != empty %}
                             <p>
-                                {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                                {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                             </p>
                         {% endif %}
 
@@ -128,3 +133,5 @@
     </div>
     {% endif %}
 {% endif %}
+
+{[ endscripturize ]}

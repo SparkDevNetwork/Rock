@@ -12,15 +12,14 @@
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{% assign feedDescription = 'Global' | Attribute:'FeedDescription'%}
 
     {% assign channelNameParts = Channel.Name | Split:' - ' %}
     <title>{{ channelNameParts[1] }} - {{ 'Global' | Attribute:'OrganizationName' }}</title>
     <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
-    {% if Channel.Description and Channel.Description != empty %}
-        <description><![CDATA[{{ Channel.Description }}]]></description>
-    {% endif %}
+    <description>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</description>
     <language>en-US</language>
-    <copyright>Copyright {{ 'Now' | Date:'yyyy' }}, {{ 'Global' | Attribute:'OrganizationName' }}</copyright>
+    <copyright>Free to distribute. Do not sell.</copyright>
     <webMaster>web@newspring.cc (NewSpring Web)</webMaster>
     <pubDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:00:00 EST' }}</pubDate>
     <category>{{ channelNameParts[1] }}</category>
@@ -37,6 +36,7 @@
             <title>{{ channelNameParts[1] }} - {{ 'Global' | Attribute:'OrganizationName' }}</title>
             <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
         </image>
+        <itunes:image href="{{ channelImage }}"/>
     {% endif %}
 
 {% for item in Items -%}

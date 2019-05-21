@@ -1,6 +1,9 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -11,7 +14,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 <div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
     {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
@@ -20,7 +23,7 @@
         </div>
     {% endif %}
     {% if imageurl != null and imageurl != '' %}
-        {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
+        {% if linkurl != empty %}<a href="{{ linkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
@@ -33,7 +36,7 @@
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
             {% endif %}
     
-        {% if url != empty %}</a>{% else %}</div>{% endif %}
+        {% if linkurl != empty %}</a>{% else %}</div>{% endif %}
     {% endif %}
 
     <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
@@ -73,9 +76,9 @@
             {{ lava }}
         {% endif %}
 
-        {% if url != empty %}
+        {% if linkurl and linkurl != empty %}
             <p>
-                {[ button linkurl:'{{ url }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
+                {[ button linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
             </p>
         {% endif %}
 
@@ -106,3 +109,5 @@
     </div>
     {% endif %}
 {% endif %}
+
+{[ endscripturize ]}

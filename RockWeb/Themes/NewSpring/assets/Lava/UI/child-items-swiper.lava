@@ -29,7 +29,7 @@
                     {% capture type %}{{ childType | Singularize }}{% endcapture %}
                     {% capture title %}{{ child.Title | Replace:"'","’" }}{% endcapture %}
                     {% capture titlesize %}h4{% endcapture %}
-                    {% capture content %}{% endcapture %}
+                    {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
                     {% capture textalignment %}{% endcapture %}
                     {% capture label %}{% if childType contains "Devotional" %}Session {{ forloop.index }}{% endif %}{% endcapture %}
                     {% if childType contains "Sermon" or childType contains "Series" %}
@@ -46,7 +46,6 @@
                             {% endif %}
                         {% endif %}
                     {% endcapture %}
-                    {{ child | Attribute:'Video','Url' }}
                     {% assign imageurl = imageurl | Trim %}
                     {% capture imageoverlayurl %}{% endcapture %}
                     {% capture imagealignment %}{% endcapture %}
@@ -55,7 +54,7 @@
                     {% capture backgroundvideourl %}{% endcapture %}
                     {% capture lava %}{% endcapture %}
                     {% capture ratio %}{% endcapture %}
-                    {% capture trimcopy %}y{% endcapture %}
+                    {% capture trimcopy %}{% endcapture %}
                     {% capture linkcolor %}{% endcapture %}
                     {% capture backgroundcolor %}{% endcapture %}
                     {% capture linkurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ child.Id }}' ]}/{[ getSlugFromId id:'{{ child.Id }}' ]}{% endcapture %}

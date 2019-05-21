@@ -1,6 +1,9 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -11,7 +14,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 
 {% if ratio and ratio != empty %}
@@ -74,9 +77,9 @@
                         {% endif %}
 
 
-                        {% if url != empty %}                        
+                        {% if linkurl and linkurl != empty %}                        
                             <p>
-                                {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                                {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                             </p>
                         {% endif %}
                     </div>
@@ -144,7 +147,7 @@
                             {% if trimcopy == 'Yes' %}
                                 {% assign length = content | Size %}
                                 
-                                <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}</p>
+                                <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}</p>
                             {% else %}
                                 {{ content }}
                             {% endif %}
@@ -152,9 +155,9 @@
                     {% endif %}
 
 
-                    {% if url != empty %}                        
+                    {% if linkurl and linkurl != empty %}                        
                         <p>
-                            {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                            {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                         </p>
                     {% endif %}
 
@@ -190,3 +193,5 @@
     </div>
     {% endif %}
 {% endif %}
+
+{[ endscripturize ]}

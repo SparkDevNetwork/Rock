@@ -1,5 +1,8 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -10,7 +13,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="
 shell
@@ -61,10 +64,9 @@ overflow-hidden
 
             {{ content }}
 
-
-            {% if url != empty %}
+            {% if linkurl and linkurl != empty %}
                 <p>
-                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
+                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
                 </p>
             {% endif %}
 
@@ -107,3 +109,5 @@ overflow-hidden
 {% capture metaimage %}{% if pagemetaimage and pagemetaimage != empty %}{{ pagemetaimage }}{% else %}{{ imageurl }}{% endif %}{% endcapture %}
 
 {[ metaTags url:'{{ url | Trim }}' title:'{{ metatitle }}' description:'{{ metadescription }}' image:'{{ metaimage }}' ]}
+
+{[ endscripturize ]}

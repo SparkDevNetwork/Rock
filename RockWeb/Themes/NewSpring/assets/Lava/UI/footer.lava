@@ -1,0 +1,60 @@
+{% if CurrentPerson and CurrentPerson != empty %}
+    {% assign orgCampus = CurrentPerson | Campus %}
+    {% assign orgAddress = orgCampus.Location %}
+    {% assign orgPhone = orgCampus.PhoneNumber %}
+    {% capture orgPhone %}({{ orgPhone | Slice:0,3 }}) {{ orgPhone | Slice:4,9 }}{% endcapture %}
+{% else %}
+    {% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
+    {% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
+{% endif %}
+
+
+<footer class="position-relative bg-gray-dark soft-double soft-bottom push-sides xs-push-half-sides push-bottom xs-push-half-bottom clearfix rounded shadowed sans-serif strong text-decoration-none overflow-hidden">
+    <img src="https://s3.amazonaws.com/ns.assets/newspring/newspring_mark.png" class="position-absolute bottom-zero right-zero" style="max-width:50px;" />
+    <div class="row">
+        <div class="col-xs-12 col-sm-6 col-md-3 push-bottom">
+            <p class="text-uppercase stronger text-gray-light push-half-bottom"><small>{{ 'Global' | Attribute:'OrganizationName' }}</small></p>
+            <p class="text-white sans-serif strong letter-spacing-condensed flush"><small>
+                {{ orgAddress.Street1 }}<br>{{ orgAddress.City }}, {{ orgAddress.State }}<br>{{ orgAddress.PostalCode }}<br>
+                <a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a>
+            </small></p>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom">
+            <p class="text-uppercase stronger text-gray-light push-half-bottom"><small>Need Help?</small></p>
+            <p class="sans-serif strong letter-spacing-condensed flush"><small>
+                <a href="/care" class="text-hover-white xs-width-full xs-display-inline-block">Care &amp; Prayer</a><br>
+                <a href="/help" class="text-hover-white xs-width-full xs-display-inline-block">Technical Support</a><br>
+                <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&SiteId={{ 'Global' | Page:'SiteId' }}">Report Website Issue</a>
+            </small></p>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom">
+            <p class="text-uppercase stronger text-gray-light push-half-bottom"><small>Legal</small></p>
+            <p class="sans-serif strong letter-spacing-condensed flush"><small>
+                <a href="/privacy-policy" class="text-hover-white xs-width-full xs-display-inline-block">Privacy Policy</a><br>
+                <a href="/terms-of-use" class="text-hover-white xs-width-full xs-display-inline-block">Terms of Use</a><br>
+                <a href="/reprinting-and-reposting-terms" class="text-hover-white xs-width-full xs-display-inline-block">Reprinting &amp; Reposting Terms</a><br>
+            </small></p>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom">
+            {% if CurrentPerson and CurrentPerson != empty %}
+                <p class="text-uppercase stronger text-gray-light push-half-bottom"><small>My Account</small></p>
+                <p class="sans-serif strong letter-spacing-condensed flush"><small>
+                    <a href="/account" class="text-hover-white xs-width-full xs-display-inline-block">My Profile</a><br>
+                    <a href="/account/groups" class="text-hover-white xs-width-full xs-display-inline-block">My Groups</a><br>
+                    <a href="/account/subscriptions" class="text-hover-white xs-width-full xs-display-inline-block">My Subscriptions</a><br>
+                    <a href="?logout=true" class="text-danger xs-width-full xs-display-inline-block">Sign Out</a>
+                </small></p>
+            {% else %}
+                <p class="text-uppercase stronger text-gray-light push-half-bottom"><small>New Here?</small></p>
+                <a href="#" class="btn btn-sm push-half-top btn-primary stronger text-hover-white xs-width-full xs-display-inline-block">Say Hello!</a>
+            {% endif %}
+        </div>
+    </div>
+</footer>
+
+<div class="soft-sides  sans-serif stronger letter-spacing-condensed text-decoration-none">
+    <div class="row">
+        <div class="col-xs-12 col-md-6 xs-text-center">
+            <p class="text-gray-dark flush"><small>Follow Us <a href="https://facebook.com/newspring" target="_blank"><i class="fab fa-lg fa-fw fa-facebook-square text-facebook"></i></a> <a href="https://twitter.com/newspring" target="_blank"><i class="fab fa-lg fa-fw fa-twitter-square text-twitter"></i></a> <a href="https://instagram.com/newspring_church" target="_blank"><i class="fab fa-lg fa-fw fa-instagram text-instagram"></i></a></small></p>
+        </div><div class="col-xs-12 col-md-6 text-right xs-text-center">
+            <p><small>&copy; {{ 'Now' | Date:'yyyy'}} {{ 'Global' | Attribute:'OrganizationName' }}</small></p>
+        </div>
+    </div>
+</div>
