@@ -280,7 +280,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( _abbreviatedName.IsNotNullOrWhiteSpace() )
+                if ( _abbreviatedName.IsNullOrWhiteSpace() )
                 {
                     return Name;
                 }
