@@ -6,11 +6,14 @@
         {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
         {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
         {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
-        {% assign backgroundColor = parent | Attribute:'BackgroundColor' | Lighten:'15%' %}
+        {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
         {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
         {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
+
     {% endfor %}
 {% endcontentchannelitem %}
+
+
 
 {% if backgroundColor %}
 <style>

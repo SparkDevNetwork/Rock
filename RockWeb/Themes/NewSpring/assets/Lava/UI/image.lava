@@ -1,3 +1,6 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture url %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
@@ -32,3 +35,5 @@
     </div>
     {% if url != empty and hideforegroundelements == 'Yes' %}</a>{% endif %}
 </section>
+
+{[ endscripturize ]}

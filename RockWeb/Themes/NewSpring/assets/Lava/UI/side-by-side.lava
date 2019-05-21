@@ -1,3 +1,6 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture url %}
@@ -190,3 +193,5 @@
     </div>
     {% endif %}
 {% endif %}
+
+{[ endscripturize ]}

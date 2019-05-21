@@ -1,3 +1,6 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture url %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
@@ -107,3 +110,5 @@ overflow-hidden
 {% capture metaimage %}{% if pagemetaimage and pagemetaimage != empty %}{{ pagemetaimage }}{% else %}{{ imageurl }}{% endif %}{% endcapture %}
 
 {[ metaTags url:'{{ url | Trim }}' title:'{{ metatitle }}' description:'{{ metadescription }}' image:'{{ metaimage }}' ]}
+
+{[ endscripturize ]}

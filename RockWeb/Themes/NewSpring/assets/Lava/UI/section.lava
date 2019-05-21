@@ -1,0 +1,44 @@
+<section {% if id %}id="{{ id }}"{% endif %} class="position-relative bg-white shell flush-sides push-bottom xs-push-half-bottom rounded shadowed {% if imageurl and imageurl != empty or backgroundcolor and backgroundcolor != empty %}text-white{% endif %}" style="{% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }}{% endif %}">
+    
+    {% if linkcolor and linkcolor != empty %}
+        <style>
+            #{{ id }} a {
+                color: {{ linkcolor }};
+            }
+            
+            #{{ id }} a:hover,
+            #{{ id }} a:visited,
+            #{{ id }} a:active {
+                color: {{ linkcolor | Darken:'5%' }};
+            }
+            
+            #{{ id }} .btn-primary {
+                background-color: {{ linkcolor }};
+            }
+            
+            #{{ id }} .btn-primary:hover,
+            #{{ id }} .btn-primary:visited,
+            #{{ id }} .btn-primary:active {
+                background-color: {{ linkcolor | Darken:'5%' }};
+            }
+        </style>
+    {% endif %}
+
+    {% if imageurl and imageurl != empty %}
+        <div class="full-screen background-center background-cover" style="background-image:url('{{ imageurl }}');"></div>
+        <div class="bring-forward">
+    {% endif %}
+    
+    {% if title and title != empty %}
+        <div class="text-center">
+            <h2 class="{{ titlesize }}">{{ title }}</h2>
+        </div>
+    {% endif %}
+    
+    {{ blockContent }}
+    
+    {% if imageurl and imageurl != empty %}
+        </div>
+    {% endif %}
+    
+</section>
