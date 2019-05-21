@@ -49,12 +49,27 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = InstructionsDefaultValue,
         Order = 0 )]
 
+    [TextField( "Set Page Title",
+        Key = AttributeKeys.SetPageTitle,
+        Description = "The text to display as the heading.",
+        IsRequired = false,
+        DefaultValue = "DISC Assessment",
+        Order = 1 )]
+
+    [TextField( "Set Page Icon",
+        Key = AttributeKeys.SetPageIcon,
+        Description = "The css class name to use for the heading icon.",
+        IsRequired = false,
+        DefaultValue = "fa fa-chart-bar",
+        Order = 2 )]
+
     [IntegerField( "Number of Questions",
         Key = AttributeKeys.NumberofQuestions,
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 5,
-        Order = 1 )]
+        Order = 3 )]
+
     #endregion Block Attributes
     public partial class Disc : Rock.Web.UI.RockBlock
     {
@@ -91,8 +106,13 @@ namespace Rockweb.Blocks.Crm
         #region Attribute Keys
         protected static class AttributeKeys
         {
-            public const string NumberofQuestions = "NumberofQuestions";
+            // Block Attributes
             public const string Instructions = "Instructions";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string SetPageIcon = "SetPageIcon";
+            public const string NumberofQuestions = "NumberofQuestions";
+            
+            // Other Attributes
             public const string Strengths = "Strengths";
             public const string Challenges = "Challenges";
         }
@@ -191,6 +211,7 @@ namespace Rockweb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            SetPanelTitleAndIcon();
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             string personKey = PageParameter( PageParameterKey.Person );
@@ -571,6 +592,24 @@ namespace Rockweb.Blocks.Crm
                 results.NaturalBehaviorS,
                 results.NaturalBehaviorC,
                 100 );
+        }
+
+        /// <summary>
+        /// Sets the page title and icon.
+        /// </summary>
+        private void SetPanelTitleAndIcon()
+        {
+            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            if ( !string.IsNullOrEmpty( panelTitle ) )
+            {
+                lTitle.Text = panelTitle;
+            }
+
+            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            if ( !string.IsNullOrEmpty( panelIcon ) )
+            {
+                iIcon.Attributes["class"] = panelIcon;
+            }
         }
 
         /// <summary>
