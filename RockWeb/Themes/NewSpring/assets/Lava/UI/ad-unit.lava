@@ -78,7 +78,7 @@
 
                     {% assign length = content | Size %}
                     {% if content and content != empty %}
-                        <div class="">
+                        <div class="{% if imageurl and imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
                             {% if trimcopy == 'Yes' %}
                                 {{ content | Truncate:200,'...' }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}
                             {% else %}
