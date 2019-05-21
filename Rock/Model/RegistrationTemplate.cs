@@ -399,7 +399,7 @@ namespace Rock.Model
         /// The maximum registrants.
         /// </value>
         [DataMember]
-        public int MaxRegistrants { get; set; }
+        public int? MaxRegistrants { get; set; }
 
         /// <summary>
         /// Gets or sets the financial gateway identifier.
