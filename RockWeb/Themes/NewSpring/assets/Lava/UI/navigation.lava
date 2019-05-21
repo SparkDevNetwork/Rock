@@ -1,7 +1,7 @@
 <ul class="nav-primary sans-serif strong text-decoration-none hard flush">
 	<li>
 		<a href="/" class="nav-logo">
-			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="" class="nav-icon  nav-logo-regular"> 
+			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="nav-icon  nav-logo-regular"> 
 			<span>{{ 'Global' | Attribute:'OrganizationName' }}</span>
 		</a>
 	</li><span class="pull-right xs-pull-none"><li>
