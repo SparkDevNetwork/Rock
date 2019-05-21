@@ -40,10 +40,38 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows for editing the value(s) of a set of attributes for person." )]
 
-    [AttributeCategoryField( "Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", true, "", "", 0 )]
-    [TextField("Attribute Order", "The order to use for displaying attributes.  Note: this value is set through the block's UI and does not need to be set here.", false, "", "", 1)]
+    [AttributeCategoryField( "Category",
+        Key = AttributeKeys.Category,
+        Description = "The Attribute Category to display attributes from",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = true,
+        Order = 0 )]
+
+    [TextField("Attribute Order",
+        Key = AttributeKeys.AttributeOrder,
+        Description = "The order to use for displaying attributes.  Note: this value is set through the block's UI and does not need to be set here.",
+        IsRequired = false,
+        Order = 1)]
+
+    [BooleanField("Use Abbreviated Name",
+        Key = AttributeKeys.UseAbbreviatedName,
+        Description = "Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Order = 2
+        )]
     public partial class AttributeValues : PersonBlock
     {
+        #region Attribute Keys
+        protected static class AttributeKeys
+        {
+            public const string Category = "Category";
+            public const string AttributeOrder = "AttributeOrder";
+            public const string UseAbbreviatedName = "UseAbbreviatedName";
+        }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -335,6 +363,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var attribute = AttributeCache.Get( attributeId );
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
+                    string attributeLabel = GetAttributeValue( AttributeKeys.UseAbbreviatedName ).AsBoolean() == false ? attribute.Name : attribute.AbbreviatedName;
 
                     if ( ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
@@ -352,7 +381,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             a.Controls.Add( i );
                             i.Attributes.Add( "class", "fa fa-bars" );
 
-                            div.Controls.Add( new LiteralControl( " " + attribute.Name ) );
+                            div.Controls.Add( new LiteralControl( " " + attributeLabel ) );
                         }
                         else
                         {
@@ -369,11 +398,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
                                 {
-                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue, CssClass= "matrix-attribute" } );
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attributeLabel, Text = formattedValue, CssClass= "matrix-attribute" } );
                                     }
                                 else
                                 {
-                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attributeLabel, Text = formattedValue } );
                                 }
                             }
                         }
