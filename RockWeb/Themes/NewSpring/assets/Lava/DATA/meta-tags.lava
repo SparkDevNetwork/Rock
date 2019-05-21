@@ -1,8 +1,18 @@
+{% if description and description != empty %}
+    {{ description | AddMetaTagToHead:'name','Description' }}
+{% else %}
+    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'name','Description' }}
+{% endif %}
+
 <!-- Facebook Card -->
 {{ site_name | AddMetaTagToHead:'property','og:site_name' }}
 {% if url and url != empty %}{{ url | AddMetaTagToHead:'property','og:url' }}{% endif %}
 {% if title and title != empty %}{{ title | AddMetaTagToHead:'property','og:title' }}{% endif %}
-{% if description and description != empty %}{{ description | AddMetaTagToHead:'property','og:description' }}{% endif %}
+{% if description and description != empty %}
+    {{ description | AddMetaTagToHead:'property','og:description' }}
+{% else %}
+    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'property','og:description' }}
+{% endif %}
 {% if image and image != empty %}{{ image | AddMetaTagToHead:'property','og:image' }}{% endif %}
 {% if article_published_time and article_published_time != empty %}{{ article_published_time | AddMetaTagToHead:'property','article:published_time' }}{% endif %}
 {{ article_author | AddMetaTagToHead:'property','article:author' }}
@@ -11,7 +21,11 @@
 {{ twitter_site | AddMetaTagToHead:'property','twitter:site' }} <!-- @newspring -->
 {{ twitter_creator | AddMetaTagToHead:'property','twitter:creator' }} <!-- @newspring -->
 {% if title and title != empty %}{{ title | AddMetaTagToHead:'property','twitter:title' }}{% endif %}
-{% if description and description != empty %}{{ description | AddMetaTagToHead:'property','twitter:description' }}{% endif %}
+{% if description and description != empty %}
+    {{ description | AddMetaTagToHead:'property','twitter:description' }}
+{% else %}
+    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'property','twitter:description' }}
+{% endif %}
 {% if image and image != empty %}{{ image | AddMetaTagToHead:'property','twitter:image' }}{% endif %}
 
 {% if article_published_time and article_published_type != empty %}

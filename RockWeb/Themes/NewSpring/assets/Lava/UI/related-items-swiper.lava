@@ -1,0 +1,69 @@
+{% capture relatedIds %}{[ relatedContentChannelItems guid:'{{ guid }}' ccids:'{{ ccids }}' limit:'{{ limit }}' ]}{% endcapture %}
+
+{% if relatedIds != empty %}
+
+    {[ swiper title:'{{ title }}' ]}
+    
+    {% contentchannelitem ids:'{{ relatedIds }}' iterator:'items' %}
+    
+        {% for item in items %}[[ item ]]
+            {% capture slug %}{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+            {% capture id %}{{ item.Id }}{% endcapture %}
+            {% capture cciid %}{{ item.Id }}{% endcapture %}
+            {% capture guid %}{{ item.Guid }}{% endcapture %}
+            {% capture title %}{{ item.Title | Escape }}{% endcapture %}
+            {% capture titlesize %}h4{% endcapture %}
+            {% capture type %}{% assign nameParts = item.ContentChannel.Name | Split:' - ' %}{{ nameParts[1] | Singularize }}{% endcapture %}
+            {% if item.Summary != empty %}
+    	        {% capture content %}<p class="push-half-bottom">{{ item.Summary | StripHtml | Truncate:200,'...' }}</p>{% endcapture %}
+    	    {% else %}
+    	        {% capture content %}<p class="push-half-bottom">{{ item.Content | StripHtml | Truncate:200,'...' }}</p>{% endcapture %}
+    	    {% endif %}
+            {% capture textalignment %}{{ item | Attribute:'TextAlignment' }}{% endcapture %}
+            {% capture label %}{{ item | Attribute:'Label' }}{% endcapture %}
+            {% capture subtitle %}{% endcapture %}
+            {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
+    	    {% if imageurl == empty %}
+    	        {% assign imageurl = 'Global' | Attribute:'ImageLandscape','Url' %}
+    	    {% endif %}
+            {% capture imageoverlayurl %}{{ item | Attribute:'OverlayImage','Url' }}{% endcapture %}
+            {% capture imagealignment %}{{ item | Attribute:'ImageAlignment' }}{% endcapture %}
+            {% capture imageopacity %}{{ item | Attribute:'ImageOpacity' | DividedBy: 100 }}{% endcapture %}
+            {% capture grayscale %}{{ item | Attribute:'Grayscale' }}{% endcapture %}
+            {% capture backgroundvideourl %}{{ item | Attribute:'BackgroundVideo','Url' }}{% endcapture %}
+            {% capture lava %}{{ item | Attribute:'Lava' }}{% endcapture %}
+            {% capture video %}{{ item | Attribute:'Video','RawValue' }}{% endcapture %}
+            {% capture ratio %}{{ item | Attribute:'Ratio','RawValue' }}{% endcapture %}
+            {% capture trimcopy %}y{% endcapture %}
+            {% capture foregroundcolor %}{{ item | Attribute:'ForegroundColor' }}{% endcapture %}
+            {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
+            {% assign parentCount = item.ParentItems | Size %}
+            {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}{% if parentCount > 0 %}/{[ getParentSlugFromChildId id:'{{ item.Id }}' ]}{% endif %}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+            {% capture linktext %}{% if type == 'Sermon' or type == 'Series' %}Watch {% else %}Read {% endif %}{{ type }}{% endcapture %}
+            
+            {% assign parentsCount = item.ParentItems | Size %}
+    	    {% if parentsCount > 0 %}
+        	    {% for parent in item.ParentItems %}
+        	        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+        	            {% for parentItem in parents %}
+        	                {% assign collectiontext = parentItem.Title %}
+        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
+        	                {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+        	                {% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
+        	            {% endfor %}
+        	        {% endcontentchannelitem %}
+        	    {% endfor %}
+        	{% else %}
+        	    {% assign collectiontext = '' %}
+        	    {% assign collectionurl = '' %}
+    	    {% endif %}
+            
+            {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+            
+        [[ enditem ]]{% endfor %}
+    
+    {% endcontentchannelitem %}
+    
+    {[ endswiper ]}
+
+{% endif %}

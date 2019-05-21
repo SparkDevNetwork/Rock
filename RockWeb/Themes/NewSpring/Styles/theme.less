@@ -210,6 +210,14 @@ ul, ol {
 .editorial-content {
 	img {
 		border-radius: @border-radius-large;
+
+		& + img {
+			margin-top: @base-spacing-unit/2;
+
+			@media (min-width: @screen-sm-min) {
+				margin-top: @base-spacing-unit;
+			}
+		}
 	}
 }
 

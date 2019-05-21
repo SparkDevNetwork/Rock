@@ -1,5 +1,8 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture url %}
+    {% capture linkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -10,7 +13,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign url = url | Trim %}
+{% assign linkurl = linkurl | Trim %}
 
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="push-bottom xs-push-half-bottom rounded shadowed overflow-hidden">
     {% if url != empty and hideforegroundelements == 'Yes' %}<a href="{{ url }}" data-scroll>{% endif %}
@@ -24,11 +27,13 @@
                     {{ content }}
                 </span>
 
-                {% if url != empty %}
-                    {[ button linkurl:'{{ url | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                {% if linkurl and linkurl != empty %}
+                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                 {% endif %}
             </div>
         </div>
     </div>
     {% if url != empty and hideforegroundelements == 'Yes' %}</a>{% endif %}
 </section>
+
+{[ endscripturize ]}
