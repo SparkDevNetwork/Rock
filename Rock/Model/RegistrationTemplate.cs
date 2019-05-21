@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -48,6 +50,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the Attribute.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the description of the registration template.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the category identifier.
@@ -134,6 +145,26 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 100 )]
         public string DiscountCodeTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the section title for attributes that are collected at the start of the registration entry process.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title start.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string RegistrationAttributeTitleStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the section title for attributes that are collected at the end of the registration entry process.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title end.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string RegistrationAttributeTitleEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the confirmation from.
@@ -262,7 +293,7 @@ namespace Rock.Model
         public bool? SetCostOnInstance { get; set; }
 
         /// <summary>
-        /// Gets or sets the cost.
+        /// Gets or sets the cost (if <see cref="SetCostOnInstance"/> == false).
         /// </summary>
         /// <value>
         /// The cost.
@@ -271,13 +302,23 @@ namespace Rock.Model
         public decimal Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum initial payment.
+        /// Gets or sets the minimum initial payment (if <see cref="SetCostOnInstance"/> == false).
         /// </summary>
         /// <value>
         /// The minimum initial payment.
         /// </value>
         [DataMember]
         public decimal? MinimumInitialPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default amount to pay per registrant (if <see cref="SetCostOnInstance"/> == false).
+        /// If this is null, the default payment will be the <see cref="Cost"/>
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        [DataMember]
+        public decimal? DefaultPayment { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [login required].
@@ -785,7 +826,13 @@ namespace Rock.Model
         /// <summary>
         /// Use first registrant
         /// </summary>
-        UseFirstRegistrant = 2
+        UseFirstRegistrant = 2,
+
+        /// <summary>
+        /// Use the LoggedIn person and keep fields readonly, except for fields that haven't been collected yet
+        /// For example, if EmailAddress wasn't known, Email would be prompted vs readonly.
+        /// </summary>
+        UseLoggedInPerson = 3
     }
 
     #endregion

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -96,8 +98,14 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// For Credit Card transactions, this is the response code that the gateway returns 
-        /// For Scanned Checks, this is the check number
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
+        /// </summary>
+        [DataMember]
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
+        /// For Credit Card transactions, this is the response code that the gateway returns. 
+        /// For Scanned Checks, this is the check number.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.
@@ -426,12 +434,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the total fee amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        [LavaInclude]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        public virtual decimal? TotalFeeAmount
+        {
+            get
+            {
+                var hasFeeInfo = false;
+                var totalFee = 0m;
+
+                foreach ( var detail in TransactionDetails )
+                {
+                    hasFeeInfo |= detail.FeeAmount.HasValue;
+                    totalFee += detail.FeeAmount ?? 0m;
+                }
+
+                return hasFeeInfo ? totalFee : ( decimal? ) null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the history changes.
         /// </summary>
         /// <value>
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
@@ -451,6 +485,7 @@ namespace Rock.Model
         /// The batch history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use BatchHistoryChangeList instead" )]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
@@ -506,7 +541,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
 
@@ -515,7 +550,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
 
@@ -546,7 +581,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
                         string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
@@ -605,7 +640,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
 
@@ -637,7 +672,7 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Data.DbContext dbContext )
         {
             if ( HistoryChangeList.Any() )
             {
@@ -791,7 +826,7 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 var service = new FinancialTransactionService( rockContext );
-                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
 
                 if ( refundTransaction != null )
                 {
@@ -799,6 +834,58 @@ namespace Rock.Model
                 }
 
                 return refundTransaction;
+            }
+        }
+
+        /// <summary>
+        /// Distributes a total fee amount among the details of a transaction according to each detail's
+        /// percent of the total transaction amount.
+        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
+        /// If this method were called with a $1 fee, that fee would be distributed as 10 cents and
+        /// 90 cents respectively.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="totalFee">The total fee for the transaction</param>
+        public static void SetApportionedFeesOnDetails( this FinancialTransaction transaction, decimal? totalFee )
+        {
+            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
+            {
+                return;
+            }
+
+            if ( !totalFee.HasValue )
+            {
+                foreach ( var detail in transaction.TransactionDetails )
+                {
+                    detail.FeeAmount = null;
+                }
+
+                return;
+            }
+
+            var totalAmount = transaction.TotalAmount;
+            var totalFeeRemaining = totalFee.Value;
+            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
+
+            foreach ( var detail in transaction.TransactionDetails )
+            {
+                numberOfDetailsRemaining--;
+                var isLastDetail = numberOfDetailsRemaining == 0;
+
+                if ( isLastDetail )
+                {
+                    // Ensure that the full fee value is retained and some part of it
+                    // is not lost because of rounding
+                    detail.FeeAmount = totalFeeRemaining;
+                }
+                else
+                {
+                    var percentOfTotal = detail.Amount / totalAmount;
+                    var apportionedFee = Math.Round( percentOfTotal * totalFee.Value, 2 );
+
+                    detail.FeeAmount = apportionedFee;
+                    totalFeeRemaining -= apportionedFee;
+                }
             }
         }
     }

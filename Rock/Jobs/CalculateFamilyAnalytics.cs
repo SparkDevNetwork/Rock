@@ -15,22 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Web;
+
 using Quartz;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Jobs
 {
@@ -101,6 +97,8 @@ namespace Rock.Jobs
 
             resultContext.Database.CommandTimeout = commandTimeout;
 
+            context.UpdateLastStatusMessage( "Getting Family Analytics Era Dataset..." );
+
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
             int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
@@ -108,8 +106,12 @@ namespace Rock.Jobs
             int eraAttributeId = eraAttribute.Id;
             int personAnalyticsCategoryId = CategoryCache.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
 
+            int progressPosition = 0;
+            int progressTotal = results.Count;
+
             foreach (var result in results )
             {
+                progressPosition++;
                 // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
                 updateContext.SourceOfChange = SOURCE_OF_CHANGE;
@@ -247,19 +249,25 @@ namespace Rock.Jobs
                 }
 
                 // update stats
+                context.UpdateLastStatusMessage( $"Updating eRA {progressPosition} of {progressTotal}" );
             }
 
             // load giving attributes
+            context.UpdateLastStatusMessage( "Updating Giving..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
 
             // load attendance attributes
+            context.UpdateLastStatusMessage( "Updating Attendance..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
 
             // process visit dates
             if ( updateVisitDates )
             {
+                context.UpdateLastStatusMessage( "Updating Visit Dates..." );
                 resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsUpdateVisitDates" );
             }
+
+            context.UpdateLastStatusMessage( "" );
         }
 
         /// <summary>

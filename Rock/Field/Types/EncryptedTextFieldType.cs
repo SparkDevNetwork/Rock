@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
@@ -41,7 +42,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
+            // Process TextFieldType first.
             var configKeys = base.ConfigurationKeys();
+
             configKeys.Add( NUMBER_OF_ROWS );
             configKeys.Add( ALLOW_HTML );
             return configKeys;
@@ -53,6 +56,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
+            // Process TextFieldType first.
             var controls = base.ConfigurationControls();
 
             // Add number box for selecting the number of rows
@@ -83,19 +87,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
+            // Process TextFieldType first.
             var configurationValues = base.ConfigurationValues( controls );
+
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (note selecting a value greater than 1 will override the Password Field setting).", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
 
             if ( controls != null )
             {
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[1] ).Text;
+                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[3] ).Text;
                 }
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockCheckBox )
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
                 {
-                    configurationValues[ALLOW_HTML].Value = ( (RockCheckBox)controls[2] ).Checked.ToString();
+                    configurationValues[ALLOW_HTML].Value = ( (RockCheckBox)controls[4] ).Checked.ToString();
                 }
             }
 
@@ -109,16 +115,19 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            // Process TextFieldType first.
+            base.SetConfigurationValues( controls, configurationValues );
+            
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
                 {
-                    ( (NumberBox)controls[1] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                    ( (NumberBox)controls[3] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
                 }
 
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
                 {
-                    ( (RockCheckBox)controls[2] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                    ( (RockCheckBox)controls[4] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
 
             }
@@ -167,7 +176,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
+            // Process TextFieldType first.
             var tb = base.EditControl( configurationValues, id ) as RockTextBox;
+
             if ( tb != null && configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
@@ -216,9 +227,31 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
-        // Note: Even though this is a 'text' type field, the base default binary comparison (Is Blank/Is Not Blank) is used instead of being overridden with 
-        // string comparison type like other 'text' fields, because comparisons like 'Starts with', 'Contains', etc. can't be performed
-        // on the encrypted text.  Only a binary comparison can be performed.
+        // Note: Even though this is a 'text' type field, the comparisons like 'Starts with', 'Contains', etc. can't be performed
+        // on the encrypted text. Every time the same value is encrypted, the value is different. So a binary comparison cannot be performed.
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        {
+            // This field type does not support filtering
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
 
         #endregion
 

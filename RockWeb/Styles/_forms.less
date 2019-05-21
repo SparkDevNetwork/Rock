@@ -13,16 +13,34 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
+
+
+.input-xs {
+  .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+}
+
+// Prevent Toggle Arrows from Displaying on number inputs
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+// Prevent Text Areas from oversizing beyond 100%
+textarea {
+  resize: vertical;
+}
+
 legend {
   font-weight: @font-weight-light;
   color: @text-color;
   border-width: 0;
-}
-
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
-  padding-left: 30px;
 }
 
 a.aspNetDisabled {
@@ -31,9 +49,6 @@ a.aspNetDisabled {
 
 .form-group.rock-literal,
 .rock-control-wrapper {
-  /*label {
-        margin-bottom: 0;
-    }*/ // commented out to match default bootstrap behavior (Lanio group member filter) JME 1/18/2016
 
   p.form-control-static {
     padding-top: 0;
@@ -68,6 +83,18 @@ a.aspNetDisabled {
   }
 }
 
+.form-inline-all {
+  .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display: inline-block;
+  }
+}
+
 .form-group.captcha {
   iframe {
     border: 0;
@@ -85,8 +112,6 @@ a.aspNetDisabled {
 // styling to get rock controls to layout horizontal
 .form-horizontal {
   .form-group {
-    margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
-
     .form-control-group,
     .form-control {
       float: left;
@@ -152,7 +177,8 @@ a.aspNetDisabled {
 
 
 .controls {
-  .checkbox:first-child {
+  .checkbox:first-child,
+  .radio:first-child {
     margin-top: 0;
   }
 }
@@ -307,16 +333,16 @@ dl:not(.dl-horizontal) {
   color: @brand-danger;
 }
 
-// 5. Custom Controls
+// 6. Custom Controls
 // -------------------------
 .btn-controlaligned {
   margin-top: 24px;
 }
 
-
-// 6. Custom Controls
-// -------------------------
-
+/* SK Add margin in ListItems */
+.list-items-rows .controls-row {
+  margin-bottom: 6px;
+}
 
 // 7. Static Controls
 // -------------------------

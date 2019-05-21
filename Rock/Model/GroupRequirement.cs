@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -161,7 +162,8 @@ namespace Rock.Model
         /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead", true )]
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
         {
             if ( this.GroupId.HasValue )
@@ -335,7 +337,8 @@ namespace Rock.Model
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         /// <exception cref="System.NotSupportedException"></exception>
-        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead", true )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
             if ( this.GroupId.HasValue )
@@ -383,7 +386,8 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="meetsGroupRequirement">The meets group requirement.</param>
-        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead", true )]
         public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
         {
             if ( this.GroupId.HasValue )

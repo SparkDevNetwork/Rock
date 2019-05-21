@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     ///
     /// </summary>
-    public class DatePicker : DataTextBox
+    public class DatePicker : DataTextBox, IPostBackEventHandler, IRockChangeHandlerControl
     {
         private CheckBox _cbCurrent;
         private RockTextBox _nbDayOffset;
@@ -205,21 +205,30 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
+            var postBackScript = ( this.SelectDate != null || this.ValueChanged != null ) ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "SelectDate" ), true ) : "";
+            postBackScript = postBackScript.Replace( '\'', '"' );
+
             // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
             var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, showOnFocus: {2}, format: '{3}', todayHighlight: {4}, forceParse: {5}, {6} {7} }});",
-                this.ClientID,                                  // {0}
-                this.StartView.ConvertToInt(),                  // {1}
-                this.ShowOnFocus.ToString().ToLower(),          // {2}
-                dateFormat,                                     // {3}
-                this.HighlightToday.ToString().ToLower(),       // {4}
-                this.ForceParse.ToString().ToLower(),           // {5}
-                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {6}
-                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {7}
-            );
+            var endDateParam = ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString( "o" ) + "',";
+            var startDateParam = ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString( "o" ) + "',";
+
+            var script = $@"Rock.controls.datePicker.initialize(
+                {{
+                    id: '{this.ClientID}',
+                    startView: {this.StartView.ConvertToInt()},
+                    showOnFocus: {this.ShowOnFocus.ToString().ToLower()},
+                    format: '{dateFormat}',
+                    todayHighlight: {this.HighlightToday.ToString().ToLower()},
+                    forceParse: {this.ForceParse.ToString().ToLower()},
+                    postbackScript: '{postBackScript}',
+                    {endDateParam}
+                    {startDateParam}
+                }});";
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
@@ -366,6 +375,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Occurs when [select date].
+        /// </summary>
+        public event EventHandler SelectDate;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -397,13 +416,16 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-date-picker-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 if (IsCurrentDateOffset)
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
 
                     // set textbox val to something instead of empty string so that validation doesn't complain
-                    this.Text = "current";
+                    this.Text = "Current";
                     _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
@@ -416,11 +438,34 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayCurrentOption )
             {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbCurrent.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag(); // form-row
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _nbDayOffset.RenderControl( writer );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
             }
         }
 
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "SelectDate")
+            {
+                EnsureChildControls();
+                SelectDate?.Invoke( this, new EventArgs() );
+                ValueChanged?.Invoke( this, new EventArgs() );
+            }
+        }
     }
 }

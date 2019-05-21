@@ -16,14 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
-using Rock.Data;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -84,7 +84,7 @@ namespace Rock.Follow.Suggestion
                         .Where( m =>
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Group != null &&
-                            m.Group.IsActive && 
+                            m.Group.IsActive && !m.Group.IsArchived &&
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 

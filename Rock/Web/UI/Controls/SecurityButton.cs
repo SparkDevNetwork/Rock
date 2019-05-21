@@ -14,14 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -69,8 +65,6 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
-            this.Attributes.Add( "height", "500px" );
 
             HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
             buttonIcon.Attributes.Add( "class", "fa fa-lock" );

@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Data.Entity;
+using System.Linq;
 
 using Rock;
 using Rock.Attribute;
@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "People" )]
     [Description( "Get's the Head of household of the selected person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Get head of household" )]
+    [ExportMetadata( "ComponentName", "Person Get Head of Household" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to get the head of the house for.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "HeadOfHousehold Attribute", "The workflow attribute to assign the head of household to.  head of household is deemed to be the other group member on the first family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -325,7 +326,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
+                    if ( !value.Contains(key) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -432,9 +433,9 @@ namespace Rock.Web.Cache
                 return "Nothing to clear";
             }
 
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -585,9 +586,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
         {
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return GetStatForSystemType( cacheTypeName );

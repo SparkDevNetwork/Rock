@@ -16,11 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using System.Web.UI;
-using Rock.Model;
-using Rock.Reporting;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -138,9 +135,31 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
-        // Note: Even though this is a 'text' type field, the base default binary comparison (Is Blank/Is Not Blank) is used instead of being overridden with 
-        // string comparison type like other 'text' fields, because comparisons like 'Starts with', 'Contains', etc. can't be performed
-        // on the encrypted text.  Only a binary comparison can be performed.
+        // Note: Even though this is a 'text' type field, the comparisons like 'Starts with', 'Contains', etc. can't be performed
+        // on the encrypted text. Every time the same value is encrypted, the value is different. So a binary comparison cannot be performed.
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        {
+            // This field type does not support filtering
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
 
         #endregion
 

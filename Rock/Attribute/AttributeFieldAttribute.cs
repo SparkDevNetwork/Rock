@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -33,6 +31,15 @@ namespace Rock.Attribute
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public AttributeFieldAttribute( string name )
+            : this( "", name )
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeFieldAttribute" /> class.
@@ -135,6 +142,62 @@ namespace Rock.Attribute
             {
                 Key = Name.Replace( " ", string.Empty );
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the EntityType.Guid that the Attribute List should be limited to.
+        /// </summary>
+        /// <value>
+        /// The entity type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_COLUMN_KEY );
+            set => FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_VALUE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( value ) );
         }
     }
 }

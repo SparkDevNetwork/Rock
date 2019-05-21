@@ -54,6 +54,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AssessmentRequestStatus
+    {
+        Pending = 0x0,
+        Complete = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -61,6 +69,15 @@ namespace Rock.Client.Enums
         Campus = 0x2,
         Schedule = 0x3,
         Location = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AttendanceRecordRequiredForCheckIn
+    {
+        AllShow = 0x0,
+        RequireAttendanceRecord = 0x1,
+        UseAttendanceRecordAsPreference = 0x2,
     }
 
     /// <summary>
@@ -151,6 +168,8 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
+
+        [Obsolete( "Not Supported", false )]
         Other = 0x4,
     }
 
@@ -451,6 +470,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum PersonAliasType
+    {
+        FromPersonAlias = 0x0,
+        ToPersonAlias = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PrintFrom
     {
         Client = 0x0,
@@ -493,6 +520,7 @@ namespace Rock.Client.Enums
         PromptForRegistrar = 0x0,
         PrefillFirstRegistrant = 0x1,
         UseFirstRegistrant = 0x2,
+        UseLoggedInPerson = 0x3,
     }
 
     /// <summary>
@@ -520,6 +548,9 @@ namespace Rock.Client.Enums
         PersonField = 0x0,
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
+        RegistrantAttribute = 0x4,
+
+        [Obsolete( "Use RegistrantAttribute instead", false )]
         RegistrationAttribute = 0x4,
     }
 
@@ -592,6 +623,33 @@ namespace Rock.Client.Enums
         No = 0x0,
         Yes = 0x1,
         Maybe = 0x2,
+        Unknown = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduledAttendanceItemStatus
+    {
+        Pending = 0x0,
+        Confirmed = 0x1,
+        Declined = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceGroupMemberFilterType
+    {
+        ShowMatchingPreference = 0x0,
+        ShowAllGroupMembers = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceListSourceType
+    {
+        Group = 0x0,
+        AlternateGroup = 0x1,
+        DataView = 0x2,
     }
 
     /// <summary>
@@ -630,6 +688,14 @@ namespace Rock.Client.Enums
         Signed = 0x2,
         Cancelled = 0x3,
         Expired = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SiteType
+    {
+        Web = 0x0,
+        Mobile = 0x1,
     }
 
     /// <summary>

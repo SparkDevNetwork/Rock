@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -42,7 +43,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use method without textMessage argument")]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method without textMessage argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -72,7 +74,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use method with send date time argument" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use method with send date time argument", true )]
         public Communication CreateEmailCommunication
         (
             List<string> recipientEmails,
@@ -163,6 +166,49 @@ namespace Rock.Model
 
         }
 
+        /// <summary>
+        /// Creates an SMS communication with a CommunicationRecipient and adds it to the context.
+        /// </summary>
+        /// <param name="fromPerson">From person. If null the name for the communication will be From: unknown person.</param>
+        /// <param name="toPersonAliasId">To person alias identifier. If null the CommunicationRecipient is not created</param>
+        /// <param name="message">The message.</param>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="responseCode">The response code. If null/empty/whitespace then one is generated</param>
+        /// <param name="communicationName">Name of the communication.</param>
+        /// <returns></returns>
+        public Communication CreateSMSCommunication( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, string communicationName )
+        {
+            RockContext rockContext = ( RockContext ) this.Context;
+
+            if ( responseCode.IsNullOrWhiteSpace() )
+            {
+                responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
+            }
+
+            // add communication for reply
+            var communication = new Rock.Model.Communication();
+            communication.Name = communicationName;
+            communication.CommunicationType = CommunicationType.SMS;
+            communication.SenderPersonAliasId = fromPerson?.PrimaryAliasId;
+            communication.IsBulkCommunication = false;
+            communication.Status = CommunicationStatus.Approved;
+            communication.SMSMessage = message;
+            communication.SMSFromDefinedValueId = fromPhone.Id;
+
+            if ( toPersonAliasId != null )
+            {
+                var recipient = new Rock.Model.CommunicationRecipient();
+                recipient.Status = CommunicationRecipientStatus.Pending;
+                recipient.PersonAliasId = toPersonAliasId.Value;
+                recipient.ResponseCode = responseCode;
+                recipient.MediumEntityTypeId = EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id;
+                recipient.SentMessage = message;
+                communication.Recipients.Add( recipient );
+            }
+
+            Add( communication );
+            return communication;
+        }
 
         /// <summary>
         /// Gets the queued communications.

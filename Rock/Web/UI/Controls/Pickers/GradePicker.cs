@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -43,7 +44,7 @@ namespace Rock.Web.UI.Controls
         private void PopulateItems()
         {
             this.Items.Clear();
-            
+
             // add blank item as first item
             this.Items.Add( new ListItem() );
 
@@ -53,7 +54,7 @@ namespace Rock.Web.UI.Controls
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
                 {
                     ListItem listItem = new ListItem();
-                    if (UseAbbreviation) 
+                    if ( UseAbbreviation )
                     {
                         string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
                         listItem.Text = string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation;
@@ -82,7 +83,8 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["UseGradeOffsetAsValue"] as bool? ?? false; ;
+                return ViewState["UseGradeOffsetAsValue"] as bool? ?? false;
+                ;
             }
 
             set
@@ -141,7 +143,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="ypGraduationYear">The yp graduation year.</param>
         /// <returns></returns>
-        public string GetJavascriptForYearPicker( YearPicker ypGraduationYear)
+        public string GetJavascriptForYearPicker( YearPicker ypGraduationYear )
         {
             DateTime currentGraduationDate = RockDateTime.CurrentGraduationDate;
             DateTime gradeTransitionDate = new DateTime( RockDateTime.Now.Year, currentGraduationDate.Month, currentGraduationDate.Day );
@@ -190,13 +192,29 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return DefinedValueCache.Get( this.SelectedValue.AsGuid() );
+                if ( this.UseGradeOffsetAsValue )
+                {
+                    return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.GetDefinedValueFromValue( this.SelectedValue );
+                }
+                else
+                {
+                    return DefinedValueCache.Get( this.SelectedValue.AsGuid() );
+                }
+
             }
             set
             {
                 if ( value != null )
                 {
-                    this.SetValue( value.Guid );
+                    if ( this.UseGradeOffsetAsValue )
+                    {
+                        this.SetValue( value.Value );
+                    }
+                    else
+                    {
+                        this.SetValue( value.Guid );
+                    }
+                        
                 }
                 else
                 {

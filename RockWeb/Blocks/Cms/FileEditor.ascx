@@ -16,7 +16,7 @@
                 <div id="pnlEditDetails" runat="server">
                     <div class="row">
                         <div class="col-sm-12">
-                            <Rock:CodeEditor ID="ceFilerEditor" runat="server" Label="File Content" EditorTheme="Rock" EditorHeight="400" />
+                            <Rock:CodeEditor ID="ceFilerEditor" runat="server" Label="File Content" EditorTheme="Rock" EditorHeight="500" />
                         </div>
                     </div>
 

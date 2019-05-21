@@ -16,15 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.Cache
 {
@@ -47,6 +46,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use SetFromEntity instead")]
         public virtual void CopyFromModel( Rock.Data.IEntity model )
         {
@@ -157,7 +157,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == Authorization.VIEW;
+            // Model is the ultimate base Parent Authority of child classes of ModelCache, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
+            // In the case of VIEW or TAG, we want to default to Allowed.
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>
@@ -348,6 +350,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the attribute values.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
         public virtual void ReloadAttributeValues()
         {
@@ -363,6 +366,27 @@ namespace Rock.Web.Cache
                 AttributeValues = model.AttributeValues;
                 Attributes = model.Attributes;
             }
+        }
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
+        public void LoadAttributes( RockContext rockContext )
+        {
+            ReloadAttributeValues();
+        }
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        [RockObsolete( "1.8" )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        public void LoadAttributes()
+        {
+            ReloadAttributeValues();
         }
 
         #endregion
@@ -484,7 +508,8 @@ namespace Rock.Web.Cache
 
             if ( Attributes == null )
             {
-                this.LoadAttributes();
+                // shouldn't happen
+                return false;
             }
 
             if ( attributeKey.EndsWith( "_unformatted" ) )

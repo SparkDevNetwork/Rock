@@ -20,8 +20,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -125,6 +125,15 @@ namespace Rock.Model
         [DataMember]
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal ControlAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control item count.
+        /// </summary>
+        /// <value>
+        /// The control item count.
+        /// </value>
+        [DataMember]
+        public int? ControlItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
@@ -336,5 +345,38 @@ namespace Rock.Model
 
     #endregion
 
+    #region Batch Classes
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [RockClientInclude( "Control Total Result from ~api/FinancialBatches/GetControlTotals/{id}" )]
+    public class ControlTotalResult
+    {
+        /// <summary>
+        /// Gets or sets the financial batch identifier.
+        /// </summary>
+        /// <value>
+        /// The financial batch identifier.
+        /// </value>
+        public int FinancialBatchId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total count.
+        /// </summary>
+        /// <value>
+        /// The control total count.
+        /// </value>
+        public int ControlTotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total amount.
+        /// </summary>
+        /// <value>
+        /// The control total amount.
+        /// </value>
+        public decimal ControlTotalAmount { get; set; }
+    }
+
+    #endregion Batch Classes
 }

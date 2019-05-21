@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Finance
                 <td>{{ transaction.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
                 <td>{{ transaction.Account.Name }}</td>
                 <td>{{ transaction.Transaction.TransactionCode }}</td>
-                <td align=""right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ transaction.Amount }}</td>
+                <td align=""right"">{{ transaction.Amount | FormatAsCurrency }}</td>
             </tr>
         {% endfor %}
     
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Finance
         {% for accountsummary in AccountSummary %}
             <div class=""row"">
                 <div class=""col-xs-6"">{{ accountsummary.AccountName }}</div>
-                <div class=""col-xs-6 text-right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ accountsummary.Total }}</div>
+                <div class=""col-xs-6 text-right"">{{ accountsummary.Total | FormatAsCurrency }}</div>
             </div>
          {% endfor %}
     </div>
@@ -140,9 +140,9 @@ namespace RockWeb.Blocks.Finance
                 <strong>{{ pledge.AccountName }}</strong>
                 
                 <p>
-                    Amt Pledged: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountPledged }} <br />
-                    Amt Given: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountGiven }} <br />
-                    Amt Remaining: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountRemaining }}
+                    Amt Pledged: {{ pledge.AmountPledged | FormatAsCurrency }} <br />
+                    Amt Given: {{ pledge.AmountGiven | FormatAsCurrency }} <br />
+                    Amt Remaining: {{ pledge.AmountRemaining | FormatAsCurrency }}
                 </p>
             </div>
             <div class=""col-xs-6 padding-t-md"">
@@ -233,9 +233,9 @@ namespace RockWeb.Blocks.Finance
 
             var statementYear = RockDateTime.Now.Year;
 
-            if ( Request["StatementYear"] != null )
+            if ( PageParameter( "StatementYear" ).IsNotNullOrWhiteSpace() )
             {
-                Int32.TryParse( Request["StatementYear"].ToString(), out statementYear );
+                Int32.TryParse( PageParameter( "StatementYear" ), out statementYear );
             }
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
@@ -249,8 +249,8 @@ namespace RockWeb.Blocks.Finance
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            var personGuid = Request["PersonGuid"].AsGuidOrNull();
-            
+            var personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
             if ( personGuid.HasValue )
             {
                 // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses

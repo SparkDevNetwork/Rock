@@ -16,6 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http.Description;
+
 using Swashbuckle.Swagger;
 
 namespace Rock.Rest.Swagger

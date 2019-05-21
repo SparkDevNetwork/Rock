@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -213,6 +214,24 @@ namespace Rock.Web.Cache
         public bool EnableHistory { get; private set; }
 
         /// <summary>
+        /// Gets or sets any HTML to be rendered before the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        [DataMember]
+        public string PreHtml { get; private set; }
+
+        /// <summary>
+        /// Gets or sets any HTML to be rendered after the attribute's edit control 
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        [DataMember]
+        public string PostHtml { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -271,12 +290,20 @@ namespace Rock.Web.Cache
         public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         /// <summary>
-        /// Gets the default type of the value as.
+        /// The default value using the most appropriate datatype
         /// </summary>
         /// <value>
         /// The default type of the value as.
         /// </value>
         public object DefaultValueAsType => FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+
+        /// <summary>
+        /// The default value formatted based on the field type and qualifiers
+        /// </summary>
+        /// <value>
+        /// The default value as formatted.
+        /// </value>
+        public string DefaultValueAsFormatted => FieldType.Field.FormatValue( null, DefaultValue, QualifierValues, false );
 
         /// <summary>
         /// Gets the default sort value.
@@ -294,6 +321,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use SetFromEntity instead")]
         public override void CopyFromModel( Data.IEntity model )
         {
@@ -328,6 +356,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use SetFromEntity instead" )]
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
@@ -363,6 +392,8 @@ namespace Rock.Web.Cache
             IsAnalyticHistory = attribute.IsAnalyticHistory;
             IsActive = attribute.IsActive;
             EnableHistory = attribute.EnableHistory;
+            PreHtml = attribute.PreHtml;
+            PostHtml = attribute.PostHtml;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -431,15 +462,14 @@ namespace Rock.Web.Cache
                 SetValue = setValue,
                 SetId = setId,
                 Required = required,
-                LabelText = labelText ?? Name,
-                HelpText = helpText ?? Description,
+                LabelText = labelText,
+                HelpText = helpText,
                 WarningText = warningText,
-                AttributeControlId = attributeControlId ?? $"attribute_field_{Id}"
+                AttributeControlId = attributeControlId
             };
 
             return AddControl( controls, attributeControlOptions );
         }
-
 
         /// <summary>
         /// Adds the control.
@@ -449,6 +479,14 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control AddControl( ControlCollection controls, AttributeControlOptions options )
         {
+            options.LabelText = options.LabelText ?? Name;
+            options.HelpText = options.HelpText ?? Description;
+            options.AttributeControlId = options.AttributeControlId ?? $"attribute_field_{Id}";
+
+            EntityTypeCache entityType = EntityTypeId.HasValue ? EntityTypeCache.Get( this.EntityTypeId.Value ) : null;
+
+            bool showPrePostHtml = ( entityType?.AttributesSupportPrePostHtml ?? false ) && ( options?.ShowPrePostHtml ?? true );
+
             var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
             if ( attributeControl == null ) return null;
 
@@ -460,6 +498,14 @@ namespace Rock.Web.Cache
             // If the control is a RockControl
             var rockControl = attributeControl as IRockControl;
             var controlHasRequired = attributeControl as IHasRequired;
+
+            if ( showPrePostHtml )
+            {
+                if ( this.PreHtml.IsNotNullOrWhiteSpace() )
+                {
+                    controls.Add( new Literal { Text = this.PreHtml } );
+                }
+            }
             
             if ( rockControl != null )
             {
@@ -543,6 +589,14 @@ namespace Rock.Web.Cache
                 }
             }
 
+            if ( options.ShowPrePostHtml )
+            {
+                if ( this.PostHtml.IsNotNullOrWhiteSpace() )
+                {
+                    controls.Add( new Literal { Text = this.PostHtml } );
+                }
+            }
+
             if ( options.SetValue )
             {
                 FieldType.Field.SetEditValue( attributeControl, QualifierValues, options.Value );
@@ -592,6 +646,7 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attribute model.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
@@ -697,6 +752,7 @@ namespace Rock.Web.Cache
         /// Loads the entity attributes.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("No longer needed")]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
@@ -706,6 +762,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the entity attributes.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use RemoveEntityAttributes instead" )]
         public static void FlushEntityAttributes()
         {
@@ -717,7 +774,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
         {
             EntityAttributesCache.UpdateCacheEntityAttributes( attribute, entityState );
         }
@@ -725,6 +782,9 @@ namespace Rock.Web.Cache
         #endregion
     }
 
+    /// <summary>
+    /// Defined options that be can used when calling AddControl
+    /// </summary>
     public class AttributeControlOptions
     {
 
@@ -800,6 +860,13 @@ namespace Rock.Web.Cache
         /// </value>
         public string AttributeControlId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowPrePostHtml { get; set; }
     }
 }
 

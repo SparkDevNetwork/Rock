@@ -50,10 +50,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var interactionChannel = new InteractionChannelService( new RockContext() ).Get( guid.Value );
-                if ( interactionChannel != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = interactionChannel.Name;
+                    var interactionChannel = new InteractionChannelService( rockContext ).GetNoTracking( guid.Value );
+                    if ( interactionChannel != null )
+                    {
+                        formattedValue = interactionChannel.Name;
+                    }
                 }
             }
 

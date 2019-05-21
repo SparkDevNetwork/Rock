@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -106,6 +107,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get( int id ) instead.")]
         public static KioskLocationAttendance Read( int id )
         {
@@ -156,6 +158,7 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {

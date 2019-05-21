@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control used by registration template detail block to edit forms
+    /// Control used by registration template detail block to edit registrant forms
     /// </summary>
     [ToolboxData( "<{0}:RegistrationTemplateFormEditor runat=server></{0}:RegistrationTemplateFormEditor>" )]
     public class RegistrationTemplateFormEditor : CompositeControl, IHasValidationGroup
@@ -177,16 +178,20 @@ $('.template-form > .panel-body').on('validation-error', function() {
         /// </value>
         public bool IsDeleteEnabled
         {
-            get
-            {
-                bool? b = ViewState["IsDeleteEnabled"] as bool?;
-                return ( b == null ) ? true : b.Value;
-            }
+            get => ViewState["IsDeleteEnabled"] as bool? ?? true;
+            set => ViewState["IsDeleteEnabled"] = value;
+        }
 
-            set
-            {
-                ViewState["IsDeleteEnabled"] = value;
-            }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is default form.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is default form; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsDefaultForm
+        {
+            get => ViewState["IsDefaultForm"] as bool? ?? false;
+            set => ViewState["IsDefaultForm"] = value;
         }
 
         /// <summary>
@@ -203,7 +208,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             result.Guid = new Guid( _hfFormGuid.Value );
             result.Name = _tbFormName.Text;
 
-            if (expandInvalid && !Expanded && !result.IsValid)
+            if ( expandInvalid && !Expanded && !result.IsValid )
             {
                 Expanded = true;
             }
@@ -224,30 +229,18 @@ $('.template-form > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// The filterable fields count. If there is less than 2, don't show the FilterButton (since there would be no other fields to use as criteria)
+        /// </summary>
+        private int _filterableFieldsCount = 0;
+
+        /// <summary>
         /// Binds the fields grid.
         /// </summary>
         /// <param name="formFields">The fields.</param>
         public void BindFieldsGrid( List<RegistrationTemplateFormField> formFields )
         {
-            _gFields.DataSource = formFields
-                .OrderBy( a => a.Order )
-                .Select( a => new
-                {
-                    a.Id,
-                    a.Guid,
-                    Name = a.FieldSource == RegistrationFieldSource.PersonField ?
-                        a.PersonFieldType.ToString() :
-                        a.Attribute.Name,
-                    FieldSource = a.FieldSource.ConvertToString(),
-                    FieldType = a.FieldSource == RegistrationFieldSource.PersonField ? 0 : a.Attribute.FieldTypeId,
-                    a.IsInternal,
-                    a.IsSharedValue,
-                    a.ShowCurrentValue,
-                    a.IsRequired,
-                    a.IsGridField,
-                    a.ShowOnWaitlist
-                } )
-                .ToList();
+            _filterableFieldsCount = formFields.Where( a => a.FieldSource != RegistrationFieldSource.PersonField ).Count();
+            _gFields.DataSource = formFields.OrderBy( a => a.Order ).ToList();
             _gFields.DataBind();
         }
 
@@ -308,19 +301,19 @@ $('.template-form > .panel-body').on('validation-error', function() {
             var reorderField = new ReorderField();
             _gFields.Columns.Add( reorderField );
 
-            var nameField = new BoundField();
-            nameField.DataField = "Name";
+            var nameField = new RockLiteralField();
             nameField.HeaderText = "Field";
+            nameField.DataBound += NameField_DataBound;
             _gFields.Columns.Add( nameField );
 
-            var sourceField = new EnumField();
-            sourceField.DataField = "FieldSource";
+            var sourceField = new RockLiteralField();
             sourceField.HeaderText = "Source";
+            sourceField.DataBound += SourceField_DataBound;
             _gFields.Columns.Add( sourceField );
 
-            var typeField = new FieldTypeField();
-            typeField.DataField = "FieldType";
+            var typeField = new RockLiteralField();
             typeField.HeaderText = "Type";
+            typeField.DataBound += TypeField_DataBound;
             _gFields.Columns.Add( typeField );
 
             var isInternalField = new BoolField();
@@ -353,13 +346,128 @@ $('.template-form > .panel-body').on('validation-error', function() {
             showOnWaitListField.HeaderText = "Show on Wait List";
             _gFields.Columns.Add( showOnWaitListField );
 
+            var btnFieldFilterField = new LinkButtonField();
+            btnFieldFilterField.CssClass = "btn btn-default btn-sm attribute-criteria";
+            btnFieldFilterField.Text = "<i class='fa fa-filter'></i>";
+            btnFieldFilterField.Click += gFields_btnFieldFilterField_Click;
+            btnFieldFilterField.DataBound += btnFieldFilterField_DataBound;
+            _gFields.Columns.Add( btnFieldFilterField );
+
             var editField = new EditField();
             editField.Click += gFields_Edit;
             _gFields.Columns.Add( editField );
 
             var delField = new DeleteField();
             delField.Click += gFields_Delete;
+            delField.DataBound += delField_DataBound;
             _gFields.Columns.Add( delField );
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the delField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void delField_DataBound( object sender, RowEventArgs e )
+        {
+            LinkButton linkButton = sender as LinkButton;
+            RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
+            if ( this.IsDefaultForm )
+            {
+                if ( field != null && linkButton != null )
+                {
+                    if ( field.FieldSource == RegistrationFieldSource.PersonField && ( field.PersonFieldType == RegistrationPersonFieldType.FirstName || field.PersonFieldType == RegistrationPersonFieldType.LastName ) )
+                    {
+                        // hide the Delete button if this is the Person FirstName or LastName field on the DefaultForm
+                        linkButton.Visible = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the btnFieldFilterField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void btnFieldFilterField_DataBound( object sender, RowEventArgs e )
+        {
+            LinkButton linkButton = sender as LinkButton;
+            RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
+
+            if ( field != null && linkButton != null )
+            {
+                if ( ( field.FieldSource == RegistrationFieldSource.PersonField ) || _filterableFieldsCount < 2 )
+                {
+                    linkButton.Visible = false;
+                }
+                else
+                {
+                    if ( field.FieldVisibilityRules.RuleList.Any() )
+                    {
+                        linkButton.AddCssClass( "criteria-exists" );
+                    }
+                    else
+                    {
+                        linkButton.RemoveCssClass( "criteria-exists" );
+                    }
+
+                    linkButton.Visible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the TypeField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void TypeField_DataBound( object sender, RowEventArgs e )
+        {
+            Literal literal = sender as Literal;
+            RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
+            if ( field != null && literal != null )
+            {
+                if ( field.FieldSource != RegistrationFieldSource.PersonField && field.AttributeId.HasValue )
+                {
+                    var attribute = AttributeCache.Get( field.AttributeId.Value );
+                    if ( attribute != null )
+                    {
+                        literal.Text = attribute.FieldType.Name;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the SourceField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void SourceField_DataBound( object sender, RowEventArgs e )
+        {
+            Literal literal = sender as Literal;
+            RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
+            if ( field != null && literal != null )
+            {
+                literal.Text = field.FieldSource.ConvertToString();
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the NameField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void NameField_DataBound( object sender, RowEventArgs e )
+        {
+            Literal literal = sender as Literal;
+            RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
+            if ( field != null && literal != null )
+            {
+                literal.Text = ( field.FieldSource != RegistrationFieldSource.PersonField && field.Attribute != null ) ?
+                            field.Attribute.Name : field.PersonFieldType.ConvertToString();
+            }
         }
 
         /// <summary>
@@ -397,7 +505,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='fa fa-bars'></i></a>" );
+            if ( !this.IsDefaultForm )
+            {
+                writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='fa fa-bars'></i></a>" );
+            }
+
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state fa {0}'></i></a>",
                 Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
@@ -433,6 +545,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfFormGuid.RenderControl( writer );
             _hfFormId.RenderControl( writer );
+            _tbFormName.Visible = !IsDefaultForm;
             _tbFormName.ValidationGroup = ValidationGroup;
             _tbFormName.RenderControl( writer );
             writer.RenderEndTag();
@@ -494,6 +607,20 @@ $('.template-form > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// Handles the Click event of the gFields_btnFieldFilterField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gFields_btnFieldFilterField_Click( object sender, RowEventArgs e )
+        {
+            if ( FilterFieldClick != null )
+            {
+                var eventArg = new TemplateFormFieldEventArg( FormGuid, ( Guid ) e.RowKeyValue );
+                FilterFieldClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
         /// Handles the Edit event of the gFields control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -502,7 +629,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
         {
             if ( EditFieldClick != null )
             {
-                var eventArg = new TemplateFormFieldEventArg( FormGuid, (Guid)e.RowKeyValue );
+                var eventArg = new TemplateFormFieldEventArg( FormGuid, ( Guid ) e.RowKeyValue );
                 EditFieldClick( this, eventArg );
             }
         }
@@ -530,7 +657,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
         {
             if ( DeleteFieldClick != null )
             {
-                var eventArg = new TemplateFormFieldEventArg( FormGuid, (Guid)e.RowKeyValue );
+                var eventArg = new TemplateFormFieldEventArg( FormGuid, ( Guid ) e.RowKeyValue );
                 DeleteFieldClick( this, eventArg );
             }
         }
@@ -550,6 +677,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
         /// Occurs when [add field click].
         /// </summary>
         public event EventHandler<TemplateFormFieldEventArg> AddFieldClick;
+
+        /// <summary>
+        /// Occurs when [filter field click].
+        /// </summary>
+        public event EventHandler<TemplateFormFieldEventArg> FilterFieldClick;
 
         /// <summary>
         /// Occurs when [edit field click].

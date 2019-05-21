@@ -1,5 +1,14 @@
 
 
+.max(@a,@b)
+{
+  @max: @b;
+}
+.max(@a,@b) when (@a>@b)
+{
+  @max: @a;
+}
+
 // Button variants
 //
 // Easily pump out default styles, as well as :hover, :focus, :active,
@@ -9,11 +18,11 @@
   color: @background;
   background-color: transparent;
   border-color: @background;
-  
+
   &:hover {
     color: @color;
     background-color: @background;
-        border-color: @background;
+    border-color: @background;
   }
 
   &:focus,
@@ -24,5 +33,4 @@
   &.disabled {
     opacity: .5;
   }
-
 }

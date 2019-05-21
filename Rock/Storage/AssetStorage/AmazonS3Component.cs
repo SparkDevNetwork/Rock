@@ -20,18 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
-using Rock.Model;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Web.Cache;
-using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -134,14 +129,14 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( assetStorageProvider, s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
                     request.ContinuationToken = response.NextContinuationToken;
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -200,7 +195,7 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( assetStorageProvider, s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
@@ -208,7 +203,7 @@ namespace Rock.Storage.AssetStorage
 
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -255,35 +250,19 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
-                var subFolders = new HashSet<string>();
 
-                ListObjectsV2Response response;
-
-                // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
-                do
+                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
+                ListObjectsV2Response response = client.ListObjectsV2( request );
+                foreach ( string subFolder in response.CommonPrefixes )
                 {
-                    response = client.ListObjectsV2( request );
-
-                    foreach ( string subFolder in response.CommonPrefixes )
+                    if ( subFolder.IsNotNullOrWhiteSpace() )
                     {
-                        if ( subFolder.IsNotNullOrWhiteSpace() )
-                        {
-                            subFolders.Add( subFolder );
-                        }
+                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                        assets.Add( subFolderAsset );
                     }
-
-                    request.ContinuationToken = response.NextContinuationToken;
-
-                } while ( response.IsTruncated );
-
-                // Add the subfolders to the asset collection
-                foreach ( string subFolder in subFolders )
-                {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                    assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -293,12 +272,24 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Returns a stream of the specified file.
+        /// Returns an asset with the stream of the specified file and creates a thumbnail.
         /// </summary>
-        /// <param name="assetStorageProvider"></param>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset )
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset)
+        {
+            return GetObject( assetStorageProvider, asset, true );
+        }
+
+        /// <summary>
+        /// Returns an asset with the stream of the specified file with the option to create a thumbnail.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
+        /// <returns></returns>
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
@@ -309,7 +300,7 @@ namespace Rock.Storage.AssetStorage
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
                 GetObjectResponse response = client.GetObject( GetAttributeValue( assetStorageProvider, "Bucket" ), asset.Key );
-                return CreateAssetFromGetObjectResponse( response, client.Config.RegionEndpoint.SystemName );
+                return CreateAssetFromGetObjectResponse( assetStorageProvider, response, client.Config.RegionEndpoint.SystemName, createThumbnail );
                 
             }
             catch ( Exception ex )
@@ -414,6 +405,7 @@ namespace Rock.Storage.AssetStorage
                     };
 
                     DeleteObjectResponse response = client.DeleteObject( request );
+                    DeleteImageThumbnail( assetStorageProvider, asset );
                     return true;
                 }
                 catch ( Exception ex )
@@ -426,7 +418,9 @@ namespace Rock.Storage.AssetStorage
             {
                 try
                 {
-                    return MultipleObjectDelete( client, assetStorageProvider, asset );
+                    MultipleObjectDelete( client, assetStorageProvider, asset );
+                    DeleteImageThumbnail( assetStorageProvider, asset );
+                    return true;
                 }
                 catch (Exception ex )
                 {
@@ -549,7 +543,7 @@ namespace Rock.Storage.AssetStorage
                             continue;
                         }
 
-                        var responseAsset = CreateAssetFromS3Object( s3Object, client.Config.RegionEndpoint.SystemName );
+                        var responseAsset = CreateAssetFromS3Object( assetStorageProvider, s3Object, client.Config.RegionEndpoint.SystemName );
                         assets.Add( responseAsset );
                     }
 
@@ -574,13 +568,68 @@ namespace Rock.Storage.AssetStorage
                     assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex );
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Gets the thumbnail image for the provided Asset key. If one does not exist it will be created. If one exists but is older than the file
+        /// a new thumbnail is created and the old one overwritten.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="assetKey">The asset key.</param>
+        /// <param name="lastModifiedDateTime">The last modified date time.</param>
+        /// <returns></returns>
+        public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
+        {
+            string name = GetNameFromKey( assetKey );
+            string path = GetPathFromKey( assetKey );
+
+            string mimeType = System.Web.MimeMapping.GetMimeMapping( name );
+            if ( !mimeType.StartsWith( "image/" ) )
+            {
+                return GetFileTypeIcon( assetKey );
+            }
+
+            // check if thumbnail exists
+            string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
+            Directory.CreateDirectory( FileSystemCompontHttpContext.Server.MapPath( thumbDir ) );
+
+            string virtualThumbPath = Path.Combine( thumbDir, name );
+            string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+
+            // Encode the name thumb path since it can contain special characters
+            virtualThumbPath = virtualThumbPath.EncodeHtml();
+
+            if (File.Exists( physicalThumbPath ) )
+            {
+                var thumbLastModDate = File.GetLastWriteTimeUtc( physicalThumbPath );
+                if ( lastModifiedDateTime <= thumbLastModDate )
+                {
+                    // thumbnail is still good so just return the virtual file path.
+                    return virtualThumbPath;
+                }
+            }
+
+            CreateImageThumbnail( assetStorageProvider, new Asset { Name = name, Key = assetKey, Type = AssetType.File }, physicalThumbPath, false );
+            
+            return virtualThumbPath;
+        }
+
+        /// <summary>
+        /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
+        /// is deleted. If the asset is a directory then a recurrsive delete is done.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="asset">The asset.</param>
+        protected override void DeleteImageThumbnail( AssetStorageProvider assetStorageProvider, Asset asset )
+        {
+            base.DeleteImageThumbnail( assetStorageProvider, asset );
         }
 
         #endregion Override Methods
@@ -639,21 +688,23 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from the AWS S3Object.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="s3Object">The s3 object.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
         /// <returns></returns>
-        private Asset CreateAssetFromS3Object( S3Object s3Object, string regionEndpoint )
+        private Asset CreateAssetFromS3Object( AssetStorageProvider assetStorageProvider, S3Object s3Object, string regionEndpoint )
         {
             string name = GetNameFromKey( s3Object.Key );
             string uriKey = System.Web.HttpUtility.UrlPathEncode( s3Object.Key );
-            
+            AssetType assetType = GetAssetType( s3Object.Key );
+
             return new Asset
             {
                 Name = name,
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
-                Type = GetAssetType( s3Object.Key ),
-                IconPath = GetFileTypeIcon( s3Object.Key ),
+                Type = assetType,
+                IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,
                 Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString(),
@@ -663,10 +714,12 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Creates the asset from AWS S3 Client GetObjectResponse.
         /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="response">The response.</param>
         /// <param name="regionEndpoint">The region endpoint.</param>
+        /// <param name="createThumbnail">if set to <c>true</c> [create thumbnail].</param>
         /// <returns></returns>
-        private Asset CreateAssetFromGetObjectResponse( GetObjectResponse response, string regionEndpoint )
+        private Asset CreateAssetFromGetObjectResponse( AssetStorageProvider assetStorageProvider, GetObjectResponse response, string regionEndpoint, bool createThumbnail )
         {
             string name = GetNameFromKey( response.Key );
             string uriKey = System.Web.HttpUtility.UrlPathEncode( response.Key );
@@ -677,7 +730,7 @@ namespace Rock.Storage.AssetStorage
                 Key = response.Key,
                 Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = GetAssetType( response.Key ),
-                IconPath = GetFileTypeIcon( response.Key ),
+                IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified) : GetFileTypeIcon( response.Key ),
                 FileSize = response.ResponseStream.Length,
                 LastModifiedDateTime = response.LastModified,
                 Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
@@ -703,7 +756,7 @@ namespace Rock.Storage.AssetStorage
                 Key = commonPrefix,
                 Uri = $"https://{bucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = AssetType.Folder,
-                IconPath = GetFileTypeIcon( commonPrefix ),
+                IconPath = string.Empty,
                 FileSize = 0,
                 LastModifiedDateTime = null,
                 Description = string.Empty
@@ -771,44 +824,6 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Gets the name from key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private string GetNameFromKey( string key )
-        {
-            if ( key.LastIndexOf('/') < 1)
-            {
-                return key;
-            }
-
-            string[] pathSegments = key.Split( '/' );
-
-            if (key.EndsWith("/"))
-            {
-                return pathSegments[pathSegments.Length - 2];
-            }
-
-            return pathSegments[pathSegments.Length - 1];
-        }
-
-        /// <summary>
-        /// Gets the path from key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>The file prefix used by AWS to mimic a folder structure.</returns>
-        private string GetPathFromKey( string key )
-        {
-            int i = key.LastIndexOf( '/' );
-            if ( i < 1)
-            {
-                return string.Empty;
-            }
-
-            return key.Substring( 0, i + 1 );
-        }
-
-        /// <summary>
         /// Determine the correct AssetType based on the provided name.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -837,6 +852,44 @@ namespace Rock.Storage.AssetStorage
             RegionEndpoint regionEndPoint = Amazon.RegionEndpoint.GetBySystemName( awsRegion );
 
             return new AmazonS3Client( awsAccessKey, awsSecretKey, regionEndPoint );
+        }
+
+        /// <summary>
+        /// Gets the name from key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetNameFromKey( string key )
+        {
+            if ( key.LastIndexOf( '/' ) < 1 )
+            {
+                return key;
+            }
+
+            string[] pathSegments = key.Split( '/' );
+
+            if ( key.EndsWith( "/" ) )
+            {
+                return pathSegments[pathSegments.Length - 2];
+            }
+
+            return pathSegments[pathSegments.Length - 1];
+        }
+
+        /// <summary>
+        /// Gets the path from key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>The file prefix used by AWS to mimic a folder structure.</returns>
+        private string GetPathFromKey( string key )
+        {
+            int i = key.LastIndexOf( '/' );
+            if ( i < 1 )
+            {
+                return string.Empty;
+            }
+
+            return key.Substring( 0, i + 1 );
         }
 
         #endregion Private Methods

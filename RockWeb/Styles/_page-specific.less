@@ -1,4 +1,4 @@
-﻿/*
+/*
     Used to manage styles for specific blocks.
 
     1. Error Page
@@ -51,7 +51,7 @@
 // -------------------------
 
 .rock-blank {
-  background-color: @body-bg;
+  background-color: #fff;
 
   main.container {
     padding: 12px;
@@ -61,6 +61,16 @@
 
 // 3. Exception Page
 // -------------------------
+.exception-table {
+  word-break: break-all;
+  word-wrap: break-word;
+
+  td {
+    min-width: 200px;
+    vertical-align: text-top;
+  }
+}
+
 .exceptionDetail-stackTrace-hide {
   display: none;
 }

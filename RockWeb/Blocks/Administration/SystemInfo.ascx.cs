@@ -22,22 +22,21 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
-
 using Rock;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.VersionInfo;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    /// Displays system information on the installed version of Rock.
     /// </summary>
     [DisplayName( "System Information" )]
     [Category( "Administration" )]
@@ -84,6 +83,7 @@ namespace RockWeb.Blocks.Administration
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
+            lThreads.Text = GetThreadInfo();
 
             // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
@@ -191,6 +191,7 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Migrations:", GetLastMigrationData().Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response ); ;
             ResponseWrite( "Routes:", lRoutes.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
+            ResponseWrite( "Threads:", lThreads.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
 
             // Last and least...
             ResponseWrite( "Server Variables:", "", response );
@@ -273,19 +274,61 @@ namespace RockWeb.Blocks.Administration
 
         private string GetRoutesInfo()
         {
-            var routes = new SortedDictionary<string, System.Web.Routing.Route>();
+            var pageService = new PageService( new RockContext() );
+            
+            var routes = new Dictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
-                if ( !routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
+                if ( !routes.ContainsKey( route.Url ) )
+                    routes.Add( route.Url, route );
             }
+
+            var pageLookup = pageService.Queryable().Select( a => new { a.InternalName, Id = a.Id } ).ToDictionary( a => a.Id, v => v );
 
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "<table class='table table-condensed'>" );
+            sb.AppendLine( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                sb.AppendFormat( "{0}<br />", routeItem.Key );
+                var pages = routeItem.Value.PageIds().Select( s => pageLookup.GetValueOrNull(s) ).ToList();
+
+                sb.AppendLine( string.Format("<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Where(a => a != null).Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() )) );
             }
 
+            sb.AppendLine( "</table>" );
+
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets thread pool details such as the number of threads in use and the maximum number of threads.
+        /// </summary>
+        /// <returns></returns>
+        private string GetThreadInfo()
+        {
+            int maxWorkerThreads = 0;
+            int maxIoThreads = 0;
+            int availWorkerThreads = 0;
+            int availIoThreads = 0;
+
+            ThreadPool.GetMaxThreads( out maxWorkerThreads, out maxIoThreads );
+            ThreadPool.GetAvailableThreads( out availWorkerThreads, out availIoThreads );
+            var workerThreadsInUse = maxWorkerThreads - availWorkerThreads;
+            var pctUse = ( ( float ) workerThreadsInUse / ( float ) maxWorkerThreads );
+            string badgeType = string.Empty;
+            if ( pctUse > .1 )
+            {
+                if ( pctUse < .3 )
+                {
+                    badgeType = "badge badge-warning";
+                }
+                else
+                {
+                    badgeType = "badge badge-danger";
+                }
+            }
+
+            return string.Format( "<span class='{0}'>{1}</span> out of {2} worker threads in use ({3}%)", badgeType, workerThreadsInUse, maxWorkerThreads, ( int ) Math.Ceiling( pctUse * 100 ) );
         }
 
         private string GetDbInfo()
@@ -383,7 +426,7 @@ namespace RockWeb.Blocks.Administration
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
         private bool RestartWebApplication()
         {
-            bool error = false;
+            bool Error = false;
             try
             {
                 // *** This requires full trust so this will fail
@@ -392,18 +435,18 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                error = true;
+                Error = true;
             }
 
-            if ( !error )
+            if ( !Error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
-            string configPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
 
             try
             {
-                File.SetLastWriteTimeUtc( configPath, DateTime.UtcNow );
+                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
             }
             catch
             {

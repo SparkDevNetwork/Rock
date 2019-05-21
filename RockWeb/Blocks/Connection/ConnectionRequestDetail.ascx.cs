@@ -46,9 +46,24 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Workflow Detail Page", "Page used to display details about a workflow.", order: 1 )]
     [LinkedPage( "Workflow Entry Page", "Page used to launch a new workflow of the selected type.", order: 2 )]
     [LinkedPage( "Group Detail Page", "Page used to display group details.", order: 3 )]
+
+    [LinkedPage(
+        name:"SMS Link Page",
+        description: "Page that will be linked for SMS enabled phones.",
+        key: AttributeKeys.SmsLinkPage,
+        defaultValue: Rock.SystemGuid.Page.NEW_COMMUNICATION,
+        order: 4 )]
+
     [PersonBadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
     {
+        /// <summary>
+        /// Keys for the block attributes
+        /// </summary>
+        private static class AttributeKeys
+        {
+            public const string SmsLinkPage = "SmsLinkPage";
+        }
 
         #region Fields
 
@@ -1480,10 +1495,23 @@ namespace RockWeb.Blocks.Connection
             if ( person != null && ( person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) ) )
             {
                 List<String> contactList = new List<string>();
-
+                var hasSmsLink = GetAttributeValue( AttributeKeys.SmsLinkPage ).IsNotNullOrWhiteSpace();
+                
                 foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
                 {
-                    contactList.Add( String.Format( "{0} <font color='#808080'>{1}</font>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue ) );
+                    var smsAnchor = string.Empty;
+
+                    if ( hasSmsLink && phoneNumber.IsMessagingEnabled )
+                    {
+                        var smsLink = LinkedPageUrl( AttributeKeys.SmsLinkPage, new Dictionary<string, string> {
+                            { "Person", person.Id.ToString() } } );
+                        smsAnchor = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
+                    }
+
+                    contactList.Add( String.Format( "{0} <small>{1} {2}</small>",
+                        phoneNumber.NumberFormatted,
+                        phoneNumber.NumberTypeValue,
+                        smsAnchor ) );
                 }
 
                 string emailTag = person.GetEmailTag( ResolveRockUrl( "/" ) );
@@ -1758,7 +1786,7 @@ namespace RockWeb.Blocks.Connection
                     groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
                         .Where( g =>
                             g.Group != null &&
-                            g.Group.IsActive &&
+                            g.Group.IsActive && !g.Group.IsArchived &&
                             ( !campusId.HasValue || !g.Group.CampusId.HasValue || campusId.Value == g.Group.CampusId.Value ) )
                         .Select( g => g.Group )
                         .ToList();
@@ -1775,7 +1803,7 @@ namespace RockWeb.Blocks.Connection
                             .Queryable().AsNoTracking()
                             .Where( g =>
                                 !existingGroupIds.Contains( g.Id ) &&
-                                g.IsActive &&
+                                g.IsActive && !g.IsArchived &&
                                 g.GroupTypeId == groupConfig.GroupTypeId &&
                                 ( !campusId.HasValue || !g.CampusId.HasValue || campusId.Value == g.CampusId.Value ) )
                             .ToList() );
@@ -2153,7 +2181,7 @@ namespace RockWeb.Blocks.Connection
                                     else
                                     {
                                         labelText = string.Empty;
-                                        labelType = string.Empty;
+                                        labelType = "default";
                                     }
                                 }
 

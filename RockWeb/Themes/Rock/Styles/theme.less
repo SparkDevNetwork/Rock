@@ -58,11 +58,18 @@ dt {
 input[type="text"],
 textarea,
 .form-control {
+  background-clip: padding-box;
+  -webkit-box-shadow: none;
   box-shadow: none;
-  transition: @input-focus-transition;
+}
 
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
+    outline: none;
     box-shadow: @input-focus-box-shadow;
   }
 }
@@ -86,7 +93,7 @@ textarea,
 // -------------------------
 
 .well {
-  .box-shadow(none)
+  .box-shadow(none);
 }
 
 .toggle-container {
@@ -135,7 +142,7 @@ textarea,
         right: 24px;
         bottom: 0;
         left: 24px;
-        height:0;
+        height: 0;
         content: " ";
         opacity: 0;
         transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
@@ -247,7 +254,7 @@ textarea,
 
 .has-error .form-control,
 .has-error .input-group-addon {
-  box-shadow: 0;
+  box-shadow: none;
 }
 
 .has-error .form-control:focus {
@@ -279,64 +286,63 @@ textarea,
   }
 }
 
-.grid .table > tbody > tr > td,
-.grid .table > tbody > tr > th,
-.grid .table > thead > tr > td,
-.grid .table > thead > tr > th {
-  padding: 18px 17px 18px 12px;
-  border-width: @table-column-border-width;
-  border-top-width: 1px;
-}
-
-.grid .table > thead > tr > td,
-.grid .table > thead > tr > th {
-  padding: 18px 0 18px 12px;
-  vertical-align: middle;
-  // &:last-child {
-  //   border-right: 1px solid @table-border-color;
-  // }
-}
-
-.grid .table > thead > tr.grid-header-bold > th {
-  padding: 18px 17px 18px 12px;
-}
-
-.grid .table > tbody > tr > td {
-  &.grid-columnreorder {
-    padding-top: 18px;
-  }
-  &.grid-row-header {
-    font-weight: bold;
-    border-right: 1px solid @table-border-color;
+.grid-table {
+  > tbody > tr > td,
+  > tbody > tr > th,
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: 18px 17px 18px 12px;
+    border-width: @table-column-border-width;
+    border-top-width: 1px;
   }
 
-  &.grid-columncommand {
-    width: 30px;
-    min-width: 0;
-    padding: 0;
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: 18px 0 18px 12px;
     vertical-align: middle;
-  }
-}
 
-.grid .table > tfoot {
-  border-top: 1px solid @ui-4;
-  > tr > td,
-  > tr > th {
-    color: @text-color;
-    background: @panel-bg;
+    // Remove padding offset on center
+    &[align="center"] {
+      padding: 18px 6px;
+    }
+  }
+
+  > thead > tr.grid-header-bold > th {
+    padding: 18px 17px 18px 12px;
+  }
+
+  > tbody > tr > td {
+    &.grid-columnreorder {
+      padding-top: 18px;
+    }
+    &.grid-row-header {
+      font-weight: bold;
+      border-right: 1px solid @table-border-color;
+    }
+
+    &.grid-columncommand {
+      width: 30px;
+      min-width: 30px;
+      padding: 0 6px;
+      vertical-align: middle;
+    }
+  }
+
+  > tfoot {
     border-top: 1px solid @ui-4;
+    > tr > td,
+    > tr > th {
+      color: @text-color;
+      background: @panel-bg;
+      border-top: 1px solid @ui-4;
+    }
   }
 }
-
 
 .grid-columncommand {
   .btn {
     width: 33px;
     padding: 5px 7px;
-    &.fa-clone {
-      width: 33px;
-      padding: 8px 8px 8px 7px;
-    }
   }
 }
 
@@ -345,12 +351,14 @@ textarea,
   .box-shadow(none);
 }
 
-.control-label {
-  font-weight: @font-weight-semibold;
-}
-
 .badge-circle {
   width: @line-height-computed;
+  border-radius: 50%;
+}
+
+.grid-select-cell .status-list .badge {
+  width: (@line-height-computed - 4px);
+  height: (@line-height-computed - 4px);
   border-radius: 50%;
 }
 
@@ -360,7 +368,7 @@ textarea,
 // 3. Rock Overrides         */
 // -------------------------
 
-.rollover-item {
+.panel-heading .rollover-item {
   > a {
     color: @gray;
 
@@ -372,7 +380,7 @@ textarea,
 }
 
 .modal {
-  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
+  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, .1));
   border-radius: 0;
 }
 
@@ -400,11 +408,10 @@ textarea,
 }
 
 .wizard {
-  margin: -35px;
-  margin-bottom: 35px;
+  margin: -5px -15px 35px -15px;
 
-  @media (max-width: @screen-md-min) {
-    margin-left: -12px;
+  @media (min-width: @screen-md-min) {
+    margin: -35px -35px 35px -35px;
   }
 }
 
@@ -432,14 +439,67 @@ textarea,
 }
 
 .group-member-list .panel,
-.panel-widget,
-.panel-drawer {
+.panel-widget {
   .box-shadow(none);
 }
 
 
 .panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
   > .panel-heading {
+    border-bottom: 1px solid @panel-border;
+  }
+
+  .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+
+    .panel-title {
+      margin-right: auto;
+    }
+
+    .filter-toggle {
+      margin-top: 0;
+    }
+
+    .panel-labels,
+    .pull-right {
+      margin-left: auto;
+      text-align: right;
+    }
+  }
+
+  .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: #fff;
+
+    .panel-block {
+      height: auto !important;
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+  }
+
+  .wizard {
+    padding: 16px 0;
+    margin: 0;
+    background: @ui-2;
     border-bottom: 1px solid @panel-border;
   }
 }
@@ -469,24 +529,6 @@ td.grid-actions {
   font-size: 1em;
 }
 
-.grid-select-field {
-  width: @custom-control-indicator-size;
-
-  .checkbox:last-child,
-  .radio:last-child {
-    margin: 0 !important;
-  }
-
-  .checkbox input[type="checkbox"] + span.label-text::before,
-  .radio input[type="radio"] + span.label-text::before {
-    margin: 0;
-  }
-}
-
-td.grid-select-field {
-  width: auto;
-}
-
 .grid-actions {
   .btn {
     padding: 5px 7px;
@@ -511,6 +553,19 @@ td.grid-select-field {
 /*#region
 // 4. Theme Styling          */
 // -------------------------
+
+body.nav-open {
+  overflow: hidden;
+}
+
+// Fixed Navbar #target fix
+:target::before {
+  display: block;
+  height: @navbar-top-height;
+  margin-top: -@navbar-top-height;
+  content: "";
+}
+
 .page-wrapper {
 
   @media (min-width: @screen-md-min) {
@@ -568,11 +623,18 @@ td.grid-select-field {
 
   .navbar-toggle {
     float: left;
-    margin-top: 12px;
-    margin-left: @navbarside-width * .24;
+    width: @navbarside-width;
+    height: @navbar-top-height;
+    padding: 0 28px;
+    margin: 0;
     font-size: 1.5em;
+    line-height: @navbar-top-height;
     color: #fff;
     cursor: pointer;
+
+    .navbar-side-open & {
+      position: fixed;
+    }
   }
 
   .navbar-nav.contextsetter,
@@ -585,8 +647,9 @@ td.grid-select-field {
     }
   }
 
-    .navbar-brand-corner {
-    position: relative;
+  .navbar-brand-corner {
+    position: fixed;
+    top: 0;
     display: none;
     float: left;
     width: @navbarside-width;
@@ -611,14 +674,9 @@ td.grid-select-field {
       background-size: (@navbarside-width * .525);
     }
 
-    &:hover {
-      background-color: @navbarside-background-color;
-      background-color: var(--navbarside-background-color);
-    }
-
     .logo {
-      width: 47px;
-      height: 47px;
+      width: 48px;
+      height: 48px;
       margin: 10px;
     }
 
@@ -848,9 +906,9 @@ td.grid-select-field {
   }
 
   .logo {
-    width: 47px;
-    height: 47px;
-    margin: 10px;
+    width: 48px;
+    height: 48px;
+    margin: 3px 0;
   }
 
   @media (min-width: @screen-sm-min) {
@@ -867,29 +925,65 @@ td.grid-select-field {
   }
 }
 
+.navbar-side-open {
+  &::before {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    width: inherit;
+    width: @navbarside-width;
+    content: "";
+    background-color: @navbarside-background-color;
+    background-color: var(--navbarside-background-color);
+  }
+}
+
 .navbar-static-side {
   position: fixed;
   top: 0;
+  bottom: 0;
   left: 0;
-  z-index: 1031;
+  z-index: @zindex-navbar-fixed + 10;
   display: none;
   width: @navbarside-width;
   height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: @navbarside-color;
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
+  &::-webkit-scrollbar {
+    width: 6px;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    width: 6px;
+    background-color: rgba(0,0,0, .2);
+    border-radius: 10px;
+  }
+
+  &.open-secondary-nav {
+    width: @navbarside-width + 280px;
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0);
+    }
+  }
+
   @media (min-width: @screen-sm-min) {
-    position: absolute;
-    top: auto;
-    z-index: auto;
+    top: 80px;
+    margin-top: 0;
   }
 
   // Disable Bootstrap Toggle Animation
   &.collapsing {
+    display: none;
     -webkit-transition: none;
     transition: none;
-    display: none;
   }
 
   .navbar-toggle-side-left {
@@ -906,26 +1000,22 @@ td.grid-select-field {
     }
   }
 
-  &::before {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    width: inherit;
-    content: "";
-    background-color: inherit;
-  }
-
   .navbar-side {
-    position: fixed;
-    z-index: @zindex-navbar-fixed;
-    display: inline-block;
-    width: 100%;
-    width: @navbarside-width;
     cursor: default;
 
+    .navbar-logo {
+      @media (min-width: @screen-sm-min) {
+        display: none;
+      }
+
+      a:hover {
+        background-color: @navbarside-background-color;
+        background-color: var(--navbarside-background-color);
+      }
+    }
+
     & > li {
+      width: @navbarside-width;
       margin-top: 0;
       text-align: center;
       cursor: pointer;
@@ -986,16 +1076,26 @@ td.grid-select-field {
       .nav-childpages {
         position: fixed;
         top: 0;
+        bottom: 0;
         left: @navbarside-width;
-        z-index: 9999;
+        z-index: 2000;
         display: none;
         width: 280px;
-        height: 100%;
         padding: 0 @padding-base-horizontal;
         overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
         background-color: @navbarside-sub-bg;
+
+
+        /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
+        @media not all and (min-resolution: .001dpcm) and (min-width: @screen-sm-min) {
+          @supports (-webkit-appearance:none) {
+            top: @navbar-top-height;
+          }
+        }
+
+
 
         li {
 
@@ -1093,7 +1193,7 @@ td.grid-select-field {
 
     > li.open {
       .nav-childpages {
-        display: block;
+        display: inline-block;
 
         li.header {
           padding-left: 0;
@@ -1101,12 +1201,31 @@ td.grid-select-field {
       }
     }
   }
+
+  // Hide config-bar inside navigation since it is always cropped
+  .config-bar {
+    display: none !important;
+  }
+}
+
+
+.navbar-side-open #cms-admin-footer {
+  left: @navbarside-width;
+  width: auto;
+}
+
+@media (min-width: @screen-sm-min) {
+  #cms-admin-footer {
+    left: @navbarside-width;
+    width: auto;
+  }
 }
 
 // expanded view
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
     display: block;
+    height: ~"calc(100% - @{navbar-top-height})" !important; // Overrides collapse if window is resized
   }
 
   #content-wrapper {
@@ -1135,10 +1254,10 @@ body.navbar-side-open {
 
   .page-title {
     padding: 20px 15px;
-    margin: -5px -5px 5px -5px;
+    margin: -5px -15px 5px -15px;
+    color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
-    color: @pagetitle-text-color;
     border-bottom: 1px solid @gray-lighter;
 
     .title {
@@ -1168,15 +1287,15 @@ body.navbar-side-open {
         font-family: @fa-font-face;
         font-size: 80%;
         font-weight: 600;
-        content: "@{breadcrumb-separator}"
+        content: "@{breadcrumb-separator}";
       }
     }
   }
 
 
   @media (min-width: @screen-md-min) {
-    margin: 35px 35px 0 35px;
     padding: 0;
+    margin: 35px 35px 0 35px;
 
     .page-title {
       padding: 20px 35px;
@@ -1212,7 +1331,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .btn {
+    .login .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;
@@ -1301,150 +1420,6 @@ body.navbar-side-open {
 /*#region
 // 6. Components          */
 // -------------------------
-
-// Date Picker
-.picker-daterange {
-  .input-group-lower{
-    .input-group-addon {
-      display: none;
-    }
-  }
-}
-
-// radio buttons & checkboxes - fancy styling
-.radio,
-.checkbox {
-  position: relative;
-  display: block;
-  min-height: 19px;
-  padding-left: 28px;  // Not sure if needed
-  margin: 7px 16px 7px 0 !important;
-
-  label { // Override forms.less
-    padding-left: 0;
-  }
-}
-
-// Fix to Show Checkbox in Summernote Modals
-.modal-body > .checkbox label input[type="checkbox"] {
-  z-index: 0;
-  opacity: 1;
-}
-
-.radio-inline,
-.checkbox-inline {
-  padding-right: 16px;
-  padding-left: 30px;
-  margin-left: 0;
-}
-
-.radio-inline:first-child,
-.checkbox-inline:first-child,
-.radio-inline + .radio-inline {
-  margin-left: 0;
-}
-
-.radio,
-.checkbox,
-.radio-inline,
-.checkbox-inline {
-  // Custom control indicators
-  //
-  // Build the custom controls out of psuedo-elements.
-  .label-text {
-    margin-bottom: 0;
-
-    // Background-color and (when enabled) gradient
-    &::before {
-      position: absolute;
-      top: @custom-control-indicator-offset;
-      left: 0;
-      display: block;
-      width: @custom-control-indicator-size;
-      height: @custom-control-indicator-size;
-      pointer-events: none;
-      content: "";
-      user-select: none;
-      background-color: #fff;
-      border: 2px solid @input-border;
-      border-radius: .25rem;
-    }
-
-    // Foreground (icon)
-    &::after {
-      position: absolute;
-      top: @custom-control-indicator-offset;
-      left: 0;
-      display: block;
-      width: @custom-control-indicator-size;
-      height: @custom-control-indicator-size;
-      content: "";
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 50% 50%;
-    }
-  }
-
-  input[type="checkbox"],
-  input[type="radio"] {
-    position: absolute;
-    z-index: -1; // Put the input behind the label so it doesn't overlay text
-    opacity: 0;
-
-    &:checked ~ .label-text::before {
-      background-color: @brand-color;
-      border-color: @brand-color;
-    }
-
-    &:focus ~ .label-text::before {
-      // the mixin is not used here to make sure there is feedback
-      box-shadow: 0 0 0 1px #fff, 0 0 0 3px rgba(red(@brand-primary), green(@brand-primary), blue(@brand-primary), .2);
-    }
-
-    &:active ~ .label-text::before {
-      color: #fff;
-      background-color: lighten(@brand-color, 30%);
-    }
-
-    &:disabled {
-      ~ .label-text {
-        color: #6c757d;
-
-        &::before {
-          background-color: #e9ecef;
-        }
-      }
-    }
-
-  }
-}
-
-.checkbox,
-.checkbox-inline {
-  input[type="checkbox"] {
-    &:checked ~ .label-text::after {
-      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
-    }
-  }
-}
-
-.radio,
-.radio-inline {
-  .label-text::before {
-    border-radius: 50%;
-  }
-
-  input[type="radio"] {
-    &:checked ~ .label-text::after {
-      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
-    }
-  }
-}
-
-.schedule-builder .checkbox {
-  display: inline;
-  padding-right: (@custom-control-indicator-size / 2);
-}
 
 .note-editor.note-frame {
   margin: 0;

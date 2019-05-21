@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -47,7 +48,7 @@ namespace Rock.Field.Types
             {
                 if ( condensed )
                 {
-                    return string.Format( "<a href='{0}'>Link</a>", value );
+                    return value;
                 }
                 else
                 {

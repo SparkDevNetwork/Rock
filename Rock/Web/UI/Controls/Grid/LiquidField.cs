@@ -15,10 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -26,7 +23,8 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:LiquidField runat=server></{0}:LiquidField>" )]
-    [Obsolete( "Use LavaField instead" )]
+    [RockObsolete( "1.7" )]
+    [Obsolete( "Use LavaField instead", true )]
     public class LiquidField : LavaField
     {
         /// <summary>
@@ -71,7 +69,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    [Obsolete( "Use LavaFieldTemplate instead" )]
+    [RockObsolete( "1.7" )]
+    [Obsolete( "Use LavaFieldTemplate instead", true )]
     public class LiquidFieldTemplate : LavaFieldTemplate
     {
 

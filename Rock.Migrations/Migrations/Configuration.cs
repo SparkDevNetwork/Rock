@@ -16,14 +16,17 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Data.Entity.Migrations.DbMigrationsConfiguration{Rock.Data.RockContext}" />
     public sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// </summary>
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
@@ -32,21 +35,13 @@ namespace Rock.Migrations
             CommandTimeout = 300;
         }
 
+        /// <summary>
+        /// Runs after upgrading to the latest migration to allow seed data to be updated.
+        /// </summary>
+        /// <param name="context">Context to be used for updating seed data.</param>
         protected override void Seed( Rock.Data.RockContext context )
         {
-            // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
-            // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
-            // recent 50 communications. A job will runto convert the remaining communications. This can be removed after every 
-            // customer has migrated past v7
-            Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
-
-            // MP: Populate AnalyticsSourceDate (if it isn't already)
-            if ( !context.AnalyticsSourceDates.AsQueryable().Any() )
-            {
-                var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
-                var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
-                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
-            }
+            // NOTE: We probably don't want to add anything here
         }
     }
 }

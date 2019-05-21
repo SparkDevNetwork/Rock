@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,6 +37,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
             this.IconCssClass = "fa fa-folder-open";
+            this.AllowCategorySelection = true;
             base.OnInit( e );
         }
 
@@ -102,6 +104,7 @@ namespace Rock.Web.UI.Controls
                         // infinite recursion
                         break;
                     }
+
                     parentCategory = parentCategory.ParentCategory;
                 }
 
@@ -217,7 +220,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int EntityTypeId
         {
-            get { return ViewState["EntityTypeId"] as int? ?? 0; }
+            get
+            {
+                return ViewState["EntityTypeId"] as int? ?? 0;
+            }
+
             set
             {
                 ViewState["EntityTypeId"] = value;
@@ -233,7 +240,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string EntityTypeQualifierColumn
         {
-            get { return ViewState["EntityTypeQualifierColumn"] as string; }
+            get
+            {
+                return ViewState["EntityTypeQualifierColumn"] as string;
+            }
+
             set
             {
                 ViewState["EntityTypeQualifierColumn"] = value;
@@ -249,7 +260,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string EntityTypeQualifierValue
         {
-            get { return ViewState["EntityTypeQualifierValue"] as string; }
+            get
+            {
+                return ViewState["EntityTypeQualifierValue"] as string;
+            }
+
             set
             {
                 ViewState["EntityTypeQualifierValue"] = value;
@@ -262,32 +277,19 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetExtraRestParams()
         {
-            string parms = "?getCategorizedItems=false";
-            parms += string.Format( "&entityTypeId={0}", EntityTypeId );
+            string parms = $"?getCategorizedItems=false&entityTypeId={EntityTypeId}";
 
-            if ( !string.IsNullOrEmpty( EntityTypeQualifierColumn ) )
-            {
-                parms += string.Format( "&entityQualifier={0}", EntityTypeQualifierColumn );
-
-                if ( !string.IsNullOrEmpty( EntityTypeQualifierValue ) )
-                {
-                    parms += string.Format( "&entityQualifierValue={0}", EntityTypeQualifierValue );
-                }
-            }
-
-            if ( !string.IsNullOrEmpty( ExcludedCategoryIds ) )
-            {
-                parms += string.Format( "&excludedCategoryIds={0}", ExcludedCategoryIds);
-            }
+            parms += EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() ? $"&entityQualifier={EntityTypeQualifierColumn}" : string.Empty;
+            parms += EntityTypeQualifierValue.IsNotNullOrWhiteSpace() ? $"&entityQualifierValue={EntityTypeQualifierValue}" : string.Empty;
+            parms += ExcludedCategoryIds.IsNotNullOrWhiteSpace() ? $"&excludedCategoryIds={ExcludedCategoryIds}" : string.Empty;
 
             if ( RootCategoryId.HasValue )
             {
                 var rootCategory = CategoryCache.Get( RootCategoryId.Value );
-                if ( rootCategory.EntityTypeId == this.EntityTypeId )
-                {
-                    parms += string.Format( "&rootCategoryId={0}", rootCategory.Id );
-                }
+                parms += rootCategory.EntityTypeId == EntityTypeId ? $"&rootCategoryId={rootCategory.Id}" : string.Empty;
             }
+
+            parms += "&lazyLoad=false";
 
             ItemRestUrlExtraParams = parms;
         }

@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a numeric value
+    /// Field used to save and display an email address
     /// </summary>
     [Serializable]
     public class EmailFieldType : FieldType
@@ -166,22 +166,6 @@ namespace Rock.Field.Types
             control.ID = string.Format( "{0}_ctlCompareValue", id );
             control.AddCssClass( "js-filter-control" );
             return control;
-        }
-
-        /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                return string.Format( "'{0}'", value );
-            }
-
-            return string.Empty;
         }
 
         /// <summary>

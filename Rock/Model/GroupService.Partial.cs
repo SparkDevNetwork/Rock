@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -523,7 +525,8 @@ namespace Rock.Model
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
-        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead", true )]
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
             var group = new GroupService( this.Context as RockContext ).Get( groupId );
@@ -555,17 +558,24 @@ namespace Rock.Model
             }
 
             var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == group.Id );
-            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
+            var groupMemberRequirementList = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id ).Select( a => new
+            {
+                a.GroupMemberId,
+                a.RequirementWarningDateTime,
+                a.RequirementFailDateTime,
+                a.RequirementMetDateTime,
+                a.GroupRequirement
+            } ).ToList();
 
             if ( !includeInactive )
             {
                 qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
             }
 
-            var groupMembers = qryGroupMembers.ToList();
+            var groupMemberList = qryGroupMembers.Include(a => a.GroupMemberRequirements).ToList();
 
             // get a list of group member ids that don't meet all the requirements
-            List<int> qryGroupMemberIdsThatLackGroupRequirements = groupMembers
+            List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
                         .Where( r => 
@@ -580,34 +590,34 @@ namespace Rock.Model
                 .Select( a => a.Id )
                 .ToList();
 
-            IEnumerable<GroupMember> qryMembersWithIssues;
+            IEnumerable<GroupMember> membersWithIssuesList;
 
             if ( includeWarnings )
             {
-                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements
-                    .Where( 
-                        a => 
-                            a.RequirementWarningDateTime != null || 
+                List<int> groupMemberIdsWithRequirementWarningsList = groupMemberRequirementList
+                    .Where(
+                        a =>
+                            a.RequirementWarningDateTime != null ||
                             a.RequirementFailDateTime != null )
                     .Select( a => a.GroupMemberId )
-                    .Distinct();
+                    .Distinct().ToList();
 
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) || groupMemberIdsWithRequirementWarningsList.Contains( a.Id ) );
             }
             else
             {
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) );
             }
 
-            var qry = qryMembersWithIssues.Select( a => new
+            var groupMemberWithIssuesList = membersWithIssuesList.Select( a => new
             {
                 GroupMember = a,
-                GroupRequirementStatuses = qryGroupMemberRequirements.Where( x => x.GroupMemberId == a.Id )
-            } );
+                GroupRequirementStatuses = groupMemberRequirementList.Where( x => x.GroupMemberId == a.Id )
+            } ).ToList();
 
             var currentDateTime = RockDateTime.Now;
 
-            foreach (var groupMemberWithIssues in qry)
+            foreach (var groupMemberWithIssues in groupMemberWithIssuesList )
             {
                 Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus, DateTime>();
                 
@@ -773,7 +783,7 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
                         }
                     }
@@ -804,27 +814,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="street1">The street1.</param>
-        /// <param name="street2">The street2.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
-        /// <param name="country">The country.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete("Use AddNewGroupAddress instead.")]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, street1, street2, city, state, postalCode, country, moveExistingToPrevious );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -842,7 +832,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -862,7 +852,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -893,22 +883,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            int? locationId, bool moveExistingToPrevious = false )
-        {
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, locationId, moveExistingToPrevious );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -920,7 +895,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -935,7 +910,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -956,23 +931,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new family address.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="family">The family.</param>
-        /// <param name="locationTypeGuid">The location type unique identifier.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        [Obsolete( "Use AddNewGroupAddress instead." )]
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
-            Location location, bool moveExistingToPrevious = false )
-        {
-            var isMappedMailing = locationTypeGuid != SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS; // Mapped and Mailing = true unless location type is Previous
-            AddNewGroupAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious, "", isMappedMailing, isMappedMailing );
-        }
-
-        /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -984,7 +943,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -998,7 +957,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -1092,12 +1051,56 @@ namespace Rock.Model
             }
 
             string message;
-            if ( !CanDelete( item, out message ) )
+            if ( !CanDelete( item, out message, true ) )
             {
                 return false;
             }
 
+            // As discussed in https://github.com/SparkDevNetwork/Rock/issues/3640, we are going to delete
+            // the association from any registrations that have a reference to this group (as long as there
+            // no RegistrationRegistrant's tied to the group -- which was checked in the local CanDelete below).
+            var registrationService = new RegistrationService( this.Context as RockContext );
+            foreach ( var registration in registrationService.Queryable().Where( a => a.GroupId == item.Id ) )
+            {
+                registration.GroupId = null;
+            }
+
             return base.Delete( item );
+        }
+
+        /// <summary>
+        /// Determines whether the specified group can be deleted.
+        /// Performs some additional checks that are missing from the
+        /// auto-generated GroupService.CanDelete().
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="includeSecondLvl">If set to true, verifies that the item is not referenced by any second level relationships.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( Group item, out string errorMessage, bool includeSecondLvl )
+        {
+            errorMessage = string.Empty;
+
+            bool canDelete = CanDelete( item, out errorMessage );
+
+            if ( canDelete && includeSecondLvl )
+            {
+                if ( new Service<RegistrationRegistrant>( this.Context ).Queryable().Any( r => r.GroupMember.GroupId == item.Id ) )
+                {
+                    errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
+                    return false;
+                }
+
+                if ( new Service<EventItemOccurrence>( this.Context ).Queryable().Any( o => o.Linkages.Any( l => l.GroupId == item.Id ) ) )
+                {
+                    errorMessage += string.Format( "This {0} is assigned to a {1} linkage.", Group.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                    return false;
+                }
+            }
+
+            return canDelete;
         }
 
         /// <summary>
@@ -1171,9 +1174,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
-            bool allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            return AllowsDuplicateMembers();
+        }
+
+        /// <summary>
+        /// Returns true if duplicate group members are allowed in groups
+        /// Normally this is false, but there is a web.config option to allow it
+        /// </summary>
+        /// <returns></returns>
+        public static bool AllowsDuplicateMembers()
+        {
+            var allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
             return allowDuplicateGroupMembers;
         }
 

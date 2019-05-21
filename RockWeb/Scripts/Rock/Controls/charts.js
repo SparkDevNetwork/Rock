@@ -9,7 +9,7 @@
             /// handles putting chartData into a Line/Bar/Points chart
             ///
             plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesPartitionNameUrl, combineValues) {
-                
+
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
 
@@ -304,7 +304,7 @@
                         }
 
                         $toolTip.find('.tooltip-inner').html(tooltipText);
-                        
+
                         var tipTop = pos.pageY - $toolTip.height() - 10;
 
                         var windowWidth = $(window).width();

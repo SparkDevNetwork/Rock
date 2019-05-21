@@ -34,6 +34,38 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = value;
+
+            System.Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var communicationTemplateName = new CommunicationTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( communicationTemplateName != null )
+                    {
+                        formattedValue = communicationTemplateName;
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        #endregion
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -47,7 +79,12 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name );
+            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name ).Select( a => new
+            {
+                a.Guid,
+                a.Name
+            } );
+
             if ( templates.Any() )
             {
                 foreach ( var template in templates )

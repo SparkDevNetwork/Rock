@@ -15,10 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
+
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -42,21 +42,36 @@ namespace Rock.Model
         /// </returns>
         public static string GenerateRandomAlternateId( bool verifyUnique = true )
         {
+            return GenerateRandomAlternateId( verifyUnique, null );
+        }
+
+        /// <summary>
+        /// Generates a random alternate Id search value for use in a
+        /// <see cref="Rock.Model.PersonSearchKey" />.  It is comprised of random alpha
+        /// numeric characters in the form ccccccc-ccccccc (7 random characters, a dash,
+        /// and 7 more random characters). Example "f5f3df2-40b8946".
+        /// </summary>
+        /// <param name="verifyUnique">if set to <c>true</c> the key will be verified as unique across all existing "Alternate Id" search values.</param>
+        /// <param name="rockContext">The rock context.  You MUST pass in a RockContext if this is going to be called from inside a WrapTransaction save.</param>
+        /// <returns>
+        /// A random key string
+        /// </returns>
+        public static string GenerateRandomAlternateId( bool verifyUnique = true, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
             string key = string.Empty;
 
             if ( verifyUnique )
             {
                 lock ( _obj )
                 {
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                    var service = new PersonSearchKeyService( rockContext );
+                    do
                     {
-                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-                        var service = new PersonSearchKeyService( rockContext );
-                        do
-                        {
-                            key = GenerateRandomAlternateId();
-                        } while ( service.Queryable().AsNoTracking().Any( a => a.SearchTypeValueId == alternateValueId && a.SearchValue == key ) );
-                    }
+                        key = GenerateRandomAlternateId();
+                    } while ( service.Queryable().AsNoTracking().Any( a => a.SearchTypeValueId == alternateValueId && a.SearchValue == key ) );
                 }
             }
             else

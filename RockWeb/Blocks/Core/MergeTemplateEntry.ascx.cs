@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Core
                 {
                     nbMergeError.Text = "An error occurred while merging";
                 }
-                
+
                 nbMergeError.Details = ex.Message;
                 nbMergeError.Visible = true;
             }
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Core
                     IQueryable<IEntity> qryPersons;
                     if ( isGroupMemberEntityType )
                     {
-                        qryPersons = qryEntity.OfType<GroupMember>().Select( a => a.Person ).Distinct();
+                        qryPersons = qryEntity.OfType<GroupMember>().Select( a => a.Person );
                     }
                     else
                     {
@@ -281,9 +281,16 @@ namespace RockWeb.Blocks.Core
                     }
 
                     Guid familyGroupType = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                    var orderIds = qryPersons.Select( a => a.Id ).ToList();
+                    if ( isGroupMemberEntityType )
+                    {
+                        qryPersons = qryPersons.Distinct();
+                    }
+
                     var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person" ).AsNoTracking()
                         .Where( a => a.Group.GroupType.Guid == familyGroupType )
-                        .Where( a => qryPersons.Any( aa => aa.Id == a.PersonId ) );
+                        .Where( a => orderIds.Contains( a.PersonId ) );
+
 
                     var qryCombined = qryFamilyGroupMembers.Join(
                         qryPersons,
@@ -362,19 +369,26 @@ namespace RockWeb.Blocks.Core
 
                         mergeObjectsDictionary.AddOrIgnore( primaryGroupPerson.Id, mergeObject );
                     }
+
+                    mergeObjectsDictionary = mergeObjectsDictionary.OrderBy( a => orderIds.IndexOf( a.Key ) ).ToDictionary( x => x.Key, y => y.Value );
                 }
                 else if ( isGroupMemberEntityType )
                 {
+                    List<int> personIds = new List<int>();
+
                     foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
                     {
                         var person = groupMember.Person;
-
-                        // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
-                        rockContext.People.Attach( person );
+                        if ( !personIds.Contains( person.Id ) )
+                        {
+                            // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
+                            rockContext.People.Attach( person );
+                        }
 
                         person.AdditionalLavaFields = new Dictionary<string, object>();
                         person.AdditionalLavaFields.Add( "GroupMember", groupMember );
                         mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
+                        personIds.Add( person.Id );
                     }
                 }
                 else

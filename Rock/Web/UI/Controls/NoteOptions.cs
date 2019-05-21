@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -34,6 +35,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteOptions"/> class.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( " Use NoteOptions( NoteContainer noteContainer ) instead" )]
         public NoteOptions() : this( null )
         {

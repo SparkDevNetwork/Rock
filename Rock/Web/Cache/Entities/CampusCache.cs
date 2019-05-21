@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -174,6 +175,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; private set; }
+
+        /// <summary>
         /// Gets the current date time.
         /// </summary>
         /// <value>
@@ -222,6 +231,7 @@ namespace Rock.Web.Cache
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
+            Order = campus.Order;
 
             Location = new CampusLocation( campus.Location );
         }

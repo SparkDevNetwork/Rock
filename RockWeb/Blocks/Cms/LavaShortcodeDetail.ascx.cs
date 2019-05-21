@@ -91,14 +91,14 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
 
-            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text ) && hfOriginalTagName.Value != tbTagName.Text )
+            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
+
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCode ) )
             {
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
-
-            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
-
+            
             if ( lavaShortCode == 0 )
             {
                 lavaShortcode = new LavaShortcode();
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // register shortcode
-            if (lavaShortcode.TagType == TagType.Block )
+            if ( lavaShortcode.TagType == TagType.Block )
             {
                 Template.RegisterShortcode<DynamicShortcodeBlock>( lavaShortcode.TagName );
             }
@@ -136,6 +136,10 @@ namespace RockWeb.Blocks.Core
             {
                 Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
             }
+
+            // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
+            // usage of this shortcode is cached with a key we can't predict.
+            LavaTemplateCache.Clear();
 
             NavigateToParentPage();
         }

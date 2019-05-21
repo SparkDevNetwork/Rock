@@ -16,6 +16,7 @@
 //
 using System;
 using System.Text;
+
 using Rock.Model;
 
 namespace Rock.Data
@@ -776,6 +777,26 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Updates the PageId and/or Route for the given PageRouteGuid.
+        /// </summary>
+        /// <param name="pageRouteGuid">The page route unique identifier. Required</param>
+        /// <param name="pageGuid">The page unique identifier. Required.</param>
+        /// <param name="route">The route. Required.</param>
+        public void UpdatePageRoute( string pageRouteGuid, string pageGuid, string route )
+        {
+            string sql = $@"
+                DECLARE @pageId INT = (SELECT [Id] FROM [dbo].[Page] WHERE [Guid] = '{pageGuid}')
+                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}') AND @pageId IS NOT NULL)
+                BEGIN
+                    UPDATE [dbo].[PageRoute]
+                    SET [PageId] = @pageId, [Route] = '{route}'
+                    WHERE [Guid] = '{pageRouteGuid}'
+                END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
@@ -813,6 +834,23 @@ namespace Rock.Data
         public void DeletePageContext( string guid )
         {
             Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
+        }
+
+        /// <summary>
+        /// Values the tuple.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="layoutGuid">The layout unique identifier.</param>
+        public void UpdatePageLayout( string pageGuid, string layoutGuid )
+        {
+            string sql = $@"
+                DECLARE @layoutId INT = (SELECT [Id] FROM [dbo].[Layout] WHERE [Guid] = '{layoutGuid}' )
+                IF EXISTS(SELECT [Id] FROM [Page] WHERE [Guid] = '{pageGuid}' AND  [LayoutId] <> @layoutId )
+                BEGIN
+	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
+                END";
+
+            Migration.Sql( sql );
         }
 
         #endregion
@@ -857,6 +895,28 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void AddBlock( bool skipIfAlreadyExists, string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
         {
+            AddBlock( skipIfAlreadyExists, pageGuid.AsGuidOrNull(), layoutGuid.AsGuidOrNull(), null, blockTypeGuid.AsGuidOrNull(), name, zone, preHtml, postHtml, order, guid );
+        }
+
+        /// <summary>
+        /// Adds a new Block of the given block type to the given page (optional) or layout (optional) or site (optional),
+        /// setting its values with the given parameter values. If only the layout is given,
+        /// edit/configuration authorization will also be inserted into the Auth table
+        /// for the admin role (GroupId 2).
+        /// </summary>
+        /// <param name="skipIfAlreadyExists">if set to <c>true</c> [skip if already exists].</param>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="layoutGuid">The layout unique identifier.</param>
+        /// <param name="siteGuid">The site unique identifier.</param>
+        /// <param name="blockTypeGuid">The block type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="zone">The zone.</param>
+        /// <param name="preHtml">The pre HTML.</param>
+        /// <param name="postHtml">The post HTML.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddBlock( bool skipIfAlreadyExists, Guid? pageGuid, Guid? layoutGuid, Guid? siteGuid, Guid? blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
+        {
             var sb = new StringBuilder();
             sb.Append( @"
                 DECLARE @PageId int
@@ -864,20 +924,31 @@ namespace Rock.Data
 
                 DECLARE @LayoutId int
                 SET @LayoutId = null
+
+                DECLARE @SiteId int
+                SET @SiteId = null
 " );
 
-            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
+            if ( pageGuid.HasValue )
             {
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 ", pageGuid );
             }
 
-            if ( !string.IsNullOrWhiteSpace( layoutGuid ) )
+            if ( layoutGuid.HasValue )
             {
                 sb.AppendFormat( @"
                 SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{0}')
 ", layoutGuid );
+            }
+
+            // if this is Site Global block (no Page or Layout), set the SiteId
+            if ( !pageGuid.HasValue && !layoutGuid.HasValue && siteGuid.HasValue )
+            {
+                sb.AppendFormat( @"
+                SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
+", siteGuid );
             }
 
             sb.AppendFormat( @"
@@ -889,11 +960,11 @@ namespace Rock.Data
 
                 DECLARE @BlockId int
                 INSERT INTO [Block] (
-                    [IsSystem],[PageId],[LayoutId],[BlockTypeId],[Zone],
+                    [IsSystem],[PageId],[LayoutId],[SiteId],[BlockTypeId],[Zone],
                     [Order],[Name],[PreHtml],[PostHtml],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,@LayoutId,@BlockTypeId,'{1}',
+                    1,@PageId,@LayoutId,@SiteId,@BlockTypeId,'{1}',
                     {2},'{3}','{4}','{5}',0,
                     '{6}')
                 SET @BlockId = SCOPE_IDENTITY()
@@ -906,8 +977,8 @@ namespace Rock.Data
                     postHtml.Replace( "'", "''" ),
                     guid );
 
-            // If adding a layout block, give edit/configuration authorization to admin role
-            if ( string.IsNullOrWhiteSpace( pageGuid ) )
+            // If adding a layout or site block, give edit/configuration authorization to admin role
+            if ( !pageGuid.HasValue )
                 sb.Append( @"
                 INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
                     VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,2,NEWID())
@@ -977,7 +1048,7 @@ namespace Rock.Data
         #region Category Methods
 
         /// <summary>
-        /// Updates the category or adds if it doesn't already exist (based on Guid)
+        /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
@@ -1303,6 +1374,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
+        /// NOTE: If the Attribute already exists, it will be deleted and recreated. So consider using UpdateEntityAttribute instead
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -1361,7 +1433,7 @@ namespace Rock.Data
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -1573,7 +1645,7 @@ namespace Rock.Data
                     name,
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -1872,7 +1944,7 @@ namespace Rock.Data
 ",
                     attributeGuid, // {0}
                     key, // {1}
-                    value, // {2}
+                    value.Replace( "'", "''" ), // {2}
                     guid ) // {3}
             );
         }
@@ -2252,6 +2324,131 @@ BEGIN
             );
         }
 
+        /// <summary>
+        /// Adds the defined type attribute, or updates it if it already exists.
+        /// This method allows the attribute guid to be updated but not the key, which is used as a reference.
+        /// To update the key using the guid use the method UpdateDefinedTypeAttribute
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="isMultiValue">if set to <c>true</c> [is multi value].</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddDefinedTypeAttribute( string definedTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, bool isGridColumn, string defaultValue, bool isMultiValue, bool isRequired, string guid )
+        {
+            key = key.IsNullOrWhiteSpace() ? name.Replace( " ", string.Empty ) : key;
+            description = description.Replace( "'", "''" );
+            defaultValue = defaultValue.Replace( "'", "''" );
+
+            Migration.Sql( $@"
+
+                DECLARE @DefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{definedTypeGuid}')
+                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
+
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{key}' )
+                BEGIN
+
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
+                        '{key}','{name}','{description}',
+                        {order},{isGridColumn.Bit()},'{defaultValue}',{isMultiValue.Bit()},{isRequired.Bit()},
+                        '{guid}')
+
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [Attribute] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [Name] = '{name}',
+                        [Description] = '{description}',
+                        [Order] = {order},
+                        [IsGridColumn] = '{isGridColumn.Bit()}',
+                        [DefaultValue] = '{defaultValue}',
+                        [IsMultiValue] = {isMultiValue.Bit()},
+                        [IsRequired] = {isRequired.Bit()},
+                        [Guid] = '{guid}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{key}'  
+
+                END" );
+        }
+
+        /// <summary>
+        /// Updates the defined type attribute.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="isMultiValue">if set to <c>true</c> [is multi value].</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateDefinedTypeAttribute( string definedTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, bool isGridColumn, string defaultValue, bool isMultiValue, bool isRequired, string guid )
+        {
+            key = key.IsNullOrWhiteSpace() ? name.Replace( " ", string.Empty ) : key;
+            description = description.Replace( "'", "''" );
+            defaultValue = defaultValue.Replace( "'", "''" );
+
+            Migration.Sql( $@"
+
+                DECLARE @DefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{definedTypeGuid}')
+                DECLARE @FieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [guid] = '{guid}' )
+                BEGIN
+
+                    UPDATE [Attribute] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [Name] = '{name}',
+                        [Description] = '{description}',
+                        [Order] = {order},
+                        [IsGridColumn] = '{isGridColumn.Bit()}',
+                        [DefaultValue] = '{defaultValue}',
+                        [IsMultiValue] = {isMultiValue.Bit()},
+                        [IsRequired] = {isRequired.Bit()},
+                        [Key] = '{key}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [guid] = '{guid}'  
+
+                END" );
+        }
+
         #endregion
 
         #region DefinedValue Methods
@@ -2385,6 +2582,69 @@ BEGIN
                     foreignId.HasValue ? foreignId.ToString() : "null",
                     foreignKey
                     ) );
+        }
+
+        /// <summary>
+        /// Updates (or Adds) the defined value for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="foreignId">The foreign identifier.</param>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem, int? foreignId, string foreignKey, int order )
+        {
+            Migration.Sql( string.Format( @"
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET
+                        [IsSystem] = {4}
+                        ,[DefinedTypeId] = @DefinedTypeId
+                        ,[Value] = '{1}'
+                        ,[Description] = '{2}'
+                        ,[ForeignId] = {5}
+                        ,[ForeignKey] = '{6}'
+                        ,[Order] = {7}
+                    WHERE
+                        [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Order]
+                        ,[Value]
+                        ,[Description]
+                        ,[Guid]
+                        ,[ForeignId]
+                        ,[ForeignKey])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,{7}
+                        ,'{1}'
+                        ,'{2}'
+                        ,'{3}'
+                        ,{5}
+                        ,'{6}')
+                END",
+                definedTypeGuid, //0
+                value.Replace( "'", "''" ), //1
+                description.Replace( "'", "''" ), //2
+                guid, //3
+                ( isSystem ? "1" : "0" ), //4
+                foreignId.HasValue ? foreignId.ToString() : "null", //5
+                foreignKey, //6
+                order //7
+                ) );
         }
 
         /// <summary>
@@ -4252,7 +4512,20 @@ END
         }
 
         /// <summary>
-        /// Updates the person attribute category.
+        /// Adds or Updates the registration attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateRegistrationAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            UpdateEntityAttributeCategory( "Rock.Model.Registration", name, iconCssClass, description, guid, order );
+        }
+
+        /// <summary>
+        /// Adds or Updates the person attribute category.
         /// </summary>
         /// <param name="entityTypeName">The fully qualified entity name as found in the EntityType table.</param>
         /// <param name="name">The name.</param>
@@ -5425,6 +5698,62 @@ END
 
         #endregion
 
+        #region General SQL Methods
+
+        /// <summary>
+        /// Normalizes line endings of the given column so your WHERE clause
+        /// or REPLACE function works as you expect it to.
+        /// 
+        /// Call this on the search _condition column of your WHERE clause
+        /// or on the string_expression in your REPLACE call when you are using
+        /// multi line strings!
+        /// 
+        /// <para>
+        /// NOTE: It does this by first changing CRLF (13 10) to GS (29;group separator),
+        /// then changing LF to CRLF, then changing GS back to CRLF.
+        /// </para>
+        /// 
+        /// <para>
+        /// Example 1:
+        ///     "WHERE " + NormalizeColumnCRLF( "GroupViewLavaTemplate" ) + " LIKE '%...%'"
+        ///
+        /// </para>
+        /// <para>
+        /// Example 2:
+        ///    "REPLACE( " + NormalizeColumnCRLF( "GroupViewLavaTemplate" ) + ", string_pattern, string_replacement )"
+        ///
+        /// </para>
+        /// <para>
+        /// Example 3:
+        ///     var targetColumn = NormalizeColumnCRLF( "GroupViewLavaTemplate" );
+        ///     Sql( $@"
+        ///     UPDATE[GroupType] 
+        ///     SET[GroupViewLavaTemplate] = REPLACE( {targetColumn}, '{lavaTemplate}', '{newLavaTemplate}' )
+        ///     WHERE {targetColumn} NOT LIKE '%{newLavaTemplate}%'"
+        ///     );
+        ///
+        /// </para>
+        /// </summary>
+        /// <param name="column">The un-bracketed column name you want to normalize</param>
+        /// <exception cref="ArgumentNullException">Will be thrown if the given column is null.</exception>
+        public string NormalizeColumnCRLF( string column )
+        {
+            if ( column == null )
+            {
+                throw new ArgumentNullException( "You must provide an column to be normalized." );
+            }
+
+            column = column.Replace( '[', '\0' ).Replace( ']', '\0' );
+            return $@"
+	            REPLACE( 
+		            REPLACE( 
+			            REPLACE( [{column}], CHAR(13)+CHAR(10), CHAR(29) )
+		            , CHAR(10), CHAR(13)+CHAR(10) )
+	            , CHAR(29), CHAR(13)+CHAR(10) )";
+        }
+
+        #endregion
+
         #region Deprecated Methods
 
         /// <summary>
@@ -5731,7 +6060,7 @@ END
         #region Reports
 
         /// <summary>
-        /// Adds a report.
+        /// Adds a report if the provided GUID does not already exist. Does nothing if the report already exists.
         /// </summary>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="dataViewGuid">The data view unique identifier.</param>
@@ -5805,7 +6134,7 @@ END
         }
 
         /// <summary>
-        /// Adds a report field to a report
+        /// Adds a report field to a report if the provided GUID does not exists. Does nothing if the report field already exists.
         /// </summary>
         /// <param name="reportGuid">The report unique identifier.</param>
         /// <param name="reportFieldType">Type of the report field.</param>

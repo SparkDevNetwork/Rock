@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
-    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_5_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
+    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_6_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata_1_6_0.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
@@ -248,7 +248,7 @@ namespace RockWeb.Blocks.Examples
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
 
         /// <summary>
@@ -468,46 +468,47 @@ namespace RockWeb.Blocks.Examples
             var xdoc = XDocument.Load( sampleXmlFile );
 
             RockContext rockContext = new RockContext();
-            rockContext.Configuration.AutoDetectChangesEnabled = false;
-
-            _maritalStatusDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            _smallGroupTopicDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
-            _recordStatusReasonDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            _suffixDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
-
-            var elemFamilies = xdoc.Element( "data" ).Element( "families" );
-            var elemGroups = xdoc.Element( "data" ).Element( "groups" );
-            var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
-            var elemConnections = xdoc.Element( "data" ).Element( "connections" );
-            var elemFollowing = xdoc.Element( "data" ).Element( "following" );
-            var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
-            var elemRegistrationTemplates = xdoc.Element( "data" ).Element( "registrationTemplates" );
-            var elemRegistrationInstances = xdoc.Element( "data" ).Element( "registrationInstances" );
-
-            // load studyTopics into DefinedType
-            foreach ( var elemGroup in elemGroups.Elements( "group" ) )
+            try
             {
-                if ( elemGroup.Attribute( "studyTopic" ) != null )
-                {
-                    var topic = elemGroup.Attribute( "studyTopic" ).Value;
-                    DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+                rockContext.Configuration.AutoDetectChangesEnabled = false;
 
-                    // add it as new if we didn't find it.
-                    if ( smallGroupTopicDefinedValue == null )
+                _maritalStatusDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+                _smallGroupTopicDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+                _recordStatusReasonDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+                _suffixDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+
+                var elemFamilies = xdoc.Element( "data" ).Element( "families" );
+                var elemGroups = xdoc.Element( "data" ).Element( "groups" );
+                var elemLocations = xdoc.Element( "data" ).Element( "locations" );
+                var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
+                var elemConnections = xdoc.Element( "data" ).Element( "connections" );
+                var elemFollowing = xdoc.Element( "data" ).Element( "following" );
+                var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
+                var elemRegistrationTemplates = xdoc.Element( "data" ).Element( "registrationTemplates" );
+                var elemRegistrationInstances = xdoc.Element( "data" ).Element( "registrationInstances" );
+
+                // load studyTopics into DefinedType
+                foreach ( var elemGroup in elemGroups.Elements( "group" ) )
+                {
+                    if ( elemGroup.Attribute( "studyTopic" ) != null )
                     {
-                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
+                        var topic = elemGroup.Attribute( "studyTopic" ).Value;
+                        DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+
+                        // add it as new if we didn't find it.
+                        if ( smallGroupTopicDefinedValue == null )
+                        {
+                            smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
+                        }
                     }
                 }
-            }
 
-            TimeSpan ts;
-
-            //// First delete any sample data that might exist already 
-            // using RockContext in case there are multiple saves (like Attributes)
-            rockContext.WrapTransaction( () =>
-            {
-                _stopwatch.Start();
-                AppendFormat( "00:00.00 started <br/>" );
+                //// First delete any sample data that might exist already 
+                // using RockContext in case there are multiple saves (like Attributes)
+                rockContext.WrapTransaction( () =>
+                {
+                    _stopwatch.Start();
+                    AppendFormat( "00:00.00 started <br/>" );
 
                 // Delete this stuff that might have people attached to it
                 DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
@@ -519,102 +520,104 @@ namespace RockWeb.Blocks.Examples
 
                 //rockContext.ChangeTracker.DetectChanges();
                 //rockContext.SaveChanges( disablePrePostProcessing: true );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-            } );
+                LogElapsed( "data deleted" );
 
-            // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
-            var authenticationComponent = Rock.Security.AuthenticationContainer.GetComponent( EntityTypeCache.Get(_authenticationDatabaseEntityTypeId).Name );
+                } );
 
-            // Import the sample data
-            // using RockContext in case there are multiple saves (like Attributes)
-            rockContext.WrapTransaction( () =>
-            {
-                // Now we can add the families (and people) and then groups.
-                AddFamilies( elemFamilies, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
+                var authenticationComponent = Rock.Security.AuthenticationContainer.GetComponent( EntityTypeCache.Get( _authenticationDatabaseEntityTypeId ).Name );
 
-                AddRelationships( elemRelationships, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                AddGroups( elemGroups, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                AddConnections( elemConnections, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} people connection requests added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                AddFollowing( elemFollowing, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} people following added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                AddToSecurityGroups( elemSecurityGroups, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                // Add Registration Templates
-                AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} registration templates added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                // Add Registration Instances
-                AddRegistrationInstances( elemRegistrationInstances, rockContext );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} registration instances added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                rockContext.ChangeTracker.DetectChanges();
-                rockContext.SaveChanges( disablePrePostProcessing: true );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                // add logins, but only if we were supplied a password
-                if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                // Import the sample data
+                // using RockContext in case there are multiple saves (like Attributes)
+                rockContext.WrapTransaction( () =>
                 {
-                    AddPersonLogins( rockContext );
-                    ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    // Now we can add the families (and people) and then groups.... etc.
+                    AddFamilies( elemFamilies, rockContext );
+                    LogElapsed( "families added" );
+
+                    AddRelationships( elemRelationships, rockContext );
+                    LogElapsed( "relationships added" );
+
+                    AddLocations( elemLocations, rockContext );
+                    LogElapsed( "locations added" );
+
+                    AddGroups( elemGroups, rockContext );
+                    LogElapsed( "groups added" );
+
+                    AddConnections( elemConnections, rockContext );
+                    LogElapsed( "people connection requests added" );
+
+                    AddFollowing( elemFollowing, rockContext );
+                    LogElapsed( "people following added" );
+
+                    AddToSecurityGroups( elemSecurityGroups, rockContext );
+                    LogElapsed( "people added to security roles" );
+
+                    AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    LogElapsed( "registration templates added" );
+
+                    AddRegistrationInstances( elemRegistrationInstances, rockContext );
+                    LogElapsed( "registration instances added..." );
+
+                    rockContext.ChangeTracker.DetectChanges();
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                    LogElapsed( "...changes saved" );
+
+                    // add logins, but only if we were supplied a password
+                    if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                    {
+                        AddPersonLogins( rockContext );
+                        LogElapsed( "person logins added" );
+                    }
+
+                    // Add Person Notes
+                    AddPersonNotes( elemFamilies, rockContext );
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                    LogElapsed( "notes added" );
+
+                    // Add Person Previous LastNames
+                    AddPeoplesPreviousNames( elemFamilies, rockContext );
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                    LogElapsed( "previous names added" );
+
+                    // Add Person Metaphone/Sounds-like stuff
+                    AddMetaphone();
+                } );
+
+                // done.
+                LogElapsed( "done" );
+
+                if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+                {
+                    lStopwatchLog.Text = _sb.ToString();
                 }
 
-                // Add Person Notes
-                AddPersonNotes( elemFamilies, rockContext );
-                rockContext.SaveChanges( disablePrePostProcessing: true );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
+                foreach ( var role in RoleCache.AllRoles() )
+                {
+                    RoleCache.Remove( role.Id );
+                }
 
-                // Add Person Previous LastNames
-                AddPeoplesPreviousNames( elemFamilies, rockContext );
-                rockContext.SaveChanges( disablePrePostProcessing: true );
-                ts = _stopwatch.Elapsed;
-                AppendFormat( "{0:00}:{1:00}.{2:00} previous names added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                // Add Person Metaphone/Sounds-like stuff
-                AddMetaphone();
-
-            } );
-
-            // done.
-            ts = _stopwatch.Elapsed;
-            AppendFormat( "{0:00}:{1:00}.{2:00} done.<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
-            {
-                lStopwatchLog.Text = _sb.ToString();
+                Rock.Security.Authorization.Clear();
             }
-
-            // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
-            foreach ( var role in RoleCache.AllRoles() )
+            finally
             {
-                RoleCache.Remove(role.Id);
+                rockContext.Configuration.AutoDetectChangesEnabled = true;
             }
-
-            Rock.Security.Authorization.Clear();
         }
 
         /// <summary>
-        /// 
+        /// Send the elapsed time and message to the output log.
+        /// </summary>
+        /// <param name="message"></param>
+        private void LogElapsed( string message )
+        {
+            var ts = _stopwatch.Elapsed;
+            AppendFormat( "{0:00}:{1:00}.{2:00} {3}<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10, message );
+        }
+
+        /// <summary>
+        /// Append the formatted content to the client hub (log).
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
@@ -737,6 +740,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     Guid = element.Attribute( "guid" ).Value.Trim().AsGuid(),
                     Name = element.Attribute( "name" ).Value.Trim(),
+                    Description = element.Attribute( "description" ) != null ? element.Attribute( "description" ).Value.Trim() : string.Empty,
                     IsActive = true,
                     CategoryId = categoryId,
                     GroupTypeId = groupType.Id,
@@ -791,7 +795,7 @@ namespace RockWeb.Blocks.Examples
 
                 // Find any Form elements and add them to the template
                 int formOrder = 0;
-                var registrationAttributeQualifierColumn = "RegistrationTemplateId";
+                var registrantAttributeQualifierColumn = "RegistrationTemplateId";
                 int? registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 if ( element.Elements( "forms" ).Count() > 0 )
                 {
@@ -827,8 +831,10 @@ namespace RockWeb.Blocks.Examples
                                     case "group member attribute":
                                         formField.FieldSource = RegistrationFieldSource.GroupMemberAttribute;
                                         break;
+                                    case "registrant attribute":
                                     case "registration attribute":
-                                        formField.FieldSource = RegistrationFieldSource.RegistrationAttribute;
+                                        // note this was renamed from 'registration attribute' to 'registrant attribute', but the sample data might still call it 'registration attribute'
+                                        formField.FieldSource = RegistrationFieldSource.RegistrantAttribute;
 
                                         //var qualifierValue = RegistrationTemplate.Id.ToString();
                                         var attrState = new Rock.Model.Attribute();
@@ -841,10 +847,20 @@ namespace RockWeb.Blocks.Examples
                                         if ( fieldType != null )
                                         {
                                             attrState.FieldTypeId = fieldType.Id;
-                                            var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrationAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
+                                            var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrantAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
+                                            
                                             //rockContext.ChangeTracker.DetectChanges();
                                             rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                                            // update AttributeCache manully since saved changes with disablePrePostProcessing = true
+                                            attribute.FieldTypeId = fieldType.Id;
+                                            AttributeCache.Get( attribute );
+
                                             formField.Attribute = attribute;
+                                        }
+                                        else
+                                        {
+                                            throw new Exception( "Unable to find FieldType for attribute" );
                                         }
                                         break;
                                     default:
@@ -853,7 +869,7 @@ namespace RockWeb.Blocks.Examples
 
                                 formField.AttributeId = null;
                                 if ( !formField.AttributeId.HasValue &&
-                                    formField.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                    formField.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
                                     formField.Attribute != null )
                                 {
                                     var attr = AttributeCache.Get( formField.Attribute.Guid, rockContext );
@@ -876,6 +892,7 @@ namespace RockWeb.Blocks.Examples
                                 formField.PreText = formFieldElement.Attribute( "preText" ) != null ? formFieldElement.Attribute( "preText" ).Value : string.Empty;
                                 formField.PostText = formFieldElement.Attribute( "postText" ) != null ? formFieldElement.Attribute( "postText" ).Value : string.Empty;
                                 formField.IsGridField = formFieldElement.Attribute( "showOnGrid" ) != null ? formFieldElement.Attribute( "showOnGrid" ).Value.AsBoolean() : false;
+                                formField.ShowOnWaitlist = formFieldElement.Attribute( "showOnWaitList" ) != null ? formFieldElement.Attribute( "showOnWaitList" ).Value.AsBoolean() : false;
                                 formField.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
                                 formField.Order = ffOrder;
                                 formField.CreatedDateTime = RockDateTime.Now;
@@ -923,47 +940,44 @@ namespace RockWeb.Blocks.Examples
                         feeOrder++;
                         var fee = new RegistrationTemplateFee();
                         fee.Guid = Guid.NewGuid();
+                        fee.Name = feeElement.Attribute( "name" ).Value.Trim();
                         registrationTemplate.Fees.Add( fee );
-
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
                         {
                             case "multiple":
                                 fee.FeeType = RegistrationFeeType.Multiple;
-                                fee.CostValue = FormatMultipleFeeCosts( feeElement.Elements( "option" ) );
+                                fee.FeeItems = new List<RegistrationTemplateFeeItem>();
+                                foreach ( XElement option in feeElement.Elements( "option" ) )
+                                {
+                                    var feeItem = new RegistrationTemplateFeeItem();
+                                    feeItem.Name = option.Attribute( "name" ).Value;
+                                    feeItem.Cost = option.Attribute( "cost" ).Value.AsDecimal();
+                                    fee.FeeItems.Add( feeItem );
+                                }
+                                
                                 break;
                             case "single":
-                                fee.FeeType = RegistrationFeeType.Single;
-                                fee.CostValue = feeElement.Attribute( "cost" ).Value.Trim();
-                                break;
+                                {
+                                    fee.FeeType = RegistrationFeeType.Single;
+                                    fee.FeeItems = new List<RegistrationTemplateFeeItem>();
+                                    var feeItem = new RegistrationTemplateFeeItem();
+                                    feeItem.Name = fee.Name;
+                                    feeItem.Cost = feeElement.Attribute( "cost" ).Value.AsDecimal();
+                                    fee.FeeItems.Add( feeItem );
+                                    break;
+                                }
                             default:
                                 throw new NotSupportedException( string.Format( "unknown fee type: {0}", feeElement.Attribute( "type" ).Value ) );
                         }
 
-                        fee.Name = feeElement.Attribute( "name" ).Value.Trim();
+                        
                         fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
                         fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
                         fee.Order = feeOrder;
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Formats the fee cost options for the CostValue field.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        private string FormatMultipleFeeCosts( IEnumerable<XElement> options )
-        {
-            var values = new List<string>();
-
-            foreach ( XElement option in options )
-            {
-                //values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value.AsDecimal().FormatAsCurrency() ) );
-                values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value ) );
-            }
-            return values.AsDelimited( "|" );
         }
 
         /// <summary>
@@ -1525,6 +1539,99 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles adding locations from the given XML element snippet.
+        /// </summary>
+        /// <param name="elemLocations"></param>
+        /// <param name="rockContext"></param>
+        private void AddLocations( XElement elemLocations, RockContext rockContext )
+        {
+            if ( elemLocations == null )
+            {
+                return;
+            }
+
+            var allLocations = from n in elemLocations.Elements( "location" )
+                                select new
+                                {
+                                    Type = n.Attribute( "type" ).Value,
+                                    Name = n.Attribute( "name" ).Value,
+                                    Guid = n.Attribute( "guid" ).Value.AsGuid(),
+                                    ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
+                                };
+
+            foreach ( var l in allLocations )
+            {
+                AddLocation( l.ParentLocationGuid, l.Guid, l.Type, l.Name, rockContext );
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a location if the guid does not already exist.
+        /// </summary>
+        /// <param name="parentLocationGuid"></param>
+        /// <param name="locationGuid"></param>
+        /// <param name="type"></param>
+        /// <param name="name"></param>
+        /// <param name="rockContext"></param>
+        private void AddLocation( string parentLocationGuid, Guid locationGuid, string type, string name, RockContext rockContext )
+        {
+            var service = new LocationService( rockContext );
+
+            var existingLocation = service.GetNoTracking( locationGuid );
+
+            // Don't re-add an existing location
+            if ( existingLocation != null )
+            {
+                return;
+            }
+
+            Guid locationTypeGuid = new Guid();
+
+            switch ( type )
+            {
+                case "room":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid();
+                    break;
+
+                case "building":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_BUILDING.AsGuid();
+                    break;
+
+                case "campus":
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid();
+                    break;
+
+                default:
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid();
+                    break;
+            }
+
+            var locationTypeValueId = DefinedValueCache.Get( locationTypeGuid ).Id;
+
+            var location = new Location()
+            {
+                Name = name,
+                Guid = locationGuid,
+                LocationTypeValueId = locationTypeValueId,
+                IsActive = true,
+                CreatedDateTime = RockDateTime.Now,
+                ModifiedDateTime = RockDateTime.Now
+            };
+
+            // Set the location's parent location if given
+            if ( ! string.IsNullOrEmpty( parentLocationGuid ) )
+            {
+                // save changes in case the location was just added prior.
+                rockContext.SaveChanges();
+                // The given parent location guid must be valid.
+                location.ParentLocation = service.Get( parentLocationGuid.AsGuid() );
+            }
+
+            service.Add( location );
+        }
+
+        /// <summary>
         /// Handles adding groups from the given XML element snippet.
         /// </summary>
         /// <param name="elemGroups">The elem groups.</param>
@@ -1697,12 +1804,15 @@ namespace RockWeb.Blocks.Examples
                             Guid scheduleGuid = elemSchedule.Attribute( "guid" ).Value.Trim().AsGuid();
                             Schedule schedule = scheduleService.Get( scheduleGuid );
                             groupLocation.Schedules.Add( schedule );
+
+                            // TODO -- once Group Scheduling is in develop, add the GroupLocationScheduleConfig
+                            // data (minimumCapacity, desiredCapacity, maximumCapacity) if any was given.
+
                         }
                         catch
                         { }
                     }
-                    TimeSpan ts = _stopwatch.Elapsed;
-                    AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                    LogElapsed( "group location schedules added" );
                 }
              }
         }
@@ -2188,7 +2298,7 @@ namespace RockWeb.Blocks.Examples
                             AttributeService attributeService = new AttributeService( rockContext );
                             if ( registrationTemplate.Forms != null )
                             {
-                                foreach ( var id in registrationTemplate.Forms.SelectMany( f => f.Fields ).Where( ff => ff.FieldSource == RegistrationFieldSource.RegistrationAttribute ).Select( f => f.AttributeId ) )
+                                foreach ( var id in registrationTemplate.Forms.SelectMany( f => f.Fields ).Where( ff => ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ).Select( f => f.AttributeId ) )
                                 {
                                     if ( id != null )
                                     {
@@ -2485,7 +2595,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( scheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    _scheduleTimes.Add( scheduleId, schedule.GetCalendarEvent().DTStart.Value );
                 }
             }
 
@@ -2502,7 +2612,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( altScheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    _scheduleTimes.Add( altScheduleId, schedule.GetCalendarEvent().DTStart.Value );
                 }
             }
 
@@ -2867,7 +2977,6 @@ namespace RockWeb.Blocks.Examples
 
             return familyMembers;
         }
-
 
         /// <summary>
         /// Gets or adds a new DefinedValue to the given DefinedTypeCache and returns the Id of the value.

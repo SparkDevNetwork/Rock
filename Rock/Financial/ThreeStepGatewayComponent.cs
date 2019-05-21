@@ -16,18 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
-using Rock.Attribute;
-using Rock.Extension;
+
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
     /// <summary>
-    /// Base class for financial provider components
+    /// Base class for financial provider components. 
     /// </summary>
-    public abstract class ThreeStepGatewayComponent : GatewayComponent 
+    [RockObsolete( "1.9" )]
+    [Obsolete( "Use IThreeStepGatewayComponent instead.", false )]
+    public abstract class ThreeStepGatewayComponent : GatewayComponent, IThreeStepGatewayComponent
     {
         /// <summary>
         /// Gets the step2 form URL.
@@ -80,6 +79,5 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage );
-
     }
 }

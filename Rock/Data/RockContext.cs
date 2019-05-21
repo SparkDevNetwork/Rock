@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
+
 using Rock.Model;
 
 namespace Rock.Data
@@ -28,6 +29,7 @@ namespace Rock.Data
     /// <summary>
     /// Helper class to set view cache
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "Does nothing. No longer needed," )]
     public static class RockInteractiveViews
     {
@@ -35,6 +37,7 @@ namespace Rock.Data
         /// Sets the view factory.
         /// </summary>
         /// <param name="path">The path.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete("Does nothing. No longer needed,")]
         public static void SetViewFactory( string path )
         {
@@ -201,6 +204,30 @@ namespace Rock.Data
         /// The analytics source person historicals.
         /// </value>
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the asset storage providers.
+        /// </summary>
+        /// <value>
+        /// The asset storage providers.
+        /// </value>
+        public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assessments.
+        /// </summary>
+        /// <value>
+        /// The assessments
+        /// </value>
+        public DbSet<Assessment> Assessments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AssessmentTypes.
+        /// </summary>
+        /// <value>
+        /// The AssessmentTypes
+        /// </value>
+        public DbSet<AssessmentType> AssessmentTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the attendances.
@@ -417,6 +444,14 @@ namespace Rock.Data
         /// The communication recipients.
         /// </value>
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication responses.
+        /// </summary>
+        /// <value>
+        /// The communication responses.
+        /// </value>
+        public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
 
         /// <summary>
         /// Gets or sets the communication template attachment.
@@ -915,12 +950,28 @@ namespace Rock.Data
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location schedule configs.
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        public DbSet<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member assignments.
+        /// </summary>
+        /// <value>
+        /// The group member assignments.
+        /// </value>
+        public DbSet<GroupMemberAssignment> GroupMemberAssignments { get; set; }
 
         /// <summary>
         /// Gets or sets the group member historicals.
@@ -937,6 +988,14 @@ namespace Rock.Data
         /// The group member requirements.
         /// </value>
         public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member schedule templates.
+        /// </summary>
+        /// <value>
+        /// The group member schedule templates.
+        /// </value>
+        public DbSet<GroupMemberScheduleTemplate> GroupMemberScheduleTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the group member workflow triggers.
@@ -1017,6 +1076,14 @@ namespace Rock.Data
         /// the Html Contents.
         /// </value>
         public DbSet<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS actions.
+        /// </summary>
+        /// <value>
+        /// The SMS actions.
+        /// </value>
+        public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
         /// Gets or sets the Interactions.
@@ -1113,22 +1180,6 @@ namespace Rock.Data
         /// The meta nick name lookups.
         /// </value>
         public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage clusters.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage clusters.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageCluster> MetaPersonicxLifestageClusters { get; set; }
-
-        /// <summary>
-        /// Gets or sets the meta personicx lifestage groups.
-        /// </summary>
-        /// <value>
-        /// The meta personicx lifestage groups.
-        /// </value>
-        public DbSet<Rock.Model.MetaPersonicxLifestageGroup> MetaPersonicxLifestageGroups { get; set; }
 
         /// <summary>
         /// Gets or sets the metaphones.
@@ -1307,6 +1358,14 @@ namespace Rock.Data
         public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
 
         /// <summary>
+        /// Gets or sets the person schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The person schedule exclusions.
+        /// </value>
+        public DbSet<PersonScheduleExclusion> PersonScheduleExclusions { get; set; }
+
+        /// <summary>
         /// Gets or sets the Person Signals.
         /// </summary>
         /// <value>
@@ -1419,6 +1478,14 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template fee items.
+        /// </summary>
+        /// <value>
+        /// The registration template fee items.
+        /// </value>
+        public DbSet<RegistrationTemplateFeeItem> RegistrationTemplateFeeItems { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration template forms.
         /// </summary>
         /// <value>
@@ -1481,6 +1548,14 @@ namespace Rock.Data
         /// The schedules.
         /// </value>
         public DbSet<Schedule> Schedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service job histories.
+        /// </summary>
+        /// <value>
+        /// The service job histories.
+        /// </value>
+        public DbSet<ServiceJobHistory> ServiceJobHistories { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.

@@ -44,6 +44,9 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -65,13 +68,13 @@ namespace Rock.Client
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsArchived { get; set; }
 
         /// <summary />
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary />
         public bool IsSecurityRole { get; set; }
@@ -83,6 +86,11 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.7"
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -97,7 +105,13 @@ namespace Rock.Client
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
+        public int? ScheduleCancellationPersonAliasId { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool SchedulingMustMeetRequirements { get; set; }
 
         /// <summary />
         public int? StatusValueId { get; set; }
@@ -138,6 +152,7 @@ namespace Rock.Client
             this.AllowGuests = source.AllowGuests;
             this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             this.ArchivedDateTime = source.ArchivedDateTime;
+            this.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             this.CampusId = source.CampusId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
@@ -155,7 +170,9 @@ namespace Rock.Client
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             this.ScheduleId = source.ScheduleId;
+            this.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -177,6 +194,12 @@ namespace Rock.Client
 
         /// <summary />
         public Campus Campus { get; set; }
+
+        /// <summary />
+        public PersonAlias GroupAdministratorPersonAlias { get; set; }
+
+        /// <summary />
+        public int? GroupAdministratorPersonAliasId { get; set; }
 
         /// <summary />
         public ICollection<GroupLocation> GroupLocations { get; set; }

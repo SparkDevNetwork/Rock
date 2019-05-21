@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +29,27 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class ConnectionRequestPicker : ItemPicker
     {
+        /// <summary>
+        /// Gets or sets the initial item parent ids.
+        /// This override is required to add quotes so that Javascript reads it as an array of strings. ('Rock.controls.itemPicker.initialize' parameter 'expandedIds'). This is used in rockTree.js
+        /// _hfInitialItemParentIds value get split by comma, so it should not have quotes. This is only temporary.
+        /// The javascript in itemPicker.js should be updated to handle this without the workaround.
+        /// </summary>
+        /// <value>
+        /// The initial item parent ids.
+        /// </value>
+        public override string InitialItemParentIds
+        {
+            get
+            {
+                return base.InitialItemParentIds.Split( ',' ).ToList().Select( i => i.Quoted() ).ToList().AsDelimited( "," );
+            }
+            set
+            {
+                base.InitialItemParentIds = value;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -53,7 +74,7 @@ namespace Rock.Web.UI.Controls
             {
                 ItemId = connectionRequest.Id.ToString();
                 ItemName = connectionRequest.PersonAlias.Person.FullName;
-                InitialItemParentIds = string.Format( "T{0},O{1}",
+                InitialItemParentIds = string.Format( "'T{0}','O{1}'",
                     connectionRequest.ConnectionOpportunity.ConnectionTypeId,
                     connectionRequest.ConnectionOpportunity.Id );
             }
@@ -87,7 +108,7 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( connectionRequest.Id.ToString() );
                         names.Add( connectionRequest.PersonAlias.Person.FullName );
-                        parentConnectionRequestIds += string.Format( "T{0},O{1},",
+                        parentConnectionRequestIds += string.Format( "'T{0}','O{1}',",
                             connectionRequest.ConnectionOpportunity.ConnectionTypeId,
                             connectionRequest.ConnectionOpportunity.Id );
                     }

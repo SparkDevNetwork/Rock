@@ -48,10 +48,13 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var benevolenceRequest = new BenevolenceRequestService( new RockContext() ).Get( guid.Value );
-                if ( benevolenceRequest != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = $"{benevolenceRequest.FirstName} {benevolenceRequest.LastName} on {benevolenceRequest.RequestDateTime.ToShortDateString()}";
+                    var benevolenceRequest = new BenevolenceRequestService( rockContext ).GetNoTracking( guid.Value );
+                    if ( benevolenceRequest != null )
+                    {
+                        formattedValue = $"{benevolenceRequest.FirstName} {benevolenceRequest.LastName} on {benevolenceRequest.RequestDateTime.ToShortDateString()}";
+                    }
                 }
             }
 
@@ -87,7 +90,7 @@ namespace Rock.Field.Types
             RockTextBox picker = control as RockTextBox;
             if ( picker != null )
             {
-                return picker.Text;
+                return picker.Text ?? string.Empty;
             }
 
             return null;

@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -25,7 +22,7 @@ namespace Rock.Attribute
     /// Field Attribute to select 0 or more Campuses stored as a comma-delimited list of Campus.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class CampusesFieldAttribute : FieldAttribute
+    public class CampusesFieldAttribute : SelectFieldAttribute
     {
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
 
@@ -42,8 +39,7 @@ namespace Rock.Attribute
         public CampusesFieldAttribute( string name = "Campuses", string description = "", bool required = true, string defaultCampusGuids = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultCampusGuids, category, order, key, typeof( Rock.Field.Types.CampusesFieldType ).FullName )
         {
-            var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( "False" ) );
         }
 
         /// <summary>
@@ -60,8 +56,7 @@ namespace Rock.Attribute
         public CampusesFieldAttribute( string name = "Campuses", string description = "", bool required = true, string defaultCampusGuids = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultCampusGuids, category, order, key, typeof( Rock.Field.Types.CampusesFieldType ).FullName )
         {
-            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( includeInactive.ToString() ) );
         }
     }
 }

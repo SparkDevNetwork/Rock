@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
@@ -253,7 +254,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the number of columns to display in the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
-        /// If RepeatDirection is Horizontal, this will default to 4 columns
+        /// If RepeatDirection is Horizontal, this will default to 4 columns. There is no upper limit in the code so use
+        /// wisely.
         /// </summary>
         public override int RepeatColumns
         {
@@ -277,7 +279,7 @@ namespace Rock.Web.UI.Controls
         }
 
         private int? _repeatColumns;
-        
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -319,7 +321,7 @@ namespace Rock.Web.UI.Controls
             // add custom validator
             CustomValidator.ID = this.ID + "_cfv";
             CustomValidator.ClientValidationFunction = "Rock.controls.rockCheckBoxList.clientValidate";
-            CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is Required." : string.Empty;
+            CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is required." : string.Empty;
             CustomValidator.CssClass = "validation-error help-inline";
             CustomValidator.Enabled = this.Required;
             CustomValidator.Display = ValidatorDisplay.Dynamic;
@@ -346,7 +348,7 @@ namespace Rock.Web.UI.Controls
             {
                 bool hasChanged = false;
 
-                // Hack to get the selected items on postback.  
+                // Hack to get the selected items on postback.
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
                     bool newCheckState = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
@@ -390,16 +392,18 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns > 0 )
-            {
-                cssClassBuilder.Append( " in-columns" );
-            }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -411,6 +415,18 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -421,11 +437,11 @@ namespace Rock.Web.UI.Controls
    function StrikeOffCheckbox( checkboxControl ){{
                 if ( checkboxControl.prop( 'checked' ) )
                 {{
-                    checkboxControl.parent('label').addClass( 'strikethrough' );
+                    checkboxControl.parent('label').addClass( 'line-through' );
                 }}
                 else
                 {{
-                    checkboxControl.parent('label').removeClass( 'strikethrough' );
+                    checkboxControl.parent('label').removeClass( 'line-through' );
                 }}
 
             }}

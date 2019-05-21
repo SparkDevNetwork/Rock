@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Event
 
                 var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
-                ShowOccurranceAttributes( eventItemOccurrence );
+                ShowOccurranceAttributes( eventItemOccurrence, false );
             }
         }
 
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence.Location = tbLocation.Text;
 
                 string iCalendarContent = sbSchedule.iCalendarContent;
-                var calEvent = ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
+                var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
                 if ( calEvent != null && calEvent.DTStart != null )
                 {
                     if ( eventItemOccurrence.Schedule == null )
@@ -812,10 +812,9 @@ namespace RockWeb.Blocks.Event
             Helper.AddDisplayControls( eventItemOccurrence, phAttributes, null, false, false );
         }
 
-        private void ShowEditDetailsForNewOccurrence( EventItemOccurrence eventItemOccurrence )
+        private EventItemOccurrence ShowEditDetailsForNewOccurrence( EventItemOccurrence eventItemOccurrence )
         {
             lActionTitle.Text = ActionTitle.Add( "Event Occurrence" ).FormatAsHtmlTitle();
-
             var copyFromOccurrenceId = PageParameter( "CopyFromId" ).AsInteger();
             if ( copyFromOccurrenceId > 0 )
             {
@@ -862,6 +861,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+            return eventItemOccurrence;
         }
 
         private void ShowEditDetails( EventItemOccurrence eventItemOccurrence )
@@ -875,12 +875,12 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItemOccurrence.Id == 0 )
             {
-                ShowEditDetailsForNewOccurrence( eventItemOccurrence );
+                eventItemOccurrence = ShowEditDetailsForNewOccurrence( eventItemOccurrence );
             }
             else
             {
                 lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
-               
+
                 var registration = eventItemOccurrence.Linkages.FirstOrDefault();
                 if ( registration != null )
                 {
@@ -915,24 +915,29 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            ShowOccurranceAttributes( eventItemOccurrence );
+            ShowOccurranceAttributes( eventItemOccurrence, true );
 
             htmlOccurrenceNote.Text = eventItemOccurrence.Note;
 
             DisplayRegistration();
         }
 
-        private void ShowOccurranceAttributes(EventItemOccurrence eventItemOccurrence )
+        private void ShowOccurranceAttributes(EventItemOccurrence eventItemOccurrence, bool setValues )
         {
             wpAttributes.Visible = false;
             phAttributeEdits.Controls.Clear();
+
+            if ( eventItemOccurrence.EventItemId == 0 )
+            {
+                eventItemOccurrence.EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull() ?? 0;
+            }
 
             eventItemOccurrence.LoadAttributes();
 
             if ( eventItemOccurrence.Attributes.Count > 0 )
             {
                 wpAttributes.Visible = true;
-                Helper.AddEditControls( eventItemOccurrence, phAttributeEdits, true, BlockValidationGroup );
+                Helper.AddEditControls( eventItemOccurrence, phAttributeEdits, setValues, BlockValidationGroup );
             }
         }
 
@@ -1062,7 +1067,7 @@ namespace RockWeb.Blocks.Event
                         LinkageState.RegistrationInstance.RegistrationTemplate.CopyPropertiesFrom( registrationTemplate );
                     }
                 }
-                
+
                 foreach ( var template in new RegistrationTemplateService( rockContext )
                     .Queryable().AsNoTracking().OrderBy(t => t.Name ))
                 {
@@ -1138,7 +1143,7 @@ namespace RockWeb.Blocks.Event
         private void ShowExistingLinkageDialog()
         {
             ddlExistingLinkageTemplate.Items.Clear();
-            
+
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var template in new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ) )

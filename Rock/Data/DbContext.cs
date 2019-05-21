@@ -19,18 +19,17 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
-using Z.EntityFramework.Plus;
 
 using Rock.Model;
 using Rock.Transactions;
 using Rock.UniversalSearch;
-using Rock.Workflow;
+using Rock.Web.Cache;
+using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
-using System.Linq.Expressions;
-using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -749,7 +748,11 @@ namespace Rock.Data
         private static bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" || propertyInfo.Name == "IsActive" ) )
+                ( ( propertyInfo.GetGetMethod() != null && !propertyInfo.GetGetMethod().IsVirtual ) ||
+                propertyInfo.Name == "Id" ||
+                propertyInfo.Name == "Guid" ||
+                propertyInfo.Name == "Order" ||
+                propertyInfo.Name == "IsActive" ) )
             {
                 return true;
             }

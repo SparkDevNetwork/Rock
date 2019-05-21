@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
 
             base.OnInit( e );
 
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
@@ -433,7 +433,8 @@ namespace RockWeb.Blocks.Crm
                         .Select( n => new PersonSearchResultPhone
                         {
                             NumberTypeValueId = n.NumberTypeValueId.Value,
-                            Number = n.NumberFormatted
+                            Number = n.NumberFormatted,
+                            PhoneTypeName = n.NumberTypeValue.Value
                         } )
                         .ToList(),
                     TopSignalColor = p.TopSignalColor,
@@ -829,6 +830,20 @@ namespace RockWeb.Blocks.Crm
         /// The number.
         /// </value>
         public string Number { get; set; }
+
+        /// <summary>
+        /// The phone type name (Mobile, Home, etc.)
+        /// </summary>
+        public string PhoneTypeName { get; set; }
+
+        /// <summary>
+        /// Provides a reasonable string representation of a phone number.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} ({1})", Number, PhoneTypeName );
+        }
     }
 
     #endregion

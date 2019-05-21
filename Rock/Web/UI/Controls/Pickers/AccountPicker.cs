@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -213,7 +214,7 @@ namespace Rock.Web.UI.Controls
                     if ( account != null )
                     {
                         ids.Add( account.Id.ToString() );
-                        names.Add( account.Name );
+                        names.Add( this.DisplayPublicName ? account.PublicName : account.Name );
                         var parentAccount = account.ParentAccount;
                         var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
                         foreach ( var accountParentId in accountParentIds )

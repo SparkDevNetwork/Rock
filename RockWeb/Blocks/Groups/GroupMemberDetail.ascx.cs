@@ -32,8 +32,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-using Newtonsoft.Json.Linq;
-
 namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group Member Detail" )]
@@ -85,17 +83,6 @@ namespace RockWeb.Blocks.Groups
                 SetBlockOptions();
                 ShowDetail( PageParameter( "GroupMemberId" ).AsInteger(), PageParameter( "GroupId" ).AsIntegerOrNull() );
             }
-            else
-            {
-                var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
-                if ( groupMember != null )
-                {
-                    groupMember.LoadAttributes();
-                    phAttributes.Controls.Clear();
-                    var excludeForEdit = groupMember.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup, excludeForEdit );
-                }
-            }
         }
 
         /// <summary>
@@ -129,13 +116,13 @@ namespace RockWeb.Blocks.Groups
                     if ( parentPageReference != null )
                     {
                         var groupIdParam = parentPageReference.QueryString["GroupId"].AsIntegerOrNull();
-                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId)
+                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                         {
                             // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
                             breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
                         }
                     }
-                    
+
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
                 }
                 else
@@ -218,7 +205,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveThenAdd_Click( object sender, EventArgs e )
         {
-            if ( SaveGroupMember( true) )
+            if ( SaveGroupMember( true ) )
             {
                 if ( cvGroupMember.IsValid )
                 {
@@ -269,7 +256,7 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember;
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
-                               
+
 
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
@@ -296,7 +283,7 @@ namespace RockWeb.Blocks.Groups
                 if ( checkForArchivedGroupMember )
                 {
                     // check if this is a duplicate member before checking for archived so that validation logic works a little smoother
-                    if ( !groupService.AllowsDuplicateMembers( group ) )
+                    if ( !GroupService.AllowsDuplicateMembers() )
                     {
                         GroupMember duplicateGroupMember;
                         if ( groupService.ExistsAsMember( group, personId.Value, role.Id, out duplicateGroupMember ) )
@@ -307,7 +294,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( checkForArchivedGroupMember)
+                if ( checkForArchivedGroupMember )
                 {
                     GroupMember archivedGroupMember;
                     if ( groupService.ExistsAsArchived( group, personId.Value, role.Id, out archivedGroupMember ) )
@@ -370,6 +357,13 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                if ( pnlScheduling.Visible )
+                {
+                    groupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull();
+                    groupMember.ScheduleStartDate = dpScheduleStartDate.SelectedDate;
+                    groupMember.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.Text.AsIntegerOrNull();
+                }
+
                 if ( group.RequiredSignatureDocumentTemplate != null )
                 {
                     var person = new PersonService( rockContext ).Get( personId.Value );
@@ -428,8 +422,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 groupMember.LoadAttributes();
-
-                Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+                avcAttributes.GetEditValues( groupMember );
 
                 if ( !Page.IsValid )
                 {
@@ -617,9 +610,10 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             var group = groupMember.Group;
-            if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+            var groupType = GroupTypeCache.Get( groupMember.Group.GroupTypeId );
+            if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
             {
-                lGroupIconHtml.Text = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
+                lGroupIconHtml.Text = string.Format( "<i class='{0}' ></i>", groupType.IconCssClass );
             }
             else
             {
@@ -628,7 +622,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMember.Id.Equals( 0 ) )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( groupMember.Group.GroupType.GroupTerm + " " + groupMember.Group.GroupType.GroupMemberTerm ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( groupType.GroupTerm + " " + groupType.GroupMemberTerm ).FormatAsHtmlTitle();
                 btnSaveThenAdd.Visible = true;
             }
             else
@@ -666,13 +660,23 @@ namespace RockWeb.Blocks.Groups
 
             btnSave.Visible = !readOnly;
 
-            if ( readOnly || groupMember.Id == 0) 
+            if ( readOnly || groupMember.Id == 0 )
             {
                 // hide the ShowMoveDialog if this is readOnly or if this is a new group member (can't move a group member that doesn't exist yet)
                 btnShowMoveDialog.Visible = false;
             }
-            
-            LoadDropDowns();
+
+            var currentSyncdRoles = new GroupSyncService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( s => s.GroupId == groupMember.GroupId )
+                    .Select( s => s.GroupTypeRoleId )
+                    .ToList();
+
+            LoadDropDowns( currentSyncdRoles, groupMember.GroupRoleId );
+
+            ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            ddlGroupRole.Enabled = ddlGroupRole.Enabled == true ? !readOnly : false;
 
             ShowRequiredDocumentStatus( rockContext, groupMember, group );
 
@@ -685,13 +689,10 @@ namespace RockWeb.Blocks.Groups
                 ppGroupMemberPerson.Enabled = false;
             }
 
-            ddlGroupRole.SetValue( groupMember.GroupRoleId );
-            ddlGroupRole.Enabled = !readOnly;
-
             tbNote.Text = groupMember.Note;
             tbNote.ReadOnly = readOnly;
 
-            rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+            rblStatus.SetValue( ( int ) groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
@@ -752,29 +753,32 @@ namespace RockWeb.Blocks.Groups
                 fuSignedDocument.Visible = false;
             }
 
+            pnlScheduling.Visible = groupType.IsSchedulingEnabled;
+            ddlGroupMemberScheduleTemplate.SetValue( groupMember.ScheduleTemplateId );
+            ddlGroupMemberScheduleTemplate_SelectedIndexChanged( null, null );
+
+            dpScheduleStartDate.SelectedDate = groupMember.ScheduleStartDate;
+            nbScheduleReminderEmailOffsetDays.Text = groupMember.ScheduleReminderEmailOffsetDays.ToString();
+
             groupMember.LoadAttributes();
-
-            phAttributes.Controls.Clear();
-            phAttributes.Visible = false;
-
-            phAttributesReadOnly.Controls.Clear();
-            phAttributesReadOnly.Visible = false;
+            avcAttributes.Visible = false;
+            avcAttributesReadOnly.Visible = false;
 
             var editableAttributes = !readOnly ? groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList() : new List<string>();
             var viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
 
             if ( editableAttributes.Any() )
             {
-                var excludeKeys = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, string.Empty, excludeKeys );
-                phAttributes.Visible = true;
+                avcAttributes.Visible = true;
+                avcAttributes.AddEditControls( groupMember );
+                avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
             }
 
             if ( viewableAttributes.Any() )
             {
+                avcAttributesReadOnly.Visible = true;
                 var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
-                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly, excludeKeys, false, false );
-                phAttributesReadOnly.Visible = true;
+                avcAttributesReadOnly.AddDisplayControls( groupMember );
             }
 
             var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
@@ -797,18 +801,18 @@ namespace RockWeb.Blocks.Groups
                 if ( !documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
                 {
                     var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent ) ?
-                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate ) : (DateTime?)null;
+                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate ) : ( DateTime? ) null;
                     pnlRequiredSignatureDocument.Visible = true;
 
                     if ( lastSent.HasValue )
                     {
                         lbResendDocumentRequest.Text = "Resend Signature Request";
-                        lRequiredSignatureDocumentMessage.Text =string.Format("A signed {0} document has not yet been received for {1}. The last request was sent {2}.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName, lastSent.Value.ToElapsedString() );
+                        lRequiredSignatureDocumentMessage.Text = string.Format( "A signed {0} document has not yet been received for {1}. The last request was sent {2}.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName, lastSent.Value.ToElapsedString() );
                     }
                     else
                     {
                         lbResendDocumentRequest.Text = "Send Signature Request";
-                        lRequiredSignatureDocumentMessage.Text = string.Format("The required {0} document has not yet been sent to {1} for signing.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName );
+                        lRequiredSignatureDocumentMessage.Text = string.Format( "The required {0} document has not yet been sent to {1} for signing.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName );
                     }
                 }
                 else
@@ -943,7 +947,7 @@ namespace RockWeb.Blocks.Groups
                         ",
                         labelText,
                         labelType,
-                        labelTooltip);
+                        labelTooltip );
                 }
             }
 
@@ -973,29 +977,57 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="syncdRoles">The syncd roles.</param>
+        private void LoadDropDowns( List<int> syncdRoles, int groupMemberRole )
         {
             int groupId = hfGroupId.ValueAsInt();
             RockContext rockContext = new RockContext();
-            Group group = new GroupService( rockContext ).Get( groupId );
-            if ( group != null )
+            int groupTypeId = new GroupService( rockContext ).GetSelect( groupId, a => a.GroupTypeId );
+
+            IQueryable<GroupTypeRole> groupTypeRoles = new GroupTypeRoleService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( r => r.GroupTypeId == groupTypeId );
+
+            if ( syncdRoles.Any() )
             {
-                var currentSyncdRoles = new GroupSyncService( rockContext )
-                    .Queryable()
-                    .Where( s => s.GroupId == groupId )
-                    .Select( s => s.GroupTypeRoleId )
-                    .ToList();
+                // At least one role is sync'd so we need to handle them.
+                if ( syncdRoles.Contains( groupMemberRole ) && hfGroupMemberId.ValueAsInt() != 0 )
+                {
+                    // This role is being sync'd so keep the full list of roles, disable the ddl, and show a tool tip explaining why it's disabled.
+                    ddlGroupRole.ToolTip = "Role selection disabled because this member was added to this role automatically by Group Sync.";
+                    ddlGroupRole.Enabled = false;
+                }
+                else
+                {
+                    // This role is not being sync'd but the group has sync'd roles. So remove the sync'd roles and display a tool tip explaining their absense.
+                    groupTypeRoles = groupTypeRoles.Where( r => !syncdRoles.Contains( r.Id ) );
 
-                ddlGroupRole.DataSource = new GroupTypeRoleService( rockContext )
-                    .Queryable()
-                    .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
-                    .OrderBy( a => a.Order )
-                    .ToList();
-
-                ddlGroupRole.DataBind();
+                    ddlGroupRole.ToolTip = "Roles used for Group Sync cannot be used for manual additions and so are not being displayed.";
+                }
             }
 
+            ddlGroupRole.DataSource = groupTypeRoles.OrderBy( a => a.Order ).ToList();
+            ddlGroupRole.DataBind();
+
             rblStatus.BindToEnum<GroupMemberStatus>();
+
+            ddlGroupMemberScheduleTemplate.Items.Clear();
+            ddlGroupMemberScheduleTemplate.Items.Add( new ListItem() );
+
+            var groupMemberScheduleTemplateList = new GroupMemberScheduleTemplateService( rockContext ).Queryable()
+                .Where( a => !a.GroupTypeId.HasValue || a.GroupTypeId == groupTypeId )
+                .OrderBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Name
+                } );
+
+            foreach ( var groupMemberScheduleTemplate in groupMemberScheduleTemplateList )
+            {
+                ddlGroupMemberScheduleTemplate.Items.Add( new ListItem( groupMemberScheduleTemplate.Name, groupMemberScheduleTemplate.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -1113,12 +1145,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var isArchive = false;
+
+            // If we can't delete, then we'll have to archive the group member.
+            // This is making this assumption since the only reason why CanDelete would return
+            // false is because the group member is tied to an group that has history tracking enabled.
             string canDeleteWarning;
             if ( !groupMemberService.CanDelete( groupMember, out canDeleteWarning ) )
             {
-                nbMoveGroupMemberWarning.Visible = true;
-                nbMoveGroupMemberWarning.Text = string.Format( "Unable to remove {0} from {1}: {2}", groupMember.Person, groupMember.Group, canDeleteWarning );
-                return;
+                isArchive = true;
             }
 
             destGroupMember = new GroupMember();
@@ -1159,11 +1194,19 @@ namespace RockWeb.Blocks.Groups
                     {
                         note.EntityId = destGroupMember.Id;
                     }
-                    
+
                     rockContext.SaveChanges();
                 }
 
-                groupMemberService.Delete( groupMember );
+                if ( isArchive )
+                {
+                    groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
+                }
+                else
+                {
+                    groupMemberService.Delete( groupMember );
+                }
+
                 rockContext.SaveChanges();
 
                 destGroupMember.CalculateRequirements( rockContext, true );
@@ -1216,8 +1259,14 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-
-
-        
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupMemberScheduleTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupMemberScheduleTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            dpScheduleStartDate.Required = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull().HasValue;
+        }
     }
 }

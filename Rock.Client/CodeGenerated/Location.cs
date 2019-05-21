@@ -80,7 +80,7 @@ namespace Rock.Client
         public int? ImageId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool? IsGeoPointLocked { get; set; }

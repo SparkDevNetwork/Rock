@@ -17,15 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Services;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using System.Text;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -47,7 +49,6 @@ namespace Rock.Data
         /// The created date time.
         /// </value>
         [DataMember]
-        [IncludeForReporting]
         [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public DateTime? CreatedDateTime { get; set; }
 
@@ -58,7 +59,6 @@ namespace Rock.Data
         /// The modified date time.
         /// </value>
         [DataMember]
-        [IncludeForReporting]
         [RockClientInclude( "This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database." )]
         public DateTime? ModifiedDateTime { get; set; }
 
@@ -69,6 +69,7 @@ namespace Rock.Data
         /// The created by person alias identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public int? CreatedByPersonAliasId { get; set; }
 
@@ -79,6 +80,7 @@ namespace Rock.Data
         /// The modified by person alias identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         [RockClientInclude( "If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it" )]
         public int? ModifiedByPersonAliasId { get; set; }
 
@@ -109,6 +111,7 @@ namespace Rock.Data
         /// The created by person identifier.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual int? CreatedByPersonId
         {
             get
@@ -128,6 +131,7 @@ namespace Rock.Data
         /// The name of the created by person.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual string CreatedByPersonName
         {
             get
@@ -147,6 +151,7 @@ namespace Rock.Data
         /// The modified by person identifier.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual int? ModifiedByPersonId
         {
             get
@@ -166,6 +171,7 @@ namespace Rock.Data
         /// The name of the modified by person.
         /// </value>
         [LavaInclude]
+        [HideFromReporting]
         public virtual string ModifiedByPersonName
         {
             get
@@ -210,7 +216,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="state"></param>
-        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, EntityState state )
         {
         }
 
@@ -219,24 +225,24 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
         }
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
             PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
-        /// Posts the save changes.
+        /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
@@ -364,7 +370,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == Authorization.VIEW;
+            // Model is the ultimate base Parent Authority of child classes of Models, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
+            // In the case of VIEW or TAG, we want to default to Allowed.
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>

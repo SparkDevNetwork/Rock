@@ -15,10 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -26,8 +22,10 @@ namespace Rock.Attribute
     /// Field Attribute for selecting items from a checkbox list. Value is saved as a comma-delimited list
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class CustomCheckboxListFieldAttribute : FieldAttribute
+    public class CustomCheckboxListFieldAttribute : SelectFieldAttribute
     {
+        private const string VALUES = "values";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute" /> class.
         /// </summary>
@@ -42,7 +40,7 @@ namespace Rock.Attribute
         public CustomCheckboxListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
         {
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
         }
     }
 }

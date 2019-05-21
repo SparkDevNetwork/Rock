@@ -275,6 +275,7 @@
     <Compile Include="Attribute\AssetStorageSystemFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
@@ -289,7 +290,10 @@
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationInstanceFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationTemplateFieldAttribute.cs" />
+    <Compile Include="Attribute\RegistrationTemplatesFieldAttribute.cs" />
     <Compile Include="Attribute\ReportFieldAttribute.cs" />
+    <Compile Include="Attribute\SelectFieldAttribute.cs" />
+    <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
@@ -385,21 +389,114 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionOutcome.cs" />
+    <Compile Include="Communication\SmsActions\SmsMessage.cs" />
+    <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
+    <Compile Include="Jobs\SendAssessmentReminders.cs" />
+    <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
+    <Compile Include="Field\Types\ValueFilterFieldType.cs" />
+    <Compile Include="Financial\HostedPaymentInfoControlOptions.cs" />
+    <Compile Include="Financial\IGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayPaymentControlTokenEvent.cs" />
+    <Compile Include="Jobs\PostV90DataMigrations.cs" />
+    <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
+    <Compile Include="Financial\IWebhookGatewayComponent.cs" />
+    <Compile Include="Jobs\ChargeFutureTransactions.cs" />
+    <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
+    <Compile Include="Financial\AutomatedPaymentArgs.cs" />
+    <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
+    <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
+    <Compile Include="Model\Assessment.cs" />
+    <Compile Include="Model\AssessmentService.Partial.cs" />
+    <Compile Include="Model\AssessmentType.cs" />
+    <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
+    <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
+    <Compile Include="Model\AttendanceData.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
+    <Compile Include="Model\CodeGenerated\SmsActionService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonScheduleExclusionService.cs" />
+    <Compile Include="Model\GroupLocationScheduleConfig.cs" />
+    <Compile Include="Model\GroupMemberAssignment.cs" />
+    <Compile Include="Model\GroupMemberAssignmentService.Partial.cs" />
+    <Compile Include="Model\GroupMemberScheduleTemplate.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
+    <Compile Include="Model\CommunicationResponse.cs" />
+    <Compile Include="Model\CommunicationResponseService.partial.cs" />
+    <Compile Include="Model\ConflictProfileService.cs" />
+    <Compile Include="Model\EQInventoryService.cs" />
+    <Compile Include="Model\SmsAction.cs" />
+    <Compile Include="Model\SmsActionService.Partial.cs" />
+    <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
+    <Compile Include="Model\MotivatorService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
-    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Model\PersonScheduleExclusionService.Partial.cs" />
+    <Compile Include="Model\PersonScheduleExclusion.cs" />
+    <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
+    <Compile Include="Model\SpiritualGiftsService.cs" />
+    <Compile Include="BulkExport\AttributesExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="BulkExport\ModelExport.cs" />
+    <Compile Include="BulkExport\ExportOptions.cs" />
+    <Compile Include="BulkExport\LocationExport.cs" />
+    <Compile Include="BulkExport\ExportResult.cs" />
+    <Compile Include="BulkExport\PeopleExport.cs" />
+    <Compile Include="BulkExport\PersonExport.cs" />
+    <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\CheckInMessage.cs" />
+    <Compile Include="CheckIn\CheckInSearchBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\Registration\FamilyRegistrationState.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
+    <Compile Include="Field\Types\RegistrationTemplatesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
+    <Compile Include="Lava\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
+    <Compile Include="Model\AttributeMatrixService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\060_MigrationRollupsForV8_6.cs" />
+    <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
+    <Compile Include="Plugin\HotFixes\057_MigrationRollupsForV8_5.cs" />
     <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
     <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
+    <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
+    <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
+    <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
+    <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
+    <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
+    <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
+    <Compile Include="Plugin\HotFixes\069_MigrationRollupsForV8_7_6.cs" />
+    <Compile Include="Plugin\HotFixes\068_MigrationRollupsForV8_7_5.cs" />
+    <Compile Include="Plugin\HotFixes\067_MigrationRollupsForV8_7_4.cs" />
+    <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
+    <Compile Include="Plugin\HotFixes\070_MigrationRollupsForV8_7_7.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -407,13 +504,49 @@
     </Compile>
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="SystemGuid\AssessmentType.cs" />
     <Compile Include="SystemGuid\ContentChannelType.cs" />
+    <Compile Include="SystemGuid\Layout.cs" />
+    <Compile Include="SystemGuid\PageRoute.cs" />
+    <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
+    <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
+    <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
+    <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
+    <Compile Include="Utility\EntityCoding\EntityDecoder.cs" />
+    <Compile Include="Utility\EntityCoding\EntityPath.cs" />
+    <Compile Include="Utility\EntityCoding\EntityPathComponent.cs" />
+    <Compile Include="Utility\EntityCoding\EntityProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\ExportedEntitiesContainer.cs" />
+    <Compile Include="Utility\EntityCoding\IEntityProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\IExporter.cs" />
+    <Compile Include="Utility\EntityCoding\Processors\AttributeProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\Processors\AttributeValueProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\Processors\WorkflowActionFormProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\Processors\WorkflowActivityTypeProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\Processors\WorkflowTypeProcessor.cs" />
+    <Compile Include="Utility\EntityCoding\QueuedEntity.cs" />
+    <Compile Include="Utility\EntityCoding\Reference.cs" />
+    <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
+    <Compile Include="Utility\EnumOrderAttribute.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
+    <Compile Include="Utility\RockObsolete.cs" />
+    <Compile Include="SystemGuid\SystemSetting.cs" />
+    <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
+    <Compile Include="Utility\RockColor.cs" />
+    <Compile Include="Utility\RockDynamic.cs" />
+    <Compile Include="Utility\Scripturize.cs" />
+    <Compile Include="Utility\StringRockExtensions.cs" />
+    <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
@@ -430,6 +563,7 @@
     <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
     <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
     <Compile Include="Web\Cache\Entities\SignalTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\SmsActionCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionTypeCache.cs" />
@@ -856,8 +990,6 @@
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.cs" />
-    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
-    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
     <Compile Include="Model\CodeGenerated\NcoaHistoryService.cs" />
     <Compile Include="Model\CodeGenerated\NoteWatchService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
@@ -888,8 +1020,6 @@
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
-    <Compile Include="Model\MetaPersonicxLifestageCluster.cs" />
-    <Compile Include="Model\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
@@ -1352,7 +1482,6 @@
     <Compile Include="Transactions\InteractionTransaction.cs" />
     <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
-    <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePersonsTopSignal.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />
@@ -1622,16 +1751,24 @@
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
+    <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
+    <Compile Include="Web\UI\Controls\CampusAccountAmountPicker.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityWrapper.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityRulesEditor.cs" />
+    <Compile Include="Web\UI\Controls\ScreenKeyboard.cs" />
+    <Compile Include="Web\UI\Controls\ValueFilter.cs" />
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldRangeValidator.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldWithValidationProperty.cs" />
     <Compile Include="Web\UI\Controls\IHasRequired.cs" />
+    <Compile Include="Web\UI\Controls\IRockChangeHandlerControl.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfo.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AdvanceInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NoteEditor.cs" />
@@ -1657,9 +1794,11 @@
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\BackgroundCheckDocument.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
+    <Compile Include="Web\UI\Controls\ButtonGroup.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\UI\IPickerBlock.cs" />
+    <Compile Include="Web\UI\IIdleRedirectBlock.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -2053,6 +2192,7 @@
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
+    <Compile Include="Workflow\Action\Assessments\CreateAssessmentRequest.cs" />
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -2063,6 +2203,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByDataView.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
@@ -2099,6 +2240,8 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\GetSavedAccount.cs" />
+    <Compile Include="Workflow\Action\Finance\ProcessPayment.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
@@ -2245,6 +2388,30 @@
     <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_AddCheck-inLabelToInstallIconFont.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_FixChartShortcode.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
@@ -2290,8 +2457,9 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Auth\" />
+    <Folder Include="bin\Auth\" />
     <Folder Include="Pbx\Provider\" />
+    <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

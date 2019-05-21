@@ -15,8 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -108,6 +106,40 @@ namespace Rock.Model
         [DataMember]
         public int? FinancialPaymentDetailId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Gateway Person Identifier.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this saved account was created by and is a part of the Rock core system/framework.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this saved account is part of the Rock core system/framework, otherwise is <c>false</c>.
+        /// </value>
+        /// <example>
+        /// True
+        /// </example>
+        [DataMember]
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this saved account is the default payment option for the given person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this saved account is the default payment option for the given person, otherwise is <c>false</c>.
+        /// </value>
+        /// <example>
+        /// True
+        /// </example>
+        [DataMember]
+        public bool IsDefault { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -174,31 +206,37 @@ namespace Rock.Model
         /// <returns></returns>
         public ReferencePaymentInfo GetReferencePayment()
         {
+            var reference = new ReferencePaymentInfo();
+            reference.TransactionCode = this.TransactionCode;
+            reference.ReferenceNumber = this.ReferenceNumber;
+            reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+
             if ( this.FinancialPaymentDetail != null )
             {
-                var reference = new ReferencePaymentInfo();
-                reference.TransactionCode = this.TransactionCode;
-                reference.ReferenceNumber = this.ReferenceNumber;
+                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
 
-                if ( this.FinancialPaymentDetail != null )
+                // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
+                if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
                 {
-                    reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
-                    if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                    if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )
                     {
-                        reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
-                        if ( reference.InitialCurrencyTypeValue != null &&
-                            reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
-                            this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-                        {
-                            reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
-                        }
+                        reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
                     }
                 }
 
-                return reference;
+                if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                {
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                    if ( reference.InitialCurrencyTypeValue != null &&
+                        reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+                        this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+                    {
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                    }
+                }
             }
 
-            return null;
+            return reference;
         }
 
         #endregion

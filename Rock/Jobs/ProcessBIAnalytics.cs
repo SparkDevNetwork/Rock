@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -265,11 +266,14 @@ namespace Rock.Jobs
             var dataSet = DbService.GetDataSetSchema( $"SELECT * FROM [{analyticsTableName}] where 1=0", System.Data.CommandType.Text, null );
             var dataTable = dataSet.Tables[0];
 
+            // This is a list of fields that we do not want considered as an attribute field. By default any field not in
+            // analyticsSourceFields is considered an attribute which is not correct in some cases (e.g. HideFromReporting).
             var analyticsFieldNames = analyticsSourceFields.Select( a => a.Name ).ToList();
             analyticsFieldNames.Add( "ForeignId" );
             analyticsFieldNames.Add( "ForeignGuid" );
             analyticsFieldNames.Add( "ForeignKey" );
             analyticsFieldNames.Add( "Guid" );
+            analyticsFieldNames.Add( "TypeId" );
 
             var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
                 !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
@@ -351,6 +355,13 @@ namespace Rock.Jobs
                 var modelAttributeColumnNames = modelAnalyticAttributes.Select( a => a.Key.RemoveSpecialCharacters() ).ToList();
                 foreach ( var databaseAttributeField in currentDatabaseAttributeFields )
                 {
+                    if ( IsEntityColumn( analyticsTableName, databaseAttributeField.ColumnName ) )
+                    {
+                        // We don't want to accidently delete an entity column just because it's not reportable or some such thing, that would be bad.
+                        ExceptionLogService.LogException( new Exception( $"The ProcessBIAnalytics job tried to delete column {analyticsTableName}.{databaseAttributeField.ColumnName} but was prevented by a check in the job." ) );
+                        continue;
+                    }
+
                     if ( !modelAttributeColumnNames.Contains( databaseAttributeField.ColumnName ) )
                     {
                         var dropColumnSql = $"ALTER TABLE [{analyticsTableName}] DROP COLUMN [{databaseAttributeField.ColumnName}]";
@@ -360,6 +371,28 @@ namespace Rock.Jobs
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether provided property name is a property of the provided entityName.
+        /// </summary>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns>
+        ///   <c>true</c> if [is entity column] [the specified entity name]; otherwise, <c>false</c>.
+        ///   Also returns false if the entity does not exist in the Rock.Model namespace.
+        /// </returns>
+        private bool IsEntityColumn( string entityName, string propertyName )
+        {
+            var entityType = Type.GetType( $"Rock.Model.{entityName}, Rock" );
+
+            if (entityType == null )
+            {
+                return false;
+            }
+
+            var prop = entityType.GetProperty( propertyName );
+            return prop != null ? true : false;
         }
 
         /// <summary>
@@ -436,7 +469,26 @@ UPDATE [{analyticsTableName}]
         /// <param name="dataMap">The data map.</param>
         private void ProcessPersonBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
         {
-            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
+            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ),  false, false );
+            EntityField typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "TypeId" ).FirstOrDefault();
+
+            if ( typeIdField != null )
+            {
+                analyticsSourcePersonHistoricalFields.Remove( typeIdField );
+            }
+
+            typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "ForeignId" ).FirstOrDefault();
+            if ( typeIdField != null )
+            {
+                analyticsSourcePersonHistoricalFields.Remove( typeIdField );
+            }
+
+            typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "ForeignKey" ).FirstOrDefault();
+            if ( typeIdField != null )
+            {
+                analyticsSourcePersonHistoricalFields.Remove( typeIdField );
+            }
+
 
             List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
@@ -620,7 +672,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
             List<string> populatePersonValueFROMClauses = new List<string>( populatePersonValueSELECTClauses );
 
-            const int MaxAttributeValueLength = 250;
+            const int maxAttributeValueLength = 250;
 
             using ( var rockContext = new RockContext() )
             {
@@ -662,7 +714,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     }
 
                     string lengthCondition = personAttributeValueFieldName == "Value"
-                        ? $"AND len(av{personAttribute.Id}.Value) <= {MaxAttributeValueLength}"
+                        ? $"AND len(av{personAttribute.Id}.Value) <= {maxAttributeValueLength}"
                         : null;
 
                     string populateAttributeValueFROMClause =
@@ -771,7 +823,7 @@ WHERE p.Id NOT IN (
         @EtlDate [EffectiveDate],
         @MaxExpireDate [ExpireDate],
         family.GroupId [PrimaryFamilyId],
-        convert(INT, (convert(CHAR(8), DateFromParts(BirthYear, BirthMonth, BirthDay), 112))) [BirthDateKey],
+        convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
         dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
         1 [Count],
 " + populatePersonValueFROMClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",

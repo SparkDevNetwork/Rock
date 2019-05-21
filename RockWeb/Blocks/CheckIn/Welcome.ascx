@@ -49,7 +49,9 @@
                 var $CountdownTimer = $('.countdown-timer');
 
                 if ($ActiveWhen.text() != '') {
-                    var timeActive = new Date($ActiveWhen.text());
+                    // Ensure date is parsed as local timezone
+                    var tc = $ActiveWhen.text().split(/\D/);
+                    var timeActive = new Date(tc[0], tc[1]-1, tc[2], tc[3], tc[4], tc[5]);
                     $CountdownTimer.countdown({
                         until: timeActive,
                         compact: true,
@@ -80,8 +82,10 @@
                         }
                         else {
                             if ((date.getTime() - lastKeyPress) > 500) {
+                                // if it's been more than 500ms, assume it is a new wedge read, so start a new keyboardBuffer
                                 keyboardBuffer = String.fromCharCode(e.which);
                             } else if ((date.getTime() - lastKeyPress) < 100) {
+                                // if it's been more less than 100ms, assume a wedge read is coming in and append to the keyboardBuffer
                                 keyboardBuffer += String.fromCharCode(e.which);
                             }
                         }
@@ -111,7 +115,18 @@
                     window.location = "javascript:__doPostBack('hfWedgeEntry', 'Family_Id_Search')";
                 }
 
-                if ($('.js-manager-login').is(':visible')) {
+                // try to find the start button using js-start-button hook, otherwise, just hook to the first anchor tag
+                var $startButton = $('.js-start-button-container .js-start-button');
+                if ($startButton.length == 0) {
+                    $startButton = $('.js-start-button-container a');
+                }
+
+                // handle click of start button in js-start-button-container
+                $startButton.on('click', function (a, b, c) {
+                    window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
+                });
+
+                if ($('.js-manager-login').length) {
                     $('.tenkey a.digit').click(function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());
@@ -211,8 +226,9 @@
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <div class="checkin-search-actions checkin-start">
-                            <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Check In"></asp:LinkButton>
+                        <%-- lStartButtonHtml will be the button HTML from Lava  --%>
+                        <div class="js-start-button-container">
+                            <asp:Literal ID="lStartButtonHtml" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -224,6 +240,7 @@
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">
+            <asp:HiddenField ID="hfAllowOpenClose" runat="server" />
             <div class="checkin-header">
                 <h1>Locations</h1>
             </div>
@@ -234,7 +251,7 @@
                         <asp:Repeater ID="rLocations" runat="server" OnItemCommand="rLocations_ItemCommand" OnItemDataBound="rLocations_ItemDataBound">
                             <ItemTemplate>
                                 <div class="controls kioskmanager-location">
-                                    <div class="btn-group kioskmanager-location-toggle">
+                                    <div ID="divLocationToggle" runat="server" class="btn-group kioskmanager-location-toggle">
                                         <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
                                         <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
 
@@ -257,6 +274,7 @@
             </div>
 
             <div class="controls kioskmanager-actions checkin-actions">
+                <asp:LinkButton ID="btnReprintLabels" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Reprint Labels" OnClick="btnReprintLabels_Click" />
                 <asp:LinkButton ID="btnOverride" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Override" OnClick="btnOverride_Click" />
                 <asp:LinkButton ID="btnScheduleLocations" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Schedule Locations" OnClick="btnScheduleLocations_Click" />
                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default btn-large btn-block btn-checkin-select" Text="Back" OnClick="btnBack_Click" />
@@ -264,8 +282,127 @@
 
         </asp:Panel>
 
-        <%-- Panel for checkin manager login --%>
-        <asp:Panel ID="pnlManagerLogin" CssClass="js-manager-login" runat="server" Visible="false">
+        <%-- Device Manager Reprint Label Panel for searching for person --%>
+        <asp:Panel ID="pnlReprintLabels" runat="server" Visible="false" DefaultButton="lbManagerReprintSearch">
+            <div class="checkin-body">
+                <div class="checkin-scroll-panel">
+                    <div class="scroller">
+                        <div class="checkin-search-body">
+
+                            <asp:Panel ID="pnlSearchName" CssClass="clearfix center-block" runat="server">
+                                <Rock:RockTextBox ID="tbNameOrPhone" runat="server" Label="Phone or Name" AutoCompleteType="Disabled" spellcheck="false" autocorrect="off" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
+                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn-default" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
+                            </asp:Panel>
+
+                            <div class="checkin-actions margin-t-md">
+                                <Rock:BootstrapButton CssClass="btn btn-primary btn-block" ID="lbManagerReprintSearch" runat="server" OnClick="lbManagerReprintSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>
+                                <asp:LinkButton CssClass="btn btn-default btn-block btn-cancel" ID="lbReprintCancelBack" runat="server" OnClick="lbManagerCancel_Click" Text="Cancel" />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <!-- Device Manager Reprint Label Panel showing person search results -->
+        <asp:Panel ID="pnlReprintSearchPersonResults" runat="server" Visible="false">
+            <div class="checkin-body">
+                <div class="checkin-scroll-panel">
+                    <div class="scroller">
+
+                    <div class="control-group checkin-body-container">
+                        <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
+                        <div class="controls">
+                            <asp:Repeater ID="rReprintLabelPersonResults" runat="server" OnItemCommand="rReprintLabelPersonResults_ItemCommand">
+                                <ItemTemplate>
+                                    <asp:HiddenField ID="hfAttendanceIds" runat="server" Value='<%#String.Join(",",((Rock.Utility.ReprintLabelPersonResult)Container.DataItem).AttendanceIds )%>' />
+                                    <Rock:BootstrapButton ID="lbSelectPersonForReprint" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandName='<%# Eval("AttendanceIds") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select text-left" DataLoadingText="Loading..." />
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </div>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkin-footer">
+                <div class="checkin-actions">
+                    <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbReprintSearchPersonCancel" runat="server" OnClick="lbManagerCancel_Click" Text="Cancel" />
+                </div>
+            </div>
+        </asp:Panel>
+
+        <!-- Device Manager Reprint Label Panel showing selected person's available labels -->
+        <asp:Panel ID="pnlReprintSelectedPersonLabels" runat="server" Visible="false">
+            <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
+            <div class="checkin-body">
+                <div class="checkin-scroll-panel">
+                    <div class="scroller">
+
+                    <div class="control-group checkin-body-container">
+                        <label class="control-label">Select Tags to Reprint</label>
+                        <div class="controls">
+
+                           <div class="controls js-label-list">
+                                <asp:Repeater ID="rReprintLabelTypeSelection" runat="server" OnItemDataBound="rReprintLabelTypeSelection_ItemDataBound">
+                                    <ItemTemplate>
+                                        <div class="row">
+                                                <a data-label-guid='<%# Eval("FileGuid") %>' class="btn btn-primary btn-checkin-select btn-block js-label-select <%# GetSelectedClass( false ) %>">
+                                                    <div class="row">
+                                                        <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
+                                                            <i class='fa fa-3x <%# GetCheckboxClass( false ) %>'></i>
+                                                        </div>
+                                                        <asp:Panel ID="pnlLabel" runat="server"><asp:Literal ID="lLabelButton" runat="server"></asp:Literal></asp:Panel>
+                                                    </div>
+                                                </a>
+
+                                            <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
+                                                <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("FileGuid") %>' CommandName="Change">Change</asp:LinkButton>
+                                            </asp:Panel>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+                </div>
+
+                <asp:HiddenField ID="hfSelectedPersonId" runat="server"></asp:HiddenField>
+                <asp:HiddenField ID="hfSelectedAttendanceIds" runat="server"></asp:HiddenField>
+                <asp:HiddenField ID="hfLabelFileGuids" runat="server"></asp:HiddenField>
+            </div>
+
+            <div class="checkin-footer">
+                <div class="checkin-actions">
+                    <asp:LinkButton CssClass="btn btn-primary " ID="lbReprintSelectLabelTypes" runat="server" OnClientClick="return GetLabelTypeSelection();" OnClick="lbReprintSelectLabelTypes_Click" Text="Print" data-loading-text="Printing..." />
+                    <asp:LinkButton CssClass="btn btn-default btn-cancel" ID="lbReprintSelectLabelCancel" runat="server" OnClick="lbManagerCancel_Click" Text="Cancel" />
+                </div>
+            </div>
+        </asp:Panel>
+
+        <!-- Device Manager Reprint results -->
+        <asp:Panel ID="pnlReprintResults" runat="server" Visible="false">
+            <div class="checkin-body">
+                <div class="checkin-scroll-panel">
+                    <div class="scroller">
+                        <h2><asp:Literal ID="lReprintResultsHtml" runat="server" /></h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkin-footer">   
+                <div class="checkin-actions">
+                    <asp:LinkButton CssClass="btn btn-primary" ID="lbMangerReprintDone" runat="server" OnClick="lbManagerReprintDone_Click" Text="Done" />
+                </div>
+            </div>
+        </asp:Panel>
+
+        <%-- Panel for device manager login --%>
+        <asp:Panel ID="pnlManagerLogin" CssClass="js-manager-login" runat="server" Visible="false" DefaultButton="lbLogin">
 
             <div class="checkin-header">
                 <h1>Manager Login</h1>
@@ -274,38 +411,36 @@
             <div class="checkin-body">
 
                 <div class="checkin-scroll-panel">
+
                     <div class="scroller">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="checkin-search-body">
-                                    <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" TextMode="Password" runat="server" Label="PIN" />
+                                    <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry input-lg" TextMode="Password" runat="server" Label="PIN" />
 
                                     <div class="tenkey checkin-phone-keypad">
                                         <div>
-                                            <a href="#" class="btn btn-default btn-lg digit">1</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">2</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">3</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">1</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">2</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">3</a>
                                         </div>
                                         <div>
-                                            <a href="#" class="btn btn-default btn-lg digit">4</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">5</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">6</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">4</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">5</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">6</a>
                                         </div>
                                         <div>
-                                            <a href="#" class="btn btn-default btn-lg digit">7</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">8</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">9</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">7</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">8</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">9</a>
                                         </div>
                                         <div>
-                                            <a href="#" class="btn btn-default btn-lg command back">Back</a>
-                                            <a href="#" class="btn btn-default btn-lg digit">0</a>
-                                            <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
                                         </div>
                                     </div>
 
-                                    <div class="checkin-actions">
-                                        <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary pull-left">Login</asp:LinkButton>
-                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -317,14 +452,13 @@
                         </div>
                     </div>
 
-
-
                 </div>
             </div>
 
             <div class="checkin-footer">
 
                 <div class="checkin-actions">
+                    <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
                     <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default btn-cancel">Cancel</asp:LinkButton>
                 </div>
             </div>

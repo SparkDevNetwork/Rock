@@ -14,19 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
-using System.Net;
-using System.Web.Http;
 using System.Linq;
+using System.Web.Http;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
-using Rock.Data;
-using System.Collections.Generic;
-using System.Data;
-using System;
-using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -78,7 +76,7 @@ namespace Rock.Rest.Controllers
                                         .Where( t => t.Group.GroupType.Guid == groupTypeGuid
                                                  && t.PersonId == personId
                                                  && t.GroupMemberStatus == GroupMemberStatus.Active
-                                                 && t.Group.IsActive )
+                                                 && t.Group.IsActive && !t.Group.IsArchived )
                                         .OrderBy( g => g.GroupRole.Order );
 
             foreach ( GroupMember member in groupMembershipsQuery )

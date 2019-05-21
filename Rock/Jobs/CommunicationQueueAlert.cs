@@ -18,15 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 
 using Quartz;
 
 using Rock.Attribute;
-using Rock.Model;
-using Rock.Data;
 using Rock.Communication;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
-using System.Text;
 
 namespace Rock.Jobs
 {
@@ -36,7 +36,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField( "Alert Period", "The number of minutes to allow for communications to be sent before sending an alert.", false, 120, "", 0 )]
     [SystemEmailField( "Alert Email", "The system email to use for sending an alert", true, "2fc7d3e3-d85b-4265-8983-970345215dea", "", 1 )]
-    [TextField( "Alert Recipients", "A comma-delimited list of recipients that should recieve the alert", true, "", "", 2 )]
+    [TextField( "Alert Recipients", "A comma-delimited list of recipients that should receive the alert", true, "", "", 2 )]
     [DisallowConcurrentExecution]
     public class CommunicationQueueAlert : IJob
     {

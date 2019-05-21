@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -51,6 +52,7 @@ namespace Rock.Jobs
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
             CreateOrUpdateIndexInteractionsForeignKey();
+            UpdateRefundTransactionSource();
             DeleteJob( context.GetJobId() );
         }
 
@@ -105,6 +107,25 @@ IF NOT EXISTS (
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ForeignKey] ON [dbo].[Interaction] ([ForeignKey]) WHERE [ForeignKey] IS NOT NULL
 END
+" );
+            }
+        }
+
+        /// <summary>
+        /// Updates the a Refund Transaction's SourceTypeValueId to match the SourceTypeValueId of the original transaction
+        /// </summary>
+        public void UpdateRefundTransactionSource()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE rft
+SET rft.SourceTypeValueId = oft.SourceTypeValueId
+FROM FinancialTransactionRefund r
+JOIN FinancialTransaction rft ON rft.Id = r.Id
+JOIN FinancialTransaction oft ON oft.Id = r.OriginalTransactionId
+WHERE isnull(rft.SourceTypeValueId, 0) != isnull(oft.SourceTypeValueId, 0)
 " );
             }
         }

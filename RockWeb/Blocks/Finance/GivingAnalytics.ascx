@@ -22,24 +22,25 @@
     <ContentTemplate>
 
         <div class="panel panel-block panel-analytics">
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
                     <i class="fa fa-check-square-o"></i>
                     Giving Analytics
                 </h1>
 
                 <div class="panel-labels">
-                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
+
+                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()" class="btn btn-xs btn-square btn-link margin-l-sm">
                         <i class='fa fa-question-circle'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        class="btn btn-xs btn-square btn-default margin-l-sm btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
                 </div>
-
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <div class="panel-info">
@@ -70,10 +71,10 @@
                                 </div>
                             </div>
                             </Rock:RockControlWrapper>
-                            <Rock:RockCheckBoxList ID="cblTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
+                            <Rock:DefinedValuesPicker ID="dvpTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
                         </div>
-                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
@@ -127,7 +128,7 @@
                                             </div>
                                         </Rock:RockControlWrapper>
                                     </div>
-                                
+
                                     <div class="pull-right">
                                         <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
                                             <div class="controls">
@@ -265,6 +266,8 @@
             }
 
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+
                 // Graph-By button group
                 $('.js-graph-by .btn').on('click', function (e) {
                     setActiveButtonGroupButton($(this));
@@ -299,8 +302,8 @@
                 });
 
                 // Set checkbox labels to toggle child checkboxes when clicked
-                $('div.rock-check-box-list').find('label').prop('data-selected', false);
-                $('div.rock-check-box-list').find('label').on('click', function (e) {
+                $('div.rock-check-box-list').find('label.control-label').prop('data-selected', false);
+                $('div.rock-check-box-list').find('label.control-label').on('click', function (e) {
                     var selected = $(this).prop('data-selected')
                     $(this).siblings().find('input:checkbox').prop('checked', !selected);
                     $(this).prop('data-selected', !selected);

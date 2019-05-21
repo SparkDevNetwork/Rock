@@ -23,7 +23,6 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web;
 
 namespace Rock.Web.Cache
 {
@@ -71,7 +70,7 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
-        /// Gets or sets the configured theme. The 'Theme' property will check to see if current request url/cookie has specified a different them and if so return that one
+        /// Gets or sets the configured theme. The <see cref="Theme"/> property will check to see if current request url/cookie has specified a different them and if so return that one
         /// </summary>
         /// <value>
         /// The configured theme.
@@ -80,7 +79,8 @@ namespace Rock.Web.Cache
         public string ConfiguredTheme { get; private set; }
 
         /// <summary>
-        /// Gets or sets the theme.
+        /// Gets or sets the *active* theme for the page. NOTE: This might be different than the <see cref="ConfiguredTheme"/>.
+        /// NOTE: The 'Theme' property will check to see if current request url/cookie has specified a different them and if so return that one. 
         /// </summary>
         /// <value>
         /// The theme.
@@ -480,6 +480,93 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public Uri DefaultDomainUri { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the site.
+        /// </summary>
+        /// <value>
+        /// The type of the site.
+        /// </value>
+        [DataMember]
+        public SiteType SiteType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile phone file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile phone file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobilePhoneFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobileTabletFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file identifier.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file identifier.
+        /// </value>
+        [DataMember]
+        public int? ThumbnailFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the latest version date time.
+        /// </summary>
+        /// <value>
+        /// The latest version date time.
+        /// </value>
+        public DateTime? LatestVersionDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        public string ConfigurationMobilePhoneFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        public string ConfigurationMobileTabletFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
+        public string ThumbnailFileUrl { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -528,6 +615,15 @@ namespace Rock.Web.Cache
             FavIconBinaryFileId = site.FavIconBinaryFileId;
             SiteLogoBinaryFileId = site.SiteLogoBinaryFileId;
             DefaultDomainUri = site.DefaultDomainUri;
+            SiteType = site.SiteType;
+            AdditionalSettings = site.AdditionalSettings;
+            ConfigurationMobilePhoneFileId = site.ConfigurationMobilePhoneFileId;
+            ConfigurationMobileTabletFileId = site.ConfigurationMobileTabletFileId;
+            ConfigurationMobilePhoneFileUrl = site.ConfigurationMobilePhoneFileUrl;
+            ConfigurationMobileTabletFileUrl = site.ConfigurationTabletFileUrl;
+            ThumbnailFileId = site.ThumbnailFileId;
+            ThumbnailFileUrl = site.ThumbnailFileUrl;
+            LatestVersionDateTime = site.LatestVersionDateTime;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {

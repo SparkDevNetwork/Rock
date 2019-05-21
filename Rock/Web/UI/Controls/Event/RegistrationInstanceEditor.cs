@@ -15,16 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
 {
@@ -46,6 +43,7 @@ namespace Rock.Web.UI.Controls
         WorkflowTypePicker _wtpRegistrationWorkflow;
         CurrencyBox _cbCost;
         CurrencyBox _cbMinimumInitialPayment;
+        CurrencyBox _cbDefaultPaymentAmount;
         AccountPicker _apAccount;
         PersonPicker _ppContact;
         PhoneNumberBox _pnContactPhone;
@@ -297,6 +295,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the default payment amount.
+        /// </summary>
+        /// <value>
+        /// The default payment amount.
+        /// </value>
+        public decimal? DefaultPaymentAmount
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbDefaultPaymentAmount.Text = value.HasValue ? value.ToString() : string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show cost].
         /// </summary>
         /// <value>
@@ -314,6 +332,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _cbCost.Visible = value;
                 _cbMinimumInitialPayment.Visible = value;
+                _cbDefaultPaymentAmount.Visible = value;
             }
         }
 
@@ -553,6 +572,7 @@ namespace Rock.Web.UI.Controls
                 _ebContactEmail.ValidationGroup = value;
                 _cbCost.ValidationGroup = value;
                 _cbMinimumInitialPayment.ValidationGroup = value;
+                _cbDefaultPaymentAmount.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
                 _dtpSendReminder.ValidationGroup = value;
                 _cbReminderSent.ValidationGroup = value;
@@ -607,6 +627,8 @@ namespace Rock.Web.UI.Controls
                 _cbCost.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _cbMinimumInitialPayment.Text = instance.MinimumInitialPayment.HasValue ? instance.MinimumInitialPayment.Value.ToString() : string.Empty;
                 _cbMinimumInitialPayment.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
+                _cbDefaultPaymentAmount.Text = instance.DefaultPayment.HasValue ? instance.DefaultPayment.Value.ToString() : string.Empty;
+                _cbDefaultPaymentAmount.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _apAccount.SetValue( instance.AccountId );
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
@@ -629,6 +651,7 @@ namespace Rock.Web.UI.Controls
                 _ebContactEmail.Text = string.Empty;
                 _cbCost.Text = string.Empty;
                 _cbMinimumInitialPayment.Text = string.Empty;
+                _cbDefaultPaymentAmount.Text = string.Empty;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
@@ -663,6 +686,7 @@ namespace Rock.Web.UI.Controls
                 instance.ContactEmail = _ebContactEmail.Text;
                 instance.Cost = _cbCost.Text.AsDecimalOrNull();
                 instance.MinimumInitialPayment = _cbMinimumInitialPayment.Text.AsDecimalOrNull();
+                instance.DefaultPayment = _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
                 int accountId = _apAccount.SelectedValue.AsInteger();
                 instance.AccountId = accountId > 0 ? accountId : (int?)null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
@@ -746,6 +770,12 @@ namespace Rock.Web.UI.Controls
                 _cbMinimumInitialPayment.Help = "The minimum amount required per registrant. Leave value blank if full amount is required.";
                 Controls.Add( _cbMinimumInitialPayment );
 
+                _cbDefaultPaymentAmount = new CurrencyBox();
+                _cbDefaultPaymentAmount.ID = this.ID + "_cbDefaultPaymentAmount";
+                _cbDefaultPaymentAmount.Label = "Default Payment Amount";
+                _cbDefaultPaymentAmount.Help = "The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined.";
+                Controls.Add( _cbDefaultPaymentAmount );
+
                 _apAccount = new AccountPicker();
                 _apAccount.ID = this.ID + "_apAccount";
                 _apAccount.Label = "Account";
@@ -792,7 +822,7 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalReminderDetails.ID = this.ID + "_htmlAdditionalReminderDetails";
                 _htmlAdditionalReminderDetails.Toolbar = HtmlEditor.ToolbarConfig.Light;
                 _htmlAdditionalReminderDetails.Label = "Additional Reminder Details";
-                _htmlAdditionalReminderDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
+                _htmlAdditionalReminderDetails.Help = "These reminder details will be included in the reminder notification.";
                 _htmlAdditionalReminderDetails.Height = 200;
                 Controls.Add( _htmlAdditionalReminderDetails );
 
@@ -906,6 +936,7 @@ namespace Rock.Web.UI.Controls
 
                     _cbCost.RenderControl( writer );
                     _cbMinimumInitialPayment.RenderControl( writer );
+                    _cbDefaultPaymentAmount.RenderControl( writer );
                     _apAccount.RenderControl( writer );
 
                 writer.RenderEndTag();  // col-md-6

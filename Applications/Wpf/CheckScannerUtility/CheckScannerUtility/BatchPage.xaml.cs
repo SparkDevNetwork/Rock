@@ -20,27 +20,32 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Navigation;
+using System.Xml;
+using ImageSafeInterop;
+using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Client;
 using Rock.Client.Enums;
 using Rock.Net;
 
-
 namespace Rock.Apps.CheckScannerUtility
 {
+
     /// <summary>
     /// Interaction logic for BatchPage.xaml
     /// </summary>
     public partial class BatchPage : System.Windows.Controls.Page
     {
+        private static NavigationService _navigationService;
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchPage" /> class.
         /// </summary>
         /// <param name="loggedInPerson">The logged in person.</param>
         public BatchPage( Person loggedInPerson )
         {
+            var rockConfig = RockConfig.Load();
             LoggedInPerson = loggedInPerson;
             InitializeComponent();
             ScanningPage = new ScanningPage( this );
@@ -52,45 +57,109 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 var micrImageHostPage = new MicrImageHostPage();
                 this.micrImage = micrImageHostPage.micrImage;
-                this.micrImage.MicrDataReceived += ScanningPage.micrImage_MicrDataReceived;
             }
             catch
             {
                 // intentionally nothing.  means they don't have the MagTek driver
             }
-
             try
             {
                 var rangerScannerHostPage = new RangerScannerHostPage();
                 this.rangerScanner = rangerScannerHostPage.rangerScanner;
 
+                if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+                {
+                    this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
+                    this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+
+                    // debug output only
+                    this.rangerScanner.TransportEnablingOptionsState += rangerScannerHostPage.rangerScanner_TransportEnablingOptionsState;
+                    this.rangerScanner.TransportExceptionComplete += rangerScannerHostPage.rangerScanner_TransportExceptionComplete;
+                    this.rangerScanner.TransportInExceptionState += rangerScannerHostPage.rangerScanner_TransportInExceptionState;
+
+                    this.rangerScanner.TransportItemInPocket += rangerScannerHostPage.rangerScanner_TransportItemInPocket;
+                    this.rangerScanner.TransportItemSuspended += rangerScannerHostPage.rangerScanner_TransportItemSuspended;
+                    this.rangerScanner.TransportOverrideOptions += rangerScannerHostPage.rangerScanner_TransportOverrideOptions;
+                    this.rangerScanner.TransportPassthroughEvent += rangerScannerHostPage.rangerScanner_TransportPassthroughEvent;
+                    this.rangerScanner.TransportReadyToFeedState += rangerScannerHostPage.rangerScanner_TransportReadyToFeedState;
+                    this.rangerScanner.TransportReadyToSetEndorsement += rangerScannerHostPage.rangerScanner_TransportReadyToSetEndorsement;
+                    this.rangerScanner.TransportShuttingDownState += rangerScannerHostPage.rangerScanner_TransportShuttingDownState;
+                    this.rangerScanner.TransportShutDownState += rangerScannerHostPage.rangerScanner_TransportShutDownState;
+                    this.rangerScanner.TransportStartingUpState += rangerScannerHostPage.rangerScanner_TransportStartingUpState;
+                    this.rangerScanner.TransportTrackIsClear += rangerScannerHostPage.rangerScanner_TransportTrackIsClear;
+                }
+
+                UnbindAllEvents();
+                BindDeviceToPage();
+            }
+            catch
+            {
+                // intentionally nothing.  means they don't have the Ranger driver
+            }
+        }
+
+        RockRestClient _restClient = null;
+
+        /// <summary>
+        /// Gets the rest client.
+        /// </summary>
+        /// <value>
+        /// The rest client.
+        /// </value>
+        public RockRestClient RestClient
+        {
+            get
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                if ( _restClient == null || !_restClient.rockBaseUri.Equals( new Uri( rockConfig.RockBaseUrl ) ) )
+                {
+                    RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                    client.Login( rockConfig.Username, rockConfig.Password );
+                    _restClient = client;
+                }
+
+                return _restClient;
+            }
+        }
+
+        /// <summary>
+        /// Binds the device to page.
+        /// </summary>
+        public void BindDeviceToPage()
+        {
+            if ( this.micrImage != null )
+            {
+
+                this.micrImage.MicrDataReceived += ScanningPage.micrImage_MicrDataReceived;
+            }
+
+            if ( this.rangerScanner != null )
+            {
                 this.rangerScanner.TransportFeedingState += ScanningPage.rangerScanner_TransportFeedingState;
                 this.rangerScanner.TransportFeedingStopped += ScanningPage.rangerScanner_TransportFeedingStopped;
                 this.rangerScanner.TransportNewItem += ScanningPage.rangerScanner_TransportNewItem;
                 this.rangerScanner.TransportSetItemOutput += ScanningPage.rangerScanner_TransportSetItemOutput;
                 this.rangerScanner.TransportIsDead += ScanningPage.rangerScanner_TransportIsDead;
-                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
-                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
-
-                // debug output only
-                this.rangerScanner.TransportEnablingOptionsState += rangerScannerHostPage.rangerScanner_TransportEnablingOptionsState;
-                this.rangerScanner.TransportExceptionComplete += rangerScannerHostPage.rangerScanner_TransportExceptionComplete;
-                this.rangerScanner.TransportInExceptionState += rangerScannerHostPage.rangerScanner_TransportInExceptionState;
-                
-                this.rangerScanner.TransportItemInPocket += rangerScannerHostPage.rangerScanner_TransportItemInPocket;
-                this.rangerScanner.TransportItemSuspended += rangerScannerHostPage.rangerScanner_TransportItemSuspended;
-                this.rangerScanner.TransportOverrideOptions += rangerScannerHostPage.rangerScanner_TransportOverrideOptions;
-                this.rangerScanner.TransportPassthroughEvent += rangerScannerHostPage.rangerScanner_TransportPassthroughEvent;
-                this.rangerScanner.TransportReadyToFeedState += rangerScannerHostPage.rangerScanner_TransportReadyToFeedState;
-                this.rangerScanner.TransportReadyToSetEndorsement += rangerScannerHostPage.rangerScanner_TransportReadyToSetEndorsement;
-                this.rangerScanner.TransportShuttingDownState += rangerScannerHostPage.rangerScanner_TransportShuttingDownState;
-                this.rangerScanner.TransportShutDownState += rangerScannerHostPage.rangerScanner_TransportShutDownState;
-                this.rangerScanner.TransportStartingUpState += rangerScannerHostPage.rangerScanner_TransportStartingUpState;
-                this.rangerScanner.TransportTrackIsClear += rangerScannerHostPage.rangerScanner_TransportTrackIsClear;
             }
-            catch
+
+        }
+
+        public void UnbindAllEvents()
+        {
+
+            //Unbind to ScannigScreen
+            if ( this.micrImage != null )
             {
-                // intentionally nothing.  means they don't have the Ranger driver
+                this.micrImage.MicrDataReceived -= ScanningPage.micrImage_MicrDataReceived;
+            }
+
+            if ( this.rangerScanner != null )
+            {
+                this.rangerScanner.TransportFeedingState -= ScanningPage.rangerScanner_TransportFeedingState;
+                this.rangerScanner.TransportFeedingStopped -= ScanningPage.rangerScanner_TransportFeedingStopped;
+                this.rangerScanner.TransportNewItem -= ScanningPage.rangerScanner_TransportNewItem;
+                this.rangerScanner.TransportSetItemOutput -= ScanningPage.rangerScanner_TransportSetItemOutput;
+                this.rangerScanner.TransportIsDead -= ScanningPage.rangerScanner_TransportIsDead;
             }
         }
 
@@ -101,6 +170,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// The micr image.
         /// </value>
         public AxMTMicrImage.AxMicrImage micrImage { get; set; }
+
 
         /// <summary>
         /// Gets or sets the ranger scanner.
@@ -125,6 +195,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// The selected financial batch
         /// </value>
         public FinancialBatch SelectedFinancialBatch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected financial transaction.
+        /// </summary>
+        /// <value>
+        /// The selected financial transaction.
+        /// </value>
+        public FinancialTransaction SelectedFinancialTransaction { get; set; }
 
         /// <summary>
         /// Gets or sets the logged in person id.
@@ -169,6 +247,14 @@ namespace Rock.Apps.CheckScannerUtility
         public List<DefinedValue> CurrencyValueList { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus list.
+        /// </summary>
+        /// <value>
+        /// The campus list.
+        /// </value>
+        public List<Campus> CampusList { get; set; }
+
+        /// <summary>
         /// Gets the selected currency value.
         /// </summary>
         /// <value>
@@ -183,7 +269,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// All the possible Transation Source Type, including ones that can't be selected when scanning
+        /// All the possible Transaction Source Type, including ones that can't be selected when scanning
         /// </summary>
         /// <value>
         /// The source type value list.
@@ -225,6 +311,13 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        public NavigationService BatchNavigationService
+        {
+            get { return _navigationService; }
+        }
+
+
+
         #region Ranger (Canon CR50/80) Scanner Events
 
         /// <summary>
@@ -239,7 +332,7 @@ namespace Rock.Apps.CheckScannerUtility
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
 
-            RangerTransportStates xportState = (RangerTransportStates)e.currentState;
+            RangerTransportStates xportState = ( RangerTransportStates ) e.currentState;
 
             switch ( xportState )
             {
@@ -268,7 +361,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
             this.shapeStatus.ToolTip = status;
 
-            ScanningPage.ShowScannerStatus( xportState, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -278,7 +371,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void rangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
         {
-            if ( e.previousState == (int)RangerTransportStates.TransportStartingUp )
+
+            if ( e.previousState == ( int ) RangerTransportStates.TransportStartingUp )
             {
                 // enable imaging
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
@@ -314,12 +408,16 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
-                
+
+                //If set to false, Ranger's exception manager will never prompt the user, and
+                // management will be left to the application.
+                rangerScanner.SetGenericOption( "ExceptionHandling", "Enabled", "false" );
+
                 // Ranger assigns a score of 1-255 on how confident it is that the character was read correctly (1 unsure, 255 very sure)
                 // If the score is less than 255, it will assign another score to its next best guess.  
                 // For example, if it pretty sure it was a '3', but it thinks it might have been an '8', it might set the score for '3' as 240, but a score of 150 to '8'.
                 // If the difference (Plurality) between the scores isn't high enough, it will reject the char. 
-                rangerScanner.SetDriverOption( "MICR", "Sensitivity", rockConfig.Sensitivity);
+                rangerScanner.SetDriverOption( "MICR", "Sensitivity", rockConfig.Sensitivity );
                 rangerScanner.SetDriverOption( "MICR", "Plurality", rockConfig.Plurality );
 
                 rangerScanner.EnableOptions();
@@ -337,6 +435,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void batchPage_Loaded( object sender, RoutedEventArgs e )
         {
+            _navigationService = this.NavigationService;
             spBatchDetailReadOnly.Visibility = Visibility.Visible;
             spBatchDetailEdit.Visibility = Visibility.Collapsed;
 
@@ -349,6 +448,36 @@ namespace Rock.Apps.CheckScannerUtility
 
                 this.FirstPageLoad = false;
             }
+
+            if ( !string.IsNullOrEmpty( txtControlItemCount.Text ) )
+            {
+                if ( int.TryParse( txtControlItemCount.Text, out int itemsToProcess ) )
+                {
+                    ScanningPageUtility.ItemsToProcess = itemsToProcess;
+                }
+            }
+
+            CheckBatchCompleted();
+        }
+
+        /// <summary>
+        /// Checks the batch completed.
+        /// </summary>
+        private void CheckBatchCompleted()
+        {
+            RockConfig rockConfig = RockConfig.Load();
+
+            if ( rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount )
+            {
+                if ( this.SelectedFinancialBatch?.Transactions != null && this.SelectedFinancialBatch.ControlItemCount > 0 )
+                {
+                    if ( this.SelectedFinancialBatch.Transactions.Count() == this.SelectedFinancialBatch.ControlItemCount )
+                    {
+                        btnScan.IsEnabled = false;
+                        btnScan.ToolTip = "Item count equals control count";
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -357,20 +486,25 @@ namespace Rock.Apps.CheckScannerUtility
         public void LoadLookups()
         {
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
-            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campuses" );
+            var client = this.RestClient;
 
-            cbCampus.SelectedValuePath = "Id";
-            cbCampus.DisplayMemberPath = "Name";
-            cbCampus.Items.Clear();
-            cbCampus.Items.Add( new Campus { Id = 0, Name = string.Empty } );
-            foreach ( var campus in campusList.OrderBy( a => a.Name ) )
+            this.CampusList = client.GetData<List<Campus>>( "api/Campuses" );
+
+            cboCampus.SelectedValuePath = "Id";
+            cboCampus.DisplayMemberPath = "Name";
+            cboCampus.Items.Clear();
+            cboCampus.Items.Add( null );
+
+            var filteredCampusList = this.CampusList.ToList();
+            if ( rockConfig.CampusIdFilter.HasValue )
             {
-                cbCampus.Items.Add( campus );
+                filteredCampusList = filteredCampusList.Where( a => a.Id == rockConfig.CampusIdFilter.Value ).ToList();
             }
 
-            cbCampus.SelectedIndex = 0;
+            foreach ( var campus in filteredCampusList.OrderBy( a => a.Name ) )
+            {
+                cboCampus.Items.Add( campus );
+            }
 
             var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
             this.CurrencyValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + currencyTypeDefinedType.Id.ToString() );
@@ -388,19 +522,88 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public void LoadFinancialBatchesGrid()
         {
+            int? origSelectedBatchId = this.SelectedFinancialBatch?.Id;
             RockConfig config = RockConfig.Load();
-            RockRestClient client = new RockRestClient( config.RockBaseUrl );
-            client.Login( config.Username, config.Password );
+            var client = this.RestClient;
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
+            if ( config.CampusIdFilter.HasValue )
+            {
+                if ((this.SelectedFinancialBatch?.CampusId.HasValue == true) && (this.SelectedFinancialBatch.CampusId.Value != config.CampusIdFilter.Value) )
+                {
+                    this.SelectedFinancialBatch = null;
+                    origSelectedBatchId = null;
+                }
+
+                pendingBatches = pendingBatches.Where( a => !a.CampusId.HasValue || a.CampusId.Value == config.CampusIdFilter.Value ).ToList();
+            }
+
+            IEnumerable<FinancialBatchWithControlVariance> gridDataContext;
+
+            if ( config.CaptureAmountOnScan == true )
+            {
+                List<FinancialBatchWithControlVariance> pendingBatchesWithControlVariances = new List<FinancialBatchWithControlVariance>();
+                List<ControlTotalResult> controlTotalAmountsList = client.GetDataByEnum<List<ControlTotalResult>>( $"api/FinancialBatches/GetControlTotals", "Status", BatchStatus.Pending );
+                var controlTotalsLookup = controlTotalAmountsList.ToDictionary( k => k.FinancialBatchId, v => v );
+
+                foreach ( var pendingBatch in pendingBatches )
+                {
+                    FinancialBatchWithControlVariance financialBatchWithControlVariance = new FinancialBatchWithControlVariance();
+                    financialBatchWithControlVariance.CopyPropertiesFrom( pendingBatch );
+                    ControlTotalResult controlTotalAmounts;
+                    if ( controlTotalsLookup.ContainsKey( pendingBatch.Id ) )
+                    {
+                        controlTotalAmounts = controlTotalsLookup[pendingBatch.Id];
+                    }
+                    else
+                    {
+                        controlTotalAmounts = new ControlTotalResult { ControlTotalAmount = 0.00M, ControlTotalCount = 0 };
+                    }
+
+                    var hasAmountVariance = config.RequireControlAmount && ( controlTotalAmounts.ControlTotalAmount != financialBatchWithControlVariance.ControlAmount );
+                    var hasCountVariance = config.RequireControlItemCount && financialBatchWithControlVariance.ControlItemCount.HasValue && ( controlTotalAmounts.ControlTotalCount != financialBatchWithControlVariance.ControlItemCount );
+
+                    financialBatchWithControlVariance.HasVariance = hasCountVariance || hasAmountVariance;
+
+                    pendingBatchesWithControlVariances.Add( financialBatchWithControlVariance );
+                }
+
+                gridDataContext = pendingBatchesWithControlVariances;
+            }
+            else
+            {
+                gridDataContext = pendingBatches.Select( a =>
+                {
+                    var result = new FinancialBatchWithControlVariance();
+                    result.CopyPropertiesFrom( a );
+
+                    // don't care about variance if CaptureAmountOnScan = false
+                    result.HasVariance = null;
+
+                    return result;
+                } );
+            }
+
+            gridDataContext = gridDataContext.OrderByDescending( a => a.Id );
+
+            grdBatches.DataContext = gridDataContext;
+
             // Order by Batch Id starting with most recent
-            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.Id );
             if ( pendingBatches.Count > 0 )
             {
                 if ( SelectedFinancialBatch != null )
                 {
                     // try to set the selected batch in the grid to our current batch (if it still exists in the database)
-                    grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatch.Id ) );
+                    var selectedValue = gridDataContext.FirstOrDefault( a => a.Id == SelectedFinancialBatch.Id );
+                    if ( selectedValue == null )
+                    {
+                        selectedValue = gridDataContext.FirstOrDefault();
+                    }
+
+                    grdBatches.SelectedValue = selectedValue;
+                    FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
+
+                    ScanningPageUtility.ItemsToProcess = selectedBatch == null ? 0 : selectedBatch.ControlItemCount;
                 }
 
                 // if there still isn't a selected batch, set it to the first one
@@ -449,7 +652,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = status;
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
 
-            ScanningPage.ShowScannerStatus( connected ? RangerTransportStates.TransportReadyToFeed : RangerTransportStates.TransportShutDown, statusColor, status );
+            ScanningPage.ShowScannerStatus( statusColor, status );
         }
 
         /// <summary>
@@ -460,109 +663,176 @@ namespace Rock.Apps.CheckScannerUtility
         {
             var rockConfig = RockConfig.Load();
 
-            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
+            switch ( rockConfig.ScannerInterfaceType )
             {
-                if ( micrImage == null )
+                case RockConfig.InterfaceType.MICRImageRS232:
+                    return HandleMICRImageRS232( rockConfig );
+                case RockConfig.InterfaceType.MagTekImageSafe:
+                    return HandleMagTekImageSafe( rockConfig );
+                default:
+                    //Ranger
+                    return HandleRanger( rockConfig );
+            }
+
+        }
+
+        private bool HandleRanger( RockConfig rockConfig )
+        {
+            try
+            {
+                if ( this.rangerScanner == null )
                 {
-                    // no MagTek driver
+                    // no ranger driver
                     return false;
                 }
+            }
+            catch
+            {
+                return false;
+            }
 
-                micrImage.CommPort = rockConfig.MICRImageComPort;
-                micrImage.PortOpen = false;
+            try
+            {
+                this.Cursor = Cursors.Wait;
+                rangerScanner.StartUp();
+            }
+            finally
+            {
+                this.Cursor = null;
+            }
 
-                UpdateScannerStatusForMagtek( false );
-
-                object dummy = null;
-
-                // converted from VB6 from MagTek's sample app
-                if ( !micrImage.PortOpen )
-                {
-                    micrImage.PortOpen = true;
-                    if ( micrImage.DSRHolding )
-                    {
-                        // Sets Switch Settings
-                        // If you use the MicrImage1.Save command then these do not need to be sent
-                        // every time you open the device
-                        micrImage.MicrTimeOut = 1;
-                        micrImage.MicrCommand( "SWA 00100010", ref dummy );
-                        micrImage.MicrCommand( "SWB 00100010", ref dummy );
-                        micrImage.MicrCommand( "SWC 00100000", ref dummy );
-                        micrImage.MicrCommand( "HW 00111100", ref dummy );
-                        micrImage.MicrCommand( "SWE 00000010", ref dummy );
-                        micrImage.MicrCommand( "SWI 00000000", ref dummy );
-
-                        // The OCX will work with any Micr Format.  You just need to know which
-                        // format is being used to parse it using the FindElement Method
-                        micrImage.FormatChange( "6200" );
-                        micrImage.MicrTimeOut = 5;
-
-                        // get Version to test if we have a good connection to the device
-                        string version = "-1";
-                        try
-                        {
-                            this.Cursor = Cursors.Wait;
-                            version = micrImage.Version();
-                        }
-                        finally
-                        {
-                            this.Cursor = null;
-                        }
-
-                        if ( !version.Equals( "-1" ) )
-                        {
-                            UpdateScannerStatusForMagtek( true );
-                        }
-                        else
-                        {
-                            MessageBox.Show( string.Format( "MagTek Device is not responding on COM{0}.", micrImage.CommPort ), "Scanner Error" );
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show( string.Format( "MagTek Device is not attached to COM{0}.", micrImage.CommPort ), "Missing Scanner" );
-                        return false;
-                    }
-                }
-
-                ScannerFeederType = FeederType.SingleItem;
+            string feederTypeName = rangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
+            if ( feederTypeName.Equals( "MultipleItems" ) )
+            {
+                ScannerFeederType = FeederType.MultipleItems;
             }
             else
             {
-                try
-                {
-                    if ( this.rangerScanner == null )
-                    {
-                        // no ranger driver
-                        return false;
-                    }
-                }
-                catch
-                {
-                    return false;
-                }
+                ScannerFeederType = FeederType.SingleItem;
+            }
 
-                try
-                {
-                    this.Cursor = Cursors.Wait;
-                    rangerScanner.StartUp();
-                }
-                finally
-                {
-                    this.Cursor = null;
-                }
+            return true;
+        }
 
-                string feederTypeName = rangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
-                if ( feederTypeName.Equals( "MultipleItems" ) )
+        private bool HandleMagTekImageSafe( RockConfig rockConfig )
+        {
+            try
+            {
+                this.Cursor = Cursors.Wait;
+                UpdateScannerStatusForMagtek( false );
+
+                //Port Open Connects
+                var firmware = this.GetImageSafeVersion();
+                if ( firmware.Length > 0 )
                 {
-                    ScannerFeederType = FeederType.MultipleItems;
+
+                    UpdateScannerStatusForMagtek( true );
+                    ScannerFeederType = FeederType.SingleItem;
+                    return true;
                 }
                 else
                 {
-                    ScannerFeederType = FeederType.SingleItem;
+                    return false;
                 }
             }
+            finally
+            {
+                this.Cursor = null;
+            }
+        }
+
+
+        public string GetImageSafeVersion()
+        {
+
+            if ( ImageSafeHelper.OpenDevice() )
+            {
+                //Query Device to See its Working
+                //option are : DeviceCapabilities,DeviceStatus,DeviceUsage
+                //Results are and XML String
+                var results = ImageSafeHelper.QueryDevice( "DeviceCapabilities" );
+                if ( results.Length > 0 )
+                {
+                    XmlDocument document = new XmlDocument();
+                    document.LoadXml( results );
+                    var firmware = document.SelectSingleNode( "//Firmware" ).InnerText;
+                    //Successfully Connected
+                    this.Cursor = null;
+                    UpdateScannerStatusForMagtek( true );
+                    return firmware;
+                }
+            }
+
+            return string.Empty;
+
+        }
+
+        private bool HandleMICRImageRS232( RockConfig rockConfig )
+        {
+            if ( micrImage == null )
+            {
+                // no MagTek driver
+                return false;
+            }
+
+            micrImage.CommPort = rockConfig.MICRImageComPort;
+            micrImage.PortOpen = false;
+
+            UpdateScannerStatusForMagtek( false );
+
+            object dummy = null;
+
+            // converted from VB6 from MagTek's sample app
+            if ( !micrImage.PortOpen )
+            {
+                micrImage.PortOpen = true;
+                if ( micrImage.DSRHolding )
+                {
+                    // Sets Switch Settings
+                    // If you use the MicrImage1.Save command then these do not need to be sent
+                    // every time you open the device
+                    micrImage.MicrTimeOut = 1;
+                    micrImage.MicrCommand( "SWA 00100010", ref dummy );
+                    micrImage.MicrCommand( "SWB 00100010", ref dummy );
+                    micrImage.MicrCommand( "SWC 00100000", ref dummy );
+                    micrImage.MicrCommand( "HW 00111100", ref dummy );
+                    micrImage.MicrCommand( "SWE 00000010", ref dummy );
+                    micrImage.MicrCommand( "SWI 00000000", ref dummy );
+
+                    // The OCX will work with any Micr Format.  You just need to know which
+                    // format is being used to parse it using the FindElement Method
+                    micrImage.FormatChange( "6200" );
+                    micrImage.MicrTimeOut = 5;
+
+                    // get Version to test if we have a good connection to the device
+                    string version = "-1";
+                    try
+                    {
+                        this.Cursor = Cursors.Wait;
+                        version = micrImage.Version();
+                    }
+                    finally
+                    {
+                        this.Cursor = null;
+                    }
+
+                    if ( !version.Equals( "-1" ) )
+                    {
+                        UpdateScannerStatusForMagtek( true );
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+
+                    return false;
+                }
+            }
+
+            ScannerFeederType = FeederType.SingleItem;
 
             return true;
         }
@@ -575,16 +845,17 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnScan_Click( object sender, RoutedEventArgs e )
         {
             var rockConfig = RockConfig.Load();
+            ScanningPageUtility.ItemsUploaded = 0;
 
             // make sure we can connect (
             // NOTE: If ranger is powered down after the app starts, it might report that is is connected.  We'll catch that later when they actually start scanning
             if ( ConnectToScanner() )
             {
-                this.NavigationService.Navigate( this.ScanningPromptPage );
+                _navigationService.Navigate( this.ScanningPromptPage );
             }
             else
             {
-                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in", rockConfig.ScannerInterfaceType.ConvertToString().SplitCase() ) );
+                MessageBox.Show( string.Format( "Unable to connect to {0} scanner. Verify that the scanner is turned on and plugged in. You may need to restart the application after reconnecting the device.", rockConfig.ScannerInterfaceType.ConvertToString( true ) ) );
             }
         }
 
@@ -601,10 +872,10 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Navigates to options page.
         /// </summary>
-        private void NavigateToOptionsPage()
+        public void NavigateToOptionsPage()
         {
             var optionsPage = new OptionsPage( this );
-            this.NavigationService.Navigate( optionsPage );
+            _navigationService.Navigate( optionsPage );
         }
 
         /// <summary>
@@ -622,6 +893,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void ShowBatch( bool showInEditMode )
         {
+            grdBatchDetailOuterGrid.Visibility = Visibility.Visible;
             gBatchDetailList.Visibility = Visibility.Visible;
             if ( showInEditMode )
             {
@@ -636,6 +908,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             grdBatches.IsEnabled = !showInEditMode;
             btnAddBatch.IsEnabled = !showInEditMode;
+            btnRefreshBatchList.IsEnabled = !showInEditMode;
         }
 
         /// <summary>
@@ -644,6 +917,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void HideBatch()
         {
             gBatchDetailList.Visibility = Visibility.Hidden;
+            grdBatchDetailOuterGrid.Visibility = Visibility.Hidden;
         }
 
         /// <summary>
@@ -656,8 +930,7 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 RockConfig rockConfig = RockConfig.Load();
-                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                var client = this.RestClient;
 
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
@@ -669,22 +942,16 @@ namespace Rock.Apps.CheckScannerUtility
                     financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatch.Id ) );
                 }
 
-                txtBatchName.Text = txtBatchName.Text.Trim();
-                if ( string.IsNullOrWhiteSpace( txtBatchName.Text ) )
+                if ( !IsValid( rockConfig ) )
                 {
-                    txtBatchName.Style = this.FindResource( "textboxStyleError" ) as Style;
                     return;
-                }
-                else
-                {
-                    txtBatchName.Style = this.FindResource( "textboxStyle" ) as Style;
                 }
 
                 financialBatch.Name = txtBatchName.Text;
-                Campus selectedCampus = cbCampus.SelectedItem as Campus;
-                if ( selectedCampus.Id > 0 )
+                Campus selectedCampus = cboCampus.SelectedItem as Campus;
+                if ( selectedCampus?.Id > 0 )
                 {
-                    financialBatch.CampusId = selectedCampus.Id;
+                    financialBatch.CampusId = selectedCampus?.Id;
                 }
                 else
                 {
@@ -693,13 +960,22 @@ namespace Rock.Apps.CheckScannerUtility
 
                 financialBatch.BatchStartDateTime = dpBatchDate.SelectedDate;
 
-                if ( !string.IsNullOrWhiteSpace( txtControlAmount.Text ) )
+                if ( !string.IsNullOrWhiteSpace( cbControlAmount.Text ) )
                 {
-                    financialBatch.ControlAmount = decimal.Parse( txtControlAmount.Text.Replace( "$", string.Empty ) );
+                    financialBatch.ControlAmount = decimal.Parse( cbControlAmount.Text.Replace( "$", string.Empty ) );
                 }
                 else
                 {
                     financialBatch.ControlAmount = 0.00M;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( txtControlItemCount.Text ) )
+                {
+                    financialBatch.ControlItemCount = int.Parse( txtControlItemCount.Text );
+                }
+                else
+                {
+                    financialBatch.ControlItemCount = null;
                 }
 
                 txtNote.Text = txtNote.Text.Trim();
@@ -734,13 +1010,101 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Apply Validation Rules
+        /// Returns true if ... is valid.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsValid( RockConfig rockConfig )
+        {
+            bool result = false;
+
+            var labelStyleError = this.FindResource( "labelStyleError" ) as Style;
+            var labelStyle = this.FindResource( "labelStyle" ) as Style;
+
+            // Batch Name Required
+            txtBatchName.Text = txtBatchName.Text.Trim();
+            if ( string.IsNullOrWhiteSpace( txtBatchName.Text ) )
+            {
+                lblBatchName.Style = labelStyleError;
+                result = false;
+            }
+            else
+            {
+                lblBatchName.Style = labelStyle;
+                result = true;
+            }
+
+            if ( string.IsNullOrWhiteSpace( dpBatchDate.Text ) )
+            {
+                lblBatchDate.Style = labelStyleError;
+                result = false;
+            }
+            else
+            {
+                lblBatchDate.Style = labelStyle;
+                result = result != false;
+            }
+            if ( cboCampus.SelectedItem == null )
+            {
+                lblCampus.Style = labelStyleError;
+                result = false;
+            }
+            else
+            {
+                lblCampus.Style = labelStyle;
+                result = result != false;
+            }
+
+            // Capture Amount Required Validation
+            if ( rockConfig.CaptureAmountOnScan == true )
+            {
+                if ( rockConfig.RequireControlAmount && ( string.IsNullOrWhiteSpace( cbControlAmount.Text ) || decimal.Parse( cbControlAmount.Text ) < 1 ) )
+                {
+                    lblControlAmount.Style = labelStyleError;
+                    cbControlAmount.IsValid = false;
+                    result = false;
+                }
+                else
+                {
+                    lblControlAmount.Style = labelStyle;
+                    cbControlAmount.IsValid = true;
+                    result = result != false;
+                }
+
+                if ( rockConfig.RequireControlItemCount && ( string.IsNullOrWhiteSpace( txtControlItemCount.Text ) || int.Parse( txtControlItemCount.Text ) < 1 ) )
+                {
+                    lblControlItemCount.Style = labelStyleError;
+                    result = false;
+                }
+                else
+                {
+                    lblControlItemCount.Style = labelStyle;
+                    result = result != false;
+                }
+            }
+            else
+            {
+                lblControlAmount.Style = labelStyle;
+                cbControlAmount.IsValid = true;
+                lblControlItemCount.Style = labelStyle;
+                result = result != false;
+                result = result != false;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Shows the exception.
         /// </summary>
         /// <param name="ex">The ex.</param>
         private static void ShowException( Exception ex )
         {
             App.LogException( ex );
-            MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+
+            MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
         }
 
         /// <summary>
@@ -757,8 +1121,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( this.SelectedFinancialBatch != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
 
                         var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
                         if ( transactions != null )
@@ -778,6 +1141,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 LoadFinancialBatchesGrid();
+
             }
         }
 
@@ -800,16 +1164,23 @@ namespace Rock.Apps.CheckScannerUtility
         private void grdBatches_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
-
-            UpdateBatchUI( selectedBatch );
+            if ( selectedBatch != this.SelectedFinancialBatch )
+            {
+                UpdateBatchUI( selectedBatch );
+            }
         }
 
         /// <summary>
         /// Updates the batch UI.
         /// </summary>
         /// <param name="selectedBatch">The selected batch.</param>
-        private void UpdateBatchUI( FinancialBatch selectedBatch )
+        public void UpdateBatchUI( FinancialBatch selectedBatch )
         {
+            // if a transaction was selected, keep it so that it can be reselected after reloading the list (if it exists)
+            var selectedTransactionId = this.SelectedFinancialTransaction?.Id;
+
+            this.btnScan.IsEnabled = true;
+            btnScan.ToolTip = null;
             if ( selectedBatch == null )
             {
                 grdBatchItems.DataContext = null;
@@ -823,39 +1194,61 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
+            var client = this.RestClient;
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
+            string campusName = null;
+            if ( selectedBatch.CampusId.HasValue )
+            {
+                campusName = this.CampusList.FirstOrDefault( a => a.Id == selectedBatch.CampusId.Value )?.Name;
+            }
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campuses/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
-            lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ?? 0 ) );
+
+            lblBatchCampusReadOnly.Content = campusName;
+            if ( selectedBatch.BatchStartDateTime != null )
+            {
+                lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
+            }
+
+            lblBatchCreatedByReadOnly.Content = string.Empty;
+            Person createdByPerson = null;
+            if ( selectedBatch.CreatedByPersonAliasId.HasValue )
+            {
+                createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ?? 0 ) );
+            }
+
             if ( createdByPerson != null )
             {
-                lblBatchCreatedByReadOnly.Content = string.Format("{0} {1}", createdByPerson.NickName, createdByPerson.LastName);
+                lblBatchCreatedByReadOnly.Content = string.Format( "{0} {1}", createdByPerson.NickName, createdByPerson.LastName );
             }
             else
             {
                 lblBatchCreatedByReadOnly.Content = string.Empty;
             }
 
-            lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
-
             txtBatchName.Text = selectedBatch.Name;
             if ( selectedBatch.CampusId.HasValue )
             {
-                cbCampus.SelectedValue = selectedBatch.CampusId;
+                cboCampus.SelectedValue = selectedBatch.CampusId;
             }
             else
             {
-                cbCampus.SelectedValue = 0;
+                // pull campus from default
+                cboCampus.SelectedValue = rockConfig.CampusIdFilter;
+                var selectedCampus = cboCampus.SelectedItem as Campus;
             }
 
             dpBatchDate.SelectedDate = selectedBatch.BatchStartDateTime;
             lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
-            txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
+            cbControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
+            txtControlItemCount.Text = selectedBatch.ControlItemCount.ToString();
+            ScanningPageUtility.ItemsToProcess = selectedBatch.ControlItemCount;
+
+            rockConfig = RockConfig.Load();
+
+            colBatchItemAmount.Visibility = rockConfig.CaptureAmountOnScan == true ? Visibility.Visible : Visibility.Collapsed;
+
             txtNote.Text = selectedBatch.Note;
 
             // start a background thread to download transactions since this could take a little while and we want a Wait cursor
@@ -863,37 +1256,84 @@ namespace Rock.Apps.CheckScannerUtility
             Rock.Wpf.WpfHelper.FadeOut( lblCount, 0 );
             lblCount.Content = "Loading...";
             Rock.Wpf.WpfHelper.FadeIn( lblCount, 300 );
-            List<FinancialTransaction> transactions = null;
             grdBatchItems.DataContext = null;
-            bw.DoWork += delegate( object s, DoWorkEventArgs ee )
+            bw.DoWork += delegate ( object s, DoWorkEventArgs ee )
             {
                 ee.Result = null;
 
-                transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
+                selectedBatch.Transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0} &$expand=TransactionDetails,FinancialPaymentDetail", selectedBatch.Id ) );
+            };
+            bw.DoWork += ( o, s ) =>
+            {
+                var allAccounts = client.GetData<List<FinancialAccount>>( "api/FinancialAccounts" );
+                ScanningPageUtility.Accounts = allAccounts;
             };
 
-            bw.RunWorkerCompleted += delegate( object s, RunWorkerCompletedEventArgs ee )
+            var currencyValueLookup = CurrencyValueList.ToDictionary( k => k.Id, v => v );
+
+
+            bw.RunWorkerCompleted += delegate ( object s, RunWorkerCompletedEventArgs ee )
             {
                 this.Cursor = null;
-                foreach ( var transaction in transactions )
+                foreach ( var transaction in selectedBatch.Transactions )
                 {
-                    if ( transaction.FinancialPaymentDetailId.HasValue )
+                    if ( transaction.FinancialPaymentDetail?.CurrencyTypeValueId != null )
                     {
-                        transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ?? 0 ) );
-                        if ( transaction.FinancialPaymentDetail != null )
-                        {
-                            transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
-                        }
+                        transaction.FinancialPaymentDetail.CurrencyTypeValue = currencyValueLookup.GetValueOrNull( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value );
                     }
                 }
 
                 // sort starting with most recent first
-                var bindingList = new BindingList<FinancialTransaction>( transactions.OrderByDescending( a => a.CreatedDateTime ).ToList() );
+                var bindingList = new BindingList<FinancialTransaction>( selectedBatch.Transactions.OrderByDescending( a => a.CreatedDateTime ).ToList() );
                 bindingList.RaiseListChangedEvents = true;
                 bindingList.ListChanged += bindingList_ListChanged;
 
                 grdBatchItems.DataContext = bindingList;
+
+                if ( selectedTransactionId.HasValue )
+                {
+                    var selectedItem = bindingList.FirstOrDefault( a => a.Id == selectedTransactionId.Value );
+                    grdBatchItems.SelectedValue = selectedItem;
+                }
+
                 DisplayTransactionCount();
+
+                lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "C" );
+
+                spBatchControlAmountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlAmount ? Visibility.Visible : Visibility.Collapsed;
+                spBatchControlItemCountVarianceReadOnly.Visibility = rockConfig.CaptureAmountOnScan && rockConfig.RequireControlItemCount ? Visibility.Visible : Visibility.Collapsed;
+                spBatchControlItemCountReadOnly.Visibility = selectedBatch.ControlItemCount.HasValue ? Visibility.Visible : Visibility.Hidden;
+
+                if ( rockConfig.CaptureAmountOnScan == true )
+                {
+                    // NOTE: only show variance errors if there is at least one scanned item
+
+                    var totalBatchAmount = bindingList.SelectMany( a => a.TransactionDetails ).Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+                    var totalBatchCount = bindingList.Count();
+                    var amountVariance = totalBatchAmount - selectedBatch.ControlAmount;
+                    lblBatchControlAmountVarianceReadOnly.Content = amountVariance.ToString( "C" );
+                    if ( amountVariance != 0.00M && totalBatchCount > 0 )
+                    {
+                        lblBatchControlAmountVarianceReadOnly.Style = this.FindResource( "labelStyleError" ) as Style;
+                    }
+                    else
+                    {
+                        lblBatchControlAmountVarianceReadOnly.Style = this.FindResource( "labelStyleDd" ) as Style;
+                    }
+
+                    lblBatchControlItemCountReadOnly.Content = selectedBatch.ControlItemCount.ToString();
+                    var countVariance = totalBatchCount - selectedBatch.ControlItemCount;
+                    lblBatchControlItemCountVarianceReadOnly.Content = countVariance.ToString();
+
+                    if ( countVariance != 0 && totalBatchCount > 0 )
+                    {
+                        lblBatchControlItemCountVarianceReadOnly.Style = this.FindResource( "labelStyleError" ) as Style;
+                    }
+                    else
+                    {
+                        lblBatchControlItemCountVarianceReadOnly.Style = this.FindResource( "labelStyleDd" ) as Style;
+                    }
+                }
             };
 
             this.Cursor = Cursors.Wait;
@@ -911,9 +1351,8 @@ namespace Rock.Apps.CheckScannerUtility
             if ( transactions != null )
             {
                 RockConfig rockConfig = RockConfig.Load();
-                var client = new RockRestClient( rockConfig.RockBaseUrl );
-                client.Login( rockConfig.Username, rockConfig.Password );
-                
+                var client = this.RestClient;
+
                 foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
                     if ( transaction.FinancialPaymentDetailId.HasValue )
@@ -945,6 +1384,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 lblCount.Content = "none";
             }
+
+            CheckBatchCompleted();
 
             Rock.Wpf.WpfHelper.FadeIn( lblCount );
         }
@@ -990,16 +1431,20 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 FinancialTransaction financialTransaction = grdBatchItems.SelectedValue as FinancialTransaction;
+                this.SelectedFinancialTransaction = financialTransaction;
 
                 if ( financialTransaction != null )
                 {
                     RockConfig config = RockConfig.Load();
-                    RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                    client.Login( config.Username, config.Password );
+                    var client = this.RestClient;
+
                     financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
                     BatchItemDetailPage.batchPage = this;
                     BatchItemDetailPage.FinancialTransaction = financialTransaction;
-                    this.NavigationService.Navigate( BatchItemDetailPage );
+                    if ( this.NavigationService != null )
+                    {
+                        _navigationService.Navigate( BatchItemDetailPage );
+                    }
                 }
             }
             catch ( Exception ex )
@@ -1025,7 +1470,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnDeleteTransaction_Click( object sender, RoutedEventArgs e )
         {
-            int transactionId = (int)( sender as Button ).CommandParameter;
+            int transactionId = ( int ) ( sender as Button ).CommandParameter;
             if ( MessageBox.Show( "Are you sure you want to delete this transaction?", "Confirm", MessageBoxButton.OKCancel ) == MessageBoxResult.OK )
             {
                 try
@@ -1035,8 +1480,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( financialTransaction != null )
                     {
                         RockConfig config = RockConfig.Load();
-                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
-                        client.Login( config.Username, config.Password );
+                        var client = this.RestClient;
                         client.Delete( string.Format( "api/FinancialTransactions/{0}", transactionId ) );
                         UpdateBatchUI( this.SelectedFinancialBatch );
                     }
@@ -1059,5 +1503,32 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Loaded event of the colBatchItemAmount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void colBatchItemAmount_Loaded( object sender, RoutedEventArgs e )
+        {
+            decimal sum = 0;
+            var textblock = sender as TextBlock;
+            var context = textblock.DataContext as FinancialTransaction;
+            if ( context != null )
+            {
+                var transactionDetails = context.TransactionDetails;
+                if ( transactionDetails != null )
+                {
+                    foreach ( var transaction in transactionDetails )
+                    {
+                        sum += transaction.Amount;
+                    }
+                }
+
+            }
+
+            textblock.Text = sum.ToString( "C" );
+        }
+
     }
 }

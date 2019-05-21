@@ -20,9 +20,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
 
 using HtmlAgilityPack;
+
 using RestSharp;
 
 using Rock.Model;
@@ -120,7 +120,7 @@ namespace Rock.UniversalSearch.Crawler
             _urlQueue.Enqueue( _site.IndexStartingLocation );
             while ( _urlQueue.Any() )
             {
-                string url = _urlQueue.Dequeue();
+                string url = _urlQueue.Dequeue().Replace( "?", "\\?" );
                 CrawlPage( url );
             }
 
@@ -422,9 +422,7 @@ namespace Rock.UniversalSearch.Crawler
                     return GetWebText( requestURL );
                 }
             }
-            catch
-            {
-            }
+            catch { }
 
             return string.Empty;
         }
@@ -507,11 +505,6 @@ namespace Rock.UniversalSearch.Crawler
         private bool IsValidUrl(string url )
         {
             if( url.Length > 2000 )
-            {
-                return false;
-            }
-
-            if( url.Split('?').Length > 1 )
             {
                 return false;
             }

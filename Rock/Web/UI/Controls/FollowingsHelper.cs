@@ -17,6 +17,7 @@
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,6 +37,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="follower">The follower.</param>
         public static void SetFollowing( IEntity followEntity, WebControl followControl, Person follower )
         {
+            if ( followEntity == null )
+            {
+                return;
+            }
+
             var followingEntityType = EntityTypeCache.Get( followEntity.GetType() );
             if ( follower != null && follower.PrimaryAliasId.HasValue )
             {

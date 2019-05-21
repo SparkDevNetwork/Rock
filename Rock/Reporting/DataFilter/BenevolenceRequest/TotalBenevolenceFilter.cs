@@ -18,12 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -31,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.BenevolenceRequest
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description("Filter Benevolence Requests based on Total Amount")]
     [Export(typeof(DataFilterComponent))]
@@ -82,7 +81,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -159,7 +158,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
             DropDownList ddlCompare = controls[0] as DropDownList;
             CurrencyBox currencyBox = controls[1] as CurrencyBox;
 
-            writer.AddAttribute("class", "row field-criteria");
+            writer.AddAttribute("class", "row form-row field-criteria");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
             writer.AddAttribute("class", "col-md-4");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);

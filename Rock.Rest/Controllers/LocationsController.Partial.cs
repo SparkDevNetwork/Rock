@@ -14,14 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-using Rock.Data;
+
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -51,6 +49,19 @@ namespace Rock.Rest.Controllers
             }
 
             throw new HttpResponseException( HttpStatusCode.BadRequest );
+        }
+
+        /// <summary>
+        /// Gets the mapCoordinate from postalcode.
+        /// </summary>
+        /// <param name="postalCode">The postalcode.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/locations/postalcodetomapcoordinate/{postalCode}" )]
+        public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
+        {
+            return ( ( LocationService ) Service ).GetMapCoordinateFromPostalCode( postalCode );
         }
 
         /// <summary>

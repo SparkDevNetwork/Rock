@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -127,10 +129,14 @@ namespace Rock.Field.Types
                 }
 
                 var guids = value.SplitDelimitedValues();
-                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-                if ( accounts.Any() )
+
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName ? account.PublicName : account.Name ).ToArray() );
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( accounts.Any() )
+                    {
+                        formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
+                    }
                 }
             }
 
@@ -170,23 +176,25 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as AccountPicker;
-            string result = null;
 
             if ( picker != null )
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
-
-                if ( accounts.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    guids = accounts.Select( a => a.Guid ).ToList();
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
+
+                    if ( accounts.Any() )
+                    {
+                        guids = accounts.Select( a => a.Guid ).ToList();
+                    }
                 }
 
-                result = string.Join( ",", guids );
+                return string.Join( ",", guids );
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

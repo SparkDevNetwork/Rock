@@ -4,14 +4,14 @@
                   Name="mainWindow"
                   Title="Rock RMS - Check Scanner"
                   Source="LoginPage.xaml"
-                  Icon="./resources/check-scanner.ico"
-                  MinHeight="350"
-                  MinWidth="550"
-                  Height="620"
+                  MinHeight="850"
+                  MinWidth="960"
+                  Height="850"
                   Width="960"
                   FontFamily="./resources/#Open Sans Regular"
                   ShowsNavigationUI="False"
                   FontSize="14"
+                  Style="{StaticResource CustomWindowStyle}" 
                   WindowStartupLocation="CenterScreen"
                   Closing="mainWindow_Closing">
 </NavigationWindow>

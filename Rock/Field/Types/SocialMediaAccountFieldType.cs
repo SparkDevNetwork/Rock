@@ -20,10 +20,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -67,38 +65,28 @@ namespace Rock.Field.Types
 
             var tbName = new RockTextBox();
             controls.Add( tbName );
-            tbName.AutoPostBack = true;
-            tbName.TextChanged += OnQualifierUpdated;
             tbName.Label = "Name";
-            tbName.Help = "The name of the socal media network.";
+            tbName.Help = "The name of the social media network.";
 
             var tbIconCssClass = new RockTextBox();
             controls.Add( tbIconCssClass );
-            tbIconCssClass.AutoPostBack = true;
-            tbIconCssClass.TextChanged += OnQualifierUpdated;
             tbIconCssClass.Label = "IconCssClass";
             tbIconCssClass.Help = "The icon that represents the social media network.";
 
             var cpColor = new ColorPicker();
             controls.Add( cpColor );
-            cpColor.AutoPostBack = true;
-            cpColor.TextChanged += OnQualifierUpdated;
             cpColor.Label = "Color";
             cpColor.Help = "The color to use for making buttons for the social media network.";
 
             var textTemplate = new CodeEditor();
             controls.Add( textTemplate );
             textTemplate.Label = "Text Template";
-            textTemplate.AutoPostBack = true;
-            textTemplate.TextChanged += OnQualifierUpdated;
             textTemplate.EditorMode = CodeEditorMode.Lava;
             textTemplate.Help = "Lava template to use to create a formatted version for the link. Primarily used for making the link text.";
 
             var ulBaseUrl = new UrlLinkBox();
             controls.Add( ulBaseUrl );
             ulBaseUrl.Label = "BaseUrl";
-            textTemplate.AutoPostBack = true;
-            textTemplate.TextChanged += OnQualifierUpdated;
             textTemplate.Help = "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.";
 
             return controls;
@@ -112,7 +100,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( NAME_KEY, new ConfigurationValue( "Name", "The name of the socal media network.", "" ) );
+            configurationValues.Add( NAME_KEY, new ConfigurationValue( "Name", "The name of the social media network.", "" ) );
             configurationValues.Add( ICONCSSCLASS_KEY, new ConfigurationValue( "IconCssClass", "The icon that represents the social media network.", "" ) );
             configurationValues.Add( COLOR_KEY, new ConfigurationValue( "Color", "The color to use for making buttons for the social media network.", "" ) );
             configurationValues.Add( TEXT_TEMPLATE, new ConfigurationValue( "Text Template", "Lava template to use to create a formatted version for the link. Primarily used for making the link text.", "" ) );

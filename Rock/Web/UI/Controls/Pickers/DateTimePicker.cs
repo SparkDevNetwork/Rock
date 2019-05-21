@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -250,7 +248,7 @@ namespace Rock.Web.UI.Controls
 
         private TextBox _date;
         private TextBox _time;
-        private CheckBox _cbCurrent;
+        private RockCheckBox _cbCurrent;
         private RockTextBox _nbTimeOffset;
 
         #endregion
@@ -258,7 +256,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the selected date time. 
+        /// Gets or sets the selected date time.
         /// </summary>
         /// <value>
         /// The selected date time.
@@ -342,7 +340,7 @@ namespace Rock.Web.UI.Controls
                 return ( !SelectedDateTime.HasValue );
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [display current option].
         /// </summary>
@@ -457,7 +455,7 @@ namespace Rock.Web.UI.Controls
             _time.AddCssClass( "form-control js-datetime-time");
             Controls.Add( _time );
 
-            _cbCurrent = new CheckBox();
+            _cbCurrent = new RockCheckBox();
             _cbCurrent.ID = "cbCurrent";
             _cbCurrent.AddCssClass( "js-current-datetime-checkbox" );
             _cbCurrent.Text = "Current Time";
@@ -514,21 +512,25 @@ namespace Rock.Web.UI.Controls
             {
 
                 writer.AddAttribute(HtmlTextWriterAttribute.Id, this.ClientID );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-datetime-picker-container " + this.CssClass );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group datetime-picker-container js-datetime-picker-container " + this.CssClass );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( IsCurrentTimeOffset )
                 {
                     _date.Attributes["disabled"] = "true";
+                    _date.Attributes["placeholder"] = "Current";
                     _date.AddCssClass( "aspNetDisabled" );
                     _time.Enabled = false;
                     _nbTimeOffset.Enabled = true;
+                    _nbTimeOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
                 {
                     _date.Enabled = true;
                     _time.Enabled = true;
-                    _nbTimeOffset.Enabled = false;
+                    _nbTimeOffset.Style[HtmlTextWriterStyle.Display] = "none";
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md date" );
@@ -551,8 +553,21 @@ namespace Rock.Web.UI.Controls
 
                 if ( DisplayCurrentOption )
                 {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _cbCurrent.RenderControl( writer );
+                    writer.RenderEndTag();
+
+                    writer.RenderEndTag(); // form-row
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _nbTimeOffset.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+                else
+                {
+                    writer.RenderEndTag(); // form-row
                 }
 
                 writer.RenderEndTag();   // form-control-group

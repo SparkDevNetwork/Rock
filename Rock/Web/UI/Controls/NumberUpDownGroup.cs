@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 
-using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Collections.Generic;
-
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -33,6 +30,16 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NumberUpDownGroup runat=server></{0}:NumberUpDown>" )]
     public class NumberUpDownGroup : CompositeControl, IRockControl, IDisplayRequiredIndicator
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            EnsureChildControls();
+            base.OnInit( e );
+        }
+
         /// <summary>
         /// Gets or sets the group custom validator.
         /// </summary>
@@ -222,11 +229,13 @@ namespace Rock.Web.UI.Controls
         public string ValidationGroup
         {
             get {
+                EnsureChildControls();
                 return ViewState["ValidationGroup"] as string;
             }
 
             set
             {
+                EnsureChildControls();
                 ViewState["ValidationGroup"] = value;
 
                 if ( GroupCustomValidator != null )
@@ -293,12 +302,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public NumberUpDownGroup() : base()
         {
-            GroupCustomValidator = new CustomValidator
-            {
-                ValidationGroup = this.ValidationGroup
-            };
+            GroupCustomValidator = new CustomValidator();
 
-           // ControlGroup = new List<NumberUpDown>();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -338,7 +343,8 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-b-md" );
+                string required = Required ? " required" : string.Empty;
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-b-md js-number-up-down-group " + required );
                 RockControlHelper.RenderControl( this, writer );
             }
         }
@@ -353,16 +359,12 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             GroupCustomValidator.ID = this.ID + "_cfv";
-            GroupCustomValidator.ControlToValidate = this.ID;
+            GroupCustomValidator.ClientValidationFunction = "Rock.controls.numberUpDownGroup.clientValidate";
             GroupCustomValidator.ErrorMessage = this.RequiredErrorMessage;
             GroupCustomValidator.CssClass = "validation-error help-inline";
             GroupCustomValidator.Enabled = true;
             GroupCustomValidator.Display = ValidatorDisplay.Dynamic;
             GroupCustomValidator.ValidationGroup = ValidationGroup;
-
-            // Need custom script to ensure at least one of the controls has a value > 0
-            GroupCustomValidator.ClientValidationFunction = "Rock.controls.numberUpDownGroup.clientValidate";
-
             Controls.Add( GroupCustomValidator );
         }
     }

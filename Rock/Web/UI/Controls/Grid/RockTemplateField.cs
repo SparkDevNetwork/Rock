@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -97,7 +96,7 @@ namespace Rock.Web.UI.Controls
         /// Gets the value that should be exported to Excel
         /// </summary>
         /// <param name="row">The row.</param>
-        /// <param name="dataControlField">The data control field.</param>
+        /// <param name="dataControlFieldCell">The data control field cell.</param>
         /// <returns></returns>
         public virtual object GetExportValue( GridViewRow row, DataControlFieldCell dataControlFieldCell )
         {

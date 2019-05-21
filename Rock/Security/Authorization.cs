@@ -18,14 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.Security;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
-using System.Runtime.Serialization;
 
 namespace Rock.Security
 {
@@ -53,7 +54,7 @@ namespace Rock.Security
         public const string EDIT = "Edit";
 
         /// <summary>
-        /// Authorization to delete object (only used in few places where delete needs to be securred differently that EDIT, i.e. Financial Batch )
+        /// Authorization to delete object (only used in few places where delete needs to be secured differently that EDIT, i.e. Financial Batch )
         /// </summary>
         public const string DELETE = "Delete";
 
@@ -82,6 +83,16 @@ namespace Rock.Security
         /// </summary>
         public const string MANAGE_MEMBERS = "ManageMembers";
 
+        /// <summary>
+        /// Authorization to perform scheduling
+        /// </summary>
+        public const string SCHEDULE = "Schedule";
+
+        /// <summary>
+        /// Authorization action for using (tagging with) the Tag.
+        /// </summary>
+        public const string TAG = "Tag";
+
         #endregion
 
         #region Public Methods
@@ -89,6 +100,7 @@ namespace Rock.Security
         /// <summary>
         /// Load the static Authorizations object
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get() Instead." )]
         public static bool Load()
         {
@@ -191,6 +203,7 @@ namespace Rock.Security
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use RefreshEntity() instead." )]
         public static void ReloadEntity( int entityTypeId, int entityId, RockContext rockContext = null )
         {
@@ -275,6 +288,7 @@ namespace Rock.Security
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="action">The action.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use RefreshAction() instead." )]
         public static void ReloadAction( int entityTypeId, int entityId, string action )
         {
@@ -319,6 +333,7 @@ namespace Rock.Security
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="action">The action.</param>
         /// <param name="rockContext">The rock context.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use RefreshAction() instead." )]
         public static void ReloadAction( int entityTypeId, int entityId, string action, RockContext rockContext )
         {
@@ -637,6 +652,7 @@ namespace Rock.Security
         /// <summary>
         /// Clear the static Authorizations object
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Clear() instead." )]
         public static void Flush()
         {
@@ -779,7 +795,8 @@ namespace Rock.Security
             var domains = dt?.DefinedValues.Select( v => v.Value ).ToList() ?? new List<string>();
 
             // Get the first domain in the list that the current request's host name ends with
-            var domain = domains.FirstOrDefault( d => HttpContext.Current.Request.Url.Host.ToLower().EndsWith( d.ToLower() ) );
+            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+            var domain = domains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
             if ( !domain.IsNotNullOrWhiteSpace() ) return null;
 
             // Make sure domain name is prefixed with a '.'

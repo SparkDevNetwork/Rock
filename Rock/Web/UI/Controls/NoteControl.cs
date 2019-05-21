@@ -16,15 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,6 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Displays a Rock Note.
     /// </summary>
     [ToolboxData( "<{0}:NoteControl runat=server></{0}:NoteControl>" )]
+    [RockObsolete( "1.8" )]
     [Obsolete("No Longer Supported")]
     public class NoteControl : CompositeControl
     {

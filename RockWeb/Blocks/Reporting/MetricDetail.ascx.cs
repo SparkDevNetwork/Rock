@@ -743,12 +743,13 @@ Simple metric with GroupId as the Partition.
 </ul>
 
 <pre>
-SELECT COUNT(*), [GroupId]
-FROM [Attendance] 
+SELECT COUNT(*), O.[GroupId]
+FROM [Attendance] A
+INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
   AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
   AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
-GROUP BY [GroupId]
+GROUP BY O.[GroupId]
 </pre>
 
 <br />
@@ -762,12 +763,13 @@ A metric with multiple partitions.
     <li>The Nth Column will be the EntityId of the (N-1)th Partition </li>
 </ul>
 <pre>
-SELECT COUNT(*), [GroupId], [CampusId], [ScheduleId]
-FROM [Attendance] 
+SELECT COUNT(*), O.[GroupId], A.[CampusId], O.[ScheduleId]
+FROM [Attendance] A
+INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
   AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
   AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
-GROUP BY [GroupId], [CampusId], [ScheduleId]
+GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
 
 <br />
@@ -784,12 +786,13 @@ A metric with multiple partitions with a specific MetricValueDateTime specified.
 -- get totals for the previous week
 {% assign weekEndDate = RunDateTime | SundayDate | DateAdd:-7,'d' %}
 
-SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], [GroupId], [CampusId], [ScheduleId]
-FROM [Attendance] 
+SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], O.[GroupId], A.[CampusId], O.[ScheduleId]
+FROM [Attendance] A
+INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
   AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}' 
   AND StartDateTime < '{{ weekEndDate | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
-GROUP BY [GroupId], [CampusId], [ScheduleId]
+GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
 
 NOTE: If a [MetricValueDateTime] is specified and there is already a metric value, the value will get updated. This is handy if you have a weekly metric, but schedule it to calculate every day.

@@ -90,6 +90,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Communications\TwilioTests.cs" />
     <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
@@ -107,10 +108,12 @@
     <Compile Include="Rock\Model\PageRouteTests.cs" />
     <Compile Include="Rock\Model\PageTests.cs" />
     <Compile Include="Rock\Model\PersonTests.cs" />
+    <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="Rock\StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\NcoaApi\TrueNcoaApiTests.cs" />
+    <Compile Include="Rock\Utility\RockDynamicTests.cs" />
     <Compile Include="Rock\Workflow\Action\BackgroundCheckRequestTests.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>

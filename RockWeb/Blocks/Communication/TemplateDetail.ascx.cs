@@ -44,6 +44,12 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
     [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 0 )]
+    [BinaryFileTypeField( "Attachment Binary File Type",
+        description: "The FileType to use for files that are attached to an sms or email communication",
+        required: true,
+        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
+        order: 1,
+        key: "AttachmentBinaryFileType" )]
     public partial class TemplateDetail : RockBlock
     {
         #region Base Control Methods
@@ -191,13 +197,13 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => communicationTemplate.Attachments.All( x => x.BinaryFileId != a ) ) )
             {
-                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
             }
 
             communicationTemplate.Subject = tbEmailSubject.Text;
             communicationTemplate.Message = ceEmailTemplate.Text;
 
-            communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            communicationTemplate.SMSFromDefinedValueId = dvpSMSFrom.SelectedValue.AsIntegerOrNull();
             communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
 
             communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
@@ -454,7 +460,7 @@ namespace RockWeb.Blocks.Communication
             UpdateAttachedFiles( false );
 
             // SMS Fields
-            ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
+            dvpSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
 
             // render UI based on Authorized and IsSystem
@@ -487,14 +493,14 @@ namespace RockWeb.Blocks.Communication
             tbBCCList.ReadOnly = restrictedEdit;
             tbEmailSubject.ReadOnly = restrictedEdit;
             fupAttachments.Visible = !restrictedEdit;
-
+            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
             tbDescription.ReadOnly = readOnly;
             imgTemplatePreview.Enabled = !readOnly;
             ceEmailTemplate.ReadOnly = readOnly;
 
             mfpSMSMessage.Visible = !restrictedEdit;
-            ddlSMSFrom.Enabled = !restrictedEdit;
+            dvpSMSFrom.Enabled = !restrictedEdit;
             tbSMSTextMessage.ReadOnly = restrictedEdit;
             ceEmailTemplate.ReadOnly = restrictedEdit;
 
@@ -509,7 +515,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            dvpSMSFrom.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ).Id;
+            dvpSMSFrom.DisplayDescriptions = true;
         }
 
         /// <summary>
@@ -667,9 +674,15 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsNode == null )
             {
-                lavaFieldsNode = templateDoc.CreateElement( "div" );
+                lavaFieldsNode = templateDoc.CreateElement( "noscript" );
                 lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
-                lavaFieldsNode.Attributes.Add( "style", "display:none" );
+            }
+            else if ( lavaFieldsNode.ParentNode.Name == "body" )
+            {
+                // if the lava-fields is a in the body (from pre-v9 template), remove it from body, and let it get added to head instead
+                lavaFieldsNode.Attributes.Remove( "style" );
+                lavaFieldsNode.Remove();
+                lavaFieldsNode.Name = "noscript";
             }
 
             var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
@@ -731,7 +744,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var lavaAssignsHtml = new StringBuilder();
                 lavaAssignsHtml.AppendLine();
-                lavaAssignsHtml.AppendLine( "    <!-- Lava Fields: Code-Generated from Template Editor -->" );
+                lavaAssignsHtml.AppendLine( "    {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}" );
                 foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
                 {
                     lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
@@ -743,16 +756,16 @@ namespace RockWeb.Blocks.Communication
 
                 if ( lavaFieldsNode.ParentNode == null )
                 {
-                    var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
-                    if ( bodyNode != null )
+                    var headNode = templateDoc.DocumentNode.SelectSingleNode( "//head" );
+                    if ( headNode != null )
                     {
                         // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                        bodyNode.PrependChild( lavaFieldsNode );
+                        headNode.PrependChild( lavaFieldsNode );
 
                         // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
                     }
                 }
             }

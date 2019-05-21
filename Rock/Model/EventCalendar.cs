@@ -18,11 +18,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -111,6 +113,16 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Returns the default authorization for a specific action.
+        /// </summary>
+        /// <param name="action">A <see cref="System.String"/> representing the name of the action.</param>
+        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the specified action is allowed by default; otherwise <c>false</c>.</returns>
+        public override bool IsAllowedByDefault( string action )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets the supported actions.
         /// </summary>
         /// <value>
@@ -144,7 +156,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
         }

@@ -17,11 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
 {
@@ -127,12 +127,16 @@ namespace Rock.Field.Types
                     displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
                 }
 
-                var service = new FinancialAccountService( new RockContext() );
-                var account = service.Get( guid.Value );
-
-                if ( account != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = displayPublicName ? account.PublicName : account.Name;
+                    var service = new FinancialAccountService( rockContext );
+                    var account = service.GetNoTracking( guid.Value );
+
+                    if ( account != null )
+                    {
+                        formattedValue = displayPublicName ? account.PublicName : account.Name;
+
+                    }
                 }
             }
 
@@ -180,16 +184,23 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    var account = new FinancialAccountService( new RockContext() ).Get( id.Value );
-
-                    if ( account != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        return account.Guid.ToString();
+                        var account = new FinancialAccountService( rockContext ).GetNoTracking( id.Value );
+
+                        if ( account != null )
+                        {
+                            return account.Guid.ToString();
+                        }
                     }
+                }
+                else
+                {
+                    return string.Empty;
                 }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

@@ -6,34 +6,29 @@
   &-inline {
     width: 220px;
   }
-  &&-rtl {
-    direction: rtl;
-    table tr td span {
-      float: right;
-    }
-  }
+
   &-dropdown {
     top: 0;
     left: 0;
     padding: 4px;
-    &:before {
+    &::before {
       position: absolute;
       display: inline-block;
       content: "";
-      border-top:    0;
-      border-right:  7px solid transparent;
+      border-top: 0;
+      border-right: 7px solid transparent;
       border-bottom: 7px solid @dropdown-border;
       border-bottom-color: rgba(0,0,0,.2);
-      border-left:   7px solid transparent;
+      border-left: 7px solid transparent;
     }
     &::after {
       position: absolute;
       display: inline-block;
       content: "";
-      border-top:    0;
-      border-right:  6px solid transparent;
+      border-top: 0;
+      border-right: 6px solid transparent;
       border-bottom: 6px solid @dropdown-bg;
-      border-left:   6px solid transparent;
+      border-left: 6px solid transparent;
     }
     &.datepicker-orient-left::before   { left: 6px; }
     &.datepicker-orient-left::after    { left: 7px; }
@@ -43,12 +38,12 @@
     &.datepicker-orient-bottom::after  { top: -6px; }
     &.datepicker-orient-top::before {
       bottom: -7px;
-      border-top:    7px solid @dropdown-border;
+      border-top: 7px solid @dropdown-border;
       border-bottom: 0;
     }
     &.datepicker-orient-top::after {
       bottom: -6px;
-      border-top:    6px solid @dropdown-bg;
+      border-top: 6px solid @dropdown-bg;
       border-bottom: 0;
     }
   }
@@ -61,7 +56,8 @@
     user-select: none;
     -webkit-touch-callout: none;
     tr {
-      td, th {
+      td,
+      th {
         width: 30px;
         height: 30px;
         text-align: center;
@@ -73,7 +69,8 @@
   // Inline display inside a table presents some problems with
   // border and background colors.
   .table-striped & table tr {
-    td, th {
+    td,
+    th {
       background-color: transparent;
     }
   }
@@ -95,7 +92,8 @@
     }
     &.highlighted {
       @highlighted-bg: @state-info-bg;
-      .button-variant(#000, @highlighted-bg, darken(@highlighted-bg, 20%));
+      color: #000;
+      background: @highlighted-bg;
       border-radius: 0;
 
       &.focused {
@@ -108,9 +106,16 @@
         background: @highlighted-bg;
       }
     }
+
     &.today {
       @today-bg: lighten(orange, 30%);
-      .button-variant(#000, @today-bg, darken(@today-bg, 20%));
+      color: #000;
+      background-color: @today-bg;
+
+      &:hover,
+      &:focus {
+        background: darken(@today-bg, 17%);
+      }
 
       &.focused {
         background: darken(@today-bg, 10%);
@@ -122,12 +127,15 @@
         background: @today-bg;
       }
     }
+
     &.range {
       @range-bg: @gray-lighter;
-      .button-variant(#000, @range-bg, darken(@range-bg, 20%));
+      color: #000;
+      background: @range-bg;
       border-radius: 0;
 
-      &.focused {
+      &.focused,
+      &:hover {
         background: darken(@range-bg, 10%);
       }
 
@@ -137,9 +145,11 @@
         background: @range-bg;
       }
     }
+
     &.range.highlighted {
       @range-highlighted-bg: mix(@state-info-bg, @gray-lighter, 50%);
-      .button-variant(#000, @range-highlighted-bg, darken(@range-highlighted-bg, 20%));
+      color: #0000;
+      background: @range-highlighted-bg;
 
       &.focused {
         background: darken(@range-highlighted-bg, 10%);
@@ -151,9 +161,15 @@
         background: @range-highlighted-bg;
       }
     }
+
     &.range.today {
       @range-today-bg: mix(orange, @gray-lighter, 50%);
-      .button-variant(#000, @range-today-bg, darken(@range-today-bg, 20%));
+      color: #000;
+      background: @range-today-bg;
+
+      &:hover {
+        background: darken(@range-today-bg, 10%);
+      }
 
       &.disabled,
       &.disabled:active {
@@ -161,16 +177,30 @@
         background: @range-today-bg;
       }
     }
+
     &.selected,
     &.selected.highlighted {
-      .button-variant(#fff, @gray-light, @gray);
+      color: #fff;
       text-shadow: 0 -1px 0 rgba(0,0,0,.25);
+      background: @gray-light;
+
+      &:hover {
+        background: darken(@gray-light, 10%);
+      }
     }
+
     &.active,
     &.active.highlighted {
-      .button-variant(@btn-primary-color, @btn-primary-bg, @btn-primary-border);
+      color: @btn-primary-color;
       text-shadow: 0 -1px 0 rgba(0,0,0,.25);
+      background: darken(@btn-primary-bg, 10%);
+
+      &:hover,
+      &:focus {
+        background: darken(@btn-primary-bg, 17%);
+      }
     }
+
     span {
       display: block;
       float: left;
@@ -194,8 +224,9 @@
       &.active:hover,
       &.active.disabled,
       &.active.disabled:hover {
-        .button-variant(@btn-primary-color, @btn-primary-bg, @btn-primary-border);
+        color: @btn-primary-color;
         text-shadow: 0 -1px 0 rgba(0,0,0,.25);
+        background: @btn-primary-bg;
       }
       &.old,
       &.new {
@@ -218,7 +249,8 @@
     }
   }
 
-  .prev, .next {
+  .prev,
+  .next {
     &.disabled {
       visibility: hidden;
     }
@@ -232,20 +264,25 @@
     vertical-align: middle;
   }
 }
+
 .input-group.date .input-group-addon {
   cursor: pointer;
 }
+
 .input-daterange {
   width: 100%;
   input {
     text-align: center;
+
+    &:first-child {
+      border-radius: 3px 0 0 3px;
+    }
+
+    &:last-child {
+      border-radius: 0 3px 3px 0;
+    }
   }
-  input:first-child {
-    border-radius: 3px 0 0 3px;
-  }
-  input:last-child {
-    border-radius: 0 3px 3px 0;
-  }
+
   .input-group-addon {
     width: auto;
     min-width: 16px;

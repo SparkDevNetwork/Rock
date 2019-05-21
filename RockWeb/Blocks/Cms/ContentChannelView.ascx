@@ -59,7 +59,7 @@
                                     <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
                                         Help="When enabled will update the page title with the channel's name unless there is an item id in the query string then it will display the item's title." />
                                     <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
-                                        Help="Enabling this option will result in the content data and attribute values to be merged using the liquid template engine." />
+                                        Help="Enabling this option will result in the content data and attribute values to be merged using the lava template engine." />
                                     <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
                                 </div>
                             </div>

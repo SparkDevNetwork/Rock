@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+
 using StackExchange.Redis;
 
 namespace Rock.Web.Cache
@@ -31,6 +32,7 @@ namespace Rock.Web.Cache
     /// https://github.com/ironyx/sharpmemorycache
     /// 
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "use RockCache instead" )]
     public class RockMemoryCache : MemoryCache
     {

@@ -37,7 +37,7 @@
         max = originalInput.data('max') || 5,
         min = originalInput.data('min') || 0,
         def_val = originalInput.val() || 0,
-        lib = originalInput.data('icon-lib') || 'glyphicon'
+        lib = originalInput.data('icon-lib') || 'glyphicon',
         active = originalInput.data('active-icon') || 'glyphicon-star',
         inactive = originalInput.data('inactive-icon') || 'glyphicon-star-empty',
         clearable = originalInput.data('clearable') || null,

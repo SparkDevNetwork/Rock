@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.OData;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -156,32 +157,6 @@ namespace Rock.Rest.Controllers
             /// The end date time stamp.
             /// </value>
             public long EndDateTimeStamp { get; set; }
-        }
-
-        /// <summary>
-        /// Gets the name of the series.
-        /// </summary>
-        /// <param name="metricId">The metric identifier.</param>
-        /// <param name="seriesId">The series identifier.</param>
-        /// <returns></returns>
-        [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
-        [Obsolete( "Use api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
-        public string GetSeriesName( int metricId, int seriesId )
-        {
-            return string.Format( "Series{0}", seriesId );
-        }
-
-        /// <summary>
-        /// Gets the name of the series partition.
-        /// </summary>
-        /// <param name="metricId">The metric identifier.</param>
-        /// <param name="metricValuePartitionEntityIds">The metric value partition entity ids.</param>
-        /// <returns></returns>
-        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
-        [Obsolete( "Use POST ~api/MetricValues/GetSeriesPartitionName/{metricId} with List<string> of EntityTypeId|EntityId as the body")]
-        public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
-        {
-            return GetSeriesPartitionName( metricId, metricValuePartitionEntityIds.Split( ',' ).ToList() );
         }
 
         /// <summary>

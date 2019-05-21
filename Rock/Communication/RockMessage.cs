@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -243,7 +244,7 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Sends the specified error message.
+        /// Sends the specified error message. Ensure you check for error messages and the boolean value to handle error causes where a communication may not be sent.
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
@@ -262,7 +263,7 @@ namespace Rock.Communication
                         if ( medium != null )
                         {
                             medium.Send( this, out errorMessages );
-                            return errorMessages.Any();
+                            return !errorMessages.Any();
                         }
                     }
 

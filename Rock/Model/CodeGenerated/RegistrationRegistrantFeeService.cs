@@ -95,6 +95,7 @@ namespace Rock.Model
             target.Quantity = source.Quantity;
             target.RegistrationRegistrantId = source.RegistrationRegistrantId;
             target.RegistrationTemplateFeeId = source.RegistrationTemplateFeeId;
+            target.RegistrationTemplateFeeItemId = source.RegistrationTemplateFeeItemId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

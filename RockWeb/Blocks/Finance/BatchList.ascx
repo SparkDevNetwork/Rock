@@ -18,10 +18,10 @@
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                             <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
                             <Rock:CampusPicker ID="campCampus" runat="server" />
-                            <Rock:RockDropDownList ID="ddlTransactionType" runat="server"  Label="Contains Transaction Type" />
+                            <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server"  Label="Contains Transaction Type" />
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
                             <Rock:RockTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code"></Rock:RockTextBox>
-                            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Contains Source Type" />
+                            <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Contains Source Type" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
 
@@ -35,18 +35,11 @@
                                 <Rock:RockBoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
                                 <Rock:RockBoundField DataField="TransactionCount" HeaderText="<span class='hidden-print'>Transaction Count</span><span class='visible-print-inline'>Txns</span>" HtmlEncode="false" SortExpression="TransactionCount" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:CurrencyField DataField="TransactionAmount" HeaderText="<span class='hidden-print'>Transaction Total</span><span class='visible-print-inline'>Txn Total</span>" HtmlEncode="false" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                <Rock:RockTemplateField HeaderText="Variance" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right">
-                                    <ItemTemplate>
-                                        <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# this.FormatValueAsCurrency((decimal)Eval("Variance")) %></span>
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField HeaderText="Amount Variance" ItemStyle-HorizontalAlign="Right" ID="lVarianceAmount" HeaderStyle-HorizontalAlign="Right" OnDataBound="lVarianceAmount_DataBound" />
+                                <Rock:RockLiteralField HeaderText="Count Variance " ItemStyle-HorizontalAlign="Right" ID="lVarianceItemCount" HeaderStyle-HorizontalAlign="Right" OnDataBound="lVarianceItemCount_DataBound" />
                                 <Rock:RockBoundField DataField="AccountSummaryHtml" HeaderText="Accounts" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop" />
-                                <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                    <ItemTemplate>
-                                        <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField HeaderText="Status" ID="lBatchStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lBatchStatus_DataBound" />
                                 <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop" />
                             </Columns>
                         </Rock:Grid>
@@ -56,27 +49,7 @@
 
             <div class="row">
                 <div class="col-md-4 col-md-offset-8 margin-t-md">
-                    <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
-                        <div class="panel-heading">
-                            <h1 class="panel-title">Total Results</h1>
-                        </div>
-                        <div class="panel-body">
-                            <asp:Repeater ID="rptAccountSummary" runat="server">
-                                <ItemTemplate>
-                                    <div class='row'>
-                                        <div class='col-xs-8'><%#Eval("Name")%></div>
-                                        <div class='col-xs-4 text-right'><%#Eval("TotalAmount")%></div>
-                                    </div>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                            <div class='row'>
-                                <div class='col-xs-8'><b>Total: </div>
-                                <div class='col-xs-4 text-right'>
-                                    <asp:Literal ID="lGrandTotal" runat="server" /></b>
-                                </div>
-                            </div>
-                        </div>
-                    </asp:Panel>
+                    <asp:Literal ID="lSummary" runat="server" />
                 </div>
             </div>
             <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>

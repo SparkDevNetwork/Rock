@@ -15,15 +15,14 @@
 // </copyright>
 //
 using System;
-
 using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
     /// <summary>
     /// Information about a reference payment to be processed by a financial gateway.  A 
-    /// reference payment is initiated using a code returned by a previous payment (i.e. using
-    /// a saved account number)
+    /// reference payment is initiated using a code returned by previous collected CreditCard/ACH info (i.e. using
+    /// a saved account number or payment token)
     /// </summary>
     public class ReferencePaymentInfo : PaymentInfo
     {
@@ -33,7 +32,8 @@ namespace Rock.Financial
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the reference number.
+        /// Gets or sets the reference number. Usually a reference to previously collected CreditCard/ACH data.
+        /// To use a saved customer record from the payment gateway, set <seealso cref="GatewayPersonIdentifier"/> instead.
         /// </summary>
         public string ReferenceNumber { get; set; }
 
@@ -41,6 +41,11 @@ namespace Rock.Financial
         /// Gets or sets the masked account number.
         /// </summary>
         public string MaskedAccountNumber { get; set; }
+
+        /// <summary>
+        /// If the payment method has an expiration date (for example a reference to a Credit Card payment), this is the expiration date
+        /// </summary>
+        public DateTime? PaymentExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the initial currency type value.
@@ -57,6 +62,14 @@ namespace Rock.Financial
         /// The initial credit card type value id.
         /// </value>
         public DefinedValueCache InitialCreditCardTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Gateway Person Identifier. Usually a reference to the gateway's saved customer info which the gateway would have previously collected payment info.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
         /// Gets the account number.

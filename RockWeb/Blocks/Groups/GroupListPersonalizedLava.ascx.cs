@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hideInactive )
             {
-                qry = qry.Where( m => m.Group.IsActive == true );
+                qry = qry.Where( m => m.Group.IsActive == true && !m.Group.IsArchived );
             }
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var groupMember in qry.ToList() )
             {
-                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) && groupMember.GroupRole.CanView )
                 {
                     groups.Add( new GroupInvolvementSummary
                     {

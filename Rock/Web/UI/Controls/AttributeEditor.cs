@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -128,6 +127,16 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbEnableHistory;
 
         /// <summary>
+        /// The Pre-HTML codeeditor
+        /// </summary>
+        protected CodeEditor _cePreHtml;
+
+        /// <summary>
+        /// The Post-HTML codeeditor
+        /// </summary>
+        protected CodeEditor _cePostHtml;
+
+        /// <summary>
         /// The hidden field that stores the FieldTypeId when the FieldType DropDown is not visible
         /// </summary>
         protected HiddenField _hfReadOnlyFieldTypeId;
@@ -151,6 +160,11 @@ namespace Rock.Web.UI.Controls
         /// Default value control
         /// </summary>
         protected DynamicPlaceholder _phDefaultValue;
+
+        /// <summary>
+        /// The advanced panel widget
+        /// </summary>
+        protected PanelWidget _pwAdvanced;
 
         /// <summary>
         /// Save control
@@ -233,7 +247,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute entity type qualifier column.
         /// </value>
-        private string AttributeEntityTypeQualifierColumn
+        public string AttributeEntityTypeQualifierColumn
         {
             get
             {
@@ -251,7 +265,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute entity type qualifier value.
         /// </value>
-        private string AttributeEntityTypeQualifierValue
+        public string AttributeEntityTypeQualifierValue
         {
             get
             {
@@ -273,6 +287,19 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["ShowActions"] as bool? ?? true; }
             set { ViewState["ShowActions"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show action title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show action title]; otherwise, <c>false</c>.
+        ///   defaulted True
+        /// </value>
+        public bool ShowActionTitle
+        {
+            get { return ViewState["ShowActionTitle"] as bool? ?? true; }
+            set { ViewState["ShowActionTitle"] = value; }
         }
 
         /// <summary>
@@ -586,7 +613,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "Use IsShowInGridVisible instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use IsShowInGridVisible instead.", true )]
         public bool ShowInGridVisible
         {
             get
@@ -826,6 +854,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cePreHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cePreHtml.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cePostHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cePostHtml.Text = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
@@ -851,6 +919,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The field type id.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead" )]
         public int? FieldTypeId
         {
@@ -887,6 +956,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The qualifiers.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead" )]
         public Dictionary<string, ConfigurationValue> Qualifiers
         {
@@ -942,7 +1012,6 @@ namespace Rock.Web.UI.Controls
 
             this.FieldTypeIdState = this.AttributeFieldTypeId;
             this.FieldTypeQualifierStateJSON = this.AttributeQualifiers.ToJson();
-
         }
 
         /// <summary>
@@ -1217,11 +1286,7 @@ namespace Rock.Web.UI.Controls
             _cvKey.CssClass = "validation-error help-inline";
             _cvKey.ErrorMessage = "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
             Controls.Add( _cvKey );
-
-            _tbIconCssClass = new RockTextBox();
-            _tbIconCssClass.ID = "_tbIconCssClass";
-            _tbIconCssClass.Label = "Icon CSS Class";
-            Controls.Add( _tbIconCssClass );
+                       
 
             _cbRequired = new RockCheckBox();
             _cbRequired.ID = "cbRequired";
@@ -1235,45 +1300,6 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.Text = "Yes";
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
-
-            _cbAllowSearch = new RockCheckBox();
-            _cbAllowSearch.ID = "cbAllowSearch";
-            _cbAllowSearch.Label = "Allow Search";
-            _cbAllowSearch.Text = "Yes";
-            _cbAllowSearch.Help = "If selected, this attribute can be search on.";
-            _cbAllowSearch.Visible = false;  // Default is to not show this option
-            Controls.Add( _cbAllowSearch );
-
-            _cbIsIndexingEnabled = new RockCheckBox();
-            _cbIsIndexingEnabled.ID = "cbAllowIndexing";
-            _cbIsIndexingEnabled.Label = "Indexing Enabled";
-            _cbIsIndexingEnabled.Text = "Yes";
-            _cbIsIndexingEnabled.Help = "If selected, this attribute can be used when indexing for universal search.";
-            _cbIsIndexingEnabled.Visible = false;  // Default is to not show this option
-            Controls.Add( _cbIsIndexingEnabled );
-
-            _cbIsAnalytic = new RockCheckBox();
-            _cbIsAnalytic.ID = "_cbIsAnalytic";
-            _cbIsAnalytic.Label = "Analytics Enabled";
-            _cbIsAnalytic.Text = "Yes";
-            _cbIsAnalytic.Help = "If selected, this attribute will be made available as an Analytic";
-            _cbIsAnalytic.Visible = false;  // Default is to not show this option
-            Controls.Add( _cbIsAnalytic );
-
-            _cbIsAnalyticHistory = new RockCheckBox();
-            _cbIsAnalyticHistory.ID = "_cbIsAnalyticHistory";
-            _cbIsAnalyticHistory.Label = "Analytics History Enabled";
-            _cbIsAnalyticHistory.Text = "Yes";
-            _cbIsAnalyticHistory.Help = "If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled.";
-            _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
-            Controls.Add( _cbIsAnalyticHistory );
-
-            _cbEnableHistory = new RockCheckBox();
-            _cbEnableHistory.ID = "_cbEnableHistory";
-            _cbEnableHistory.Label = "Enable History";
-            _cbEnableHistory.Text = "Yes";
-            _cbEnableHistory.Help = "If selected, changes to the value of this attribute will be stored in attribute value history";
-            Controls.Add( _cbEnableHistory );
 
             _lFieldType = new RockLiteral();
             _lFieldType.Label = "Field Type";
@@ -1302,6 +1328,81 @@ namespace Rock.Web.UI.Controls
             _phDefaultValue = new DynamicPlaceholder();
             _phDefaultValue.ID = "phDefaultValue";
             Controls.Add( _phDefaultValue );
+
+            _pwAdvanced = new PanelWidget();
+            _pwAdvanced.ID = "pwAdvanced";
+            _pwAdvanced.Title = "Advanced Settings";
+            
+            var pnlAdvancedTopRow = new Panel { CssClass = "row" };
+            _pwAdvanced.Controls.Add( pnlAdvancedTopRow );
+            var pnlAdvancedTopRowCol1 = new Panel { CssClass = "col-md-6" };
+            pnlAdvancedTopRow.Controls.Add( pnlAdvancedTopRowCol1 );
+            var pnlAdvancedTopRowCol2 = new Panel { CssClass = "col-md-6" };
+            pnlAdvancedTopRow.Controls.Add( pnlAdvancedTopRowCol2 );
+            Controls.Add( _pwAdvanced );
+
+            _tbIconCssClass = new RockTextBox();
+            _tbIconCssClass.ID = "_tbIconCssClass";
+            _tbIconCssClass.Label = "Icon CSS Class";
+            pnlAdvancedTopRowCol1.Controls.Add( _tbIconCssClass );
+
+            _cbEnableHistory = new RockCheckBox();
+            _cbEnableHistory.ID = "_cbEnableHistory";
+            _cbEnableHistory.Label = "Enable History";
+            _cbEnableHistory.Text = "Yes";
+            _cbEnableHistory.Help = "If selected, changes to the value of this attribute will be stored in attribute value history";
+            pnlAdvancedTopRowCol1.Controls.Add( _cbEnableHistory );
+
+            _cbAllowSearch = new RockCheckBox();
+            _cbAllowSearch.ID = "cbAllowSearch";
+            _cbAllowSearch.Label = "Allow Search";
+            _cbAllowSearch.Text = "Yes";
+            _cbAllowSearch.Help = "If selected, this attribute can be searched on.";
+            _cbAllowSearch.Visible = false;  // Default is to not show this option
+            pnlAdvancedTopRowCol1.Controls.Add( _cbAllowSearch );
+
+            _cbIsIndexingEnabled = new RockCheckBox();
+            _cbIsIndexingEnabled.ID = "cbAllowIndexing";
+            _cbIsIndexingEnabled.Label = "Indexing Enabled";
+            _cbIsIndexingEnabled.Text = "Yes";
+            _cbIsIndexingEnabled.Help = "If selected, this attribute can be used when indexing for universal search.";
+            _cbIsIndexingEnabled.Visible = false;  // Default is to not show this option
+            pnlAdvancedTopRowCol1.Controls.Add( _cbIsIndexingEnabled );
+
+            _cbIsAnalytic = new RockCheckBox();
+            _cbIsAnalytic.ID = "_cbIsAnalytic";
+            _cbIsAnalytic.Label = "Analytics Enabled";
+            _cbIsAnalytic.Text = "Yes";
+            _cbIsAnalytic.Help = "If selected, this attribute will be made available as an Analytic";
+            _cbIsAnalytic.Visible = false;  // Default is to not show this option
+            pnlAdvancedTopRowCol2.Controls.Add( _cbIsAnalytic );
+
+            _cbIsAnalyticHistory = new RockCheckBox();
+            _cbIsAnalyticHistory.ID = "_cbIsAnalyticHistory";
+            _cbIsAnalyticHistory.Label = "Analytics History Enabled";
+            _cbIsAnalyticHistory.Text = "Yes";
+            _cbIsAnalyticHistory.Help = "If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled.";
+            _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
+            pnlAdvancedTopRowCol2.Controls.Add( _cbIsAnalyticHistory );
+
+            var pnlAdvancedPrePostHTMLRow = new Panel { CssClass = "row" };
+            _pwAdvanced.Controls.Add( pnlAdvancedPrePostHTMLRow );
+            var pnlAdvancedPrePostHTMLCol = new Panel { CssClass = "col-md-12" };
+            pnlAdvancedPrePostHTMLRow.Controls.Add( pnlAdvancedPrePostHTMLCol );
+
+            _cePreHtml = new CodeEditor();
+            _cePreHtml.ID = "_cePreHtml";
+            _cePreHtml.Label = "Pre-HTML";
+            _cePreHtml.Help = "HTML that should be rendered before the attribute's edit control";
+            _cePreHtml.EditorMode = CodeEditorMode.Html;
+            pnlAdvancedPrePostHTMLCol.Controls.Add( _cePreHtml );
+
+            _cePostHtml = new CodeEditor();
+            _cePostHtml.ID = "_cePostHtml";
+            _cePostHtml.Label = "Post-HTML";
+            _cePostHtml.Help = "HTML that should be rendered after the attribute's edit control";
+            _cePostHtml.EditorMode = CodeEditorMode.Html;
+            pnlAdvancedPrePostHTMLCol.Controls.Add( _cePostHtml );
 
             _btnSave = new LinkButton();
             _btnSave.ID = "btnSave";
@@ -1352,7 +1453,7 @@ namespace Rock.Web.UI.Controls
             _cbIsAnalytic.Visible = false;
             _cbIsAnalyticHistory.Visible = false;
 
-            // Only show the Analytic checkbox if the Entity is IAnalytic
+            // Only show certain options depending on the EntityType
             if ( this.AttributeEntityTypeId.HasValue )
             {
                 var entityType = EntityTypeCache.Get( this.AttributeEntityTypeId.Value );
@@ -1360,6 +1461,8 @@ namespace Rock.Web.UI.Controls
                 {
                     _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
                     _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
+                    _cePreHtml.Visible = entityType.AttributesSupportPrePostHtml;
+                    _cePostHtml.Visible = entityType.AttributesSupportPrePostHtml;
                 }
             }
 
@@ -1394,6 +1497,15 @@ namespace Rock.Web.UI.Controls
                     rockControl.ValidationGroup = validationGroup;
                 }
             }
+
+            foreach ( var control in _pwAdvanced.ControlsOfTypeRecursive<Control>() )
+            {
+                if ( control is IRockControl )
+                {
+                    ( ( IRockControl ) control ).ValidationGroup = validationGroup;
+                }
+            }
+
             _btnSave.ValidationGroup = validationGroup;
         }
 
@@ -1407,9 +1519,12 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-            _lAttributeActionTitle.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( ShowActionTitle )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Legend );
+                _lAttributeActionTitle.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             var existingKeyNames = new List<string>();
             ReservedKeyNames.ForEach( n => existingKeyNames.Add( n ) );
@@ -1457,8 +1572,6 @@ namespace Rock.Web.UI.Controls
             _lKey.RenderControl( writer );
             _tbKey.RenderControl( writer );
             _cvKey.RenderControl( writer );
-            _tbIconCssClass.RenderControl( writer );
-
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1466,16 +1579,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbRequired.RenderControl( writer );
-            _cbIsIndexingEnabled.RenderControl( writer );
-            _cbIsAnalytic.RenderControl( writer );
-            _cbIsAnalyticHistory.RenderControl( writer );
-            _cbEnableHistory.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbShowInGrid.RenderControl( writer );
-            _cbAllowSearch.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -1493,6 +1601,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
+            _pwAdvanced.RenderControl( writer );
 
             // </fieldset>
             writer.RenderEndTag();
@@ -1606,6 +1716,8 @@ namespace Rock.Web.UI.Controls
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
                 this.IsActive = attribute.IsActive;
                 this.EnableHistory = attribute.EnableHistory;
+                this.PreHtml = attribute.PreHtml;
+                this.PostHtml = attribute.PostHtml;
 
                 // only allow the fieldtype to be set if this a new attribute
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
@@ -1672,10 +1784,15 @@ namespace Rock.Web.UI.Controls
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
                 attribute.IsActive = this.IsActive;
                 attribute.EnableHistory = this.EnableHistory;
+                attribute.PreHtml = this.PreHtml;
+                attribute.PostHtml = this.PostHtml;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
                     attribute.Categories.Add( c ) );
+
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+                attribute.ModifiedDateTime = RockDateTime.Now;
 
                 attribute.AttributeQualifiers.Clear();
                 foreach ( var qualifier in AttributeQualifiers )
@@ -1711,7 +1828,20 @@ namespace Rock.Web.UI.Controls
             {
                 // make sure each qualifier control has a unique/predictable ID to help avoid viewstate issues
                 var controlTypeName = control.GetType().Name;
+                var oldControlId = control.ID ?? string.Empty;
                 control.ID = $"qualifier_{fieldTypeId}_{controlTypeName}_{i++}";
+
+                // if this is a RockControl with a required field validator, make sure RequiredFieldValidator.ControlToValidate gets updated with the new control id
+                if ( control is IRockControl rockControl )
+                {
+                    if ( rockControl.RequiredFieldValidator != null)
+                    {
+                        if ( rockControl.RequiredFieldValidator.ControlToValidate == oldControlId )
+                        {
+                            rockControl.RequiredFieldValidator.ControlToValidate = control.ID;
+                        }
+                    }
+                }
                 _phQualifiers.Controls.Add( control );
             }
         }

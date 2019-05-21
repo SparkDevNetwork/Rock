@@ -30,7 +30,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlBatchName" runat="server" Label="Name" Visible="false" Required="true"/>
+                            <Rock:DefinedValuePicker ID="dvpBatchName" runat="server" Label="Name" Visible="false" Required="true"/>
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged"></Rock:RockDropDownList>
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Batch Start" Required="true" RequiredErrorMessage="A Batch Start Date is required" />
@@ -38,6 +38,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:CurrencyBox ID="tbControlAmount" runat="server" Label="Control Amount" />
+                            <Rock:NumberBox ID="nbControlItemCount" runat="server" Label="Control Item Count" NumberType="Integer" />
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="AccountingSystemCode"
                                 Help="Optional id or code from an external accounting system." />

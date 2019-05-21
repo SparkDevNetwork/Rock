@@ -7,6 +7,48 @@
 
 */
 
+// Fullscreen Toggle
+
+.rock-fullscreen-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: inline-flex; /* make element size relative to content */
+  align-items: center; /* vertical alignment of items */
+  justify-content: center;
+  width: 50px;
+  padding: 0 10px; /* horizontal with padding-l/r */
+  line-height: 40px; /* vertically size by height, line-height or padding */
+  color: @text-color;
+  text-align: center;
+  cursor: pointer;
+  border-left: 1px solid @panel-border;
+  opacity: .5;
+  transition: .2s;
+
+  &:hover {
+    font-size: 110%;
+    color: @text-color;
+    opacity: .75;
+  }
+
+  &::before {
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    text-align: center;
+    content: @fa-var-expand;
+  }
+
+  .is-fullscreen & {
+    color: @text-color;
+    &::before {
+      content: @fa-var-compress;
+    }
+  }
+}
+
+
 // 1. Notes
 // -------------------------
 .panel-note {
@@ -273,9 +315,13 @@
     }
   }
 
-  @media @sm {
-    .note-content {
+  .note-content {
+    @media @sm {
       margin: 0 0 24px 60px;
+    }
+
+    p {
+      margin: 0;
     }
   }
 
@@ -435,9 +481,14 @@
   }
 }
 
+// Fixes note-editor name conflict with Summernote and Timeline note
+.note-list .note-editor {
+  margin: 8px 16px;
+}
+
 .noteentry-control {
   textarea {
-    .resizable(vertical)
+    .resizable(vertical);
   }
 }
 
@@ -614,7 +665,7 @@
         i.panel-navigation {
           margin-top: 8px;
 
-          &:before {
+          &::before {
             margin-top: 6px;
             font-family: @fa-font-face;
             font-size: 20px;

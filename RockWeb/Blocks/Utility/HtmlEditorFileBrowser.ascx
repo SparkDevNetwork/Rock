@@ -1,25 +1,23 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HtmlEditorFileBrowser.ascx.cs" Inherits="RockWeb.Blocks.Utility.HtmlEditorFileBrowser" %>
 
-<asp:Panel ID="pnlModalHeader" runat="server" Visible="false">
-    <h3 class="modal-title">
-        <asp:Literal ID="lTitle" runat="server"></asp:Literal>
-        <span class="js-cancel-file-button cursor-pointer pull-right" style="opacity: .5">&times;</span>
-    </h3>
+<asp:Panel ID="pnlFileBrowser" runat="server">
+    <asp:Panel ID="pnlModalHeader" CssClass="modal-header" runat="server" Visible="false">
+        <h3 class="modal-title">
+            <asp:Literal ID="lTitle" runat="server"></asp:Literal>
+            <span class="js-cancel-file-button cursor-pointer pull-right" style="opacity: .5">&times;</span>
+        </h3>
+    </asp:Panel>
 
-</asp:Panel>
-
-<div class="picker-wrapper clearfix">
-    <div class="picker-folders">
+    <div class="picker-wrapper clearfix">
         <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicitly wants it to get rebuilt) --%>
-        <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+        <asp:UpdatePanel ID="upnlFolders" Class="picker-folders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <div class="actions btn-group">
-                    <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-folder-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-i-cursor"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbArchive" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-archive"></i></asp:LinkButton>
                 </div>
 
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
@@ -57,7 +55,7 @@
 
                             // init scroll bars for folder divs
                             <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
-                                mouseWheel: false,
+                                mouseWheel: true,
                                 indicators: {
                                     el: '#<%=pnlTreeTrack.ClientID%>',
                                     interactive: true,
@@ -180,11 +178,9 @@
                 </script>
             </ContentTemplate>
         </asp:UpdatePanel>
-    </div>
 
-    <div class="picker-files">
         <%-- Files and Modals --%>
-        <asp:UpdatePanel ID="upnlFiles" runat="server">
+        <asp:UpdatePanel ID="upnlFiles" class="picker-files" runat="server">
             <ContentTemplate>
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" Dismissable="true" />
 
@@ -230,8 +226,12 @@
                 <asp:HiddenField ID="hfSelectedFolder" runat="server" />
                 <asp:HiddenField ID="hfIsRestrictedFolder" runat="server" />
                 <asp:HiddenField ID="hfIsUploadRestrictedFolder" runat="server" />
-                <div style="height: 45px;">
-                    <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" />
+                <div class="actions assetmanager-actions">
+
+                    <div class="pull-right"><Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" /></div>
+                    <div class="pull-right">
+                    <asp:LinkButton ID="lbArchive" runat="server" CssClass="btn btn-default btn-sm margin-r-sm" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-file-archive"></i> Upload Zip</asp:LinkButton>
+                    </div>
                 </div>
 
                 <div>
@@ -245,8 +245,7 @@
                         </div>
                         <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
-                                <%--<Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />--%>
-                                <asp:Label ID="lbNoFilesFound" runat="server" Visible="false" Text="No files found." CssClass="text-muted" />
+                                <asp:Label ID="lbNoFilesFound" runat="server" Visible="false" Text="This folder is empty" CssClass="text-muted padding-all-md margin-v-md empty-folder-notification" />
                                 <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                             </div>
                         </asp:Panel>
@@ -258,15 +257,14 @@
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>
-
     </div>
-</div>
 
-<asp:Panel ID="pnlModalFooterActions" CssClass="modal-footer" runat="server" Visible="false">
-    <div class="row">
-        <div class="actions">
-            <a class="btn btn-primary js-select-file-button">OK</a>
-            <a class="btn btn-link js-cancel-file-button">Cancel</a>
+    <asp:Panel ID="pnlModalFooterActions" CssClass="modal-footer" runat="server" Visible="false">
+        <div class="row">
+            <div class="actions">
+                <a class="btn btn-primary js-select-file-button">OK</a>
+                <a class="btn btn-link js-cancel-file-button">Cancel</a>
+            </div>
         </div>
-    </div>
+    </asp:Panel>
 </asp:Panel>

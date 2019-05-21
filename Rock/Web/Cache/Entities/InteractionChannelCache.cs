@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -34,8 +35,6 @@ namespace Rock.Web.Cache
     {
 
         #region Properties
-
-        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets the name.
@@ -164,6 +163,9 @@ namespace Rock.Web.Cache
         /// <value>
         /// The interaction components.
         /// </value>
+        [Obsolete( "This is not performant. Instead get the ID for the InteractionComponent from the DB using " +
+            "the InteractionComponentService and then use the ID to get the InteractionComponentCache obj from the cache." )]
+        [RockObsolete( "1.9.15" )]
         public List<InteractionComponentCache> InteractionComponents
         {
             get
@@ -174,7 +176,7 @@ namespace Rock.Web.Cache
 
                 if ( InteractionComponentIds == null ) return components;
 
-                foreach ( var id in InteractionComponentIds )
+                foreach ( var id in InteractionComponentIds.Keys )
                 {
                     var component = InteractionComponentCache.Get( id );
                     if ( component != null )
@@ -189,7 +191,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The component ids
         /// </summary>
-        internal List<int> InteractionComponentIds { get; private set; }
+        internal ConcurrentDictionary<int, int> InteractionComponentIds { get; private set; }
 
         #endregion
 
@@ -200,19 +202,17 @@ namespace Rock.Web.Cache
         /// </summary>
         private void InitComponentIds()
         {
-            if ( InteractionComponentIds != null ) return;
-
-            lock ( _obj )
+            if ( InteractionComponentIds != null )
             {
-                if ( InteractionComponentIds != null ) return;
+                return;
+            }
 
-                using ( var rockContext = new RockContext() )
-                {
-                    InteractionComponentIds = new InteractionComponentService( rockContext )
-                        .GetByChannelId( Id )
-                        .Select( v => v.Id )
-                        .ToList();
-                }
+            using ( var rockContext = new RockContext() )
+            {
+                InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
+                    .GetByChannelId( Id )
+                    .Select( v => v.Id )
+                    .ToList().ToDictionary( k => k, v => v ) );
             }
         }
 
@@ -224,15 +224,12 @@ namespace Rock.Web.Cache
         {
             InitComponentIds();
 
-            if ( InteractionComponentIds == null ) return;
-
-            lock ( _obj )
+            if ( InteractionComponentIds == null )
             {
-                if ( !InteractionComponentIds.Contains( id ) )
-                {
-                    InteractionComponentIds.Add( id );
-                }
+                return;
             }
+
+            InteractionComponentIds.TryAdd( id, id );
         }
 
         /// <summary>
@@ -243,15 +240,13 @@ namespace Rock.Web.Cache
         {
             InitComponentIds();
 
-            if ( InteractionComponentIds == null ) return;
-
-            lock ( _obj )
+            if ( InteractionComponentIds == null )
             {
-                if ( InteractionComponentIds.Contains( id ) )
-                {
-                    InteractionComponentIds.Remove( id );
-                }
+                return;
             }
+
+            int value;
+            InteractionComponentIds.TryRemove( id, out value );
         }
 
         /// <summary>

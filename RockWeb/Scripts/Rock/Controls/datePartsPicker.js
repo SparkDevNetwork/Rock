@@ -24,7 +24,7 @@
         var requireYear = $datePartsPicker.attr('data-requireyear') == 'true';
         var allowFuture = $datePartsPicker.attr('data-allowFuture') == 'true';
         var itemLabelText = $datePartsPicker.attr('data-itemlabel');
-        
+
         var isValid = true;
 
         if (!allowFuture) {
@@ -51,7 +51,7 @@
         else if (required) {
           // nothing is set but it is a required field.
           isValid = false;
-          validator.errormessage = itemLabelText + ' is Required.';
+          validator.errormessage = itemLabelText + ' is required.';
         }
 
         var control = $datePartsPicker

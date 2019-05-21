@@ -14,9 +14,8 @@
                 <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;My Account</h1>
             </div>
             <div class="panel-body">
-                <asp:HiddenField ID="hfPersonId" runat="server" />
                 <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
-                <asp:Panel ID="pnlView" runat="server">
+                <asp:Panel ID="pnlView" CssClass="panel-view" runat="server">
                     <div class="row">
 
                         <div class="col-sm-3">
@@ -46,6 +45,7 @@
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
+                                    <asp:PlaceHolder ID="phPhoneDisplay" runat="server">
                                     <ul class="phone-list list-unstyled">
                                         <asp:Repeater ID="rptPhones" runat="server">
                                             <ItemTemplate>
@@ -53,6 +53,7 @@
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ul>
+                                    </asp:PlaceHolder>
                                     <asp:Literal ID="lEmail" runat="server" />
                                 </div>
                             </div>
@@ -135,7 +136,7 @@
                                         </asp:Repeater>
                                     </div>
                                     <div class="row pull-right">
-                                        <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-primary btn-xs" CommandArgument='<%# Eval("PersonId") %>' CommandName="Update"> Update</asp:LinkButton>
+                                        <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-primary btn-xs" CommandArgument='<%# Eval("Person.Guid") %>' CommandName="Update"> Update</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
@@ -147,25 +148,27 @@
                     <asp:LinkButton ID="lbRequestChanges" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbRequestChanges_Click"> Request Additional Changes</asp:LinkButton>
                 </asp:Panel>
 
+                <asp:HiddenField ID="hfPersonGuid" runat="server" />
+
                 <asp:Panel ID="pnlEdit" runat="server">
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <div class="row">
 
                         <div class="col-md-3">
-                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" ButtonText="<i class='fa fa-camera'></i>" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
 
                         <div class="col-md-9">
-                            <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title" />
+                            <Rock:DefinedValuePicker ID="dvpTitle" runat="server" CssClass="input-width-md" Label="Title" AutoPostBack="true" />
                             <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" />
                             <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
                             <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" />
-                            <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
+                            <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
                             <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
                             <Rock:RockRadioButtonList ID="rblRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" />
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" Required="true">
+                                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" FormGroupCssClass="gender-picker" Required="true">
                                         <asp:ListItem Text="Male" Value="Male" />
                                         <asp:ListItem Text="Female" Value="Female" />
                                         <asp:ListItem Text="Unknown" Value="Unknown" />
@@ -179,6 +182,8 @@
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" />
                                 </div>
                             </div>
+
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         </div>
                     </div>
                     <hr />
@@ -204,10 +209,33 @@
                     </asp:Panel>
 
                     <h3>Contact Info</h3>
+                    <div class="row">
+                        <div class="col-md-10 col-md-offset-2">
+                            <div class="form-group">
+                                <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="Email Address" />
+                            </div>
+
+                            <div class="form-group">
+                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
+                                    <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
+                                    <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                                    <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                                </Rock:RockRadioButtonList>
+
+                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
+                                    <asp:ListItem Text="Email" Value="1" />
+                                    <asp:ListItem Text="SMS" Value="2" />
+                                </Rock:RockRadioButtonList>
+                            </div>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlPhoneNumbers" runat="server">
+                    <h3>Phone Numbers</h3>
                     <div class="form-horizontal">
                         <asp:Repeater ID="rContactInfo" runat="server">
                             <ItemTemplate>
-                                <div class="form-group">
+                                <div id="divPhoneNumberContainer" runat="server" class="form-group">
                                     <div class="control-label col-md-2"><%# Eval("NumberTypeValue.Value")  %></div>
                                     <div class="controls col-md-10">
                                         <div class="row">
@@ -231,33 +259,13 @@
                             </ItemTemplate>
                         </asp:Repeater>
 
-                        <div class="form-group">
-                            <div class="control-label col-md-2">Email</div>
-                            <div class="controls col-md-10">
-                                <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="" />
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="controls col-md-10 col-md-offset-2">
-                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
-                                    <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
-                                    <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
-                                    <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
-                                </Rock:RockRadioButtonList>
-                                
-                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
-                                    <asp:ListItem Text="Email" Value="1" />
-                                    <asp:ListItem Text="SMS" Value="2" />
-                                </Rock:RockRadioButtonList>
-                            </div>
-                        </div>
                     </div>
+                    </asp:Panel>
 
                     <asp:Panel ID="pnlAddress" runat="server">
                         <fieldset>
-                            <legend>
-                                <asp:Literal ID="lAddressTitle" runat="server" /></legend>
+                            <h3><asp:Literal ID="lAddressTitle" runat="server" /></h3>
+
 
                             <div class="clearfix">
                                 <div class="pull-left margin-b-md">

@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -211,6 +206,11 @@ namespace Rock.SystemGuid
         /// The protect my ministry provider
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Registration entity
+        /// </summary>
+        public const string REGISTRATION = "D2F294C6-E161-4A56-85C7-CD74D535F61A";
 
         /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity

@@ -17,10 +17,8 @@
 using System;
 using System.Reflection;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
-
-using Rock;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -170,6 +168,24 @@ namespace Rock.Web.UI.Controls
         public event EventHandler<RowEventArgs> Click;
 
         /// <summary>
+        /// Occurs when [on data bound].
+        /// </summary>
+        public event EventHandler<RowEventArgs> DataBound;
+
+        /// <summary>
+        /// Handles the on data bound.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        internal void HandleOnDataBound( object sender, RowEventArgs e )
+        {
+            if ( this.DataBound != null )
+            {
+                this.DataBound( sender, e );
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:Click"/> event.
         /// </summary>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
@@ -183,10 +199,19 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// Template used by the <see cref="DeleteField"/> control
+    /// Template used by the <see cref="DeleteField" /> control
     /// </summary>
+    /// <seealso cref="System.Web.UI.ITemplate" />
     public class DeleteFieldTemplate : ITemplate
     {
+        /// <summary>
+        /// Gets or sets the delete field.
+        /// </summary>
+        /// <value>
+        /// The delete field.
+        /// </value>
+        private DeleteField DeleteField { get; set; }
+
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -197,6 +222,7 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 DeleteField deleteField = cell.ContainingField as DeleteField;
+                this.DeleteField = deleteField;
 
                 // only need to do this stuff if the deleteField is actually going to be rendered onto the page
                 if ( deleteField.Visible )
@@ -273,6 +299,10 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+            RowEventArgs args = new RowEventArgs( row );
+            this.DeleteField.HandleOnDataBound( sender, args );
         }
 
         /// <summary>

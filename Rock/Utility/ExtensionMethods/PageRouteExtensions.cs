@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -72,14 +73,66 @@ namespace Rock
         /// <param name="routes">The routes.</param>
         /// <param name="routeName">Name of the route.</param>
         /// <param name="pageAndRouteIds">The page and route ids.</param>
+        [Obsolete( "Use the override without the Generic list instead." )]
         public static void AddPageRoute( this Collection<RouteBase> routes, string routeName, List<Rock.Web.PageAndRouteId> pageAndRouteIds)
         {
             Route route = new Route( routeName, new Rock.Web.RockRouteHandler() );
             route.DataTokens = new RouteValueDictionary();
+            route.DataTokens.Add( "RouteName", routeName );
             route.DataTokens.Add( "PageRoutes", pageAndRouteIds );
             routes.Add( route );
         }
 
+        /// <summary>
+        /// Adds the page route. If the route name already exists then the PageAndRouteId obj will be added to the DataTokens "PageRoutes" List.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
+        /// <param name="routeName">Name of the route.</param>
+        /// <param name="pageAndRouteId">The page and route identifier.</param>
+        public static void AddPageRoute( this Collection<RouteBase> routes, string routeName, Rock.Web.PageAndRouteId pageAndRouteId)
+        {
+            Route route;
+            List<Route> filteredRoutes = new List<Route>();
+
+            // The list of Route Names being used is case sensitive but IIS's usage of them is not. This can cause problems when the same
+            // route name is used on different Rock sites. In order for the correct route to be selected they must be group together.
+            // So we need to check if an existing route has been created first and then add to the data tokens if it has.
+            foreach( var rb in routes )
+            {
+                // Make sure this is a route
+                if ( rb.GetType() == typeof( Route ) )
+                {
+                    Route r = rb as Route;
+                    filteredRoutes.Add( r );
+                }
+            }
+
+            if ( filteredRoutes.Where( r => string.Compare( r.Url, routeName, true ) == 0 ).Any() )
+            {
+                route = filteredRoutes.Where( r => string.Compare( r.Url, routeName, true ) == 0 ).First();
+
+                var pageRoutes = ( List<Rock.Web.PageAndRouteId> ) route.DataTokens["PageRoutes"];
+                if ( pageRoutes == null )
+                {
+                    route.DataTokens.Add( "PageRoutes", pageAndRouteId );
+                }
+                else
+                {
+                    pageRoutes.Add( pageAndRouteId );
+                }
+            }
+            else
+            {
+                var pageRoutes = new List<Rock.Web.PageAndRouteId>();
+                pageRoutes.Add( pageAndRouteId );
+
+                route = new Route( routeName, new Rock.Web.RockRouteHandler() );
+                route.DataTokens = new RouteValueDictionary();
+                route.DataTokens.Add( "RouteName", routeName );
+                route.DataTokens.Add( "PageRoutes", pageRoutes );
+                routes.Add( route );
+            }
+        }
         #endregion Route Extensions
     }
 }

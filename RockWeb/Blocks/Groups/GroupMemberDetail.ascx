@@ -72,10 +72,22 @@
                         </div>
                     </div>
 
+                    <asp:Panel ID="pnlScheduling" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlGroupMemberScheduleTemplate" runat="server" Label="Schedule Template" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupMemberScheduleTemplate_SelectedIndexChanged" />
+                                <Rock:DatePicker ID="dpScheduleStartDate" runat="server" Label="Schedule Start Date" />
+                                <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The number of days prior to the schedule to send a reminder email or leave blank to use the default." Placeholder="Use default" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </asp:Panel>
+
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
-                            <Rock:DynamicPlaceHolder ID="phAttributesReadOnly" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
                         </div>
                     </div>
 

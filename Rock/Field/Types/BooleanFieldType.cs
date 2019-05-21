@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -248,8 +249,9 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( (RockDropDownList)control ).SelectedValue ?? string.Empty;
             }
+
             return null;
         }
 
@@ -470,9 +472,10 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public override string FormatFilterValueValue(Dictionary<string,ConfigurationValue> configurationValues, string value)
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            return value;
+            string formattedValue = FormatValue( null, value, configurationValues, false );
+            return AddQuotes( formattedValue );
         }
 
         /// <summary>

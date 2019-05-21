@@ -16,13 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Linq;
-using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -125,10 +125,13 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var registrationInstance = new RegistrationInstanceService( new RockContext() ).Get( guid );
-                if ( registrationInstance != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    formattedValue = registrationInstance.Name;
+                    var registrationInstance = new RegistrationInstanceService( rockContext ).GetNoTracking( guid );
+                    if ( registrationInstance != null )
+                    {
+                        formattedValue = registrationInstance.Name;
+                    }
                 }
             }
 
@@ -180,11 +183,11 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new RegistrationInstanceService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        itemGuid = new RegistrationInstanceService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
                 }
 
-                return itemGuid?.ToString();
+                return itemGuid?.ToString() ?? string.Empty;
             }
 
             return null;

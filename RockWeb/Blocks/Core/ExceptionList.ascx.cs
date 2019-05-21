@@ -75,9 +75,6 @@ namespace RockWeb.Blocks.Administration
             gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowItemText = "Exception";
-
-            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi", false );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
 
         /// <summary>
@@ -94,18 +91,19 @@ namespace RockWeb.Blocks.Administration
                 pnlExceptionGroups.Visible = true;
             }
 
-            lcExceptions.Options.SetChartStyle( this.ChartStyle );
             lcExceptions.Options.legend = lcExceptions.Options.legend ?? new Legend();
             lcExceptions.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             lcExceptions.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+            lcExceptions.Options.SetChartStyle( this.ChartStyle );
 
-            bcExceptions.Options.SetChartStyle( this.ChartStyle );
             bcExceptions.Options.legend = bcExceptions.Options.legend ?? new Legend();
             bcExceptions.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             bcExceptions.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
             bcExceptions.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
             bcExceptions.Options.series.bars.barWidth = 0.6;
             bcExceptions.Options.series.bars.align = "center";
+            // Set chart style after setting options so they are not overwritten.
+            bcExceptions.Options.SetChartStyle( this.ChartStyle );
 
             bcExceptions.TooltipFormatter = @"
 function(item) {
@@ -126,7 +124,7 @@ function(item) {
 
             if ( exceptionListCount == 1 )
             {
-                // if there is only one x datapoint for the Chart, show it as a barchart 
+                // if there is only one x datapoint for the Chart, show it as a barchart
                 lcExceptions.Visible = false;
                 bcExceptions.Visible = true;
             }
@@ -192,7 +190,7 @@ function(item) {
                 fExceptionList.SaveUserPreference( "Site", String.Empty );
             }
 
-            
+
             if ( ppUser.PersonId.HasValue )
             {
                 fExceptionList.SaveUserPreference( "User", ppUser.PersonId.ToString() );
@@ -214,7 +212,7 @@ function(item) {
             fExceptionList.SaveUserPreference( "Status Code", txtStatusCode.Text );
 
             fExceptionList.SaveUserPreference( "Date Range", sdpDateRange.DelimitedValues );
-           
+
             BindExceptionListGrid();
         }
 
@@ -273,7 +271,7 @@ function(item) {
                 case "Date Range":
                     e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                     break;
-                        
+
             }
         }
 
@@ -387,7 +385,7 @@ function(item) {
                                     .Select( eg => new
                                     {
                                         Id = eg.Max( e => e.Id ),
-                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault().Description + "</a>",
+                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault(e => e.Id == eg.Max( e2 => e2.Id ) ).Description + "</a>",
                                         LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
                                         TotalCount = eg.Count(),
                                         SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )

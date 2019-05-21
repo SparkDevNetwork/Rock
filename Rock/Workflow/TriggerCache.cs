@@ -17,15 +17,15 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Web.Cache;
-using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow
 {
     /// <summary>
     /// MEF Container class for WorkflowAction Components
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete( "Use WorkflowTriggersCache instead" )]
     public class TriggerCache
     {
@@ -46,6 +46,7 @@ namespace Rock.Workflow
         /// <summary>
         /// Refreshes this instance.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use WorkflowTriggersCache.Refresh() method instead" )]
         public static void Refresh()
         {
@@ -57,6 +58,7 @@ namespace Rock.Workflow
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
         public static List<WorkflowTrigger> Triggers( string entityTypeName )
         {
@@ -69,6 +71,7 @@ namespace Rock.Workflow
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="triggerType">Type of the trigger.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use WorkflowTriggersCache.Triggers() method instead" )]
         public static List<WorkflowTrigger> Triggers( string entityTypeName, WorkflowTriggerType triggerType )
         {

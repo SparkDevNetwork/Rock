@@ -28,8 +28,8 @@
                             <Rock:RockLiteral ID="lRecordStatusReadOnly" runat="server" Label="Record Status" />
                             <Rock:RockLiteral ID="lReasonReadOnly" runat="server" Label="Reason" />
                             <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
-                            <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
+                            <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                            <Rock:DefinedValuePicker ID="dvpReason" runat="server" Label="Reason" Visible="false"></Rock:DefinedValuePicker>
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off"></Rock:RockTextBox>
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
@@ -42,7 +42,7 @@
 
                                 <div class="form-row">
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title" />
+                                        <Rock:DefinedValuePicker ID="dvpTitle" runat="server" CssClass="input-width-md" Label="Title" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" autocomplete="off" />
@@ -61,14 +61,14 @@
                                         <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" autocomplete="off" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
+                                        <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
                                     </div>
                                 </div>
 
                                 <div class="form-row">
                                     <div class="col-sm-6">
                                         <Rock:RockLiteral ID="lConnectionStatusReadOnly" runat="server" Label="Connection Status" />
-                                        <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" Required="true" />
+                                        <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
                                     </div>
@@ -89,7 +89,7 @@
                                 </asp:Panel>
                                 <div class="form-row">
                                     <div class="col-sm-3">
-                                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" AutoPostBack="true" OnSelectedIndexChanged="ddlMaritalStatus_SelectedIndexChanged" />
+                                        <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" Label="Marital Status" AutoPostBack="true" OnSelectedIndexChanged="ddlMaritalStatus_SelectedIndexChanged" />
                                     </div>
                                     <div class="col-sm-3">
                                         <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />
@@ -113,11 +113,10 @@
                                                             <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                             <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' autocomplete="off" />
                                                         </div>
-                                                        <div class="col-sm-5 col-lg-5">
-                                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="pull-left" CssClass="js-sms-number" />
-                                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' ContainerCssClass="pull-left" />
+                                                        <div class="col-sm-5 col-lg-5 form-align">
+                                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' DisplayInline="true" CssClass="js-sms-number" />
+                                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' DisplayInline="true" />
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -125,12 +124,14 @@
                                     </asp:Repeater>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
+                                <div class="form-group emailgroup">
+                                    <div class="form-row">
+                                        <div class="col-sm-6">
+                                            <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                                        </div>
+                                        <div class="col-sm-3 form-align">
+                                            <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Text="Email Is Active" DisplayInline="true" />
+                                        </div>
                                     </div>
                                 </div>
 

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -48,7 +49,7 @@ namespace Rock.Field.Types
                 using ( var rockContext = new RockContext() )
                 {
                     var service = new LocationService( rockContext );
-                    var location = service.Get( new Guid( value ) );
+                    var location = service.GetNoTracking( new Guid( value ) );
                     if ( location != null )
                     {
                         formattedValue = location.ToString();
@@ -85,24 +86,27 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var addressControl = control as AddressControl;
-            var locationService = new LocationService( new RockContext() );
-            string result = null;
-
-            if ( addressControl != null )
+            using ( var rockContext = new RockContext() )
             {
-                var guid = Guid.Empty;
+                var locationService = new LocationService( rockContext );
+                string result = null;
 
-                var location = locationService.Get( addressControl.Street1, addressControl.Street2, addressControl.City, addressControl.State, addressControl.PostalCode, addressControl.Country );
-
-                if ( location != null )
+                if ( addressControl != null )
                 {
-                    guid = location.Guid;
+                    var guid = Guid.Empty;
+
+                    var location = locationService.Get( addressControl.Street1, addressControl.Street2, addressControl.City, addressControl.State, addressControl.PostalCode, addressControl.Country );
+
+                    if ( location != null )
+                    {
+                        guid = location.Guid;
+                    }
+
+                    result = guid.ToString();
                 }
 
-                result = guid.ToString();
+                return result;
             }
-
-            return result;
         }
 
         /// <summary>

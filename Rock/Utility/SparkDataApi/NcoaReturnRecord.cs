@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 
 namespace Rock.Utility.SparkDataApi
@@ -904,7 +906,11 @@ namespace Rock.Utility.SparkDataApi
             else
             {
                 ncoaHistory.NcoaType = NcoaType.NoMove;
-                ncoaHistory.Processed = Processed.Complete;
+
+                if ( AddressStatus == "V" )
+                {
+                    ncoaHistory.Processed = Processed.Complete;
+                }
             }
 
             if ( AddressStatus != "V" )

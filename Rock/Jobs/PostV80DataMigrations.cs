@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

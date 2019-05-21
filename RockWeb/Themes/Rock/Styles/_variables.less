@@ -1,4 +1,6 @@
 
+@enable-global-custom-controls: true;
+
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;                      // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
 @body-background:             #fafafa;                      // The page background color. #color
@@ -29,7 +31,7 @@
 @brand-info:                  #009ce3; // #color
 @brand-critical:              #ee7624; // #color
 
-@gray-base:                   #000000; // #color
+@gray-base:                   #000; // #color
 @gray-darker:                 #3d3d3d; // #color
 @gray-dark:                   #484848; // #color
 @gray:                        #767676; // #color
@@ -40,7 +42,7 @@
 @ui-2:                        #f7f7f7;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
 @ui-3:                        #f0f3f6;                        // Modal footer background. #color
 @ui-4:                        #dbdbdb;                        // Table, panel, well, and hr border color. #color
-@ui-5:                        #aaaaaa;                        // Grid action button color. #color
+@ui-5:                        #aaa;                        // Grid action button color. #color
 
 // Text *show in editor*
 @text-selection-background:   #bcd9ea;                      // Text selection background color (used when people select text with the mouse). #color
@@ -237,13 +239,15 @@
 @input-border-radius:         @border-radius-base;            // The border radius of input fields.
 @input-border-focus:          @brand-primary;                 // The border color of active inputs.
 
-@input-focus-rgba:            rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
-@input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
+@input-focus-rgba:            fade(@input-border-focus, 40%);
+@input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
 @input-color-placeholder:        lighten(@text-color, 40%);   // The text color of input placeholder text.
 @input-group-addon-bg:           @gray-lighter;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
 @input-group-addon-border-color: @input-border;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
+
+@control-label-weight:           @font-weight-semibold;
 
 //// Picker
 @picker-action-bg:            @ui-2;                          // The background color of the actions bar at the bottom of the picker dropdown.
@@ -270,7 +274,7 @@
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @ui-4;                          // The panel's border color.
 @panel-top-border-color:      @ui-4;                          // Color of the panel's top border often used as an accent color.
-@panel-border-radius:         @border-radius-base;
+@panel-border-radius:         @border-radius-base + 1;        // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
 @drawer-bg:                   @panel-subheading;
 //--
@@ -347,7 +351,7 @@
 @pagination-disabled-border:            transparent;
 
 //// Footer
-@grid-footer-bg:                        #ffffff;
+@grid-footer-bg:                        #fff;
 @grid-footer-text-color:                @panel-heading-text-color;
 @grid-footer-font-size:                 10px;
 @grid-footer-font-weight:               300;

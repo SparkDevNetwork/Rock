@@ -16,14 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -33,6 +27,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
+    [RockObsolete( "1.8" )]
     [Obsolete("Use EntityCache instead")]
     public abstract class CachedEntity<T>  
         where T : Rock.Data.Entity<T>, new()

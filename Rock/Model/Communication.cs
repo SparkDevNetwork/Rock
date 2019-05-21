@@ -19,17 +19,18 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Data;
 using Rock.Communication;
+using Rock.Data;
+using Rock.Web;
 using Rock.Web.Cache;
-using System.Data.Entity;
-using System.Linq.Expressions;
 
 namespace Rock.Model
 {
@@ -193,7 +194,8 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete( "MediumDataJson is no longer used." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumDataJson is no longer used.", true )]
         public string MediumDataJson { get; set; }
 
         /// <summary>
@@ -234,7 +236,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
+        [MaxLength( 1000 )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -427,7 +429,8 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data.", true )]
         public virtual Dictionary<string, string> MediumData
         {
             get
@@ -623,7 +626,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public string GetMediumDataValue( string key )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -641,7 +645,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [Obsolete( "MediumData is no longer used" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "MediumData is no longer used", true )]
         public void SetMediumDataValue( string key, string value )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -659,7 +664,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this." )]
+        [RockObsolete( "1.7.4" )]
+        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this.", true )]
         public int GetRecipientCount( RockContext rockContext )
         {
             var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
@@ -829,10 +835,9 @@ namespace Rock.Model
                 communicationRecipientService.Add( communicationRecipient );
             }
 
-            // Get all pending communiation recipents that is no longer part of the group list member
+            // Get all pending communication recipents that are no longer part of the group list member, then delete them from the Recipients
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
                 .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
-                .AsNoTracking()
                 .ToList();
 
             foreach ( var missingMember in missingMemberInList )
@@ -924,7 +929,7 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
         }
-
+        
         /// <summary>
         /// Gets the next pending.
         /// </summary>
@@ -966,7 +971,8 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead." )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead.", true )]
         public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
         {
             CommunicationRecipient recipient = null;
@@ -1086,6 +1092,7 @@ namespace Rock.Model
         /// <summary>
         /// Some other communication type
         /// </summary>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Not Supported" )]
         Other = 4
     }

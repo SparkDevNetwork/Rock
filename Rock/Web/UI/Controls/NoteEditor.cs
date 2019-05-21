@@ -20,10 +20,11 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -37,6 +38,7 @@ namespace Rock.Web.UI.Controls
 
         private DropDownList _ddlNoteType;
         private HiddenFieldWithClass _hfHasUnselectableNoteType;
+        private ValidationSummary _vsEditNote;
         private RockTextBox _tbNote;
         private CheckBox _cbAlert;
         private CheckBox _cbPrivate;
@@ -92,6 +94,7 @@ namespace Rock.Web.UI.Controls
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
                 this.IsPrivate = value.IsPrivateNote;
                 this.ParentNoteId = value.ParentNoteId;
+                this.CreatedDateTime = value.CreatedDateTime;
             }
         }
 
@@ -254,6 +257,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the created date time
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
+        public DateTime? CreatedDateTime
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dtCreateDate.SelectedDateTime;
+            }
+            set
+            {
+                EnsureChildControls();
+                _dtCreateDate.SelectedDateTime = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is alert.
         /// </summary>
         /// <value>
@@ -375,7 +398,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Events
-        
+
         /// <summary>
         /// Handles the NoteTypesChange event of the NoteOptions control.
         /// </summary>
@@ -389,7 +412,6 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Base Control Methods
-        
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -418,12 +440,20 @@ namespace Rock.Web.UI.Controls
             _hfParentNoteId.ID = this.ID + "_hfParentNoteId";
             _hfParentNoteId.CssClass = "js-parentnoteid";
             Controls.Add( _hfParentNoteId );
+            _vsEditNote = new ValidationSummary();
+            _vsEditNote.ID = this.ID + "_vsEditNote";
+
+            _vsEditNote.CssClass = "alert alert-validation";
+            _vsEditNote.HeaderText = "Please correct the following:";
+            Controls.Add( _vsEditNote );
 
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
             _tbNote.Rows = 3;
             _tbNote.CssClass = "js-notetext";
             _tbNote.ValidateRequestMode = ValidateRequestMode.Disabled;
+            _tbNote.Required = true;
+            _tbNote.RequiredFieldValidator.ErrorMessage = "Note is required.";
             Controls.Add( _tbNote );
 
             _ddlNoteType.ID = this.ID + "_ddlNoteType";
@@ -451,7 +481,7 @@ namespace Rock.Web.UI.Controls
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
             _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
-            _lbSaveNote.CausesValidation = false;
+            _lbSaveNote.CausesValidation = true;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add( _lbSaveNote );
@@ -464,6 +494,7 @@ namespace Rock.Web.UI.Controls
 
             _dtCreateDate.ID = this.ID + "_tbCreateDate";
             _dtCreateDate.Label = "Note Created Date";
+            _dtCreateDate.AddCssClass( "js-notecreateddate" );
             Controls.Add( _dtCreateDate );
         }
 
@@ -487,7 +518,12 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             var noteType = NoteTypeId.HasValue ? NoteTypeCache.Get( NoteTypeId.Value ) : null;
+
+            //Add Note Validation Group here since the ClientID is now resolved
+            AddNoteValidationGroup();
+
             StringBuilder noteCss = new StringBuilder();
+
             noteCss.Append( "note-editor js-note-editor meta" );
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
@@ -534,6 +570,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _vsEditNote.RenderControl( writer );
             _tbNote.RenderControl( writer );
             _hfNoteId.RenderControl( writer );
             _hfParentNoteId.RenderControl( writer );
@@ -601,6 +638,20 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();  // panel body
 
             writer.RenderEndTag(); // ????
+        }
+
+        /// <summary>
+        /// Adds the note validation group.
+        /// ValidationGroups for Notes needs to a group for each
+        /// Note, this is called from RenderControl
+        /// So that ClientID is fully Qualified 
+        /// </summary>
+        private void AddNoteValidationGroup()
+        {
+            string validationGroup = $"vgNoteEdit_{this.ClientID}";
+            _vsEditNote.ValidationGroup = validationGroup;
+            _tbNote.ValidationGroup = validationGroup;
+            _lbSaveNote.ValidationGroup = validationGroup;
         }
 
         #endregion

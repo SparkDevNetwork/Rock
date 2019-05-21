@@ -16,16 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Web;
+
 using Quartz;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Communication;
 
 namespace Rock.Jobs
 {
@@ -174,13 +175,13 @@ namespace Rock.Jobs
                     var errorMessages = new List<string>();
                     var emailMessage = new RockEmailMessage( systemEmail.Guid );
                     emailMessage.SetRecipients( recipients );
-                    emailMessage.Send( out errorMessages );
+                    var sendSuccess = emailMessage.Send( out errorMessages );
 
                     errorsEncountered += errorMessages.Count;
                     errorList.AddRange( errorMessages );
 
                     // be conservative: only mark as notified if we are sure the email didn't fail 
-                    if ( errorMessages.Any() )
+                    if ( sendSuccess == false )
                     {
                         continue;
                     }
@@ -201,7 +202,7 @@ namespace Rock.Jobs
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine();
-                    sb.Append( "Errors: " );
+                    sb.Append( "Errors in GroupLeaderPendingNotificationJob: " );
                     errorList.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
                     context.Result += errors;

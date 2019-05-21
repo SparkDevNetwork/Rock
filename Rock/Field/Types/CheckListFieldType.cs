@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
+
 using static Rock.Web.UI.Controls.ListItems;
 
 namespace Rock.Field.Types
@@ -39,6 +40,8 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string VALUES_KEY = "listItems";
+        private const string REPEAT_COLUMNS = "repeatColumns";
+
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -48,6 +51,7 @@ namespace Rock.Field.Types
         {
             List<string> configKeys = new List<string>();
             configKeys.Add( VALUES_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -60,10 +64,19 @@ namespace Rock.Field.Types
             List<Control> controls = new List<Control>();
 
             var li = new ListItems();
-            controls.Add( li );
             li.Label = "Values";
             li.Help = "The list of the values to display.";
             li.ValueChanged += OnQualifierUpdated;
+            controls.Add( li );
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
+
             return controls;
         }
 
@@ -78,11 +91,19 @@ namespace Rock.Field.Types
             configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
                 "The source of the values to display.", string.Empty ) );
 
+            var description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
+
             if ( controls != null )
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is ListItems )
                 {
                     configurationValues[VALUES_KEY].Value = ( ( ListItems ) controls[0] ).Value;
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                {
+                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[1] ).Text;
                 }
             }
 
@@ -103,6 +124,10 @@ namespace Rock.Field.Types
                     ( ( ListItems ) controls[0] ).Value = configurationValues[VALUES_KEY].Value;
                 }
 
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( NumberBox ) controls[1] ).Text = configurationValues[REPEAT_COLUMNS].Value;
+                }
             }
         }
 
@@ -174,6 +199,12 @@ namespace Rock.Field.Types
                 ( ( RockCheckBoxList ) editControl ).DisplayAsCheckList = true;
                 ( ( RockCheckBoxList ) editControl ).RepeatDirection = RepeatDirection.Vertical;
 
+
+                if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                {
+                    ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                }
+
                 if ( configurationValues.ContainsKey( VALUES_KEY ) )
                 {
                     var values = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
@@ -185,6 +216,7 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
                 if ( editControl.Items.Count > 0 )
                 {
                     return editControl;
@@ -284,7 +316,7 @@ namespace Rock.Field.Types
             {
                 var keyValuePairs = JsonConvert.DeserializeObject<List<KeyValuePair>>( configurationValues[VALUES_KEY].Value );
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( " OR " );
+                return AddQuotes( keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "' OR '" ) );
             }
             return string.Empty;
         }
@@ -301,28 +333,46 @@ namespace Rock.Field.Types
             Expression comparison = null;
             if ( filterValues.Count > 1 )
             {
-                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
-
-                List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-                foreach ( var selectedValue in selectedValues )
+                ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                if ( comparisonType.HasValue )
                 {
-                    var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
-                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
-                    if ( comparisonType != ComparisonType.Contains )
-                    {
-                        valueExpression = Expression.Not( valueExpression );
-                    }
+                    string compareToValue = filterValues[1];
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
 
-                    if ( comparison == null )
+                    if ( !string.IsNullOrWhiteSpace( compareToValue ) )
                     {
-                        comparison = valueExpression;
+                        List<string> selectedValues = compareToValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                        foreach ( var selectedValue in selectedValues )
+                        {
+                            var searchValue = "," + selectedValue + ",";
+                            var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                            var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
+
+                            if ( comparisonType.Value != ComparisonType.Contains )
+                            {
+                                valueExpression = Expression.Not( valueExpression );
+                            }
+
+                            if ( comparison == null )
+                            {
+                                comparison = valueExpression;
+                            }
+                            else
+                            {
+                                comparison = Expression.Or( comparison, valueExpression );
+                            }
+                        }
                     }
                     else
                     {
-                        comparison = Expression.Or( comparison, valueExpression );
+                        // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                            return ComparisonHelper.ComparisonExpression( comparisonType.Value, propertyExpression, AttributeConstantExpression( string.Empty ) );
+                        }
                     }
                 }
             }

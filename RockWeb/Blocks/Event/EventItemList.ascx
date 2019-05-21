@@ -9,7 +9,7 @@
 
                 <div class="panel panel-block">
 
-                    <div class="panel-heading clearfix">
+                    <div class="panel-heading">
                         <h1 class="panel-title pull-left">
                             <i class="fa fa-calendar-check-o"></i>
                             Event Items
@@ -32,7 +32,7 @@
                                     <asp:ListItem Text="Not Approved" Value="Not Approved" />
                                 </Rock:RockDropDownList>
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
-                                <Rock:RockCheckBoxList ID="cblAudience" runat="server" Label="Audiences" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                                <Rock:DefinedValuesPicker ID="dvpAudience" runat="server" Label="Audiences" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gEventCalendarItems" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gEventCalendarItems_Edit">

@@ -52,7 +52,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
 ", "", 5 )]
     [BooleanField( "Hide New Account Option", "Should 'New Account' option be hidden?  For sites that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
-    [CodeEditorField( "No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"We couldn’t find an account with that username. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?", "", 8, "NoAccountText" )]
+    [CodeEditorField( "No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?", "", 8, "NoAccountText" )]
 
     [CodeEditorField( "Remote Authorization Prompt Message", "Optional text (HTML) to display above remote authorization options.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, defaultValue: "Login with social account", order: 9 )]
     [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 10 )]
@@ -219,7 +219,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
 
-                if ( ( bool? ) Session["InvalidPersonToken"] == true )
+                if ( (bool?)Session["InvalidPersonToken"] == true )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     lInvalidPersonTokenText.Text = GetAttributeValue( "InvalidPersonTokenText" ).ResolveMergeFields( mergeFields );
@@ -253,7 +253,10 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
-                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        var isSuccess = component.AuthenticateAndTrack( userLogin, tbPassword.Text );
+                        rockContext.SaveChanges();
+
+                        if ( isSuccess )
                         {
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
@@ -340,7 +343,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             if ( sender is LinkButton )
             {
-                LinkButton lb = ( LinkButton ) sender;
+                LinkButton lb = (LinkButton)sender;
 
                 foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {
@@ -450,13 +453,14 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = Server.UrlDecode( returnUrl );
+                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                redirectUrl =  Server.UrlDecode( redirectUrl );
                 Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
             {
-                Response.Redirect( redirectUrlSetting );
+                Response.Redirect( redirectUrlSetting, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else

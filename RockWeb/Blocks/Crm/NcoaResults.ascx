@@ -5,10 +5,16 @@
         <asp:Panel id="pnlDetails" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title">
-                    <i class="fa fa-people-carry"></i>
-                    NCOA Results
-                </h1>
+                <div class="pull-left">
+                    <h1 class="panel-title">
+                        <i class="fa fa-people-carry"></i>
+                        NCOA Results
+                    </h1>
+                </div>
+                <div class="pull-right">
+                    <asp:Literal id="lTotal" runat="server" />
+                </div>
+                <div class="clearfix"></div>
             </div>
 
             <div class="panel-body">
@@ -101,9 +107,9 @@
                         </ItemTemplate>
                     </asp:Repeater>
 
-                    <div class="ncoaResult-nav">
-                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
-                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                    <div class="clearfix">
+                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary pull-right" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary pull-left" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
                     </div>
 
                 </div>

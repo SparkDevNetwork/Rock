@@ -138,43 +138,45 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var rockContext = new RockContext();
-            var attributeMatrixService = new AttributeMatrixService( rockContext );
-            AttributeMatrix attributeMatrix = null;
-            Guid? attributeMatrixGuid = value.AsGuidOrNull();
-            if ( attributeMatrixGuid.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                attributeMatrix = attributeMatrixService.Get( attributeMatrixGuid.Value );
-            }
-
-            if ( attributeMatrix != null)
-            { 
-                if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+                var attributeMatrixService = new AttributeMatrixService( rockContext );
+                AttributeMatrix attributeMatrix = null;
+                Guid? attributeMatrixGuid = value.AsGuidOrNull();
+                if ( attributeMatrixGuid.HasValue )
                 {
-                    // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
-                    int attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE].Value.AsInteger();
-                    if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixTemplateId )
-                    {
-                        attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
-                        attributeMatrix.AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( attributeMatrix.AttributeMatrixTemplateId );
-
-                        // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
-                        // are referring to attributes from the old template, so wipe them out. All of them.
-                        attributeMatrix.AttributeMatrixItems.Clear();
-                    }
+                    attributeMatrix = attributeMatrixService.GetNoTracking( attributeMatrixGuid.Value );
                 }
 
-                // make a temp attributeMatrixItem to see what Attributes they have
-                AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
-                tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
-                tempAttributeMatrixItem.LoadAttributes();
+                if ( attributeMatrix != null )
+                {
+                    if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+                    {
+                        // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
+                        int attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE].Value.AsInteger();
+                        if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixTemplateId )
+                        {
+                            attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
+                            attributeMatrix.AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrix.AttributeMatrixTemplateId );
 
-                var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
-                Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                mergeFields.Add( "AttributeMatrix", attributeMatrix );
-                mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
-                mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
-                return lavaTemplate.ResolveMergeFields( mergeFields );
+                            // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
+                            // are referring to attributes from the old template, so wipe them out. All of them.
+                            attributeMatrix.AttributeMatrixItems.Clear();
+                        }
+                    }
+
+                    // make a temp attributeMatrixItem to see what Attributes they have
+                    AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
+                    tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
+                    tempAttributeMatrixItem.LoadAttributes();
+
+                    var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "AttributeMatrix", attributeMatrix );
+                    mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+                    mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
+                    return lavaTemplate.ResolveMergeFields( mergeFields );
+                }
             }
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
@@ -228,9 +230,11 @@ namespace Rock.Field.Types
                 {
                     if ( attributeMatrixEditor.AttributeMatrixGuid.HasValue )
                     {
-                        var rockContext = new RockContext();
-                        var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixEditor.AttributeMatrixGuid.Value );
-                        return attributeMatrix.Guid.ToString();
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var attributeMatrix = new AttributeMatrixService( rockContext ).GetNoTracking( attributeMatrixEditor.AttributeMatrixGuid.Value );
+                            return attributeMatrix.Guid.ToString();
+                        }
                     }
                 }
             }

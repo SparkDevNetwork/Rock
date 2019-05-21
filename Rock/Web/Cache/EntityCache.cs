@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+
 using DbContext = Rock.Data.DbContext;
 
 namespace Rock.Web.Cache
@@ -112,7 +113,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        public static T Get( string guidString )
+        public static T Get( string guidString ) 
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
@@ -193,6 +194,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static T Read( int id, RockContext rockContext = null )
         {
@@ -205,6 +207,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static T Read( Guid guid, RockContext rockContext = null )
         {
@@ -216,6 +219,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use Get instead" )]
         public static T Read( TT model )
         {
@@ -226,6 +230,7 @@ namespace Rock.Web.Cache
         /// Flushes the specified identifier.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use FlushItem or Remove instead" )]
         public static void Flush( int id )
         {
@@ -239,7 +244,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState )
+        public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.

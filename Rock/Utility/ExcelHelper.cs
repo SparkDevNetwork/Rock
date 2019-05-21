@@ -16,13 +16,15 @@
 //
 using System;
 using System.Data;
-using OfficeOpenXml;
-using Rock.Model;
-using Rock.Data;
-using System.IO;
 using System.Drawing;
-using Rock.Web.UI.Controls;
+using System.IO;
 using System.Linq;
+
+using OfficeOpenXml;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Utility
 {
@@ -299,10 +301,16 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string FinalColumnFormat( object exportValue, string defaultFormat )
         {
-            var dateValue = exportValue as DateTime?;
-            if ( dateValue != null && dateValue.Value.TimeOfDay.TotalSeconds > 0 )
+            var dateTimeValue = exportValue as DateTime?;
+            if ( dateTimeValue != null && dateTimeValue.Value.TimeOfDay.TotalSeconds > 0 )
             {
                 return DateTimeFormat;
+            }
+
+            var dateValue = exportValue as DateTime?;
+            if ( dateValue != null && dateTimeValue.Value.TimeOfDay.TotalSeconds == 0 )
+            {
+                return DateFormat;
             }
 
             var numValue = exportValue as decimal?;

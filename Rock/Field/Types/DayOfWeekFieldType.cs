@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -109,9 +110,13 @@ namespace Rock.Field.Types
                 {
                     return selectedDay.ConvertToInt().ToString();
                 }
+                else
+                {
+                    return string.Empty;
+                }
             }
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

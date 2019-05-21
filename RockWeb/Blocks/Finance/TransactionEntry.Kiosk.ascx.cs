@@ -842,6 +842,8 @@ namespace RockWeb.Blocks.Finance
                     tb.ID = "tbAccount_" + account.Key;
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
+                    tb.Attributes.Add( "min", "0" );
+                    tb.Attributes.Add( "oninput", "validity.valid||(value='')" );
                     tb.CssClass = "input-account";
 
                     if ( firstAccount )

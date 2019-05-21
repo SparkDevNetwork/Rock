@@ -18,8 +18,6 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -120,14 +118,7 @@ namespace Rock.Web.UI.Controls
                 DateTime now = RockDateTime.Now;
                 if ( IncludeAge && dateValue < now )
                 {
-                    if ( now.TotalMonths( dateValue ) <= 18 )
-                    {
-                        return string.Format( "{0} ({1} {2})", base.FormatDataValue( dataValue, encode ), now.TotalMonths( dateValue ), now.TotalMonths( dateValue ) > 1 ? "mos" : "mo");
-                    }
-                    else
-                    {
-                        return string.Format( "{0} ({1} {2})", base.FormatDataValue( dataValue, encode ), now.TotalYears( dateValue ), "yr".PluralizeIf( now.TotalYears( dateValue ) > 1) );
-                    }
+                    return string.Format( "{0} ({1})", base.FormatDataValue( dataValue, encode ), dateValue .GetFormattedAge());
                 }
             }
 

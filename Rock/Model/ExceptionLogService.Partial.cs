@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -276,20 +275,14 @@ namespace Rock.Model
                     var stackTrace = new System.Diagnostics.StackTrace( 2 );
                     exceptionLog.StackTrace = stackTrace.ToString();
                 }
-                catch
-                {
-                    // ignore
-                }
+                catch { }
             }
 
             try
             {
                 ex.Data.Add( "ExceptionLogGuid", exceptionLog.Guid );
             }
-            catch
-            {
-                // ignore
-            }
+            catch { }
 
             try
             {
@@ -362,10 +355,7 @@ namespace Rock.Model
                             // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists. Was not able to find a more elegant way to avoid an exception. 
                             val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
                         }
-                        catch
-                        {
-
-                        }
+                        catch { }
 
                         serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
                     }
@@ -380,9 +370,7 @@ namespace Rock.Model
                 exceptionLog.QueryString = request.Url.Query;
                 exceptionLog.Form = formItems.ToString();
             }
-            catch { 
-                // Intentionally do nothing
-            }
+            catch { }
 
             return exceptionLog;
         }

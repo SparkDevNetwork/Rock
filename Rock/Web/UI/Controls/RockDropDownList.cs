@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -346,7 +345,13 @@ namespace Rock.Web.UI.Controls
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            var savedAttributes = ViewState["ItemAttributes"] as List<Dictionary<string, string>>;
+            var savedAttributes = ( ViewState["ItemAttributes"] as string ).FromJsonOrNull<List<Dictionary<string, string>>>();
+
+            if ( savedAttributes == null )
+            {
+                return;
+            }
+
             int itemPosition = 0;
 
             // make sure the list has the same number of items as it did when ViewState was saved
@@ -375,7 +380,16 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["ItemAttributes"] = this.Items.OfType<ListItem>().Select( a => a.Attributes.Keys.OfType<string>().ToDictionary( k => k, v => a.Attributes[v] ) ).ToList();
+            var itemAttributes = this.Items.OfType<ListItem>().Select( a => a.Attributes.Keys.OfType<string>().ToDictionary( k => k, v => a.Attributes[v] ) ).ToList();
+            if ( itemAttributes.Any( a => a.Any() ) )
+            {
+                ViewState["ItemAttributes"] = itemAttributes.ToJson();
+            }
+            else
+            {
+                ViewState["ItemAttributes"] = null;
+            }
+
             return base.SaveViewState();
         }
 
