@@ -220,12 +220,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum attendees.
         /// </value>
-        public int MaxAttendees
+        public int? MaxAttendees
         {
             get
             {
                 EnsureChildControls();
-                return _nbMaxAttendees.Text.AsInteger();
+                return _nbMaxAttendees.Text.AsIntegerOrNull();
             }
             set
             {
@@ -679,7 +679,7 @@ namespace Rock.Web.UI.Controls
                 instance.Details = _ceDetails.Text;
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
-                instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
+                instance.MaxAttendees = _nbMaxAttendees.Text.AsIntegerOrNull();
                 instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
@@ -749,6 +749,7 @@ namespace Rock.Web.UI.Controls
                 _nbMaxAttendees = new NumberBox();
                 _nbMaxAttendees.ID = this.ID + "_nbMaxAttendees";
                 _nbMaxAttendees.Label = "Maximum Attendees";
+                _nbMaxAttendees.Help = "Total number of people who can register for the event. Leave blank for unlimited.";
                 _nbMaxAttendees.NumberType = ValidationDataType.Integer;
                 Controls.Add( _nbMaxAttendees );
 
