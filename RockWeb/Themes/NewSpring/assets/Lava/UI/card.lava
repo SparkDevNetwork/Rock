@@ -23,7 +23,7 @@
         </div>
     {% endif %}
     {% if imageurl != null and imageurl != '' %}
-        {% if url != empty %}<a href="{{ url }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
+        {% if linkurl != empty %}<a href="{{ linkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
@@ -36,7 +36,7 @@
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
             {% endif %}
     
-        {% if url != empty %}</a>{% else %}</div>{% endif %}
+        {% if linkurl != empty %}</a>{% else %}</div>{% endif %}
     {% endif %}
 
     <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
