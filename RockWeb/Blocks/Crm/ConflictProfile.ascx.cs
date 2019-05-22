@@ -371,6 +371,7 @@ namespace Rockweb.Blocks.Crm
                             .OrderByDescending( a => a.CreatedDateTime )
                             .FirstOrDefault();
                     }
+
                     if ( assessment != null )
                     {
                         hfAssessmentId.SetValue( assessment.Id );
