@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:admin="http://webns.net/mvcb/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:media="http://search.yahoo.com/mrss/"
+    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+
+<channel>
+
+{% assign PublicApplicationRoot = "https://newspring.cc" %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign orgEmail = 'Global' | Attribute:'OrganizationEmail' %}
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Replace:'newspring.cc','<a href="https://newspring.cc">newspring.cc</a>' | Escape %}
+{% assign channelNameParts = Channel.Name | Split:' - ' %}
+{% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
+{% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
+
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+    <title>{{ channelNameParts[1] }} - {% if channelNameParts[0] contains 'Fuse' %}Fuse Student Ministry{% else %}{{ orgName }}{% endif %}</title>
+    <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+    <description>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}<![CDATA[{{ feedDescription }}]]>{% endif %}</description>
+    <language>en-US</language>
+    <copyright>Free to distribute. Do not sell.</copyright>
+    <webMaster>web@newspring.cc (NewSpring Web)</webMaster>
+    <pubDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:00:00 EST' }}</pubDate>
+    <category>{{ channelNameParts[1] }}</category>
+    <generator>Rock RMS, https://www.rockrms.com/</generator>
+    
+    {% if Channel.TimeToLive > 0 %}
+        <ttl>{{ Channel.TimeToLive }}</ttl>
+    {% endif %}
+    
+    {% if channelImage and channelImage != empty %}
+        <image>
+            <url>{{ channelImage }}</url>
+            <title>{{ channelNameParts[1] }} - {{ orgName }}</title>
+            <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+        </image>
+    {% endif %}
+
+    {% comment %}
+        Add iTunes Tags for Audio/Video Feeds
+    {% endcomment %}
+    {% if feedtype and feedtype != empty and feedtype == 'Audio' OR feedtype == 'Video' %}
+        <itunes:image href="{{ fallbackImage }}"/>
+        <itunes:author>{{ orgName}}</itunes:author>
+        <itunes:summary>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</itunes:summary>
+        <itunes:keywords>newspring,community,church,god,jesus,anderson</itunes:keywords>
+        <itunes:owner>
+            <itunes:name>{{ orgName}}</itunes:name>
+            <itunes:email>{{ orgEmail }}</itunes:email>
+        </itunes:owner>
+        <itunes:category text="Religion &amp; Spirituality">
+            <itunes:category text="Christianity"/>
+        </itunes:category>
+    {% endif %}
+
+
+{% for item in Items -%}
+
+    {% comment %}
+        Getting the Parent Data
+    {% endcomment %}
+    {% assign parentId = item.ParentItems[0].ContentChannelItemId %}
+    {% if parentId and parentId != empty %}
+        {% contentchannelitem id:'{{ parentId }}' iterator:'parents' %}
+            {% for parent in parents %}
+                {% assign parentTitle = parent.Title %}
+                {% assign parentImageLandscape = parent | Attribute:'ImageLandscape','Url' | Escape %}
+                {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' | Escape %}
+                {% capture parentSlug %}
+                    {% contentchannelitemslug where:'ContentChannelItemId == {{ parent.Id }}' iterator:'slugs' limit:'1' %}
+                        {% for slug in slugs %}
+                            {{ slug.Slug }}
+                        {% endfor %}
+                    {% endcontentchannelitemslug %}
+                {% endcapture %}
+            {% endfor %}
+        {% endcontentchannelitem %}
+    {% endif %}
+
+    {% capture itemSlug %}
+        {% contentchannelitemslug where:'ContentChannelItemId == {{ item.Id }}' iterator:'slugs' limit:'1' %}
+            {% for slug in slugs %}
+                {{ slug.Slug }}
+            {% endfor %}
+        {% endcontentchannelitemslug %}
+    {% endcapture %}
+
+    {% if itemSlug and itemSlug != empty %}
+        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}{% if parentSlug != empty %}/{{ parentSlug | Trim }}{% endif %}/{{ itemSlug | Trim }}{% endcapture %}
+        {% assign itemSubtitle = item | Attribute:'Subtitle' | StripHtml | HtmlDecode %}
+        {% assign itemSummary = item | Attribute:'Summary' | StripHtml | HtmlDecode %}
+        {% assign communicatorsGuid = item | Attribute:'Communicators','RawValue' %}
+        {% assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Escape %}
+        {% assign itemImageSquare = item | Attribute:'ImageSquare','Url' | Escape %}
+        {% assign itemAudio = item | Attribute:'AudioFile','Url' | Escape %}
+        {% assign itemVideo = item | Attribute:'VideoFileMid','Url' | Escape %}
+
+        <item>
+            <title><![CDATA[{% if parentTitle and parentTitle != empty %}{{ parentTitle }}: {% endif %}{{ item.Title }}]]></title>
+            <link>{{ itemLink | Trim }}</link>
+            <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}</pubDate>
+            <category>{{ channelNameParts[1] }}</category>
+            
+            {% if itemImage and itemImage != empty %}
+                <media:content
+                  url="{{ itemImage | Escape }}"
+                  medium="image"
+                  isDefault="true"/>
+            {% endif %}
+            <description><![CDATA[{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content }}{% endif %}]]></description>
+            <guid>{{ itemLink | Trim }}</guid>
+
+            {% if feedtype == 'Audio' OR feedtype == 'Video' %}
+                <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare }}{% elseif parentImageSquare != empty %}{{ parentImageSquare }}{% else %}{{ fallbackImage }}{% endif %}"/>
+
+                <itunes:author>{[ communicatorNames guid:'{{ communicatorsGuid }}' ]}</itunes:author>
+                {% if itemSubtitle != empty %}<itunes:subtitle>{{ itemSubtitle }}</itunes:subtitle>{% endif %}
+                <itunes:summary>{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content | Truncate:140,'...' }}{% endif %}</itunes:summary>
+                <itunes:keywords>{[ tagData guid:'{{ item.Guid }}' ]}</itunes:keywords>
+
+                {% if feedtype == 'Audio' %}
+                    {% if itemAudio != empty %}<enclosure url="{{ itemAudio }}" length="5" type="audio/mp3"/>{% endif %}
+                {% else %}
+                    {% if itemVideo != empty %}<enclosure url="{{ itemVideo }}" length="5" type="video/mp4"/>{% endif %}
+                {% endif %}
+            {% endif %}
+            
+
+        </item>
+    {% endif %}
+{% endfor -%}
+
+{[ endscripturize ]}
+
+</channel>
+</rss>
