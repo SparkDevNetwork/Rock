@@ -427,11 +427,21 @@ namespace Rockweb.Blocks.Crm
                 if ( _targetPerson != null )
                 {
                     var primaryAliasId = _targetPerson.PrimaryAliasId;
-                    assessment = new AssessmentService( rockContext )
-                        .Queryable()
-                        .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
-                        .OrderByDescending( a => a.CreatedDateTime )
-                        .FirstOrDefault();
+
+                    if ( _assessmentId == 0 )
+                    {
+                        // This indicates that the block should create a new assessment instead of looking for an existing one. e.g. a user directed re-take
+                        assessment = null;
+                    }
+                    else
+                    {
+                        // Look for an existing pending or completed assessment.
+                        assessment = new AssessmentService( rockContext )
+                            .Queryable()
+                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
+                            .OrderByDescending( a => a.CreatedDateTime )
+                            .FirstOrDefault();
+                    }
 
                     if ( assessment != null )
                     {
@@ -573,7 +583,19 @@ namespace Rockweb.Blocks.Crm
                 rockContext.SaveChanges();
 
                 // Since we are rendering chart.js we have to register the script or reload the page.
-                this.NavigateToCurrentPageReference();
+                if ( _assessmentId == 0 )
+                {
+                    var removeParams = new List<string>
+                    {
+                        PageParameterKey.AssessmentId
+                    };
+
+                    NavigateToCurrentPageReferenceWithRemove( removeParams );
+                }
+                else
+                {
+                    this.NavigateToCurrentPageReference();
+                }
             }
         }
 
