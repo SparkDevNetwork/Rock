@@ -91,55 +91,96 @@ namespace Rockweb.Blocks.Crm
     {
         #region AttributeDefaultValues
         private const string InstructionsDefaultValue = @"
-<h2>Welcome to the Conflict Profile Assessment</h2>
 <p>
-    {{ Person.NickName }}, this assessment was developed and researched by Dr. Gregory A. Wiens and Al Ells and is based on the work and writings of Kenneth Thomas and Ralph Kilmann. When dealing with conflict, one way isn’t always the right way to solve a problem. All five of the modes evaluated in this assessment are appropriate at different times. The challenge is to know which approach is appropriate at what times. It is also important to understand how to use each approach.
+    {{ Person.NickName }}, while we can’t avoid occasional conflict in life, we can approach its resolution in different ways.
+    This assessment evaluates your natural approach and compares it to the five common conflict profile modes.
 </p>
 <p>
-   Most people feel comfortable using a few approaches and these approaches are often what we saw demonstrated in our culture of origin. This may not have been a healthy method of dealing with conflict.
+    For best results with this assessment, picture a setting in which you might encounter conflict and keep that same setting
+    in mind as you answer all the questions. Your responses may be different in different environments.
 </p>
 <p>
-    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
-    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
-    on each item. Your first instinct is probably your best response.
+    Don’t spend too much time thinking about your answer. Usually, your first responses is your most
+    natural. Since there are no right or wrong answers, just go with your instinct.
 </p>";
 
-        private const string ResultsMessageDefaultValue = @"
+        private const string ResultsMessageDefaultValue = @"<h2>Conflict Engagement Profile Results</h2>
 <p>
-   Your scores on this report are how YOU see yourself currently dealing with conflict in the environment chosen. This may or may not be accurate depending on how you are aware of yourself in the midst of conflict. It is most helpful to discuss your scores with someone who understands both you and this assessment.  Remember, in the future, the way you approach conflict should be dictated by the situation, not just how you are used to dealing with conflict. In doing so, everyone benefits, including you.
+   {{ Person.NickName }}, here are your conflict engagement results.
+   You will rank high, medium or low in each of the following five modes.
 </p>
 
-<h2>Conflict Engagement Profile</h2>
-{[ chart type:'pie' ]}
-    [[ dataitem label:'Solving' value:'{{EngagementProfileSolving}}' fillcolor:'#FFCD56' ]] [[ enddataitem ]]
-    [[ dataitem label:'Accommodating' value:'{{EngagementProfileAccommodating}}' fillcolor:'#4BC0C0' ]] [[ enddataitem ]]
-    [[ dataitem label:'Winning' value:'{{EngagementProfileWinning}}' fillcolor:'#FF3D67' ]] [[ enddataitem ]]
-{[ endchart ]}
-
-<h4>Brief Definitions for Conflict Engagement Modes</h4>
-
-<p>
-    <b>SOLVING</b> describes those who seek to use both RESOLVING and COMPROMISING modes for solving conflict. By combining these two modes, those who seek to solve problems as a team. Their leadership styles are highly cooperative and empowering for the benefit of the entire group.<br>
-    <b>ACCOMMODATING</b> combines AVOIDING and YIELDING modes for solving conflict. Those who are ACCOMMODATING are most effective in roles where allowing others to have their way is better for the team. They are often most effective in support roles or roles where an emphasis on the contribution of others is significant.<br>
-    A <b>WINNING</b> engagement profile relates to the WINNING mode for solving conflict. Depending on your role, WINNING engagement is important for times when quick decisions need to be made and essential for sole-proprietors.
-</p>
-
-<h2>Your Results Across All Five Modes</h2>
 {[ chart type:'bar' ]}
-    [[ dataitem label:'Winning' value:'{{Winning}}' fillcolor:'#FF3D67' ]] [[ enddataitem ]]
-    [[ dataitem label:'Resolving' value:'{{Resolving}}' fillcolor:'#059BFF' ]] [[ enddataitem ]]
-    [[ dataitem label:'Compromising' value:'{{Compromising}}' fillcolor:'#4BC0C0' ]] [[ enddataitem ]]
-    [[ dataitem label:'Avoiding' value:'{{Avoiding}}' fillcolor:'#FFCD56' ]] [[ enddataitem ]]
-    [[ dataitem label:'Yielding' value:'{{Yielding}}' fillcolor:'#880D37' ]] [[ enddataitem ]]
+    [[ dataitem label:'Winning' value:'{{Winning}}' fillcolor:'#E15759' ]] [[ enddataitem ]]
+    [[ dataitem label:'Resolving' value:'{{Resolving}}' fillcolor:'#5585B7' ]] [[ enddataitem ]]
+    [[ dataitem label:'Compromising' value:'{{Compromising}}' fillcolor:'#6399D1' ]] [[ enddataitem ]]
+    [[ dataitem label:'Avoiding' value:'{{Avoiding}}' fillcolor:'#94DB84' ]] [[ enddataitem ]]
+    [[ dataitem label:'Yielding' value:'{{Yielding}}' fillcolor:'#A1ED90' ]] [[ enddataitem ]]
 {[ endchart ]}
 
-<h4>Brief Definitions for Conflict Profile Modes</h4>
+<h3>Conflict Engagement Modes</h3>
+
+<h4>Winning</h4>
 <p>
-    <b>WINNING</b> is competing and uncooperative. You believe you have the right answer and you must prove you are right whatever it takes. This may be standing up for your own rights, beliefs or position.<br>
-    <b>RESOLVING</b> is attempting to work with the other person in depth to find the best solution regardless of where it may lie on the continuum. This involves digging beneath the presenting issue to find a way out that benefits both parties.<br>
-    <b>COMPROMISING</b> is finding a middle ground in the conflict. This often involves meeting in the middle or finding some mutually agreeable point between both positions and is useful for quick solutions.<br>
-    <b>AVOIDING</b> is not pursuing your own rights or those of the other person. You do not address the conflict. This may be diplomatically sidestepping an issue or avoiding a threatening situation.<br>
-    <b>YIELDING</b> is neglecting your own interests and giving in to those of the other person. This is self-sacrifice and may be charity, serving or choosing to obey another when you prefer not to.
+    Winning means you prefer competing over cooperating. You believe you have the right answer and you desire to
+  prove you are right, whatever it takes. This may include standing up for your own rights, beliefs or position.
+</p>
+
+<h4>Resolving</h4>
+<p>
+    Resolving means you attempt to work with the other person in depth to find the best solution, regardless of
+    who appears to get the most immediate benefit. This involves digging beneath the presenting issue to find a
+    solution that offers benefit to both parties and can take more time than other approaches.
+</p>
+
+<h4>Compromising</h4>
+<p>
+    Compromising means you find a middle ground in the conflict. This often involves meeting in the middle or finding
+    some mutually agreeable point between both positions. This is useful for quick solutions.
+</p>
+
+<h4>Avoiding</h4>
+<p>
+    Avoiding means not pursuing your own rights or those of the other person. You typically do not address the
+    conflict at all, if possible. This may be diplomatically sidestepping an issue or staying away from a
+    threatening situation.
+</p>
+
+<h4>Yielding</h4>
+<p>
+    Yielding means neglecting your own interests while giving in to those of the other person. This is
+    self-sacrificing and maybe charitable; serving or choosing to obey another when you prefer not to.
+</p>
+
+<h3>Conflict Engagement Themes</h3>
+
+<p>Often people find that they have a combined approach and gravitate toward one of the following themes.</p>
+
+{[ chart type:'pie' ]}
+    [[ dataitem label:'Solving' value:'{{EngagementProfileSolving}}' fillcolor:'#4E79A7' ]] [[ enddataitem ]]
+    [[ dataitem label:'Accommodating' value:'{{EngagementProfileAccommodating}}' fillcolor:'#8CD17D' ]] [[ enddataitem ]]
+    [[ dataitem label:'Winning' value:'{{EngagementProfileWinning}}' fillcolor:'#E15759' ]] [[ enddataitem ]]
+{[ endchart ]}
+
+<h4>Solving</h4>
+<p>
+    Solving describes those who seek to use both Resolving and Compromising modes for solving conflict. By combining
+    these two modes, they seek to solve problems as a team. Their leadership styles are highly cooperative and
+    empowering for the benefit of the entire group.
+</p>
+
+<h4>Accommodating</h4>
+<p>
+    Accommodating combines Avoiding and Yielding modes for solving conflict. They are most effective in roles
+    where allowing others to have their way is better for the team, such as support roles or roles where an
+    emphasis on the contribution of others is significant.
+</p>
+
+<h4>Winning</h4>
+<p>
+    Winning is not a combination of modes, but a theme that is based entirely on the Winning model alone for
+    solving conflict. This theme is important for times when quick decisions need to be made and is helpful
+    for roles such as sole-proprietor.
 </p>";
 
         #endregion AttributeDefaultValues
@@ -157,7 +198,7 @@ namespace Rockweb.Blocks.Crm
         #endregion Attribute keys
 
         #region Fields
-        
+
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
 
@@ -260,7 +301,7 @@ namespace Rockweb.Blocks.Crm
             SetPanelTitleAndIcon();
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
-            
+
             // set the target person according to the parameter or use Current user if not provided.
             string personKey = PageParameter( PageParameterKey.Person );
             int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
