@@ -3501,7 +3501,7 @@ DECLARE @attributeId int
 SET @attributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
 
 DECLARE @entityTypeId int
-SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Attribute')
 
 DELETE [dbo].[Auth]
 WHERE [EntityTypeId] = @EntityTypeId
