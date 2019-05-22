@@ -456,14 +456,17 @@ textarea,
     border-bottom: 1px solid @panel-border;
   }
 
-  .panel-heading {
+  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
     align-items: center;
 
+    .row {
+      width: 100%;
+    }
 
-    .panel-title {
+    > .panel-title {
       margin-right: auto;
     }
 
@@ -471,14 +474,18 @@ textarea,
       margin-top: 0;
     }
 
-    .panel-labels,
-    .pull-right {
+    > .panel-labels,
+    > .pull-right {
       margin-left: auto;
       text-align: right;
     }
+
+    > .description {
+      display: block;
+    }
   }
 
-  .panel-body {
+  > .panel-body {
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
   }
