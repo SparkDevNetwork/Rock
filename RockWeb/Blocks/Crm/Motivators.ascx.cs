@@ -121,7 +121,7 @@ namespace Rockweb.Blocks.Crm
             /// </summary>
             public const string Person = "Person";
         }
-        
+
         #endregion PageParameterKeys
 
         #region Fields
@@ -146,24 +146,37 @@ namespace Rockweb.Blocks.Crm
         private const string InstructionsDefaultValue = @"
 <h2>Welcome to the Motivators Assessment</h2>
 <p>
-    {{ Person.NickName }}, this assessment was developed and researched by Dr. Gregory A. Wiens and is intended to help identify the things that you value. These motivators influence your personal, professional, social and every other part of your life because they influence what you view as important and what should or should not be paid attention to. They impact the way you lead or even if you lead. They directly sway how you view your current situation.
+    {{ Person.NickName }}, our values dictate what we determine is important, how we lead and how
+    we interact with others; in short they affect every area of our life. This assessment identifies
+    the motivators that drive your perspective and goals.
 </p>
 <p>
-   We all have internal mechanisms that cause us to view life very differently from others. Some of this could be attributed to our personality. However, a great deal of research has been done to identify different values, motivators or internal drivers which cause each of us to have a different perspective on people, places, and events. These values cause you to construe one situation very differently from another who value things differently.
+   For best results with this assessment, picture a setting such as the workplace, at home or with
+   friends, and keep that same setting in mind as you answer all the questions. Your responses may
+   be different in different circumstances.
 </p>
 <p>
-    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
-    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
-    on each item. Your first instinct is probably your best response.
+    Don’t spend too much time thinking about your answer. Usually, your first responses is your
+    most natural. Since there are no right or wrong answers, just go with your instinct.
 </p>";
 
         private const string ResultMessageDefaultValue = @"<p>
-   This assessment identifies 22 different motivators (scales) which illustrate different things to which we all assign importance. These motivators listed in descending order on the report from the highest to the lowest. No one motivator is better than another. They are all critical and essential for the health of an organization. There are over 1,124,000,727,777,607,680,000 different combinations of these 22 motivators so we would hope you realize that your exceptional combination is clearly unique. We believe it is as important for you to know the motivators which are at the top as well as the ones at the bottom of your list. This is because you would best be advised to seek roles and responsibilities where your top motivators are needed. On the other hand, it would be advisable to <i>avoid roles or responsibilities where your bottom motivators would be required</i>.
+   {{ Person.NickName }}, here are your motivators results. We’ve listed your Top 5 Motivators, your
+   growth propensity score, along with a complete listing of all 22 motivators and your results
+   for each.
 </p>
 
-<h2>Influential, Organizational, Intellectual, and Operational</h2>
+<h2>Growth Propensity</h2>
 <p>
-Each of the 22 motivators are grouped into one of four clusters: Influential, Organizational, Intellectual, and Operational. The clusters, graphed below, include the motivators that fall within each grouping.
+    Growth Propensity measures your perceived mindset on a continuum between a growth mindset and
+    fixed mindset. These are two ends of a spectrum about how we view our own capacity and potential.
+</p>
+
+<!-- ADD GAUGE HERE -->
+
+<h2>Individual Motivators</h2>
+<p>
+There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
 </p>
 <!--  Cluster Chart -->
     <div class=""panel panel-default"">
@@ -213,9 +226,6 @@ This graph is based on the average composite score for each cluster of Motivator
         {[endchart]}
     </div>
   </div>
-<p>
-    Your motivators will no doubt shift and morph throughout your life.For instance, #4 may drop to #7 and vice versa.  However, it is very doubtful that #22 would ever become #1. For that reason, read through all of the motivators and appreciate the ones that you have. Seek input from those who know you to see if they agree or disagree with these results.
-</p>
 ";
 
         #endregion Attribute Default values
@@ -315,7 +325,7 @@ This graph is based on the average composite score for each cluster of Motivator
                 }
             }
 
-            
+
         }
 
         /// <summary>
