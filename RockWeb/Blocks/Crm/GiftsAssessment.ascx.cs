@@ -91,27 +91,13 @@ namespace Rockweb.Blocks.Crm
         private const string InstructionsDefaultValue = @"
 <h2>Welcome to Your Spiritual Gifts Assessment</h2>
 <p>
-    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
-    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
-    seen in action for most churches and most people.
+    {{ Person.NickName }}, we are all called to a unique role in the church body, and are equipped with
+    the gifts required for this calling. This assessment identifies the common spiritual gifts that
+    you possess.
 </p>
 <p>
-    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
-    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
-</p>
-<ol>
-    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
-    <li>Learn what these gifts are and what they are not.</li>
-    <li>See where these gifts fit into the functioning of the body. </li>
-</ol>
-<p>
-    When you are working within your Spirit-given gifts, you will be most effective for the body
-    of Christ in your local setting.
-</p>
-<p>
-    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
-    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
-    on each item. Your first instinct is probably your best response.
+    Don’t spend too much time thinking about your answer. Usually, your first responses is your most
+    natural. Since there are no right or wrong answers, just go with your instinct.
 </p>";
 
         private const string ResultsMessageDefaultValue = @"
@@ -120,78 +106,82 @@ namespace Rockweb.Blocks.Crm
     <h2 class='h2'> Dominant Gifts</h2>
     </div>
     <div class='col-md-9'>
-    <table class='table table-bordered table-responsive'>
-    <thead>
-        <tr>
-            <th>
-                Spiritual Gift
-            </th>
-            <th>
-                You are uniquely wired to:
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if DominantGifts != empty %}
-            {% for dominantGift in DominantGifts %}
-                <tr>
-                    <td>
-                        {{ dominantGift.Value }}
-                    </td>
-                    <td>
-                        {{ dominantGift.Description }}    
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan='2'>
-                    You did not have any Dominant Gifts
-                </td>
-            </tr>
-        {% endif %}
-    </tbody>
-    </table>
+        <div class='table-responsive'>
+            <table class='table'>
+                <thead>
+                    <tr>
+                        <th>
+                            Spiritual Gift
+                        </th>
+                        <th>
+                            You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if DominantGifts != empty %}
+                        {% for dominantGift in DominantGifts %}
+                            <tr>
+                                <td>
+                                    {{ dominantGift.Value }}
+                                </td>
+                                <td>
+                                    {{ dominantGift.Description }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan='2'>
+                                You did not have any Dominant Gifts
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-    
+
 <div class='row'>
     <div class='col-md-12'>
         <h2 class='h2'> Supportive Gifts</h2>
     </div>
     <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
+        <div class='table-responsive'>
+            <table class='table'>
+                <thead>
+                    <tr>
                     <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if SupportiveGifts != empty %}
-                    {% for supportiveGift in SupportiveGifts %}
+                        Spiritual Gift
+                        </th>
+                        <th>
+                        You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if SupportiveGifts != empty %}
+                        {% for supportiveGift in SupportiveGifts %}
+                            <tr>
+                                <td>
+                                    {{ supportiveGift.Value }}
+                                </td>
+                                <td>
+                                    {{ supportiveGift.Description }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
                         <tr>
-                            <td>
-                                {{ supportiveGift.Value }}
-                            </td>
-                            <td>
-                                {{ supportiveGift.Description }}
+                            <td colspan='2'>
+                                You did not have any Supportive Gifts
                             </td>
                         </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Supportive Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div?
 <div class='row'>
@@ -199,38 +189,40 @@ namespace Rockweb.Blocks.Crm
         <h2 class='h2'> Other Gifts</h2>
     </div>
     <div class='col-md-9'>
-        <table class='table table-bordered table-responsive'>
-            <thead>
-                <tr>
-                   <th>
-                    Spiritual Gift
-                    </th>
+        <div class='table-responsive'>
+            <table class='table'>
+                <thead>
+                    <tr>
                     <th>
-                    You are uniquely wired to:
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if OtherGifts != empty %}
-                    {% for otherGift in OtherGifts %}
+                        Spiritual Gift
+                        </th>
+                        <th>
+                        You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if OtherGifts != empty %}
+                        {% for otherGift in OtherGifts %}
+                            <tr>
+                                <td>
+                                    {{ otherGift.Value }}
+                                </td>
+                                <td>
+                                    {{ otherGift.Description }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
                         <tr>
-                            <td>
-                                {{ otherGift.Value }}
-                            </td>
-                            <td>
-                                {{ otherGift.Description }}
+                            <td colspan='2'>
+                                You did not have any Other Gifts
                             </td>
                         </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan='2'>
-                            You did not have any Other Gifts
-                        </td>
-                    </tr>
-                {% endif %}
-           </tbody>
-        </table>
+                    {% endif %}
+            </tbody>
+            </table>
+        </div>
     </div>
 </div>";
 
