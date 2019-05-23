@@ -145,6 +145,15 @@ namespace RockWeb.Blocks.Communication
                 } )
                 .ToList();
 
+            if ( actions.Any() )
+            {
+                olActions.RemoveCssClass( "drag-container-empty" );
+            }
+            else
+            {
+                olActions.AddCssClass( "drag-container-empty" );
+            }
+
             rptrActions.DataSource = actions;
             rptrActions.DataBind();
         }
