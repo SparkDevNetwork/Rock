@@ -96,6 +96,7 @@ namespace Rockweb.Blocks.Crm
             public const string SetPageIcon = "SetPageIcon";
             public const string ResultsMessage = "ResultsMessage";
             public const string AllowRetakes = "AllowRetakes";
+            public const string StartDateTime = "StartDateTime";
         }
 
         #endregion Attribute Keys
@@ -258,6 +259,15 @@ This graph is based on the average composite score for each cluster of Motivator
         {
             get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
             set { ViewState[AttributeKeys.NumberofQuestions] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the time to take the result
+        /// </summary>
+        public DateTime StartDateTime
+        {
+            get { return ViewState[AttributeKeys.StartDateTime] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[AttributeKeys.StartDateTime] = value; }
         }
 
         #endregion
@@ -436,6 +446,7 @@ This graph is based on the average composite score for each cluster of Motivator
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            StartDateTime = RockDateTime.Now;
             ShowQuestions();
         }
 
@@ -495,7 +506,7 @@ This graph is based on the average composite score for each cluster of Motivator
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = result.AssessmentData.ToJson();
+                assessment.AssessmentResultData = new { Result = result.AssessmentData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
                 rockContext.SaveChanges();
 
                 // Since we are rendering chart.js we have to register the script or reload the page.

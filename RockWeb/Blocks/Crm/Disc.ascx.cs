@@ -100,6 +100,7 @@ namespace Rockweb.Blocks.Crm
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string NumberofQuestions = "NumberofQuestions";
+            public const string StartDateTime = "StartDateTime";
 
             // Other Attributes
             public const string Strengths = "Strengths";
@@ -176,6 +177,15 @@ namespace Rockweb.Blocks.Crm
         {
             get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
             set { ViewState[AttributeKeys.NumberofQuestions] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the time to take the result
+        /// </summary>
+        public DateTime StartDateTime
+        {
+            get { return ViewState[AttributeKeys.StartDateTime] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[AttributeKeys.StartDateTime] = value; }
         }
 
         #endregion
@@ -335,6 +345,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            StartDateTime = RockDateTime.Now;
             ShowQuestions();
         }
 
@@ -409,7 +420,7 @@ namespace Rockweb.Blocks.Crm
 
                     assessment.Status = AssessmentRequestStatus.Complete;
                     assessment.CompletedDateTime = RockDateTime.Now;
-                    assessment.AssessmentResultData = assessmentData.ToJson();
+                    assessment.AssessmentResultData = new { Result = assessmentData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
                     rockContext.SaveChanges();
 
                     ShowResult( results, assessment );
