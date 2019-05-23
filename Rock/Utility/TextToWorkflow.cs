@@ -45,13 +45,13 @@ namespace Rock.Utility
         {
             response = "The keyword you provided was not recognized as a valid keyword.";
 
-            // get TextToWorkflow defined types for this number
+            // Get TextToWorkflow defined types for this number
             var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
 
             // If there are not any defined values, then return with the invalid keyword response
             if ( definedType == null || definedType.DefinedValues == null || !definedType.DefinedValues.Any() ) return;
 
-            // get the TextToWorkflow values for the selected "To" number
+            // Get the TextToWorkflow values for the selected "To" number
             var smsWorkflows = definedType.DefinedValues.Where( v => v.Value.AsNumeric() == toPhone.AsNumeric() )
                 .OrderBy( v => v.Order ).ToList();
 
@@ -62,13 +62,13 @@ namespace Rock.Utility
                 string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
                 if ( string.IsNullOrWhiteSpace( keywordExpression ) )
                 {
-                    // if there was no keyword expression add wildcard expression
+                    // If there was no keyword expression add wildcard expression
                     keywordExpression = ".*";
                 }
 
                 if ( keywordExpression == "*" )
                 {
-                    // if the keyword is just a * then replace it
+                    // If the keyword is just a * then replace it
                     keywordExpression = ".*";
                 }
 
@@ -80,15 +80,24 @@ namespace Rock.Utility
 
                 // If the keyword expression does not match the message that was received ignore this TextToWorkflow value and continue to the next
                 var match = Regex.Match( message, keywordExpression, RegexOptions.IgnoreCase );
-                if ( !match.Success ) continue;
+                if ( !match.Success )
+                {
+                    continue;
+                }
 
                 // Get the workflow type, If there is not a valid workflow type defined, return with invalid keyword response
                 var workflowTypeGuid = dvWorkflow.GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
-                if ( !workflowTypeGuid.HasValue ) return;
+                if ( !workflowTypeGuid.HasValue )
+                {
+                    return;
+                }
 
                 // Get the configured workflow type, if it is not valid return with invalid keyword response
                 var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                if ( workflowType == null ) return;
+                if ( workflowType == null )
+                {
+                    return;
+                }
 
                 // Get the list of workflow attributes to set
                 var workflowAttributesSettings = new List<KeyValuePair<string, object>>();
@@ -119,11 +128,10 @@ namespace Rock.Utility
                 using ( var rockContext = new RockContext() )
                 {
                     fromPerson = GetPerson( fromPhone, rockContext );
+
+                    LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
                 }
-
-                LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
-
-                // once we find one match stop processing
+                // Once we find one match stop processing
                 break;
             }
         }
@@ -270,8 +278,11 @@ namespace Rock.Utility
             }
 
             // If we have a person, return it
-            if ( fromPerson != null ) return fromPerson;
-
+            if ( fromPerson != null )
+            {
+                return fromPerson;
+            }
+            
             // Otherwise, See if a person matches by any other type of phone (other than mobile)
             var peopleWithAnyNumber = phoneNumberService
                 .Queryable().AsNoTracking()

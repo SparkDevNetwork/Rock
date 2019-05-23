@@ -1,5 +1,5 @@
 {% if description and description != empty %}
-    {{ description | AddMetaTagToHead:'name','Description' }}
+    {{ description | AddMetaTagToHead:'name','description' }}
 {% else %}
     {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'name','Description' }}
 {% endif %}

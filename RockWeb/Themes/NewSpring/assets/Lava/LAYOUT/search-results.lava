@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var Http = new XMLHttpRequest();
 
         // Define request url
-        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=8&q=' + query + startIndex;
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=9&q=' + query + startIndex;
         
         // Open request
         Http.open("GET", requestUrl);
@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function() {
             totalResults = 100;
         }
 
-        if (totalResults > 8) {
+        if (totalResults > 9) {
             if(response.queries.nextPage) {
                 resultsContainer.innerHTML += '<h2 class="h3 xs-h5 soft-half-sides soft-half-ends xs-push-half-top xs-hard-bottom">Showing results <span class="text-info">' + (response.queries.nextPage[0].startIndex - response.queries.nextPage[0].count) + '-' + (response.queries.nextPage[0].startIndex - 1) + '</span> matching <span class="text-info">' + response.queries.request[0].searchTerms + '</span></h2>';
             } else {
