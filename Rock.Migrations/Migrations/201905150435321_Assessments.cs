@@ -1196,14 +1196,14 @@ SELECT  CASE
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Caring", "core_MotivatorCaring", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_CARING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_CARING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Communicating", "core_MotivatorCommunicating", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_COMMUNICATING );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_COMMUNICATING );
+            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Communicating", "core_MotivatorCommunicating", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_EXPRESSING );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_EXPRESSING );
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Empowering", "core_MotivatorEmpowering", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_EMPOWERING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_EMPOWERING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Flexing", "core_MotivatorFlexing", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_FLEXING );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_FLEXING );
+            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Flexing", "core_MotivatorFlexing", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_ADAPTING );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_ADAPTING );
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Gathering", "core_MotivatorGathering", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GATHERING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GATHERING );
@@ -1244,11 +1244,11 @@ SELECT  CASE
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Uniting", "core_MotivatorUniting", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_UNITING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_UNITING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Unwavering", "core_MotivatorUnwavering", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_UNWAVERING );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_UNWAVERING );
+            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Unwavering", "core_MotivatorUnwavering", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_PERSEVERING );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_PERSEVERING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Venturing", "core_MotivatorVenturing", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_VENTURING );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VENTURING );
+            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Venturing", "core_MotivatorVenturing", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_RISKING );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_RISKING );
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Visioning", "core_MotivatorVisioning", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );

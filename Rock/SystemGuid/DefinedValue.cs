@@ -717,9 +717,9 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_CARING = "FFD7EF9C-5D68-40D2-A362-416B2D660D51";
 
         /// <summary>
-        /// Motivator: Communicating 
+        /// Motivator: Expressing 
         /// </summary>
-        public const string MOTIVATOR_COMMUNICATING = "FA70E27D-6642-4162-AF17-530F66B507E7";
+        public const string MOTIVATOR_EXPRESSING = "FA70E27D-6642-4162-AF17-530F66B507E7";
 
         /// <summary>
         /// Motivator: Empowering 
@@ -732,9 +732,9 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_ENGAGING = "5635E95B-3A07-43B7-837A-0F131EF1DA97";
 
         /// <summary>
-        /// Motivator: Flexing 
+        /// Motivator: Adapting 
         /// </summary>
-        public const string MOTIVATOR_FLEXING = "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89";
+        public const string MOTIVATOR_ADAPTING = "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89";
 
         /// <summary>
         /// Motivator: Gathering 
@@ -802,14 +802,14 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_UNITING = "D7601B56-7495-4D7B-A916-8C48F78675E3";
 
         /// <summary>
-        /// Motivator: Unwavering 
+        /// Motivator: Persevering 
         /// </summary>
-        public const string MOTIVATOR_UNWAVERING = "A027F6B2-56DD-4724-962D-F865606AEAB8";
+        public const string MOTIVATOR_PERSEVERING = "A027F6B2-56DD-4724-962D-F865606AEAB8";
 
         /// <summary>
-        /// Motivator: Venturing 
+        /// Motivator: Risk-Taking 
         /// </summary>
-        public const string MOTIVATOR_VENTURING = "4D0A1A6D-3F5A-476E-A633-04EAEF457645";
+        public const string MOTIVATOR_RISKTAKING = "4D0A1A6D-3F5A-476E-A633-04EAEF457645";
 
         /// <summary>
         /// Motivator: Visioning 
