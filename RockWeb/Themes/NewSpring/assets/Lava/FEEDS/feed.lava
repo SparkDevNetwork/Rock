@@ -14,7 +14,7 @@
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign orgEmail = 'Global' | Attribute:'OrganizationEmail' %}
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Replace:'newspring.cc','<a href="https://newspring.cc">newspring.cc</a>' | Escape %}
+{% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Escape %}
 {% assign channelNameParts = Channel.Name | Split:' - ' %}
 {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
 {% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
