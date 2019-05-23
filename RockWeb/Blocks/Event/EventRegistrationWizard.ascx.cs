@@ -145,6 +145,15 @@ namespace RockWeb.Blocks.Event
         AllowMultiple = false,
         Order = 9 )]
 
+    [GroupTypesField(
+        "Check-In Group Types",
+        Key = AttributeKey.CheckInGroupTypes,
+        Description = "Select group types which should enable check-in.  If the selected registration template is one of these types, check-in options will be enabled for the group.",
+        Category = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 10)]
+
     #region Advanced Block Attribute Settings 
 
     [MemoField(
@@ -229,6 +238,7 @@ namespace RockWeb.Blocks.Event
             public const string AllowCreatingNewCalendarEvents = "AllowCreatingNewCalendarEvents";
             public const string RequireCalendarEvents = "RequireCalendarEvents";
             public const string CompletionWorkflow = "CompletionWorkflow";
+            public const string CheckInGroupTypes = "CheckInGroupTypes";
 
             public const string LavaInstruction_InitiateWizard = "LavaInstruction_InitiateWizard";
             public const string LavaInstruction_Registration = "LavaInstruction_Registration";
@@ -290,7 +300,7 @@ namespace RockWeb.Blocks.Event
         {
             RegistrationTemplate template;
             string json = ViewState["SelectedTemplate"] as string;
-            if (string.IsNullOrWhiteSpace( json ))
+            if ( string.IsNullOrWhiteSpace( json ) )
             {
                 template = null;
             }
@@ -342,7 +352,7 @@ namespace RockWeb.Blocks.Event
                     SaveCalendarItemState( itemsState );
 
                     eventCalendarItem.LoadAttributes();
-                    if (eventCalendarItem.Attributes.Count > 0)
+                    if ( eventCalendarItem.Attributes.Count > 0 )
                     {
                         wpAttributes.Visible = true;
                         phAttributes.Controls.Add( new LiteralControl( String.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
@@ -391,13 +401,13 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-                    if (rootGroupGuid != null)
+                    if ( rootGroupGuid != null )
                     {
                         var groupService = new GroupService( rockContext );
                         parentGroup = groupService.Get( rootGroupGuid.Value );
                     }
                 }
-                if ( parentGroup == null)
+                if ( parentGroup == null )
                 {
                     groupDescription += " as a new root group.";
                 }
@@ -557,6 +567,25 @@ namespace RockWeb.Blocks.Event
 
                 // Add GrouId to linkage.
                 linkage.GroupId = group.Id;
+
+                // Add GroupLocation and GroupLocationSchedule
+                if (GroupTypeIsCheckinGroup(group.GroupTypeId, rockContext))
+                {
+                    if (lpGroupLocation.Location != null)
+                    {
+                        var groupLocation = new GroupLocation();
+                        groupLocation.LocationId = lpGroupLocation.Location.Id;
+
+                        foreach (int selectedScheduleId in spGroupLocationSchedule.SelectedValuesAsInt())
+                        {
+                            var groupLocationSchedule = new ScheduleService(rockContext).Get(selectedScheduleId);
+                            groupLocation.Schedules.Add(groupLocationSchedule);
+                        }
+
+                        group.GroupLocations.Add(groupLocation);
+                        rockContext.SaveChanges();
+                    }
+                }
             }
 
             if ( GetAttributeValue( AttributeKey.EnableCalendarEvents ).AsBoolean() )
@@ -634,7 +663,7 @@ namespace RockWeb.Blocks.Event
                     var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
                     if ( calEvent != null && calEvent.DTStart != null )
                     {
-                        if (eventItemOccurrence.Schedule == null)
+                        if ( eventItemOccurrence.Schedule == null )
                         {
                             eventItemOccurrence.Schedule = new Schedule();
                         }
@@ -677,7 +706,7 @@ namespace RockWeb.Blocks.Event
                 hlRegistrationInstance.NavigateUrl = GetPageUrl( "844dc54b-daec-47b3-a63a-712dd6d57793", qryRegistrationInstance );
             }
 
-            if (string.IsNullOrWhiteSpace( result.GroupId ))
+            if ( string.IsNullOrWhiteSpace( result.GroupId ) )
             {
                 liGroupLink.Visible = false;
             }
@@ -688,7 +717,7 @@ namespace RockWeb.Blocks.Event
                 hlGroup.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.GroupViewerPage ), qryGroup );
             }
 
-            if (string.IsNullOrWhiteSpace( result.EventId ))
+            if ( string.IsNullOrWhiteSpace( result.EventId ) )
             {
                 liEventLink.Visible = false;
             }
@@ -699,7 +728,7 @@ namespace RockWeb.Blocks.Event
                 hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
             }
 
-            if (string.IsNullOrWhiteSpace( result.EventOccurrenceId ))
+            if ( string.IsNullOrWhiteSpace( result.EventOccurrenceId ) )
             {
                 liEventOccurrenceLink.Visible = false;
             }
@@ -729,7 +758,7 @@ namespace RockWeb.Blocks.Event
         private bool SelectedTemplateHasGroupType()
         {
             var registrationTemplate = GetSelectedTemplate();
-            if (registrationTemplate == null)
+            if ( registrationTemplate == null )
             {
                 return false;
             }
@@ -741,14 +770,14 @@ namespace RockWeb.Blocks.Event
             nbNotAuthorized.Visible = false;
             nbNotPermitted.Visible = false;
 
-            if (tbGroupName.Text == string.Empty)
+            if ( tbGroupName.Text == string.Empty )
             {
                 return true;
             }
 
             Group parentGroup = null;
             var parentGroupId = gpParentGroup.SelectedValueAsId();
-            if (parentGroupId != null)
+            if ( parentGroupId != null )
             {
                 var groupService = new GroupService( rockContext );
                 parentGroup = groupService.Get( parentGroupId.Value );
@@ -756,18 +785,18 @@ namespace RockWeb.Blocks.Event
             else
             {
                 Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-                if (rootGroupGuid != null)
+                if ( rootGroupGuid != null )
                 {
                     var groupService = new GroupService( rockContext );
                     parentGroup = groupService.Get( rootGroupGuid.Value );
                 }
             }
 
-            if (parentGroup != null)
+            if ( parentGroup != null )
             {
                 bool isAuthorized = parentGroup.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ||
                     parentGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
-                if (!isAuthorized)
+                if ( !isAuthorized )
                 {
                     nbNotAuthorized.Visible = true;
                     return false;
@@ -781,17 +810,31 @@ namespace RockWeb.Blocks.Event
                     var parentGroupType = groupTypeService.Get( parentGroup.GroupTypeId );
 
                     bool isChildPermitted = parentGroupType.ChildGroupTypes.Contains( templateGroupType );
-                    if (!isChildPermitted)
+                    if ( !isChildPermitted )
                     {
                         nbNotPermitted.Text = string.Format( "Groups of type \"{0}\" are not permitted under the parent \"{1}\".", templateGroupType.Name, parentGroup.Name );
                         nbNotPermitted.Visible = true;
                         return false;
                     }
-
                 }
             }
 
             return true;
+        }
+
+        private bool GroupTypeIsCheckinGroup(int groupTypeId, RockContext rockContext)
+        {
+            var checkInGroupGuids = GetAttributeValues(AttributeKey.CheckInGroupTypes).AsGuidList();
+            if (!checkInGroupGuids.Any())
+            {
+                return false;
+            }
+
+            var groupTypeService = new GroupTypeService(rockContext);
+            var checkinGroups = groupTypeService.Queryable().AsNoTracking()
+                .Where(gt => checkInGroupGuids.Contains(gt.Guid))
+                .Where(gt => gt.Id == groupTypeId);
+            return checkinGroups.Any();
         }
 
         #region Control Initialization
@@ -869,7 +912,7 @@ namespace RockWeb.Blocks.Event
             var registrationTemplateQuery = registrationTemplateService.GetByGuids( registrationTemplateGuids ).AsNoTracking();
 
             // If no registration templates were selected in the block settings, all active registration templates will be available.
-            if (registrationTemplateGuids.Count == 0)
+            if ( registrationTemplateGuids.Count == 0 )
             {
                 registrationTemplateQuery = registrationTemplateService.Queryable().AsNoTracking().Where( rt => rt.IsActive == true );
             }
@@ -914,7 +957,7 @@ namespace RockWeb.Blocks.Event
         private void Init_SetDefaultAccount( RockContext rockContext )
         {
             Guid? acctGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
-            if (acctGuid != null)
+            if ( acctGuid != null )
             {
                 var acctService = new FinancialAccountService( rockContext );
                 var acct = acctService.Get( acctGuid.Value );
@@ -925,7 +968,7 @@ namespace RockWeb.Blocks.Event
         {
             int defaultCalendarId = -1;
             Guid? calendarGuid = GetAttributeValue( AttributeKey.DefaultCalendar ).AsGuidOrNull();
-            if (calendarGuid != null)
+            if ( calendarGuid != null )
             {
                 var calendarService = new EventCalendarService( rockContext );
                 var calendar = calendarService.Get( calendarGuid.Value );
@@ -937,10 +980,10 @@ namespace RockWeb.Blocks.Event
                 .Queryable().AsNoTracking()
                 .OrderBy( c => c.Name ) )
             {
-                if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ))
+                if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     ListItem liCalendar = new ListItem( calendar.Name, calendar.Id.ToString() );
-                    if (calendar.Id == defaultCalendarId)
+                    if ( calendar.Id == defaultCalendarId )
                     {
                         liCalendar.Selected = true;
                     }
@@ -953,7 +996,7 @@ namespace RockWeb.Blocks.Event
         private void Init_SetRootGroup( RockContext rockContext )
         {
             Guid? groupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-            if (groupGuid != null)
+            if ( groupGuid != null )
             {
                 var groupService = new GroupService( rockContext );
                 var rootGroup = groupService.Get( groupGuid.Value );
@@ -1216,7 +1259,7 @@ namespace RockWeb.Blocks.Event
                     break;
                 case ActiveWizardStep.EventOccurrence:
                     lbRegistration.Enabled = true;
-                    if (SelectedTemplateHasGroupType())
+                    if ( SelectedTemplateHasGroupType() )
                     {
                         lbGroup.Enabled = true;
                     }
@@ -1227,7 +1270,7 @@ namespace RockWeb.Blocks.Event
                     break;
                 case ActiveWizardStep.Summary:
                     lbRegistration.Enabled = true;
-                    if (SelectedTemplateHasGroupType())
+                    if ( SelectedTemplateHasGroupType() )
                     {
                         lbGroup.Enabled = true;
                     }
@@ -1443,6 +1486,11 @@ namespace RockWeb.Blocks.Event
                 if ( !registrationTemplate.GroupTypeId.HasValue )
                 {
                     tbGroupName.Text = string.Empty;
+                    pnlCheckinOptions.Visible = false;
+                }
+                else
+                {
+                    pnlCheckinOptions.Visible = GroupTypeIsCheckinGroup( registrationTemplate.GroupTypeId.Value, rockContext );
                 }
 
                 lTemplateDescription.Text = registrationTemplate.Description;
@@ -1471,7 +1519,7 @@ namespace RockWeb.Blocks.Event
 
         protected void tbRegistrationName_TextChanged( object sender, EventArgs e )
         {
-            if (SelectedTemplateHasGroupType())
+            if ( SelectedTemplateHasGroupType() )
             {
                 if ( ( tbGroupName.Text == string.Empty ) || ( tbGroupName.Text == hfPreviousName.Value ) )
                 {
