@@ -9,7 +9,7 @@
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 
 
-{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' duration:'3600' %}
+{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss' duration:'3600' %}
 
 <channel>
 {% assign PublicApplicationRoot = "https://newspring.cc" %}
