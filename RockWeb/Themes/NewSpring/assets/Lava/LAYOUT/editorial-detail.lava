@@ -5,10 +5,10 @@
                 {% assign parentTitle = parent.Title %}
                 {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
                 {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                    {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
+                    {% assign backgroundColor = baseBackgroundColor %}
                     <style>
                         .brand-bg {
-                            background-color: {{ backgroundColor | Darken:'5%' }};
+                            background-color: {{ backgroundColor | Darken:'10%' }};
                         }
                     </style>
                 {% endif %}
@@ -48,7 +48,7 @@
     {% assign imageurl = imageurl | Trim %}
 
 
-    <div class="md-text-constrained md-mx-auto panel">
+    <div class="md-text-constrained md-mx-auto panel overflow-hidden">
         <div class="editorial-content position-relative panel-body bg-white xs-soft-half hard-bottom">
 
             {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
