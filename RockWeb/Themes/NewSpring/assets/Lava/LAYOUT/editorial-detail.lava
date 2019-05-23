@@ -1,3 +1,33 @@
+{% if Item.ParentItems %}
+    {% for parent in Item.ParentItems %}
+        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+            {% for parent in parents %}
+                {% assign parentTitle = parent.Title %}
+                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
+                {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                    {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
+                    <style>
+                        .brand-bg {
+                            background-color: {{ backgroundColor | Darken:'5%' }};
+                        }
+                    </style>
+                {% endif %}
+
+            {% endfor %}
+        {% endcontentchannelitem %}
+    {% endfor %}
+{% endif %}
+
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {{ orgName }}{% endcapture %}
+
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+
+
+
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
 
@@ -16,27 +46,6 @@
         {% endif %}
     {% endcapture %}
     {% assign imageurl = imageurl | Trim %}
-
-
-    {% if Item.ParentItems %}
-        {% for parent in Item.ParentItems %}
-        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
-            {% for parent in parents %}
-                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-
-                {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                    {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
-                    <style>
-                        .brand-bg {
-                            background-color: {{ backgroundColor | Darken:'5%' }};
-                        }
-                    </style>
-                {% endif %}
-
-            {% endfor %}
-        {% endcontentchannelitem %}
-        {% endfor %}
-    {% endif %}
 
 
     <div class="md-text-constrained md-mx-auto panel">

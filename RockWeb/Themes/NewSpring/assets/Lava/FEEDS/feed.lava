@@ -8,8 +8,10 @@
 	xmlns:media="http://search.yahoo.com/mrss/"
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 
-<channel>
 
+{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' duration:'3600' %}
+
+<channel>
 {% assign PublicApplicationRoot = "https://newspring.cc" %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign orgEmail = 'Global' | Attribute:'OrganizationEmail' %}
@@ -18,8 +20,6 @@
 {% assign channelNameParts = Channel.Name | Split:' - ' %}
 {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
 {% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
-
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
 
     <title>{{ channelNameParts[1] }} - {% if channelNameParts[0] contains 'Fuse' %}Fuse Student Ministry{% else %}{{ orgName }}{% endif %}</title>
     <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
@@ -114,7 +114,11 @@
                   medium="image"
                   isDefault="true"/>
             {% endif %}
-            <description><![CDATA[{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content }}{% endif %}]]></description>
+
+            {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+                <description><![CDATA[{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content }}{% endif %}]]></description>
+            {[ endscripturize ]}
+
             <guid>{{ itemLink | Trim }}</guid>
 
             {% if feedtype == 'Audio' OR feedtype == 'Video' %}
@@ -137,7 +141,6 @@
     {% endif %}
 {% endfor -%}
 
-{[ endscripturize ]}
-
 </channel>
+{% endcache %}
 </rss>

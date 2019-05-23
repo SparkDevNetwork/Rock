@@ -1,17 +1,28 @@
-{% capture parentId %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% endfor %}{% endcapture %}
-{% contentchannelitem Id:'{{ parentId }}' iterator:'parents' %}
-    {% for parent in parents %}
-        {% capture parentType %}{% assign parentTypeParts = parent.ContentChannel.Name | Split:' - ' %}{{ parentTypeParts[1] | Singularize }}{% endcapture %}
-        {% assign parentTitle = parent.Title | Replace:"'","’" %}
-        {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
-        {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
-        {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
-        {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
-        {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
-        {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
+{% if Item.ParentItems %}
+    {% capture parentId %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% endfor %}{% endcapture %}
+    {% contentchannelitem Id:'{{ parentId }}' iterator:'parents' %}
+        {% for parent in parents %}
+            {% capture parentType %}{% assign parentTypeParts = parent.ContentChannel.Name | Split:' - ' %}{{ parentTypeParts[1] | Singularize }}{% endcapture %}
+            {% assign parentTitle = parent.Title | Replace:"'","’" %}
+            {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
+            {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+            {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
+            {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
+            {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
+            {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
 
-    {% endfor %}
-{% endcontentchannelitem %}
+        {% endfor %}
+    {% endcontentchannelitem %}
+{% endif %}
+
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }} | {% if parentTitle and parentTitle != empty %}{{ parentTitle }} | {% endif %}{{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
 
 
 
