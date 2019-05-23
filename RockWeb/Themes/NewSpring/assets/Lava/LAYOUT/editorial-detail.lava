@@ -64,8 +64,11 @@
             {% if subtitle != empty %}
                 <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
             {% endif %}
-            
-            <p class="stronger">{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}</p>
+
+            {% capture communicatorNames %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+            {% if communicatorNames and communicatorNames != empty %}
+                <p class="stronger">{{ communicatorNames }}</p>
+            {% endif %}
             
             {% if imageurl and imageurl != empty %}
                 <div class="ratio-landscape background-cover push-bottom" style="background-image:url('{{ imageurl }}'); margin-left: -30px; margin-right: -30px;"></div>
