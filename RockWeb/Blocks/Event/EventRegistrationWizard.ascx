@@ -271,6 +271,14 @@
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Label="Parent Group" OnSelectItem="gpParentGroup_SelectItem" />
                                 </div>
                             </div>
+                            <asp:Panel ID="pnlCheckinOptions" runat="server" Visible="false" CssClass="row">
+                                <div class="col-md-6">
+                                    <Rock:LocationPicker ID="lpGroupLocation" runat="server" AllowedPickerModes="Named" Label="Location" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:SchedulePicker ID="spGroupLocationSchedule" runat="server" Label="Schedule" AllowMultiSelect="true" />
+                                </div>
+                            </asp:Panel>
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Not Authorized">
