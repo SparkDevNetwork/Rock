@@ -196,9 +196,9 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_CARING = "95C6E9B1-4E26-4D7A-8944-3FED076C12B6";
 
         /// <summary>
-        /// The person attribute for the Motivator Communicating
+        /// The person attribute for the Motivator Expressing
         /// </summary>
-        public const string PERSON_MOTIVATOR_COMMUNICATING = "79CC222F-ABB0-489B-8DC3-20FA10A29ADE";
+        public const string PERSON_MOTIVATOR_EXPRESSING = "79CC222F-ABB0-489B-8DC3-20FA10A29ADE";
 
         /// <summary>
         /// The person attribute for the Motivator Empowering
@@ -211,9 +211,9 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_ENGAGING = "A3B93C89-8C89-431D-A408-7E8C209DF62A";
 
         /// <summary>
-        /// The person attribute for the Motivator Flexing
+        /// The person attribute for the Motivator Adapting
         /// </summary>
-        public const string PERSON_MOTIVATOR_FLEXING = "7E32DC1C-D912-45AA-9C16-F098ED33A0D2";
+        public const string PERSON_MOTIVATOR_ADAPTING = "7E32DC1C-D912-45AA-9C16-F098ED33A0D2";
 
         /// <summary>
         /// The person attribute for the Motivator Gathering
@@ -281,14 +281,14 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_UNITING = "D7A987CA-7DF6-4539-96F6-A3641C3F1DED";
 
         /// <summary>
-        /// The person attribute for the Motivator Unwavering
+        /// The person attribute for the Motivator Persevering
         /// </summary>
-        public const string PERSON_MOTIVATOR_UNWAVERING = "C4361DE6-6F62-446C-B4B3-39CB670AC0E1";
+        public const string PERSON_MOTIVATOR_PERSEVERING = "C4361DE6-6F62-446C-B4B3-39CB670AC0E1";
 
         /// <summary>
         /// The person attribute for the Motivator Venturing
         /// </summary>
-        public const string PERSON_MOTIVATOR_VENTURING = "04ED7F11-4C01-43B6-9EF7-C5C4820055B0";
+        public const string PERSON_MOTIVATOR_RISKING = "04ED7F11-4C01-43B6-9EF7-C5C4820055B0";
 
         /// <summary>
         /// The person attribute for the Motivator Visioning

@@ -16,13 +16,13 @@ namespace Rock.Model
 
         private const string ATTRIBUTE_MOTIVATOR_CARING = "core_MotivatorCaring";
 
-        private const string ATTRIBUTE_MOTIVATOR_COMMUNICATING = "core_MotivatorCommunicating";
+        private const string ATTRIBUTE_MOTIVATOR_EXPRESSING = "core_MotivatorExpressing";
 
         private const string ATTRIBUTE_MOTIVATOR_EMPOWERING = "core_MotivatorEmpowering";
 
         private const string ATTRIBUTE_MOTIVATOR_ENGAGING = "core_MotivatorEngaging";
 
-        private const string ATTRIBUTE_MOTIVATOR_FLEXING = "core_MotivatorFlexing";
+        private const string ATTRIBUTE_MOTIVATOR_ADAPTING = "core_MotivatorAdapting";
 
         private const string ATTRIBUTE_MOTIVATOR_GATHERING = "core_MotivatorGathering";
 
@@ -50,9 +50,9 @@ namespace Rock.Model
 
         private const string ATTRIBUTE_MOTIVATOR_UNITING = "core_MotivatorUniting";
 
-        private const string ATTRIBUTE_MOTIVATOR_UNWAVERING = "core_MotivatorUnwavering";
+        private const string ATTRIBUTE_MOTIVATOR_PERSERVERING = "core_MotivatorPersevering";
 
-        private const string ATTRIBUTE_MOTIVATOR_VENTURING = "core_MotivatorVenturing";
+        private const string ATTRIBUTE_MOTIVATOR_RISKING = "core_MotivatorRisking";
 
         private const string ATTRIBUTE_MOTIVATOR_VISIONING = "core_MotivatorVisioning";
 
@@ -80,11 +80,11 @@ namespace Rock.Model
             new MotivatorQuestion ("f0202","I hurt when others hurt.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_CARING),
             new MotivatorQuestion ("f0203","I easily feel the pain of others.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_CARING),
             new MotivatorQuestion ("f0204","I have empathy for those in difficult situations.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_CARING),
-            new MotivatorQuestion ("f0301","People describe me as an engaging communicator.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING),
-            new MotivatorQuestion ("f0302","Others describe my speaking as challenging them to change.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING),
-            new MotivatorQuestion ("f0303","I hold the attention of others when I speak.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING),
-            new MotivatorQuestion ("f0304","I enjoy speaking in public.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING),
-            new MotivatorQuestion ("f0305","Being in front of people doesn't bother me.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING),
+            new MotivatorQuestion ("f0301","People describe me as an engaging communicator.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING),
+            new MotivatorQuestion ("f0302","Others describe my speaking as challenging them to change.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING),
+            new MotivatorQuestion ("f0303","I hold the attention of others when I speak.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING),
+            new MotivatorQuestion ("f0304","I enjoy speaking in public.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING),
+            new MotivatorQuestion ("f0305","Being in front of people doesn't bother me.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING),
             new MotivatorQuestion ("f0401","I invest in others who see positive life change.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EMPOWERING),
             new MotivatorQuestion ("f0402","I invest in others who lead well.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EMPOWERING),
             new MotivatorQuestion ("f0403","I match others' strengths to needs.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_EMPOWERING),
@@ -96,12 +96,12 @@ namespace Rock.Model
             new MotivatorQuestion ("f0504","I know the background of my community.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_ENGAGING),
             new MotivatorQuestion ("f0505","I have a specific approach to helping in my community.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_ENGAGING),
             new MotivatorQuestion ("f0506","I demonstrate a commitment to helping others in my community.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_ENGAGING),
-            new MotivatorQuestion ("f0601","I quickly change a plan that is not working.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
-            new MotivatorQuestion ("f0602","I create new ways of doing things.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
-            new MotivatorQuestion ("f0603","Others see me as open to change.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
-            new MotivatorQuestion ("f0604","I cope well with ambiguity.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
-            new MotivatorQuestion ("f0605","I enjoy constant change.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
-            new MotivatorQuestion ("f0606","I plan my projects knowing that it will change as issues arise.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_FLEXING),
+            new MotivatorQuestion ("f0601","I quickly change a plan that is not working.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
+            new MotivatorQuestion ("f0602","I create new ways of doing things.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
+            new MotivatorQuestion ("f0603","Others see me as open to change.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
+            new MotivatorQuestion ("f0604","I cope well with ambiguity.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
+            new MotivatorQuestion ("f0605","I enjoy constant change.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
+            new MotivatorQuestion ("f0606","I plan my projects knowing that it will change as issues arise.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_ADAPTING),
             new MotivatorQuestion ("f0701","Others want to work with me.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_GATHERING),
             new MotivatorQuestion ("f0702","Others change their lives through my influence.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_GATHERING),
             new MotivatorQuestion ("f0703","People emulate me.",OptionType.Frequency,SystemGuid.DefinedValue.MOTIVATOR_GATHERING),
@@ -171,17 +171,17 @@ namespace Rock.Model
             new MotivatorQuestion ("f1904","I have the ability to get disjointed members to work as a team.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_UNITING),
             new MotivatorQuestion ("f1905","I deal with conflict in a way that brings the team together.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNITING),
             new MotivatorQuestion ("f1906","I help people feel responsible for the success of the team.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNITING),
-            new MotivatorQuestion ("f2001","I am motivated in the face of discouragement.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING),
-            new MotivatorQuestion ("f2002","I experience setbacks without defeat.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING),
-            new MotivatorQuestion ("f2003","I ride the ups and downs well.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING),
-            new MotivatorQuestion ("f2004","I rebound from disappointments with renewed focus and commitment.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING),
-            new MotivatorQuestion ("f2005","I'm not easily discouraged.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING),
-            new MotivatorQuestion ("f2101","I like to be challenged.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
-            new MotivatorQuestion ("f2102","I enjoy taking on assignments which I don't know if I can accomplish.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
-            new MotivatorQuestion ("f2103","I see risk as a necessary part of the decisions I make.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
-            new MotivatorQuestion ("f2104","I become more engaged when there is some risk involved.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
-            new MotivatorQuestion ("f2105","Risk does not discourage me from attempting something.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
-            new MotivatorQuestion ("f2106","I am not threatened by risk.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_VENTURING),
+            new MotivatorQuestion ("f2001","I am motivated in the face of discouragement.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING),
+            new MotivatorQuestion ("f2002","I experience setbacks without defeat.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING),
+            new MotivatorQuestion ("f2003","I ride the ups and downs well.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING),
+            new MotivatorQuestion ("f2004","I rebound from disappointments with renewed focus and commitment.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING),
+            new MotivatorQuestion ("f2005","I'm not easily discouraged.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING),
+            new MotivatorQuestion ("f2101","I like to be challenged.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
+            new MotivatorQuestion ("f2102","I enjoy taking on assignments which I don't know if I can accomplish.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
+            new MotivatorQuestion ("f2103","I see risk as a necessary part of the decisions I make.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
+            new MotivatorQuestion ("f2104","I become more engaged when there is some risk involved.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
+            new MotivatorQuestion ("f2105","Risk does not discourage me from attempting something.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
+            new MotivatorQuestion ("f2106","I am not threatened by risk.",OptionType.Agreement, SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING),
             new MotivatorQuestion ("f2201","I can picture what I would like to see become reality.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VISIONING),
             new MotivatorQuestion ("f2202","I dream of things that don't exist yet.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VISIONING),
             new MotivatorQuestion ("f2203","I focus on a preferred future when challenging others.",OptionType.Frequency, SystemGuid.DefinedValue.MOTIVATOR_VISIONING),
@@ -273,10 +273,10 @@ namespace Rock.Model
         {
             { SystemGuid.DefinedValue.MOTIVATOR_BELIEVING.AsGuid(),  new MotivatorData(27.56, 4.441 ) },
             { SystemGuid.DefinedValue.MOTIVATOR_CARING.AsGuid(),  new MotivatorData(17.06, 5.391 ) },
-            { SystemGuid.DefinedValue.MOTIVATOR_COMMUNICATING.AsGuid(), new MotivatorData(21.82, 6.247) },
+            { SystemGuid.DefinedValue.MOTIVATOR_EXPRESSING.AsGuid(), new MotivatorData(21.82, 6.247) },
             { SystemGuid.DefinedValue.MOTIVATOR_EMPOWERING.AsGuid(), new MotivatorData(21.87, 4.126) },
             { SystemGuid.DefinedValue.MOTIVATOR_ENGAGING.AsGuid(), new MotivatorData(23.25, 6.58) },
-            { SystemGuid.DefinedValue.MOTIVATOR_FLEXING.AsGuid(), new MotivatorData(23.26, 5.144) },
+            { SystemGuid.DefinedValue.MOTIVATOR_ADAPTING.AsGuid(), new MotivatorData(23.26, 5.144) },
             { SystemGuid.DefinedValue.MOTIVATOR_GATHERING.AsGuid(), new MotivatorData(21.77, 3.475) },
             { SystemGuid.DefinedValue.MOTIVATOR_INNOVATING.AsGuid(), new MotivatorData(22.66, 5.157) },
             { SystemGuid.DefinedValue.MOTIVATOR_LEADING.AsGuid(), new MotivatorData(22.52, 4.657) },
@@ -290,8 +290,8 @@ namespace Rock.Model
             { SystemGuid.DefinedValue.MOTIVATOR_THINKING.AsGuid(), new MotivatorData(27.93, 4.418) },
             { SystemGuid.DefinedValue.MOTIVATOR_TRANSFORMING.AsGuid(), new MotivatorData(21.5, 4.556) },
             { SystemGuid.DefinedValue.MOTIVATOR_UNITING.AsGuid(), new MotivatorData(26.37, 5.22) },
-            { SystemGuid.DefinedValue.MOTIVATOR_UNWAVERING.AsGuid(), new MotivatorData(20.53, 4.715) },
-            { SystemGuid.DefinedValue.MOTIVATOR_VENTURING.AsGuid(), new MotivatorData(24.83, 6.619) },
+            { SystemGuid.DefinedValue.MOTIVATOR_PERSEVERING.AsGuid(), new MotivatorData(20.53, 4.715) },
+            { SystemGuid.DefinedValue.MOTIVATOR_RISKTAKING.AsGuid(), new MotivatorData(24.83, 6.619) },
             { SystemGuid.DefinedValue.MOTIVATOR_VISIONING.AsGuid(), new MotivatorData(30.03, 5.883) },
             { SystemGuid.DefinedValue.MOTIVATOR_GROWTH_PROPENSITY.AsGuid(), new MotivatorData(32.63, 4.728) },
         };
