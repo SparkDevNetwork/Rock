@@ -4681,6 +4681,79 @@ END
             );
         }
 
+        /// <summary>
+        /// Adds or Updates the person attribute for the provided guid.
+        /// </summary>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        /// <param name="key">The key. If null/empty/whitespace the name without spaces is used.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, string categoryGuid, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
+        {
+            key = key.IsNotNullOrWhiteSpace() ? key : name.Replace( " ", string.Empty );
+            description = description.Replace( "'", "''" );
+            defaultValue = defaultValue.Replace( "'", "''" );
+
+            Migration.Sql( $@"
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = ''
+                    AND [EntityTypeQualifierValue] = ''
+                    AND [Guid] = '{guid}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{name}',
+                        [AbbreviatedName] = '{abbreviatedName}'
+                        [Key] = '{key}',
+                        [IconCssClass] = '{iconCssClass}',
+                        [Description] = '{description}',
+                        [Order] = {order},
+                        [DefaultValue] = '{defaultValue}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = ''
+                    AND [EntityTypeQualifierValue] = ''
+                    AND [Guid] = '{guid}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[IconCssClass],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'','',
+                        '{key}','{name}','{iconCssClass}','{description}',
+                        {order},0,'{defaultValue}',0,0,
+                        '{guid}')
+                END" );
+
+            Migration.Sql( $@"
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{guid}')
+                DECLARE @CategoryId int = (SELECT [Id] FROM [Category] WHERE [Guid] = '{categoryGuid}')
+
+                IF NOT EXISTS (
+                    SELECT *
+                    FROM [AttributeCategory]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [CategoryId] = CategoryId )
+                BEGIN
+                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+                    VALUES( @AttributeId, @CategoryId )
+                END" );
+        }
+
         #endregion
 
         #region PersonBadge
