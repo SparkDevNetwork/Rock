@@ -96,6 +96,11 @@ namespace Rock.SystemGuid
         public const string PERSON_DISC_LAST_SAVE_DATE = "990275DB-611B-4D2E-94EA-3FFA1186A5E1";
 
         /// <summary>
+        /// The person attribute for the DISC profile
+        /// </summary>
+        public const string PERSON_DISC_PROFILE = "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D";
+
+        /// <summary>
         /// The person attribute for the dominant gifts
         /// </summary>
         public const string PERSON_DOMINANT_GIFTS = "F76FC75E-B33F-42B8-B360-15BA9A1F0F9A";
