@@ -57,7 +57,7 @@
         
         <p>Looking for something specific?</p>
         <div class="row">
-          <div class="col-xs-12 col-sm-6 col-md-6">
+          <div class="col-xs-6 col-sm-6 col-md-6">
             <h5 class="push-half-bottom">Next Steps</h5>
             <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
                 <li><a href="/bible">Bible Reading</a></li>
@@ -69,9 +69,8 @@
                 <li><a href="/baptism">Baptism</a></li>
                 <li><a href="/missions">Missions</a></li>
                 <li><a href="/finances">Finances</a></li>
-                <li><a href="/internships">Internships</a></li>
             </ul>
-          </div><div class="col-xs-12 col-sm-6 col-md-6">
+          </div><div class="col-xs-6 col-sm-6 col-md-6">
             <h5 class="push-half-bottom">Watch &amp; Read</h5>
             <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
                 <li><a href="/articles">Articles</a></li>
@@ -80,19 +79,17 @@
                 <li><a href="/news">News</a></li>
                 <li><a href="/stories">Stories</a></li>
             </ul>
-          </div><div class="col-xs-12 col-sm-6 col-md-6">
+          </div><div class="col-xs-6 col-sm-6 col-md-6">
             <h5 class="push-half-bottom">Ministries</h5>
             <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
                 <li><a href="/kidspring">Kids</a></li>
                 <li><a href="/fuse">Students</a></li>
                 <li><a href="/rally">Young Adults</a></li>
-                <li><a href="/internships">Internships</a></li>
                 <li><a href="/worship">Worship</a></li>
                 <li><a href="/missions">Missions</a></li>
                 <li><a href="/network">NewSpring Network</a></li>
-                <li><a href="/store">Store</a></li>
             </ul>
-          </div><div class="col-xs-12 col-sm-6 col-md-6">
+          </div><div class="col-xs-6 col-sm-6 col-md-6">
             <h5 class="push-half-bottom">Giving</h5>
             <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
                 <li><a href="/give">Why We Give</a></li>
@@ -102,10 +99,6 @@
             </ul>
           </div>
         </div>
-      </div>
-      <div class="modal-footer hidden">
-        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-sm btn-primary">Save changes</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

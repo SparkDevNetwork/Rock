@@ -8,8 +8,7 @@
 	xmlns:media="http://search.yahoo.com/mrss/"
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 
-
-{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss' duration:'3600' %}
+{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss,feed-{{ Channel.Id }}-{{ feedtype }}' duration:'{{ Channel.TimeToLive | Timems:60 }}' %}
 
 <channel>
 {% assign PublicApplicationRoot = "https://newspring.cc" %}
@@ -19,6 +18,7 @@
 {% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Escape %}
 {% assign channelNameParts = Channel.Name | Split:' - ' %}
 {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
+{% assign channelFeedKeywords = Channel | Attribute:'RSSFeedKeywords' %}
 {% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
 
     <title>{{ channelNameParts[1] }} - {% if channelNameParts[0] contains 'Fuse' %}Fuse Student Ministry{% else %}{{ orgName }}{% endif %}</title>
@@ -50,7 +50,7 @@
         <itunes:image href="{{ fallbackImage }}"/>
         <itunes:author>{{ orgName}}</itunes:author>
         <itunes:summary>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</itunes:summary>
-        <itunes:keywords>newspring,community,church,god,jesus,anderson</itunes:keywords>
+        <itunes:keywords>{% if channelFeedKeywords and channelFeedKeywords != empty %}{{ channelFeedKeywords }}{% else %}newspring,church,newspring church,fuse,community,god,jesus,anderson{% endif %}</itunes:keywords>
         <itunes:owner>
             <itunes:name>{{ orgName}}</itunes:name>
             <itunes:email>{{ orgEmail }}</itunes:email>
@@ -66,20 +66,19 @@
     {% comment %}
         Getting the Parent Data
     {% endcomment %}
-    {% assign parentId = item.ParentItems[0].ContentChannelItemId %}
-    {% if parentId and parentId != empty %}
+    {% assign parentCount = item.ParentItems | Size %}
+    {% if parentCount >= 1 %}
+        {% assign parentId = item.ParentItems[0].ContentChannelItemId %}
         {% contentchannelitem id:'{{ parentId }}' iterator:'parents' %}
             {% for parent in parents %}
                 {% assign parentTitle = parent.Title %}
                 {% assign parentImageLandscape = parent | Attribute:'ImageLandscape','Url' | Escape %}
                 {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' | Escape %}
-                {% capture parentSlug %}
-                    {% contentchannelitemslug where:'ContentChannelItemId == {{ parent.Id }}' iterator:'slugs' limit:'1' %}
-                        {% for slug in slugs %}
-                            {{ slug.Slug }}
-                        {% endfor %}
-                    {% endcontentchannelitemslug %}
-                {% endcapture %}
+                {% contentchannelitemslug where:'ContentChannelItemId == {{ parent.Id }}' iterator:'slugs' limit:'1' %}
+                    {% for slug in slugs %}
+                        {% capture parentSlug %}{{ slug.Slug }}{% endcapture %}
+                    {% endfor %}
+                {% endcontentchannelitemslug %}
             {% endfor %}
         {% endcontentchannelitem %}
     {% endif %}
@@ -93,7 +92,7 @@
     {% endcapture %}
 
     {% if itemSlug and itemSlug != empty %}
-        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}{% if parentSlug != empty %}/{{ parentSlug | Trim }}{% endif %}/{{ itemSlug | Trim }}{% endcapture %}
+        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}{% if parentSlug and parentSlug != empty %}/{{ parentSlug | Trim }}{% endif %}/{{ itemSlug | Trim }}{% endcapture %}
         {% assign itemSubtitle = item | Attribute:'Subtitle' | StripHtml | HtmlDecode %}
         {% assign itemSummary = item | Attribute:'Summary' | HtmlDecode %}
         {% assign itemContent = item.Content | HtmlDecode %}
@@ -168,5 +167,7 @@
 {% endfor -%}
 
 </channel>
+
 {% endcache %}
+
 </rss>
