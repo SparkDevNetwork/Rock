@@ -204,11 +204,14 @@
 	}
 
 	blockquote {
-		margin-left: -@base-spacing-unit/2 !important;
-		margin-right: 0 !important;
-		padding-left: @base-spacing-unit/3*2.5 !important;
 		font-size: floor((@font-size-base * 1.1)) !important;
 		letter-spacing: 0 !important;
+	}
+
+	.editorial-content {
+		blockquote {
+			margin-left: -@base-spacing-unit;
+		}
 	}
 
 	.panel-body {

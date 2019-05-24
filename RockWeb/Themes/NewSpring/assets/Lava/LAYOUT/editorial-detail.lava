@@ -49,7 +49,7 @@
 
 
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
-        <div class="editorial-content position-relative panel-body bg-white xs-soft-half hard-bottom">
+        <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom hard-bottom">
 
             {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
                 <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">

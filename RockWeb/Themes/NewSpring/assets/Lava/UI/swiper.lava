@@ -35,37 +35,39 @@
   var swiper = new Swiper('#{{ swiperid }}', {
       slidesPerView: 3.3,
       spaceBetween: 15,
+      speed: 500,
       centeredSlides: true,
       roundLengths: true,
       grabCursor: true,
+      resistanceRatio: 0.5,
       keyboard: {
-      enabled: true,
-      onlyInViewport: false,
+        enabled: true,
+        onlyInViewport: false,
       },
       pagination: {
-      el: '.swiper-pagination',
-      clickable: true,
+        el: '.swiper-pagination',
+        clickable: true,
       },
       navigation: {
-      nextEl: '.swiper-next',
-      prevEl: '.swiper-prev',
+        nextEl: '.swiper-next',
+        prevEl: '.swiper-prev',
       },
       breakpoints: {
-      1024: {
-        slidesPerView: 2.3,
-      },
-      768: {
-        slidesPerView: 2.3,
-        pagination: {
-          dynamicBullets: true,
+        1024: {
+          slidesPerView: 2.3,
         },
-      },
-      667: {
-        slidesPerView: 1.15,
-        pagination: {
-          dynamicBullets: true,
+        768: {
+          slidesPerView: 2.3,
+          pagination: {
+            dynamicBullets: true,
+          },
         },
-      }
+        667: {
+          slidesPerView: 1.15,
+          pagination: {
+            dynamicBullets: true,
+          },
+        }
       }
   });
 </script>

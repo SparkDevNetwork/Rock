@@ -1,0 +1,46 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+{%- assign modalid = uniqueid -%}
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture linkurl %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign linkurl = linkurl | Trim %}
+
+
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="hard position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+</section>
+
+{% if trimcopy == 'Yes' and length > 200 %}
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="text-gray-darker pull-right" data-dismiss="modal" aria-label="Close">
+                        <i class="fa fa-lg fa-times"></i>
+                    </a>
+                    {% if title != null and title != '' %}
+                        <h3 class="flush">{{ title }}</h3>
+                    {% endif %}
+                </div>
+                <div class="modal-body soft hard-bottom">
+                    {{ content }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{[ endscripturize ]}
