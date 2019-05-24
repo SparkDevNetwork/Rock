@@ -32,6 +32,9 @@ namespace Rock.Web.UI.Controls
     {
         #region Events
 
+        /// <summary>
+        /// Occurs when the enter key is pressed.
+        /// </summary>
         public event EventHandler EnterPressed;
 
         #endregion
@@ -272,9 +275,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-         /// Renders the content of the key pad (
-         /// </summary>
-         /// <param name="writer">The writer.</param>
+        /// Renders the content of the key pad (
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="isTenKey">if set to <c>true</c> [is ten key].</param>
         protected void RenderPadContent( HtmlTextWriter writer, bool isTenKey )
         {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -428,6 +432,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="value">The value.</param>
         /// <param name="altValue">The alt value.</param>
         /// <param name="sizeClass">The size class.</param>
+        /// <param name="styleClass">The style class.</param>
         protected void RenderDigit( HtmlTextWriter writer, string value, string altValue, string sizeClass = "", string styleClass = null )
         {
             if ( string.IsNullOrWhiteSpace( styleClass ) )
@@ -452,6 +457,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="command">The command.</param>
         /// <param name="content">The content.</param>
         /// <param name="sizeClass">The size class.</param>
+        /// <param name="styleClass">The style class.</param>
         protected void RenderCommand( HtmlTextWriter writer, string command, string content, string sizeClass = "", string styleClass = null )
         {
             if ( string.IsNullOrWhiteSpace( styleClass ) )
@@ -487,10 +493,22 @@ namespace Rock.Web.UI.Controls
         #endregion
     }
 
+    /// <summary>
+    /// The Enum representing all the types of keyboards this control can render.
+    /// </summary>
     public enum ScreenKeyboardType
     {
+        /// <summary>
+        /// The number pad
+        /// </summary>
         NumberPad,
+        /// <summary>
+        /// The qwerty keyboard
+        /// </summary>
         Qwerty,
+        /// <summary>
+        /// The ten key (like a phone dialer) pad
+        /// </summary>
         TenKey
     }
 }

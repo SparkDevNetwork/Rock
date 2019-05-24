@@ -214,7 +214,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary> Saves the family's label set as AttendanceData to the attendance records
         /// associated with the current check-in (using the given attendanceIds). The label
         /// data looks like:
-        /// 
+        /// <![CDATA[
         ///   [
         ///      {
         ///         "LabelType":0,
@@ -227,9 +227,14 @@ namespace Rock.Workflow.Action.CheckIn
         ///         "FileGuid":"9b098db0-952c-43fb-a5bd-511e3c2b72fb",
         ///         "LabelFile":"/GetFile.ashx?id=33",
         ///         "LabelKey":"9b098db0-952c-43fb-a5bd-511e3c2b72fb",
-        ///         "MergeFields":{
-        ///            "1":"Ted-K46\\&Noah-Z7J\\&",
-        ///            "2":"Cindy-HTB\\&"
+        ///         "MergeFields":{ 
+        ///                  "WWW":"K46", 
+        ///                  "2":"Ted Decker", 
+        ///                  "AAA":"", 
+        ///                  "3":"Bears Room 4:30 (test)", 
+        ///                  "LLL":"", 
+        ///                  "5":"", 
+        ///                  "7":"" 
         ///         }
         ///      },
         ///      {
@@ -238,7 +243,7 @@ namespace Rock.Workflow.Action.CheckIn
         ///      },
         ///      ...
         ///   ]
-        /// 
+        /// ]]>
         /// </summary>
         /// <param name="family">A CheckInFamily that holds the labels to be stored.</param>
         private void SaveLabelToAttendance( CheckInFamily family )
