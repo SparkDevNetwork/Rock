@@ -320,6 +320,10 @@
     <Compile Include="Migrations\201905082317243_Rollup_0508.Designer.cs">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs" />
+    <Compile Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.Designer.cs">
+      <DependentUpon>201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -800,6 +804,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905082317243_Rollup_0508.resx">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.resx">
+      <DependentUpon>201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
