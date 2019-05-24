@@ -49,6 +49,7 @@ namespace Rock.Migrations
             DefinedTypeCategoryTrueWiringToPersonalityAssessmentsUp();
             RenamePersonAttributeCategoryTrueWiring();
             UpdateSpiritualGiftsDefinedValuesUp();
+            AddDiscProfilePersonAttributeUp();
         }
         
         /// <summary>
@@ -56,6 +57,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            AddDiscProfilePersonAttributeDown();
             UpdateSpiritualGiftsDefinedValuesDown();
             DefinedTypeCategoryTrueWiringToPersonalityAssessmentsDown();
             PagesBlocksAndAttributesDown();
@@ -1688,5 +1690,16 @@ This graph is based on the average composite score for each cluster of Motivator
                 UPDATE [dbo].[DefinedValue] SET [Value] = 'Pastor-Shepherd' WHERE [Guid] = 'FC4F1B46-F0C3-45B0-9FD9-D15F4FD05A31'
                 UPDATE [dbo].[DefinedValue] SET [Value] = 'Pastor-Teacher' WHERE [Guid] = 'C7291F22-05F0-4EF9-A7C2-2CFEBFEBCB45'" );
         }
+
+        private void AddDiscProfilePersonAttributeUp()
+        {
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( "59D5A94C-94A0-4630-B80A-BB25697D74C7", "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "DISC: DISC Profile", "DISC Profile", "core_DISCDISCProfile", "", "", 1029, "", "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D" );
+        }
+
+        private void AddDiscProfilePersonAttributeDown()
+        {
+            RockMigrationHelper.DeleteAttribute( "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D" );
+        }
+
     }
 }
