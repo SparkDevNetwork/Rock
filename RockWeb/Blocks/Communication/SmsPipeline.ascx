@@ -16,30 +16,32 @@
             </div>
 
             <asp:HiddenField runat="server" ID="hfIsTestingDrawerOpen" Value="false" ClientIDMode="Static" />
-            <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-heading margin-v-none" style="display: none">
-                <div class="alert alert-info" role="alert">
-                    Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
+            <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-drawer" style="display: none">
+                <div class="drawer-content">
+                    <div class="alert alert-info" role="alert">
+                        Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
                     </div>
-                    <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" />
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
+                        </div>
+                        <div class="col-sm-6">
+                            <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" />
+                        </div>
                     </div>
-                </div>
 
-                <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
+                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
 
-                <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
+                    <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
 
-                <Rock:RockLiteral ID="lResponse" runat="server" Label="Response" CssClass="margin-t-lg" />
+                    <Rock:RockLiteral ID="lResponse" runat="server" Label="Response" CssClass="margin-t-lg" />
 
-                <div class="form-group static-control margin-t-lg">
-                    <label class="control-label">Action Outcomes</label>
-                    <div class="control-wrapper">
-                        <pre runat="server" id="preOutcomes"></pre>
+                    <div class="form-group static-control margin-t-lg">
+                        <label class="control-label">Action Outcomes</label>
+                        <div class="control-wrapper">
+                            <pre runat="server" id="preOutcomes"></pre>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -47,7 +49,6 @@
             <div class="panel-body padding-all-none">
                 <div class="row row-eq-height row-no-gutters">
                     <div class="col-md-2 col-sm-6 js-sms-action-components sms-action-components">
-
                         <ul class="components-list list-unstyled">
                             <li>
                                 <ol class="drag-container js-drag-container">
@@ -62,7 +63,6 @@
                                 </ol>
                             </li>
                         </ul>
-
                     </div>
 
                     <div class="col-md-6 col-sm-6 js-sms-actions sms-actions-container">
