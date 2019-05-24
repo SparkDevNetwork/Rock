@@ -4714,7 +4714,7 @@ END
                 BEGIN
                     UPDATE [Attribute] SET
                         [Name] = '{name}',
-                        [AbbreviatedName] = '{abbreviatedName}'
+                        [AbbreviatedName] = '{abbreviatedName}',
                         [Key] = '{key}',
                         [IconCssClass] = '{iconCssClass}',
                         [Description] = '{description}',
@@ -4728,15 +4728,39 @@ END
                 ELSE
                 BEGIN
                     INSERT INTO [Attribute] (
-                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Key],[Name],[IconCssClass],[Description],
-                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                        [Guid])
+                          [IsSystem]
+                        , [FieldTypeId]
+                        , [EntityTypeId]
+                        , [EntityTypeQualifierColumn]
+                        , [EntityTypeQualifierValue]
+                        , [Key]
+                        , [Name]
+                        , [IconCssClass]
+                        , [Description]
+                        , [Order]
+                        , [IsGridColumn]
+                        , [DefaultValue]
+                        , [IsMultiValue]
+                        , [IsRequired]
+                        , [Guid]
+                        , [AbbreviatedName])
                     VALUES(
-                        1,@FieldTypeId, @EntityTypeId,'','',
-                        '{key}','{name}','{iconCssClass}','{description}',
-                        {order},0,'{defaultValue}',0,0,
-                        '{guid}')
+                          1
+                        , @FieldTypeId
+                        , @EntityTypeId
+                        , ''
+                        , ''
+                        , '{key}'
+                        , '{name}'
+                        , '{iconCssClass}'
+                        , '{description}'
+                        , {order}
+                        , 0
+                        , '{defaultValue}'
+                        , 0
+                        , 0
+                        , '{guid}'
+                        , '{abbreviatedName}')
                 END" );
 
             Migration.Sql( $@"
