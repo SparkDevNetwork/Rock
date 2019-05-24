@@ -223,7 +223,8 @@ namespace Rock.Utility
         /// <summary>
         /// Adds the label script, registering it to the given control.
         /// </summary>
-        /// <param name="jsonObject">The json object.</param>
+        /// <param name="jsonObject">The JSON object.</param>
+        /// <param name="control">The control.</param>
         public static void AddLabelScript( string jsonObject, Control control )
         {
             string script = string.Format( @"
@@ -432,18 +433,47 @@ namespace Rock.Utility
     }
 
     #region Reprint Label Helper Classes
+
+    /// <summary>
+    /// The class structure used with label reprinting as a view model for on screen button choices.
+    /// </summary>
     public class ReprintLabelPersonResult
     {
+        /// <summary>
+        /// The Person's Id 
+        /// </summary>
         public int Id { get; set; }
+        /// <summary>
+        /// A list of Attendance Ids.
+        /// </summary>
         public List<int> AttendanceIds { get; set; }
+        /// <summary>
+        /// The Guid of the Person.
+        /// </summary>
         public Guid PersonGuid { get; set; }
+        /// <summary>
+        /// The Person's name.
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the location and schedule names shown on the button.
+        /// </summary>
+        /// <value>
+        /// The location and schedule names.
+        /// </value>
         public string LocationAndScheduleNames { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReprintLabelPersonResult"/> class.
+        /// </summary>
         public ReprintLabelPersonResult()
         {
         }
 
+        /// <summary>
+        /// Constructor to create an object for the given attendance list.
+        /// </summary>
+        /// <param name="attendances"></param>
         public ReprintLabelPersonResult( List<Attendance> attendances )
         {
             if ( attendances.Any() )
@@ -464,19 +494,64 @@ namespace Rock.Utility
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return string.Format( "{0} <span class='pull-right'>{1}</span>", Name, LocationAndScheduleNames );
         }
     }
 
+    /// <summary>
+    /// Class used as a structure for the reprinting of labels.
+    /// </summary>
     public class ReprintLabelCheckInLabelType
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public int Id { get; set; }
+        /// <summary>
+        /// Gets or sets the label binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The label file identifier.
+        /// </value>
         public int LabelFileId { get; set; }
+        /// <summary>
+        /// Gets or sets the label binary file unique identifier.
+        /// </summary>
+        /// <value>
+        /// The file unique identifier.
+        /// </value>
         public Guid FileGuid { get; set; }
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the person's Id.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
         public int PersonId { get; set; }
+        /// <summary>
+        /// Gets or sets a list of attendance ids.
+        /// </summary>
+        /// <value>
+        /// The attendance ids.
+        /// </value>
         public List<int> AttendanceIds { get; set; }
     }
     #endregion
