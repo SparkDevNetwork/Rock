@@ -2,7 +2,7 @@
 
 DECLARE @crlf varchar(2) = char(13) + char(10)
 
-select @crlf + '// ' + et.FriendlyName + ' Attribute "' +  a.[Name] + '"' + @crlf
+select @crlf + '// Person Attribute "' +  a.[Name] + '"' + @crlf
 	+ 'RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( '
 	+ '@"' + CONVERT(nvarchar(50),f.[Guid]) + '", '
 	+ '@"' + CONVERT(nvarchar(50),c.[Guid]) + '", '
@@ -31,6 +31,7 @@ JOIN FieldType f ON f.id = a.FieldTypeId
 JOIN EntityType et ON et.id = a.EntityTypeId
 LEFT JOIN AttributeQualifier aq ON a.id = aq.AttributeId
 WHERE a.[ModifiedDateTime] > GETDATE() - 1
+	AND et.[Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7'
 
 
 
