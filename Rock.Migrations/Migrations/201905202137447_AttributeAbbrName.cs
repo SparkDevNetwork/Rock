@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Attribute", "AbbreviatedName", c => c.String(maxLength: 100));
+            //AddColumn("dbo.Attribute", "AbbreviatedName", c => c.String(maxLength: 100));
         }
         
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.Attribute", "AbbreviatedName");
+            //DropColumn("dbo.Attribute", "AbbreviatedName");
         }
     }
 }

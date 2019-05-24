@@ -21,11 +21,11 @@ namespace Rock.Model
 
         private const string ATTRIBUTE_MODE_YEILDING = "core_ConflictModeYielding";
 
-        private const string ATTRIBUTE_ENGAGEMENT_ACCOMMODATING = "core_ConflictEngagementAccommodating";
+        private const string ATTRIBUTE_THEME_ACCOMMODATING = "core_ConflictThemeAccommodating";
 
-        private const string ATTRIBUTE_ENGAGEMENT_WINNING = "core_ConflictEngagementWinning";
+        private const string ATTRIBUTE_THEME_WINNING = "core_ConflictThemeWinning";
 
-        private const string ATTRIBUTE_ENGAGEMENT_SOLVING = "core_ConflictEngagementSolving";
+        private const string ATTRIBUTE_THEME_SOLVING = "core_ConflictThemeSolving";
 
         /// <summary>
         /// Raw question data with code as key.
@@ -250,9 +250,9 @@ namespace Rock.Model
             person.SetAttributeValue( ATTRIBUTE_MODE_COMPROMISING, assessmentResults.ModeCompromisingScore );
             person.SetAttributeValue( ATTRIBUTE_MODE_AVOIDING, assessmentResults.ModeAvoidingScore );
             person.SetAttributeValue( ATTRIBUTE_MODE_YEILDING, assessmentResults.ModeYieldingScore );
-            person.SetAttributeValue( ATTRIBUTE_ENGAGEMENT_ACCOMMODATING, assessmentResults.EngagementAccommodatingScore );
-            person.SetAttributeValue( ATTRIBUTE_ENGAGEMENT_WINNING, assessmentResults.EngagementWinningScore );
-            person.SetAttributeValue( ATTRIBUTE_ENGAGEMENT_SOLVING, assessmentResults.EngagementSolvingScore );
+            person.SetAttributeValue( ATTRIBUTE_THEME_ACCOMMODATING, assessmentResults.EngagementAccommodatingScore );
+            person.SetAttributeValue( ATTRIBUTE_THEME_WINNING, assessmentResults.EngagementWinningScore );
+            person.SetAttributeValue( ATTRIBUTE_THEME_SOLVING, assessmentResults.EngagementSolvingScore );
             person.SaveAttributeValues();
         }
 
@@ -271,9 +271,9 @@ namespace Rock.Model
             savedScores.ModeCompromisingScore = person.GetAttributeValue( ATTRIBUTE_MODE_COMPROMISING ).AsDecimal();
             savedScores.ModeAvoidingScore = person.GetAttributeValue( ATTRIBUTE_MODE_AVOIDING ).AsDecimal();
             savedScores.ModeYieldingScore = person.GetAttributeValue( ATTRIBUTE_MODE_YEILDING ).AsDecimal();
-            savedScores.EngagementAccommodatingScore = person.GetAttributeValue( ATTRIBUTE_ENGAGEMENT_ACCOMMODATING ).AsDecimal();
-            savedScores.EngagementWinningScore = person.GetAttributeValue( ATTRIBUTE_ENGAGEMENT_WINNING ).AsDecimal();
-            savedScores.EngagementSolvingScore = person.GetAttributeValue( ATTRIBUTE_ENGAGEMENT_SOLVING ).AsDecimal();
+            savedScores.EngagementAccommodatingScore = person.GetAttributeValue( ATTRIBUTE_THEME_ACCOMMODATING ).AsDecimal();
+            savedScores.EngagementWinningScore = person.GetAttributeValue( ATTRIBUTE_THEME_WINNING ).AsDecimal();
+            savedScores.EngagementSolvingScore = person.GetAttributeValue( ATTRIBUTE_THEME_SOLVING ).AsDecimal();
 
             return savedScores;
         }

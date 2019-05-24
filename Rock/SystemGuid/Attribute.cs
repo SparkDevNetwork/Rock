@@ -148,17 +148,17 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The person attribute for the conflict engagement profile: accommodating  
         /// </summary>
-        public const string PERSON_CONFLICT_ENGAGEMENT_ACCOMMODATING = "404A64FB-7396-4896-9C94-84DE21E995CA";
+        public const string PERSON_CONFLICT_THEME_ACCOMMODATING = "404A64FB-7396-4896-9C94-84DE21E995CA";
 
         /// <summary>
         /// The person attribute for the conflict engagement profile: winning  
         /// </summary>
-        public const string PERSON_CONFLICT_ENGAGEMENT_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
+        public const string PERSON_CONFLICT_THEME_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
 
         /// <summary>
         /// The person attribute for the conflict engagement profile: solving  
         /// </summary>
-        public const string PERSON_CONFLICT_ENGAGEMENT_SOLVING = "33235605-D8BB-4C1E-B231-6F085970A14F";
+        public const string PERSON_CONFLICT_THEME_SOLVING = "33235605-D8BB-4C1E-B231-6F085970A14F";
 
         /// <summary>
         /// The person attribute for the EQ self aware
