@@ -49,6 +49,11 @@ namespace Rock.SystemGuid
         public const string GLOBAL_DEFAULT_SHORT_LINK_SITE = "DD0E0757-2A01-47BB-A74A-F6E69B0399C8";
 
         /// <summary>
+        /// The global attribute to enable when routes must match the site's domain
+        /// </summary>
+        public const string GLOBAL_ENABLE_ROUTE_DOMAIN_MATCHING = "0B7DD63E-AD00-445E-8E9D-047956FEAFB3";
+
+        /// <summary>
         /// The Google reCaptcha site key
         /// </summary>
         public const string GLOBAL_GOOGLE_RECAPTCHA_SITE_KEY = "BF1FD484-50F3-4C7E-975C-5E1CEB1F8C72";
