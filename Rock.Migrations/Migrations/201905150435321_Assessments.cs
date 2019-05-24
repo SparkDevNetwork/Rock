@@ -48,6 +48,7 @@ namespace Rock.Migrations
             UpdateGiftsPageLayout();
             DefinedTypeCategoryTrueWiringToPersonalityAssessmentsUp();
             RenamePersonAttributeCategoryTrueWiring();
+            UpdateSpiritualGiftsDefinedValuesUp();
         }
         
         /// <summary>
@@ -55,10 +56,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            UpdateSpiritualGiftsDefinedValuesDown();
             DefinedTypeCategoryTrueWiringToPersonalityAssessmentsDown();
             PagesBlocksAndAttributesDown();
             AssessmentRemindersServiceJobDown();
-            RockMigrationHelper.DeleteSystemEmail("41FF4269-7B48-40CD-81D4-C11370A13DED"); // Assessment Request System Eamil
+            RockMigrationHelper.DeleteSystemEmail("41FF4269-7B48-40CD-81D4-C11370A13DED"); // Assessment Request System Email
             AddConflictProfileDefinedTypeAndAttributesDown();
             CreateTablesDown();
             DropColumn("dbo.Attribute", "AbbreviatedName");
@@ -1669,6 +1671,22 @@ This graph is based on the average composite score for each cluster of Motivator
          //               ( int ) Rock.Model.SpecialRole.AllUsers,
          //               Guid.NewGuid().ToString() );
 
+        }
+
+        private void UpdateSpiritualGiftsDefinedValuesUp()
+        {
+            Sql( @"
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Service' WHERE [Guid] = '13C40209-F41D-4C1D-83D3-2EC530588245'
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Shepherding' WHERE [Guid] = 'FC4F1B46-F0C3-45B0-9FD9-D15F4FD05A31'
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Mentoring' WHERE [Guid] = 'C7291F22-05F0-4EF9-A7C2-2CFEBFEBCB45'" );
+        }
+
+        private void UpdateSpiritualGiftsDefinedValuesDown()
+        {
+            Sql( @"
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Helps/Service' WHERE [Guid] = '13C40209-F41D-4C1D-83D3-2EC530588245'
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Pastor-Shepherd' WHERE [Guid] = 'FC4F1B46-F0C3-45B0-9FD9-D15F4FD05A31'
+                UPDATE [dbo].[DefinedValue] SET [Value] = 'Pastor-Teacher' WHERE [Guid] = 'C7291F22-05F0-4EF9-A7C2-2CFEBFEBCB45'" );
         }
     }
 }
