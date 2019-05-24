@@ -90,13 +90,12 @@ namespace Rockweb.Blocks.Crm
         #region Attribute Keys
         protected static class AttributeKeys
         {
-            public const string NumberofQuestions = "NumberofQuestions";
             public const string Instructions = "Instructions";
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string ResultsMessage = "ResultsMessage";
             public const string AllowRetakes = "AllowRetakes";
-            public const string StartDateTime = "StartDateTime";
+            public const string NumberofQuestions = "NumberofQuestions";
         }
 
         #endregion Attribute Keys
@@ -129,6 +128,7 @@ namespace Rockweb.Blocks.Crm
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
+        private const string START_DATETIME = "StartDateTime";
 
         // View State Variables
         private List<AssessmentResponse> _assessmentResponses;
@@ -266,8 +266,8 @@ This graph is based on the average composite score for each cluster of Motivator
         /// </summary>
         public DateTime StartDateTime
         {
-            get { return ViewState[AttributeKeys.StartDateTime] as DateTime? ?? RockDateTime.Now; }
-            set { ViewState[AttributeKeys.StartDateTime] = value; }
+            get { return ViewState[START_DATETIME] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[START_DATETIME] = value; }
         }
 
         #endregion

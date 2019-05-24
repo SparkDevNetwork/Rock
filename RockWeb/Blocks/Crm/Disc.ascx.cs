@@ -100,7 +100,6 @@ namespace Rockweb.Blocks.Crm
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string NumberofQuestions = "NumberofQuestions";
-            public const string StartDateTime = "StartDateTime";
 
             // Other Attributes
             public const string Strengths = "Strengths";
@@ -146,6 +145,7 @@ namespace Rockweb.Blocks.Crm
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
+        private const string START_DATETIME = "StartDateTime";
 
         #endregion
 
@@ -184,8 +184,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public DateTime StartDateTime
         {
-            get { return ViewState[AttributeKeys.StartDateTime] as DateTime? ?? RockDateTime.Now; }
-            set { ViewState[AttributeKeys.StartDateTime] = value; }
+            get { return ViewState[START_DATETIME] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[START_DATETIME] = value; }
         }
 
         #endregion

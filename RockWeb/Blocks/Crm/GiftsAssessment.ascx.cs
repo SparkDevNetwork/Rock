@@ -269,6 +269,7 @@ namespace Rockweb.Blocks.Crm
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
+        private const string START_DATETIME = "StartDateTime";
 
         // View State Variables
         private List<AssessmentResponse> _assessmentResponses;
@@ -309,6 +310,15 @@ namespace Rockweb.Blocks.Crm
         {
             get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
             set { ViewState[AttributeKeys.NumberofQuestions] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the time to take the result
+        /// </summary>
+        public DateTime StartDateTime
+        {
+            get { return ViewState[START_DATETIME] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[START_DATETIME] = value; }
         }
 
         #endregion
@@ -470,6 +480,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            StartDateTime = RockDateTime.Now;
             ShowQuestions();
         }
 
@@ -506,6 +517,7 @@ namespace Rockweb.Blocks.Crm
             {
                 SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
                 SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
+                var resultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -529,7 +541,7 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ).ToJson();
+                assessment.AssessmentResultData = new { Result = resultData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
                 rockContext.SaveChanges();
 
                 ShowResult( result, assessment );
