@@ -215,7 +215,7 @@
                 <%-- Sign-up --%>
                 <asp:Panel ID="pnlSignup" CssClass="row" runat="server">
                     <div class="col-md-6">
-                        <Rock:NotificationBox ID="nbNoSignupsAvailable" runat="server" Visible="false" Text="No sign-ups available." NotificationBoxType="Info" />
+                        <Rock:NotificationBox ID="nbSignupsMsg" runat="server" NotificationBoxType="Info" />
                         <Rock:DynamicPlaceholder ID="phSignUpSchedules" runat="server" />
                     </div>
                 </asp:Panel>

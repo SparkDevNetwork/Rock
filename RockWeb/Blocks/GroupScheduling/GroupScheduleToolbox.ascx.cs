@@ -1187,8 +1187,24 @@ $('#{0}').tooltip();
                 .ThenBy( a => a.LocationName )
                 .ToList();
 
-            nbNoSignupsAvailable.Visible = availableSchedules.Any() == false;
-
+            string signUpMsg = string.Empty;
+            if ( availableSchedules.Any() )
+            {
+                if ( CurrentPerson.Id != SelectedPersonId )
+                {
+                    signUpMsg = "Sign up to attend a group and location on the given date.";
+                }
+                else
+                {
+                    signUpMsg = string.Format("Sign up {0} to attend a group and location on a given date.", CurrentPerson.FullName);
+                }
+            }
+            else
+            {
+                signUpMsg = "No sign-ups available.";
+            }
+            nbSignupsMsg.Text = signUpMsg;
+            
             foreach ( var availableSchedule in availableSchedules )
             {
                 if ( availableSchedule.GroupId != currentGroupId )
