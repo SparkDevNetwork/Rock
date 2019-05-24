@@ -201,6 +201,7 @@ namespace Rockweb.Blocks.Crm
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
+        private const string START_DATETIME = "StartDateTime";
 
         // View State Variables
         private List<AssessmentResponse> _assessmentResponses;
@@ -272,6 +273,15 @@ namespace Rockweb.Blocks.Crm
             {
                 ViewState[AttributeKeys.NumberOfQuestions] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the time to take the result
+        /// </summary>
+        public DateTime StartDateTime
+        {
+            get { return ViewState[START_DATETIME] as DateTime? ?? RockDateTime.Now; }
+            set { ViewState[START_DATETIME] = value; }
         }
 
         #endregion
@@ -449,6 +459,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            StartDateTime = RockDateTime.Now;
             ShowQuestions();
         }
 
@@ -508,7 +519,7 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = result.AssessmentData.ToJson();
+                assessment.AssessmentResultData = new { Result = result.AssessmentData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
                 rockContext.SaveChanges();
 
                 // Since we are rendering chart.js we have to reload the page.
