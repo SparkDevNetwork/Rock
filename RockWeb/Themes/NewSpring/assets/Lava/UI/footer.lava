@@ -8,8 +8,27 @@
     {% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
 {% endif %}
 
+<footer class="shell soft bg-gray-dark rounded shadowed">
+    <div class="row sans-serif strong text-decoration-none">
+        <div class="col-xs-12 col-sm-12 col-md-3 text-left sm-text-center xs-text-center sm-push-half-bottom xs-push-half-bottom">
+            <span class="text-white"><small>&copy; {{ 'Now' | Date:'yyyy' }} NewSpring Church</small></span>
+        </div><div class="col-xs-12 col-sm-12 col-md-6 text-center">
+            <small class="sans-serif strong text-decoration-none text-center flush">
+                <a href="/privacy" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Privacy Policy</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/terms" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Terms of Use</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/reprinting-and-reposting" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Reprinting &amp; Reposting Terms</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Report Website Issue</a>
+    	    </small>
+        </div><div class="col-xs-12 col-sm-12 col-md-3 text-right sm-text-center xs-text-center">
+            <small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a></small>
+        </div>
+    </div>
+</footer>
 
-<footer class="position-relative bg-gray-dark soft-double soft-bottom push-sides xs-push-half-sides push-bottom xs-push-half-bottom clearfix rounded shadowed sans-serif strong text-decoration-none overflow-hidden">
+<footer class="hidden position-relative bg-gray-dark soft-double soft-bottom push-sides xs-push-half-sides push-bottom xs-push-half-bottom clearfix rounded shadowed sans-serif strong text-decoration-none overflow-hidden">
     <img src="https://s3.amazonaws.com/ns.assets/newspring/newspring_mark.png" class="position-absolute bottom-zero right-zero" style="max-width:50px;" />
     <div class="row">
         <div class="col-xs-12 col-sm-6 col-md-3 push-bottom">
@@ -49,7 +68,7 @@
     </div>
 </footer>
 
-<div class="soft-sides  sans-serif stronger letter-spacing-condensed text-decoration-none">
+<div class="hidden soft-sides  sans-serif stronger letter-spacing-condensed text-decoration-none">
     <div class="row">
         <div class="col-xs-12 col-md-6 xs-text-center">
             <p class="text-gray-dark flush"><small>Follow Us <a href="https://facebook.com/newspring" target="_blank"><i class="fab fa-lg fa-fw fa-facebook-square text-facebook"></i></a> <a href="https://twitter.com/newspring" target="_blank"><i class="fab fa-lg fa-fw fa-twitter-square text-twitter"></i></a> <a href="https://instagram.com/newspring_church" target="_blank"><i class="fab fa-lg fa-fw fa-instagram text-instagram"></i></a></small></p>

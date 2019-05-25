@@ -139,7 +139,7 @@
                 {[ endscripturize ]}
             {% endif %}
 
-            <guid>{{ itemLink | Trim }}</guid>
+            <guid>{{ item.Guid }}</guid>
 
             {% if feedtype and feedtype != 'Editorial' %}
                 <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare }}{% elseif parentImageSquare != empty %}{{ parentImageSquare }}{% else %}{{ fallbackImage }}{% endif %}"/>
