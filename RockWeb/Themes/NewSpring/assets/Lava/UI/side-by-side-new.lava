@@ -37,7 +37,7 @@
             </div>
         {% if linkurl != empty %}</a>{% endif %}
     </div><div class="floating-item col-xs-12 col-sm-12 col-md-6">
-        <div class="soft-sides xs-hard sm-hard text-left sm-text-center xs-text-center">
+        <div class="soft-sides sm-hard-sides sm-soft-half-bottom xs-hard-sides xs-soft-half-bottom clearfix text-left sm-text-center xs-text-center">
             {% if label != null and label != '' %}
                 <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
             {% endif %}

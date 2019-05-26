@@ -104,7 +104,6 @@
                     </ProgressTemplate>
             </asp:UpdateProgress>
 
-            <!-- Smooth Scrolling Setup -->
             <script>
                 document.addEventListener("DOMContentLoaded", function(){
                     var navigation = document.querySelector('#zone-navigation');
