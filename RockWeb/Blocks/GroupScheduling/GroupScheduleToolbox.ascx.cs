@@ -50,11 +50,34 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "6",
         Order = 0,
         Key = AttributeKeys.FutureWeeksToShow )]
+
+    [CodeEditorField(
+        "Signup Instructions",
+        Description = "Instructions here will show up on Signup tab. <span class='tip tip-lava'></span>",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue =
+    @"<div class=""alert alert-info"">
+    {%- if IsSchedulesAvailable -%}
+        {%- if CurrentPerson.Id != Person.Id -%}
+            Sign up to attend a group and location on the given date.
+        {%- else -%}
+            Sign up {{ Person.FullName }} to attend a group and location on a given date.
+        {%- endif -%}
+     {%- else -%}
+        No sign-ups available.
+     {%- endif -%}
+</div>",
+        Order = 1,
+        Key = AttributeKeys.SignupInstructions )]
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKeys
         {
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string SignupInstructions = "SignupInstructions";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -1187,23 +1210,10 @@ $('#{0}').tooltip();
                 .ThenBy( a => a.LocationName )
                 .ToList();
 
-            string signUpMsg = string.Empty;
-            if ( availableSchedules.Any() )
-            {
-                if ( CurrentPerson.Id != SelectedPersonId )
-                {
-                    signUpMsg = "Sign up to attend a group and location on the given date.";
-                }
-                else
-                {
-                    signUpMsg = string.Format("Sign up {0} to attend a group and location on a given date.", CurrentPerson.FullName);
-                }
-            }
-            else
-            {
-                signUpMsg = "No sign-ups available.";
-            }
-            nbSignupsMsg.Text = signUpMsg;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "IsSchedulesAvailable", availableSchedules.Any() );
+            mergeFields.Add( "Person", CurrentPerson );
+            lSignupMsg.Text = GetAttributeValue( AttributeKeys.SignupInstructions ).ResolveMergeFields( mergeFields );
             
             foreach ( var availableSchedule in availableSchedules )
             {
