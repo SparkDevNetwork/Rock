@@ -43,7 +43,7 @@
                 <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 transaction-matching-image">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
                             <div class="photo transaction-image">
@@ -57,7 +57,8 @@
                                 </asp:Repeater>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 transaction-matching-details">
+                            <div class="header">
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" EnhanceForLongLists="true" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
@@ -105,7 +106,6 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
@@ -113,6 +113,8 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
+                            </div>
+                            <div class="body">
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <div class="form-horizontal label-xl js-accounts">
                                     <asp:Repeater ID="rptAccounts" runat="server">
@@ -130,7 +132,9 @@
                                     </div>
                                 </asp:Panel>
                             </Rock:RockControlWrapper>
+                            </div>
 
+                            <div class="footer">
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
                             <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
 
@@ -140,6 +144,7 @@
                             <Rock:HiddenFieldWithClass ID="hfCurrencySymbol" runat="server" CssClass="js-currencysymbol" />
 
                             <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
+                            </div>
                         </div>
                     </div>
 
