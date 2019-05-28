@@ -11,13 +11,13 @@ namespace Rock.Model
     /// </summary>
     public class EQInventoryService
     {
-        private const string ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARE = "core_EQSelfAware";
+        private const string ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARENESS = "core_EQSelfAwareness";
 
-        private const string ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATE = "core_EQSelfRegulate";
+        private const string ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATING = "core_EQSelfRegulating";
 
-        private const string ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARE = "core_EQOthersAware";
+        private const string ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARENESS = "core_EQOthersAwareness";
 
-        private const string ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATE = "core_EQOthersRegulate";
+        private const string ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATING = "core_EQOthersRegulating";
 
         private const string ATTRIBUTE_EQ_SCALES_PROBLEM_SOLVING = "core_EQProblemSolving";
 
@@ -153,11 +153,11 @@ namespace Rock.Model
         /// </summary>
         private static Dictionary<Guid, EQInventory> constructData = new Dictionary<Guid, EQInventory>()
         {
-            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARE.AsGuid(),  new EQInventory(34.36,4.209, new List<string>(){ "fsa02N", "fsa03", "fsa04N", "fsa05", "fsa06", "fsa07", "fsa08", "fsa09","fsa10N" }) },
-            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATE.AsGuid(), new EQInventory(31.43, 4.305,  new List<string>(){ "fsr01", "fsr02", "fsr03N", "fsr04", "fsr06N", "fsr07", "fsr08", "fsr09N","fsr10N"}) },
-            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARE.AsGuid(), new EQInventory(34.17,4.160, new List<string>(){ "foa02", "foa03", "foa04", "foa05", "foa06", "foa07", "foa08N", "foa09","foa10"}) },
-            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATE.AsGuid(), new EQInventory( 33.66, 5.352, new List<string>(){ "for02", "for03", "for04", "for05", "for06", "for07", "for08", "for09", "for10" } )},
-            { SystemGuid.Attribute.PERSON_EQ_SCALES_IN_PROBLEM_SOLVING.AsGuid(), new EQInventory(20.18,3.59, new List<string>(){ "fps01N", "fps02", "fps03N", "fps04N", "fps05N", "fps07N", "fps08N" } )},
+            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARENESS.AsGuid(),  new EQInventory(34.36,4.209, new List<string>(){ "fsa02N", "fsa03", "fsa04N", "fsa05", "fsa06", "fsa07", "fsa08", "fsa09","fsa10N" }) },
+            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATING.AsGuid(), new EQInventory(31.43, 4.305,  new List<string>(){ "fsr01", "fsr02", "fsr03N", "fsr04", "fsr06N", "fsr07", "fsr08", "fsr09N","fsr10N"}) },
+            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS.AsGuid(), new EQInventory(34.17,4.160, new List<string>(){ "foa02", "foa03", "foa04", "foa05", "foa06", "foa07", "foa08N", "foa09","foa10"}) },
+            { SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING.AsGuid(), new EQInventory( 33.66, 5.352, new List<string>(){ "for02", "for03", "for04", "for05", "for06", "for07", "for08", "for09", "for10" } )},
+            { SystemGuid.Attribute.PERSON_EQ_SCALES_PROBLEM_SOLVING.AsGuid(), new EQInventory(20.18,3.59, new List<string>(){ "fps01N", "fps02", "fps03N", "fps04N", "fps05N", "fps07N", "fps08N" } )},
             { SystemGuid.Attribute.PERSON_EQ_SCALES_UNDER_STRESS.AsGuid(), new EQInventory(29.07,3.478, new List<string>(){ "fes01", "fes02", "fes03N", "fes04", "fes05", "fes06N", "fes07", "fes08" } )},
         };
 
@@ -203,18 +203,18 @@ namespace Rock.Model
             }
 
             testResults.AssessmentData = new AssessmentData();
-            testResults.AssessmentData.SelfAware = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARE.AsGuid()];
-            testResults.AssessmentData.SelfRegulate = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATE.AsGuid()];
-            testResults.AssessmentData.OthersAware = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARE.AsGuid()];
-            testResults.AssessmentData.OthersRegulate = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATE.AsGuid()];
-            testResults.AssessmentData.EQ_InProblemSolving = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_SCALES_IN_PROBLEM_SOLVING.AsGuid()];
+            testResults.AssessmentData.SelfAware = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARENESS.AsGuid()];
+            testResults.AssessmentData.SelfRegulate = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATING.AsGuid()];
+            testResults.AssessmentData.OthersAware = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS.AsGuid()];
+            testResults.AssessmentData.OthersRegulate = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING.AsGuid()];
+            testResults.AssessmentData.EQ_InProblemSolving = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_SCALES_PROBLEM_SOLVING.AsGuid()];
             testResults.AssessmentData.EQ_UnderStress = assessmentDatas[SystemGuid.Attribute.PERSON_EQ_SCALES_UNDER_STRESS.AsGuid()];
 
-            testResults.SelfAwareConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARE.AsGuid()] );
-            testResults.SelfRegulatingConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATE.AsGuid()] );
-            testResults.OtherAwarenessContruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARE.AsGuid()] );
-            testResults.OthersRegulatingConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATE.AsGuid()] );
-            testResults.EQ_ProblemSolvingScale = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_SCALES_IN_PROBLEM_SOLVING.AsGuid()] );
+            testResults.SelfAwareConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARENESS.AsGuid()] );
+            testResults.SelfRegulatingConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATING.AsGuid()] );
+            testResults.OtherAwarenessContruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS.AsGuid()] );
+            testResults.OthersRegulatingConstruct = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING.AsGuid()] );
+            testResults.EQ_ProblemSolvingScale = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_SCALES_PROBLEM_SOLVING.AsGuid()] );
             testResults.EQ_UnderStressScale = GetPercentFromScore( zScores[SystemGuid.Attribute.PERSON_EQ_SCALES_UNDER_STRESS.AsGuid()] );
             return testResults;
         }
@@ -246,10 +246,10 @@ namespace Rock.Model
         {
             person.LoadAttributes();
 
-            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARE, assessmentResults.SelfAwareConstruct );
-            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATE, assessmentResults.SelfRegulatingConstruct );
-            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARE, assessmentResults.OtherAwarenessContruct );
-            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATE, assessmentResults.OthersRegulatingConstruct );
+            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARENESS, assessmentResults.SelfAwareConstruct );
+            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATING, assessmentResults.SelfRegulatingConstruct );
+            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARENESS, assessmentResults.OtherAwarenessContruct );
+            person.SetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATING, assessmentResults.OthersRegulatingConstruct );
             person.SetAttributeValue( ATTRIBUTE_EQ_SCALES_PROBLEM_SOLVING, assessmentResults.EQ_ProblemSolvingScale );
             person.SetAttributeValue( ATTRIBUTE_EQ_SCALES_UNDER_STRESS, assessmentResults.EQ_UnderStressScale );
             person.SaveAttributeValues();
@@ -265,10 +265,10 @@ namespace Rock.Model
             AssessmentResults savedScores = new AssessmentResults();
 
             person.LoadAttributes();
-            savedScores.SelfAwareConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARE ).AsDecimal();
-            savedScores.SelfRegulatingConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATE ).AsDecimal();
-            savedScores.OtherAwarenessContruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARE ).AsDecimal();
-            savedScores.OthersRegulatingConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATE ).AsDecimal();
+            savedScores.SelfAwareConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_AWARENESS ).AsDecimal();
+            savedScores.SelfRegulatingConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_SELF_REGULATING ).AsDecimal();
+            savedScores.OtherAwarenessContruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_AWARENESS ).AsDecimal();
+            savedScores.OthersRegulatingConstruct = person.GetAttributeValue( ATTRIBUTE_EQ_CONSTRUCTS_OTHERS_REGULATING ).AsDecimal();
             savedScores.EQ_ProblemSolvingScale = person.GetAttributeValue( ATTRIBUTE_EQ_SCALES_PROBLEM_SOLVING ).AsDecimal();
             savedScores.EQ_UnderStressScale = person.GetAttributeValue( ATTRIBUTE_EQ_SCALES_UNDER_STRESS ).AsDecimal();
 
