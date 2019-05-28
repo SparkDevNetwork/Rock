@@ -57,7 +57,7 @@
                                 </asp:Repeater>
                             </div>
                         </div>
-                        <div class="col-md-6 transaction-matching-details">
+                        <div class="col-md-6 transaction-matching-details styled-scroll">
                             <div class="header">
                             <div class="row">
                                 <div class="col-md-6">
