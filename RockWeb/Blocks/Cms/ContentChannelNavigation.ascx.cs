@@ -883,6 +883,10 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.IsDeleteEnabled = canEditChannel;
                 if ( canEditChannel )
                 {
+                    var securityField = new SecurityField();
+                    gContentChannelItems.Columns.Add( securityField );
+                    securityField.TitleField = "Title";
+                    securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
 
                     var deleteField = new DeleteField();
                     gContentChannelItems.Columns.Add( deleteField );

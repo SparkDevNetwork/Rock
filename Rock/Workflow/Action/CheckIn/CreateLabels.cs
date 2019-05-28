@@ -21,6 +21,8 @@ using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
 
+using Newtonsoft.Json;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
@@ -34,6 +36,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Creates Check-in Labels" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Labels" )]
+    [BooleanField( "Enable Saving Label Data", "Select 'Yes' if the label data should be temporarily saved on the attendance record. Select 'No' to disable saving label data.", true )]
+
     public class CreateLabels : CheckInActionComponent
     {
         /// <summary>
@@ -190,6 +194,13 @@ namespace Rock.Workflow.Action.CheckIn
                             }
                         }
                     }
+
+                    // Save the label data
+                    var enableSavingLabelData = GetAttributeValue( action, "EnableSavingLabelData" ).AsBoolean( true );
+                    if ( enableSavingLabelData )
+                    {
+                        SaveLabelToAttendance( family );
+                    }
                 }
 
                 return true;
@@ -197,6 +208,68 @@ namespace Rock.Workflow.Action.CheckIn
             }
 
             return false;
+        }
+
+
+        /// <summary> Saves the family's label set as AttendanceData to the attendance records
+        /// associated with the current check-in (using the given attendanceIds). The label
+        /// data looks like:
+        /// <![CDATA[
+        ///   [
+        ///      {
+        ///         "LabelType":0,
+        ///         "Order":0,
+        ///         "PersonId":4,
+        ///         "PrinterDeviceId":1,
+        ///         "PrinterAddress":"10.1.20.200",
+        ///         "PrintFrom":0,
+        ///         "PrintTo":1,
+        ///         "FileGuid":"9b098db0-952c-43fb-a5bd-511e3c2b72fb",
+        ///         "LabelFile":"/GetFile.ashx?id=33",
+        ///         "LabelKey":"9b098db0-952c-43fb-a5bd-511e3c2b72fb",
+        ///         "MergeFields":{ 
+        ///                  "WWW":"K46", 
+        ///                  "2":"Ted Decker", 
+        ///                  "AAA":"", 
+        ///                  "3":"Bears Room 4:30 (test)", 
+        ///                  "LLL":"", 
+        ///                  "5":"", 
+        ///                  "7":"" 
+        ///         }
+        ///      },
+        ///      {
+        ///         "LabelType":1,
+        ///         ...
+        ///      },
+        ///      ...
+        ///   ]
+        /// ]]>
+        /// </summary>
+        /// <param name="family">A CheckInFamily that holds the labels to be stored.</param>
+        private void SaveLabelToAttendance( CheckInFamily family )
+        {
+            if ( family == null || family.People == null )
+            {
+                return;
+            }
+
+            var labels = family.People.SelectMany( p => p.GroupTypes ).Where( gt => gt.Labels != null ).SelectMany( gt => gt.Labels ).ToList();
+
+            if ( labels == null || labels.Count == 0 )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var attendanceRecords = new AttendanceService( rockContext ).Queryable().Where( a => family.AttendanceIds.Contains( a.Id ) );
+            var labelData = JsonConvert.SerializeObject( labels );
+
+            foreach ( var attendance in attendanceRecords )
+            {
+                attendance.AttendanceData = new AttendanceData() { LabelData = labelData };
+            }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>

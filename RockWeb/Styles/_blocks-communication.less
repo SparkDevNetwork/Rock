@@ -596,13 +596,25 @@ iframe.email-body {
     font-size: 21px;
     text-align: center;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, .9);
+    background-color: @panel-heading-bg;
     border-radius: 2px;
     box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
   }
 
   .drag-container {
     height: 100%;
+  }
+
+  .drag-container-empty::after {
+    display: block;
+    content: 'Drag and Drop Here';
+    max-width: 500px;
+    padding: 80px 0;
+    margin: 0 auto 20px;
+    font-size: 20px;
+    text-align: center;
+    border: 3px dashed rgba(0,0,0,0.2);
+    height: 200px;
   }
 
   h4 {
@@ -626,6 +638,12 @@ iframe.email-body {
   }
 }
 
-.component.gu-mirror {
+.component.gu-mirror,
+.sms-action.gu-mirror {
   list-style: none;
+
+  &::before,
+  &::after {
+    display: none;
+  }
 }

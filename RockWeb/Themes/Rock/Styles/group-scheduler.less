@@ -12,19 +12,59 @@
 @pending-icon-color: @brand-warning;
 @declined-icon-color: @brand-danger;
 
-.viewport {
-  max-height: 50vh;
-  overflow-y: scroll;
+.group-scheduler-resourcelist {
+  height: 100%;
+}
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    background-color: fade(@panel-heading-bg, 40%);
+.resource-list {
+  position: sticky !important;
+  top: 16px;
+  max-height: ~"calc(100vh - 32px)";
+
+  @media (min-width: @screen-md-min) {
+    top: @navbar-top-height + 16px;
+    max-height: ~"calc(100vh - 112px)";
   }
 
-  &::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0,0,0, .2);
-    border-radius: 3px;
+  .is-fullscreen & {
+    top: 16px;
+    max-height: ~"calc(100vh - 100px)";
+  }
+
+  .panel-body {
+    position: relative;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    flex: 0 1 auto !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+  }
+
+  .viewport {
+    flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+    height: 100%;
+    min-height: 0;
+    padding: 12px;
+    overflow-y: scroll;
+    background-color: fade(@panel-heading-bg, 40%);
+    -ms-flex-positive: 1 !important;
+    -ms-flex-negative: 1 !important;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: fade(@panel-heading-bg, 40%);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0, .2);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(0,0,0, .3);
+      }
+    }
   }
 }
 
@@ -34,7 +74,6 @@
   margin-bottom: 12px;
   font-family: @font-family-sans-serif;
   color: @btn-default-color;
-  //overflow: auto;
   cursor: move;
   cursor: -webkit-grab;
   cursor: grab;
@@ -43,26 +82,55 @@
   border-radius: 4px;
   box-shadow: 0 1px 0 hsl(228, 7%, 83%);
 
+  .flex {
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-direction: row !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+
+    &::before {
+      display: block;
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      margin-right: 7.5px;
+      content: " ";
+      background-color: #fff;
+      border: 1px solid #d8d8d8;
+      border-radius: 50%;
+    }
+  }
+
+  .resource-meta {
+    margin-left: auto;
+  }
+
+  .btn {
+    height: 16px;
+    padding: 0;
+    line-height: 16px;
+    color: #d8d8d8;
+
+    &:hover,
+    &:focus,
+    &:active:focus {
+      color: #767676;
+      outline: none;
+    }
+  }
+
   &:hover {
     background: rgba(85,150,230,.1);
   }
 
-  &[data-state="scheduled"] {
-    display: inline-block;
-  }
-  // &[data-state="unscheduled"] {
-  //
-  // }
   &[data-state="unscheduled"][data-is-scheduled="true"] {
     background-color: @state-danger-bg;
   }
 
   &[data-has-scheduling-conflict="true"] {
     background-color: @state-warning-bg;
-
-    .resource-scheduling-conflict {
-      display: block;
-    }
   }
 
   &[data-has-blackout-conflict="true"] {
@@ -73,7 +141,7 @@
     }
 
     .resource-blackout-status {
-      display: block;
+      display: inline;
     }
   }
 
@@ -89,8 +157,9 @@
   }
 
   .resource-name {
-    display: block;
+    //display: block;
     margin-right: 20px;
+    white-space: nowrap;
   }
 
   .dropdown-menu {
@@ -98,17 +167,14 @@
   }
 
   .resource-blackout-status {
-    display: none;
     margin-left: 5px;
   }
 
   .resource-requirements-conflict {
-    display: none;
     margin-left: 5px;
   }
 
   .resource-scheduling-conflict {
-    display: none;
     margin-left: 5px;
   }
 
@@ -117,8 +183,23 @@
   }
 }
 
+.flex::before {
+  .resource[data-status="pending"] & {
+    background-color: @pending-icon-color;
+  }
+
+  .resource[data-status="confirmed"] & {
+    background-color: @confirmed-icon-color;
+  }
+
+  .resource[data-status="declined"] & {
+    background-color: @declined-icon-color;
+  }
+}
+
 
 .panel-groupscheduler .resource-area {
+  height: 100%;
   padding-top: 15px;
   padding-bottom: 15px;
 
@@ -128,6 +209,7 @@
 }
 
 .panel-groupscheduler .filter-options {
+  min-width: 160px;
   padding-top: 15px;
   padding-bottom: 15px;
   background-color: #f3f3f3;
@@ -153,7 +235,7 @@
       font-size: 14px;
       color: rgba(0, 0, 0, .4);
       text-align: center;
-      content: "No Resources Available";
+      content: "No People Available";
       -webkit-transform: translateY(-50%);
       -moz-transform: translateY(-50%);
       -ms-transform: translateY(-50%);
@@ -187,57 +269,22 @@
     outline: 2px dashed rgba(0, 0, 0, .1);
 
     &::after {
-      content: "Drag and Drop Resources Here";
+      content: "Drag and Drop Here";
     }
   }
 
   .resource {
+    display: inline-block;
     margin-right: 8px;
+
+    .resource-meta {
+      display: none;
+    }
   }
-}
-
-.resource-container {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 12px 12px 0 12px;
-  overflow: auto;
-  font-family: @font-family-sans-serif;
-  color: @text-color;
-  color: var(--text-color);
-  background-color: fade(@panel-heading-bg, 40%);
-
-  &::after {
-    display: table;
-    clear: both;
-    content: "";
-  }
-
 }
 
 .resource-search {
   border-bottom: 1px solid @panel-default-border;
-}
-
-.resource-scheduled-status {
-  width: 24px;
-  height: 24px;
-  margin-right: 7.5px;
-  background-color: #fff;
-  border: 1px solid #d8d8d8;
-  border-radius: 50%;
-
-  &[data-status="pending"] {
-    background-color: @pending-icon-color;
-  }
-
-  &[data-status="confirmed"] {
-    background-color: @confirmed-icon-color;
-  }
-
-  &[data-status="declined"] {
-    background-color: @declined-icon-color;
-  }
 }
 
 .resource-lastattendeddate {
@@ -245,53 +292,39 @@
 }
 
 .resource-note {
-  font-size: 80%;
+  display: -webkit-box;
+  max-height: 32px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 /* Resource List */
 .group-scheduler-resourcelist {
-  // width: 350px;
 
-  /* Resource List Scroller */
-  .scroll-container-resourcelist {
-    width: 320px;
+  .resource {
+    .flex {
 
-    .viewport {
-      width: 300px;
-      height: 375px;
+      &::before,
+      .btn {
+        display: none;
+      }
     }
 
-    .overview {
-      width: 100%;
-    }
-
-    .scrollbar {
-      position: relative;
-      float: right;
-      width: 15px;
-      height: 120px;
-    }
-
-    .track {
-      width: 1px;
-      height: 100%;
-      border-radius: 4px;
-    }
-
-    .thumb {
-      top: 0;
-      width: 13px;
-      height: 20px;
-      margin-left: -6px;
+    &.has-note .flex {
+      -ms-flex-direction: column !important;
+      flex-direction: column !important;
     }
   }
+
+
 }
 
 /* Location (Attendance Occurrence) */
 .scheduling-status {
-  // width: 135px;
-  // height: 24px;
-  // display: inline-block;
   .progress {
     margin-bottom: 0;
   }
@@ -354,58 +387,6 @@
   }
 }
 
-/*
--=-=- Dragula Classes
-*/
-
-/* Is added to the mirror image. It handles fixed positioning and z-index (and removes any prior margins on the element). Note
-that the mirror image is appended to the mirrorContainer, not to its initial container. Keep that in mind when styling your
-elements with nested rules, like .list .item { padding: 10px; }. */
-.gu-mirror {
-  position: fixed !important;
-  z-index: 9999 !important;
-  max-width: 560px;
-  margin: 0 !important;
-  font-family: Arial, Helvetica, sans-serif;
-  cursor: move !important;
-  cursor: -webkit-grabbing !important;
-  cursor: grabbing !important;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-  filter: alpha(opacity=80);
-  opacity: .8;
-}
-
-/* Is a helper class to apply display: none to an element. */
-.gu-hide {
-  display: none !important;
-}
-
-/* Is added to the mirrorContainer element when dragging. You can use it to style the mirrorContainer while something is being dragged. */
-.gu-unselectable {
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
-}
-
-/* Is added to the source element when its mirror image is dragged. It just adds opacity to it. */
-.gu-transit {
-  box-sizing: border-box;
-  //display: block;
-  float: none !important; /* added to override the float from the resource */
-  // width: 100% !important;
-  //height: 100%;
-  // margin: 0 !important;
-  // background: repeating-linear-gradient(
-  //   -55deg,
-  //   rgba(35, 79, 65, 0.1),
-  //   rgba(35, 79, 65, 0.1) 3px,
-  //   rgba(35, 79, 65, 0) 3px,
-  //   rgba(35, 79, 65, 0) 6px
-  // ) !important;
-  opacity: .5;
-}
-
 /* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
 .gu-transit .container {
   display: none;
@@ -418,7 +399,7 @@ elements with nested rules, like .list .item { padding: 10px; }. */
 }
 
 .schedule-status-board {
-  width: inherit;
+  width: inherit !important;
   min-width: 100%;
   table-layout: fixed;
 
@@ -455,8 +436,6 @@ elements with nested rules, like .list .item { padding: 10px; }. */
     border-left: 1px solid @panel-default-border;
   }
 }
-
-
 
 .location-scheduled-list {
   padding: 0;
@@ -499,7 +478,7 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   margin: 0 3px 0 0;
 
   &::before {
-    font-family: 'FontAwesome';
+    font-family: FontAwesome;
     font-style: normal;
     font-weight: @fa-theme-weight;
     color: @pending-icon-color;
@@ -515,4 +494,19 @@ elements with nested rules, like .list .item { padding: 10px; }. */
     color: @confirmed-icon-color;
     content: @fa-var-check-circle;
   }
+}
+
+.scheduler-target-container .resource.gu-transit,
+.resource.gu-mirror {
+  max-height: 38px;
+
+  .hide-transit {
+    display: none;
+  }
+}
+
+.resource.gu-mirror {
+  background: rgba(255,255,255,.8);
+  box-shadow: 0 5px 20px 0 rgba(21,27,38,.08);
+  opacity: 1;
 }
