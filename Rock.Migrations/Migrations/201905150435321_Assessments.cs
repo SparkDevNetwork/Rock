@@ -1345,18 +1345,22 @@ SELECT  CASE
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Growth Propensity", "core_MotivatorGrowthPropensity", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            
+            // Person Attribute "Motivators: Relational Theme"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"C757A554-3009-4214-B05D-CEA2B2EA6B8F", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 0, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_RELATIONAL_THEME );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Cluster: Influential", "core_MotivatorClusterInfluential", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_INFLUENTIAL );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_INFLUENTIAL );
+            // Person Attribute "Motivators: Directional Theme"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"C757A554-3009-4214-B05D-CEA2B2EA6B8F", categories, @"Motivators: Directional Theme", @"Directional Theme", @"core_MotivatorsDirectionalTheme", @"", @"", 0, @"", @"0815E9BE-BC24-4568-AC1A-3ECCDFF44D9F" );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_DIRECTIONAL_THEME );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Cluster: Organizational", "core_MotivatorClusterOrganizational", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_ORGANIZATIONAL );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_ORGANIZATIONAL );
+            // Person Attribute "Motivators: Intellectual Theme"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"C757A554-3009-4214-B05D-CEA2B2EA6B8F", categories, @"Motivators: Intellectual Theme", @"Intellectual Theme", @"core_MotivatorsIntellectualTheme", @"", @"", 0, @"", @"592A5F89-5E8A-43D8-8843-760207D71699" );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_INTELLECTUAL_THEME );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Cluster: Intellectual", "core_MotivatorClusterIntellectual", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_INTELLECTUAL );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_INTELLECTUAL );
-
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Cluster: Operational", "core_MotivatorClusterOperational", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_OPERATIONAL );
-            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_CLUSTER_OPERATIONAL );
+            // Person Attribute "Motivators: Positional Theme"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"C757A554-3009-4214-B05D-CEA2B2EA6B8F", categories, @"Motivators: Positional Theme", @"Positional Theme", @"core_MotivatorsPositionalTheme", @"", @"", 0, @"", @"075FDF4D-DDEC-4106-B996-F48CD1EFC978" );
+            AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_POSITIONAL_THEME );
         }
 
         private void AddMotivatorsDefinedTypes()
@@ -1861,29 +1865,29 @@ This graph is based on the average composite score for each cluster of Motivator
                     UPDATE
 	                    [Attribute]
                     SET [Key]='core_MotivatorPersevering',
-                    [Name]='Motivator: Persevering',
-					[AbbreviatedName]='Motivator: Persevering'
+                    [Name]='Motivator Persevering',
+					[AbbreviatedName]='Motivator Persevering'
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_PERSEVERING}'
 
                     UPDATE
 	                    [Attribute]
                     SET [Key]='core_MotivatorRisking',
-                    [Name]='Motivator: Risking',
-					[AbbreviatedName]='Motivator: Risking'
+                    [Name]='Motivator Risking',
+					[AbbreviatedName]='Motivator Risking'
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_RISKING}'
 
                     UPDATE
 	                    [Attribute]
                     SET [Key]='core_MotivatorExpressing',
-                    [Name]='Motivator: Expressing',
-					[AbbreviatedName]='Motivator: Expressing'
+                    [Name]='Motivator Expressing',
+					[AbbreviatedName]='Motivator Expressing'
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_EXPRESSING}'
                     
                     UPDATE
 	                    [Attribute]
                     SET [Key]='core_MotivatorAdapting',
-                    [Name]='Motivator: Adapting'
-                    [AbbreviatedName]='Motivator: Adapting'
+                    [Name]='Motivator Adapting',
+                    [AbbreviatedName]='Motivator Adapting'
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_ADAPTING}'" );
         }
     }
