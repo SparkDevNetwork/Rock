@@ -15,25 +15,27 @@
         <asp:HiddenField ID="hfDoFadeIn" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading">
-                <h1 class="panel-title">
-                    <asp:Literal ID="lPanelTitle" runat="server" /></h1>
+            <div class="panel-heading panel-follow">
+                <!-- <h1 class="panel-title">
+                    <asp:Literal ID="lPanelTitle" runat="server" />
+                </h1> -->
 
                 <asp:Literal ID="lProgressBar" runat="server"></asp:Literal>
 
-                <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
-
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Visible="false"  />
+
+                    <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
+                        <a id="hlAddNewBusiness" class="btn btn-default btn-xs" runat="server" href="#">Add Business</a>
+                    </Rock:RockControlWrapper>
+
+                    <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Visible="false">
+                        <a id="hlAddNewFamily" class="btn btn-default btn-xs" runat="server" href="#">Add Family</a>
+                    </Rock:RockControlWrapper>
+
+                    <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
                 </div>
-
-                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
-                    <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
-                </Rock:RockControlWrapper>
-
-                <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Visible="false">
-                    <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
-                </Rock:RockControlWrapper>
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <div class="panel-body">
@@ -211,6 +213,8 @@
             }
 
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+
                 if ($('#<%=hfDoFadeIn.ClientID%>').val() == "1") {
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }
