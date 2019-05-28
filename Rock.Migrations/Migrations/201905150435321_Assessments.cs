@@ -416,6 +416,8 @@ namespace Rock.Migrations
 
         private void AddEmotionalIntelligenceDefinedTypeAndAttributes()
         {
+            RockMigrationHelper.UpdatePersonAttributeCategory( "EQ", "fa fa-theater-masks", "", "0B6C7001-2D3A-4195-86CA-85C6DCBF2023" );
+
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "EQ: Self Aware", "core_EQSelfAware", "", "", 0, "", SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARE );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARE );
 
