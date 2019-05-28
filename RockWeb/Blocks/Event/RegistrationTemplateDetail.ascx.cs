@@ -1243,6 +1243,9 @@ The logged-in person's information will be used to complete the registrar inform
                     fee.IsRequired = feeUI.IsRequired;
                 }
 
+                registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                registrationTemplate.ModifiedDateTime = RockDateTime.Now;
+
                 rockContext.SaveChanges();
 
                 SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
