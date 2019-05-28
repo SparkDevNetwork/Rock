@@ -122,11 +122,12 @@
             {% assign shareimageurl = image %}
             {% assign shareauthor = 'newspring' %}
             {% assign sharetitle = Item.Title %}
+            {% assign summary = item | Attribute:'Summary' %}
             {%- capture sharesummary -%}
-                {% if Item.Summary != '' %}
-                    {{ Item.Summary | StripHtml }}
+                {% if summary and summary != empty %}
+                    {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
                 {% else %}
-                    {{ Item.Content | StripHtml | Truncate:140,'...' }}
+                    {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
                 {% endif %}
             {%- endcapture -%}
             {% assign sharehashtag = '' %}

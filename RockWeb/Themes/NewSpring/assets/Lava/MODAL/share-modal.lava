@@ -10,7 +10,7 @@
             <a href="https://twitter.com/share?url={{ shareurl }}&via={{ shareauthor }}&text={{ sharesummary | Trim }}&hashtags={{ sharehashtag }}" target="_blank" class="btn btn-twitter btn-block push-half-bottom"><i class="fab fa-fw fa-twitter"></i> Twitter</a>
           </li>
           <li>
-            <a href="http://pinterest.com/pin/create/button/?url={{ shareurl }}&media={{ shareimageurl }}&description={{ sharetitle }} {{ sharesummary }} {{ shareurl }}" target="_blank" class="btn btn-pinterest btn-block"><i class="fab fa-fw fa-pinterest-p"></i> Pinterest</a>
+            <a href="http://pinterest.com/pin/create/button/?url={{ shareurl }}&media={{ shareimageurl }}&description={{ sharetitle }} {{ sharesummary | Trim }} {{ shareurl }}" target="_blank" class="btn btn-pinterest btn-block"><i class="fab fa-fw fa-pinterest-p"></i> Pinterest</a>
           </li>
         </ul>
 
