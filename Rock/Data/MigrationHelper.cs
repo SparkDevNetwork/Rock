@@ -4684,17 +4684,17 @@ END
         /// <summary>
         /// Adds or Updates the person attribute for the provided guid.
         /// </summary>
-        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier. This method WILL update the field type if the attribute already exists.</param>
+        /// <param name="categoryGuids">The COMPLETE LIST of category guids.</param>
         /// <param name="name">The name.</param>
-        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        /// <param name="abbreviatedName">The abbreviated name of the attribute.</param>
         /// <param name="key">The key. If null/empty/whitespace the name without spaces is used.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, string categoryGuid, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
+        public void AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, System.Collections.Generic.List<string> categoryGuids, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
         {
             key = key.IsNotNullOrWhiteSpace() ? key : name.Replace( " ", string.Empty );
             description = description.Replace( "'", "''" );
@@ -4713,6 +4713,7 @@ END
                     AND [Guid] = '{guid}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
                         [Name] = '{name}',
                         [AbbreviatedName] = '{abbreviatedName}',
                         [Key] = '{key}',
@@ -4763,19 +4764,21 @@ END
                         , '{abbreviatedName}')
                 END" );
 
-            Migration.Sql( $@"
+            // Delete the current categories
+            Migration.Sql( $@"DELETE FROM [AttributeCategory] WHERE [AttributeId] = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{guid}')" );
+
+            // Now add the categories from the provided list
+            foreach ( string categoryGuid in categoryGuids )
+            {
+                Migration.Sql( $@"
                 DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{guid}')
                 DECLARE @CategoryId int = (SELECT [Id] FROM [Category] WHERE [Guid] = '{categoryGuid}')
 
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [AttributeCategory]
-                    WHERE [AttributeId] = @AttributeId
-                    AND [CategoryId] = CategoryId )
                 BEGIN
                     INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
                     VALUES( @AttributeId, @CategoryId )
                 END" );
+            }
         }
 
         #endregion

@@ -222,43 +222,45 @@ namespace Rock.Migrations
             // Create Conflict Engagement person attribute category
             RockMigrationHelper.UpdatePersonAttributeCategory( "Conflict Engagement", "fa fa-handshake", "", "EDD33F72-ECED-49BC-AC49-3643B60AD736" );
 
+            var categories = new System.Collections.Generic.List<string> { "EDD33F72-ECED-49BC-AC49-3643B60AD736" };
+            
             // Person Attribute "Conflict Mode: Winning"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 0, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 0, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
             RockMigrationHelper.AddAttributeQualifier( @"7147F706-388E-45E6-BE21-893FC7D652AA", @"ConfigurationJSON", @"[{""Guid"":""951e4864-78c7-4d9c-8548-fc7d6a5cc91b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#b21f22"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""ca9fd375-5adf-4a56-ae84-5941015f454e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#e15759"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""2f91c1ea-3d13-4a5c-9f33-ed8948e7fb1c"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f0adae"",""HighValue"":33.0,""LowValue"":0.0}]", @"33306923-B938-4156-A4D6-4ABF75146B9D" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_WINNING );
             
             // Person Attribute "Conflict Mode: Resolving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 0, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 0, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
             RockMigrationHelper.AddAttributeQualifier( @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE", @"ConfigurationJSON", @"[{""Guid"":""022c15d2-9e23-46aa-a18b-3e9a49183adf"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""7ca1d560-fc1e-4f20-b4e8-38ae3ab1385b"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""11d01d8f-d555-409f-b563-964461382a17"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"67985444-26DE-46F1-8A93-41EE55052170" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_RESOLVING );
             
             // Person Attribute "Conflict Mode: Compromising"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 0, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 0, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
             RockMigrationHelper.AddAttributeQualifier( @"817D6B13-E4AA-4E93-8547-FE711A0065F2", @"ConfigurationJSON", @"[{""Guid"":""b08b08fd-88a9-46cc-87c3-cb17368d4b56"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""80c8f457-9afc-4dd1-8d18-a86037dba6c9"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""eba49b52-17c4-4813-9688-e316b767f295"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"AACC439C-A2DC-40EC-BC22-96A1ABA4BB72" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_COMPROMISING );
             
             // Person Attribute "Conflict Mode: Avoiding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 0, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 0, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
             RockMigrationHelper.AddAttributeQualifier( @"071A8EFA-AD1C-436A-8E1E-23D215617004", @"ConfigurationJSON", @"[{""Guid"":""412a6f33-eee1-4179-a762-1df8a8b1ac6b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""25633115-9868-4c2a-89c7-97a15509c727"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""7e6bf4ac-16fa-47e4-a60d-956924ffc474"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"1835F432-A316-4347-8840-2DA5C3E24D2C" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_AVOIDING );
             
             // Person Attribute "Conflict Mode: Yielding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 0, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 0, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
             RockMigrationHelper.AddAttributeQualifier( @"D30A33AD-7A60-43E0-84DA-E23600156BF7", @"ConfigurationJSON", @"[{""Guid"":""542a5291-7d2d-40c1-bde1-fff6167e145a"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""5efa046b-f235-4ce3-9568-4daafb4860a4"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""f765b351-8e60-4d49-a8c4-d14ab761cbb9"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"45C648A3-26A9-47D8-B380-3B916FAAF701" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_YIELDING );
             
             // Person Attribute "Conflict Theme: Accommodating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 0, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 0, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
             RockMigrationHelper.AddAttributeQualifier( @"404A64FB-7396-4896-9C94-84DE21E995CA", @"ConfigurationJSON", @"[{""Guid"":""c7a0cf27-032a-4ce4-be51-228f56750ba7"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""fe2c3be8-75e5-4ee1-8559-8f6fa531bf07"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""1fa912d5-772d-48d4-8d35-5a3791096777"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"4ACECE69-D2E6-494B-96A2-4C5D15392935" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_ACCOMMODATING );
             
             // Person Attribute "Conflict Theme: Winning"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Theme: Winning", @"Theme: Winning", @"core_ConflictThemeWinning", @"", @"", 0, @"", @"6DE5878D-7CDB-404D-93A7-27CFF5E98C3B" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Winning", @"Theme: Winning", @"core_ConflictThemeWinning", @"", @"", 0, @"", @"6DE5878D-7CDB-404D-93A7-27CFF5E98C3B" );
             RockMigrationHelper.AddAttributeQualifier( @"6DE5878D-7CDB-404D-93A7-27CFF5E98C3B", @"ConfigurationJSON", @"[{""Guid"":""4185359a-af32-4902-82b4-d87e5729bd81"",""RangeIndex"":0,""Label"":""High"",""Color"":""#b21f22"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""c22b5ba0-06c9-4d68-814a-3b7ac603f39c"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#e15759"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""56923739-16b5-4c58-8cc4-961800117bb5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f0adae"",""HighValue"":33.0,""LowValue"":0.0}]", @"F43DEF27-ABE2-4015-8F3A-BB52953C4389" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_WINNING );
 
             // Person Attribute "Conflict Theme: Solving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"EDD33F72-ECED-49BC-AC49-3643B60AD736", @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 0, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 0, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
             RockMigrationHelper.AddAttributeQualifier( @"33235605-D8BB-4C1E-B231-6F085970A14F", @"ConfigurationJSON", @"[{""Guid"":""fbd84cfb-bd89-4ed5-a1b3-834e2118ae9b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""c43e78c1-b675-48a2-8039-5784aadb8502"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""b2757ecb-8d72-4ccd-af6e-d8f022b2473d"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"34483B88-0BDF-4E23-8E56-4183FA8DF1A1" );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_SOLVING );
         }
@@ -1697,7 +1699,8 @@ This graph is based on the average composite score for each cluster of Motivator
 
         private void AddDiscProfilePersonAttributeUp()
         {
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( "59D5A94C-94A0-4630-B80A-BB25697D74C7", "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "DISC: DISC Profile", "DISC Profile", "core_DISCDISCProfile", "", "", 1029, "", "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D" );
+            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" };
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( "59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, "DISC: DISC Profile", "DISC Profile", "core_DISCDISCProfile", "", "", 1029, "", "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D" );
         }
 
         private void AddDiscProfilePersonAttributeDown()
@@ -1708,51 +1711,57 @@ This graph is based on the average composite score for each cluster of Motivator
         //Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
         private void UpdateAdaptiveDiscAttributeCategoryUp()
         {
+            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" };
+
             // Person Attribute "Adaptive D"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" ); 
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" ); 
         }
 
         //Revert Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
         private void UpdateAdaptiveDiscAttributeCategoryDown()
         {
+            var categories = new System.Collections.Generic.List<string> { "0B187C81-2106-4875-82B6-FBF1277AE23B" };
+
             // Person Attribute "Adaptive D"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" ); 
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" ); 
         }
 
         private void UpdateNaturalDiscAttributesUp()
         {
+            var categories = new System.Collections.Generic.List<string> { "0B187C81-2106-4875-82B6-FBF1277AE23B" };
+
             // Person Attribute "DISC: D Value"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"DISC: D Value", @"D Value", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: D Value", @"D Value", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
             RockMigrationHelper.AddAttributeQualifier( @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26", @"ConfigurationJSON", @"[{""Guid"":""4f7c1ea0-415d-4d89-86b1-a3b343d3115f"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""a5e8c10e-c360-4083-a3d4-fa18a096b68a"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""8f4ebbf2-d2d8-479d-9330-8ca2baab37a5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"AC4B49ED-4BDE-4838-B310-25697DC4804B" );
 
             // Person Attribute "DISC: I Value"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"DISC: I Value", @"I Value", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: I Value", @"I Value", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
             RockMigrationHelper.AddAttributeQualifier( @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA", @"ConfigurationJSON", @"[{""Guid"":""353c14d3-96a1-441f-ac86-d663aa86ef37"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f4cf68"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""b8aa394f-6755-4f01-b625-3702825fcd00"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f6d988"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""e71c0ac8-2a4b-4cd6-a5ac-0285b24d9b1a"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f8e1a0"",""HighValue"":33.0,""LowValue"":0.0}]", @"C652B942-935C-4614-90EC-331D57A0DDE4" );
 
             // Person Attribute "DISC: S Value"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"DISC: S Value", @"S Value", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: S Value", @"S Value", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
             RockMigrationHelper.AddAttributeQualifier( @"FA4341B4-28C7-409E-A101-548BB5759BE6", @"ConfigurationJSON", @"[{""Guid"":""da2a311d-e5d2-4127-8683-beb4f00a82d1"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""e115b2a1-f5dd-49bf-b5a7-11992e63fd8e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""27ab08d6-464d-42cf-92b8-c4cf4b3ec492"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"06E123D6-F149-421B-BE6C-CA1612A562E8" );
 
             // Person Attribute "DISC: C Value"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"DISC: C Value", @"C Value", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: C Value", @"C Value", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
             RockMigrationHelper.AddAttributeQualifier( @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251", @"ConfigurationJSON", @"[{""Guid"":""ee28fca6-4ccc-4cf1-a166-69171b34eb17"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f26863"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""786bfb8a-0b87-4d01-b71f-031f91b229fa"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f58d89"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""5d864986-1b74-4bd9-b99e-7ea177b348e6"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#fac4c2"",""HighValue"":33.0,""LowValue"":0.0}]", @"C312B380-703B-4F84-A720-C6FC7FC92059" );
         }
 
