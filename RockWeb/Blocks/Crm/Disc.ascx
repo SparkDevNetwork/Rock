@@ -103,6 +103,10 @@
         initQuestionValidation();
     }
 
+    function scrollToTop() {
+        window.scrollTo(0, 0);
+    }
+
     $(document).ready(function () {
         fadePanelIn();
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(fadePanelIn);
@@ -111,145 +115,132 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
-
-        <asp:Panel ID="pnlInstructions" CssClass="panel panel-block" runat="server">
+        <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
-
+                <h1 class="panel-title">
+                    <i runat="server" id="iIcon"></i>
+                    <asp:Literal ID="lTitle" runat="server" />
+                </h1>
             </div>
             <div class="panel-body">
-                <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
-                <div class="actions">
-                    <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
-                </div>
-            </div>
-        </asp:Panel>
+                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
+                <asp:HiddenField ID="hfAssessmentId" runat="server" />
 
-        <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
-            <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
+                <%-- Instructions --%>
+                <asp:Panel ID="pnlInstructions" runat="server">
+                    <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
-            </div>
-            <div class="panel-body">
-                <asp:HiddenField ID="hfPageNo" runat="server" />
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: <%=this.PercentComplete%>%;">
-                        <%=this.PercentComplete.ToString("F0") %>%
+                    <div class="actions">
+                        <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
                     </div>
-                </div>
-                <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
-                <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
-                    <ItemTemplate>
-                        <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
-                            <thead>
-                                <tr>
-                                    <th class="disc-question">
-                                        Question <%# Eval( "QuestionNumber") %>
-                                        <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' />
-                                    </th>
-                                    <th class="disc-answer grid-select-field disc-more">Most</th>
-                                    <th class="disc-answer grid-select-field disc-less">Least</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="disc-question">
-                                        <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer grid-select-field disc-more">
-                                        <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
-                                    <td class="disc-answer grid-select-field disc-less">
-                                        <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
-                                </tr>
-                                <tr>
-                                    <td class="disc-question">
-                                        <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer grid-select-field disc-more">
-                                        <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
-                                    <td class="disc-answer grid-select-field disc-less">
-                                        <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
-                                </tr>
-                                <tr>
-                                    <td class="disc-question">
-                                        <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer grid-select-field disc-more">
-                                        <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
-                                    <td class="disc-answer grid-select-field disc-less">
-                                        <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
-                                </tr>
-                                <tr>
-                                    <td class="disc-question">
-                                        <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
-                                    <td class="disc-answer grid-select-field disc-more">
-                                        <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
-                                    <td class="disc-answer grid-select-field disc-less">
-                                        <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </asp:Panel>
 
-                    </ItemTemplate>
-                </asp:Repeater>
-                <div style="display: none" class="alert alert-danger" id="divError">
-                    Please answer question(s) before proceeding further.
-                </div>
-                <div class="actions clearfix">
-                    <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" />
-                    <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; }" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
-                </div>
+                <%-- Questions --%>
+                <asp:Panel ID="pnlQuestion" runat="server">
+                    <asp:HiddenField ID="hfPageNo" runat="server" />
+                    <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
 
-                <div class="disc-attribution">
-                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
-                </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: <%=this.PercentComplete%>%;">
+                            <%=this.PercentComplete.ToString("F0") %>%
+                        </div>
+                    </div>
+                
+                    <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
+                        <ItemTemplate>
+                            <table class="table table-striped table-hover assessment disc-assessment js-disc-questions margin-b-lg">
+                                <thead>
+                                    <tr>
+                                        <th class="disc-question"><asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' /></th>
+                                        <th class="disc-answer grid-select-field disc-more">Most</th>
+                                        <th class="disc-answer grid-select-field disc-less">Least</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="disc-question">
+                                            <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
+                                        <td class="disc-answer grid-select-field disc-more">
+                                            <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
+                                        <td class="disc-answer grid-select-field disc-less">
+                                            <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="disc-question">
+                                            <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
+                                        <td class="disc-answer grid-select-field disc-more">
+                                            <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
+                                        <td class="disc-answer grid-select-field disc-less">
+                                            <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="disc-question">
+                                            <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
+                                        <td class="disc-answer grid-select-field disc-more">
+                                            <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
+                                        <td class="disc-answer grid-select-field disc-less">
+                                            <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="disc-question">
+                                            <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
+                                        <td class="disc-answer grid-select-field disc-more">
+                                            <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
+                                        <td class="disc-answer grid-select-field disc-less">
+                                            <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </ItemTemplate>
+                    </asp:Repeater>
+                    <div style="display: none" class="alert alert-danger" id="divError">
+                        Please answer question(s) before proceeding further.
+                    </div>
+                    <div class="actions clearfix">
+                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();" />
+                        <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlResult" runat="server">
+                    <asp:Literal ID="lPrintTip" runat="server" Text="<div class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>" Visible="false"></asp:Literal>
+                    <asp:Literal ID="lHeading" runat="server"></asp:Literal>
+
+                    <ul class="discchart">
+                        <li class="discchart-midpoint"></li>
+                        <li style="height: 100%; width: 0px;"></li>
+                        <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
+                            <div class="discbar-label">D</div>
+                        </li>
+                        <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
+                            <div class="discbar-label">I</div>
+                        </li>
+                        <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
+                            <div class="discbar-label">S</div>
+                        </li>
+                        <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
+                            <div class="discbar-label">C</div>
+                        </li>
+                    </ul>
+
+                    <h3>Description</h3>
+                    <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+
+                    <h3>Strengths</h3>
+                    <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
+
+                    <h3>Challenges</h3>
+                    <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
+
+                    <div class="actions margin-t-lg margin-b-lg">
+                        <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+                    </div>
+
+                </asp:Panel>
+
             </div>
         </asp:Panel>
-
-        <asp:Panel ID="pnlResults" CssClass="panel panel-block" runat="server">
-            <div class="panel-heading">
-                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>DISC Assessment</h1>
-            </div>
-            <div class="panel-body">
-
-                <asp:Literal ID="lPrintTip" runat="server" Text="<div class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>" Visible="false"></asp:Literal>
-                <asp:Literal ID="lHeading" runat="server"></asp:Literal>
-
-                <ul class="discchart">
-                    <li class="discchart-midpoint"></li>
-                    <li style="height: 100%; width: 0px;"></li>
-                    <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
-                        <div class="discbar-label">D</div>
-                    </li>
-                    <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
-                        <div class="discbar-label">I</div>
-                    </li>
-                    <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
-                        <div class="discbar-label">S</div>
-                    </li>
-                    <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
-                        <div class="discbar-label">C</div>
-                    </li>
-                </ul>
-
-                <h3>Description</h3>
-                <asp:Literal ID="lDescription" runat="server"></asp:Literal>
-
-                <h3>Strengths</h3>
-                <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
-
-                <h3>Challenges</h3>
-                <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
-
-                <div class="actions margin-t-lg margin-b-lg">
-                    <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
-                </div>
-
-                <div class="disc-attribution">
-                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
-                </div>
-            </div>
-
-        </asp:Panel>
-
     </ContentTemplate>
 </asp:UpdatePanel>

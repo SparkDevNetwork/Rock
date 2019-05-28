@@ -16,11 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
-
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
@@ -635,12 +635,23 @@ namespace Rock.Model
 
         /// <summary>
         /// Sends the scheduled attendance confirmation emails and marks ScheduleConfirmationSent = true, then returns the number of emails sent.
+        /// Make sure to call rockContext.SaveChanges() after running this.
+        /// NOTE: This doesn't check <see cref="Attendance.ScheduleConfirmationSent" />, so you'll need to add that condition to the sendConfirmationAttendancesQuery parameter
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery )
+        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
         {
             int emailsSent = 0;
+            errorMessages = new List<string>();
+
+            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a =>
+                a.PersonAlias.Person.Email != null
+                && a.PersonAlias.Person.Email != string.Empty
+                && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                && a.PersonAlias.Person.IsEmailActive );
+
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
             var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
             {
@@ -649,6 +660,8 @@ namespace Rock.Model
             } ).ToList();
 
             var rockContext = this.Context as RockContext;
+
+            List<Exception> exceptionList = new List<Exception>();
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
@@ -664,28 +677,45 @@ namespace Rock.Model
                 {
                     try
                     {
-
                         var emailMessage = new RockEmailMessage( scheduleConfirmationSystemEmail );
                         var recipient = attendancesByPerson.Person.Email;
                         var attendances = attendancesByPerson.Attendances;
-
-                        foreach ( var attendance in attendances )
-                        {
-                            attendance.ScheduleConfirmationSent = true;
-                        }
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
                         mergeFields.Add( "Attendances", attendances );
                         emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
-                        emailMessage.Send();
-                        emailsSent++;
+                        List<string> sendErrors;
+                        bool sendSuccess = emailMessage.Send( out sendErrors );
+
+                        if ( sendSuccess )
+                        {
+                            emailsSent++;
+                            foreach ( var attendance in attendances )
+                            {
+                                attendance.ScheduleConfirmationSent = true;
+                            }
+                        }
+                        else
+                        {
+                            errorMessages.AddRange( sendErrors );
+                        }
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send ScheduleConfirmationSystemEmailId to { attendancesByPerson.Person }", ex ) );
+                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { attendancesByPerson.Person }", ex );
+                        errorMessages.Add( emailException.Message );
+                        exceptionList.Add( emailException );
                     }
                 }
+            }
+
+            // group messages that are exactly the same and put a count of those in the message
+            errorMessages = errorMessages.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( exceptionList.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmation emails", exceptionList ) );
             }
 
             return emailsSent;
@@ -825,7 +855,7 @@ namespace Rock.Model
                 if ( dataView != null )
                 {
                     List<string> errorMessages;
-                    personQry = dataView.GetQuery( null, null, out errorMessages ) as IQueryable<Person>;
+                    personQry = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<Person>;
                 }
             }
 
@@ -969,11 +999,13 @@ namespace Rock.Model
 
                 if ( groupMemberQry != null )
                 {
-                    lastAttendedDateTimeQuery.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
+                    lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
                 }
                 else if ( personQry != null )
                 {
-                    lastAttendedDateTimeQuery.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
+                    lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
                 }
 
                 var personIdLastAttendedDateTimeLookup = lastAttendedDateTimeQuery
@@ -998,14 +1030,27 @@ namespace Rock.Model
                     } )
                     .ToDictionary( k => k.PersonId, v => v.ScheduledOccurrenceGroupIds );
 
-                var resourcePersonIds = schedulerResourceList.Select( a => a.PersonId ).Distinct().ToArray();
+                // select personScheduleExclusionQueryForOccurrence into a List just in case resourcePersonIds is large (10000+ ids) , so we don't an exception when building personScheduleExclusionQueryForOccurrencePersonIds
+                var personScheduleExclusionForOccurrencePersonIdList = personScheduleExclusionQueryForOccurrence.Select( s => s.PersonAlias.PersonId ).ToList();
 
-                HashSet<int> personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>( personScheduleExclusionQueryForOccurrence.Where( a => resourcePersonIds.Contains( a.PersonAlias.PersonId ) ).Select( a => a.PersonAlias.PersonId ).Distinct().ToList() );
+                HashSet<int> personScheduleExclusionQueryForOccurrencePersonIds;
+
+                if ( true || personScheduleExclusionForOccurrencePersonIdList.Any() )
+                {
+                    var resourcePersonIdHash = new HashSet<int>( schedulerResourceList.Select( a => a.PersonId ).Distinct().ToArray() );
+                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>( personScheduleExclusionForOccurrencePersonIdList.Where( personId => resourcePersonIdHash.Contains( personId ) ).Distinct().ToList() );
+                }
+                else
+                {
+                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>();
+                }
 
                 foreach ( var schedulerResource in schedulerResourceList )
                 {
                     schedulerResource.LastAttendanceDateTime = personIdLastAttendedDateTimeLookup.GetValueOrNull( schedulerResource.PersonId );
                     var scheduledForGroupIds = scheduledAttendanceGroupIdsLookup.GetValueOrNull( schedulerResource.PersonId );
+
+                    schedulerResource.ConfirmationStatus = ScheduledAttendanceItemStatus.Unscheduled.ConvertToString( false ).ToLower();
 
                     // see if they are scheduled for some other group during this occurrence
                     schedulerResource.HasSchedulingConflict = scheduledForGroupIds?.Any( groupId => groupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ) ?? false;
@@ -1224,8 +1269,6 @@ namespace Rock.Model
                  && a.Occurrence.GroupId == attendanceOccurrence.GroupId
                  && a.Occurrence.OccurrenceDate == attendanceOccurrence.OccurrenceDate
                 && a.Occurrence.LocationId == null ).ToList();
-
-//##TODO## test
 
             if ( unspecifiedLocationResourceAttendanceList.Any() )
             {
@@ -1530,14 +1573,6 @@ namespace Rock.Model
         /// The attendance identifier.
         /// </value>
         public int AttendanceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="ScheduledAttendanceItemStatus"/> as a lowercase string
-        /// </summary>
-        /// <value>
-        /// The status.
-        /// </value>
-        public string ConfirmationStatus { get; set; }
     }
 
     /// <summary>
@@ -1552,6 +1587,14 @@ namespace Rock.Model
         /// The person identifier.
         /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ScheduledAttendanceItemStatus"/> as a lowercase string
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string ConfirmationStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the GroupMemberId.
@@ -1697,7 +1740,12 @@ namespace Rock.Model
         /// <summary>
         /// declined
         /// </summary>
-        Declined
+        Declined,
+
+        /// <summary>
+        /// Person isn't Scheduled (they would be in the list of Unscheduled resources)
+        /// </summary>
+        Unscheduled,
     }
 
     /// <summary>
@@ -1713,6 +1761,7 @@ namespace Rock.Model
         /// <summary>
         /// The alternate group
         /// </summary>
+        [Description("Alt Group")]
         AlternateGroup,
 
         /// <summary>

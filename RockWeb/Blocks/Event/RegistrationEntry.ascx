@@ -78,7 +78,7 @@
         
             <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
                 <div class="col-md-6">
-                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member to Register" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
                 </div>
             </asp:Panel>
 

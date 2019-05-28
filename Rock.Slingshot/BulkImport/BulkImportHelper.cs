@@ -1940,6 +1940,16 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
                     if ( primaryFamily != null )
                     {
+                        // Import fails if re-importing a person who has addresses but is not assigned to a family. When initially imported,
+                        // Rock creates a family group for these people and we need to locate the ID before checking for matching locations.
+                        if (primaryFamily.Id == 0)
+                        {
+                            if (person.PrimaryFamilyId.HasValue)
+                            {
+                                primaryFamily.Id = person.PrimaryFamilyId.Value;
+                            }
+                        }
+
                         var groupLocationService = new GroupLocationService( rockContextForPersonUpdate );
                         var primaryFamilyGroupLocations = groupLocationService.Queryable().Where( a => a.GroupId == primaryFamily.Id ).Include( a => a.Location ).AsNoTracking().ToList();
                         foreach ( var personAddressImport in personImport.Addresses )

@@ -200,14 +200,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
                 mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages );
 
                 // populate merge fields for Registration Counts
-                var maxRegistrantCount = 0;
+                int? maxRegistrantCount = registrationInstance.MaxAttendees;
                 var currentRegistrationCount = 0;
 
-                if ( registrationInstance.MaxAttendees != 0 )
-                {
-                    maxRegistrantCount = registrationInstance.MaxAttendees;
-                }
-               
                 currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
                                                 .Where( r =>
                                                     r.Registration.RegistrationInstanceId == registrationInstance.Id
@@ -215,7 +210,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
                                                 .Count();
 
                 mergeFields.Add( "CurrentRegistrationCount", currentRegistrationCount );
-                if ( maxRegistrantCount != 0 )
+                if ( maxRegistrantCount.HasValue )
                 {
                     mergeFields.Add( "MaxRegistrantCount", maxRegistrantCount );
                     mergeFields.Add( "RegistrationSpotsAvailable", maxRegistrantCount - currentRegistrationCount );
@@ -234,7 +229,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
             // only show the leader toolbox link of the currentperson has a leader role in the group
             btnLeaderToolbox.Visible = group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
 
-            //// Participant Actions 
+            //// Participant Actions
             // only show if the current person is a group member
             var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
             if ( groupMember != null )
@@ -428,7 +423,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         {
             SetActiveTab( "Comments" );
         }
-               
+
         /// <summary>
         /// Handles the Click event of the btnDonateToParticipant control.
         /// </summary>

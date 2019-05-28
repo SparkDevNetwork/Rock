@@ -3836,6 +3836,7 @@ namespace Rock.Lava
         /// adds a link tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="titleLocation">The title location.</param>
         /// <returns></returns>
         public static string SetPageTitle( string input, string titleLocation = "All" )
         {
@@ -4008,6 +4009,11 @@ namespace Rock.Lava
                 switch ( parm )
                 {
                     case "Title":
+                        {
+                            return page.PageTitle;
+                        }
+
+                    case "BrowserTitle":
                         {
                             return page.BrowserTitle;
                         }

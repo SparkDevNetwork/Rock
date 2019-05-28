@@ -274,6 +274,7 @@
     <Compile Include="Attribute\AssetStorageSystemFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
@@ -288,6 +289,7 @@
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationInstanceFieldAttribute.cs" />
     <Compile Include="Attribute\RegistrationTemplateFieldAttribute.cs" />
+    <Compile Include="Attribute\RegistrationTemplatesFieldAttribute.cs" />
     <Compile Include="Attribute\ReportFieldAttribute.cs" />
     <Compile Include="Attribute\SelectFieldAttribute.cs" />
     <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
@@ -396,6 +398,9 @@
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
+    <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
+    <Compile Include="Field\Types\ConditionalScaleFieldType.cs" />
+    <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
@@ -413,6 +418,11 @@
     <Compile Include="Financial\AutomatedPaymentArgs.cs" />
     <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
     <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
+    <Compile Include="Model\Assessment.cs" />
+    <Compile Include="Model\AssessmentService.Partial.cs" />
+    <Compile Include="Model\AssessmentType.cs" />
+    <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
+    <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
     <Compile Include="Model\AttendanceData.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
     <Compile Include="Model\CodeGenerated\SmsActionService.cs" />
@@ -425,9 +435,12 @@
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CommunicationResponse.cs" />
     <Compile Include="Model\CommunicationResponseService.partial.cs" />
+    <Compile Include="Model\ConflictProfileService.cs" />
+    <Compile Include="Model\EQInventoryService.cs" />
     <Compile Include="Model\SmsAction.cs" />
     <Compile Include="Model\SmsActionService.Partial.cs" />
     <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
+    <Compile Include="Model\MotivatorService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Model\PersonScheduleExclusionService.Partial.cs" />
     <Compile Include="Model\PersonScheduleExclusion.cs" />
@@ -453,6 +466,7 @@
     <Compile Include="CheckIn\Registration\FamilyRegistrationState.cs" />
     <Compile Include="Data\NoAttributeFilterExpression.cs" />
     <Compile Include="Field\ICachedEntitiesFieldType.cs" />
+    <Compile Include="Field\Types\RegistrationTemplatesFieldType.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
@@ -497,9 +511,11 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="SystemGuid\AssessmentType.cs" />
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="SystemGuid\Layout.cs" />
     <Compile Include="SystemGuid\PageRoute.cs" />
+    <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
@@ -1744,6 +1760,7 @@
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRulesEditor.cs" />
+    <Compile Include="Web\UI\Controls\ScreenKeyboard.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
     <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
@@ -2175,6 +2192,7 @@
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
+    <Compile Include="Workflow\Action\Assessments\CreateAssessmentRequest.cs" />
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
