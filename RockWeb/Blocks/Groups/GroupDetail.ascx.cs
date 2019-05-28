@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Groups
                     taglGroupTags.EntityTypeId = group.TypeId;
                     taglGroupTags.EntityGuid = group.Guid;
                     taglGroupTags.CategoryGuid = GetAttributeValue( "TagCategory" ).AsGuidOrNull();
-                    taglGroupTags.GetTagValues( null );
+                    taglGroupTags.GetTagValues( CurrentPersonId );
                     taglGroupTags.Visible = GetAttributeValue( ENABLE_GROUP_TAGS ).AsBoolean() && group.GroupType.EnableGroupTag;
 
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );

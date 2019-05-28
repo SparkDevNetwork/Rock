@@ -876,6 +876,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             registrationTemplate.IsActive = cbIsActive.Checked;
             registrationTemplate.Name = tbName.Text;
+            registrationTemplate.Description = tbDescription.Text;
             registrationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
             registrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
@@ -892,7 +893,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
             registrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
             registrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
-            registrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
+            registrationTemplate.MaxRegistrants = cbMultipleRegistrants.Checked ? nbMaxRegistrants.Text.AsIntegerOrNull() : null;
             registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             registrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
@@ -985,7 +986,7 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            if ( registrationTemplate.WaitListEnabled && registrationTemplate.MaxRegistrants == 0 )
+            if ( registrationTemplate.WaitListEnabled && !registrationTemplate.MaxRegistrants.HasValue )
             {
                 validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
             }
@@ -2302,6 +2303,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbIsActive.Checked = registrationTemplate.IsActive;
             tbName.Text = registrationTemplate.Name;
+            tbDescription.Text = registrationTemplate.Description;
             cpCategory.SetValue( registrationTemplate.CategoryId );
 
             gtpGroupType.SelectedGroupTypeId = registrationTemplate.GroupTypeId;
@@ -2326,7 +2328,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbAllowGroupPlacement.Checked = registrationTemplate.AllowGroupPlacement;
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
-            nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants == 0 ? string.Empty : registrationTemplate.MaxRegistrants.ToString();
+            nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( registrationTemplate.RegistrantsSameFamily.ConvertToInt() );
             cbShowCurrentFamilyMembers.Checked = registrationTemplate.ShowCurrentFamilyMembers;
             tglSetCostOnTemplate.Checked = !registrationTemplate.SetCostOnInstance.HasValue || !registrationTemplate.SetCostOnInstance.Value;
@@ -2407,6 +2409,7 @@ The logged-in person's information will be used to complete the registrar inform
             hlType.Visible = registrationTemplate.Category != null;
             hlType.Text = registrationTemplate.Category != null ? registrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = registrationTemplate.GroupType != null ? registrationTemplate.GroupType.Name : string.Empty;
+            lDescription.Text = registrationTemplate.Description;
             lRequiredSignedDocument.Text = registrationTemplate.RequiredSignatureDocumentTemplate != null ? registrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
             lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;

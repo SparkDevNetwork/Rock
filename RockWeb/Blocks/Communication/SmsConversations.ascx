@@ -11,6 +11,8 @@
 
 
                 <div class="panel-labels"> <!--  style="position:absolute;right:15px;top:10px;" -->
+                <Rock:HighlightLabel ID="hlSmsNumber" runat="server" CssClass="pull-left input-width-lg input-xs" />
+                <asp:HiddenField ID="hfSmsNumber" runat="server" />
                 <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
 
                     <a href="#" class="btn btn-xs btn-default pull-left margin-l-sm" onclick="$('.js-sms-configuration').toggle()">

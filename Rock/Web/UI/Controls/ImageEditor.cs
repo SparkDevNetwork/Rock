@@ -354,6 +354,7 @@ namespace Rock.Web.UI.Controls
         private ModalDialog _mdImageDialog;
         private Panel _pnlCropContainer;
         private NotificationBox _nbImageWarning;
+        private NotificationBox _nbErrorMessage;
         private Image _imgCropSource;
         private HiddenField _hfCropCoords;
 
@@ -656,6 +657,12 @@ namespace Rock.Web.UI.Controls
             _nbImageWarning.NotificationBoxType = NotificationBoxType.Warning;
             _nbImageWarning.Text = "SVG image cropping is not supported.";
 
+            _nbErrorMessage = new NotificationBox();
+            _nbErrorMessage.ID = this.ID + "_nbErrorMessage";
+            _nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+            _nbErrorMessage.Text = "File Type is not supported.";
+            _nbErrorMessage.Visible = false;
+
             _imgCropSource = new Image();
             _imgCropSource.ID = this.ID + "_imgCropSource";
             _imgCropSource.CssClass = "image-editor-crop-source";
@@ -830,7 +837,7 @@ namespace Rock.Web.UI.Controls
             }
 
             _nbImageWarning.Visible = false;
-
+            _nbErrorMessage.Visible = false;
             var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
@@ -841,9 +848,21 @@ namespace Rock.Web.UI.Controls
                     {
                         if ( stream != null )
                         {
-                            var bitMap = new System.Drawing.Bitmap( stream );
-                            _imgCropSource.Width = bitMap.Width;
-                            _imgCropSource.Height = bitMap.Height;
+                            try
+                            {
+                                var bitMap = new System.Drawing.Bitmap( stream );
+                                _imgCropSource.Width = bitMap.Width;
+                                _imgCropSource.Height = bitMap.Height;
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                                _imgCropSource.Width = Unit.Empty;
+                                _imgCropSource.Height = Unit.Empty;
+                                _nbErrorMessage.Visible = true;
+                                BinaryFileId = null;
+                                return;
+                            }
                         }
                     }
                 }
@@ -882,6 +901,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            _nbErrorMessage.RenderControl( writer );
             writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute( "class", "image-editor-group imageupload-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

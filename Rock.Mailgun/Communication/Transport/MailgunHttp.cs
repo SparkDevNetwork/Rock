@@ -174,7 +174,7 @@ namespace Rock.Communication.Transport
                     }
 
                     // Subject
-                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left(998);
                     restRequest.AddParameter( "subject", subject );
 
                     // Body (html)
@@ -499,6 +499,12 @@ namespace Rock.Communication.Transport
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( !person.IsEmailActive )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Recipient Email Address is not active";
                         valid = false;
                     }
                     else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )

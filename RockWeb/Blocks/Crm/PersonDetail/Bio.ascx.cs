@@ -555,7 +555,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
-                        formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+                        phoneMarkup = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
                     }
                 }                
 

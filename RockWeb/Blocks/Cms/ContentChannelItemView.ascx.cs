@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Cms
 
     [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
-    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: true, defaultValue: "", category: "CustomSetting" )]
     [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 

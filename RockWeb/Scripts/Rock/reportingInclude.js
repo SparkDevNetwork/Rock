@@ -130,7 +130,7 @@ $(document).ready(function () {
                 },
 
                 //
-                formatFilterForDefinedValueField: function (title, $selectedContent) {
+                formatFilterForCheckBoxListFilterControl: function (title, $selectedContent) {
                     var selectedItems = '';
                     $('input:checked', $selectedContent).each(
                         function () {
@@ -141,6 +141,11 @@ $(document).ready(function () {
                     return title + ' is ' + selectedItems
                 },
 
+                //
+                formatFilterForDefinedValueField: function (title, $selectedContent) {
+                    return formatFilterForCheckBoxListFilterControl(title, $selectedContent);
+                },
+
                 // NOTE: this is specifically for the Rock.Reporting.DataFilter.OtherDataViewFilter (and similar) components
                 formatFilterForOtherDataViewFilter: function (title, $selectedContent) {
                     var dataViewName = $('.js-dataview .js-item-name-value', $selectedContent).val();
@@ -149,14 +154,7 @@ $(document).ready(function () {
 
                 //
                 formatFilterForSelectSingleField: function (title, $selectedContent) {
-                    var selectedItems = '';
-                    $('input:checked', $selectedContent).each(
-                        function () {
-                            selectedItems += selectedItems == '' ? '' : ' OR ';
-                            selectedItems += ' \'' + $(this).parent().text() + ' \''
-                        });
-
-                    return title + ' is ' + selectedItems
+                    return formatFilterForCheckBoxListFilterControl(title, $selectedContent);
                 },
 
                 // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.InGroupFilter component

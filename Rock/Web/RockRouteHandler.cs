@@ -36,10 +36,10 @@ namespace Rock.Web
     public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>
-        /// Determine the logical page being requested by evaluating the routedata, or querystring and
+        /// Determine the logical page being requested by evaluating the RouteData, or QueryString and
         /// then loading the appropriate layout (ASPX) page
         /// 
-        /// Pick url on the following priority order:
+        /// Pick URL on the following priority order:
         /// 1. PageId
         /// 2. Route match and site match
         /// 3. ShortLink match and site match
@@ -113,7 +113,7 @@ namespace Rock.Web
                     }
                 }
 
-                // If the the page ID and site has not yet been matched
+                // If the page ID and site has not yet been matched
                 if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
                     SiteCache site = GetSite( routeHttpRequest, host, siteCookie );
@@ -172,7 +172,7 @@ namespace Rock.Web
                             }
                         }
 
-                        // If site has has been enabled for mobile redirect, then we'll need to check what type of device is being used
+                        // If site has been enabled for mobile redirect, then we'll need to check what type of device is being used
                         if ( site.EnableMobileRedirect )
                         {
                             // get the device type
@@ -218,6 +218,15 @@ namespace Rock.Web
                     if ( int.TryParse( pageId, out pageIdNumber ) )
                     {
                         page = PageCache.Get( pageIdNumber );
+
+                        // If it was not a siteMatch and the page is not a system page
+                        // and 'Enable Route Domain Matching' is true, then we can't
+                        // match the page and therefore must set it back to null
+                        // for 404 handling.
+                        if ( page != null && ! isSiteMatch && ! page.IsSystem && GlobalAttributesCache.Get().GetValue( "core_EnableRouteDomainMatching" ).AsBoolean() )
+                        {
+                            page = null;
+                        }
                     }
                 }
 
@@ -285,7 +294,7 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Reregisters the routes from PageRoute and default routes. Does not affect ODataService routes. Call this method after saving changes to PageRoute entities.
+        /// Re-registers the routes from PageRoute and default routes. Does not affect ODataService routes. Call this method after saving changes to PageRoute entities.
         /// </summary>
         public static void ReregisterRoutes()
         {
@@ -374,7 +383,7 @@ namespace Rock.Web
                 routes.Remove( pageIdRoute );
             }
 
-            // Remove scriptmanager ignore route
+            // Remove ScriptManager ignore route
             var scriptmanagerRoute = routes.OfType<Route>().Where( r => r.Url == "{resource}.axd/{*pathInfo}" ).FirstOrDefault();
             if ( scriptmanagerRoute != null )
             {
@@ -383,7 +392,7 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Uses the DataTokens to contstruct a list of PageAndRouteIds
+        /// Uses the DataTokens to construct a list of PageAndRouteIds
         /// If any exist then set page and route ID to the first one found.
         /// Then loop through the collection looking for a site match, if one is found then set the page and route ID to that
         /// and the IsSiteMatch property to true.
@@ -437,7 +446,7 @@ namespace Rock.Web
         {
             SiteCache site = null;
 
-            // First check to see if site was specified in querystring
+            // First check to see if site was specified in QueryString
             int? siteId = routeHttpRequest.QueryString["SiteId"].AsIntegerOrNull();
             if ( siteId.HasValue )
             {
@@ -488,7 +497,7 @@ namespace Rock.Web
         /// <param name="page">The page.</param>
         /// <param name="layoutPath">The layout path.</param>
         /// <param name="routeHttpRequest">The routeHttpRequest.</param>
-        /// <param name="parms">The parms.</param>
+        /// <param name="parms">The parameters.</param>
         /// /// <param name="routeId">The routeId.</param>
         /// <returns></returns>
         private Rock.Web.UI.RockPage CreateRockPage( PageCache page, string layoutPath, int routeId, Dictionary<string, string> parms, HttpRequestBase routeHttpRequest )
@@ -502,7 +511,7 @@ namespace Rock.Web
     }
 
     /// <summary>
-    /// Helper for storing page an route ids in a System.Web.Routing.Route datatoken
+    /// Helper for storing page an route ids in a System.Web.Routing.Route DataTokens
     /// </summary>
     public class PageAndRouteId
     {
