@@ -1,0 +1,143 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html class="no-js">
+    <head runat="server">
+
+        <meta charset="utf-8">
+
+        <title></title>
+
+        <!-- Libraries -->
+        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
+        <script src="<%# ResolveRockUrl("~~/Scripts/search.js", true) %>" ></script>
+
+        <!-- Set the viewport width to device width for mobile -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+        <asp:ContentPlaceHolder ID="css" runat="server" />
+
+        <!-- Included CSS Files -->
+        <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+        <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+        <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+
+        <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+        <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    </head>
+    <body runat="server" id="body">
+
+        <form id="form1" runat="server">
+
+            <div id="navigation">
+                <Rock:Zone Name="Login" runat="server" />
+                <Rock:Zone Name="Navigation" runat="server" />
+
+            </div>
+            <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
+                <Rock:Zone Name="Header" runat="server" />
+                <Rock:Lava ID="PageTitle" runat="server">
+                    {% if CurrentPage.PageDisplayTitle == 'True' %}
+                        <div class="{% if CurrentPage.MenuDisplayChildPages == 'True' %}hidden-md hidden-lg{% endif %}">
+                            {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                        </div>
+                    {% endif %}         
+                </Rock:Lava>
+            </div>
+
+            <Rock:Lava ID="PageConstrained" runat="server">
+                {% assign pageconstrained = CurrentPage | Attribute:'PageConstrained' %}
+                {% if pageconstrained == 'Yes' %}
+                    <div class="page-constrained mx-auto">
+                {% endif %}
+            </Rock:Lava>
+
+            <div id="content" class="clearfix">
+                <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                <Rock:Zone Name="Footer" runat="server" />                
+            </div>
+
+            <Rock:Lava ID="PageConstrainedEnd" runat="server">
+                {% assign pageconstrained = CurrentPage | Attribute:'PageConstrained' %}
+                {% if pageconstrained %}
+                    </div>
+                {% endif %}
+            </Rock:Lava>
+
+            <Rock:Lava ID="SiteModals" runat="server">
+            {[ modalNavigation ]}
+            </Rock:Lava>
+
+            <%-- controls for scriptmanager and update panel --%>
+            <asp:ScriptManager ID="sManager" runat="server"/>
+            <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+                    <ProgressTemplate>
+                        <div class="updateprogress-status">
+                            <div class="spinner">
+                              <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                            </div>
+                        </div>
+                        <div class="updateprogress-bg modal-backdrop"></div>
+                    </ProgressTemplate>
+            </asp:UpdateProgress>
+
+            <!-- Smooth Scrolling Setup -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function(){
+                    var navigation = document.querySelector('#zone-navigation');
+                    if(navigation != null) {
+                        var navigationHeight = navigation.offsetHeight;
+                    }
+
+                    var header = document.querySelector('#navigation-secondary');
+                    if(header != null) {
+                        var headerHeight = header.offsetHeight;
+                    }
+
+                    if (window.innerWidth > 667) {
+                        // Desktop
+                        offset = navigationHeight + headerHeight + 25 + "px";
+                    } else {
+                        // Mobile
+                        offset = headerHeight + 10 + "px";
+                    }
+
+                    var scroll = new SmoothScroll('a[data-scroll]', {
+                        speed: 500,
+                        speedAsDuration: true,
+                        offset: offset,
+                        easing: 'easeInOutCubic'
+                    });
+
+                    
+                });
+            </script>
+
+        </form>
+
+    </body>
+
+</html>

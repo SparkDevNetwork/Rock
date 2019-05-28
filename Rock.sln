@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "http://rock.test", "http://rock.test", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
+		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
 		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;{c1dd2402-5fb2-411e-bf8d-5d9cb3a58e8b}|Rock.Slingshot.dll;{962944DE-8BF4-4175-B55A-E75CF7918272}|Rock.Slingshot.Model.dll;{42edf2dd-5284-4b64-93c3-5186619d2b14}|Rock.StatementGenerator.dll;{5055f482-72c7-4cc9-8ed0-a77090c777db}|Rock.Security.Authentication.Auth0.dll;{515e22e4-4b9b-4886-8477-e5b312b75eb4}|Rock.WebStartup.dll;{94a5f880-31ae-4889-b9be-ba1fdc258e83}|Rock.Checkr.dll;{13711bed-69dd-4182-9bb5-b3c9a4de32df}|Rock.TransNational.Pi.dll;"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_6229"
+		Debug.AspNetCompiler.VirtualPath = "/rock.test"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\rock.test\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_6229"
+		Release.AspNetCompiler.VirtualPath = "/rock.test"
 		Release.AspNetCompiler.PhysicalPath = "RockWeb\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\rock.test\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "6229"
 		SlnRelativePath = "RockWeb\"
 	EndProjectSection
 EndProject
@@ -59,6 +59,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.StatementGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.F1", "..\rock-f1\cc.newspring.F1.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.CacheBreak", "..\rock-cache-sync\cc.newspring.CacheBreak.csproj", "{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.AttendedCheckIn", "..\rock-attended-checkin\cc.newspring.AttendedCheckIn.csproj", "{BC36CAC2-1F25-4190-9297-157DDD2E4960}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.shepherdchurch.Misc", "..\rock-misc\com.shepherdchurch.Misc.csproj", "{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.WebStartup", "Rock.WebStartup\Rock.WebStartup.csproj", "{515E22E4-4B9B-4886-8477-E5B312B75EB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Checkr", "Rock.Checkr\Rock.Checkr.csproj", "{94A5F880-31AE-4889-B9BE-BA1FDC258E83}"
@@ -71,6 +79,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Integration", "Rock.Tests.Integration\Rock.Tests.Integration.csproj", "{9BB83636-1C9C-4A3F-9C18-5CFDB1EC720A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.TransNational.Pi", "Rock.TransNational.Pi\Rock.TransNational.Pi.csproj", "{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apollosProject.OneSignal", "..\apollos-onesignal\apollosProject.OneSignal.csproj", "{237D789F-52EF-48EF-A213-8D2284A6DE6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -150,6 +160,22 @@ Global
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3591C6-451C-4C38-A1D2-6E8B99C81DA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -166,6 +192,10 @@ Global
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13711BED-69DD-4182-9BB5-B3C9A4DE32DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

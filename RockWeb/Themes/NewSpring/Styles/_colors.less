@@ -1,0 +1,110 @@
+.text-secondary { color: @brand-secondary; }
+.text-tertiary { color: @brand-tertiary; }
+.text-gray-lighter { color: darken(@gray-lighter, 10);}
+.text-gray-light { color: @gray-light; }
+.text-gray { color: @gray; }
+.text-gray-dark { color: @gray-dark; }
+.text-gray-darker { color: @gray-darker; }
+
+a.text-gray-dark:hover {
+	color: lighten(@gray-dark, 25);
+}
+
+a.text-gray-dark:focus {
+	color: @gray-dark;
+}
+
+.bg-facebook { background-color: @facebook; }
+.bg-twitter { background-color: @twitter; }
+.bg-instagram { background-color: @instagram; }
+.bg-google { background-color: @google; }
+.bg-pinterest { background-color: @pinterest; }
+
+.text-facebook { 
+	color: @facebook; 
+	
+	&:hover {
+		color: darken(@facebook, 15%);
+	}
+}
+.text-twitter { 
+	color: @twitter; 
+	
+	&:hover {
+		color: darken(@twitter, 15%);
+	}
+}
+.text-instagram { 
+	color: @instagram; 
+	
+	&:hover {
+		color: darken(@instagram, 15%);
+	}
+}
+.text-google { 
+	color: @google; 
+	
+	&:hover {
+		color: darken(@google, 15%);
+	}
+}
+.text-pinterest { 
+	color: @pinterest; 
+	
+	&:hover {
+		color: darken(@pinterest, 15%);
+	}
+}
+
+.text-white, .text-white a:not(.btn), .text-white a:not(.btn):hover { color: @white; }
+.text-white .panel-body a:not(.btn) { color: @brand-primary; }
+.text-white .panel-body a:not(.btn):hover { color: @brand-secondary; }
+
+.text-white {
+	.panel-body {
+		background-color: @white;
+		color: @gray-darker;
+
+		a:not(.btn) {
+			color: @brand-primary;
+		}
+
+		h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+			a {
+				color: @gray-darker;
+
+				&:hover {
+					color: @brand-primary;
+				}
+			}
+		}
+	}
+}
+
+.text-kidspring-primary { color: @kidspring-primary; }
+.text-kidspring-secondary { color: @kidspring-secondary; }
+.text-kidspring-tertiary { color: @kidspring-tertiary; }
+
+.bg-white { background-color: @white; }
+.bg-secondary { background-color: @brand-secondary; }
+.bg-tertiary { background-color: @brand-tertiary; }
+.bg-success { background-color: @brand-success; }
+.bg-info { background-color: @brand-info; }
+.bg-warning { background-color: @brand-warning; }
+.bg-danger { background-color: @brand-danger; }
+.bg-kidspring-primary { background-color: @kidspring-primary; }
+.bg-kidspring-secondary { background-color: @kidspring-secondary; }
+.bg-kidspring-tertiary { background-color: @kidspring-tertiary; }
+
+.bg-gray-lighter { background-color: @gray-lighter; }
+.bg-gray-light { background-color: @gray-light; }
+.bg-gray { background-color: @gray; }
+.bg-gray-dark { background-color: @gray-dark; }
+.bg-gray-darker { background-color: @gray-darker; }
+.bg-black { background-color: @black; }
+.bg-white { background-color: @white; }
+
+.text-hover-white:hover { color: @white !important; }
+.text-hover-primary:hover { color: @brand-primary !important; }
+.text-hover-secondary:hover { color: @brand-secondary !important; }
+.text-hover-tertiary:hover { color: @brand-tertiary !important; }

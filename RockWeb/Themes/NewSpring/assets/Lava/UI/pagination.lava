@@ -1,0 +1,62 @@
+{% assign totalpages = itemcount | DividedBy:pagesize | Ceiling | AsInteger %}
+{% assign currentpage = 'Global' | PageParameter:'Page' | WithFallback:'', '1' | AsInteger %}
+
+{% if currentpage > totalpages %}{{ '/page-not-found' | PageRedirect }}{% endif %}
+
+{% capture paginationJSON %}{
+  "ItemCount": {{ itemcount }},
+  "PageSize": {{ pagesize }},
+  "CurrentPage": {{ currentpage }},
+  "PreviousPage": {% if currentpage == 1 %}-1{% else %}{{ currentpage | Minus:1 }}{% endif %},
+  "NextPage": {{ currentpage | Plus:1 }},
+  "TotalPages": {{ totalpages }},
+  "UrlTemplate": "{{ 'Global' | Page:'Path' }}?Page=PageNum",
+  "Pages": [
+    {% for i in (0..totalpages) %}
+    {
+      "PageNumber": {{ i }},
+      "PageUrl": "{{ i }}",
+      "Context": null
+    }{% if forloop.last != true %},{% endif %}
+    {% endfor %}
+    ]
+ }{% endcapture %}
+
+{% assign paginationObject = paginationJSON | FromJSON %}
+
+{% if paginationObject.TotalPages > 1 %}
+{% assign startingPage = paginationObject.CurrentPage | Minus: 2 %}
+{% assign endingPage = paginationObject.CurrentPage | Plus:2 %}
+
+{% assign nextPageString = paginationObject.NextPage | ToString %}
+{% assign prevPageString = paginationObject.PreviousPage | ToString %}
+
+<section class="soft xs-soft-half hard-bottom clearfix"> 
+  <nav aria-label="Page navigation" class="text-center push-bottom xs-push-half-bottom">
+      <ul class="pagination sans-serif strong shadowed">
+      
+          <li>
+              {% if currentpage != '' and currentpage != 1 %}<a href="{{ paginationObject.UrlTemplate | Replace:'PageNum', prevPageString }}" aria-label="Previous">{% endif %}
+                  <span aria-hidden="true">
+                      <i class="fas fa-angle-left"></i>
+                  </span>
+              {% if currentpage != '' and currentpage != 1 %}</a>{% endif %}
+          </li>
+
+          {% for page in (startingPage..endingPage) %}
+            {% if page > 0 and page <= paginationObject.TotalPages %}
+                <li {% if paginationObject.CurrentPage == page %}class="active"{% endif %}><a href="{{ paginationObject.UrlTemplate | Replace:'PageNum', page }}">{{ page }}</a></li>
+            {% endif %}
+          {% endfor %}
+          
+          <li>
+              {% if currentpage != paginationObject.TotalPages %}<a href="{{ paginationObject.UrlTemplate | Replace:'PageNum', nextPageString }}" aria-label="Next">{% endif %}
+                  <span aria-hidden="true">
+                      <i class="fas fa-angle-right"></i>
+                  </span>
+              {% if currentpage != paginationObject.TotalPages %}</a>{% endif %}
+          </li>
+      </ul>
+  </nav>
+</section>
+{% endif %}

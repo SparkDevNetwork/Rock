@@ -1,0 +1,11 @@
+{%- capture parentSlug -%}
+{% contentchannelitemassociation where:'ChildContentChannelItemId == {{ id }}' iterator:'associations' %}
+    {% for association in associations %}
+        {% contentchannelitemslug where:'ContentChannelItemId == {{ association.ContentChannelItemId }}' iterator:'slugs' %}
+            {% for slug in slugs %}
+                {{ slug.Slug }}
+            {% endfor %}
+        {% endcontentchannelitemslug %}
+    {% endfor %}
+{% endcontentchannelitemassociation %}
+{%- endcapture -%}{{ parentSlug | Trim }}

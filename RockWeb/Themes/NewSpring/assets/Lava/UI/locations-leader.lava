@@ -1,0 +1,43 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Uppercase %}
+{% campus where:'Name == "{{ campusSlug }}"' iterator:'campuses' %}
+{% for campus in campuses %}
+
+{% if servicetype == 'Fuse' %}
+    {% assign cp = campus | Attribute:'FusePastor','Object' %}
+{% else %}
+    {% assign cp = campus.LeaderPersonAliasId | PersonByAliasId %}
+{% endif %}
+
+{% if cp and cp != empty %}
+
+    {% capture id %}{% endcapture %}
+    {% capture title %}Meet {{ cp.FullName }}{% endcapture %}
+    {% capture titlesize %}{% endcapture %}
+    {% capture content %}<p>{{ cp | Attribute:'StaffBio' }}</p>{% endcapture %}
+    {% capture textalignment %}{% endcapture %}
+    {% capture label %}{% if servicetype == 'Fuse' %}{{ campus.Name }} {% endif %}{{ cp | Attribute:'StaffTitle' }}{% endcapture %}
+    {% capture subtitle %}{% endcapture %}
+    {% capture imageurl %}{{ cp | Attribute:'StaffImage','Url' }}{% endcapture %}
+    {% capture imageoverlayurl %}{% endcapture %}
+    {% capture imagealignment %}{% endcapture %}
+    {% capture imageopacity %}{% endcapture %}
+    {% capture imageflip %}{% endcapture %}
+    {% capture imageblur %}{% endcapture %}
+    {% capture grayscale %}{% endcapture %}
+    {% capture backgroundvideourl %}{% endcapture %}
+    {% capture lava %}{% endcapture %}
+    {% capture video %}{% endcapture %}
+    {% capture ratio %}square{% endcapture %}
+    {% capture trimcopy %}{% endcapture %}
+    {% capture linkcolor %}{% endcapture %}
+    {% capture backgroundcolor %}{% endcapture %}
+    {% capture linkurl %}/staff/campus/{{ campus.Name | Replace:' ','-' | Downcase }}{% endcapture %}
+    {% capture linktext %}More {{ campus.Name }} Staff{% endcapture %}
+    {% capture hideforegroundelements %}{% endcapture %}
+
+    {[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}
+
+{% endif %}
+
+{% endfor %}
+{% endcampus %}

@@ -1,0 +1,65 @@
+// Layout
+
+html { 
+	-webkit-font-smoothing: antialiased;
+}
+
+body { 
+	// font-family: @font-family-serif;
+	background-color: @gray-lighter;
+}
+
+#navigation {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	z-index: @zindex-navbar;
+	
+	@stuff: (@screen-sm-min + 1);
+	@media (min-width: @stuff) {
+		bottom: auto;
+		top: 0;
+	}
+}
+
+#navigation-secondary {
+	z-index: @zindex-navbar;
+}
+
+.split {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 50%;
+
+	&.split-left {
+		left: 0;
+	}
+
+	&.split-right {
+		right: 0;
+	}
+
+	@media (max-width: @screen-sm-max) {
+		position: relative;
+		top: auto;
+		right: auto;
+		bottom: auto;
+		left: auto;
+		width: 100%;
+    	display: block;
+    	border-bottom: 1px solid rgba(0,0,0,.1);
+
+		&:before{
+	        content: "";
+	        display: block;
+	        padding-top: 100%;
+	    }
+	}
+
+	@media (max-width: @screen-sm-min) {
+		&:before {
+			padding-top: 100%;
+		}
+	}
+}

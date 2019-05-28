@@ -1,0 +1,101 @@
+#---------------------------------#
+#            Rock RMS             #
+#---------------------------------#
+
+# version format
+version: 1.3.{build}
+
+# increment flag
+pull_requests:
+  do_not_increment_build_number: true
+
+# branches to build
+branches:
+  only:
+  - master
+  - beta
+  - alpha
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+# operating system (build VM template)
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+
+# clone directory and depth
+clone_depth: 1
+clone_folder: C:\projects\Rock
+
+# scripts that run after cloning repository
+install:
+- ps: >-
+    $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+
+    $fileContent += $env:priv_key.Replace(' ', "`n")
+
+    $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+
+    Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+
+    git clone -q --depth=1 https://github.com/NewSpring/rock-misc.git c:\projects\rock-misc
+
+    git clone -q --depth=1 https://github.com/NewSpring/rock-f1.git c:\projects\rock-f1
+
+    git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
+
+    git clone -q --depth=1 https://github.com/NewSpring/rock-attended-checkin.git c:\projects\rock-attended-checkin
+
+    git clone -q --depth=1 https://github.com/ApollosProject/apollos-onesignal.git c:\projects\apollos-onesignal
+
+
+# directories to preserve between builds
+cache:
+- node_modules
+- packages
+
+# scripts to run before build
+# (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
+before_build:
+- ps: >-
+    if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
+
+    nuget restore Rock.sln
+
+    $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades"
+
+    $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2"
+
+    Get-ChildItem $src | Copy-Item -Destination $dst -Force
+
+    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
+
+# build configuration
+build:
+  project: Rock.sln
+  publish_wap: true
+  parallel: true
+  verbosity: minimal
+
+# flag to stop building if an error throws
+matrix:
+  fast_finish: true
+
+# test
+test:
+  assemblies:
+    only:
+      - Rock.Tests.dll
+
+# IIS artifact configuration
+artifacts:
+- path: RockWeb
+  name: NewSpringRockKit
+
+# deployment configuration
+deploy:
+- provider: Environment
+  name: Alpha (alpha-rock.newspring.cc)
+  on:
+    branch: alpha

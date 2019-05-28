@@ -1,0 +1,25 @@
+{% comment %}
+    {% include '~~/Assets/Lava/_test.html' %}
+{% endcomment %}
+
+<section class="bg-white soft hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+<div class="row floating floating-left">
+    <div class="floating-item col-md-4 col-sm-5">
+        {[ image imageurl:'{{ imageurl }}' hideforegroundelements:'Yes' ]}
+    </div><div class="floating-item col-md-8 col-sm-7">
+        <div class="soft soft-half-bottom">
+        <p><small class="label label-default sans-serif letter-spacing-condensed circular">Today's Devotional</small></p>
+            
+        <h2 class="block-title push-half-bottom">
+            <a href="/devotionals/revelation-a-28-day-bible-study/a-personal-appointment">
+                {{ item.Title }}
+            </a>
+        </h2>
+
+        <p>{{ content | StripHtml | Truncate:850,"..." }}</p>
+                    
+        <p><a href="/devotionals/revelation-a-28-day-bible-study/a-personal-appointment" class="btn btn-primary" role="button" data-scroll="">Read Devotional</a></p>
+        </div>
+    </div>
+</div>
+</section>
