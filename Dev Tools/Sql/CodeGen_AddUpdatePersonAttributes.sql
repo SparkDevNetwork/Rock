@@ -7,7 +7,7 @@ select @crlf + '// Person Attribute "' +  a.[Name] + '"' + @crlf
 	+ '@"' + CONVERT(nvarchar(50),f.[Guid]) + '", '
 	+ '@"' + CONVERT(nvarchar(50),c.[Guid]) + '", '
 	+ '@"' + a.[Name] + '", '
-	+ '@"' + a.[AbbreviatedName] + '", '
+	+ '@"' + COALESCE(a.[AbbreviatedName], '') + '", '
 	+ '@"' + a.[Key] + '", '
 	+ '@"' + a.[IconCssClass] + '", '
 	+ '@"' + a.[Description] + '", '
@@ -23,6 +23,7 @@ select @crlf + '// Person Attribute "' +  a.[Name] + '"' + @crlf
 			+ '@"' + REPLACE(aq.[Value], '"', '""') + '", '
 			+ '@"' + CONVERT(NVARCHAR(50),aq.[Guid]) 
 			+ '" );'
+		ELSE + ''
 	END
 FROM Attribute a
 JOIN AttributeCategory ac ON a.id = ac.AttributeId
