@@ -1,0 +1,33 @@
+.panel, .panel-block {
+	border-top-width: 1px;
+
+	.panel-heading {
+		border-top-right-radius: 5px;
+		border-top-left-radius: 5px;
+	}
+
+	.grid-actions {
+		border-bottom-left-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
+}
+
+.panel-persondetails > .panel-heading,
+.panel-note > .panel-heading,
+.panel-block > .panel-heading .panel-title,
+.panel-block > .panel-heading .panel-title i {
+	color: @theme-5-text;
+}
+
+.panel-widget .panel-heading {
+	color: @theme-5-text;
+	font-weight: 600;
+	letter-spacing: -.2px;
+	padding-top: 15px;
+}
+
+.panel:not(.panel-drawer) {
+	border-color: rgba(0,0,0,.15);
+	border-radius: 5px;
+	border-bottom: 2px solid rgba(0,0,0,.15);
+}

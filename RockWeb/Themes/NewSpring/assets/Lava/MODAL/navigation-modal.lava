@@ -1,0 +1,113 @@
+<div id="navigation-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body soft hard-bottom">
+        <i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i>
+        <h1 class="h2">
+          {% if CurrentPerson != null %}
+            Hello {{ CurrentPerson.NickName }}.
+          {% else %}
+            Hello!
+          {% endif %}
+        </h1>
+
+        <p>Where would you like to go?</p>
+
+        {% if CurrentPerson != null %}
+        {% assign personCampus = CurrentPerson | Campus %}
+
+        <ul class="list-style-none hard xs-flush">
+          <li>
+            <a href="/account">
+              <h3 class="text-primary push-half-bottom push-half-top"><a href="/account"><img src="{{ CurrentPerson.PhotoUrl }}" alt="" class="nav-icon circular" style="position: relative; top: -3px; max-width: 36px;">&nbsp; My Account</a></h3>
+            </a>
+          </li>
+        </ul>
+        
+        <div class="hidden">
+          <hr class="push-ends">
+
+          <ul class="list-style-none hard xs-flush">
+            <li>
+              <span class="label label-sm label-default sans-serif">{{ personCampus.Name }}</span><br>
+              <h3 class="text-primary push-half-bottom push-half-top"><a href="/news?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-newspaper display-none"></i>News</a></h3>
+              <h3 class="text-primary push-half-bottom"><a href="/events?campus={{ personCampus.Name | Replace:' ','-' | Downcase }}"><i class="fal fa-fw fa-calendar-alt display-none"></i>Events</a></h3>
+            </li>
+          </ul>
+        </div>
+        
+        <hr class="push-ends">
+        {% endif %}
+        
+        {% assign pages = 'Global' | Attribute:'Navigation','Object' %}
+        {% for page in pages %}
+        <pre>{{ page | ToJSON }}</pre>
+        {% endfor %}
+        <ul class="list-style-none hard xs-flush">
+          <li><h3 class="text-primary push-half-bottom"><a href="/about"><i class="fal fa-fw fa-map-marker-alt display-none"></i>About</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/articles"><i class="fal fa-fw fa-file-alt display-none"></i>Articles</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/sermons"><i class="fal fa-fw fa-video display-none"></i>Sermons</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/locations"><i class="fal fa-fw fa-video display-none"></i>Locations</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/groups"><i class="fal fa-fw fa-map-marker-alt display-none"></i>Find a Group</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/give"><i class="fal fa-fw fa-dollar-sign display-none"></i>Giving</a></h3></li>
+          <li><h3 class="text-primary push-half-bottom"><a href="/help"><i class="fal fa-fw fa-question display-none"></i>Help</a></h3></li>
+        </ul>
+
+        <hr class="push-ends">
+        
+        <p>Looking for something specific?</p>
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <h5 class="push-half-bottom">Next Steps</h5>
+            <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
+                <li><a href="/bible">Bible Reading</a></li>
+                <li><a href="/connect">Connect</a></li>
+                <li><a href="/groups">Groups</a></li>
+                <li><a href="/care">Care</a></li>
+                <li><a href="/serving">Serving</a></li>
+                <li><a href="/salvation">Salvation</a></li>
+                <li><a href="/baptism">Baptism</a></li>
+                <li><a href="/missions">Missions</a></li>
+                <li><a href="/finances">Finances</a></li>
+                <li><a href="/internships">Internships</a></li>
+            </ul>
+          </div><div class="col-xs-12 col-sm-6 col-md-6">
+            <h5 class="push-half-bottom">Watch &amp; Read</h5>
+            <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
+                <li><a href="/articles">Articles</a></li>
+                <li><a href="/sermons">Sermons</a></li>
+                <li><a href="/devotionals">Devotionals</a></li>
+                <li><a href="/news">News</a></li>
+                <li><a href="/stories">Stories</a></li>
+            </ul>
+          </div><div class="col-xs-12 col-sm-6 col-md-6">
+            <h5 class="push-half-bottom">Ministries</h5>
+            <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
+                <li><a href="/kidspring">Kids</a></li>
+                <li><a href="/fuse">Students</a></li>
+                <li><a href="/rally">Young Adults</a></li>
+                <li><a href="/internships">Internships</a></li>
+                <li><a href="/worship">Worship</a></li>
+                <li><a href="/missions">Missions</a></li>
+                <li><a href="/network">NewSpring Network</a></li>
+                <li><a href="/store">Store</a></li>
+            </ul>
+          </div><div class="col-xs-12 col-sm-6 col-md-6">
+            <h5 class="push-half-bottom">Giving</h5>
+            <ul class="list-relaxed sans-serif strong text-decoration-none list-style-none hard">
+                <li><a href="/give">Why We Give</a></li>
+                <li><a href="/give/now">Give Now</a></li>
+                <li><a href="/account/giving/schedules">Schedule Your Giving</a></li>
+                <li><a href="/account/giving">Giving History</a></li>
+                <li><a href="/annualreport">Annual Report</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer hidden">
+        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-primary">Save changes</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

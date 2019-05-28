@@ -1,0 +1,63 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+    {% assign baseBackgroundColor = Item | Attribute:'BackgroundColor' %}
+    {% if baseBackgroundColor and baseBackgroundColor != empty %}
+        {% assign backgroundColor = baseBackgroundColor %}
+        <style>
+            .brand-bg {
+                background-color: {{ backgroundColor | Darken:'10%' }};
+            }
+        </style>
+    {% endif %}
+
+
+    <!-- SIDE BY SIDE -->
+    {% capture id %}{% endcapture %}
+    {% capture guid %}{{ Item.Guid }}{% endcapture %}
+    {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
+    {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
+    {% capture textalignment %}{% endcapture %}
+    {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] | Singularize }}{% endcapture %}
+    {% capture label %}{{ type }}{% endcapture %}
+    {% assign dateparts = Item | Attribute:'Dates','RawValue' | Split:',' %}
+    {% if dateparts[0] != '' %}
+        {% capture subtitle %}{{ dateparts[0] | Date:'M/d/yyyy' }}{% if dateparts[1] != dateparts[0] %} - {{ dateparts[1] | Date:'M/d/yyyy' }}{% endif %}{% endcapture %}
+    {% endif %}
+    {% capture imageurl %}{{ Item | Attribute:'ImageSquare','Url' }}{% endcapture %}
+    {% capture imageoverlayurl %}{% endcapture %}
+    {% capture imagealignment %}Left{% endcapture %}
+    {% capture imageopacity %}{% endcapture %}
+    {% capture grayscale %}{% endcapture %}
+    {% capture backgroundvideourl %}{% endcapture %}
+    {% capture lava %}{% endcapture %}
+    {% capture video %}{{ Item | Attribute:'Video','RawValue' }}{% endcapture %}
+    {% capture ratio %}square{% endcapture %}
+    {% capture trimcopy %}Yes{% endcapture %}
+    {% capture linkcolor %}{% endcapture %}
+    {% capture backgroundcolor %}{% endcapture %}
+
+    {% for childItem in Item.ChildItems limit:1 %}
+            {%- capture childType -%}
+                {% assign childTypeParts = childItem.ChildContentChannelItem.ContentChannel.Name | Split:' - ' %}
+                {{ childTypeParts[1] }}
+            {%- endcapture -%}
+            {% assign childType = childType | Trim %}
+    {% endfor %}
+
+    {% if childType and childType != empty %}
+        {% capture linkurl %}#entries{% endcapture %}
+        {% capture linktext %}{% if childType contains "Sermon" %}Watch{% else %}Read{% endif %} {{ childType }}{% endcapture %}
+    {% endif %}
+
+    {[ sideBySide id:'{{ id }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+{[ endscripturize ]}
+
+{% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
+{% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
+{% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
+{% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Email Analytics" )]
     [Category( "Communication" )]
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        #region Events 
+        #region Events
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Communication
         #region Block specific classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class SummaryInfo
         {
@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class TopLinksInfo
         {
@@ -618,7 +618,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ClientTypeUsageInfo
         {
@@ -640,7 +640,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ApplicationUsageInfo
         {

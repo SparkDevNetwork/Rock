@@ -1,0 +1,111 @@
+{% capture parentId %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% endfor %}{% endcapture %}
+{% contentchannelitem Id:'{{ parentId }}' iterator:'parents' %}
+    {% for parent in parents %}
+        {% capture parentType %}{% assign parentTypeParts = parent.ContentChannel.Name | Split:' - ' %}{{ parentTypeParts[1] | Singularize }}{% endcapture %}
+        {% assign parentTitle = parent.Title | Replace:"'","’" %}
+        {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
+        {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+        {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
+        {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
+        {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
+        {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
+
+    {% endfor %}
+{% endcontentchannelitem %}
+
+
+
+{% if backgroundColor %}
+<style>
+    .brand-bg {
+        background-color: {{ backgroundColor | Darken:'10%' }};
+    }
+</style>
+{% endif %}
+
+<div class="row">
+	<div class="col-md-4 col-sm-12 col-xs-12">
+        {% capture guid %}{{ Item.Guid }}{% endcapture %}
+        {% capture id %}{{ Item.Id }}{% endcapture %}
+        {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
+        {% capture titlesize %}h3{% endcapture %}
+        {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
+        {% capture textalignment %}{% endcapture %}
+        {% capture label %}{% endcapture %}
+        {% capture subtitle %}{{ Item | Attribute:'ActualDate' | Date:'MMM d, yyyy' }} &middot; {[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+        {% capture imageurl %}{{ parentImage }}{% endcapture %}
+        {% capture imageoverlayurl %}{% endcapture %}
+        {% capture imagealignment %}{% endcapture %}
+        {% capture imageopacity %}{% endcapture %}
+        {% capture grayscale %}{% endcapture %}
+        {% capture backgroundvideourl %}{% endcapture %}
+        {% capture lava %}
+            <div class="row row-condensed push-bottom xs-push-half-bottom">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share="">Share This <i class="fas fa-fw fa-share flush"></i></a>
+                </div><div class="col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom hidden">
+                    <a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like=""><i class="far fa-fw fa-heart flush"></i> 5</a>
+                </div>
+            </div>
+        {% endcapture %}
+        {% capture videoid %}{% endcapture %}
+        {% capture ratio %}{% endcapture %}
+        {% capture trimcopy %}{% endcapture %}
+        {% capture linkcolor %}{% endcapture %}
+        {% capture backgroundcolor %}{% endcapture %}
+        {% capture linkurl %}{% endcapture %}
+        {% capture linktext %}{% endcapture %}
+        {% capture linkedpageraw %}{{ item | Attribute:'LinkedPage','RawValue' }}{% endcapture %}
+        {% if linkedpageraw != empty %}
+            {% capture linkedpageparts %}{{ linkedpageraw | Split:',' }}{% endcapture %}
+            {% capture linkedpagepartssize %}{{ linkedpageparts | Size }}{% endcapture %}
+            {% capture linkedpageid %}{[ pageIdFromGuid guid:'{{ linkedpageparts[0] }}' ]}{% endcapture %}
+            {% if linkedpagepartssize > 1 %}
+                {% capture linkedpageroute %}{{ linkedpageparts[1] }}{% endcapture %}
+                {% capture linkedpageroute %}{[ pageRouteFromRouteGuid routeguid:'{{ linkedpageid }}' ]}{% endcapture %}
+            {% endif %}
+        {% endif %}
+
+       {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+        
+        {[ modalShare ]}
+
+	</div><div class="col-md-8 col-sm-12 col-xs-12">
+        {[ wistiaEmbed id:'{{ Item | Attribute:'Video','RawValue' }}' color:'{{ backgroundColor }}' ]}
+	</div>
+</div>
+
+<!-- SIDE BY SIDE -->
+{% capture id %}{% endcapture %}
+{% capture title %}{{ parentTitle | Replace:"'","’" }}{% endcapture %}
+{% capture content %}{{ parentSummary | Replace:"'","’" }}{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{{ parentType }}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{{ parentImageSquare }}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}Left{% endcapture %}
+{% capture imageopacity %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{{ parentVideo }}{% endcapture %}
+{% capture ratio %}square{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}{% endcapture %}
+{% capture linkurl %}{{ parentUrl }}{% endcapture %}
+{% capture linktext %}Watch Series{% endcapture %}
+
+{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+
+
+
+<!-- META TAGS -->
+{% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
+{% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
+{% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
+{% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}

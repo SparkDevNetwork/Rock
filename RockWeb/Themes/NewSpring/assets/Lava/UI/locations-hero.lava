@@ -1,0 +1,40 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Uppercase %}
+{% campus where:'Name == "{{ campusSlug }}"' iterator:'campuses' %}
+{% for campus in campuses %}
+
+{% assign fuseImageUrl = campus | Attribute:'FuseImageLandscape','Url' %}
+{% assign nsImageUrl = campus | Attribute:'ImageLandscape','Url' %}
+
+{% assign fuseDirectionsUrl = campus | Attribute:'FuseGetDirectionsURL','RawValue' %}
+{% assign nsDirectionsUrl = campus | Attribute:'GetDirectionsURL','RawValue' %}
+
+{% capture id %}{% endcapture %}
+{% capture title %}{{ campus.Name }}, SC{% endcapture %}
+{% capture titlesize %}{% endcapture %}
+{% capture content %}<p class="lead">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}.40{% endcapture %}
+{% capture imageflip %}{% endcapture %}
+{% capture imageblur %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{% endcapture %}
+{% capture ratio %}thin{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}#303030{% endcapture %}
+{% capture linkurl %}{% if servicetype == 'Fuse' and fuseDirectionsUrl and fuseDirectionsUrl != empty %}{{ fuseDirectionsUrl }}{% else %}{{ nsDirectionsUrl }}{% endif %}{% endcapture %}
+{% capture linktext %}Get Directions{% endcapture %}
+{% capture linktarget %}_blank{% endcapture %}
+{% capture hideforegroundelements %}{% endcapture %}
+
+{[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}
+
+{% endfor %}
+{% endcampus %}
