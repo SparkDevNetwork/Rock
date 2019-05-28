@@ -108,7 +108,7 @@ namespace Rockweb.Blocks.Crm
 
         private const string ResultsMessageDefaultValue = @"
 
-{%- assign chartColor = '#5c8ae7' -%}
+{%- assign chartColor = '#709AC7' -%}
 {%- assign chartHeight = '100px' -%}
 
 <h1 class='text-center'>EQ Inventory Assessment Results</h1>
