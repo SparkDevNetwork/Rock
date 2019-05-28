@@ -50,8 +50,8 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
         void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage );
 
         /// <summary>

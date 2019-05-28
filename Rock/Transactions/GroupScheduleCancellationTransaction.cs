@@ -36,9 +36,9 @@ namespace Rock.Transactions
         private int AttendanceId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupScheduleCancellationTransaction"/> class.
+        /// Initializes a new instance of the <see cref="GroupScheduleCancellationTransaction" /> class.
         /// </summary>
-        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="attendance">The attendance.</param>
         public GroupScheduleCancellationTransaction( Attendance attendance )
         {
             this.AttendanceId = attendance.Id;
