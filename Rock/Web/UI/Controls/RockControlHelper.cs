@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Text;
+using System;
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -78,101 +79,104 @@ namespace Rock.Web.UI.Controls
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
             bool renderWarning = ( rockControl.WarningBlock != null && !string.IsNullOrWhiteSpace( rockControl.Warning ) );
 
+            var cssClassList = new List<string>();
+            string controlTypeCssClass = rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower();
+            cssClassList.Add( "form-group" );
+            cssClassList.Add( controlTypeCssClass );
+            cssClassList.Add( rockControl.FormGroupCssClass );
+
+            if ( !renderLabel )
+            {
+                cssClassList.Add( "no-label" );
+            }
+
+            if ( ( ( Control ) rockControl ).Page.IsPostBack && !rockControl.IsValid )
+            {
+                cssClassList.Add( "has-error" );
+            }
+            if ( rockControl.Required )
+            {
+                if ( ( rockControl is IDisplayRequiredIndicator ) && !( rockControl as IDisplayRequiredIndicator ).DisplayRequiredIndicator )
+                {
+                    // if this is a rock control that implements IDisplayRequiredIndicator and DisplayRequiredIndicator is false, don't add the " required " cssclass
+                }
+                else
+                {
+                    cssClassList.Add( "required" );
+                }
+            }
+            if ( !string.IsNullOrWhiteSpace( additionalCssClass ) )
+            {
+                cssClassList.Add( additionalCssClass );
+            }
+
+            var cssClass = cssClassList.AsDelimited( " " );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( !( rockControl is RockLiteral ) && renderLabel )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, rockControl.ClientID );
+            }
+
+            if ( rockControl is WebControl )
+            {
+                // if the control has a Display Style, make sure the Label, Help, and Warning also get the same Display style
+                // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label, help, and warning to also get not displayed
+                var rockControlDisplayStyle = ( rockControl as WebControl ).Style[HtmlTextWriterStyle.Display];
+                if ( rockControlDisplayStyle != null )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, rockControlDisplayStyle );
+                    if ( rockControl.HelpBlock != null )
+                    {
+                        rockControl.HelpBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
+                    }
+
+                    if ( rockControl.WarningBlock != null )
+                    {
+                        rockControl.WarningBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
+                    }
+                }
+            }
+
             if ( renderLabel )
             {
-                var cssClass = new StringBuilder();
-                cssClass.AppendFormat( "form-group {0} {1}", rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower(), rockControl.FormGroupCssClass );
-                if ( ( (Control)rockControl ).Page.IsPostBack && !rockControl.IsValid )
-                {
-                    cssClass.Append( " has-error" );
-                }
-                if ( rockControl.Required )
-                {
-                    if ( ( rockControl is IDisplayRequiredIndicator ) && !( rockControl as IDisplayRequiredIndicator ).DisplayRequiredIndicator )
-                    {
-                        // if this is a rock control that implements IDisplayRequiredIndicator and DisplayRequiredIndicator is false, don't add the " required " cssclass
-                    }
-                    else
-                    {
-                        cssClass.Append( " required" );
-                    }
-                }
-                if (!string.IsNullOrWhiteSpace(additionalCssClass))
-                {
-                    cssClass.Append( " " + additionalCssClass );
-                }
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                if ( !( rockControl is RockLiteral ) )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, rockControl.ClientID );
-                }
-
-                if ( rockControl is WebControl )
-                {
-                    // if the control has a Display Style, make sure the Label, Help, and Warning also get the same Display style
-                    // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label, help, and warning to also get not displayed
-                    var rockControlDisplayStyle = ( rockControl as WebControl ).Style[HtmlTextWriterStyle.Display];
-                    if ( rockControlDisplayStyle != null )
-                    {
-                        writer.AddStyleAttribute( HtmlTextWriterStyle.Display, rockControlDisplayStyle );
-                        if (rockControl.HelpBlock != null)
-                        {
-                            rockControl.HelpBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
-                        }
-
-                        if ( rockControl.WarningBlock != null )
-                        {
-                            rockControl.WarningBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
-                        }
-                    }
-                }
-
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
-
-                if ( renderHelp )
-                {
-                    rockControl.HelpBlock.RenderControl( writer );
-                }
-
-                if ( renderWarning )
-                {
-                    rockControl.WarningBlock.RenderControl( writer );
-                }
-
-                writer.RenderEndTag();
-
-                if ( rockControl is IRockControlAdditionalRendering )
-                {
-                    ( (IRockControlAdditionalRendering)rockControl ).RenderAfterLabel( writer );
-                }
-
-                writer.Write( " " ); // add space for inline forms, otherwise the label butts right up to the control
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            rockControl.RenderBaseControl( writer );
-
-            if ( renderLabel )
-            {
-                writer.RenderEndTag();
-            }
-
-            if ( !renderLabel && renderHelp )
+            if ( renderHelp )
             {
                 rockControl.HelpBlock.RenderControl( writer );
             }
 
-            if ( !renderLabel && renderWarning )
+            if ( renderWarning )
             {
                 rockControl.WarningBlock.RenderControl( writer );
             }
+
+            if ( renderLabel )
+            {
+
+                // label tag
+                writer.RenderEndTag();
+            }
+
+            if ( rockControl is IRockControlAdditionalRendering )
+            {
+                ( ( IRockControlAdditionalRendering ) rockControl ).RenderAfterLabel( writer );
+            }
+
+            writer.Write( " " ); // add space for inline forms, otherwise the label butts right up to the control
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            rockControl.RenderBaseControl( writer );
+
+            // control-wrapper div
+            writer.RenderEndTag();
 
             if ( rockControl.RequiredFieldValidator != null )
             {
@@ -181,8 +185,20 @@ namespace Rock.Web.UI.Controls
                     rockControl.RequiredFieldValidator.Enabled = true;
                     if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                     {
-                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is required.";
+                        // if the control is a Label, use that. Otherwise, if the control has PlaceHolder, use that.
+                        string requiredName = string.Empty;
+                        if ( rockControl.Label.IsNotNullOrWhiteSpace() )
+                        {
+                            requiredName = rockControl.Label;
+                        }
+                        else if ( rockControl is RockTextBox )
+                        {
+                            requiredName = ( rockControl as RockTextBox ).Placeholder;
+                        }
+
+                        rockControl.RequiredFieldValidator.ErrorMessage = requiredName + " is required.";
                     }
+
                     rockControl.RequiredFieldValidator.RenderControl( writer );
                 }
                 else
@@ -191,47 +207,42 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( renderLabel )
-            {
-                writer.RenderEndTag();
-            }
+            // form-group div
+            writer.RenderEndTag();
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders a form-group div and label around a control that doesn't implement <see cref="IRockControl"/>
         /// </summary>
         /// <param name="label">The label.</param>
         /// <param name="control">The control.</param>
         /// <param name="writer">The writer.</param>
+        [Obsolete( "Use the other RenderControl if the control is an IRockControl. Otherwise, use RockControlWrapper to put a the form-group, label and control-wrapper tags around your control." )]
+        [RockObsolete( "1.9" )]
         public static void RenderControl( string label, Control control, HtmlTextWriter writer )
         {
             bool renderLabel = ( !string.IsNullOrEmpty( label ) );
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             if ( renderLabel )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                 writer.AddAttribute( HtmlTextWriterAttribute.For, control.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( label );
                 writer.RenderEndTag();  // label
-
-                control.RenderControl( writer );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                control.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();  // form-group
             }
-            else
-            {
-                control.RenderControl( writer );
-            }
+
+            control.RenderControl( writer );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            control.RenderControl( writer );
+            writer.RenderEndTag();  // control-wrapper
+
+            writer.RenderEndTag();  // form-group
         }
-
     }
 }
