@@ -98,9 +98,9 @@
 
                             <div class="panel-body">
 
-
+                                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
-
+                                
                                 <div class="row form-row">
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />
