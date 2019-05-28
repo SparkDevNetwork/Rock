@@ -45,15 +45,23 @@ namespace RockWeb.Blocks.GroupScheduling
 
     [IntegerField(
         "Number of Future Weeks To Show",
-        Description = "The number of weeks into the future to allow users to signup for a schedule.",
+        Key = AttributeKey.FutureWeeksToShow,
+        Description = "The number of weeks into the future to allow users to sign up for a schedule.",
         IsRequired = true,
         DefaultValue = "6",
-        Order = 0,
-        Key = AttributeKeys.FutureWeeksToShow )]
+        Order = 0 )]
+
+    [BooleanField(
+        "Enable Sign-up",
+        Key = AttributeKey.EnableSignup,
+        Description = "Set to false to hide the Sign Up tab.",
+        DefaultBooleanValue = true,
+        Order = 1 )]
 
     [CodeEditorField(
-        "Signup Instructions",
-        Description = "Instructions here will show up on Signup tab. <span class='tip tip-lava'></span>",
+        "Sign Up Instructions",
+        Key = AttributeKey.SignupInstructions,
+        Description = "Instructions here will show up on Sign Up tab. <span class='tip tip-lava'></span>",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
@@ -70,19 +78,20 @@ namespace RockWeb.Blocks.GroupScheduling
         No sign-ups available.
      {%- endif -%}
 </div>",
-        Order = 1,
-        Key = AttributeKeys.SignupInstructions )]
+        Order = 2
+         )]
+
+
     public partial class GroupScheduleToolbox : RockBlock
     {
-        protected class AttributeKeys
+        protected class AttributeKey
         {
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
-
-        private readonly List<GroupScheduleToolboxTab> _tabs = Enum.GetValues( typeof( GroupScheduleToolboxTab ) ).Cast<GroupScheduleToolboxTab>().ToList();
 
         /// <summary>
         /// Tab menu options
@@ -246,6 +255,7 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            BindTabs();
             ShowSelectedTab();
         }
 
@@ -261,8 +271,7 @@ $('#{0}').tooltip();
             {
                 CurrentTab = lb.CommandArgument.ConvertToEnum<GroupScheduleToolboxTab>();
 
-                rptTabs.DataSource = _tabs;
-                rptTabs.DataBind();
+                BindTabs();
             }
 
             ShowSelectedTab();
@@ -327,7 +336,13 @@ $('#{0}').tooltip();
         /// </summary>
         private void BindTabs()
         {
-            rptTabs.DataSource = _tabs;
+            var tabs = Enum.GetValues( typeof( GroupScheduleToolboxTab ) ).Cast<GroupScheduleToolboxTab>().ToList();
+            if ( this.GetAttributeValue( AttributeKey.EnableSignup ).AsBoolean() == false )
+            {
+                tabs = tabs.Where( a => a != GroupScheduleToolboxTab.SignUp ).ToList();
+            }
+
+            rptTabs.DataSource = tabs;
             rptTabs.DataBind();
         }
 
@@ -1213,8 +1228,8 @@ $('#{0}').tooltip();
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "IsSchedulesAvailable", availableSchedules.Any() );
             mergeFields.Add( "Person", CurrentPerson );
-            lSignupMsg.Text = GetAttributeValue( AttributeKeys.SignupInstructions ).ResolveMergeFields( mergeFields );
-            
+            lSignupMsg.Text = GetAttributeValue( AttributeKey.SignupInstructions ).ResolveMergeFields( mergeFields );
+
             foreach ( var availableSchedule in availableSchedules )
             {
                 if ( availableSchedule.GroupId != currentGroupId )
@@ -1409,7 +1424,7 @@ $('#{0}').tooltip();
         protected List<PersonScheduleSignup> GetScheduleData()
         {
             List<PersonScheduleSignup> personScheduleSignups = new List<PersonScheduleSignup>();
-            int numOfWeeks = GetAttributeValue( AttributeKeys.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
+            int numOfWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
             var startDate = DateTime.Now.AddDays( 1 );
             var endDate = DateTime.Now.AddDays( numOfWeeks * 7 );
 
