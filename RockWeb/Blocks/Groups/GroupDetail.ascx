@@ -94,13 +94,13 @@
 
                         <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
-                                <Rock:Grid ID="gLocations" runat="server" AllowPaging="false"  DisplayType="Light" RowItemText="Location">
+                                <Rock:Grid ID="gGroupLocations" runat="server" AllowPaging="false"  DisplayType="Light" RowItemText="Location">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
                                         <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
-                                        <Rock:EditField OnClick="gLocations_Edit" />
-                                        <Rock:DeleteField OnClick="gLocations_Delete" />
+                                        <Rock:EditField OnClick="gGroupLocations_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupLocations_Delete" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -322,7 +322,7 @@
 
                 <div class="row">
                     <div class="col-md-3">
-                       <asp:HiddenField ID="hfLocationGuid" runat="server" />
+                       <asp:HiddenField ID="hfGroupLocationGuid" runat="server" />
                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
                     </div>
                     <div class="col-md-9">
