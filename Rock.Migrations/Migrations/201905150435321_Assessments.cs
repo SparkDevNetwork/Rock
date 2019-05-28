@@ -1274,6 +1274,8 @@ SELECT  CASE
     
         private void AddMotivatorsAttributes()
         {
+            RockMigrationHelper.UpdatePersonAttributeCategory( "Motivators", "fa fa-key", "", "CEAA3D59-D53C-40EC-B7B8-E7BBB758BD4D" );
+
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator: Believing", "core_MotivatorBelieving", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_BELIVING );
             AddSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_BELIVING );
 
