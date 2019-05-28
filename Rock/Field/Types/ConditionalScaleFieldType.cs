@@ -487,7 +487,7 @@ namespace Rock.Field.Types
 
             MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
 
-            Expression comparison = null;
+            Expression rangeComparison = null;
 
             var conditionalScaleRangeRuleListToFilter = conditionalScaleRangeRuleList.Where( a => filterCompareValues.Contains( a.Guid ) ).ToList();
             foreach ( var conditionalScaleRangeRule in conditionalScaleRangeRuleListToFilter )
@@ -500,17 +500,21 @@ namespace Rock.Field.Types
 
                 var rangeBetweenExpression = ComparisonHelper.ComparisonExpression( ComparisonType.Between, propertyExpression, constantExpressionLowValue, constantExpressionHighValue );
 
-                if ( comparison == null )
+                if ( rangeComparison == null )
                 {
-                    comparison = rangeBetweenExpression;
+                    rangeComparison = rangeBetweenExpression;
                 }
                 else
                 {
-                    comparison = Expression.Or( comparison, rangeBetweenExpression );
+                    rangeComparison = Expression.Or( rangeComparison, rangeBetweenExpression );
                 }
             }
 
-            return comparison;
+            var notNullComparison = ComparisonHelper.ComparisonExpression( ComparisonType.IsNotBlank, propertyExpression, AttributeConstantExpression( string.Empty ) );
+
+            var expression = Expression.AndAlso( notNullComparison, rangeComparison );
+
+            return expression;
         }
 
         /// <summary>
