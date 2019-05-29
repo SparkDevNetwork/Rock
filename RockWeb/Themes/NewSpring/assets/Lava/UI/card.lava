@@ -73,7 +73,7 @@
         {% endif %}
 
         {% if lava != empty %}
-            {{ lava }}
+            {{ lava | HtmlDecode }}
         {% endif %}
 
         {% if linkurl and linkurl != empty %}
