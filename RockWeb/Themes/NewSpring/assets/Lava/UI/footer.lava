@@ -10,21 +10,21 @@
 
 <footer class="shell soft bg-gray-dark rounded shadowed">
     <div class="row sans-serif strong text-decoration-none">
-        <div class="col-xs-12 col-sm-12 col-md-3 text-left sm-text-center xs-text-center sm-push-half-bottom xs-push-half-bottom">
+        <div class="col-xs-12 col-sm-12 col-md-3 text-left sm-text-center xs-text-center sm-push-quarter-bottom xs-push-quarter-bottom">
             <span class="text-white"><small>&copy; {{ 'Now' | Date:'yyyy' }} NewSpring Church</small></span>
         </div><div class="col-xs-12 col-sm-12 col-md-6 text-center">
             <small class="sans-serif strong text-decoration-none text-center flush">
                 <span style="display: inline-block; margin-bottom: 5px;">
-                    <a href="/privacy" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Privacy Policy</a>
+                    <a href="/privacy" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-quarter-bottom xs-push-quarter-bottom">Privacy Policy</a>
                     <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                    <a href="/terms" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Terms of Use</a>
+                    <a href="/terms" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-quarter-bottom xs-push-quarter-bottom">Terms of Use</a>
                     <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                    <a href="/reprinting-and-reposting" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Reprinting &amp; Reposting Terms</a>
+                    <a href="/reprinting-and-reposting" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-quarter-bottom xs-push-quarter-bottom">Reprinting &amp; Reposting Terms</a>
                     <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                    <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Report Website Issue</a>
+                    <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-quarter-bottom xs-push-quarter-bottom">Report Website Issue</a>
     	        </span>
                 <br>
-                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">{{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} {{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</span>
+                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-flush-bottom xs-flush-bottom">{{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %}</span> <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">{{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</span>
                 <span class="text-white hidden-sm hidden-xs"> &middot; </span>
                 <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom"><a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></span>
             </small>

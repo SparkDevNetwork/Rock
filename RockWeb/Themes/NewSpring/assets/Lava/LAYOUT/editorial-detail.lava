@@ -80,7 +80,7 @@
             {% endif %}
             
             {% if imageurl and imageurl != empty %}
-                <div class="ratio-landscape background-cover push-bottom" style="background-image:url('{{ imageurl }}'); margin-left: -30px; margin-right: -30px;"></div>
+                <div class="ratio-landscape background-cover push-bottom rounded" style="background-image:url('{{ imageurl }}');"></div>
             {% endif %}
 
             {% assign scripturesguid = Item | Attribute:'Scriptures','RawValue' %}
@@ -138,7 +138,7 @@
                 <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
                     {[ tags guid:'{{ Item.Guid }}']}
                 </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                    <p class="tag-list"><small><b>{{ date }}</b></small></p>
+                    <p><small><b>{{ date }}</b></small></p>
                 </div>
             </div>
         </div>

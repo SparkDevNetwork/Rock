@@ -1,4 +1,6 @@
 {% taggeditem where:'EntityGuid == "{{ guid }}"' iterator:'tags' limit:'7' %}
+{% assign tagCount = tags | Size %}
+{% if tagCount > 0 %}
 <p class="tag-list sans-serif push-half-bottom">
     <small>
         {% for tag in tags %}
@@ -6,4 +8,5 @@
         {% endfor %}
     </small>
 </p>
+{% endif %}
 {% endtaggeditem %}
