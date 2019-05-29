@@ -119,7 +119,7 @@
             </div>
             
             {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:'', 18, false, 7 %}
-            {% assign shareimageurl = image %}
+            {% assign shareimageurl = imageurl %}
             {% assign shareauthor = 'newspring' %}
             {% assign sharetitle = Item.Title %}
             {% assign summary = item | Attribute:'Summary' %}
