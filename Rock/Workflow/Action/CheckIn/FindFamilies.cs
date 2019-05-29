@@ -100,7 +100,7 @@ namespace Rock.Workflow.Action.CheckIn
                     else
                     {
                         var familyMemberQry = memberService
-                            .Queryable().AsNoTracking()
+                            .AsNoFilter().AsNoTracking()
                             .Where( m =>
                                 m.Group.GroupTypeId == familyGroupTypeId &&
                                 m.Person.RecordTypeValueId == personRecordTypeId );
@@ -181,28 +181,42 @@ namespace Rock.Workflow.Action.CheckIn
                         familyIdQry = familyIdQry.Take( maxResults );
                     }
 
-                    var familyIds = familyIdQry.ToList();
+                    // You might think we should do a ToList() on the familyIdQry and use it below,
+                    // but through some extensive testing, we discovered that the next SQL query is better
+                    // optimized if it has the familyIdQry without being to-listed.  It was over 270% slower
+                    // when querying names and 120% slower when querying phone numbers.
 
                     // Load the family members
                     var familyMembers = memberService
-                        .Queryable( "Group,GroupRole,Person" ).AsNoTracking()
-                        .Where( m => familyIds.Contains( m.GroupId ) )
+                        .Queryable().AsNoTracking()
+                        .Where( m => m.Group.GroupTypeId == familyGroupTypeId && familyIdQry.Contains( m.GroupId ) ).Select( a =>
+                        new {
+                            Group = a.Group,
+                            GroupId = a.GroupId,
+                            Order = a.GroupRole.Order,
+                            BirthYear = a.Person.BirthYear,
+                            BirthMonth = a.Person.BirthMonth,
+                            BirthDay = a.Person.BirthDay,
+                            Gender = a.Person.Gender,
+                            NickName = a.Person.NickName,
+                            RecordStatusValueId = a.Person.RecordStatusValueId
+                        } )
                         .ToList();
 
                     // Add each family
-                    foreach ( int familyId in familyIds )
+                    foreach ( int familyId in familyMembers.Select( fm => fm.GroupId ).Distinct() )
                     {
                         // Get each of the members for this family
                         var familyMemberQry = familyMembers
                             .Where( m =>
                                 m.GroupId == familyId &&
-                                m.Person.NickName != null );
+                                m.NickName != null );
 
                         if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople && dvInactive != null )
                         {
                             familyMemberQry = familyMemberQry
                                 .Where( m =>
-                                    m.Person.RecordStatusValueId != dvInactive.Id );
+                                    m.RecordStatusValueId != dvInactive.Id );
                         }
 
                         var thisFamilyMembers = familyMemberQry.ToList();
@@ -214,12 +228,12 @@ namespace Rock.Workflow.Action.CheckIn
                                 .FirstOrDefault();
 
                             var firstNames = thisFamilyMembers
-                                .OrderBy( m => m.GroupRole.Order )
-                                .ThenBy( m => m.Person.BirthYear )
-                                .ThenBy( m => m.Person.BirthMonth )
-                                .ThenBy( m => m.Person.BirthDay )
-                                .ThenBy( m => m.Person.Gender )
-                                .Select( m => m.Person.NickName )
+                                .OrderBy( m => m.Order )
+                                .ThenBy( m => m.BirthYear )
+                                .ThenBy( m => m.BirthMonth )
+                                .ThenBy( m => m.BirthDay )
+                                .ThenBy( m => m.Gender )
+                                .Select( m => m.NickName )
                                 .ToList();
 
                             var family = new CheckInFamily();

@@ -3212,6 +3212,27 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Creates a Person Action Identifier (rckid) for the specified Person (person can be specified by Person, Guid, or Id) for specific action.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public static string PersonActionIdentifier( DotLiquid.Context context, object input, string action )
+        {
+            Person person = GetPerson( input ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
+
+            if ( person != null )
+            {
+                return person.GetPersonActionIdentifier( action );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Creates a Person Token (rckipid) for the specified Person (person can be specified by Person, Guid, or Id). Specify ExpireMinutes, UsageLimit and PageId to
         /// limit the usage of the token for the specified number of minutes, usage count, and specific pageid
         /// </summary>

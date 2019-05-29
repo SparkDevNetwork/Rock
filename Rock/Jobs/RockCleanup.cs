@@ -507,7 +507,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" ) )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && ( w.Status.Equals( "Completed" ) || w.CompletedDateTime.HasValue) )
                 .ToList();
 
             foreach ( var workflow in completedWorkflows )
@@ -779,13 +779,8 @@ WHERE ic.ChannelId = @channelId
                 AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
-                var matrixFieldTypeId = FieldTypeCache.Get<MatrixFieldType>().Id;
-                // get a list of attribute Matrix Guids that are actually in use
-                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
+                var orphanedAttributeMatrices = attributeMatrixService.GetOrphanedAttributeMatrices().ToList();
 
-                // clean up any orphaned attribute matrices
-                var dayAgo = RockDateTime.Now.AddDays( -1 );
-                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;

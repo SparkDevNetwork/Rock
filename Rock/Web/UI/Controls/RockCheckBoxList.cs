@@ -383,18 +383,18 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns <= 0 )
-            {
-                this.RepeatColumns = 4;
-            }
-
-            cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -406,6 +406,18 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();
