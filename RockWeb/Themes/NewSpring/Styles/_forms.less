@@ -1,3 +1,41 @@
 .form-control.input-width-sm, .input-group.input-width-sm, .form-control-group.input-width-sm input {
     width: 80px;
 }
+
+.select-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+
+    &:after {
+        content:'\f0d7';
+        font-family:"Font Awesome 5 Pro";
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        margin-top: -13px;
+        font-weight: 900;
+        color: @white;
+        cursor: pointer;
+    }
+
+    select {
+        -webkit-appearance: none; 
+        -moz-appearance: none;
+        appearance: none;       /* remove default arrow */
+        background-color: @brand-primary;
+        border: 0;
+        padding: 6px 10px 5px;
+        padding-right: 30px;
+        font-family: @font-family-sans-serif;
+        font-weight: 500;
+        color: @white;
+        outline: none;
+        cursor: pointer;
+    }
+
+    select::-ms-expand { 
+        display: none; /* hide the default arrow in ie10 and ie11 */
+    }
+
+}

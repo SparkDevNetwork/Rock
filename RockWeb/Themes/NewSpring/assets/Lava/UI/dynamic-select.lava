@@ -4,17 +4,19 @@
 {% assign optionParts = optionsRaw | Split:',' %}
 
 <p>
-	<select data-dynamic-select="{{ id }}" data-dynamic-select-url="{{ linkurl }}">
-	
-	    <option>{{ defaultoptiontext }}</option>
-	    
-	    {% for option in optionParts %}
-	    
-	        {% assign optionValueLabel = option | Split:'^' %}
-	        <option value="{{ optionValueLabel[0] | Trim }}">{{ optionValueLabel[1] }}</option>
-	        
-		{% endfor %}
-    </select>
+    <div class="select-wrapper">
+        <select data-dynamic-select="{{ id }}" data-dynamic-select-url="{{ linkurl }}">
+        
+            <option>{{ defaultoptiontext }}</option>
+            
+            {% for option in optionParts %}
+            
+                {% assign optionValueLabel = option | Split:'^' %}
+                <option value="{{ optionValueLabel[0] | Trim }}">{{ optionValueLabel[1] }}</option>
+                
+            {% endfor %}
+        </select>
+    </div>
 </p>
 
 <p><a href="#" class="btn btn-primary disabled" data-dynamic-link="{{ id }}">{{ linktext }}</a></p>
