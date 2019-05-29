@@ -23,13 +23,15 @@
 <div class="row {% if imagealignment == 'Right' %}row-reverse{% endif %} floating floating-left">
     <div class="floating-item col-xs-12 col-sm-12 col-md-6 sm-hard xs-hard">
 
-        {% if title != null and title != '' %}
-            <h2 class="block-title push-half-bottom soft-half-ends soft-half-sides hidden-md hidden-lg sm-text-center xs-text-center">
-                {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
-                    {{ title }}
-                {% if linkurl != empty %}</a>{% endif %}
-            </h2>
-        {% endif %}
+        <div class="hidden-md hidden-lg">
+            {% if title != null and title != '' %}
+                <h2 class="block-title push-half-bottom soft-half-ends soft-half-sides sm-text-center xs-text-center">
+                    {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+                        {{ title }}
+                    {% if linkurl != empty %}</a>{% endif %}
+                </h2>
+            {% endif %}
+        </div>
 
         {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
             <div class="position-relative ratio-square push-bottom">
@@ -38,17 +40,20 @@
         {% if linkurl != empty %}</a>{% endif %}
     </div><div class="floating-item col-xs-12 col-sm-12 col-md-6">
         <div class="soft-sides sm-hard-sides sm-soft-half-bottom xs-hard-sides xs-soft-half-bottom clearfix text-left sm-text-center xs-text-center">
-            {% if label != null and label != '' %}
-                <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
-            {% endif %}
-            
-            {% if title != null and title != '' %}
-                <h2 class="block-title push-half-bottom hidden-sm hidden-xs">
-                    {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
-                        {{ title }}
-                    {% if linkurl != empty %}</a>{% endif %}
-                </h2>
-            {% endif %}
+
+            <div class="hidden-sm hidden-xs">
+                {% if label != null and label != '' %}
+                    <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                {% endif %}
+                
+                {% if title != null and title != '' %}
+                    <h2 class="block-title push-half-bottom">
+                        {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+                            {{ title }}
+                        {% if linkurl != empty %}</a>{% endif %}
+                    </h2>
+                {% endif %}
+            </div>
 
             {% if subtitle != null and subtitle != '' %}
                 <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
@@ -77,6 +82,10 @@
                 <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
                 <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
                 <p><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><a href="#" class="btn btn-primary">Watch Video</a></span></p>
+            {% endif %}
+
+            {% if lava and lava != empty %}
+                {{ lava }}
             {% endif %}
         </div>
     </div>

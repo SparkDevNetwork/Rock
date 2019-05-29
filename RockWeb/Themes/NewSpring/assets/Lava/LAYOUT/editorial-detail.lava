@@ -3,6 +3,7 @@
         {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
             {% for parent in parents %}
                 {% assign parentTitle = parent.Title %}
+                {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
                 {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
                 {% if baseBackgroundColor and baseBackgroundColor != empty %}
                     {% assign backgroundColor = baseBackgroundColor %}
@@ -18,10 +19,11 @@
     {% endfor %}
 {% endif %}
 
+{% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
 {% assign channelName = channelNameParts[1] %}
-{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {{ orgName }}{% endcapture %}
+{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
 
 {{ browserTitle | SetPageTitle:'BrowserTitle' }}
 {{ channelName | Singularize | SetPageTitle:'PageTitle' }}
@@ -42,7 +44,7 @@
         {% if itemimageurl and itemimageurl != empty %}
             {{ itemimageurl }}
         {% elseif Item.ParentItems %}
-            {% for parent in Item.ParentItems %}{[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ratio:'landscape' ]}{% endfor %}
+            {{ parentImage }}
         {% endif %}
     {% endcapture %}
     {% assign imageurl = imageurl | Trim %}
@@ -118,11 +120,13 @@
                 </div>
             </div>
             
-            {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:'', 18, false, 7 %}
-            {% assign shareimageurl = image %}
+            {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
+            {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+
+            {% assign shareimageurl = imageurl %}
             {% assign shareauthor = 'newspring' %}
             {% assign sharetitle = Item.Title %}
-            {% assign summary = item | Attribute:'Summary' %}
+            {% assign summary = Item | Attribute:'Summary' %}
             {%- capture sharesummary -%}
                 {% if summary and summary != empty %}
                     {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
@@ -151,4 +155,4 @@
 {% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
 {% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
 
-{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ imageurl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
