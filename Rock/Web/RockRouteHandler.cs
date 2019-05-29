@@ -124,7 +124,8 @@ namespace Rock.Web
                         site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
 
-                    if ( site != null )
+                    // Are shortlinks enabled for this site? If so, check for a matching shortlink route.
+                    if ( site != null && site.EnabledForShortening )
                     {
                         // Check to see if this is a short link route
                         string shortlink = null;
@@ -132,7 +133,19 @@ namespace Rock.Web
                         {
                             shortlink = requestContext.RouteData.Values["shortlink"].ToString();
                         }
-
+                        else 
+                        {
+                            // Because we implemented shortlinks using a {shortlink} (catchall) route, it's
+                            // possible the organization added a custom {catchall} route (at root level; no slashes)
+                            // and it is overriding our shortlink route.  If they did, use it for a possible 'shortlink'
+                            // route match.
+                            if ( requestContext.RouteData.DataTokens["RouteName"] != null && requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().StartsWith( "{" ) )
+                            {
+                                var routeName = requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().Trim( new Char[] { '{', '}'} );
+                                shortlink = requestContext.RouteData.Values[routeName].ToStringSafe();
+                            }
+                        }
+                        
                         // If shortlink have the same name as route and route's site did not match, then check if shortlink site match.
                         if ( shortlink.IsNullOrWhiteSpace() && requestContext.RouteData.DataTokens["RouteName"] != null )
                         {

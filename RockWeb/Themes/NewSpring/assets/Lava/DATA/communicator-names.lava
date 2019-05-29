@@ -1,4 +1,4 @@
-{% if guid != null %}
+{% if guid and guid != empty %}
 {% sql %}
 SELECT av.ValueAsPersonId 'PersonId', av.Value 'Value'
 FROM AttributeMatrix am

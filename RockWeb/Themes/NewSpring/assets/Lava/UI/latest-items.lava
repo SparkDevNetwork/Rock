@@ -1,0 +1,74 @@
+{% if ccid and ccid != empty %}
+
+{% contentchannel id:'{{ ccid }}' iterator:'channels' %}
+{% for channel in channels %}
+    {% assign channelNameParts = channel.Name | Split:' - ' %}
+    {% assign channelItemsName = channelNameParts[1] %}
+    {% assign channelUrl = channel.ChannelUrl %}
+{% endfor %}
+{% endcontentchannel %}
+
+{% contentchannelitem dataview:'{{ dvid }}' where:'ContentChannelId == {{ ccid }}' limit:'3' sort:'StartDateTime desc' iterator:'items' %}
+<section class="bg-white soft xs-soft-half soft-half-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+<div class="row soft-half-top soft-bottom xs-text-center">
+    <div class="col-xs-12 col-sm-6 col-md-6">
+        <h2 class="flush xs-push-half-ends">Latest {{ channelItemsName }}</h2>
+    </div><div class="col-xs-12 col-sm-6 col-md-6 text-right xs-text-center">
+        <a href="{{ channelUrl }}" class="btn btn-primary xs-push-half-bottom">More {{ channelItemsName }}</a>
+    </div>
+</div>
+<div class="row">
+    {% for item in items %}<div class="col-xs-12 col-sm-6 col-md-4">
+        {% assign parentCount = item.ParentItems | Size %}
+        {% capture guid %}{{ item.Guid }}{% endcapture %}
+        {% capture id %}{{ item.Id }}{% endcapture %}
+        {% capture cciid %}{{ item.Id }}{% endcapture %}
+        {% capture title %}{{ item.Title | Replace:"'","’" }}{% endcapture %}
+        {% capture titlesize %}h3{% endcapture %}
+        {% assign summary = item | Attribute:'Summary' %}
+        {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Truncate:150,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
+        {% capture textalignment %}{{ item | Attribute:'TextAlignment' }}{% endcapture %}
+        {% capture label %}{{ item | Attribute:'Label' }}{% endcapture %}
+        {% capture communicators %}{[ communicatorNames guid:'{{ item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+        {% assign communicators = communicators | Trim %}
+        {% assign actualdate = child | Attribute:'ActualDate' %}
+        {% capture subtitle %}{% if actualdate and actualdate != empty %}{{ actualdate | Date:'MMM d, yyyy' }}{% else %}{{ item.StartDateTime | Date:'MMM d, yyyy' }}{% endif %}{% if communicators and communicators != empty %} &middot; {{ communicators }}{% endif %}{% endcapture %}
+        {% assign video = item | Attribute:'Video','RawValue' %}
+        {% assign itemImage = item | Attribute:'ImageLandscape','Url' %}
+        {% capture imageurl %}
+            {% if channelItemsName == 'Sermons' and video and video != empty %}
+                {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+            {% elseif itemImage and itemImage != empty %}
+                {{ itemImage }}
+            {% else %}
+                {% for parent in item.ParentItems %}
+                    {[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ]}
+                {% endfor %}
+            {% endif %}
+        {% endcapture %}
+        {% assign imageurl = imageurl | Trim %}
+
+        {% capture imageoverlayurl %}{{ item | Attribute:'OverlayImage','Url' }}{% endcapture %}
+        {% capture imagealignment %}{{ item | Attribute:'ImageAlignment' }}{% endcapture %}
+        {% capture imageopacity %}{{ item | Attribute:'ImageOpacity' | DividedBy: 100 }}{% endcapture %}
+        {% capture imageflip %}{{ item | Attribute:'ImageFlip' }}{% endcapture %}
+        {% capture imageblur %}{{ item | Attribute:'ImageBlur' }}{% endcapture %}
+        {% capture grayscale %}{{ item | Attribute:'Grayscale' }}{% endcapture %}
+        {% capture backgroundvideourl %}{{ item | Attribute:'BackgroundVideo' }}{% endcapture %}
+        {% capture lava %}{{ item | Attribute:'Lava' }}{% endcapture %}
+        {% capture video %}{{ item | Attribute:'Video','RawValue' }}{% endcapture %}
+        {% capture ratio %}{{ item | Attribute:'Ratio','RawValue' }}{% endcapture %}
+        {% capture trimcopy %}{{ item | Attribute:'TrimCopy' }}{% endcapture %}
+        {% capture linkcolor %}{{ item | Attribute:'ForegroundColor' }}{% endcapture %}
+        {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
+        {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}{% if parentCount > 0 %}/{[ getParentSlugFromChildId id:'{{ item.Id }}' ]}{% endif %}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+        {% capture linktext %}{% if channelItemsName == 'Sermons' %}Watch{% else %}Read{% endif %} {{ channelItemsName | Singularize }}{% endcapture %}
+        {% capture hideforegroundelements %}{{ item | Attribute:'HideForegroundElements' }}{% endcapture %}
+        
+        {[ card guid:'{{ guid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+    </div>{% endfor %}
+</div></section>
+{% endcontentchannelitem %}
+
+{% endif %}

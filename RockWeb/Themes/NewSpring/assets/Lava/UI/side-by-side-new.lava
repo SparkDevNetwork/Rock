@@ -1,0 +1,119 @@
+{% assign trimcopy = 'Yes' %}
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+{%- assign modalid = uniqueid -%}
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture linkurl %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign linkurl = linkurl | Trim %}
+
+
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+
+<div class="row {% if imagealignment == 'Right' %}row-reverse{% endif %} floating floating-left">
+    <div class="floating-item col-xs-12 col-sm-12 col-md-6 sm-hard xs-hard">
+
+        <div class="hidden-md hidden-lg">
+            {% if title != null and title != '' %}
+                <h2 class="block-title push-half-bottom soft-half-ends soft-half-sides sm-text-center xs-text-center">
+                    {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+                        {{ title }}
+                    {% if linkurl != empty %}</a>{% endif %}
+                </h2>
+            {% endif %}
+        </div>
+
+        {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+            <div class="position-relative ratio-square push-bottom">
+                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %} rounded" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+            </div>
+        {% if linkurl != empty %}</a>{% endif %}
+    </div><div class="floating-item col-xs-12 col-sm-12 col-md-6">
+        <div class="soft-sides sm-hard-sides sm-soft-half-bottom xs-hard-sides xs-soft-half-bottom clearfix text-left sm-text-center xs-text-center">
+
+            <div class="hidden-sm hidden-xs">
+                {% if label != null and label != '' %}
+                    <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                {% endif %}
+                
+                {% if title != null and title != '' %}
+                    <h2 class="block-title push-half-bottom">
+                        {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+                            {{ title }}
+                        {% if linkurl != empty %}</a>{% endif %}
+                    </h2>
+                {% endif %}
+            </div>
+
+            {% if subtitle != null and subtitle != '' %}
+                <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+            {% endif %}
+
+            {% if guid and guid != empty %}
+                {[ tags guid:'{{ guid }}' ]}
+            {% endif %}
+            
+            {% if content != null and content != '' %}
+                <div>
+                    {% if trimcopy == 'Yes' %}
+                        {% assign length = content | Size %}
+                        <p class="push-half-bottom">{{ content | StripHtml | Truncate:200,'...') }}{% if length > 200 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}</p>
+                    {% else %}
+                        {{ content }}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if linkurl and linkurl != empty %}                        
+                <p class="{% if video != null and video != '' %}push-half-bottom{% endif %}">{[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}</p>
+            {% endif %}
+
+            {% if video != null and video != '' %}
+                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+                <p><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><a href="#" class="btn btn-primary">Watch Video</a></span></p>
+            {% endif %}
+
+            {% if lava and lava != empty %}
+                {{ lava }}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</section>
+
+{% if trimcopy == 'Yes' and length > 200 %}
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="text-gray-darker pull-right" data-dismiss="modal" aria-label="Close">
+                        <i class="fa fa-lg fa-times"></i>
+                    </a>
+                    {% if title != null and title != '' %}
+                        <h3 class="flush">{{ title }}</h3>
+                    {% endif %}
+                </div>
+                <div class="modal-body soft hard-bottom">
+                    {{ content }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{[ endscripturize ]}

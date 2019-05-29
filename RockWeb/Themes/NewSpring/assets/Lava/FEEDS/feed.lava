@@ -8,8 +8,9 @@
 	xmlns:media="http://search.yahoo.com/mrss/"
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 
-<channel>
+{% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss,feed-{{ Channel.Id }}-{{ feedtype }}' duration:'{{ Channel.TimeToLive | Timems:60 }}' %}
 
+<channel>
 {% assign PublicApplicationRoot = "https://newspring.cc" %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign orgEmail = 'Global' | Attribute:'OrganizationEmail' %}
@@ -17,9 +18,8 @@
 {% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Escape %}
 {% assign channelNameParts = Channel.Name | Split:' - ' %}
 {% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
+{% assign channelFeedKeywords = Channel | Attribute:'RSSFeedKeywords' %}
 {% assign fallbackImage = 'http://ns.images.s3.amazonaws.com/newspring/icons/newspring.podcast.png' %}
-
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
 
     <title>{{ channelNameParts[1] }} - {% if channelNameParts[0] contains 'Fuse' %}Fuse Student Ministry{% else %}{{ orgName }}{% endif %}</title>
     <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
@@ -50,7 +50,7 @@
         <itunes:image href="{{ fallbackImage }}"/>
         <itunes:author>{{ orgName}}</itunes:author>
         <itunes:summary>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</itunes:summary>
-        <itunes:keywords>newspring,community,church,god,jesus,anderson</itunes:keywords>
+        <itunes:keywords>{% if channelFeedKeywords and channelFeedKeywords != empty %}{{ channelFeedKeywords }}{% else %}newspring,church,newspring church,fuse,community,god,jesus,anderson{% endif %}</itunes:keywords>
         <itunes:owner>
             <itunes:name>{{ orgName}}</itunes:name>
             <itunes:email>{{ orgEmail }}</itunes:email>
@@ -66,20 +66,19 @@
     {% comment %}
         Getting the Parent Data
     {% endcomment %}
-    {% assign parentId = item.ParentItems[0].ContentChannelItemId %}
-    {% if parentId and parentId != empty %}
+    {% assign parentCount = item.ParentItems | Size %}
+    {% if parentCount >= 1 %}
+        {% assign parentId = item.ParentItems[0].ContentChannelItemId %}
         {% contentchannelitem id:'{{ parentId }}' iterator:'parents' %}
             {% for parent in parents %}
                 {% assign parentTitle = parent.Title %}
                 {% assign parentImageLandscape = parent | Attribute:'ImageLandscape','Url' | Escape %}
                 {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' | Escape %}
-                {% capture parentSlug %}
-                    {% contentchannelitemslug where:'ContentChannelItemId == {{ parent.Id }}' iterator:'slugs' limit:'1' %}
-                        {% for slug in slugs %}
-                            {{ slug.Slug }}
-                        {% endfor %}
-                    {% endcontentchannelitemslug %}
-                {% endcapture %}
+                {% contentchannelitemslug where:'ContentChannelItemId == {{ parent.Id }}' iterator:'slugs' limit:'1' %}
+                    {% for slug in slugs %}
+                        {% capture parentSlug %}{{ slug.Slug }}{% endcapture %}
+                    {% endfor %}
+                {% endcontentchannelitemslug %}
             {% endfor %}
         {% endcontentchannelitem %}
     {% endif %}
@@ -93,19 +92,28 @@
     {% endcapture %}
 
     {% if itemSlug and itemSlug != empty %}
-        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}{% if parentSlug != empty %}/{{ parentSlug | Trim }}{% endif %}/{{ itemSlug | Trim }}{% endcapture %}
+        {% capture itemLink %}{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}{% if parentSlug and parentSlug != empty %}/{{ parentSlug | Trim }}{% endif %}/{{ itemSlug | Trim }}{% endcapture %}
         {% assign itemSubtitle = item | Attribute:'Subtitle' | StripHtml | HtmlDecode %}
-        {% assign itemSummary = item | Attribute:'Summary' | StripHtml | HtmlDecode %}
+        {% assign itemSummary = item | Attribute:'Summary' | HtmlDecode %}
+        {% assign itemContent = item.Content | HtmlDecode %}
         {% assign communicatorsGuid = item | Attribute:'Communicators','RawValue' %}
+        {% capture communicators %}{[ communicatorNames guid:'{{ communicatorsGuid }}' ]}{% endcapture %}
+        {% assign communicators = communicators | Trim %}
         {% assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Escape %}
         {% assign itemImageSquare = item | Attribute:'ImageSquare','Url' | Escape %}
         {% assign itemAudio = item | Attribute:'AudioFile','Url' | Escape %}
         {% assign itemVideo = item | Attribute:'VideoFileMid','Url' | Escape %}
+        {% assign itemActualDate = item | Attribute:'ActualDate' | Date:'ddd, dd MMM yyyy HH:mm:00 EST' %}
+        {% assign itemWistia = item | Attribute:'Video','RawValue' %}
+        {% capture itemWistiaEmbed %}{[ wistiaEmbed id:'{{ itemWistia }}' ]}{% endcapture %}
+        {% assign itemScripturesGuid = item | Attribute:'Scriptures','RawValue' %}
+        {% capture itemScriptures %}{[ scriptureReferences guid:'{{ itemScripturesGuid }}' ]}{% endcapture %}
+        {% assign itemScriptures = itemScriptures | Trim %}
 
         <item>
             <title><![CDATA[{% if parentTitle and parentTitle != empty %}{{ parentTitle }}: {% endif %}{{ item.Title }}]]></title>
             <link>{{ itemLink | Trim }}</link>
-            <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}</pubDate>
+            <pubDate>{% if itemActualDate and itemActualDate != empty %}{{ itemActualDate }}{% else %}{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}{% endif %}</pubDate>
             <category>{{ channelNameParts[1] }}</category>
             
             {% if itemImage and itemImage != empty %}
@@ -114,21 +122,42 @@
                   medium="image"
                   isDefault="true"/>
             {% endif %}
-            <description><![CDATA[{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content }}{% endif %}]]></description>
-            <guid>{{ itemLink | Trim }}</guid>
 
-            {% if feedtype == 'Audio' OR feedtype == 'Video' %}
+            {% capture description %}
+                {% if itemScriptures and itemScriptures != empty %}<p>Read: {{ itemScriptures | Trim }}</p>{% endif %}
+                {% if feedtype == 'Editorial' and itemWistia and itemWistia != empty %}{{ itemWistiaEmbed | Trim }}<br>   {% endif %}
+                {% if itemSummary and itemSummary != empty %}{{ itemSummary }}{% endif %}
+                {% if itemContent and itemContent != empty %}{{ itemContent | Replace:'src="https://rock.newspring.cc//s3','src="https://s3' }}{% endif %}
+            {% endcapture %}
+            {% assign description = description | Trim %}
+
+            {% if description and description != empty and description != '' %}
+                {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+                    <description><![CDATA[
+                        {{ description }}
+                    ]]></description>
+                {[ endscripturize ]}
+            {% endif %}
+
+            <guid>{{ item.Guid }}</guid>
+
+            {% if feedtype and feedtype != 'Editorial' %}
                 <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare }}{% elseif parentImageSquare != empty %}{{ parentImageSquare }}{% else %}{{ fallbackImage }}{% endif %}"/>
-
-                <itunes:author>{[ communicatorNames guid:'{{ communicatorsGuid }}' ]}</itunes:author>
+                {% if communicators and communicators != empty %}
+                    <itunes:author>{{ communicators}}</itunes:author>
+                {% endif %}
                 {% if itemSubtitle != empty %}<itunes:subtitle>{{ itemSubtitle }}</itunes:subtitle>{% endif %}
-                <itunes:summary>{% if itemSummary != empty %}{{ itemSummary }}{% else %}{{ item.Content | Truncate:140,'...' }}{% endif %}</itunes:summary>
+                {% if itemSummary != empty or itemContent != empty %}
+                    <itunes:summary><![CDATA[{% if itemSummary and itemSummary != empty %}{{ itemSummary }}{% else %}{{ itemContent | StripHtml | Truncate:200,'...' }}{% endif %}]]></itunes:summary>
+                {% endif %}
                 <itunes:keywords>{[ tagData guid:'{{ item.Guid }}' ]}</itunes:keywords>
 
-                {% if feedtype == 'Audio' %}
-                    {% if itemAudio != empty %}<enclosure url="{{ itemAudio }}" length="5" type="audio/mp3"/>{% endif %}
-                {% else %}
-                    {% if itemVideo != empty %}<enclosure url="{{ itemVideo }}" length="5" type="video/mp4"/>{% endif %}
+                {% if feedtype and feedtype != 'Editorial' %}
+                    {% if feedtype and feedtype == 'Audio' %}
+                        <enclosure url="{{ itemAudio }}" length="" type="audio/mp3"/>
+                    {% elseif feedtype and feedtype == 'Video' %}
+                        <enclosure url="{{ itemVideo }}" length="" type="video/mp4"/>
+                    {% endif %}
                 {% endif %}
             {% endif %}
             
@@ -137,7 +166,8 @@
     {% endif %}
 {% endfor -%}
 
-{[ endscripturize ]}
-
 </channel>
+
+{% endcache %}
+
 </rss>
