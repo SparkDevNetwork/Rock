@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.CheckIn
                         queryParams.Add( "FamilyId", familyId );
                     }
 
-                    NavigateToNextPage();
+                    NavigateToNextPage( queryParams );
                 }
                 else
                 {
