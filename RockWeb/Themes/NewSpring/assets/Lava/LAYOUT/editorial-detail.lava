@@ -19,10 +19,11 @@
     {% endfor %}
 {% endif %}
 
+{% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
 {% assign channelName = channelNameParts[1] %}
-{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {{ orgName }}{% endcapture %}
+{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
 
 {{ browserTitle | SetPageTitle:'BrowserTitle' }}
 {{ channelName | Singularize | SetPageTitle:'PageTitle' }}
