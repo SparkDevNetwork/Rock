@@ -47,9 +47,9 @@
         
         {% if title != null and title != '' %}
         <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">
-            {% if url != empty %}<a href="{{ url }}">{% endif %}
+            {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
                 {{ title }}
-            {% if url != empty %}</a>{% endif %}
+            {% if linkurl != empty %}</a>{% endif %}
         </h2>
         {% endif %}
 

@@ -125,6 +125,9 @@ document.addEventListener("DOMContentLoaded", function(){
     // If origin exists as query string, go ahead and reorder locations
     if (origin) {
 
+        var anchor = document.querySelector('#locations');
+        scroll.animateScroll(anchor);
+
         // Reorder location cards
         reorderLocations(origin);
     }

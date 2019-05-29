@@ -17,25 +17,71 @@
 
 </script>
 
-<html class="no-js">
+<!--
+
+   ______                            __  _                ____                   __        __            
+  / ________  ____  ____  ___  _____/ /_(_____  ____ _   / __ \___  ____  ____  / ___     / /_____       
+ / /   / __ \/ __ \/ __ \/ _ \/ ___/ __/ / __ \/ __ `/  / /_/ / _ \/ __ \/ __ \/ / _ \   / __/ __ \      
+/ /___/ /_/ / / / / / / /  __/ /__/ /_/ / / / / /_/ /  / ____/  __/ /_/ / /_/ / /  __/  / /_/ /_/ /      
+\____/\____/_/ /_/_/ /_/\___/\___/\__/_/_/ /_/\__, /  /_/    \___/\____/ .___/_/\___/   \__/\____/       
+       __                                    /_____   ______          /__       ____  __  __             
+      / ___  _______  _______   ____ _____  ____/ /  / ________ ______/ /_     / __ \/ /_/ /_  ___  _____
+ __  / / _ \/ ___/ / / / ___/  / __ `/ __ \/ __  /  / __/ / __ `/ ___/ __ \   / / / / __/ __ \/ _ \/ ___/
+/ /_/ /  __(__  / /_/ (__  )  / /_/ / / / / /_/ /  / /___/ /_/ / /__/ / / /  / /_/ / /_/ / / /  __/ /    
+\____/\___/____/\__,_/____/   \__,_/_/ /_/\__,_/  /_____/\__,_/\___/_/ /_/   \____/\__/_/ /_/\___/_/     
+
+-->
+
+<html class="no-js" lang="en">
     <head runat="server">
 
         <meta charset="utf-8">
 
         <title></title>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function(){
+                var navigation = document.querySelector('#zone-navigation');
+                if(navigation != null) {
+                    var navigationHeight = navigation.offsetHeight;
+                }
+
+                var header = document.querySelector('#navigation-secondary');
+                if(header != null) {
+                    var headerHeight = header.offsetHeight;
+                }
+
+                if (window.innerWidth > 667) {
+                    // Desktop
+                    offset = navigationHeight + headerHeight + 25 + "px";
+                } else {
+                    // Mobile
+                    offset = headerHeight + 10 + "px";
+                }
+
+                var scroll = new SmoothScroll('a[data-scroll]', {
+                    speed: 500,
+                    speedAsDuration: true,
+                    offset: offset,
+                    easing: 'easeInOutCubic'
+                });
+
+                
+            });
+        </script>
+
         <!-- Libraries -->
+        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
         <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/search.js", true) %>" ></script>
 
         <!-- Set the viewport width to device width for mobile -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
 
         <asp:ContentPlaceHolder ID="css" runat="server" />
 
@@ -103,38 +149,6 @@
                         <div class="updateprogress-bg modal-backdrop"></div>
                     </ProgressTemplate>
             </asp:UpdateProgress>
-
-            <!-- Smooth Scrolling Setup -->
-            <script>
-                document.addEventListener("DOMContentLoaded", function(){
-                    var navigation = document.querySelector('#zone-navigation');
-                    if(navigation != null) {
-                        var navigationHeight = navigation.offsetHeight;
-                    }
-
-                    var header = document.querySelector('#navigation-secondary');
-                    if(header != null) {
-                        var headerHeight = header.offsetHeight;
-                    }
-
-                    if (window.innerWidth > 667) {
-                        // Desktop
-                        offset = navigationHeight + headerHeight + 25 + "px";
-                    } else {
-                        // Mobile
-                        offset = headerHeight + 10 + "px";
-                    }
-
-                    var scroll = new SmoothScroll('a[data-scroll]', {
-                        speed: 500,
-                        speedAsDuration: true,
-                        offset: offset,
-                        easing: 'easeInOutCubic'
-                    });
-
-                    
-                });
-            </script>
 
         </form>
 
