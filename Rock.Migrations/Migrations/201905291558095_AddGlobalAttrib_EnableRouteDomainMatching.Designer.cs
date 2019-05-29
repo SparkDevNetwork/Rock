@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class UpdateMaxRegistrantsToNull : IMigrationMetadata
+    public sealed partial class AddGlobalAttrib_EnableRouteDomainMatching : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateMaxRegistrantsToNull));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddGlobalAttrib_EnableRouteDomainMatching));
         
         string IMigrationMetadata.Id
         {
-            get { return "201905211226291_UpdateMaxRegistrantsToNull"; }
+            get { return "201905291558095_AddGlobalAttrib_EnableRouteDomainMatching"; }
         }
         
         string IMigrationMetadata.Source
