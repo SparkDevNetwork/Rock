@@ -13,42 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
-    public partial class UpdateMaxRegistrantsToNull : Rock.Migrations.RockMigration
+    public partial class UpdateSubjectLength : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AlterColumn("dbo.RegistrationInstance", "MaxAttendees", c => c.Int());
-            AlterColumn("dbo.RegistrationTemplate", "MaxRegistrants", c => c.Int());
-            Sql( @"UPDATE
-	                [RegistrationTemplate]
-                SET [MaxRegistrants] = NULL
-                WHERE [MaxRegistrants] = 0
-
-                UPDATE
-	                [RegistrationInstance]
-                SET [MaxAttendees] = NULL
-                WHERE [MaxAttendees] = 0 " );
+            AlterColumn( "dbo.SystemEmail", "Subject", c => c.String( nullable: false, maxLength: 1000 ) );
+            AlterColumn( "dbo.Communication", "Subject", c => c.String( maxLength: 1000 ) );
+            AlterColumn( "dbo.CommunicationTemplate", "Subject", c => c.String( maxLength: 1000 ) );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            AlterColumn("dbo.RegistrationTemplate", "MaxRegistrants", c => c.Int(nullable: false));
-            AlterColumn("dbo.RegistrationInstance", "MaxAttendees", c => c.Int(nullable: false));
+            AlterColumn( "dbo.CommunicationTemplate", "Subject", c => c.String( maxLength: 100 ) );
+            AlterColumn( "dbo.Communication", "Subject", c => c.String( maxLength: 100 ) );
+            AlterColumn( "dbo.SystemEmail", "Subject", c => c.String( nullable: false, maxLength: 200 ) );
         }
     }
 }
