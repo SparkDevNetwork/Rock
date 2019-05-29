@@ -7,10 +7,10 @@
             <a href="https://www.facebook.com/sharer/sharer.php?u={{ shareurl }}" target="_blank" class="btn btn-facebook btn-block push-half-bottom"><i class="fab fa-fw fa-facebook-f"></i> Facebook</a>
           </li>
           <li>
-            <a href="https://twitter.com/share?url={{ shareurl }}&via={{ shareauthor }}&text={{ sharesummary | Trim }}&hashtags={{ sharehashtag }}" target="_blank" class="btn btn-twitter btn-block push-half-bottom"><i class="fab fa-fw fa-twitter"></i> Twitter</a>
+            <a href="https://twitter.com/share?url={{ shareurl }}&via={{ shareauthor }}&text={{ sharetitle }} &mdash; {{ sharesummary | Trim }}&hashtags={{ sharehashtag }}" target="_blank" class="btn btn-twitter btn-block push-half-bottom"><i class="fab fa-fw fa-twitter"></i> Twitter</a>
           </li>
           <li>
-            <a href="http://pinterest.com/pin/create/button/?url={{ shareurl }}&media={{ shareimageurl }}&description={{ sharetitle }} {{ sharesummary | Trim }} {{ shareurl }}" target="_blank" class="btn btn-pinterest btn-block"><i class="fab fa-fw fa-pinterest-p"></i> Pinterest</a>
+            <a href="http://pinterest.com/pin/create/button/?url={{ shareurl }}&media={{ shareimageurl }}&description={{ sharetitle }} &mdash; {{ sharesummary | Trim }} {{ shareurl }}" target="_blank" class="btn btn-pinterest btn-block"><i class="fab fa-fw fa-pinterest-p"></i> Pinterest</a>
           </li>
         </ul>
 

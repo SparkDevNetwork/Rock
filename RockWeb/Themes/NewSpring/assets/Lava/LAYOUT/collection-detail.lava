@@ -28,7 +28,7 @@
     {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
     {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
     {% capture textalignment %}{% endcapture %}
-    {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] | Singularize }}{% endcapture %}
+    {% capture type %}{% endcapture %}
     {% capture label %}{{ type }}{% endcapture %}
     {% assign dateparts = Item | Attribute:'Dates','RawValue' | Split:',' %}
     {% if dateparts[0] != '' %}

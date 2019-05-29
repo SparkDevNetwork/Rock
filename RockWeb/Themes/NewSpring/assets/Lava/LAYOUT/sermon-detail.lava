@@ -59,25 +59,38 @@
                 </div>
             </div>
         {% endcapture %}
-        {% capture videoid %}{% endcapture %}
+        {% capture video %}{{ Item | Attribute:'Video','RawValue' }}{% endcapture %}
         {% capture ratio %}{% endcapture %}
-        {% capture trimcopy %}{% endcapture %}
+        {% capture trimcopy %}Yes{% endcapture %}
         {% capture linkcolor %}{% endcapture %}
         {% capture backgroundcolor %}{% endcapture %}
         {% capture linkurl %}{% endcapture %}
         {% capture linktext %}{% endcapture %}
-        {% capture linkedpageraw %}{{ item | Attribute:'LinkedPage','RawValue' }}{% endcapture %}
-        {% if linkedpageraw != empty %}
-            {% capture linkedpageparts %}{{ linkedpageraw | Split:',' }}{% endcapture %}
-            {% capture linkedpagepartssize %}{{ linkedpageparts | Size }}{% endcapture %}
-            {% capture linkedpageid %}{[ pageIdFromGuid guid:'{{ linkedpageparts[0] }}' ]}{% endcapture %}
-            {% if linkedpagepartssize > 1 %}
-                {% capture linkedpageroute %}{{ linkedpageparts[1] }}{% endcapture %}
-                {% capture linkedpageroute %}{[ pageRouteFromRouteGuid routeguid:'{{ linkedpageid }}' ]}{% endcapture %}
-            {% endif %}
-        {% endif %}
 
        {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+        
+        {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
+        {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+
+        {% capture shareimageurl -%}
+            {% if video and video != empty %}
+                {[ getImageFromVideoId id:'{{ video }}' ]}
+            {% else %}
+                {{ imageurl }}
+            {% endif %}
+        {%- endcapture %}
+
+        {% assign shareauthor = 'newspring' %}
+        {% assign sharetitle = Item.Title %}
+        {% assign summary = Item | Attribute:'Summary' %}
+        {%- capture sharesummary -%}
+            {% if summary and summary != empty %}
+                {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
+            {% else %}
+                {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
+            {% endif %}
+        {%- endcapture -%}
+        {% assign sharehashtag = '' %}
         
         {[ modalShare ]}
 
@@ -119,4 +132,4 @@
 {% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
 {% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
 
-{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ shareimageurl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
