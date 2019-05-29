@@ -79,20 +79,27 @@ namespace Rock.Web.UI.Controls
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
             bool renderWarning = ( rockControl.WarningBlock != null && !string.IsNullOrWhiteSpace( rockControl.Warning ) );
 
-            var cssClassList = new List<string>();
+            var wrapperCssClassList = new List<string>();
             string controlTypeCssClass = rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower();
-            cssClassList.Add( "form-group" );
-            cssClassList.Add( controlTypeCssClass );
-            cssClassList.Add( rockControl.FormGroupCssClass );
+
+            // only add the form-group class if there is going to more than the base control getting rendered
+            bool addFormGroupClass = renderLabel || renderHelp || renderWarning;
+            if ( addFormGroupClass )
+            {
+                wrapperCssClassList.Add( "form-group" );
+            }
+
+            wrapperCssClassList.Add( controlTypeCssClass );
+            wrapperCssClassList.Add( rockControl.FormGroupCssClass );
 
             if ( !renderLabel )
             {
-                cssClassList.Add( "no-label" );
+                wrapperCssClassList.Add( "no-label" );
             }
 
             if ( ( ( Control ) rockControl ).Page.IsPostBack && !rockControl.IsValid )
             {
-                cssClassList.Add( "has-error" );
+                wrapperCssClassList.Add( "has-error" );
             }
             if ( rockControl.Required )
             {
@@ -102,15 +109,15 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    cssClassList.Add( "required" );
+                    wrapperCssClassList.Add( "required" );
                 }
             }
             if ( !string.IsNullOrWhiteSpace( additionalCssClass ) )
             {
-                cssClassList.Add( additionalCssClass );
+                wrapperCssClassList.Add( additionalCssClass );
             }
 
-            var cssClass = cssClassList.AsDelimited( " " );
+            var cssClass = wrapperCssClassList.AsDelimited( " " );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -207,7 +214,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // form-group div
+            // wrapperCssClassList div
             writer.RenderEndTag();
         }
 
