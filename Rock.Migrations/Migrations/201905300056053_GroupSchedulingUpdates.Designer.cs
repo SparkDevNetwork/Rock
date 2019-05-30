@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddGlobalAttrib_EnableRouteDomainMatching : IMigrationMetadata
+    public sealed partial class GroupSchedulingUpdates : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddGlobalAttrib_EnableRouteDomainMatching));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupSchedulingUpdates));
         
         string IMigrationMetadata.Id
         {
-            get { return "201905291558095_AddGlobalAttrib_EnableRouteDomainMatching"; }
+            get { return "201905300056053_GroupSchedulingUpdates"; }
         }
         
         string IMigrationMetadata.Source
