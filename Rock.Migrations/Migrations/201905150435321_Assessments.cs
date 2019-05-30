@@ -346,27 +346,27 @@ namespace Rock.Migrations
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARENESS );
 
             // Person Attribute "EQ: Self Regulating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Self Regulating", @"Self Regulating", @"core_EQSelfRegulating", @"", @"", 0, @"", @"149CD0CD-3CD6-44B6-8D84-A17A477A8978" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Self Regulating", @"Self Regulating", @"core_EQSelfRegulating", @"", @"", 1, @"", @"149CD0CD-3CD6-44B6-8D84-A17A477A8978" );
             RockMigrationHelper.AddAttributeQualifier( @"149CD0CD-3CD6-44B6-8D84-A17A477A8978", @"ConfigurationJSON", @"[{""Guid"":""0cb16450-f31e-48cc-8b56-6b851416551e"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""902c2340-3f11-46fc-8701-1c5bfa687464"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""690d4410-dfb1-448e-804f-d76d9ee11e02"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"9C17DBBA-820A-4FDE-A425-F52CE6592B69" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATING );
 
             // Person Attribute "EQ: Others Awareness"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Awareness", @"Others Awareness", @"core_EQOthersAwareness", @"", @"", 0, @"", @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Awareness", @"Others Awareness", @"core_EQOthersAwareness", @"", @"", 2, @"", @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78" );
             RockMigrationHelper.AddAttributeQualifier( @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78", @"ConfigurationJSON", @"[{""Guid"":""0213bd4e-1187-4990-84d8-79cd9c8046ad"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""b8b10704-f7ca-45f7-b907-5e152c0e6ce1"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""8d6f3051-e640-4268-a3d8-f990676e74b7"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"99A8D4E4-9D48-48C4-9661-6AB1AAF2279F" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS );
 
             // Person Attribute "EQ: Others Regulating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Regulating", @"Others Regulating", @"core_EQOthersRegulating", @"", @"", 0, @"", @"129C108E-CE61-4DFB-A9A8-1EBC3462022E" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Regulating", @"Others Regulating", @"core_EQOthersRegulating", @"", @"", 3, @"", @"129C108E-CE61-4DFB-A9A8-1EBC3462022E" );
             RockMigrationHelper.AddAttributeQualifier( @"129C108E-CE61-4DFB-A9A8-1EBC3462022E", @"ConfigurationJSON", @"[{""Guid"":""d7eaa798-e069-4216-a07f-e652173730d8"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""dc01f800-204a-487a-8014-19c2b992cfbe"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""017f9b50-943a-4707-9547-b4648759ba75"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"AED8EA0E-CD43-47C8-8984-92790BC7BCDF" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING );
 
             // Person Attribute "EQ: Problem Solving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Problem Solving", @"Problem Solving", @"core_EQProblemSolving", @"", @"", 0, @"", @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Problem Solving", @"Problem Solving", @"core_EQProblemSolving", @"", @"", 4, @"", @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D" );
             RockMigrationHelper.AddAttributeQualifier( @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D", @"ConfigurationJSON", @"[{""Guid"":""c185d175-cd75-4c63-a5b2-0e7ab0f804a2"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""becd7784-307e-4ecd-be95-e6dacdeba53a"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""593cf5b9-315c-4216-8ef0-8bd17bdbadde"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"8AFD4B98-09F3-42EE-8D7C-81B89D543A43" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_SCALES_PROBLEM_SOLVING );
 
             // Person Attribute "EQ: Under Stress"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Under Stress", @"Under Stress", @"core_EQUnderStress", @"", @"", 0, @"", @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Under Stress", @"Under Stress", @"core_EQUnderStress", @"", @"", 5, @"", @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED" );
             RockMigrationHelper.AddAttributeQualifier( @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED", @"ConfigurationJSON", @"[{""Guid"":""908a1346-378f-4cad-b032-ef419cc9bc1d"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""5dfeac9f-7060-4203-b345-bc5ecec16f31"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""2ed1ac01-ca3b-44d6-927f-a8e2b878a4e3"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"3064309F-8011-41A3-A89C-43F2FB612857" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_SCALES_UNDER_STRESS );
         }
