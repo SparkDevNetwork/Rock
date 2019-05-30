@@ -1273,11 +1273,10 @@ SELECT  CASE
             RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
 
+            
             // Person Attribute "Motivators: Growth Propensity"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 0, @"", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"fieldtype", @"ddl", @"C5BE7CFF-6856-4E4C-BAAE-33B696003FD3" );
-            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"repeatColumns", @"", @"221081A6-E3F4-43D9-AD26-687A2FAAEBEB" );
-            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"values", @"1^Very High,2^High,3^Medium,4^Somewhat Low,5^Low", @"1837257C-448B-4F87-8A88-B0815B7068A7" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 0, @"", @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA" );
+            RockMigrationHelper.AddAttributeQualifier( @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA", @"ConfigurationJSON", @"[{""Guid"":""72536eae-bc85-41e6-a1b2-19755d7fd15e"",""RangeIndex"":0,""Label"":""Very High"",""Color"":""#3f56a1"",""HighValue"":null,""LowValue"":99.0},{""Guid"":""487cc20c-456d-439c-8beb-b61572b02c2a"",""RangeIndex"":1,""Label"":""High"",""Color"":""#3f56a1"",""HighValue"":98.0,""LowValue"":85.0},{""Guid"":""c7c1bb14-1b8d-44f5-911a-5acf2c94a1ef"",""RangeIndex"":2,""Label"":""Medium"",""Color"":""#0e9445"",""HighValue"":84.0,""LowValue"":17.0},{""Guid"":""a58108b7-3841-408f-a1b9-a0c3fc4daa8a"",""RangeIndex"":3,""Label"":""Somewhat Low"",""Color"":""#f0e3ba"",""HighValue"":16.0,""LowValue"":3.0},{""Guid"":""97e4f6d6-8225-439a-83bb-ca2469f917e8"",""RangeIndex"":4,""Label"":""Low"",""Color"":""#f13c1f"",""HighValue"":2.0,""LowValue"":0.0}]", @"537E9E56-C705-4736-B250-57D23305DF5B" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
             
             // Person Attribute "Motivators: Relational Theme"
