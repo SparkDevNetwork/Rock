@@ -340,13 +340,13 @@
     <Compile Include="Migrations\201905291556006_UpdateMaxRegistrantsToNull.Designer.cs">
       <DependentUpon>201905291556006_UpdateMaxRegistrantsToNull.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201905291558095_AddGlobalAttrib_EnableRouteDomainMatching.cs" />
-    <Compile Include="Migrations\201905291558095_AddGlobalAttrib_EnableRouteDomainMatching.Designer.cs">
-      <DependentUpon>201905291558095_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201905291845488_Assessments3.cs" />
     <Compile Include="Migrations\201905291845488_Assessments3.Designer.cs">
       <DependentUpon>201905291845488_Assessments3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905300056053_GroupSchedulingUpdates.cs" />
+    <Compile Include="Migrations\201905300056053_GroupSchedulingUpdates.Designer.cs">
+      <DependentUpon>201905300056053_GroupSchedulingUpdates.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -844,11 +844,11 @@
     <EmbeddedResource Include="Migrations\201905291556006_UpdateMaxRegistrantsToNull.resx">
       <DependentUpon>201905291556006_UpdateMaxRegistrantsToNull.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905291558095_AddGlobalAttrib_EnableRouteDomainMatching.resx">
-      <DependentUpon>201905291558095_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905291845488_Assessments3.resx">
       <DependentUpon>201905291845488_Assessments3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905300056053_GroupSchedulingUpdates.resx">
+      <DependentUpon>201905300056053_GroupSchedulingUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
