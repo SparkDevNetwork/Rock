@@ -1,5 +1,14 @@
-{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
 
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+
+
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
 
     {% assign baseBackgroundColor = Item | Attribute:'BackgroundColor' %}
@@ -19,7 +28,7 @@
     {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
     {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
     {% capture textalignment %}{% endcapture %}
-    {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] | Singularize }}{% endcapture %}
+    {% capture type %}{% endcapture %}
     {% capture label %}{{ type }}{% endcapture %}
     {% assign dateparts = Item | Attribute:'Dates','RawValue' | Split:',' %}
     {% if dateparts[0] != '' %}
@@ -31,7 +40,8 @@
     {% capture imageopacity %}{% endcapture %}
     {% capture grayscale %}{% endcapture %}
     {% capture backgroundvideourl %}{% endcapture %}
-    {% capture lava %}{% endcapture %}
+    {% assign downloads = Item | Attribute:'Downloads' %}
+    {% capture lava %}{{ downloads }}{% endcapture %}
     {% capture video %}{{ Item | Attribute:'Video','RawValue' }}{% endcapture %}
     {% capture ratio %}square{% endcapture %}
     {% capture trimcopy %}Yes{% endcapture %}
@@ -51,7 +61,7 @@
         {% capture linktext %}{% if childType contains "Sermon" %}Watch{% else %}Read{% endif %} {{ childType }}{% endcapture %}
     {% endif %}
 
-    {[ sideBySide id:'{{ id }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+    {[ sideBySide id:'{{ id }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava | Escape }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
 
 {[ endscripturize ]}
 

@@ -947,7 +947,7 @@ namespace RockWeb.Blocks.Cms
                 }
             } );
 
-            NavigateToCurrentPage();
+            ShowDetail();
         }
 
         /// <summary>

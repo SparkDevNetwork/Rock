@@ -156,17 +156,20 @@ namespace RockWeb.Blocks.Event
                     Dictionary<int, string> registrationStatusLabels = new Dictionary<int, string>();
                     foreach ( var registrationInstance in eventItemOccurrence.Linkages.Select( a => a.RegistrationInstance ).Distinct().ToList() )
                     {
-                        int? maxRegistrantCount = null;
+                        var maxRegistrantCount = 0;
                         var currentRegistrationCount = 0;
 
                         if ( registrationInstance != null )
                         {
-                            maxRegistrantCount = registrationInstance.MaxAttendees;
+                            if ( registrationInstance.MaxAttendees != 0 )
+                            {
+                                maxRegistrantCount = registrationInstance.MaxAttendees;
+                            }
                         }
 
 
                         int? registrationSpotsAvailable = null;
-                        if ( maxRegistrantCount.HasValue )
+                        if ( maxRegistrantCount != 0 )
                         {
                             currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
                                                             .Where( r =>

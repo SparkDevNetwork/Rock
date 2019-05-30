@@ -43,9 +43,9 @@
                 </div>
             </div>
         </div><div class="floating-item col-xs-12 col-sm-12 col-md-6 hard">
-            <div class="ratio-{{ ratio }} xs-ratio-none sm-ratio-none bg-white">
+            <div class="ratio-{{ ratio }} sm-ratio-none xs-ratio-none sm-ratio-none bg-white">
                 <div class="soft-double-sides soft-top soft-half-bottom sm-soft-sides sm-soft-double-top xs-soft-half-sides xs-soft-double-top floating floating-left ratio-item top-zero xs-position-relative sm-position-relative">
-                    <div class="floating-item {% if video and video != empty and imagealignment == 'Left' %}soft-left{% elseif video and video != empty %}soft-right{% endif %} sm-hard-sides sm-soft-half-top xs-hard-sides xs-soft-half-top text-left sm-text-center xs-text-center">
+                    <div class="floating-item {% if video and video != empty and imagealignment == 'Left' %}soft-left{% elseif video and video != empty %}soft-right{% endif %} sm-soft-double-sides sm-hard-top sm-soft-half-bottom xs-soft-sides xs-hard-top xs-soft-half-bottom text-left sm-text-center xs-text-center">
                         
                         {% if label != null and label != '' %}
                             <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>

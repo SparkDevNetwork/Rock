@@ -31,23 +31,12 @@ namespace Rock.Communication.SmsActions
     [Description( "Launches a workflow to process a message." )]
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "Reply" )]
-    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: AttributeCategories.Filters )]
-    [WorkflowTypeField( "Workflow Type", "The type of workflow to launch.", false, true, order: 2, category: AttributeCategories.Workflow )]
-    [TextField( "Workflow Name Template", "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", order: 3, category: AttributeCategories.Workflow )]
-    [KeyValueListField( "Workflow Attributes", "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", "Attribute Key", "Merge Template", order: 4, category: AttributeCategories.Workflow )]
+    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: "Filter" )]
+    [WorkflowTypeField( "Workflow Type", "The type of workflow to launch.", false, true, order: 2 )]
+    [TextField( "Workflow Name Template", "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", order: 3 )]
+    [KeyValueListField( "Workflow Attributes", "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", "Attribute Key", "Merge Template", order: 4 )]
     public class SmsActionLaunchWorkflow : SmsActionComponent
     {
-        /// <summary>
-        /// Categories for the attributes
-        /// </summary>
-        protected class AttributeCategories : BaseAttributeCategories
-        {
-            /// <summary>
-            /// The Workflow category
-            /// </summary>
-            public const string Workflow = "Workflow";
-        }
-
         #region Properties
 
         /// <summary>

@@ -217,7 +217,6 @@ namespace RockWeb.Blocks.CRM.PersonDetail
             signal.SignalTypeId = ddlSignalType.SelectedValue.AsInteger();
             signal.ExpirationDate = dpExpirationDate.SelectedDate;
             signal.Note = tbNote.Text;
-            signal.OwnerPersonAliasId = ppSignalOwner.PersonAliasId.Value;
 
             rockContext.SaveChanges();
 

@@ -40,63 +40,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows for editing the value(s) of a set of attributes for person." )]
 
-    [AttributeCategoryField( "Category",
-        allowMultiple: true,
-        Key = AttributeKeys.Category,
-        AllowMultiple = true,
-        Description = "The Attribute Categories to display attributes from",
-        EntityTypeName = "Rock.Model.Person",
-        IsRequired = true,
-        Order = 0 )]
-
-    [TextField("Attribute Order",
-        Key = AttributeKeys.AttributeOrder,
-        Description = "The order to use for displaying attributes.  Note: this value is set through the block's UI and does not need to be set here.",
-        IsRequired = false,
-        Order = 1)]
-
-    [BooleanField("Use Abbreviated Name",
-        Key = AttributeKeys.UseAbbreviatedName,
-        Description = "Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",
-        IsRequired = true,
-        DefaultBooleanValue = false,
-        Order = 2
-        )]
-
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
-        Description = "The text to display as the heading.",
-        IsRequired = false,
-        DefaultValue = "",
-        Order = 3 )]
-
-    [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
-        Description = "The css class name to use for the heading icon.",
-        IsRequired = false,
-        DefaultValue = "",
-        Order = 4 )]
-
-    [BooleanField( "Show Category Names as Separators",
-        Key = AttributeKeys.ShowCategoryNamesasSeparators,
-        Description = "Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",
-        IsRequired = true,
-        DefaultBooleanValue = false,
-        Order = 5 )]
+    [AttributeCategoryField( "Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", true, "", "", 0 )]
+    [TextField("Attribute Order", "The order to use for displaying attributes.  Note: this value is set through the block's UI and does not need to be set here.", false, "", "", 1)]
     public partial class AttributeValues : PersonBlock
     {
-        #region Attribute Keys
-        protected static class AttributeKeys
-        {
-            public const string Category = "Category";
-            public const string AttributeOrder = "AttributeOrder";
-            public const string UseAbbreviatedName = "UseAbbreviatedName";
-            public const string SetPageTitle = "SetPageTitle";
-            public const string SetPageIcon = "SetPageIcon";
-            public const string ShowCategoryNamesasSeparators = "ShowCategoryNamesasSeparators";
-        }
-
-        #endregion Attribute Keys
 
         #region Fields
 
@@ -131,26 +78,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     return viewMode.ToString();
                 }
             }
-            set
-            {
-                ViewState["ViewMode"] = value;
+            set 
+            { 
+                ViewState["ViewMode"] = value; 
             }
         }
 
         /// <summary>
-        /// Gets or sets the attribute categories list.
+        /// Gets or sets the attribute list.
         /// </summary>
         /// <value>
-        /// The attribute categories list.
+        /// The attribute list.
         /// </value>
-        protected Dictionary<int, List<int>> AttributeCategoriesList
+        protected List<int> AttributeList
         {
             get
             {
-                Dictionary<int, List<int>> attributeList = ViewState["AttributeList"] as Dictionary<int, List<int>>;
+                List<int> attributeList = ViewState["AttributeList"] as List<int>;
                 if ( attributeList == null )
                 {
-                    attributeList = new Dictionary<int, List<int>>();
+                    attributeList = new List<int>();
                     ViewState["AttributeList"] = attributeList;
                 }
                 return attributeList;
@@ -176,7 +123,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _canAdministrate = IsUserAuthorized(Rock.Security.Authorization.ADMINISTRATE );
 
-            SetPanelTitleAndIcon();
             lbOrder.Visible = _canAdministrate;
 
             string script = @"
@@ -235,7 +181,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            AttributeCategoriesList = null;
+            AttributeList = null;
             BindData();
             CreateControls( true );
         }
@@ -277,7 +223,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     var rockContext = new RockContext();
 
-                    foreach ( int attributeId in AttributeCategoriesList.Keys )
+                    foreach ( int attributeId in AttributeList )
                     {
                         var attribute = AttributeCache.Get( attributeId );
 
@@ -325,33 +271,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindData()
         {
-            AttributeCategoriesList = new Dictionary<int, List<int>>();
+            AttributeList = new List<int>();
 
-            var categories = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
-            if ( categories.Any() )
+            Guid? categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
+            if ( categoryGuid.HasValue )
             {
-                var orderOverride = new List<int>();
-                GetAttributeValue( "AttributeOrder" ).SplitDelimitedValues().ToList().ForEach( a => orderOverride.Add( a.AsInteger() ) );
-
-                var orderedAttributeList = new AttributeService( new RockContext() ).Queryable().Where( a => a.IsActive && a.Categories.Any( c => categories.Contains( c.Guid ) ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToAttributeCacheList();
-
-                foreach ( int attributeId in orderOverride )
+                var category = CategoryCache.Get( categoryGuid.Value );
+                if ( category != null )
                 {
-                    var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
-                    if ( attribute != null && attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
                     {
-                        AttributeCategoriesList.Add( attribute.Id, attribute.CategoryIds );
+                        lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
                     }
-                }
-
-                foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
-                {
-                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    else
                     {
-                        AttributeCategoriesList.Add( attribute.Id, attribute.CategoryIds );
+                        lCategoryName.Text = category.Name;
+                    }
+
+                    var orderOverride = new List<int>();
+                    GetAttributeValue( "AttributeOrder" ).SplitDelimitedValues().ToList().ForEach( a => orderOverride.Add( a.AsInteger() ) );
+
+                    var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id, false )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToAttributeCacheList();
+
+                    foreach ( int attributeId in orderOverride )
+                    {
+                        var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
+                        if ( attribute != null && attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            AttributeList.Add( attribute.Id );
+                        }
+                    }
+
+                    foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
+                    {
+                        if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            AttributeList.Add( attribute.Id );
+                        }
                     }
                 }
             }
@@ -359,143 +318,74 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             CreateControls( true );
         }
 
-        /// <summary>
-        /// Sets the page title and icon.
-        /// </summary>
-        private void SetPanelTitleAndIcon()
-        {
-            CategoryCache category = null;
-            var categories = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
-            if ( categories.Count == 1 )
-            {
-                category = CategoryCache.Get( categories.First() );
-            }
-
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
-            if ( !string.IsNullOrEmpty( panelTitle ) )
-            {
-                lTitle.Text = panelTitle;
-            }
-            else if ( category != null )
-            {
-                lTitle.Text = category.Name;
-            }
-            else
-            {
-                lTitle.Text = "Attribute Values";
-            }
-
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
-            if ( !string.IsNullOrEmpty( panelIcon ) )
-            {
-                iIcon.Attributes["class"] = panelIcon;
-            }
-            else if ( category != null )
-            {
-                iIcon.Attributes["class"] = category.IconCssClass;
-            }
-        }
-
         private void CreateControls( bool setValues )
         {
-            var showCategoryNamesasSeparators = GetAttributeValue( AttributeKeys.ShowCategoryNamesasSeparators ).AsBoolean();
             fsAttributes.Controls.Clear();
 
             string validationGroup = string.Format("vgAttributeValues_{0}", this.BlockId );
             valSummaryTop.ValidationGroup = validationGroup;
             btnSave.ValidationGroup = validationGroup;
 
-            hfAttributeOrder.Value = AttributeCategoriesList.Keys.ToList().AsDelimited( "|" );
+            hfAttributeOrder.Value = AttributeList.AsDelimited( "|" );
 
             if ( Person != null )
             {
-                if ( showCategoryNamesasSeparators )
+                foreach ( int attributeId in AttributeList )
                 {
-                    var categoryGuids = GetAttributeValue( AttributeKeys.Category ).SplitDelimitedValues( false ).AsGuidList();
-                    var categories = new CategoryService( new RockContext() ).GetByGuids( categoryGuids ).OrderBy( a => a.Order );
-                    foreach ( var category in categories )
-                    {
+                    var attribute = AttributeCache.Get( attributeId );
+                    string attributeValue = Person.GetAttributeValue( attribute.Key );
+                    string formattedValue = string.Empty;
 
-                        var attributeList = AttributeCategoriesList.Where( a => a.Value.Contains( category.Id ) ).Select( a => a.Key );
-                        if ( attributeList.Any() )
+                    if ( ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                         {
-                            var h4 = new HtmlGenericControl( "h4" );
-                            h4.InnerText = category.Name;
-                            fsAttributes.Controls.Add( h4 );
-                            var hr = new HtmlGenericControl( "hr/" );
-                            fsAttributes.Controls.Add( hr );
+                            var div = new HtmlGenericControl( "div" );
+                            fsAttributes.Controls.Add( div );
+                            div.Attributes.Add( "data-attribute-id", attribute.Id.ToString() );
+                            div.Attributes.Add( "class", "form-group" );
 
-                            CreateAttributeControl( setValues, validationGroup, attributeList );
-                        }
-                    }
-                    
-                }
-                else
-                {
-                    CreateAttributeControl( setValues, validationGroup, AttributeCategoriesList.Keys );
-                }
-            }
+                            var a = new HtmlGenericControl( "a" );
+                            div.Controls.Add( a );
 
-            lbOrder.Visible = !showCategoryNamesasSeparators;
-            pnlActions.Visible = ( ViewMode != VIEW_MODE_VIEW );
-        }
+                            var i = new HtmlGenericControl( "i" );
+                            a.Controls.Add( i );
+                            i.Attributes.Add( "class", "fa fa-bars" );
 
-        private void CreateAttributeControl( bool setValues, string validationGroup, IEnumerable<int> attributeList )
-        {
-            foreach ( int attributeId in attributeList )
-            {
-                var attribute = AttributeCache.Get( attributeId );
-                string attributeValue = Person.GetAttributeValue( attribute.Key );
-                string formattedValue = string.Empty;
-                string attributeLabel = GetAttributeValue( AttributeKeys.UseAbbreviatedName ).AsBoolean() == false ? attribute.Name : attribute.AbbreviatedName;
-
-                if ( ViewMode != VIEW_MODE_EDIT || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                {
-                    if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
-                    {
-                        var div = new HtmlGenericControl( "div" );
-                        fsAttributes.Controls.Add( div );
-                        div.Attributes.Add( "data-attribute-id", attribute.Id.ToString() );
-                        div.Attributes.Add( "class", "form-group" );
-
-                        var a = new HtmlGenericControl( "a" );
-                        div.Controls.Add( a );
-
-                        var i = new HtmlGenericControl( "i" );
-                        a.Controls.Add( i );
-                        i.Attributes.Add( "class", "fa fa-bars" );
-
-                        div.Controls.Add( new LiteralControl( " " + attributeLabel ) );
-                    }
-                    else
-                    {
-                        if ( attribute.FieldType.Class == typeof(Rock.Field.Types.ImageFieldType).FullName )
-                        {
-                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, true );
+                            div.Controls.Add( new LiteralControl( " " + attribute.Name ) );
                         }
                         else
                         {
-                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, false );
-                        }
-
-                        if ( !string.IsNullOrWhiteSpace( formattedValue ) )
-                        {
-                            if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
+                            if ( attribute.FieldType.Class == typeof(Rock.Field.Types.ImageFieldType).FullName )
                             {
-                                fsAttributes.Controls.Add( new RockLiteral { Label = attributeLabel, Text = formattedValue, CssClass= "matrix-attribute" } );
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, true );
                             }
                             else
                             {
-                                fsAttributes.Controls.Add( new RockLiteral { Label = attributeLabel, Text = formattedValue } );
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, false );
+                            }
+                            
+                            if ( !string.IsNullOrWhiteSpace( formattedValue ) )
+                            {
+                                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
+                                {
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue, CssClass= "matrix-attribute" } );
+                                    }
+                                else
+                                {
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true );
+                    else
+                    {
+                        attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true );
+                    }
                 }
             }
+
+            pnlActions.Visible = ( ViewMode != VIEW_MODE_VIEW );
         }
 
         #endregion

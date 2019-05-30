@@ -52,21 +52,16 @@
         fadePanelIn();
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(fadePanelIn);
     });
-
-    function scrollToTop() {
-        window.scrollTo(0, 0);
-    }
 </script>
 <asp:UpdatePanel ID="upAssessment" runat="server">
     <ContentTemplate>
-        <asp:HiddenField ID="hfAssessmentId" runat="server" />
+        <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
         <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
                 <asp:Panel ID="pnlInstructions" runat="server">
                     <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
@@ -102,8 +97,8 @@
                          Please answer all questions before continuing.
                      </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();"/>
-                        <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
+                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" />
+                        <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; }" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
                     </div>
                 </asp:Panel>
                   <asp:Panel ID="pnlResult" runat="server">

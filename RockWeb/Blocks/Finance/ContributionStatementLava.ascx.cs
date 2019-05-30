@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Finance
                 <td>{{ transaction.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
                 <td>{{ transaction.Account.Name }}</td>
                 <td>{{ transaction.Transaction.TransactionCode }}</td>
-                <td align=""right"">{{ transaction.Amount | FormatAsCurrency }}</td>
+                <td align=""right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ transaction.Amount }}</td>
             </tr>
         {% endfor %}
     
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Finance
         {% for accountsummary in AccountSummary %}
             <div class=""row"">
                 <div class=""col-xs-6"">{{ accountsummary.AccountName }}</div>
-                <div class=""col-xs-6 text-right"">{{ accountsummary.Total | FormatAsCurrency }}</div>
+                <div class=""col-xs-6 text-right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ accountsummary.Total }}</div>
             </div>
          {% endfor %}
     </div>
@@ -140,9 +140,9 @@ namespace RockWeb.Blocks.Finance
                 <strong>{{ pledge.AccountName }}</strong>
                 
                 <p>
-                    Amt Pledged: {{ pledge.AmountPledged | FormatAsCurrency }} <br />
-                    Amt Given: {{ pledge.AmountGiven | FormatAsCurrency }} <br />
-                    Amt Remaining: {{ pledge.AmountRemaining | FormatAsCurrency }}
+                    Amt Pledged: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountPledged }} <br />
+                    Amt Given: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountGiven }} <br />
+                    Amt Remaining: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountRemaining }}
                 </p>
             </div>
             <div class=""col-xs-6 padding-t-md"">

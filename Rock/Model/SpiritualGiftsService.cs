@@ -25,13 +25,13 @@ namespace Rock.Model
     /// </summary>
     public class SpiritualGiftsService
     {
-        private static readonly double minDominantGiftScore = 0.5;
+        private static readonly double minDominantGiftScore = 1.0;
 
-        private static readonly double maxSupportiveGiftScore = 0.4;
+        private static readonly double maxSupportiveGiftScore = 0.9;
 
-        private static readonly double minSupportiveGiftScore = -0.4;
+        private static readonly double minSupportiveGiftScore = 0;
 
-        private static readonly double maxOtherGiftScore = -0.5;
+        private static readonly double maxOtherGiftScore = -0.1;
 
         private const string ATTRIBUTE_DOMINANT_GIFTS = "core_DominantGifts";
 

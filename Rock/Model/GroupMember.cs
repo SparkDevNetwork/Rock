@@ -331,12 +331,6 @@ namespace Rock.Model
                             this.DateTimeAdded = RockDateTime.Now;
                         }
 
-                        // if this is a new record, but is saved with IsActive=False, set the InactiveDateTime if it isn't set already
-                        if ( this.GroupMemberStatus == GroupMemberStatus.Inactive )
-                        {
-                            this.InactiveDateTime = this.InactiveDateTime ?? RockDateTime.Now;
-                        }
-
                         break;
                     }
 
@@ -347,22 +341,6 @@ namespace Rock.Model
 
                         oldGroupId = entry.OriginalValues["GroupId"].ToStringSafe().AsIntegerOrNull();
                         newGroupId = GroupId;
-
-                        var originalStatus = entry.OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
-
-                        // IsActive was modified, set the InactiveDateTime if it changed to Inactive, or set it to NULL if it changed to Active
-                        if ( originalStatus != this.GroupMemberStatus )
-                        {
-                            if ( this.GroupMemberStatus == GroupMemberStatus.Inactive )
-                            {
-                                // if the caller didn't already set InactiveDateTime, set it to now
-                                this.InactiveDateTime = this.InactiveDateTime ?? RockDateTime.Now;
-                            }
-                            else
-                            {
-                                this.InactiveDateTime = null;
-                            }
-                        }
 
                         break;
                     }

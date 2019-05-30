@@ -838,29 +838,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to current page reference including current page and query parameters not included in the removeQueryParameterKeys parameter.
-        /// </summary>
-        /// <param name="removeQueryParameterKeys">The remove query parameter keys.</param>
-        /// <returns></returns>
-        public bool NavigateToCurrentPageReferenceWithRemove( List<string> removeQueryParameterKeys )
-        {
-            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
-            var currentQueryStrings = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
-
-            if ( removeQueryParameterKeys != null )
-            {
-                foreach ( var key in removeQueryParameterKeys )
-                {
-                    currentQueryStrings.Remove( key );
-                }
-            }
-
-            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( currentQueryStrings );
-
-            return NavigateToPage( pageReference );
-        }
-
-        /// <summary>
         /// Navigates/redirects to the parent <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -122,14 +121,8 @@ namespace Rock.Jobs
                     .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.HasValue )
                     .Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate ) <= a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.Value );
 
-                List<string> errorMessages;
-                _groupScheduleConfirmationsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
+                _groupScheduleConfirmationsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery );
                 rockContext.SaveChanges();
-
-                if ( errorMessages.Any() )
-                {
-                    throw new Exception( "One or more errors occurred when sending confirmation emails: " + Environment.NewLine + errorMessages.AsDelimited( Environment.NewLine ) );
-                }
             }
         }
 
@@ -167,11 +160,11 @@ namespace Rock.Jobs
                 // limit to ones that have an offset window for either the GroupType or for the Person in the group
                 sendReminderAttendancesQuery = sendReminderAttendancesQuery
                  .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays.HasValue
-                     || ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy( r => r.GroupRole.IsLeader ).FirstOrDefault().ScheduleReminderEmailOffsetDays.HasValue ) );
+                     || ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy(r => r.GroupRole.IsLeader).FirstOrDefault().ScheduleReminderEmailOffsetDays.HasValue ) );
 
                 // limit to ones within offset
                 sendReminderAttendancesQuery = sendReminderAttendancesQuery.Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate )
-                    <= ( ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy( r => r.GroupRole.IsLeader ).FirstOrDefault().ScheduleReminderEmailOffsetDays ?? a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays ) ) );
+                    <= ( ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy( r => r.GroupRole.IsLeader ).FirstOrDefault().ScheduleReminderEmailOffsetDays ?? a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays) ) );
 
                 _groupScheduleRemindersSent = attendanceService.SendScheduleReminderSystemEmails( sendReminderAttendancesQuery );
                 rockContext.SaveChanges();

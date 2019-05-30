@@ -1709,17 +1709,8 @@ namespace Rock.TransNational.Pi
     /// URL ~api//recurring/subscription/search.
     /// Search body example: {"customer":{"id":{"value":"&lt;customer id here&gt;","operator":"="}}}
     /// </summary>
-    public class QueryCustomerSubscriptionsRequest
+    public class QuerySubscriptionsRequest
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="QueryCustomerSubscriptionsRequest"/> class.
-        /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        public QueryCustomerSubscriptionsRequest( string customerId )
-        {
-            CustomerIdSearch = new QuerySearchCustomerId( customerId );
-        }
-
         /// <summary>
         /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
         /// </summary>
@@ -1730,13 +1721,13 @@ namespace Rock.TransNational.Pi
         public int Limit { get; set; } = 0;
 
         /// <summary>
-        /// Gets or sets the customer identifier search
+        /// Gets or sets the customer identifier search (optional)
         /// </summary>
         /// <value>
         /// The customer identifier search.
         /// </value>
-        [JsonProperty( "customer", NullValueHandling = NullValueHandling.Ignore )]
-        public QuerySearchCustomerId CustomerIdSearch { get; set; }
+        [JsonProperty( "customer_id", NullValueHandling = NullValueHandling.Ignore )]
+        public QuerySearchString CustomerIdSearch { get; set; }
     }
 
     /// <summary>
@@ -1854,30 +1845,6 @@ namespace Rock.TransNational.Pi
         /// </value>
         [JsonProperty( "value" )]
         public string SearchValue { get; set; }
-    }
-
-    /// <summary>
-    /// Searching by the Customer property of a record
-    /// </summary>
-    public class QuerySearchCustomerId
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="QuerySearchCustomerId"/> class.
-        /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        public QuerySearchCustomerId( string customerId )
-        {
-            Id = new QuerySearchString { ComparisonOperator = "=", SearchValue = customerId };
-        }
-
-        /// <summary>
-        /// The 'id' of the 'customer' property
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        [JsonProperty( "id" )]
-        public QuerySearchString Id { get; set; }
     }
 
     /// <summary>

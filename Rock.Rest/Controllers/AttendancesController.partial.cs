@@ -199,8 +199,7 @@ namespace Rock.Rest.Controllers
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
             var sendConfirmationAttendancesQuery = attendanceService.Queryable().Where( a => a.Id == attendanceId );
-            List<string> errorMessages;
-            attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
+            attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery );
             rockContext.SaveChanges();
         }
 
