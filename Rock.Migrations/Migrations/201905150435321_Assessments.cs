@@ -226,32 +226,32 @@ namespace Rock.Migrations
             var categories = new System.Collections.Generic.List<string> { "EDD33F72-ECED-49BC-AC49-3643B60AD736" };
 
             // Person Attribute "Conflict Mode: Winning"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 0, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 3, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
             RockMigrationHelper.AddAttributeQualifier( @"7147F706-388E-45E6-BE21-893FC7D652AA", @"ConfigurationJSON", @"[{""Guid"":""951e4864-78c7-4d9c-8548-fc7d6a5cc91b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#b21f22"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""ca9fd375-5adf-4a56-ae84-5941015f454e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#e15759"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""2f91c1ea-3d13-4a5c-9f33-ed8948e7fb1c"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f0adae"",""HighValue"":33.0,""LowValue"":0.0}]", @"33306923-B938-4156-A4D6-4ABF75146B9D" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_WINNING );
 
             // Person Attribute "Conflict Mode: Resolving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 0, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 4, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
             RockMigrationHelper.AddAttributeQualifier( @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE", @"ConfigurationJSON", @"[{""Guid"":""022c15d2-9e23-46aa-a18b-3e9a49183adf"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""7ca1d560-fc1e-4f20-b4e8-38ae3ab1385b"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""11d01d8f-d555-409f-b563-964461382a17"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"67985444-26DE-46F1-8A93-41EE55052170" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_RESOLVING );
 
             // Person Attribute "Conflict Mode: Compromising"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 0, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 5, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
             RockMigrationHelper.AddAttributeQualifier( @"817D6B13-E4AA-4E93-8547-FE711A0065F2", @"ConfigurationJSON", @"[{""Guid"":""b08b08fd-88a9-46cc-87c3-cb17368d4b56"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""80c8f457-9afc-4dd1-8d18-a86037dba6c9"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""eba49b52-17c4-4813-9688-e316b767f295"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"AACC439C-A2DC-40EC-BC22-96A1ABA4BB72" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_COMPROMISING );
 
             // Person Attribute "Conflict Mode: Avoiding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 0, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 6, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
             RockMigrationHelper.AddAttributeQualifier( @"071A8EFA-AD1C-436A-8E1E-23D215617004", @"ConfigurationJSON", @"[{""Guid"":""412a6f33-eee1-4179-a762-1df8a8b1ac6b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""25633115-9868-4c2a-89c7-97a15509c727"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""7e6bf4ac-16fa-47e4-a60d-956924ffc474"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"1835F432-A316-4347-8840-2DA5C3E24D2C" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_AVOIDING );
 
             // Person Attribute "Conflict Mode: Yielding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 0, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 7, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
             RockMigrationHelper.AddAttributeQualifier( @"D30A33AD-7A60-43E0-84DA-E23600156BF7", @"ConfigurationJSON", @"[{""Guid"":""542a5291-7d2d-40c1-bde1-fff6167e145a"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""5efa046b-f235-4ce3-9568-4daafb4860a4"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""f765b351-8e60-4d49-a8c4-d14ab761cbb9"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"45C648A3-26A9-47D8-B380-3B916FAAF701" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_YIELDING );
 
             // Person Attribute "Conflict Theme: Accommodating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 0, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 2, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
             RockMigrationHelper.AddAttributeQualifier( @"404A64FB-7396-4896-9C94-84DE21E995CA", @"ConfigurationJSON", @"[{""Guid"":""c7a0cf27-032a-4ce4-be51-228f56750ba7"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""fe2c3be8-75e5-4ee1-8559-8f6fa531bf07"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""1fa912d5-772d-48d4-8d35-5a3791096777"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"4ACECE69-D2E6-494B-96A2-4C5D15392935" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_ACCOMMODATING );
 
@@ -261,7 +261,7 @@ namespace Rock.Migrations
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_WINNING );
 
             // Person Attribute "Conflict Theme: Solving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 0, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 1, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
             RockMigrationHelper.AddAttributeQualifier( @"33235605-D8BB-4C1E-B231-6F085970A14F", @"ConfigurationJSON", @"[{""Guid"":""fbd84cfb-bd89-4ed5-a1b3-834e2118ae9b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""c43e78c1-b675-48a2-8039-5784aadb8502"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""b2757ecb-8d72-4ccd-af6e-d8f022b2473d"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"34483B88-0BDF-4E23-8E56-4183FA8DF1A1" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_SOLVING );
         }
