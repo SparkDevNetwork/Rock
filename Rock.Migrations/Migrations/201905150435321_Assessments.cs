@@ -1273,10 +1273,13 @@ SELECT  CASE
             RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
 
-            // Person Attribute "Motivator Growth Propensity"
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "CEAA3D59-D53C-40EC-B7B8-E7BBB758BD4D", "Motivator Growth Propensity", "core_MotivatorGrowthPropensity", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            // Person Attribute "Motivators: Growth Propensity"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 0, @"", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"fieldtype", @"ddl", @"C5BE7CFF-6856-4E4C-BAAE-33B696003FD3" );
+            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"repeatColumns", @"", @"221081A6-E3F4-43D9-AD26-687A2FAAEBEB" );
+            RockMigrationHelper.AddAttributeQualifier( SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY, @"values", @"1^Very High,2^High,3^Medium,4^Somewhat Low,5^Low", @"1837257C-448B-4F87-8A88-B0815B7068A7" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-
+            
             // Person Attribute "Motivators: Relational Theme"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 0, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
             RockMigrationHelper.AddAttributeQualifier( @"CDCBA1D3-4129-43DB-9607-74F57BEBF807", @"ConfigurationJSON", @"[{""Guid"":""bd0a2d33-4bb0-44ee-a343-cfe80e0c3a79"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""f3aef44f-177f-408e-8739-3b2f6d4fbb8f"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""d101199c-c095-4778-92ea-e2ea9957d7c5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"FF41610F-7ABA-46E8-95A4-4A0CF6273A41" );
