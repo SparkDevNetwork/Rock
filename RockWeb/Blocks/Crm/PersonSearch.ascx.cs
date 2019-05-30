@@ -433,8 +433,7 @@ namespace RockWeb.Blocks.Crm
                         .Select( n => new PersonSearchResultPhone
                         {
                             NumberTypeValueId = n.NumberTypeValueId.Value,
-                            Number = n.NumberFormatted,
-                            PhoneTypeName = n.NumberTypeValue.Value
+                            Number = n.NumberFormatted
                         } )
                         .ToList(),
                     TopSignalColor = p.TopSignalColor,
@@ -830,20 +829,6 @@ namespace RockWeb.Blocks.Crm
         /// The number.
         /// </value>
         public string Number { get; set; }
-
-        /// <summary>
-        /// The phone type name (Mobile, Home, etc.)
-        /// </summary>
-        public string PhoneTypeName { get; set; }
-
-        /// <summary>
-        /// Provides a reasonable string representation of a phone number.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} ({1})", Number, PhoneTypeName );
-        }
     }
 
     #endregion

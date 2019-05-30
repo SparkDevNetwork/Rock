@@ -40,8 +40,6 @@ namespace Rockweb.Blocks.Crm
     [DisplayName( "DISC Result" )]
     [Category( "CRM" )]
     [Description( "View the results of a DISC assessment." )]
-    [Obsolete("Use Rock.Web.UI.RockBlock.DISC instead. Results will display for current user or for the PersonId page parameter.")]
-    [RockObsolete("1.9")]
     public partial class DiscResult : Rock.Web.UI.RockBlock
     {
         #region Fields

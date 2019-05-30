@@ -52,15 +52,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the description of the Attribute.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that represents the description of the registration template.
-        /// </value>
-        [DataMember]
-        public string Description { get; set; }
-
-        /// <summary>
         /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
@@ -399,7 +390,7 @@ namespace Rock.Model
         /// The maximum registrants.
         /// </value>
         [DataMember]
-        public int? MaxRegistrants { get; set; }
+        public int MaxRegistrants { get; set; }
 
         /// <summary>
         /// Gets or sets the financial gateway identifier.

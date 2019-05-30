@@ -44,12 +44,6 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
     [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 0 )]
-    [BinaryFileTypeField( "Attachment Binary File Type",
-        description: "The FileType to use for files that are attached to an sms or email communication",
-        required: true,
-        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        order: 1,
-        key: "AttachmentBinaryFileType" )]
     public partial class TemplateDetail : RockBlock
     {
         #region Base Control Methods
@@ -493,7 +487,7 @@ namespace RockWeb.Blocks.Communication
             tbBCCList.ReadOnly = restrictedEdit;
             tbEmailSubject.ReadOnly = restrictedEdit;
             fupAttachments.Visible = !restrictedEdit;
-            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+
             // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
             tbDescription.ReadOnly = readOnly;
             imgTemplatePreview.Enabled = !readOnly;

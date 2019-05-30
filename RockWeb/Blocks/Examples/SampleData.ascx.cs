@@ -740,7 +740,6 @@ namespace RockWeb.Blocks.Examples
                 {
                     Guid = element.Attribute( "guid" ).Value.Trim().AsGuid(),
                     Name = element.Attribute( "name" ).Value.Trim(),
-                    Description = element.Attribute( "description" ) != null ? element.Attribute( "description" ).Value.Trim() : string.Empty,
                     IsActive = true,
                     CategoryId = categoryId,
                     GroupTypeId = groupType.Id,

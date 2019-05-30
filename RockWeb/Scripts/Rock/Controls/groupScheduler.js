@@ -20,10 +20,9 @@
                     return;
                 }
 
-                var $blockInstance = $control.closest('.block-instance')[0];
                 self.$groupScheduler = $control;
                 self.$resourceList = $('.group-scheduler-resourcelist', $control);
-                self.$additionalPersonIds = $('.js-resource-additional-person-ids', self.$resourceList);
+                self.$additionalPersonIds = $('.js-resource-additional-person-ids', self.$resourceList)
 
                 // initialize dragula
                 var containers = [];
@@ -60,25 +59,27 @@
                         var isMenu = $(el).closest('.js-resource-actions').length;
                         return isMenu;
                     },
-                    ignoreInputTextSelection: true,
-                    mirrorContainer: $blockInstance
+                    ignoreInputTextSelection: true
                 })
                     .on('drag', function (el) {
+                        if (self.resourceScroll) {
+                            // disable the scroller while dragging so that the scroller doesn't move while we are dragging
+                            //self.resourceScroll.disable();
+                        }
                         $('body').addClass('state-drag');
                     })
                     .on('dragend', function (el) {
+                        if (self.resourceScroll) {
+                            // re-enable the scroller when done dragging
+                            //self.resourceScroll.enable();
+                        }
                         $('body').removeClass('state-drag');
                     })
                     .on('drop', function (el, target, source, sibling) {
-                        if (source == target) {
-                            // don't do anything if a person is dragged around within the same occurrence
-                            return;
-                        }
-
                         if (target.classList.contains('js-scheduler-source-container')) {
                             // deal with the resource that was dragged back into the unscheduled resources
                             var $unscheduledResource = $(el);
-                            $unscheduledResource.attr('data-status', 'unscheduled');
+                            $unscheduledResource.attr('data-state', 'unscheduled');
 
                             var personId = $unscheduledResource.attr('data-person-id')
 
@@ -87,7 +88,7 @@
 
                             self.$additionalPersonIds.val(additionalPersonIds);
 
-                            var attendanceId = $unscheduledResource.attr('data-attendance-id');
+                            var attendanceId = $unscheduledResource.attr('data-attendance-id')
                             var $occurrence = $(source).closest('.js-scheduled-occurrence');
                             self.removeResource(attendanceId, $occurrence);
                         }
@@ -96,28 +97,24 @@
                             var scheduledPersonAddPendingUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddPending';
                             var scheduledPersonAddConfirmedUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonAddConfirmed';
                             var $scheduledResource = $(el);
-
-                            var personId = $scheduledResource.attr('data-person-id');
+                            $scheduledResource.attr('data-state', 'scheduled');
+                            var personId = $scheduledResource.attr('data-person-id')
                             var attendanceOccurrenceId = $(target).closest('.js-scheduled-occurrence').find('.js-attendanceoccurrence-id').val();
                             var $occurrence = $(el).closest('.js-scheduled-occurrence');
                             var scheduledPersonAddUrl = scheduledPersonAddPendingUrl;
 
-                            // if they were dragged from another occurrence, remove them from that first
+                            // if they were dragged from another occurrence, unschedule from that first
                             if (source.classList.contains('js-scheduler-target-container')) {
 
                                 var attendanceId = $scheduledResource.attr('data-attendance-id')
 
                                 // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
-                                var sourceConfirmationStatus = $scheduledResource.attr('data-status');
-                                if (sourceConfirmationStatus == 'confirmed') {
+                                var sourceConfirmationStatus = $scheduledResource.attr('data-state');
+                                if (sourceConfirmationStatus == 'scheduled') {
                                     scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
                                 }
                                 var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
                                 self.removeResource(attendanceId, $sourceOccurrence);
-                            }
-                            else {
-                                // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
-                                $scheduledResource.attr('data-status', 'pending');
                             }
 
                             // add as pending (or confirmed if already confirmed) to target occurrence
@@ -188,7 +185,7 @@
                 var $autoschedulerWarning = $occurrence.find('.js-autoscheduler-warning');
                 if (!desiredCapacity) {
                     $autoschedulerWarning.show();
-                    $autoschedulerWarning.tooltip();
+                    $autoschedulerWarning.tooltip({ container: 'body' });
                 }
                 else {
                     $autoschedulerWarning.hide();
@@ -223,7 +220,7 @@
                         }
 
                         var $resourceDiv = $('.js-scheduled-resource-template').find('.js-resource').clone();
-                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem);
+                        self.populateResourceDiv($resourceDiv, scheduledAttendanceItem, 'scheduled');
                         $schedulerTargetContainer.append($resourceDiv);
                     });
 
@@ -238,7 +235,7 @@
                         $statusLight.attr('data-status', 'below-desired');
                     }
                     else if (desiredCapacity && (totalPendingOrConfirmed >= desiredCapacity)) {
-                        $statusLight.attr('data-status', 'meets-desired');
+                        $statusLight.attr('data-status', 'meets-desired'); ``
                     }
                     else {
                         // no capacities defined, so just hide it
@@ -247,7 +244,7 @@
 
                     // set the progressbar max range to desired capacity if known
                     var progressMax = desiredCapacity;
-                    var totalScheduled = (totalPending + totalConfirmed );
+                    var totalScheduled = (totalPending + totalConfirmed + totalDeclined);
                     if (!progressMax) {
                         // desired capacity isn't known, so just have it act as a stacked bar based on the sum of pending,confirmed,declined
                         progressMax = totalScheduled;
@@ -261,10 +258,11 @@
                     var toolTipHtml = '<div>Confirmed: ' + totalConfirmed + '<br/>Pending: ' + totalPending + '<br/>Declined: ' + totalDeclined + '</div>';
 
                     $schedulingStatusContainer.attr('data-original-title', toolTipHtml);
-                    $schedulingStatusContainer.tooltip({ html: true });
+                    $schedulingStatusContainer.tooltip({ 'html': 'true', container: 'body' });
 
                     var confirmedPercent = !progressMax || (totalConfirmed * 100 / progressMax);
                     var pendingPercent = !progressMax || (totalPending * 100 / progressMax);
+                    var declinedPercent = !progressMax || (totalDeclined * 100 / progressMax);
                     var minimumPercent = !progressMax || (minimumCapacity * 100 / progressMax);
                     var desiredPercent = !progressMax || (desiredCapacity * 100 / progressMax);
 
@@ -293,6 +291,11 @@
                     var $progressPending = $schedulingStatusContainer.find('.js-scheduling-progress-pending');
                     $progressPending.css({ 'width': pendingPercent + '%' });
                     $progressPending.find('.js-progress-text-percent').val(pendingPercent);
+
+                    var $progressDeclined = $schedulingStatusContainer.find('.js-scheduling-progress-declined');
+                    $progressDeclined.css({ 'width': declinedPercent + '%' });
+                    $progressDeclined.find('.js-progress-text-percent').val(declinedPercent);
+
 
                 });
             },
@@ -337,7 +340,7 @@
                     for (var i = 0; i < schedulerResources.length; i++) {
                         var schedulerResource = schedulerResources[i];
                         var $resourceDiv = $resourceTemplate.clone();
-                        self.populateResourceDiv($resourceDiv, schedulerResource);
+                        self.populateResourceDiv($resourceDiv, schedulerResource, 'unscheduled');
                         $resourceContainer.append($resourceDiv);
                     }
 
@@ -345,6 +348,7 @@
 
                     setTimeout(function () {
                         $loadingNotification.hide();
+                        //self.resourceScroll.refresh();
                     }, 0)
 
                 }).fail(function (a, b, c) {
@@ -355,49 +359,36 @@
 
             },
             /**  populates the resource element (both scheduled and unscheduled) */
-            populateResourceDiv: function ($resourceDiv, schedulerResource) {
-                $resourceDiv.attr('data-status', schedulerResource.ConfirmationStatus);
+            populateResourceDiv: function ($resourceDiv, schedulerResource, state) {
+                $resourceDiv.attr('data-state', state);
                 $resourceDiv.attr('data-person-id', schedulerResource.PersonId);
                 $resourceDiv.attr('data-has-scheduling-conflict', schedulerResource.HasSchedulingConflict);
                 $resourceDiv.attr('data-has-blackout-conflict', schedulerResource.HasBlackoutConflict);
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
-                var $resourceMeta = $resourceDiv.find('.js-resource-meta');
 
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " cannot be scheduled due to a blackout.");
-                    $resourceDiv.tooltip();
-                } else if (schedulerResource.HasGroupRequirementsConflict) {
-                    $resourceDiv.attr('title', schedulerResource.PersonName + " does not meet the requirements for this group.");
-                    $resourceDiv.tooltip();
-                } else if (schedulerResource.HasSchedulingConflict) {
-                    $resourceDiv.attr('title', schedulerResource.PersonName + " has a scheduling conflict.");
-                    $resourceDiv.tooltip();
+                    $resourceDiv.tooltip({ container: 'body' });
                 }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
                 if (schedulerResource.Note) {
-                    $resourceDiv.addClass('has-note');
-                    $resourceMeta.parent().prepend('<div class="resource-note js-resource-note hide-transit">'+ schedulerResource.Note +'</div>');
+                    $resourceDiv.find('.js-resource-note').text(schedulerResource.Note);
                 }
 
                 if (schedulerResource.ConflictNote) {
-                    $resourceMeta.append('<span class="resource-warning hide-transit">' + schedulerResource.ConflictNote + '</span>')
-                }
-
-                if (schedulerResource.HasSchedulingConflict) {
-                    $resourceMeta.append('<span class="resource-scheduling-conflict hide-transit" title="Scheduling Conflict"><i class="fa fa-user-clock"></i></span>');
-                }
-
-                if (schedulerResource.HasBlackoutConflict) {
-                    $resourceMeta.append('<span class="resource-blackout-status hide-transit" title="Blackout"><i class="fa fa-user-times"></i></span>');
-                }
-
-                if (schedulerResource.HasGroupRequirementsConflict) {
-                    $resourceMeta.append('<span class="resource-requirements-conflict hide-transit" title="Group Requirements Not Met"><i class="fa fa-exclamation-triangle"></i></span>');
+                    $resourceDiv.find('.js-resource-warning').text(schedulerResource.ConflictNote);
                 }
 
                 if (schedulerResource.LastAttendanceDateTime) {
-                    $resourceMeta.append('<span class="resource-lastattendeddate hide-transit" title="Last Attended" data-datetime="' + schedulerResource.LastAttendanceDateTime + '">' + schedulerResource.LastAttendanceDateTimeFormatted + '</span>');
+                    var $lastAttendedDate = $resourceDiv.find('.js-resource-lastattendeddate');
+                    $lastAttendedDate.attr('data-datetime', schedulerResource.LastAttendanceDateTime);
+                    $lastAttendedDate.text(schedulerResource.LastAttendanceDateTimeFormatted);
+                }
+
+
+                if (schedulerResource.ConfirmationStatus) {
+                    $resourceDiv.find('.js-resource-status').attr('data-status', schedulerResource.ConfirmationStatus);
                 }
 
                 // stuff that only applies to unscheduled resource
@@ -434,6 +425,7 @@
                         return;
                     }
 
+                    var attendanceId = $resource.attr('data-attendance-id')
                     $.ajax({
                         method: "PUT",
                         url: scheduledPersonUrl + '?attendanceId=' + attendanceId
@@ -445,27 +437,6 @@
                         debugger
                         console.log('fail');
                     })
-                });
-
-                // add autoscroll capabilities during dragging
-                $(window).mousemove(function (e) {
-                    if (self.resourceListDrake.dragging) {
-                        // editor scrollbar
-                        // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragger
-                        var $editorScrollWindow = $(window);
-                        var editorScrollHeight = window.innerHeight;
-                        var editorScrollLevel = $editorScrollWindow.scrollTop()
-                        var editorMouseY = e.clientY;
-                        var editorMousePositionProportion = editorMouseY / editorScrollHeight;
-                        if (editorMousePositionProportion > .90) {
-                            editorScrollLevel += 20;
-                            $editorScrollWindow.scrollTop(editorScrollLevel);
-                        }
-                        else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
-                            editorScrollLevel -= 20;
-                            $editorScrollWindow.scrollTop(editorScrollLevel);
-                        }
-                    }
                 });
 
             }

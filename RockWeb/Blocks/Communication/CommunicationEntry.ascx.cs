@@ -56,13 +56,7 @@ namespace RockWeb.Blocks.Communication
     [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
     [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
-    [BooleanField( "Simple Communications Are Bulk", "Should simple mode communications be sent as a bulk communication?", true, order: 10, key: "IsBulk" )]
-    [BinaryFileTypeField( "Attachment Binary File Type",
-        description: "The FileType to use for files that are attached to an sms or email communication",
-        required: true,
-        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        order: 11,
-        key: "AttachmentBinaryFileType" )]
+    [BooleanField( "Simple Communications Are Bulk", "Should simple mode communications be sent as a bulk communication?" , true, order: 10, key:"IsBulk")]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
@@ -378,9 +372,9 @@ namespace RockWeb.Blocks.Communication
                     if ( Person != null )
                     {
                         var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd =>
-                                pd.PersonAliasId.HasValue &&
-                                pd.PersonAliasId == Person.PrimaryAliasId &&
+                            .Where( pd => 
+                                pd.PersonAliasId.HasValue && 
+                                pd.PersonAliasId == Person.PrimaryAliasId && 
                                 pd.NotificationsEnabled )
                             .Any();
                         Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any( a => a.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending ) );
@@ -1052,22 +1046,15 @@ namespace RockWeb.Blocks.Communication
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
                 mediumControl.ValidationGroup = btnSubmit.ValidationGroup;
-                var fupEmailAttachments = ( Rock.Web.UI.Controls.FileUploader ) mediumControl.FindControl( "fupEmailAttachments_commControl" );
-
-                if ( fupEmailAttachments != null )
+                if ( !GetAttributeValue( "ShowAttachmentUploader" ).AsBoolean() )
                 {
-                    if ( !GetAttributeValue( "ShowAttachmentUploader" ).AsBoolean() )
+                    var fuAttachments = mediumControl.FindControl( "fuAttachments_commControl" );
+                    if ( fuAttachments != null )
                     {
-                        if ( fupEmailAttachments != null )
-                        {
-                            fupEmailAttachments.Visible = false;
-                        }
-                    }
-                    else
-                    {
-                        fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                        fuAttachments.Visible = false;
                     }
                 }
+
                 // if this is an email with an HTML control and there are block settings to provide updated content directories set them
                 if ( mediumControl is Rock.Web.UI.Controls.Communication.Email )
                 {

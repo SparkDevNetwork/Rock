@@ -14,7 +14,7 @@
                 var $selectBtn = $control.find('.js-buttondropdown-btn-select');
                 var $selectedId = $control.find('.js-buttondropdown-selected-id');
                 var checkmarksEnabled = $control.attr('data-checkmarks-enabled') == 1;
-
+                
                 $('.dropdown-menu a', $control).click(function (e) {
                     var $el = $(this);
                     var text = $el.html();
@@ -24,7 +24,7 @@
 
                     if (checkmarksEnabled) {
                         $el.closest('.dropdown-menu').find('.js-selectionicon').removeClass('fa-check');
-                        $el.find('.js-selectionicon').addClass('fa-check');
+                        $el.find('.js-selectionicon').addClass('fa-check'); 
                     }
                     else {
                         $selectBtn.html(textHtml);

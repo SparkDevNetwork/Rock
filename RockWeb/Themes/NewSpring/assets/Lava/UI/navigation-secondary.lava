@@ -32,12 +32,12 @@
 <section class="bg-primary hard flush shadowed hidden-md hidden-lg">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
-        <a class="btn btn-block btn-primary collapsed letter-spacing-condensed stronger text-decoration-none text-center" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        <a class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-center" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                 {{ Page.Title }}
             <i class="position-relative fas fa-angle-down" style="top: 1px;"></i>
         </a>
 
-        <div class="panel panel-default flush hidden-md hidden-lg">
+        <div class="panel panel-default rounded overflow-hidden flush hidden-md hidden-lg">
             <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                 <div class="panel-body hard" style="background-color: transparent;">
                     <div class="list-group list-group-dark text-left">
@@ -49,10 +49,10 @@
                         {% else %}
                             {% assign value = parts.Value %}
                         {% endif %}
-                        <a href="{{ value }}" class="list-group-item text-gray-darker sans-serif strong letter-spacing-condensed text-decoration-none {% if parts.Value == path %}active{% endif %}">{{ parts.Key }}</button>
+                        <a href="{{ value }}" class="list-group-item text-gray-darker sans-serif strong  text-decoration-none {% if parts.Value == path %}active{% endif %}">{{ parts.Key }}</button>
                     {% endfor %}
                     {% for childPage in Page.Pages %}
-                        <a href="{{ childPage.Url }}" class="list-group-item text-gray-darker sans-serif strong letter-spacing-condensed text-decoration-none {%  if childPage.Url == path %}active{% endif %}">{{ childPage.Title }}</a>
+                        <a href="{{ childPage.Url }}" class="list-group-item text-gray-darker sans-serif strong  text-decoration-none {%  if childPage.Url == path %}active{% endif %}">{{ childPage.Title }}</a>
                     {% endfor %}
                     </div>
                 </div>

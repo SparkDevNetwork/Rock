@@ -437,7 +437,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                             content.Append( "<div class='panel panel-widget'>" );
                             content.Append( "<div class='panel-heading'>" );
-                            content.Append( string.Format( "<h1 class='panel-title'>{0}</h1><div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div>", title ) );
+                            content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
                             content.Append( "</div>" );
                             content.Append( "<div class='panel-body'>" );
 

@@ -1296,21 +1296,14 @@ tr.inactive {
   text-align: center;
 }
 
-
-@disc-chart-height: 425px;
 .discchart {
   position: relative;
   width: 80%;
   max-width: 650px;
-  height: @disc-chart-height;
+  height: 425px;
   padding: 0;
   margin: 0 auto;
   clear: both;
-  background-size: 100% (@disc-chart-height/10);
-  background-image: linear-gradient(to bottom,
-                                    @ui-4 0%,
-                                    transparent 2%,
-                                    transparent 100%);
 
   li {
     position: relative;
@@ -1323,6 +1316,7 @@ tr.inactive {
     text-align: center;
     vertical-align: bottom;
     background-color: lighten(@brand-primary, 10%);
+    border-radius: @border-radius-large @border-radius-large 0 0;
 
     &.discchart-midpoint {
       position: absolute;
@@ -1337,25 +1331,28 @@ tr.inactive {
 
   .discbar-label {
     position: absolute;
-    bottom: 10px;
+    bottom: 20px;
     width: 100%;
     overflow: hidden;
     font-size: 28px;
-    font-weight: @font-weight-bold;
-    text-shadow: 0 0 3px @brand-primary;
+    font-weight: 500;
+    text-transform: uppercase;
   }
 
   .discbar {
+    border: 1px solid #ddd;
+
     &::before {
       position: absolute;
-      top: -25px;
+      top: 5%;
       right: 0;
       left: 0;
-      color: @text-color;
       display: block;
+      padding: 5px 1em 0;
       font-size: 20px;
       line-height: 1em;
       text-align: center;
+      letter-spacing: -3px;
       word-wrap: break-word;
       content: attr(title);
     }

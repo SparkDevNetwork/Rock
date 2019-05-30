@@ -1,3 +1,35 @@
+{% if Item.ParentItems %}
+    {% for parent in Item.ParentItems %}
+        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+            {% for parent in parents %}
+                {% assign parentTitle = parent.Title %}
+                {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
+                {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                    {% assign backgroundColor = baseBackgroundColor %}
+                    <style>
+                        .brand-bg {
+                            background-color: {{ backgroundColor | Darken:'10%' }};
+                        }
+                    </style>
+                {% endif %}
+
+            {% endfor %}
+        {% endcontentchannelitem %}
+    {% endfor %}
+{% endif %}
+
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+
+
+
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
 
@@ -12,35 +44,14 @@
         {% if itemimageurl and itemimageurl != empty %}
             {{ itemimageurl }}
         {% elseif Item.ParentItems %}
-            {% for parent in Item.ParentItems %}{[ getImageFromItemId id:'{{ parent.ContentChannelItemId }}' ratio:'landscape' ]}{% endfor %}
+            {{ parentImage }}
         {% endif %}
     {% endcapture %}
     {% assign imageurl = imageurl | Trim %}
 
 
-    {% if Item.ParentItems %}
-        {% for parent in Item.ParentItems %}
-        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
-            {% for parent in parents %}
-                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-
-                {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                    {% assign backgroundColor = baseBackgroundColor | Lighten:'15%' %}
-                    <style>
-                        .brand-bg {
-                            background-color: {{ backgroundColor | Darken:'5%' }};
-                        }
-                    </style>
-                {% endif %}
-
-            {% endfor %}
-        {% endcontentchannelitem %}
-        {% endfor %}
-    {% endif %}
-
-
-    <div class="md-text-constrained md-mx-auto panel">
-        <div class="editorial-content position-relative panel-body bg-white xs-soft-half hard-bottom">
+    <div class="md-text-constrained md-mx-auto panel overflow-hidden">
+        <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom hard-bottom">
 
             {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
                 <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
@@ -64,11 +75,14 @@
             {% if subtitle != empty %}
                 <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
             {% endif %}
-            
-            <p class="stronger">{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}</p>
+
+            {% capture communicatorNames %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+            {% if communicatorNames and communicatorNames != empty %}
+                <p class="stronger">{{ communicatorNames }}</p>
+            {% endif %}
             
             {% if imageurl and imageurl != empty %}
-                <div class="ratio-landscape background-cover push-bottom" style="background-image:url('{{ imageurl }}'); margin-left: -30px; margin-right: -30px;"></div>
+                <div class="ratio-landscape background-cover push-bottom rounded" style="background-image:url('{{ imageurl }}');"></div>
             {% endif %}
 
             {% assign scripturesguid = Item | Attribute:'Scriptures','RawValue' %}
@@ -106,15 +120,18 @@
                 </div>
             </div>
             
-            {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:'', 18, false, 7 %}
-            {% assign shareimageurl = image %}
+            {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
+            {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+
+            {% assign shareimageurl = imageurl %}
             {% assign shareauthor = 'newspring' %}
             {% assign sharetitle = Item.Title %}
+            {% assign summary = Item | Attribute:'Summary' %}
             {%- capture sharesummary -%}
-                {% if Item.Summary != '' %}
-                    {{ Item.Summary | StripHtml }}
+                {% if summary and summary != empty %}
+                    {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
                 {% else %}
-                    {{ Item.Content | StripHtml | Truncate:140,'...' }}
+                    {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
                 {% endif %}
             {%- endcapture -%}
             {% assign sharehashtag = '' %}
@@ -125,7 +142,7 @@
                 <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
                     {[ tags guid:'{{ Item.Guid }}']}
                 </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                    <p class="tag-list"><small><b>{{ date }}</b></small></p>
+                    <p><small><b>{{ date }}</b></small></p>
                 </div>
             </div>
         </div>
@@ -138,4 +155,4 @@
 {% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
 {% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
 
-{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ imageurl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
