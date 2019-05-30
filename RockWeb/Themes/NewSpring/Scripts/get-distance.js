@@ -115,7 +115,6 @@ document.addEventListener("DOMContentLoaded", function(){
             var anchor = document.querySelector('#locations');
 
             // Scroll constructor located in _smooth-scroll.js, compiled into main.js
-            // scroll.animateScroll(anchor);
         });
     }
 
@@ -126,7 +125,6 @@ document.addEventListener("DOMContentLoaded", function(){
     if (origin) {
 
         var anchor = document.querySelector('#locations');
-        scroll.animateScroll(anchor);
 
         // Reorder location cards
         reorderLocations(origin);
@@ -139,14 +137,14 @@ document.addEventListener("DOMContentLoaded", function(){
     var locationsCount = locations.length;
 
     // Find a location query search
-    distanceSearchForm.addEventListener("submit", function(e){
-        e.preventDefault();
+    // distanceSearchForm.addEventListener("submit", function(e){
+    //     e.preventDefault();
 
-        // Get origin location data from form input field
-        var origin = distanceSearchForm.querySelector('input').value;
+    //     // Get origin location data from form input field
+    //     var origin = distanceSearchForm.querySelector('input').value;
 
-        // Reorder location cards
-        reorderLocations(origin);
+    //     // Reorder location cards
+    //     reorderLocations(origin);
 
-    });
+    // });
 });
