@@ -1273,9 +1273,9 @@ SELECT  CASE
             RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Growth Propensity", "core_MotivatorGrowthPropensity", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-            RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-            AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            // Person Attribute "Motivator Growth Propensity"
+            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "CEAA3D59-D53C-40EC-B7B8-E7BBB758BD4D", "Motivator Growth Propensity", "core_MotivatorGrowthPropensity", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
 
             // Person Attribute "Motivators: Relational Theme"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 0, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
