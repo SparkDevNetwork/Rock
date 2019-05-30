@@ -207,7 +207,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Motivator Cluster Type
         /// </summary>
-        public const string MOTIVATOR_CLUSTER_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
+        public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
 
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)

@@ -179,15 +179,15 @@ namespace Rockweb.Blocks.Crm
 <p>
 There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
 </p>
-<!--  Cluster Chart -->
+<!--  Theme Chart -->
     <div class=""panel panel-default"">
       <div class=""panel-heading"">
         <h2 class=""panel-title""><b>Composite Score</b></h2>
       </div>
       <div class=""panel-body"">
         {[chart type:'horizontalBar' chartheight:'200px' ]}
-        {% for motivatorClusterScore in MotivatorClusterScores %}
-            [[dataitem label:'{{ motivatorClusterScore.DefinedValue.Value }}' value:'{{ motivatorClusterScore.Value }}' fillcolor:'{{ motivatorClusterScore.DefinedValue | Attribute:'Color' }}' ]]
+        {% for motivatorThemeScore in MotivatorThemeScores %}
+            [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
             [[enddataitem]]
         {% endfor %}
         {[endchart]}
@@ -196,13 +196,13 @@ There are 22 possible motivators in this assessment. While your Top 5 Motivators
 <p>
 This graph is based on the average composite score for each cluster of Motivators.
 </p>
-{% for motivatorClusterScore in MotivatorClusterScores %}
+{% for motivatorThemeScore in MotivatorThemeScores %}
 <p>
-<b>{{ motivatorClusterScore.DefinedValue.Value }}</b>
+<b>{{ motivatorThemeScore.DefinedValue.Value }}</b>
 </br>
-{{ motivatorClusterScore.DefinedValue.Description }}
+{{ motivatorThemeScore.DefinedValue.Description }}
 </br>
-{{ motivatorClusterScore.DefinedValue | Attribute:'Summary' }}
+{{ motivatorThemeScore.DefinedValue | Attribute:'Summary' }}
 </p>
 
  {% endfor %}
@@ -218,8 +218,8 @@ This graph is based on the average composite score for each cluster of Motivator
 
       {[ chart type:'horizontalBar' ]}
         {% for motivatorScore in MotivatorScores %}
-        {% assign cluster = motivatorScore.DefinedValue | Attribute:'Cluster' %}
-            {% if cluster and cluster != empty %}
+        {% assign theme = motivatorScore.DefinedValue | Attribute:'Theme' %}
+            {% if theme and theme != empty %}
                 [[dataitem label:'{{ motivatorScore.DefinedValue.Value }}' value:'{{ motivatorScore.Value }}' fillcolor:'{{ motivatorScore.DefinedValue | Attribute:'Color' }}' ]]
                 [[enddataitem]]
             {% endif %}
@@ -661,7 +661,7 @@ This graph is based on the average composite score for each cluster of Motivator
                 mergeFields.Add( "Person", _targetPerson );
 
                 // The five Mode scores
-                mergeFields.Add( "MotivatorClusterScores", result.MotivatorClusterScores );
+                mergeFields.Add( "MotivatorThemeScores", result.MotivatorThemeScores );
                 mergeFields.Add( "MotivatorScores", result.MotivatorScores );
             }
 

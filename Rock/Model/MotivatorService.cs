@@ -340,13 +340,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="assessmentResponse">The assessment response.</param>
         /// <returns>returns a AssessmentResults object</returns>
-        static public AssessmentResults GetResult( Dictionary<string, int> assessmentResponse )
+        public static AssessmentResults GetResult( Dictionary<string, int> assessmentResponse )
         {
-            AssessmentResults testResults = new AssessmentResults();
-
-            var motivatorClusterScore = new Dictionary<Guid, List<decimal>>();
+            var assessmentResults = new AssessmentResults();
+            var motivatorThemeScore = new Dictionary<Guid, List<decimal>>();
             var motivatorScore = new Dictionary<DefinedValueCache, decimal>();
             var grandTotal = assessmentResponse.Sum( a => Convert.ToDouble( a.Value ) );
+
             foreach ( var motivatorDefinedValueGuid in constructData.Keys )
             {
                 var conflictProfile = constructData[( Guid ) motivatorDefinedValueGuid];
@@ -366,39 +366,42 @@ namespace Rock.Model
                 var motivatorDefinedValue = DefinedValueCache.Get( ( Guid ) motivatorDefinedValueGuid );
                 motivatorScore.AddOrReplace( motivatorDefinedValue, score );
 
-                testResults.AssessmentData.AddOrReplace( motivatorDefinedValue.Value, assessmentData );
+                assessmentResults.AssessmentData.AddOrReplace( motivatorDefinedValue.Value, assessmentData );
 
-                var clusterGuid = motivatorDefinedValue.GetAttributeValue("Cluster").AsGuidOrNull();
-                if ( clusterGuid.HasValue )
+                var themeGuid = motivatorDefinedValue.GetAttributeValue("Theme").AsGuidOrNull();
+                if ( themeGuid.HasValue )
                 {
-                    if ( !motivatorClusterScore.ContainsKey( clusterGuid.Value ) )
+                    if ( !motivatorThemeScore.ContainsKey( themeGuid.Value ) )
                     {
-                        motivatorClusterScore[clusterGuid.Value] = new List<decimal>();
+                        motivatorThemeScore[themeGuid.Value] = new List<decimal>();
                     }
-                    motivatorClusterScore[clusterGuid.Value].Add( score );
+
+                    motivatorThemeScore[themeGuid.Value].Add( score );
                 }
             }
 
-            foreach ( var clusterDefinedValueGuid in motivatorClusterScore.Keys )
+            foreach ( var themeDefinedValueGuid in motivatorThemeScore.Keys )
             {
-                var clusterScore = motivatorClusterScore[clusterDefinedValueGuid].Sum() / motivatorClusterScore[clusterDefinedValueGuid].Count();
-                var clusterDefinedValue = DefinedValueCache.Get( ( Guid ) clusterDefinedValueGuid );
-                testResults.MotivatorClusterScores.Add( new MotivatorScore()
-                                                        {
-                                                            DefinedValue = clusterDefinedValue,
-                                                            Value = clusterScore
-                                                        } );
+                var themeScore = motivatorThemeScore[themeDefinedValueGuid].Sum() / motivatorThemeScore[themeDefinedValueGuid].Count();
+                var themeDefinedValue = DefinedValueCache.Get( ( Guid ) themeDefinedValueGuid );
+                assessmentResults.MotivatorThemeScores.Add(
+                    new MotivatorScore()
+                    {
+                        DefinedValue = themeDefinedValue,
+                        Value = themeScore
+                    } );
             }
 
-            testResults.MotivatorScores = motivatorScore
-                                            .OrderByDescending( a => a.Value )
-                                            .Select( a => new MotivatorScore()
-                                            {
-                                                DefinedValue = a.Key,
-                                                Value = a.Value
-                                            } )
-                                            .ToList();
-            return testResults;
+            assessmentResults.MotivatorScores = motivatorScore
+                .OrderByDescending( a => a.Value )
+                .Select( a => new MotivatorScore()
+                {
+                    DefinedValue = a.Key,
+                    Value = a.Value
+                } )
+                .ToList();
+
+            return assessmentResults;
         }
 
         private static decimal GetPercentFromScore( double scoreValue )
@@ -428,15 +431,15 @@ namespace Rock.Model
         {
             person.LoadAttributes();
 
-            var motivatorTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_TYPE.AsGuid() );
+            //var motivatorTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_TYPE.AsGuid() );
             foreach ( var motivatorScore in assessmentResults.MotivatorScores )
             {
                 var scoreKey = motivatorScore.DefinedValue.GetAttributeValue( "AttributeScoreKey" );
                 person.SetAttributeValue( scoreKey, motivatorScore.Value );
             }
 
-            var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_CLUSTER_TYPE.AsGuid() );
-            foreach ( var motivatorClusterScore in assessmentResults.MotivatorClusterScores )
+            //var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_THEME_TYPE.AsGuid() );
+            foreach ( var motivatorClusterScore in assessmentResults.MotivatorThemeScores )
             {
                 var scoreKey = motivatorClusterScore.DefinedValue.GetAttributeValue( "AttributeScoreKey" );
                 person.SetAttributeValue( scoreKey, motivatorClusterScore.Value );
@@ -459,14 +462,14 @@ namespace Rock.Model
             var motivatorClusterScores = new Dictionary<DefinedValueCache, decimal>();
             var motivatorScores = new Dictionary<DefinedValueCache, decimal>();
 
-            var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_CLUSTER_TYPE.AsGuid() );
+            var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_THEME_TYPE.AsGuid() );
             foreach ( var motivatorClusterType in motivatorClusterTypes.DefinedValues )
             {
                 var scoreKey = motivatorClusterType.GetAttributeValue( "AttributeScoreKey" );
                 motivatorClusterScores.Add( motivatorClusterType, person.GetAttributeValue( scoreKey ).AsDecimal() );
             }
 
-            savedScores.MotivatorClusterScores = motivatorClusterScores
+            savedScores.MotivatorThemeScores = motivatorClusterScores
                                            .OrderByDescending( a => a.Value )
                                            .Select( a => new MotivatorScore()
                                            {
@@ -549,7 +552,7 @@ namespace Rock.Model
             public AssessmentResults()
             {
                 MotivatorScores = new List<MotivatorScore>();
-                MotivatorClusterScores = new List<MotivatorScore>();
+                MotivatorThemeScores = new List<MotivatorScore>();
                 AssessmentData = new Dictionary<string, Dictionary<string, string>>();
             }
 
@@ -567,7 +570,7 @@ namespace Rock.Model
             /// <value>
             /// The Motivator Cluster Score data.
             /// </value>
-            public List<MotivatorScore> MotivatorClusterScores { get; set; }
+            public List<MotivatorScore> MotivatorThemeScores { get; set; }
 
             /// <summary>
             /// Gets or sets the assessment data.
@@ -606,7 +609,7 @@ namespace Rock.Model
         public class MotivatorData
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="EQInventory"/> class.
+            /// Initializes a new instance of the <see cref="MotivatorData"/> class.
             /// </summary>
             /// <param name="mean">The mean.</param>
             /// <param name="standardDeviation">The standard deviation.</param>
