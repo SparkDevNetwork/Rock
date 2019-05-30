@@ -1273,14 +1273,13 @@ SELECT  CASE
             RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
 
-            
             // Person Attribute "Motivators: Growth Propensity"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 0, @"", @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 4, @"", @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA" );
             RockMigrationHelper.AddAttributeQualifier( @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA", @"ConfigurationJSON", @"[{""Guid"":""72536eae-bc85-41e6-a1b2-19755d7fd15e"",""RangeIndex"":0,""Label"":""Very High"",""Color"":""#3f56a1"",""HighValue"":null,""LowValue"":99.0},{""Guid"":""487cc20c-456d-439c-8beb-b61572b02c2a"",""RangeIndex"":1,""Label"":""High"",""Color"":""#3f56a1"",""HighValue"":98.0,""LowValue"":85.0},{""Guid"":""c7c1bb14-1b8d-44f5-911a-5acf2c94a1ef"",""RangeIndex"":2,""Label"":""Medium"",""Color"":""#0e9445"",""HighValue"":84.0,""LowValue"":17.0},{""Guid"":""a58108b7-3841-408f-a1b9-a0c3fc4daa8a"",""RangeIndex"":3,""Label"":""Somewhat Low"",""Color"":""#f0e3ba"",""HighValue"":16.0,""LowValue"":3.0},{""Guid"":""97e4f6d6-8225-439a-83bb-ca2469f917e8"",""RangeIndex"":4,""Label"":""Low"",""Color"":""#f13c1f"",""HighValue"":2.0,""LowValue"":0.0}]", @"537E9E56-C705-4736-B250-57D23305DF5B" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
             
             // Person Attribute "Motivators: Relational Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 0, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 3, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
             RockMigrationHelper.AddAttributeQualifier( @"CDCBA1D3-4129-43DB-9607-74F57BEBF807", @"ConfigurationJSON", @"[{""Guid"":""bd0a2d33-4bb0-44ee-a343-cfe80e0c3a79"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""f3aef44f-177f-408e-8739-3b2f6d4fbb8f"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""d101199c-c095-4778-92ea-e2ea9957d7c5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"FF41610F-7ABA-46E8-95A4-4A0CF6273A41" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_RELATIONAL_THEME );
 
@@ -1290,12 +1289,12 @@ SELECT  CASE
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_DIRECTIONAL_THEME );
 
             // Person Attribute "Motivators: Intellectual Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Intellectual Theme", @"Intellectual Theme", @"core_MotivatorsIntellectualTheme", @"", @"", 0, @"", @"592A5F89-5E8A-43D8-8843-760207D71699" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Intellectual Theme", @"Intellectual Theme", @"core_MotivatorsIntellectualTheme", @"", @"", 1, @"", @"592A5F89-5E8A-43D8-8843-760207D71699" );
             RockMigrationHelper.AddAttributeQualifier( @"592A5F89-5E8A-43D8-8843-760207D71699", @"ConfigurationJSON", @"[{""Guid"":""202c572c-79cd-4c66-9f14-28fdd81e3b7b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""f963047a-1d9a-4665-90bb-aa0aa46877a9"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""76d6dfab-f9d9-4ee3-ae28-20b687c76840"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"463BAEE0-CB9D-4CCC-9ABF-6420FCFA74BE" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_INTELLECTUAL_THEME );
 
             // Person Attribute "Motivators: Positional Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Positional Theme", @"Positional Theme", @"core_MotivatorsPositionalTheme", @"", @"", 0, @"", @"075FDF4D-DDEC-4106-B996-F48CD1EFC978" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Positional Theme", @"Positional Theme", @"core_MotivatorsPositionalTheme", @"", @"", 2, @"", @"075FDF4D-DDEC-4106-B996-F48CD1EFC978" );
             RockMigrationHelper.AddAttributeQualifier( @"075FDF4D-DDEC-4106-B996-F48CD1EFC978", @"ConfigurationJSON", @"[{""Guid"":""94cc75f7-177a-43a0-9dc4-37f0216771fe"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f4cf68"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""9b66a1f0-5333-4da8-9c17-78595357f66d"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f6d988"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""d15fb222-ff88-4adf-818b-a361f94f58d4"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f8e1a0"",""HighValue"":33.0,""LowValue"":0.0}]", @"38A0329C-AABE-4378-9508-3BCCBAC5722E" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_POSITIONAL_THEME );
         }
