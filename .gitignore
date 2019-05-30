@@ -42,7 +42,6 @@ RockWeb/documents/**/*
 
 # javascript deps
 node_modules
-.cache
 *.map
 /packages/
 /Installers/CheckScannerInstall/UpgradeLog.htm

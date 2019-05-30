@@ -54,14 +54,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum AssessmentRequestStatus
-    {
-        Pending = 0x0,
-        Complete = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -470,14 +462,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum OptionType
-    {
-        Agreement = 0x0,
-        Frequency = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersonAliasType
     {
         FromPersonAlias = 0x0,
@@ -641,7 +625,6 @@ namespace Rock.Client.Enums
         Pending = 0x0,
         Confirmed = 0x1,
         Declined = 0x2,
-        Unscheduled = 0x3,
     }
 
     /// <summary>

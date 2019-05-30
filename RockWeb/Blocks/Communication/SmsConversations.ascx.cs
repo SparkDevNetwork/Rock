@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( smsNumbers.Any() )
             {
-                var smsDetails = smsNumbers.Select( v => new
+                ddlSmsNumbers.DataSource = smsNumbers.Select( v => new
                 {
                     v.Id,
                     Description = string.IsNullOrWhiteSpace( v.Description )
@@ -270,8 +270,7 @@ namespace RockWeb.Blocks.Communication
                     : v.Description.LeftWithEllipsis( 25 ),
                 } );
 
-                ddlSmsNumbers.DataSource = smsDetails;
-                ddlSmsNumbers.Visible = smsNumbers.Count() > 1;
+                ddlSmsNumbers.Visible = smsNumbers.Count() > 0;
                 ddlSmsNumbers.DataValueField = "Id";
                 ddlSmsNumbers.DataTextField = "Description";
                 ddlSmsNumbers.DataBind();
@@ -288,10 +287,6 @@ namespace RockWeb.Blocks.Communication
                         ddlSmsNumbers.SelectedValue = smsNumberUserPref;
                     }
                 }
-
-                hlSmsNumber.Visible = smsNumbers.Count() == 1;
-                hlSmsNumber.Text = smsDetails.Select( v => v.Description ).FirstOrDefault();
-                hfSmsNumber.SetValue( smsNumbers.Count() > 1 ? ddlSmsNumbers.SelectedValue.AsInteger() : smsDetails.Select( v => v.Id ).FirstOrDefault() );
 
                 tglShowRead.Checked = this.GetUserPreference( keyPrefix + "showRead" ).AsBooleanOrNull() ?? true;
             }
@@ -319,8 +314,8 @@ namespace RockWeb.Blocks.Communication
             tbNewMessage.Visible = false;
             btnSend.Visible = false;
 
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
-            if ( smsPhoneDefinedValueId == default( int ) )
+            int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
+            if ( smsPhoneDefinedValueId == null )
             {
                 return;
             }
@@ -369,9 +364,9 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private string LoadResponsesForRecipient( int recipientId )
         {
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
+            int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
 
-            if ( smsPhoneDefinedValueId == default( int ) )
+            if ( smsPhoneDefinedValueId == null )
             {
                 return string.Empty;
             }
@@ -392,9 +387,9 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private string LoadResponsesForRecipient( string messageKey )
         {
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
+            int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
 
-            if ( smsPhoneDefinedValueId == default( int ) )
+            if ( smsPhoneDefinedValueId == null )
             {
                 return string.Empty;
             }
@@ -497,9 +492,9 @@ namespace RockWeb.Blocks.Communication
         /// <param name="messageKey">The message key.</param>
         private void UpdateReadProperty( string messageKey )
         {
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
+            int? smsPhoneDefinedValueId = ddlSmsNumbers.SelectedValue.AsIntegerOrNull();
 
-            if ( smsPhoneDefinedValueId == default( int ) )
+            if ( smsPhoneDefinedValueId == null )
             {
                 return;
             }
@@ -598,15 +593,7 @@ namespace RockWeb.Blocks.Communication
         {
             string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
 
-            if ( ddlSmsNumbers.Visible )
-            {
-                this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString(), false );
-                hfSmsNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-            }
-            else
-            {
-                this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString(), false );
-            }
+            this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString(), false );
             this.SetUserPreference( keyPrefix + "showRead", tglShowRead.Checked.ToString(), false );
         }
 
@@ -624,7 +611,7 @@ namespace RockWeb.Blocks.Communication
                 string fromPersonName = CurrentUser.Person.FullName;
 
                 // The sending phone is the selected one
-                DefinedValueCache fromPhone = DefinedValueCache.Get( hfSmsNumber.ValueAsInt() );
+                DefinedValueCache fromPhone = DefinedValueCache.Get( ddlSmsNumbers.SelectedValue.AsInteger() );
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
@@ -762,14 +749,14 @@ namespace RockWeb.Blocks.Communication
             int toPersonAliasId = ppRecipient.PersonAliasId.Value;
             var personAliasService = new PersonAliasService( new RockContext() );
             var toPerson = personAliasService.GetPerson( toPersonAliasId );
-            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled).Any())
             {
                 nbNoSms.Visible = true;
                 return;
             }
 
             SendMessage( toPersonAliasId, message );
-
+            
             HideDialog();
             LoadResponseListing();
         }
@@ -781,7 +768,7 @@ namespace RockWeb.Blocks.Communication
             int toPersonAliasId = ppRecipient.PersonAliasId.Value;
             var personAliasService = new PersonAliasService( new RockContext() );
             var toPerson = personAliasService.GetPerson( toPersonAliasId );
-            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled).Any())
             {
                 nbNoSms.Visible = true;
             }

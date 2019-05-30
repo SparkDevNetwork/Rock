@@ -152,7 +152,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 1000 )]
+        [MaxLength( 100 )]
         public string Subject { get; set; }
 
         /// <summary>

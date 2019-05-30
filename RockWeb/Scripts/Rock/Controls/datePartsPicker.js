@@ -24,7 +24,7 @@
         var requireYear = $datePartsPicker.attr('data-requireyear') == 'true';
         var allowFuture = $datePartsPicker.attr('data-allowFuture') == 'true';
         var itemLabelText = $datePartsPicker.attr('data-itemlabel');
-
+        
         var isValid = true;
 
         if (!allowFuture) {

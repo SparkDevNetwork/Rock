@@ -214,22 +214,6 @@ namespace Rock.Data
         public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the assessments.
-        /// </summary>
-        /// <value>
-        /// The assessments
-        /// </value>
-        public DbSet<Assessment> Assessments { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AssessmentTypes.
-        /// </summary>
-        /// <value>
-        /// The AssessmentTypes
-        /// </value>
-        public DbSet<AssessmentType> AssessmentTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>

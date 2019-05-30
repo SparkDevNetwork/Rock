@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
+//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,151 +37,98 @@ namespace Rockweb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows you to take a spiritual gifts test and saves your spiritual gifts score." )]
 
-    #region Block Attributes
-    [CodeEditorField( "Instructions",
-        Key = AttributeKeys.Instructions,
-        Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 400,
-        IsRequired = true,
-        DefaultValue = InstructionsDefaultValue,
-        Order = 0 )]
-
-    [CodeEditorField( "Results Message",
-        Key = AttributeKeys.ResultsMessage,
-        Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
-        EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 400,
-        IsRequired = true,
-        DefaultValue = ResultsMessageDefaultValue,
-        Order = 1 )]
-
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
-        Description = "The text to display as the heading.",
-        IsRequired = false,
-        DefaultValue = "Spiritual Gifts Assessment",
-        Order = 2 )]
-
-    [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
-        Description = "The css class name to use for the heading icon.",
-        IsRequired = false,
-        DefaultValue = "fa fa-gift",
-        Order = 3 )]
-
-    [IntegerField( "Number of Questions",
-        Key = AttributeKeys.NumberofQuestions,
-        Description = "The number of questions to show per page while taking the test",
-        IsRequired = true,
-        DefaultIntegerValue = 17,
-        Order = 4 )]
-
-    [BooleanField( "Allow Retakes",
-        Key = AttributeKeys.AllowRetakes,
-        Description = "If enabled, the person can retake the test after the minimum days passes.",
-        DefaultBooleanValue = true,
-        Order = 5 )]
-    #endregion Block Attributes
-    public partial class GiftsAssessment : Rock.Web.UI.RockBlock
-    {
-        #region AttributeDefaultValues
-        private const string InstructionsDefaultValue = @"
+    [TextField( "Set Page Title", "The text to display as the heading.", false, "Spiritual Gifts Assessment", order: 0 )]
+    [TextField( "Set Page Icon", "The css class name to use for the heading icon.", false, "fa fa-gift", order: 1 )]
+    [IntegerField( "Number of Questions", "The number of questions to show per page while taking the test", true, 17, order: 2 )]
+    [BooleanField( "Allow Retakes", "If enabled, the person can retake the test after the minimum days passes.", true, order: 3 )]
+    [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 360, order: 4 )]
+    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <h2>Welcome to Your Spiritual Gifts Assessment</h2>
 <p>
-    {{ Person.NickName }}, we are all called to a unique role in the church body, and are equipped with
-    the gifts required for this calling. This assessment identifies the common spiritual gifts that
-    you possess.
+    {{ Person.NickName }}, the purpose of this assessment is to help you identify spiritual gifts that are most naturally
+    used in the life of the local church. This survey does not include all spiritual gifts, just those that are often
+    seen in action for most churches and most people.
 </p>
 <p>
-    Don’t spend too much time thinking about your answer. Usually, your first responses is your most
-    natural. Since there are no right or wrong answers, just go with your instinct.
-</p>";
-
-        private const string ResultsMessageDefaultValue = @"
+    In churches it’s not uncommon to see 90% of the work being done by a weary 10%. Why does this happen?
+    Partially due to ignorance and partially due to avoidance of spiritual gifts. Here’s the process:
+</p>
+<ol>
+    <li>Discover the primary gifts given to us at our Spiritual birth.</li>
+    <li>Learn what these gifts are and what they are not.</li>
+    <li>See where these gifts fit into the functioning of the body. </li>
+</ol>
+<p>
+    When you are working within your Spirit-given gifts, you will be most effective for the body
+    of Christ in your local setting.
+</p>
+<p>
+    Before you begin, please take a moment and pray that the Holy Spirit would guide your thoughts,
+    calm your mind, and help you respond to each item as honestly as you can. Don't spend much time
+    on each item. Your first instinct is probably your best response.
+</p>" )]
+    [CodeEditorField( "Results Message", "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='row'>
     <div class='col-md-12'>
     <h2 class='h2'> Dominant Gifts</h2>
     </div>
     <div class='col-md-9'>
-        <div class='table-responsive'>
-            <table class='table'>
-                <thead>
-                    <tr>
-                        <th>
-                            Spiritual Gift
-                        </th>
-                        <th>
-                            You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if DominantGifts != empty %}
-                        {% for dominantGift in DominantGifts %}
-                            <tr>
-                                <td>
-                                    {{ dominantGift.Value }}
-                                </td>
-                                <td>
-                                    {{ dominantGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Dominant Gifts
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+    <table class='table table-bordered table-responsive'>
+    <thead>
+        <tr>
+            <th>
+                Spiritual Gift
+            </th>
+            <th>
+                You are uniquely wired to:
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dominantGift in DominantGifts %}
+        <tr>
+        <td>
+        {{ dominantGift.Value }}
+        </td>
+        <td>
+        {{ dominantGift.Description }}    
+        </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
     </div>
-</div>
-
+    </div>
+    
 <div class='row'>
     <div class='col-md-12'>
         <h2 class='h2'> Supportive Gifts</h2>
     </div>
     <div class='col-md-9'>
-        <div class='table-responsive'>
-            <table class='table'>
-                <thead>
-                    <tr>
+        <table class='table table-bordered table-responsive'>
+            <thead>
+                <tr>
+                   <th>
+                    Spiritual Gift
+                    </th>
                     <th>
-                        Spiritual Gift
-                        </th>
-                        <th>
-                        You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if SupportiveGifts != empty %}
-                        {% for supportiveGift in SupportiveGifts %}
-                            <tr>
-                                <td>
-                                    {{ supportiveGift.Value }}
-                                </td>
-                                <td>
-                                    {{ supportiveGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Supportive Gifts
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+                    You are uniquely wired to:
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for supportiveGift in SupportiveGifts %}
+            <tr>
+                <td>
+                {{ supportiveGift.Value }}
+                </td>
+                <td>
+                {{ supportiveGift.Description }}
+                </td>
+            </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div?
 <div class='row'>
@@ -189,95 +136,55 @@ namespace Rockweb.Blocks.Crm
         <h2 class='h2'> Other Gifts</h2>
     </div>
     <div class='col-md-9'>
-        <div class='table-responsive'>
-            <table class='table'>
-                <thead>
-                    <tr>
+        <table class='table table-bordered table-responsive'>
+            <thead>
+                <tr>
+                   <th>
+                    Spiritual Gift
+                    </th>
                     <th>
-                        Spiritual Gift
-                        </th>
-                        <th>
-                        You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if OtherGifts != empty %}
-                        {% for otherGift in OtherGifts %}
-                            <tr>
-                                <td>
-                                    {{ otherGift.Value }}
-                                </td>
-                                <td>
-                                    {{ otherGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Other Gifts
-                            </td>
-                        </tr>
-                    {% endif %}
-            </tbody>
-            </table>
-        </div>
+                    You are uniquely wired to:
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for otherGift in OtherGifts %}
+            <tr>
+                <td>
+                {{ otherGift.Value }}
+                </td>
+                <td>
+                    {{ otherGift.Description }}
+                </td>
+            </tr>
+                {% endfor %}
+           </tbody>
+        </table>
     </div>
-</div>";
-
-        #endregion AttributeDefaultValues
-
-        #region Attribute Keys
-        protected static class AttributeKeys
-        {
-            public const string NumberofQuestions = "NumberofQuestions";
-            public const string Instructions = "Instructions";
-            public const string SetPageTitle = "SetPageTitle";
-            public const string SetPageIcon = "SetPageIcon";
-            public const string ResultsMessage = "ResultsMessage";
-            public const string AllowRetakes = "AllowRetakes";
-        }
-
-        #endregion Attribute Keys
-
-        #region PageParameterKeys
-        /// <summary>
-        /// A defined list of page parameter keys used by this block.
-        /// </summary>
-        protected static class PageParameterKey
-        {
-            /// <summary>
-            /// The person identifier. Use this to get a person's Spiritual Gifts results.
-            /// </summary>
-            public const string PersonId = "PersonId";
-
-            /// <summary>
-            /// The assessment identifier
-            /// </summary>
-            public const string AssessmentId = "AssessmentId";
-
-            /// <summary>
-            /// The ULR encoded key for a person
-            /// </summary>
-            public const string Person = "Person";
-        }
-
-        #endregion PageParameterKeys
-
+</div>
+" )]
+    public partial class GiftsAssessment : Rock.Web.UI.RockBlock
+    {
         #region Fields
+
+        //block attribute keys
+        private const string NUMBER_OF_QUESTIONS = "NumberofQuestions";
+        private const string INSTRUCTIONS = "Instructions";
+        private const string SET_PAGE_TITLE = "SetPageTitle";
+        private const string SET_PAGE_ICON = "SetPageIcon";
+        private const string RESULTS_MESSAGE = "ResultsMessage";
+        private const string ALLOW_RETAKES = "AllowRetakes";
+        private const string MIN_DAYS_TO_RETAKE = "MinDaysToRetake";
 
         // View State Keys
         private const string ASSESSMENT_STATE = "AssessmentState";
-        private const string START_DATETIME = "StartDateTime";
 
         // View State Variables
-        private List<AssessmentResponse> _assessmentResponses;
+        private List<AssessmentResponse> AssessmentResponses;
 
         // used for private variables
-        private Person _targetPerson = null;
-        private int? _assessmentId = null;
-        private bool _isQuerystringPersonKey = false;
+        Person _targetPerson = null;
+        bool _isQuerystringPersonKey = false;
 
         // protected variables
         private decimal _percentComplete = 0;
@@ -308,17 +215,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
-            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the time to take the result
-        /// </summary>
-        public DateTime StartDateTime
-        {
-            get { return ViewState[START_DATETIME] as DateTime? ?? RockDateTime.Now; }
-            set { ViewState[START_DATETIME] = value; }
+            get { return ViewState[NUMBER_OF_QUESTIONS] as int? ?? 0; }
+            set { ViewState[NUMBER_OF_QUESTIONS] = value; }
         }
 
         #endregion
@@ -333,7 +231,7 @@ namespace Rockweb.Blocks.Crm
         {
             base.LoadViewState( savedState );
 
-            _assessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
+            AssessmentResponses = ViewState[ASSESSMENT_STATE] as List<AssessmentResponse> ?? new List<AssessmentResponse>();
         }
 
         /// <summary>
@@ -346,17 +244,9 @@ namespace Rockweb.Blocks.Crm
 
             SetPanelTitleAndIcon();
 
-            _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
-            string personKey = PageParameter( PageParameterKey.Person );
-            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-
-            // set the target person according to the parameter or use Current user if not provided.
-            if ( personId.HasValue )
-            {
-                // Try the person ID first.
-                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
-            }
-            else if ( personKey.IsNotNullOrWhiteSpace() )
+            // otherwise use the currently logged in person
+            string personKey = PageParameter( "Person" );
+            if ( !string.IsNullOrEmpty( personKey ) )
             {
                 try
                 {
@@ -372,18 +262,6 @@ namespace Rockweb.Blocks.Crm
             {
                 _targetPerson = CurrentPerson;
             }
-
-            if ( _targetPerson == null )
-            {
-                if ( _isQuerystringPersonKey || personId.HasValue )
-                {
-                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
-                }
-                else
-                {
-                    HidePanelsAndShowError( "You must be signed in to take the assessment.");
-                }
-            }
         }
 
         /// <summary>
@@ -392,67 +270,36 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            // Hide notification panels on every postback
+            nbError.Visible = false;
+
             if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
-                Assessment assessment = null;
-
                 if ( _targetPerson != null )
                 {
-                    var primaryAliasId = _targetPerson.PrimaryAliasId;
+                    SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
 
-                    if ( _assessmentId == 0 )
+                    if ( !savedScores.LastSaveDate.HasValue && !_isQuerystringPersonKey )
                     {
-                        // This indicates that the block should create a new assessment instead of looking for an existing one. e.g. a user directed re-take
-                        assessment = null;
+                        ShowInstructions();
                     }
                     else
                     {
-                        // Look for an existing pending or completed assessment.
-                        assessment = new AssessmentService( rockContext )
-                            .Queryable()
-                            .Where( a => ( _assessmentId.HasValue && a.Id == _assessmentId ) || ( a.PersonAliasId == primaryAliasId && a.AssessmentTypeId == assessmentType.Id ) )
-                            .OrderByDescending( a => a.CreatedDateTime )
-                            .FirstOrDefault();
-                    }
-
-                    if ( assessment != null )
-                    {
-                        hfAssessmentId.SetValue( assessment.Id );
-                    }
-                    else
-                    {
-                        hfAssessmentId.SetValue( 0 );
-                    }
-
-                    if ( assessment != null && assessment.Status == AssessmentRequestStatus.Complete )
-                    {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
-                        ShowResult( savedScores, assessment );
-                    }
-                    else if ( ( assessment == null && !assessmentType.RequiresRequest ) || ( assessment != null && assessment.Status == AssessmentRequestStatus.Pending ) )
-                    {
-                        if ( _targetPerson.Id != CurrentPerson.Id )
-                        {
-                            // If the current person is not the target person and there are no results to show then show a not taken message.
-                            HidePanelsAndShowError( string.Format("{0} does not have results for the Conflict Profile Assessment.", _targetPerson.FullName ) );
-                        }
-                        else
-                        {
-                            ShowInstructions();
-                        }
-                    }
-                    else
-                    {
-                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
+                        ShowResult( savedScores );
                     }
                 }
-            }
-            else
-            {
-                // Hide notification panels on every postback
-                nbError.Visible = false;
+                else
+                {
+                    pnlInstructions.Visible = false;
+                    pnlQuestion.Visible = false;
+                    pnlResult.Visible = false;
+                    nbError.Visible = true;
+
+                    if ( _isQuerystringPersonKey )
+                    {
+                        nbError.Text = "There is an issue locating the person associated with the request.";
+                    }
+                }
             }
         }
 
@@ -464,7 +311,7 @@ namespace Rockweb.Blocks.Crm
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ASSESSMENT_STATE] = _assessmentResponses;
+            ViewState[ASSESSMENT_STATE] = AssessmentResponses;
 
             return base.SaveViewState();
         }
@@ -480,7 +327,6 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStart_Click( object sender, EventArgs e )
         {
-            StartDateTime = RockDateTime.Now;
             ShowQuestions();
         }
 
@@ -491,7 +337,6 @@ namespace Rockweb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRetakeTest_Click( object sender, EventArgs e )
         {
-            hfAssessmentId.SetValue( 0 );
             ShowInstructions();
         }
 
@@ -509,42 +354,15 @@ namespace Rockweb.Blocks.Crm
             string commandArgument = btn.CommandArgument;
 
             var totalQuestion = pageNumber * QuestionCount;
-            if ( ( _assessmentResponses.Count > totalQuestion && !_assessmentResponses.All( a => a.Response.HasValue ) ) || "Next".Equals( commandArgument ) )
+            if ( AssessmentResponses.Count > totalQuestion && !AssessmentResponses.All( a => a.Response.HasValue ) || "Next".Equals( commandArgument ) )
             {
                 BindRepeater( pageNumber );
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
+                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( AssessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
                 SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
-                var resultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value );
-                var rockContext = new RockContext();
-
-                var assessmentService = new AssessmentService( rockContext );
-                Assessment assessment = null;
-
-                if ( hfAssessmentId.ValueAsInt() != 0 )
-                {
-                    assessment = assessmentService.Get( int.Parse( hfAssessmentId.Value ) );
-                }
-
-                if ( assessment == null )
-                {
-                    var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.GIFTS.AsGuid() );
-                    assessment = new Assessment()
-                    {
-                        AssessmentTypeId = assessmentType.Id,
-                        PersonAliasId = _targetPerson.PrimaryAliasId.Value
-                    };
-                    assessmentService.Add( assessment );
-                }
-
-                assessment.Status = AssessmentRequestStatus.Complete;
-                assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = new { Result = resultData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
-                rockContext.SaveChanges();
-
-                ShowResult( result, assessment );
+                ShowResult( result );
             }
         }
 
@@ -585,30 +403,17 @@ namespace Rockweb.Blocks.Crm
         #region Methods
 
         /// <summary>
-        /// Hides the Instructions and Questions panels and shows the specified error.
-        /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        private void HidePanelsAndShowError( string errorMessage )
-        {
-            pnlInstructions.Visible = false;
-            pnlQuestion.Visible = false;
-            pnlResult.Visible = false;
-            nbError.Visible = true;
-            nbError.Text = errorMessage;
-        }
-
-        /// <summary>
         /// Sets the page title and icon.
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            string panelTitle = this.GetAttributeValue( SET_PAGE_TITLE );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            string panelIcon = this.GetAttributeValue( SET_PAGE_ICON );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -623,30 +428,27 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = true;
             pnlQuestion.Visible = false;
             pnlResult.Visible = false;
-
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
-
-            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            lInstructions.Text = GetAttributeValue( INSTRUCTIONS ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
         /// Shows the result.
         /// </summary>
-        private void ShowResult( SpiritualGiftsService.AssessmentResults result, Assessment assessment )
+        private void ShowResult( SpiritualGiftsService.AssessmentResults result )
         {
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
 
-            var allowRetakes = GetAttributeValue( AttributeKeys.AllowRetakes ).AsBoolean();
-            var minDays = assessment.AssessmentType.MinimumDaysToRetake;
-
-            if ( !_isQuerystringPersonKey && allowRetakes && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
+            var allowRetakes = GetAttributeValue( ALLOW_RETAKES ).AsBoolean();
+            var minDays = GetAttributeValue( MIN_DAYS_TO_RETAKE ).AsInteger();
+            if ( !_isQuerystringPersonKey && allowRetakes && result.LastSaveDate.HasValue && result.LastSaveDate.Value.AddDays( minDays ) <= RockDateTime.Now )
             {
                 btnRetakeTest.Visible = true;
             }
@@ -654,9 +456,7 @@ namespace Rockweb.Blocks.Crm
             {
                 btnRetakeTest.Visible = false;
             }
-
             var spiritualGifts = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SPIRITUAL_GIFTS );
-
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
@@ -667,8 +467,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
             }
-
-            lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );
+            lResult.Text = GetAttributeValue( RESULTS_MESSAGE ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -679,7 +478,7 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = true;
             pnlResult.Visible = false;
-            _assessmentResponses = SpiritualGiftsService.GetQuestions()
+            AssessmentResponses = SpiritualGiftsService.GetQuestions()
                                     .Select( a => new AssessmentResponse()
                                     {
                                         Code = a.Key,
@@ -687,11 +486,11 @@ namespace Rockweb.Blocks.Crm
                                     } ).ToList();
 
             // If _maxQuestions has not been set yet...
-            if ( QuestionCount == 0 && _assessmentResponses != null )
+            if ( QuestionCount == 0 && AssessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
-                QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
+                int numQuestions = this.GetAttributeValue( NUMBER_OF_QUESTIONS ).AsInteger();
+                QuestionCount = ( numQuestions > AssessmentResponses.Count ) ? AssessmentResponses.Count : numQuestions;
             }
 
             BindRepeater( 0 );
@@ -704,12 +503,12 @@ namespace Rockweb.Blocks.Crm
         {
             hfPageNo.SetValue( pageNumber );
 
-            var answeredQuestionCount = _assessmentResponses.Where( a => a.Response.HasValue ).Count();
-            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( _assessmentResponses.Count ) ) * 100.0m, 2 );
+            var answeredQuestionCount = AssessmentResponses.Where( a => a.Response.HasValue ).Count();
+            PercentComplete = Math.Round( ( Convert.ToDecimal( answeredQuestionCount ) / Convert.ToDecimal( AssessmentResponses.Count ) ) * 100.0m, 2 );
 
             var skipCount = pageNumber * QuestionCount;
 
-            var questions = _assessmentResponses
+            var questions = AssessmentResponses
                 .Skip( skipCount )
                 .Take( QuestionCount + 1 )
                 .ToList();
@@ -749,7 +548,7 @@ namespace Rockweb.Blocks.Crm
             {
                 HiddenField hfQuestionCode = item.FindControl( "hfQuestionCode" ) as HiddenField;
                 RockRadioButtonList rblQuestion = item.FindControl( "rblQuestion" ) as RockRadioButtonList;
-                var assessment = _assessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
+                var assessment = AssessmentResponses.SingleOrDefault( a => a.Code == hfQuestionCode.Value );
                 if ( assessment != null )
                 {
                     assessment.Response = rblQuestion.SelectedValueAsInt( false );
@@ -764,28 +563,8 @@ namespace Rockweb.Blocks.Crm
         [Serializable]
         public class AssessmentResponse
         {
-            /// <summary>
-            /// Gets or sets the code.
-            /// </summary>
-            /// <value>
-            /// The code.
-            /// </value>
             public string Code { get; set; }
-
-            /// <summary>
-            /// Gets or sets the question.
-            /// </summary>
-            /// <value>
-            /// The question.
-            /// </value>
             public string Question { get; set; }
-
-            /// <summary>
-            /// Gets or sets the response.
-            /// </summary>
-            /// <value>
-            /// The response.
-            /// </value>
             public int? Response { get; set; }
         }
 

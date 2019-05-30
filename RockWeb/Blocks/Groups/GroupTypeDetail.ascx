@@ -135,7 +135,7 @@
                                             Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
                                         <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
                                             Help="Determines if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
-                                        <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag"
+                                        <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag" 
                                             Help="Determines if groups of this type should be allowed to manage tags." />
 
                                     </div>
@@ -180,7 +180,7 @@
                                             <Columns>
                                                 <asp:TemplateField>
                                                     <ItemTemplate>
-                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> -
+                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
                                                         <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
                                                     </ItemTemplate>
                                                 </asp:TemplateField>
@@ -212,7 +212,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemEmail" runat="server" Label="Schedule Confirmation Email" Help="The system email to use when a person is scheduled or when the schedule has been updated." />
-                                <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason If Schedule Declined" Help="Indicates whether a person must specify a reason when declining/cancelling." />
+                                <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason if Decline Schedule" Help="Indicates whether a person must specify a reason when declining/cancelling." />
                                 <Rock:NumberBox ID="nbScheduleConfirmationEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Email Offset Days" Help="The number of days prior to the schedule to send a confirmation email." />
                             </div>
                             <div class="col-md-6">

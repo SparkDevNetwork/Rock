@@ -22,16 +22,18 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Caching;
 using System.Text;
 using System.Threading;
 using System.Web;
 using System.Web.UI;
+
 using Rock;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.VersionInfo;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -283,20 +285,18 @@ namespace RockWeb.Blocks.Administration
                     routes.Add( route.Url, route );
             }
 
-            var pageLookup = pageService.Queryable().Select( a => new { a.InternalName, Id = a.Id } ).ToDictionary( a => a.Id, v => v );
-
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "<table class='table table-condensed'>" );
-            sb.AppendLine( "<tr><th>Route</th><th>Pages</th></tr>" );
+            sb.AppendFormat( "<table class='table table-condensed'>" );
+            sb.Append( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                var pages = routeItem.Value.PageIds().Select( s => pageLookup.GetValueOrNull(s) ).ToList();
+                //sb.AppendFormat( "{0}<br />", routeItem.Key );
+                var pages = pageService.GetListByIds( routeItem.Value.PageIds() );
 
-                sb.AppendLine( string.Format("<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Where(a => a != null).Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() )) );
+                sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) );
             }
 
-            sb.AppendLine( "</table>" );
-
+            sb.AppendFormat( "</table>" );
             return sb.ToString();
         }
 
