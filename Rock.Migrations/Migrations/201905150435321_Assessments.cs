@@ -266,134 +266,6 @@ namespace Rock.Migrations
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_SOLVING );
         }
 
-        /// <summary>
-        /// Adds the security to attribute. Deny View/Edit AllUsers.
-        /// Grant View/Edit Administrators, Staff, Staff Like
-        /// </summary>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        private void AddReadWriteSecurityToAttribute( string attributeGuid )
-        {
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                2,
-                Rock.Security.Authorization.VIEW,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                2,
-                Rock.Security.Authorization.EDIT,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-        }
-
-        private void AddReadOnlySecurityToAttribute( string attributeGuid )
-        {
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               2,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                3,
-                Rock.Security.Authorization.VIEW,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                0,
-                Rock.Security.Authorization.EDIT,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-        }
-
         private void AddConflictProfileDefinedTypeAndAttributesDown()
         {
             RockMigrationHelper.DeleteDefinedType( Rock.SystemGuid.DefinedType.ASSESSMENT_CONFLICT_PROFILE );
@@ -1839,19 +1711,23 @@ This graph is based on the average composite score for each cluster of Motivator
         //Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
         private void UpdateAdaptiveDiscAttributeCategoryUp()
         {
-            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" };
+            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" }; //"Personality Assessment Data"
 
             // Person Attribute "Adaptive D"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            AddDenyToAllSecurityToAttribute( "EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            AddDenyToAllSecurityToAttribute( "7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            AddDenyToAllSecurityToAttribute( "2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
+            AddDenyToAllSecurityToAttribute( "4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
         }
 
         //Revert Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
@@ -1861,15 +1737,19 @@ This graph is based on the average composite score for each cluster of Motivator
 
             // Person Attribute "Adaptive D"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            SecurityViewAllEditStaffAdmin( "EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            SecurityViewAllEditStaffAdmin( "7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            SecurityViewAllEditStaffAdmin( "2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
+            SecurityViewAllEditStaffAdmin( "4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
         }
 
         private void UpdateNaturalDiscAttributesUp()
@@ -1879,33 +1759,41 @@ This graph is based on the average composite score for each cluster of Motivator
             // Person Attribute "DISC: D Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: D Value", @"D Value", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
             RockMigrationHelper.AddAttributeQualifier( @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26", @"ConfigurationJSON", @"[{""Guid"":""4f7c1ea0-415d-4d89-86b1-a3b343d3115f"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""a5e8c10e-c360-4083-a3d4-fa18a096b68a"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""8f4ebbf2-d2d8-479d-9330-8ca2baab37a5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"AC4B49ED-4BDE-4838-B310-25697DC4804B" );
+            AddReadWriteSecurityToAttribute( "86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
 
             // Person Attribute "DISC: I Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: I Value", @"I Value", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
             RockMigrationHelper.AddAttributeQualifier( @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA", @"ConfigurationJSON", @"[{""Guid"":""353c14d3-96a1-441f-ac86-d663aa86ef37"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f4cf68"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""b8aa394f-6755-4f01-b625-3702825fcd00"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f6d988"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""e71c0ac8-2a4b-4cd6-a5ac-0285b24d9b1a"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f8e1a0"",""HighValue"":33.0,""LowValue"":0.0}]", @"C652B942-935C-4614-90EC-331D57A0DDE4" );
+            AddReadWriteSecurityToAttribute( "3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
 
             // Person Attribute "DISC: S Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: S Value", @"S Value", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
             RockMigrationHelper.AddAttributeQualifier( @"FA4341B4-28C7-409E-A101-548BB5759BE6", @"ConfigurationJSON", @"[{""Guid"":""da2a311d-e5d2-4127-8683-beb4f00a82d1"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""e115b2a1-f5dd-49bf-b5a7-11992e63fd8e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""27ab08d6-464d-42cf-92b8-c4cf4b3ec492"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"06E123D6-F149-421B-BE6C-CA1612A562E8" );
+            AddReadWriteSecurityToAttribute( "FA4341B4-28C7-409E-A101-548BB5759BE6" );
 
             // Person Attribute "DISC: C Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: C Value", @"C Value", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
             RockMigrationHelper.AddAttributeQualifier( @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251", @"ConfigurationJSON", @"[{""Guid"":""ee28fca6-4ccc-4cf1-a166-69171b34eb17"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f26863"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""786bfb8a-0b87-4d01-b71f-031f91b229fa"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f58d89"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""5d864986-1b74-4bd9-b99e-7ea177b348e6"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#fac4c2"",""HighValue"":33.0,""LowValue"":0.0}]", @"C312B380-703B-4F84-A720-C6FC7FC92059" );
+            AddReadWriteSecurityToAttribute( "3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
         }
 
         private void UpdateNatrualDiscAttributesDown()
         {
             // Person Attribute "Natural D"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural D", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
+            SecurityViewAllEditStaffAdmin( "86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
 
             // Person Attribute "Natural I"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural I", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
+            SecurityViewAllEditStaffAdmin( "3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
 
             // Person Attribute "Natural S"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural S", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
+            SecurityViewAllEditStaffAdmin( "FA4341B4-28C7-409E-A101-548BB5759BE6" );
 
             // Person Attribute "Natural C"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural C", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
+            SecurityViewAllEditStaffAdmin( "3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
         }
 
         /// <summary>
@@ -1995,6 +1883,7 @@ This graph is based on the average composite score for each cluster of Motivator
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_ADAPTING}'" );
         }
 
+        #region Security Methods
         private void AddDenyToAllSecurityToAttribute( string attributeGuid )
         {
             RockMigrationHelper.AddSecurityAuthForAttribute(
@@ -2016,6 +1905,185 @@ This graph is based on the average composite score for each cluster of Motivator
                 Guid.NewGuid().ToString() );
         }
 
+        /// <summary>
+        /// Removes any existing security settings on the attribute.
+        /// Allow View access to all users.
+        /// Allow Edit access to Staff, Staff-Like, and Administrators
+        /// </summary>
+        private void SecurityViewAllEditStaffAdmin( string attributeGuid )
+        {
+            RockMigrationHelper.DeleteSecurityAuthForAttribute( attributeGuid );
 
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+        }
+
+        /// <summary>
+        /// Adds the security to attribute. Deny View/Edit AllUsers.
+        /// Grant View/Edit Administrators, Staff, Staff Like
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        private void AddReadWriteSecurityToAttribute( string attributeGuid )
+        {
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                2,
+                Rock.Security.Authorization.EDIT,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+        }
+
+        /// <summary>
+        /// Deny Read/Edit for all users.
+        /// Allow View for Administrators, Staff, and Staff-Like.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        private void AddReadOnlySecurityToAttribute( string attributeGuid )
+        {
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                0,
+                Rock.Security.Authorization.EDIT,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+        }
+
+        #endregion Security Methods
     }
 }
