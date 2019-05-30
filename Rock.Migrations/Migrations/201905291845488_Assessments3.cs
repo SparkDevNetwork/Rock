@@ -37,6 +37,7 @@ namespace Rock.Migrations
             RemoveAttributesFromSpiritualGiftsDefinedType();
             RemovePostHtmlFromPersonSecurityTab();
             UpdateChartShortcodeForGaugeChartUp();
+            CreateSpiritualGiftsAttributeCategory();
         }
 
         /// <summary>
@@ -704,6 +705,19 @@ var chart = new Chart(ctx, {
                 WHERE [Guid] = '43819A34-4819-4507-8FEA-2E406B5474EA'";
 
             Sql( qry );
+        }
+
+        /// <summary>
+        /// Creates the spiritual gifts attribute category and updates Dominant, Supportive, and other to use it.
+        /// </summary>
+        private void CreateSpiritualGiftsAttributeCategory()
+        {
+            RockMigrationHelper.UpdatePersonAttributeCategory( "Spiritual Gifts", "fa fa-gift", "", "8E94CE6F-716D-4B6D-9BEC-C83385B90006" );
+            var categories = new System.Collections.Generic.List<string> { "8E94CE6F-716D-4B6D-9BEC-C83385B90006" };
+            
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Dominant Gifts", @"", @"core_DominantGifts", @"", @"", 15, @"", @"F76FC75E-B33F-42B8-B360-15BA9A1F0F9A" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Supportive Gifts", @"", @"core_SupportiveGifts", @"", @"", 16, @"", @"0499E359-3A7B-4138-A3EE-44CBF9750E33" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Other Gifts", @"", @"core_OtherGifts", @"", @"", 17, @"", @"F33EC30E-7E5C-488E-AB48-81977CCFB185" );
         }
     }
 }
