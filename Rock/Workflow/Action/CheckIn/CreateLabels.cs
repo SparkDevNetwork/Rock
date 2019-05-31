@@ -266,7 +266,12 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var attendance in attendanceRecords )
             {
-                attendance.AttendanceData = new AttendanceData() { LabelData = labelData };
+                if (attendance.AttendanceData == null)
+                {
+                    attendance.AttendanceData = new AttendanceData();
+                }
+
+                attendance.AttendanceData.LabelData = labelData;
             }
 
             rockContext.SaveChanges();
