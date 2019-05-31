@@ -183,45 +183,11 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
-            RegisterScript();
-
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
             if ( bodyTag != null )
             {
                 bodyTag.AddCssClass( "checkin-welcome-bg" );
             }
-
-            // For Label Reprints
-            string script = string.Format( @"
-        function GetLabelTypeSelection() {{
-            var ids = '';
-            $('div.js-label-list').find('i.fa-check-square').each( function() {{
-                ids += $(this).closest('a').attr('data-label-guid') + ',';
-            }});
-            if (ids == '') {{
-                bootbox.alert('Please select at least one tag');
-                return false;
-            }}
-            else
-            {{
-                $('#{0}').button('loading')
-                $('#{1}').val(ids);
-                return true;
-            }}
-        }}
-
-        $('a.js-label-select').click( function() {{
-            $(this).toggleClass('active');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
-            var ids = '';
-            $('div.js-label-list').find('i.fa-check-square').each( function() {{
-                ids += $(this).closest('a').attr('data-label-guid') + ',';
-            }});
-            $('#{1}').val(ids);
-        }});
-
-", lbReprintSelectLabelTypes.ClientID, hfLabelFileGuids.ClientID );
-            ScriptManager.RegisterStartupScript( pnlReprintSelectedPersonLabels, pnlReprintSelectedPersonLabels.GetType(), "SelectLabelTypes", script, true );
         }
 
         /// <summary>
@@ -331,22 +297,6 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Registers the script.
-        /// </summary>
-        private void RegisterScript()
-        {
-            var script = new StringBuilder();
-            script.AppendFormat( @"
-
-        function PostRefresh() {{
-            window.location = ""javascript:{0}"";
-        }}
-
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "refresh-postback", script.ToString(), true );
-        }
-
-        /// <summary>
         /// Clears the selection.
         /// </summary>
         private void ClearSelection()
@@ -395,7 +345,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             bool isActive = false;
 
-            hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
+            hfRefreshTimerSeconds.Value = "1";// ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;

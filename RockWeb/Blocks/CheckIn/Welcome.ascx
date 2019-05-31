@@ -35,6 +35,38 @@
                 }
             });
 
+            function PostRefresh() {
+                window.location = "javascript:__doPostBack('<%=lbRefresh.ClientID %>','')";
+            }
+
+            function GetLabelTypeSelection() {
+                var ids = '';
+                $('div.js-label-list').find('i.fa-check-square').each(function () {
+                    ids += $(this).closest('a').attr('data-label-guid') + ',';
+                });
+                if (ids == '') {
+                    bootbox.alert('Please select at least one tag');
+                    return false;
+                }
+                else {
+                    $('#<%=lbReprintSelectLabelTypes.ClientID %>').button('loading')
+                    $('#<%=hfLabelFileGuids.ClientID %>').val(ids);
+                    return true;
+                }
+            }
+
+            $('a.js-label-select').click(function () {
+                $(this).toggleClass('active');
+                $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+                var ids = '';
+                $('div.js-label-list').find('i.fa-check-square').each(function () {
+                    ids += $(this).closest('a').attr('data-label-guid') + ',';
+                });
+                $('#ctl00_main_ctl09_ctl01_ctl06_hfLabelFileGuids').val(ids);
+            });
+
+
+
             Sys.Application.add_load(function () {
 
                 var timeoutSeconds = $('.js-refresh-timer-seconds').val();
