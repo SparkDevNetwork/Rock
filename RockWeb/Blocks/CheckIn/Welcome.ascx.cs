@@ -174,6 +174,9 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
+            // ZebraPrint is needed for client side label re-printing.
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
+
             if ( CurrentCheckInState == null )
             {
                 NavigateToPreviousPage();
@@ -345,7 +348,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             bool isActive = false;
 
-            hfRefreshTimerSeconds.Value = "1";// ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
+            hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
@@ -703,10 +706,13 @@ namespace RockWeb.Blocks.CheckIn
             var personId = hfSelectedPersonId.ValueAsInt();
             var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
-            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, this );
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request );
 
             pnlReprintResults.Visible = true;
             pnlReprintSelectedPersonLabels.Visible = false;
+
+            hfLabelFileGuids.Value = string.Empty;
+            hfSelectedPersonId.Value = string.Empty;
 
             lReprintResultsHtml.Text = messages.JoinStrings( "<br>" );
         }
