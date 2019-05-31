@@ -47,6 +47,15 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            Sql( @"UPDATE
+                    dbo.[RegistrationTemplate]
+                   SET [MaxRegistrants] = 0
+                   WHERE [MaxRegistrants] IS NULL
+
+                   UPDATE
+                    dbo.[RegistrationInstance]
+                   SET [MaxAttendees] = 0
+                   WHERE [MaxAttendees] IS NULL" );
             AlterColumn( "dbo.RegistrationTemplate", "MaxRegistrants", c => c.Int( nullable: false ) );
             AlterColumn( "dbo.RegistrationInstance", "MaxAttendees", c => c.Int( nullable: false ) );
         }

@@ -952,7 +952,7 @@ namespace RockWeb.Blocks.Finance
 
         #region Helper Class
 
-        public class BatchAccountSummary
+        public class BatchAccountSummary : DotLiquid.Drop
         {
             public int AccountId { get; set; }
             public int AccountOrder
@@ -979,7 +979,7 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        public class BatchRow
+        public class BatchRow : DotLiquid.Drop
         {
             public int Id { get; set; }
             public DateTime BatchStartDateTime { get; set; }
@@ -1079,7 +1079,6 @@ namespace RockWeb.Blocks.Finance
                     return Status.ConvertToString();
                 }
             }
-
 
             public string StatusLabelClass
             {
