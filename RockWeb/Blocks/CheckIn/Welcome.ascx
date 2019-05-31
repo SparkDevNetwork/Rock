@@ -55,19 +55,17 @@
                 }
             }
 
-            $('a.js-label-select').click(function () {
-                $(this).toggleClass('active');
-                $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
-                var ids = '';
-                $('div.js-label-list').find('i.fa-check-square').each(function () {
-                    ids += $(this).closest('a').attr('data-label-guid') + ',';
-                });
-                $('#ctl00_main_ctl09_ctl01_ctl06_hfLabelFileGuids').val(ids);
-            });
-
-
-
             Sys.Application.add_load(function () {
+
+                $('a.js-label-select').off('click').on('click', function () {
+                    $(this).toggleClass('active');
+                    $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+                    var ids = '';
+                    $('div.js-label-list').find('i.fa-check-square').each(function () {
+                        ids += $(this).closest('a').attr('data-label-guid') + ',';
+                    });
+                    $('.js-label-file-guids').val(ids);
+                });
 
                 var timeoutSeconds = $('.js-refresh-timer-seconds').val();
                 timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
@@ -405,7 +403,7 @@
 
                 <asp:HiddenField ID="hfSelectedPersonId" runat="server"></asp:HiddenField>
                 <asp:HiddenField ID="hfSelectedAttendanceIds" runat="server"></asp:HiddenField>
-                <asp:HiddenField ID="hfLabelFileGuids" runat="server"></asp:HiddenField>
+                <Rock:HiddenFieldWithClass ID="hfLabelFileGuids" runat="server" CssClass="js-label-file-guids" />
             </div>
 
             <div class="checkin-footer">

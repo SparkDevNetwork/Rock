@@ -139,10 +139,14 @@ namespace Rock.Utility
         /// <param name="fileGuids">The file guids of the label types to print.</param>
         /// <param name="personId">The person whose labels to print.</param>
         /// <param name="selectedAttendanceIds">The attendance Ids that have the labels to be reprinted.</param>
-        /// <param name="control">The control to register/inject the client side printing into.</param>
+        /// <param name="control">The control to register/inject the client side printing into. This should be
+        /// a control that is inside an UpdatePanel control so that the ScriptManager can register the needed client script block.</param>
+        /// <param name="request">The HTTP Request so that the request's URL can be used when needed for client printing.</param>
         /// <param name="printerAddress">The IP Address of a printer to send the print job to, overriding what is in the label.</param>
-        /// <returns>A list of any messages that occur during printing.</returns>
-        public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, string printerAddress = null )
+        /// <returns>
+        /// A list of any messages that occur during printing.
+        /// </returns>
+        public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, System.Web.HttpRequest request, string printerAddress = null )
         {
             // Fetch the actual labels and print them
             var rockContext = new RockContext();
@@ -195,10 +199,12 @@ namespace Rock.Utility
             // Print client labels
             if ( printFromClient.Any() )
             {
+                var urlRoot = string.Format( "{0}://{1}", request.Url.Scheme, request.Url.Authority );
                 printFromClient
                     .OrderBy( l => l.PersonId )
                     .ThenBy( l => l.Order )
-                    .ToList();
+                    .ToList()
+                    .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
 
                 AddLabelScript( printFromClient.ToJson(), control );
             }
@@ -275,7 +281,7 @@ namespace Rock.Utility
             );
 	    }}
 ", jsonObject );
-            ScriptManager.RegisterStartupScript( control, control.GetType(), "addLabelScript", script, true );
+            ScriptManager.RegisterClientScriptBlock( control, control.GetType(), "addLabelScript", script, true );
         }
 
         #region Private Methods
