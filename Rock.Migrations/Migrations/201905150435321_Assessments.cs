@@ -226,32 +226,32 @@ namespace Rock.Migrations
             var categories = new System.Collections.Generic.List<string> { "EDD33F72-ECED-49BC-AC49-3643B60AD736" };
 
             // Person Attribute "Conflict Mode: Winning"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 0, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Winning", @"Mode: Winning", @"core_ConflictModeWinning", @"", @"", 3, @"", @"7147F706-388E-45E6-BE21-893FC7D652AA" );
             RockMigrationHelper.AddAttributeQualifier( @"7147F706-388E-45E6-BE21-893FC7D652AA", @"ConfigurationJSON", @"[{""Guid"":""951e4864-78c7-4d9c-8548-fc7d6a5cc91b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#b21f22"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""ca9fd375-5adf-4a56-ae84-5941015f454e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#e15759"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""2f91c1ea-3d13-4a5c-9f33-ed8948e7fb1c"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f0adae"",""HighValue"":33.0,""LowValue"":0.0}]", @"33306923-B938-4156-A4D6-4ABF75146B9D" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_WINNING );
 
             // Person Attribute "Conflict Mode: Resolving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 0, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Resolving", @"Mode: Resolving", @"core_ConflictModeResolving", @"", @"", 4, @"", @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE" );
             RockMigrationHelper.AddAttributeQualifier( @"5B811EAC-51B2-41F2-A55A-C966D9DB05EE", @"ConfigurationJSON", @"[{""Guid"":""022c15d2-9e23-46aa-a18b-3e9a49183adf"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""7ca1d560-fc1e-4f20-b4e8-38ae3ab1385b"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""11d01d8f-d555-409f-b563-964461382a17"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"67985444-26DE-46F1-8A93-41EE55052170" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_RESOLVING );
 
             // Person Attribute "Conflict Mode: Compromising"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 0, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Compromising", @"Mode: Compromising", @"core_ConflictModeCompromising", @"", @"", 5, @"", @"817D6B13-E4AA-4E93-8547-FE711A0065F2" );
             RockMigrationHelper.AddAttributeQualifier( @"817D6B13-E4AA-4E93-8547-FE711A0065F2", @"ConfigurationJSON", @"[{""Guid"":""b08b08fd-88a9-46cc-87c3-cb17368d4b56"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""80c8f457-9afc-4dd1-8d18-a86037dba6c9"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""eba49b52-17c4-4813-9688-e316b767f295"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"AACC439C-A2DC-40EC-BC22-96A1ABA4BB72" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_COMPROMISING );
 
             // Person Attribute "Conflict Mode: Avoiding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 0, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Avoiding", @"Mode: Avoiding", @"core_ConflictModeAvoiding", @"", @"", 6, @"", @"071A8EFA-AD1C-436A-8E1E-23D215617004" );
             RockMigrationHelper.AddAttributeQualifier( @"071A8EFA-AD1C-436A-8E1E-23D215617004", @"ConfigurationJSON", @"[{""Guid"":""412a6f33-eee1-4179-a762-1df8a8b1ac6b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""25633115-9868-4c2a-89c7-97a15509c727"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""7e6bf4ac-16fa-47e4-a60d-956924ffc474"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"1835F432-A316-4347-8840-2DA5C3E24D2C" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_AVOIDING );
 
             // Person Attribute "Conflict Mode: Yielding"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 0, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Mode: Yielding", @"Mode: Yielding", @"core_ConflictModeYielding", @"", @"", 7, @"", @"D30A33AD-7A60-43E0-84DA-E23600156BF7" );
             RockMigrationHelper.AddAttributeQualifier( @"D30A33AD-7A60-43E0-84DA-E23600156BF7", @"ConfigurationJSON", @"[{""Guid"":""542a5291-7d2d-40c1-bde1-fff6167e145a"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""5efa046b-f235-4ce3-9568-4daafb4860a4"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""f765b351-8e60-4d49-a8c4-d14ab761cbb9"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"45C648A3-26A9-47D8-B380-3B916FAAF701" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_MODE_YIELDING );
 
             // Person Attribute "Conflict Theme: Accommodating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 0, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Accommodating", @"Theme: Accommodating", @"core_ConflictThemeAccommodating", @"", @"", 2, @"", @"404A64FB-7396-4896-9C94-84DE21E995CA" );
             RockMigrationHelper.AddAttributeQualifier( @"404A64FB-7396-4896-9C94-84DE21E995CA", @"ConfigurationJSON", @"[{""Guid"":""c7a0cf27-032a-4ce4-be51-228f56750ba7"",""RangeIndex"":0,""Label"":""High"",""Color"":""#50aa3c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""fe2c3be8-75e5-4ee1-8559-8f6fa531bf07"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#8cd17d"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""1fa912d5-772d-48d4-8d35-5a3791096777"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#cdebc6"",""HighValue"":33.0,""LowValue"":0.0}]", @"4ACECE69-D2E6-494B-96A2-4C5D15392935" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_ACCOMMODATING );
 
@@ -261,137 +261,9 @@ namespace Rock.Migrations
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_WINNING );
 
             // Person Attribute "Conflict Theme: Solving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 0, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Conflict Theme: Solving", @"Theme: Solving", @"core_ConflictThemeSolving", @"", @"", 1, @"", @"33235605-D8BB-4C1E-B231-6F085970A14F" );
             RockMigrationHelper.AddAttributeQualifier( @"33235605-D8BB-4C1E-B231-6F085970A14F", @"ConfigurationJSON", @"[{""Guid"":""fbd84cfb-bd89-4ed5-a1b3-834e2118ae9b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#43678e"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""c43e78c1-b675-48a2-8039-5784aadb8502"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#789abf"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""b2757ecb-8d72-4ccd-af6e-d8f022b2473d"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#bdcee0"",""HighValue"":33.0,""LowValue"":0.0}]", @"34483B88-0BDF-4E23-8E56-4183FA8DF1A1" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_CONFLICT_THEME_SOLVING );
-        }
-
-        /// <summary>
-        /// Adds the security to attribute. Deny View/Edit AllUsers.
-        /// Grant View/Edit Administrators, Staff, Staff Like
-        /// </summary>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        private void AddReadWriteSecurityToAttribute( string attributeGuid )
-        {
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                2,
-                Rock.Security.Authorization.VIEW,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.EDIT,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                2,
-                Rock.Security.Authorization.EDIT,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-        }
-
-        private void AddReadOnlySecurityToAttribute( string attributeGuid )
-        {
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               0,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               1,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-               attributeGuid,
-               2,
-               Rock.Security.Authorization.VIEW,
-               true,
-               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-               ( int ) Rock.Model.SpecialRole.None,
-               Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                3,
-                Rock.Security.Authorization.VIEW,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
-
-            RockMigrationHelper.AddSecurityAuthForAttribute(
-                attributeGuid,
-                0,
-                Rock.Security.Authorization.EDIT,
-                false,
-                null,
-                ( int ) Rock.Model.SpecialRole.AllUsers,
-                Guid.NewGuid().ToString() );
         }
 
         private void AddConflictProfileDefinedTypeAndAttributesDown()
@@ -474,27 +346,27 @@ namespace Rock.Migrations
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_AWARENESS );
 
             // Person Attribute "EQ: Self Regulating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Self Regulating", @"Self Regulating", @"core_EQSelfRegulating", @"", @"", 0, @"", @"149CD0CD-3CD6-44B6-8D84-A17A477A8978" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Self Regulating", @"Self Regulating", @"core_EQSelfRegulating", @"", @"", 1, @"", @"149CD0CD-3CD6-44B6-8D84-A17A477A8978" );
             RockMigrationHelper.AddAttributeQualifier( @"149CD0CD-3CD6-44B6-8D84-A17A477A8978", @"ConfigurationJSON", @"[{""Guid"":""0cb16450-f31e-48cc-8b56-6b851416551e"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""902c2340-3f11-46fc-8701-1c5bfa687464"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""690d4410-dfb1-448e-804f-d76d9ee11e02"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"9C17DBBA-820A-4FDE-A425-F52CE6592B69" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_SELF_REGULATING );
 
             // Person Attribute "EQ: Others Awareness"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Awareness", @"Others Awareness", @"core_EQOthersAwareness", @"", @"", 0, @"", @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Awareness", @"Others Awareness", @"core_EQOthersAwareness", @"", @"", 2, @"", @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78" );
             RockMigrationHelper.AddAttributeQualifier( @"A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78", @"ConfigurationJSON", @"[{""Guid"":""0213bd4e-1187-4990-84d8-79cd9c8046ad"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""b8b10704-f7ca-45f7-b907-5e152c0e6ce1"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""8d6f3051-e640-4268-a3d8-f990676e74b7"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"99A8D4E4-9D48-48C4-9661-6AB1AAF2279F" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS );
 
             // Person Attribute "EQ: Others Regulating"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Regulating", @"Others Regulating", @"core_EQOthersRegulating", @"", @"", 0, @"", @"129C108E-CE61-4DFB-A9A8-1EBC3462022E" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Others Regulating", @"Others Regulating", @"core_EQOthersRegulating", @"", @"", 3, @"", @"129C108E-CE61-4DFB-A9A8-1EBC3462022E" );
             RockMigrationHelper.AddAttributeQualifier( @"129C108E-CE61-4DFB-A9A8-1EBC3462022E", @"ConfigurationJSON", @"[{""Guid"":""d7eaa798-e069-4216-a07f-e652173730d8"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""dc01f800-204a-487a-8014-19c2b992cfbe"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""017f9b50-943a-4707-9547-b4648759ba75"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"AED8EA0E-CD43-47C8-8984-92790BC7BCDF" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING );
 
             // Person Attribute "EQ: Problem Solving"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Problem Solving", @"Problem Solving", @"core_EQProblemSolving", @"", @"", 0, @"", @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Problem Solving", @"Problem Solving", @"core_EQProblemSolving", @"", @"", 4, @"", @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D" );
             RockMigrationHelper.AddAttributeQualifier( @"B598BF9C-7A0C-467E-B467-13B40DAC9F8D", @"ConfigurationJSON", @"[{""Guid"":""c185d175-cd75-4c63-a5b2-0e7ab0f804a2"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""becd7784-307e-4ecd-be95-e6dacdeba53a"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""593cf5b9-315c-4216-8ef0-8bd17bdbadde"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"8AFD4B98-09F3-42EE-8D7C-81B89D543A43" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_SCALES_PROBLEM_SOLVING );
 
             // Person Attribute "EQ: Under Stress"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Under Stress", @"Under Stress", @"core_EQUnderStress", @"", @"", 0, @"", @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"EQ: Under Stress", @"Under Stress", @"core_EQUnderStress", @"", @"", 5, @"", @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED" );
             RockMigrationHelper.AddAttributeQualifier( @"C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED", @"ConfigurationJSON", @"[{""Guid"":""908a1346-378f-4cad-b032-ef419cc9bc1d"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""5dfeac9f-7060-4203-b345-bc5ecec16f31"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""2ed1ac01-ca3b-44d6-927f-a8e2b878a4e3"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"3064309F-8011-41A3-A89C-43F2FB612857" );
             AddReadWriteSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_EQ_SCALES_UNDER_STRESS );
         }
@@ -1401,12 +1273,13 @@ SELECT  CASE
             RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
             AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_VISIONING );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DECIMAL, "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969", "Motivator Growth Propensity", "core_MotivatorGrowthPropensity", "", "", 0, "", SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-            RockMigrationHelper.DeleteSecurityAuthForAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-            AddDenyToAllSecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
-
+            // Person Attribute "Motivators: Growth Propensity"
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Growth Propensity", @"Growth Propensity", @"core_MotivatorGrowthPropensity", @"", @"", 4, @"", @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA" );
+            RockMigrationHelper.AddAttributeQualifier( @"3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA", @"ConfigurationJSON", @"[{""Guid"":""72536eae-bc85-41e6-a1b2-19755d7fd15e"",""RangeIndex"":0,""Label"":""Very High"",""Color"":""#3f56a1"",""HighValue"":null,""LowValue"":99.0},{""Guid"":""487cc20c-456d-439c-8beb-b61572b02c2a"",""RangeIndex"":1,""Label"":""High"",""Color"":""#3f56a1"",""HighValue"":98.0,""LowValue"":85.0},{""Guid"":""c7c1bb14-1b8d-44f5-911a-5acf2c94a1ef"",""RangeIndex"":2,""Label"":""Medium"",""Color"":""#0e9445"",""HighValue"":84.0,""LowValue"":17.0},{""Guid"":""a58108b7-3841-408f-a1b9-a0c3fc4daa8a"",""RangeIndex"":3,""Label"":""Somewhat Low"",""Color"":""#f0e3ba"",""HighValue"":16.0,""LowValue"":3.0},{""Guid"":""97e4f6d6-8225-439a-83bb-ca2469f917e8"",""RangeIndex"":4,""Label"":""Low"",""Color"":""#f13c1f"",""HighValue"":2.0,""LowValue"":0.0}]", @"537E9E56-C705-4736-B250-57D23305DF5B" );
+            AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_GROWTHPROPENSITY );
+            
             // Person Attribute "Motivators: Relational Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 0, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Relational Theme", @"Relational Theme", @"core_MotivatorsRelationalTheme", @"", @"", 3, @"", @"CDCBA1D3-4129-43DB-9607-74F57BEBF807" );
             RockMigrationHelper.AddAttributeQualifier( @"CDCBA1D3-4129-43DB-9607-74F57BEBF807", @"ConfigurationJSON", @"[{""Guid"":""bd0a2d33-4bb0-44ee-a343-cfe80e0c3a79"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""f3aef44f-177f-408e-8739-3b2f6d4fbb8f"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""d101199c-c095-4778-92ea-e2ea9957d7c5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"FF41610F-7ABA-46E8-95A4-4A0CF6273A41" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_RELATIONAL_THEME );
 
@@ -1416,12 +1289,12 @@ SELECT  CASE
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_DIRECTIONAL_THEME );
 
             // Person Attribute "Motivators: Intellectual Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Intellectual Theme", @"Intellectual Theme", @"core_MotivatorsIntellectualTheme", @"", @"", 0, @"", @"592A5F89-5E8A-43D8-8843-760207D71699" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Intellectual Theme", @"Intellectual Theme", @"core_MotivatorsIntellectualTheme", @"", @"", 1, @"", @"592A5F89-5E8A-43D8-8843-760207D71699" );
             RockMigrationHelper.AddAttributeQualifier( @"592A5F89-5E8A-43D8-8843-760207D71699", @"ConfigurationJSON", @"[{""Guid"":""202c572c-79cd-4c66-9f14-28fdd81e3b7b"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""f963047a-1d9a-4665-90bb-aa0aa46877a9"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""76d6dfab-f9d9-4ee3-ae28-20b687c76840"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"463BAEE0-CB9D-4CCC-9ABF-6420FCFA74BE" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATORS_INTELLECTUAL_THEME );
 
             // Person Attribute "Motivators: Positional Theme"
-            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Positional Theme", @"Positional Theme", @"core_MotivatorsPositionalTheme", @"", @"", 0, @"", @"075FDF4D-DDEC-4106-B996-F48CD1EFC978" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"Motivators: Positional Theme", @"Positional Theme", @"core_MotivatorsPositionalTheme", @"", @"", 2, @"", @"075FDF4D-DDEC-4106-B996-F48CD1EFC978" );
             RockMigrationHelper.AddAttributeQualifier( @"075FDF4D-DDEC-4106-B996-F48CD1EFC978", @"ConfigurationJSON", @"[{""Guid"":""94cc75f7-177a-43a0-9dc4-37f0216771fe"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f4cf68"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""9b66a1f0-5333-4da8-9c17-78595357f66d"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f6d988"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""d15fb222-ff88-4adf-818b-a361f94f58d4"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f8e1a0"",""HighValue"":33.0,""LowValue"":0.0}]", @"38A0329C-AABE-4378-9508-3BCCBAC5722E" );
             AddReadOnlySecurityToAttribute( Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_POSITIONAL_THEME );
         }
@@ -1839,19 +1712,23 @@ This graph is based on the average composite score for each cluster of Motivator
         //Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
         private void UpdateAdaptiveDiscAttributeCategoryUp()
         {
-            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" };
+            var categories = new System.Collections.Generic.List<string> { "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969" }; //"Personality Assessment Data"
 
             // Person Attribute "Adaptive D"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            AddDenyToAllSecurityToAttribute( "EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            AddDenyToAllSecurityToAttribute( "7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            AddDenyToAllSecurityToAttribute( "2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
+            AddDenyToAllSecurityToAttribute( "4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
         }
 
         //Revert Change the "Adaptive" DISC person attributes to category Personality Assessment Data.
@@ -1861,15 +1738,19 @@ This graph is based on the average composite score for each cluster of Motivator
 
             // Person Attribute "Adaptive D"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive D", @"", @"AdaptiveD", @"fa fa-bar-chart", @"Adaptive Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 1, @"", @"EDE5E199-37BE-424F-A788-5CDCC064157C" );
+            SecurityViewAllEditStaffAdmin( "EDE5E199-37BE-424F-A788-5CDCC064157C" );
 
             // Person Attribute "Adaptive I"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive I", @"", @"AdaptiveI", @"fa fa-bar-chart", @"Adaptive Influence: very people oriented, has a lot of friends, wants opportunity to talk.", 2, @"", @"7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
+            SecurityViewAllEditStaffAdmin( "7F0A1794-0150-413B-9AE1-A6B0D6373DA6" );
 
             // Person Attribute "Adaptive S"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive S", @"", @"AdaptiveS", @"fa fa-bar-chart", @"Adaptive Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 3, @"", @"2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
+            SecurityViewAllEditStaffAdmin( "2512DAC6-BBC4-4D0E-A01D-E92F94C534BD" );
 
             // Person Attribute "Adaptive C"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", categories, @"Adaptive C", @"", @"AdaptiveC", @"fa fa-bar-chart", @"Adaptive Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 4, @"", @"4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
+            SecurityViewAllEditStaffAdmin( "4A2E1539-4ECC-40B9-9EBD-C0C84EC8DA36" );
         }
 
         private void UpdateNaturalDiscAttributesUp()
@@ -1879,33 +1760,41 @@ This graph is based on the average composite score for each cluster of Motivator
             // Person Attribute "DISC: D Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: D Value", @"D Value", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
             RockMigrationHelper.AddAttributeQualifier( @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26", @"ConfigurationJSON", @"[{""Guid"":""4f7c1ea0-415d-4d89-86b1-a3b343d3115f"",""RangeIndex"":0,""Label"":""High"",""Color"":""#709ac7"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""a5e8c10e-c360-4083-a3d4-fa18a096b68a"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#91b1d4"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""8f4ebbf2-d2d8-479d-9330-8ca2baab37a5"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#b6cbe2"",""HighValue"":33.0,""LowValue"":0.0}]", @"AC4B49ED-4BDE-4838-B310-25697DC4804B" );
+            AddReadWriteSecurityToAttribute( "86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
 
             // Person Attribute "DISC: I Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: I Value", @"I Value", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
             RockMigrationHelper.AddAttributeQualifier( @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA", @"ConfigurationJSON", @"[{""Guid"":""353c14d3-96a1-441f-ac86-d663aa86ef37"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f4cf68"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""b8aa394f-6755-4f01-b625-3702825fcd00"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f6d988"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""e71c0ac8-2a4b-4cd6-a5ac-0285b24d9b1a"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#f8e1a0"",""HighValue"":33.0,""LowValue"":0.0}]", @"C652B942-935C-4614-90EC-331D57A0DDE4" );
+            AddReadWriteSecurityToAttribute( "3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
 
             // Person Attribute "DISC: S Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: S Value", @"S Value", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
             RockMigrationHelper.AddAttributeQualifier( @"FA4341B4-28C7-409E-A101-548BB5759BE6", @"ConfigurationJSON", @"[{""Guid"":""da2a311d-e5d2-4127-8683-beb4f00a82d1"",""RangeIndex"":0,""Label"":""High"",""Color"":""#80bb7c"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""e115b2a1-f5dd-49bf-b5a7-11992e63fd8e"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#a0cc9e"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""27ab08d6-464d-42cf-92b8-c4cf4b3ec492"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#c1debf"",""HighValue"":33.0,""LowValue"":0.0}]", @"06E123D6-F149-421B-BE6C-CA1612A562E8" );
+            AddReadWriteSecurityToAttribute( "FA4341B4-28C7-409E-A101-548BB5759BE6" );
 
             // Person Attribute "DISC: C Value"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"E73B9F41-8325-4229-8EA5-75180066680C", categories, @"DISC: C Value", @"C Value", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
             RockMigrationHelper.AddAttributeQualifier( @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251", @"ConfigurationJSON", @"[{""Guid"":""ee28fca6-4ccc-4cf1-a166-69171b34eb17"",""RangeIndex"":0,""Label"":""High"",""Color"":""#f26863"",""HighValue"":null,""LowValue"":67.0},{""Guid"":""786bfb8a-0b87-4d01-b71f-031f91b229fa"",""RangeIndex"":1,""Label"":""Medium"",""Color"":""#f58d89"",""HighValue"":66.0,""LowValue"":34.0},{""Guid"":""5d864986-1b74-4bd9-b99e-7ea177b348e6"",""RangeIndex"":2,""Label"":""Low"",""Color"":""#fac4c2"",""HighValue"":33.0,""LowValue"":0.0}]", @"C312B380-703B-4F84-A720-C6FC7FC92059" );
+            AddReadWriteSecurityToAttribute( "3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
         }
 
         private void UpdateNatrualDiscAttributesDown()
         {
             // Person Attribute "Natural D"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural D", @"NaturalD", @"fa fa-bar-chart", @"Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.", 5, @"", @"86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
+            SecurityViewAllEditStaffAdmin( "86670F7D-07BA-4ECE-9BB9-9D94B5FB5F26" );
 
             // Person Attribute "Natural I"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural I", @"NaturalI", @"fa fa-bar-chart", @"Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk", 6, @"", @"3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
+            SecurityViewAllEditStaffAdmin( "3EFF4FEF-EE4C-40E2-8DBD-80F3276852DA" );
 
             // Person Attribute "Natural S"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural S", @"NaturalS", @"fa fa-bar-chart", @"Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.", 7, @"", @"FA4341B4-28C7-409E-A101-548BB5759BE6" );
+            SecurityViewAllEditStaffAdmin( "FA4341B4-28C7-409E-A101-548BB5759BE6" );
 
             // Person Attribute "Natural C"
             RockMigrationHelper.UpdatePersonAttribute( @"A75DFC58-7A1B-4799-BF31-451B2BBE38FF", @"0B187C81-2106-4875-82B6-FBF1277AE23B", @"Natural C", @"NaturalC", @"fa fa-bar-chart", @"Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.", 8, @"", @"3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
+            SecurityViewAllEditStaffAdmin( "3A10ECFB-8CAB-4CCA-8B29-298756CD3251" );
         }
 
         /// <summary>
@@ -1995,6 +1884,7 @@ This graph is based on the average composite score for each cluster of Motivator
                     WHERE [Guid]='{Rock.SystemGuid.Attribute.PERSON_MOTIVATOR_ADAPTING}'" );
         }
 
+        #region Security Methods
         private void AddDenyToAllSecurityToAttribute( string attributeGuid )
         {
             RockMigrationHelper.AddSecurityAuthForAttribute(
@@ -2016,6 +1906,185 @@ This graph is based on the average composite score for each cluster of Motivator
                 Guid.NewGuid().ToString() );
         }
 
+        /// <summary>
+        /// Removes any existing security settings on the attribute.
+        /// Allow View access to all users.
+        /// Allow Edit access to Staff, Staff-Like, and Administrators
+        /// </summary>
+        private void SecurityViewAllEditStaffAdmin( string attributeGuid )
+        {
+            RockMigrationHelper.DeleteSecurityAuthForAttribute( attributeGuid );
 
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+        }
+
+        /// <summary>
+        /// Adds the security to attribute. Deny View/Edit AllUsers.
+        /// Grant View/Edit Administrators, Staff, Staff Like
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        private void AddReadWriteSecurityToAttribute( string attributeGuid )
+        {
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.EDIT,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                2,
+                Rock.Security.Authorization.EDIT,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+        }
+
+        /// <summary>
+        /// Deny Read/Edit for all users.
+        /// Allow View for Administrators, Staff, and Staff-Like.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        private void AddReadOnlySecurityToAttribute( string attributeGuid )
+        {
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               0,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               1,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+               attributeGuid,
+               2,
+               Rock.Security.Authorization.VIEW,
+               true,
+               Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
+               ( int ) Rock.Model.SpecialRole.None,
+               Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+
+            RockMigrationHelper.AddSecurityAuthForAttribute(
+                attributeGuid,
+                0,
+                Rock.Security.Authorization.EDIT,
+                false,
+                null,
+                ( int ) Rock.Model.SpecialRole.AllUsers,
+                Guid.NewGuid().ToString() );
+        }
+
+        #endregion Security Methods
     }
 }

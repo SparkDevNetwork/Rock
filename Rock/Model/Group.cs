@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -1054,7 +1055,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
-            // This will prevent archived members from being included in any Groupqueries.
+            // This will prevent archived members from being included in any Group queries.
             // It will also prevent navigation properties of Group from including archived groups.
             Z.EntityFramework.Plus.QueryFilterManager.Filter<Group>( x => x.Where( m => m.IsArchived == false ) );
 
@@ -1069,24 +1070,25 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// Controls what selections the person is shown when checking in
+    /// Check-in Requirements for Group Scheduling
     /// </summary>
     public enum AttendanceRecordRequiredForCheckIn
     {
         /// <summary>
-        /// All groups are shown
+        /// Person doesn't need to be scheduled
         /// </summary>
-        AllShow,
+        ScheduleNotRequired = 0,
 
         /// <summary>
-        /// Person cannot check into group unless they have been scheduled
+        /// Person doesn't need to be scheduled, but pre-select group if they are scheduled.
         /// </summary>
-        RequireAttendanceRecord,
+        [Description( "Pre-select Group if Scheduled" )]
+        PreSelect = 1,
 
         /// <summary>
-        /// The group is preselected if the person is scheduled for this team
+        /// Person cannot check into group unless they have been scheduled 
         /// </summary>
-        UseAttendanceRecordAsPreference
+        ScheduleRequired = 2,
     }
 
     #endregion

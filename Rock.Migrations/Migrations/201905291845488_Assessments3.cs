@@ -37,6 +37,8 @@ namespace Rock.Migrations
             RemoveAttributesFromSpiritualGiftsDefinedType();
             RemovePostHtmlFromPersonSecurityTab();
             UpdateChartShortcodeForGaugeChartUp();
+            CreateSpiritualGiftsAttributeCategory();
+            SetAssessmentAttributeValuesBlockSettingsUp();
         }
 
         /// <summary>
@@ -44,6 +46,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            SetAssessmentAttributeValuesBlockSettingsDown();
             UpdateChartShortcodeForGaugeChartDown();
         }
 
@@ -704,6 +707,58 @@ var chart = new Chart(ctx, {
                 WHERE [Guid] = '43819A34-4819-4507-8FEA-2E406B5474EA'";
 
             Sql( qry );
+        }
+
+        /// <summary>
+        /// Creates the spiritual gifts attribute category and updates Dominant, Supportive, and other to use it.
+        /// </summary>
+        private void CreateSpiritualGiftsAttributeCategory()
+        {
+            RockMigrationHelper.UpdatePersonAttributeCategory( "Spiritual Gifts", "fa fa-gift", "", "8E94CE6F-716D-4B6D-9BEC-C83385B90006" );
+            var categories = new System.Collections.Generic.List<string> { "8E94CE6F-716D-4B6D-9BEC-C83385B90006" };
+            
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Dominant Gifts", @"", @"core_DominantGifts", @"", @"", 15, @"", @"F76FC75E-B33F-42B8-B360-15BA9A1F0F9A" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Supportive Gifts", @"", @"core_SupportiveGifts", @"", @"", 16, @"", @"0499E359-3A7B-4138-A3EE-44CBF9750E33" );
+            RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"59D5A94C-94A0-4630-B80A-BB25697D74C7", categories, @"Other Gifts", @"", @"core_OtherGifts", @"", @"", 17, @"", @"F33EC30E-7E5C-488E-AB48-81977CCFB185" );
+        }
+
+        private void SetAssessmentAttributeValuesBlockSettingsUp()
+        {
+            // Attrib for BlockType: Attribute Values:Show Category Names as Separators
+            RockMigrationHelper.UpdateBlockTypeAttribute("D70A59DC-16BE-43BE-9880-59598FA7A94C","1EDAFDED-DFE6-4334-B019-6EECBA89E05A","Show Category Names as Separators","ShowCategoryNamesasSeparators","",@"Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",5,@"False","EF57237E-BA12-488A-9585-78466E4C3DB5");
+            
+            // Attrib for BlockType: Attribute Values:Set Page Icon
+            RockMigrationHelper.UpdateBlockTypeAttribute("D70A59DC-16BE-43BE-9880-59598FA7A94C","9C204CD0-1233-41C5-818A-C5DA439445AA","Set Page Icon","SetPageIcon","",@"The css class name to use for the heading icon.",4,@"","DF437D92-FB5A-4625-851A-24F79412A337");
+            
+            // Attrib for BlockType: Attribute Values:Set Page Title
+            RockMigrationHelper.UpdateBlockTypeAttribute("D70A59DC-16BE-43BE-9880-59598FA7A94C","9C204CD0-1233-41C5-818A-C5DA439445AA","Set Page Title","SetPageTitle","",@"The text to display as the heading.",3,@"","ADBFBED7-2A61-49ED-93EC-AF48B0247F34");
+            
+            // Attrib Value for Block:Assessments, Attribute:Use Abbreviated Name Page: Extended Attributes, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("0C244AA1-2473-4749-8D7E-81CAA415C886","51693680-B03C-468B-A771-CD8C103D0B1B",@"True");
+            
+            // Attrib Value for Block:Assessments, Attribute:Show Category Names as Separators Page: Extended Attributes, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("0C244AA1-2473-4749-8D7E-81CAA415C886","EF57237E-BA12-488A-9585-78466E4C3DB5",@"True");
+            
+            // Attrib Value for Block:Assessments, Attribute:Set Page Icon Page: Extended Attributes, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("0C244AA1-2473-4749-8D7E-81CAA415C886","DF437D92-FB5A-4625-851A-24F79412A337",@"fa fa-project-diagram");
+            
+            // Attrib Value for Block:Assessments, Attribute:Set Page Title Page: Extended Attributes, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("0C244AA1-2473-4749-8D7E-81CAA415C886","ADBFBED7-2A61-49ED-93EC-AF48B0247F34",@"Assessments");
+            
+            // Attrib Value for Block:Assessments, Attribute:Category Page: Extended Attributes, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue("0C244AA1-2473-4749-8D7E-81CAA415C886","EC43CF32-3BDF-4544-8B6A-CE9208DD7C81",@"0b187c81-2106-4875-82b6-fbf1277ae23b,edd33f72-eced-49bc-ac49-3643b60ad736,0b6c7001-2d3a-4195-86ca-85c6dcbf2023,ceaa3d59-d53c-40ec-b7b8-e7bbb758bd4d,8e94ce6f-716d-4b6d-9bec-c83385b90006");
+        }
+
+        private void SetAssessmentAttributeValuesBlockSettingsDown()
+        {
+            // Attrib for BlockType: Attribute Values:Set Page Title
+            RockMigrationHelper.DeleteAttribute("ADBFBED7-2A61-49ED-93EC-AF48B0247F34");
+
+            // Attrib for BlockType: Attribute Values:Set Page Icon
+            RockMigrationHelper.DeleteAttribute("DF437D92-FB5A-4625-851A-24F79412A337");
+
+            // Attrib for BlockType: Attribute Values:Show Category Names as Separators
+            RockMigrationHelper.DeleteAttribute("EF57237E-BA12-488A-9585-78466E4C3DB5");
         }
     }
 }

@@ -484,7 +484,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        protected class CommunicationItem
+        protected class CommunicationItem : DotLiquid.Drop
         {
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }
