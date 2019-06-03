@@ -301,6 +301,11 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_VISIONING = "C9BC83A0-27D4-4194-A199-56F2EA83363C";
 
         /// <summary>
+        /// The person attribute to hold the top 5 motivators.
+        /// </summary>
+        public const string PERSON_MOTIVATOR_TOP_5_MOTIVATORS = "402308F6-44BB-46CF-ADF9-6F62406C9923";
+
+        /// <summary>
         /// The person attribute for the Motivator Growth Propensity
         /// </summary>
         public const string PERSON_MOTIVATOR_GROWTHPROPENSITY = "3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA";
