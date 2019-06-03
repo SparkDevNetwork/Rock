@@ -98,7 +98,7 @@ Write-Host "Putting application in maintenence mode";
 
 Move-Item -Path (Join-Path $RootLocation "app_offline-template.htm") -Destination (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
 
-Set-Content (Join-Path $RootLocation "app_offline-template.htm") @'
+Set-Content (Join-Path $RootLocation "web.config") @'
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <system.web>
@@ -109,6 +109,8 @@ Set-Content (Join-Path $RootLocation "app_offline-template.htm") @'
     </system.webServer>
 </configuration>
 '@
+
+Invoke-WebRequest "https://newpointe.org" | Out-Null
 
 
 # 3. Save server-specifig files like static files, logs, plugin packages, and caches
