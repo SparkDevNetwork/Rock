@@ -1,90 +1,92 @@
 ﻿{% for item in Items %}
-  {% assign loopIndex = forloop.index0 | Modulo:4 %}
-  {% if loopIndex == 0 %}
-	<div class="sermons-container">
-	  <div class="container">
-	  <div class="row">
-	  {% endif %}
-			<div class="col-md-3 col-sm-12 sermon">
-				<div class="sermon-holder">
-					<a class="series-link showdetail" data-openid="series{{ item.Id }}" href="#series{{ item.Id }}">
-                    	{% assign seriesImageUrl = item | Attribute:'SermonGraphic','Url' %}
-						{% if seriesImageUrl != '' %}
-							<div class="series-image" style="background-image: url('{{ seriesImageUrl }}');" ></div>
-						{% endif %}
-					</a>
-				</div>
-			</div>
-	  	<div class="sermondetail" id="series{{ item.Id }}">
-	  		<div class="container">
-	  			<div class="content_holder row">
-	  				<div class="col-md-10 col-md-offset-1 col-sm-12">
-	  					<a class="closer"><i class="np-icon np-close"></i></a>
-	  					<h2 class="series-title">{{ item.Title }}</h2>
-	  					<div class="series-summary">{{ item.Content }}</div>
-	  					<ul class="sermons-list">
-	  						{% for ChildItemAssociation in item.ChildItems reversed %}
-                                {% assign ChildItem = ChildItemsAssociation.ChildContentChannelItem %}
-	  						    {% assign startDateTime = ChildItem.StartDateTime | Date:'yyyyMMddHHmmss' %}
-	  						    {% assign speaker = ChildItem | Attribute:'Speaker' %}
-	  						    {% assign speakerTitle = ChildItem | Attribute:'SpeakerTitle' %}
-	  						    {% assign scripture = ChildItem | Attribute:'ScripturePassage' %}
-	  						    {% assign dateTimeNow = 'Now' | Date:'yyyyMMddHHmmss' %}
-	  						    {% if startDate <= dateNow %}
-	  							    <li>
-		  							    <p class="date">{{ ChildItem.StartDateTime | Date:'MMM d, yyyy' }}</p>
-		  							    <h3><a href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">{{ ChildItem.Title }}</a></h3>
-		  							    <p class="speaker">{{ speaker }} {% if speakerTitle != "" %}| {{ speakerTitle }}{% endif %} {% if scripture != "" %}| {{ scripture }}{% endif %}</p>
-		  							    <p class="readmore"><a class="btn btn-outline-primary" href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">Watch</a></p>
-	  							    </li>
-	  						    {% endif %}
-	  						{% endfor %}
-	  					</ul>
-	  				</div>
-	  			</div>
-	  		</div>
-	  	</div>	
-	
-	  {% if loopIndex == 3 or loopIndex.last %}		
-		</div>
-		</div>
-	</div>
-  {% endif %}	
+
+    {% assign loopIndex = forloop.index0 | Modulo:4 %}
+
+    {% if loopIndex == 0 %}
+        <div class="sermons-container">
+            <div class="container">
+                <div class="row">
+    {% endif %}
+
+    <div class="col-md-3 col-sm-12 sermon">
+        <div class="sermon-holder">
+            <a class="series-link showdetail" data-openid="series{{ item.Id }}" href="#series{{ item.Id }}">
+                {% assign seriesImageUrl = item | Attribute:'SermonGraphic','Url' %}
+                {% if seriesImageUrl != '' %}
+                    <div class="series-image" style="background-image: url('{{ seriesImageUrl }}');" ></div>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="sermondetail" id="series{{ item.Id }}">
+        <div class="container">
+            <div class="content_holder row">
+                <div class="col-md-10 col-md-offset-1 col-sm-12">
+                    <a class="closer"><i class="np-icon np-close"></i></a>
+                    <h2 class="series-title">{{ item.Title }}</h2>
+                    <div class="series-summary">{{ item.Content }}</div>
+                    <ul class="sermons-list">
+                        {% for ChildItemAssociation in item.ChildItems reversed %}
+                            {% assign ChildItem = ChildItemAssociation.ChildContentChannelItem %}
+                            {% assign startDateTime = ChildItem.StartDateTime | Date:'yyyyMMddHHmmss' %}
+                            {% assign speaker = ChildItem | Attribute:'Speaker' %}
+                            {% assign speakerTitle = ChildItem | Attribute:'SpeakerTitle' %}
+                            {% assign scripture = ChildItem | Attribute:'ScripturePassage' %}
+                            {% assign dateTimeNow = 'Now' | Date:'yyyyMMddHHmmss' %}
+                            {% if startDateTime <= dateTimeNow %}
+                                <li>
+                                    <p class="date">{{ ChildItem.StartDateTime | Date:'MMM d, yyyy' }}</p>
+                                    <h3><a href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">{{ ChildItem.Title }}</a></h3>
+                                    <p class="speaker">{{ speaker }} {% if speakerTitle != "" %}| {{ speakerTitle }}{% endif %} {% if scripture != "" %}| {{ scripture }}{% endif %}</p>
+                                    <p class="readmore"><a class="btn btn-outline-primary" href="{% assign Item = ChildItem.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'Item' ]}">Watch</a></p>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>    
+    
+    {% if loopIndex == 3 or loopIndex.last %}
+                </div>
+            </div>
+        </div>
+    {% endif %}    
 
 {% endfor %}
 
-
 <div class="container">
-  <div class="row">
-		<div class="col-sm-12">
+    <div class="row">
+        <div class="col-sm-12">
 
-      {% if Pagination.TotalPages > 1 %}
-      <div class="margin-t-lg">
-        {% assign nextPageString = Pagination.NextPage | ToString %}
-        {% assign prevPageString = Pagination.PreviousPage | ToString %}
+            {% if Pagination.TotalPages > 1 %}
+                <div class="margin-t-lg">
+                    {% assign nextPageString = Pagination.NextPage | ToString %}
+                    {% assign prevPageString = Pagination.PreviousPage | ToString %}
       
-        {% if Pagination.NextPage == -1 %}
-        <div class="btn btn-default disabled pull-right">
-          Older <i class="fa fa-chevron-right"></i>
-        </div>
-        {% else %}
-        <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',nextPageString }}">
-          Older <i class="fa fa-chevron-right"></i>
-        </a>
-        {% endif %}
+                    {% if Pagination.NextPage == -1 %}
+                        <div class="btn btn-default disabled pull-right">
+                            Older <i class="fa fa-chevron-right"></i>
+                        </div>
+                    {% else %}
+                        <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',nextPageString }}">
+                            Older <i class="fa fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
       
-        {% if Pagination.PreviousPage == -1 %}
-        <div class="btn btn-default disabled pull-left">
-          <i class="fa fa-chevron-left"></i> Newer
+                    {% if Pagination.PreviousPage == -1 %}
+                        <div class="btn btn-default disabled pull-left">
+                            <i class="fa fa-chevron-left"></i> Newer
+                        </div>
+                    {% else %}
+                        <a class="btn btn-primary pull-left backlink" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
+                            <i class="fa fa-chevron-left"></i> Newer
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <a class="btn btn-primary pull-left backlink" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
-          <i class="fa fa-chevron-left"></i> Newer
-        </a>
-        {% endif %}
-      </div>
-      {% endif %}
-
-		</div>
-  </div>
+    </div>
 </div>
