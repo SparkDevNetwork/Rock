@@ -419,13 +419,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var attributeList = AttributeCategoriesList.Where( a => a.Value.Contains( category.Id ) ).Select( a => a.Key );
                         if ( attributeList.Any() )
                         {
-                            var h4 = new HtmlGenericControl( "h4" );
-                            h4.InnerText = category.Name;
-                            fsAttributes.Controls.Add( h4 );
-                            var hr = new HtmlGenericControl( "hr/" );
-                            fsAttributes.Controls.Add( hr );
-
-                            CreateAttributeControl( setValues, validationGroup, attributeList );
+                            var index = fsAttributes.Controls.Count;
+                            var isAttributeFound = CreateAttributeControl( setValues, validationGroup, attributeList );
+                            if ( isAttributeFound )
+                            {
+                                var h4 = new HtmlGenericControl( "h4" );
+                                h4.InnerText = category.Name;
+                                fsAttributes.Controls.AddAt( index, h4 );
+                                var hr = new HtmlGenericControl( "hr/" );
+                                fsAttributes.Controls.AddAt( index + 1, hr );
+                            }
                         }
                     }
                     
@@ -440,8 +443,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlActions.Visible = ( ViewMode != VIEW_MODE_VIEW );
         }
 
-        private void CreateAttributeControl( bool setValues, string validationGroup, IEnumerable<int> attributeList )
+        private bool CreateAttributeControl( bool setValues, string validationGroup, IEnumerable<int> attributeList )
         {
+            var isAttributeFound = false;
             foreach ( int attributeId in attributeList )
             {
                 var attribute = AttributeCache.Get( attributeId );
@@ -480,6 +484,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                         {
+                            isAttributeFound = true;
                             if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
                             {
                                 fsAttributes.Controls.Add( new RockLiteral { Label = attributeLabel, Text = formattedValue, CssClass= "matrix-attribute" } );
@@ -493,9 +498,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true );
+                    isAttributeFound = true;
+                    attribute.AddControl( fsAttributes.Controls, attributeValue, validationGroup, setValues, true, labelText: attributeLabel );
                 }
             }
+            return isAttributeFound;
         }
 
         #endregion
