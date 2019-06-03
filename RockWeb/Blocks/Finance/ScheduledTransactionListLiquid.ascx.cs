@@ -86,6 +86,7 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad( e );
 
             lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue("TransactionLabel") );
+            lbAddScheduledTransaction.Visible = GetAttributeValue( "ScheduledTransactionEntryPage" ).IsNotNullOrWhiteSpace();
             _transferToGatewayGuid = GetAttributeValue( "TransferToGateway" ).AsGuidOrNull();
 
             // set initial info

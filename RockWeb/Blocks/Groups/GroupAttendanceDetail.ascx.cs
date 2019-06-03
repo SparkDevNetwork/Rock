@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     Group = _group,
                     GroupId = _group.Id,
-                    OccurrenceDate = occurrenceDate ?? RockDateTime.Today.Date,
+                    OccurrenceDate = occurrenceDate ?? RockDateTime.Today,
                     LocationId = locationId,
                     ScheduleId = scheduleId,
                 };
@@ -683,7 +683,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     lOccurrenceDate.Visible = false;
                     dpOccurrenceDate.Visible = true;
-                    dpOccurrenceDate.SelectedDate = _occurrence.OccurrenceDate.Date;
+                    dpOccurrenceDate.SelectedDate = _occurrence.OccurrenceDate;
 
                     int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
                     if ( locationId.HasValue )
@@ -978,7 +978,7 @@ namespace RockWeb.Blocks.Groups
                                     attendance = new Attendance();
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
-                                    attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
+                                    attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
 
                                     // check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;
@@ -995,6 +995,7 @@ namespace RockWeb.Blocks.Groups
                             if ( attendance != null )
                             {
                                 attendance.DidAttend = attendee.Attended;
+                                attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
                             }
                         }
                     }

@@ -70,9 +70,6 @@
                     </asp:Panel>
                 </div>
             </div>
-
-            
-
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -91,7 +88,7 @@
                         </div>
                     </div>
                 </asp:panel>
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" ShowActionTitle="false" />
             </Content>
         </Rock:ModalDialog>
 

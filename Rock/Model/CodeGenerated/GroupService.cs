@@ -125,12 +125,8 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<Registration>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Registration.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Registration,GroupId 
  
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {

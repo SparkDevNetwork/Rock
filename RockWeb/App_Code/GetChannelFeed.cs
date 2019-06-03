@@ -173,17 +173,17 @@ namespace RockWeb
                                 ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.ContentChannelType.DisableStatus || c.ContentChannel.RequiresApproval == false ) &&
                                 c.StartDateTime <= RockDateTime.Now );
 
-            if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
-            {
-                if ( channel.ContentChannelType.IncludeTime )
-                {
-                    content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
-                }
-                else
-                {
-                    content = content.Where( c => c.ExpireDateTime > RockDateTime.Today );
-                }
-            }
+                        if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                        {
+                            if ( channel.ContentChannelType.IncludeTime )
+                            {
+                                content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
+                            }
+                            else
+                            {
+                                content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
+                            }
+                        }
 
             if ( channel.ItemsManuallyOrdered )
             {

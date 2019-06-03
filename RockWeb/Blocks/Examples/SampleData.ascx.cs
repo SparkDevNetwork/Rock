@@ -2476,7 +2476,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( scheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    _scheduleTimes.Add( scheduleId, schedule.GetCalendarEvent().DTStart.Value );
                 }
             }
 
@@ -2493,7 +2493,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( altScheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    _scheduleTimes.Add( altScheduleId, schedule.GetCalendarEvent().DTStart.Value );
                 }
             }
 

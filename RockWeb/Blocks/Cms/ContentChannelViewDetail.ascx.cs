@@ -1,4 +1,8 @@
-﻿// <copyright>
+﻿/////
+///// IMPORTANT NOTE:  This block was renamed ContentChannelItemView in develop. If there are fixes in any 1.8.x hotfixes, you'll have to manually make the same changes in ContentChannelItemView when merging
+/////
+
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +33,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Field.Types;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -39,7 +44,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
+    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
     [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
     [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
@@ -227,7 +232,8 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
@@ -237,7 +243,7 @@ Guid - ContentChannelItem Guid
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
-            foreach( ListItem cacheTag in cblCacheTags.Items )
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
@@ -299,7 +305,8 @@ Guid - ContentChannelItem Guid
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
             this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
-            this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
+            var ppFieldType = new PageReferenceFieldType();
+            this.SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
@@ -468,8 +475,15 @@ Guid - ContentChannelItem Guid
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
-                mergeFields.Add( "DetailPage", GetAttributeValue( "DetailPage" ) );
 
+                int detailPage = 0;
+                var page = PageCache.Get( GetAttributeValue( "DetailPage" ) );
+                if ( page != null )
+                {
+                    detailPage = page.Id;
+                }
+
+                mergeFields.Add( "DetailPage", detailPage );
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
 
                 if ( !string.IsNullOrWhiteSpace( metaDescriptionValue ) )
@@ -533,7 +547,7 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            
+
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
@@ -599,22 +613,21 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                if ( Request.QueryString.HasKeys() )
+                var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
+                // if this is the standard "page/{PageId}" route, don't grab the Item from the route since it would just be the pageId
+                if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
+                {
+                    // if no specific Parameter was specified, get whatever the last Parameter in the Route is
+                    var key = this.Page.RouteData.Values.Keys.LastOrDefault();
+                    if ( key.IsNotNullOrWhiteSpace() )
+                    {
+                        contentChannelItemKey = this.Page.RouteData.Values[key].ToString();
+                    }
+                }
+                else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
                 }
-                else
-                {
-                    var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
-
-                    // if this is the standard "page/{PageId" route, don't grab the Item from the route since it would just be the pageId
-                    if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
-                    {
-                        // if no specific Parameter was specified, and there was no QueryString, get whatever the last Parameter in the Route is
-                        contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).LastOrDefault();
-                    }
-                }
-
             }
 
             return contentChannelItemKey;
@@ -892,7 +905,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
         {
-            if (cbLogInteractions.Checked)
+            if ( cbLogInteractions.Checked )
             {
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;

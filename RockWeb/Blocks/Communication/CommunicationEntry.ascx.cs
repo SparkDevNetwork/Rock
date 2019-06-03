@@ -551,6 +551,8 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
+                        testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
+
                         foreach ( var attachment in communication.Attachments )
                         {
                             var cloneAttachment = attachment.Clone( false );
@@ -1425,17 +1427,6 @@ namespace RockWeb.Blocks.Communication
             pnlEdit.Visible = false;
 
             nbResult.Text = message;
-
-            var communicationDateTime = communication.FutureSendDateTime.HasValue ?
-            communication.FutureSendDateTime.Value :
-            communication.CreatedDateTime.Value;
-            DateTime? dndEndingTime = null;
-            var isCommunicationInsideDND = Rock.Model.Communication.CheckCommunicationForDND( communicationDateTime, out dndEndingTime );
-            nbWarning.Visible = isCommunicationInsideDND;
-            if ( isCommunicationInsideDND )
-            {
-                nbWarning.Text = "Do not disturb is active and it's falling inside the DND window. It will only be sent once the DND window has passed";
-            }
 
             CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();

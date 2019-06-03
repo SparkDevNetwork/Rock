@@ -120,9 +120,13 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlock( true, "5B67480F-418D-4916-9C39-A26D2F8FA95C", "", "41A585E0-4522-40FA-8CC6-A411C70340F7", "Communication Setting", "Main", @"", @"", 0, "8083E072-A5F6-4BA0-8110-7D3A9E94A05F" );
             RockMigrationHelper.UpdateCategory( "5997C8D3-8840-4591-99A5-552919F90CBD", "Communication Settings", "", "", "1059CCF2-933F-488E-8DBF-4FEC64A12409" );
             Sql( "UPDATE [Category] SET [EntityTypeQualifierColumn]='EntityTypeId' where [Guid]='1059CCF2-933F-488E-8DBF-4FEC64A12409'" );
+
+            #pragma warning disable CS0618 // Type or member is obsolete
             UpdateSystemSetting( Rock.SystemKey.SystemSetting.DO_NOT_DISTURB_START, "21:00:00", Rock.SystemGuid.FieldType.TIME, Rock.SystemGuid.SystemSetting.DO_NOT_DISTURB_START );
             UpdateSystemSetting( Rock.SystemKey.SystemSetting.DO_NOT_DISTURB_END, "09:00:00", Rock.SystemGuid.FieldType.TIME, Rock.SystemGuid.SystemSetting.DO_NOT_DISTURB_END );
             UpdateSystemSetting( Rock.SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE, "False", Rock.SystemGuid.FieldType.BOOLEAN, Rock.SystemGuid.SystemSetting.DO_NOT_DISTURB_ACTIVE );
+            #pragma warning restore CS0618 // Type or member is obsolete
+
             RockMigrationHelper.UpdateBlockTypeAttribute( "41A585E0-4522-40FA-8CC6-A411C70340F7", "309460EF-0CC5-41C6-9161-B3837BA3D374", "Category", "Category", "", @"The Attribute Category to display attributes from", 0, @"", "25E02584-4B8F-4A8F-8558-8D2EDA2C5393" );
             RockMigrationHelper.AddBlockAttributeValue( "8083E072-A5F6-4BA0-8110-7D3A9E94A05F", "25E02584-4B8F-4A8F-8558-8D2EDA2C5393", @"1059ccf2-933f-488e-8dbf-4fec64a12409" );
         }
