@@ -251,7 +251,7 @@ namespace Rock.Web
                     Url = trimmedUrl,
                     UserName = requestContext.HttpContext.User?.Identity?.Name,
                     DateViewed = RockDateTime.Now,
-                    IPAddress = UI.RockPage.GetClientIpAddress( requestContext.HttpContext.Request ),
+                    IPAddress = UI.RockPage.GetClientIpAddress(),
                     UserAgent = requestContext.HttpContext.Request.UserAgent ?? ""
                 } );
 
