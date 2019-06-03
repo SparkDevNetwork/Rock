@@ -307,9 +307,9 @@ namespace Rock.Model
             new ResponseOption ("Disagree",1,5 ),
             new ResponseOption ("Somewhat Disagree",2,4 ),
             new ResponseOption ("Undecided",3,3 ),
-            new ResponseOption ("Somewhat agree",4,2 ),
+            new ResponseOption ("Somewhat Agree",4,2 ),
             new ResponseOption ("Agree",5,1 ),
-            new ResponseOption ("Strongly agree",6,0 ),
+            new ResponseOption ("Strongly Agree",6,0 ),
         };
 
         /// <summary>
