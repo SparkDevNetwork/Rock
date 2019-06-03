@@ -377,8 +377,22 @@ namespace Rock.Model
                 motivatorScore.AddOrReplace( motivatorDefinedValue, score );
 
                 assessmentResults.AssessmentData.AddOrReplace( motivatorDefinedValue.Value, assessmentData );
+            }
 
-                var themeGuid = motivatorDefinedValue.GetAttributeValue("Theme").AsGuidOrNull();
+            assessmentResults.MotivatorScores = motivatorScore
+                .OrderByDescending( a => a.Value )
+                .Select( a => new MotivatorScore()
+                {
+                    DefinedValue = a.Key,
+                    Value = a.Value
+                } )
+                .ToList();
+
+            assessmentResults.TopFiveMotivatorScores = assessmentResults.MotivatorScores.Take( 5 ).ToList();
+
+            foreach ( var m in assessmentResults.TopFiveMotivatorScores )
+            {
+                var themeGuid = m.DefinedValue.GetAttributeValue( "Theme" ).AsGuidOrNull();
                 if ( themeGuid.HasValue )
                 {
                     if ( !motivatorThemeScore.ContainsKey( themeGuid.Value ) )
@@ -386,7 +400,7 @@ namespace Rock.Model
                         motivatorThemeScore[themeGuid.Value] = new List<decimal>();
                     }
 
-                    motivatorThemeScore[themeGuid.Value].Add( score );
+                    motivatorThemeScore[themeGuid.Value].Add( m.Value );
                 }
             }
 
@@ -401,15 +415,6 @@ namespace Rock.Model
                         Value = themeScore
                     } );
             }
-
-            assessmentResults.MotivatorScores = motivatorScore
-                .OrderByDescending( a => a.Value )
-                .Select( a => new MotivatorScore()
-                {
-                    DefinedValue = a.Key,
-                    Value = a.Value
-                } )
-                .ToList();
 
             return assessmentResults;
         }
