@@ -66,6 +66,8 @@ namespace Rock.Model
 
         private const string ATTRIBUTE_MOTIVATOR_CLUSTER_OPERATIONAL = "core_MotivatorClusterOperational";
 
+        private const string ATTRIBUTE_MOTIVATOR_TOP_5_MOTIVATORS = "core_MotivatorsTop5Motivators";
+
         /// <summary>
         /// Raw question data with code as key.
         /// </summary>
@@ -439,6 +441,9 @@ namespace Rock.Model
         {
             person.LoadAttributes();
 
+            var topFiveMotivatorScores = assessmentResults.MotivatorScores.OrderByDescending( x => x.Value ).Take( 5 ).Select( x => x.DefinedValue.Guid ).ToList().AsDelimited( "," );
+            person.SetAttributeValue( ATTRIBUTE_MOTIVATOR_TOP_5_MOTIVATORS, topFiveMotivatorScores );
+
             //var motivatorTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_TYPE.AsGuid() );
             foreach ( var motivatorScore in assessmentResults.MotivatorScores )
             {
@@ -503,6 +508,7 @@ namespace Rock.Model
                                             } )
                                             .ToList();
 
+            savedScores.TopFiveMotivatorScores = savedScores.MotivatorScores.Take( 5 ).ToList();
             savedScores.GrowthScore = person.GetAttributeValue( ATTRIBUTE_MOTIVATOR_GROWTHPROPENSITY ).AsDecimal();
 
             return savedScores;
@@ -597,6 +603,14 @@ namespace Rock.Model
             /// The growth score.
             /// </value>
             public decimal GrowthScore { get; set; }
+
+            /// <summary>
+            /// Gets or sets the top five motivator scores.
+            /// </summary>
+            /// <value>
+            /// The top five motivator scores.
+            /// </value>
+            public List<MotivatorScore> TopFiveMotivatorScores { get; set; }
         }
 
         /// <summary>
