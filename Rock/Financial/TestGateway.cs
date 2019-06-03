@@ -258,10 +258,15 @@ namespace Rock.Financial
             var randomNumberOfPayments = new Random().Next( 1, 1000 );
             var rockContext = new Rock.Data.RockContext();
             var scheduledTransactionList = new FinancialScheduledTransactionService( rockContext ).Queryable().ToList();
+            if ( !scheduledTransactionList.Any())
+            {
+                return fakePayments;
+            }
 
             var transactionDateTime = startDate;
             for( int paymentNumber = 0; paymentNumber < randomNumberOfPayments; paymentNumber++  )
             {
+                // get a random scheduled Transaction (if any)
                 var scheduledTransaction = scheduledTransactionList.OrderBy( a => a.Guid ).FirstOrDefault();
                 var fakePayment = new Payment
                 {
