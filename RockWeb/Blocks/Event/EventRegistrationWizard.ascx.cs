@@ -561,6 +561,12 @@ namespace RockWeb.Blocks.Event
                     group.ParentGroupId = parentGroup.Id;
                 }
 
+                // Set group CampusId if campus is selected.
+                if ( ( ddlCampus.Enabled ) && ( !string.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) ) )
+                {
+                    group.CampusId = ddlCampus.SelectedValueAsInt();
+                }
+
                 groupService.Add( group );
                 rockContext.SaveChanges();
                 result.GroupId = group.Id.ToString();
