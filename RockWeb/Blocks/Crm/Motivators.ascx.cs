@@ -173,39 +173,44 @@ namespace Rockweb.Blocks.Crm
     fixed mindset. These are two ends of a spectrum about how we view our own capacity and potential.
 </p>
 
-<!-- ADD GAUGE HERE -->
+{[ chart type:'gauge' backgroundcolor:'#f13c1f,#f0e3ba,#0e9445,#3f56a1' gaugelimits:'0,2,17,85,100']}
+    [[ dataitem value:'{{ GrowthScore }}' fillcolor:'#484848' ]] [[ enddataitem ]]
+{[ endchart ]}
 
 <h2>Individual Motivators</h2>
 <p>
-There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
-</p>
-<!--  Theme Chart -->
-    <div class=""panel panel-default"">
-      <div class=""panel-heading"">
-        <h2 class=""panel-title""><b>Composite Score</b></h2>
-      </div>
-      <div class=""panel-body"">
-        {[chart type:'horizontalBar' chartheight:'200px' ]}
-        {% for motivatorThemeScore in MotivatorThemeScores %}
-            [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
-            [[enddataitem]]
-        {% endfor %}
-        {[endchart]}
-      </div>
-    </div>
-<p>
-This graph is based on the average composite score for each cluster of Motivators.
-</p>
-{% for motivatorThemeScore in MotivatorThemeScores %}
-<p>
-<b>{{ motivatorThemeScore.DefinedValue.Value }}</b>
-</br>
-{{ motivatorThemeScore.DefinedValue.Description }}
-</br>
-{{ motivatorThemeScore.DefinedValue | Attribute:'Summary' }}
+    There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
 </p>
 
- {% endfor %}
+<!--  Theme Chart -->
+<div class=""panel panel-default"">
+    <div class=""panel-heading"">
+    <h2 class=""panel-title""><b>Composite Score</b></h2>
+    </div>
+    <div class=""panel-body"">
+    {[chart type:'horizontalBar' chartheight:'200px' ]}
+    {% for motivatorThemeScore in MotivatorThemeScores %}
+        [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
+        [[enddataitem]]
+    {% endfor %}
+    {[endchart]}
+    </div>
+</div>
+
+<p>
+    This graph is based on the average composite score for each cluster of Motivators.
+</p>
+
+{% for motivatorThemeScore in MotivatorThemeScores %}
+    <p>
+        <b>{{ motivatorThemeScore.DefinedValue.Value }}</b>
+        </br>
+        {{ motivatorThemeScore.DefinedValue.Description }}
+        </br>
+        {{ motivatorThemeScore.DefinedValue | Attribute:'Summary' }}
+    </p>
+{% endfor %}
+
 <p>
    The following graph shows your motivators ranked from top to bottom.
 </p>
@@ -663,6 +668,7 @@ This graph is based on the average composite score for each cluster of Motivator
                 // The five Mode scores
                 mergeFields.Add( "MotivatorThemeScores", result.MotivatorThemeScores );
                 mergeFields.Add( "MotivatorScores", result.MotivatorScores );
+                mergeFields.Add( "GrowthScore", result.GrowthScore );
             }
 
             lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );

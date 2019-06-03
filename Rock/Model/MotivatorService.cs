@@ -362,7 +362,15 @@ namespace Rock.Model
                 }
 
                 var zScore = Math.Round( ( totalResponse - conflictProfile.Mean ) / conflictProfile.StandardDeviation, 1 );
-                var score = GetPercentFromScore( zScore );
+                decimal score = GetPercentFromScore( zScore );
+
+                // The Growth Propensity score needs to be stored in its own property for Lava merge.
+                // Also needs to be a number and not a percentage.
+                if ( motivatorDefinedValueGuid == SystemGuid.DefinedValue.MOTIVATOR_GROWTH_PROPENSITY.AsGuid() )
+                {
+                    assessmentResults.GrowthScore = score * 100;
+                }
+
                 var motivatorDefinedValue = DefinedValueCache.Get( ( Guid ) motivatorDefinedValueGuid );
                 motivatorScore.AddOrReplace( motivatorDefinedValue, score );
 
@@ -495,6 +503,8 @@ namespace Rock.Model
                                             } )
                                             .ToList();
 
+            savedScores.GrowthScore = person.GetAttributeValue( ATTRIBUTE_MOTIVATOR_GROWTHPROPENSITY ).AsDecimal();
+
             return savedScores;
         }
 
@@ -579,6 +589,14 @@ namespace Rock.Model
             /// The assessment data.
             /// </value>
             public Dictionary<string, Dictionary<string, string>> AssessmentData { get; set; }
+
+            /// <summary>
+            /// Gets or sets the growth score.
+            /// </summary>
+            /// <value>
+            /// The growth score.
+            /// </value>
+            public decimal GrowthScore { get; set; }
         }
 
         /// <summary>
