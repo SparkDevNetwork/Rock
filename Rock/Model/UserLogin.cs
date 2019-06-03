@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading;
@@ -25,6 +26,7 @@ using System.Web;
 using System.Web.Hosting;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -194,6 +196,15 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private History.HistoryChangeList HistoryChanges { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -307,6 +318,66 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.UserName;
+        }
+
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            HistoryChanges = new History.HistoryChangeList();
+
+            switch ( entry.State )
+            {
+
+                case System.Data.Entity.EntityState.Added:
+                    var entityName = EntityTypeCache.Get( this.EntityTypeId ?? 0 )?.FriendlyName;
+                    HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "User Login" ).SetNewValue( entityName );
+                    History.EvaluateChange( HistoryChanges, "User Name", string.Empty, UserName );
+                    History.EvaluateChange( HistoryChanges, "Person Id", null, PersonId );
+                    History.EvaluateChange( HistoryChanges, "Is Confirmed", null, IsConfirmed );
+                    History.EvaluateChange( HistoryChanges, "Is Password Change Required", null, IsPasswordChangeRequired );
+                    History.EvaluateChange( HistoryChanges, "Is Locked Out", null, IsLockedOut );
+                    break;
+
+                case System.Data.Entity.EntityState.Modified:
+                    History.EvaluateChange( HistoryChanges, "User Name", entry.OriginalValues["UserName"].ToStringSafe(), UserName );
+                    History.EvaluateChange( HistoryChanges, "Person Id", entry.OriginalValues["PersonId"].ToStringSafe().AsIntegerOrNull(), PersonId );
+                    History.EvaluateChange( HistoryChanges, "Is Confirmed", entry.OriginalValues["IsConfirmed"].ToStringSafe().AsBooleanOrNull(), IsConfirmed );
+                    History.EvaluateChange( HistoryChanges, "Is Password Change Required", entry.OriginalValues["IsPasswordChangeRequired"].ToStringSafe().AsBooleanOrNull(), IsPasswordChangeRequired );
+                    History.EvaluateChange( HistoryChanges, "Is Locked Out", entry.OriginalValues["IsLockedOut"].ToStringSafe().AsBooleanOrNull(), IsLockedOut );
+
+                    if ( entry.OriginalValues["Password"].ToStringSafe() != Password )
+                    {
+                        HistoryChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Password" ).SetSensitive();
+                    }
+                    break;
+
+                case System.Data.Entity.EntityState.Deleted:
+                    //By this point EF has stripped out some of the data we need to save history
+                    //Reload the data using a new context.
+                    RockContext newRockContext = new RockContext();
+                    var userLogin = new UserLoginService( newRockContext ).Get( this.Id );
+                    if ( userLogin != null )
+                    {
+                        HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
+                        HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, UserName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                    }
+                    HistoryChanges.Clear();
+                    return;
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+
+            if ( HistoryChanges != null && HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), this.PersonId.Value, HistoryChanges, this.UserName, typeof( UserLogin ), this.Id, true, this.ModifiedByPersonAliasId, null );
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion
