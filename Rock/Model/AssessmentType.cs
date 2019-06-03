@@ -128,6 +128,17 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        [MaxLength( 7 )]
+        [DataMember]
+        public string BadgeColor { get; set; }
+
+        [DataMember]
+        public string BadgeSummaryLava { get; set; }
+
         #endregion
 
         #region Virtual Properties
