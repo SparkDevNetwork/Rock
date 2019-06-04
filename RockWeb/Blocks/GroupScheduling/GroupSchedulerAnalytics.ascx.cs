@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.BarChartAttendedColor )]
 
     [ColorField(
-        "Committed No Show",
+        "Did Not Show",
         Description = "Choose the color to show the number of schedule requests where the person committed but did not attend.",
         IsRequired = true,
         DefaultValue = "#484848",
@@ -315,7 +315,7 @@ var barChart = new Chart(barCtx, {{
             data: {7}
         }},
         {{
-            label: 'Committed No Show',
+            label: 'Did Not Show',
             backgroundColor: '{8}',
             borderColor: '#E0E0E0',
             data: {9}

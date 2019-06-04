@@ -103,7 +103,7 @@
                                         <Rock:RockBoundField DataField="NoResponseCountText" SortExpression="NoResponseCount" HeaderText="No Response" />
                                         <Rock:RockBoundField DataField="DeclineCountText" SortExpression="DeclineCount" HeaderText="Declines" />
                                         <Rock:RockBoundField DataField="AttendedCountText" SortExpression="AttendedCount" HeaderText="Attended" />
-                                        <Rock:RockBoundField DataField="CommittedNoShowCountText" SortExpression="CommittedNoShowCount" HeaderText="Committed No Show" />
+                                        <Rock:RockBoundField DataField="CommittedNoShowCountText" SortExpression="CommittedNoShowCount" HeaderText="Did Not Show" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
