@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
     [IntegerField(
         "Number Of Weeks (Max 16)",
-        Key = AttributeKey.NumberOfWeeks,
+        Key = AttributeKey.FutureWeeksToShow,
         Description = "How many weeks into the future should be displayed.",
         IsRequired = false,
         DefaultIntegerValue = 2,
@@ -58,13 +58,13 @@ namespace RockWeb.Blocks.GroupScheduling
         protected static class AttributeKey
         {
             public const string ParentGroup = "ParentGroup";
-            public const string NumberOfWeeks = "NumberOfWeeks";
+            public const string FutureWeeksToShow = "FutureWeeksToShow";
         }
 
         protected static class UserPreferenceKey
         {
             public const string GroupIds = "GroupIds";
-            public const string NumberOfWeeks = "NumberOfWeeks";
+            public const string FutureWeeksToShow = "FutureWeeksToShow";
         }
 
         #endregion
@@ -137,10 +137,15 @@ namespace RockWeb.Blocks.GroupScheduling
                 foreach ( var schedule in groupsScheduleList )
                 {
                     var sundayWeekStart = sundayDate.AddDays( -6 );
-                    var scheduledDateTime = schedule.GetNextStartDateTime( sundayWeekStart );
-                    if ( scheduledDateTime.HasValue && scheduledDateTime.Value >= currentDate )
+
+                    // get all the occurrences for the selected week for this scheduled (It could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc)
+                    var scheduledDateTimeList = schedule.GetScheduledStartTimes( sundayWeekStart, sundayDate.AddDays( 1 ) );
+                    foreach ( var scheduledDateTime in scheduledDateTimeList )
                     {
-                        scheduleOccurrenceDateList.Add( new ScheduleOccurrenceDate { Schedule = schedule, ScheduledDateTime = scheduledDateTime.Value } );
+                        if ( scheduledDateTime >= currentDate )
+                        {
+                            scheduleOccurrenceDateList.Add( new ScheduleOccurrenceDate { Schedule = schedule, ScheduledDateTime = scheduledDateTime } );
+                        }
                     }
                 }
             }
@@ -366,10 +371,10 @@ namespace RockWeb.Blocks.GroupScheduling
         private int GetSelectedNumberOfWeeks()
         {
             // if there is a stored user preference, use that, otherwise use the value from block attributes
-            int? numberOfWeeks = this.GetBlockUserPreference( UserPreferenceKey.NumberOfWeeks ).AsIntegerOrNull();
+            int? numberOfWeeks = this.GetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull();
             if ( !numberOfWeeks.HasValue )
             {
-                numberOfWeeks = this.GetAttributeValue( AttributeKey.NumberOfWeeks ).AsIntegerOrNull() ?? 2;
+                numberOfWeeks = this.GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 2;
             }
 
             // limit number of weeks to 1-16, just in case it got outside of that
@@ -404,7 +409,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDates_Click( object sender, EventArgs e )
         {
-            rsDateRange.SelectedValue = this.GetBlockUserPreference( UserPreferenceKey.NumberOfWeeks ).AsIntegerOrNull() ?? 2;
+            rsDateRange.SelectedValue = this.GetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 2;
             dlgDateRangeSlider.Show();
         }
 
@@ -429,7 +434,7 @@ namespace RockWeb.Blocks.GroupScheduling
         protected void dlgDateRangeSlider_SaveClick( object sender, EventArgs e )
         {
             dlgDateRangeSlider.Hide();
-            this.SetBlockUserPreference( UserPreferenceKey.NumberOfWeeks, rsDateRange.SelectedValue.ToString() );
+            this.SetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow, rsDateRange.SelectedValue.ToString() );
             BuildStatusBoard();
         }
 

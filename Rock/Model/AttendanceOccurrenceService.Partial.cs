@@ -281,36 +281,42 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates and returns a list of missing attendance occurrences for the specified date, scheduleId and groupLocationIds.
+        /// Creates and returns a list of missing attendance occurrences for the specified dates, scheduleId and groupLocationIds.
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="occurrenceDate">The occurrence dates.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>
-        public List<AttendanceOccurrence> CreateMissingAttendanceOccurrences( DateTime occurrenceDate, int scheduleId, List<int> groupLocationIds )
+        public List<AttendanceOccurrence> CreateMissingAttendanceOccurrences( List<DateTime> occurrenceDateList, int scheduleId, List<int> groupLocationIds )
         {
             var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).GetByIds( groupLocationIds );
 
-            var attendanceOccurrencesQuery = this.Queryable()
-                .Where( a => a.GroupId.HasValue
-                        && a.LocationId.HasValue
-                        && groupLocationQuery.Any( gl => gl.GroupId == a.GroupId && gl.LocationId == gl.LocationId )
-                        && a.ScheduleId == scheduleId
-                        && a.OccurrenceDate == occurrenceDate );
+            List<AttendanceOccurrence> missingAttendanceOccurrenceList = new List<AttendanceOccurrence>();
+            foreach ( var occurrenceDate in occurrenceDateList )
+            {
+                var attendanceOccurrencesQuery = this.Queryable()
+                    .Where( a => a.GroupId.HasValue
+                            && a.LocationId.HasValue
+                            && groupLocationQuery.Any( gl => gl.GroupId == a.GroupId && gl.LocationId == gl.LocationId )
+                            && a.ScheduleId == scheduleId
+                            && a.OccurrenceDate == occurrenceDate );
 
-            var missingAttendanceOccurrences = groupLocationQuery.Where( gl => !attendanceOccurrencesQuery.Any( ao => ao.LocationId == gl.LocationId && ao.GroupId == gl.GroupId ) )
-                            .ToList()
-                            .Select( gl => new AttendanceOccurrence
-                            {
-                                GroupId = gl.GroupId,
-                                Group = gl.Group,
-                                LocationId = gl.LocationId,
-                                Location = gl.Location,
-                                ScheduleId = scheduleId,
-                                OccurrenceDate = occurrenceDate
-                            } ).ToList();
+                List<AttendanceOccurrence> missingAttendanceOccurrencesForOccurrenceDate = groupLocationQuery.Where( gl => !attendanceOccurrencesQuery.Any( ao => ao.LocationId == gl.LocationId && ao.GroupId == gl.GroupId ) )
+                                .ToList()
+                                .Select( gl => new AttendanceOccurrence
+                                {
+                                    GroupId = gl.GroupId,
+                                    Group = gl.Group,
+                                    LocationId = gl.LocationId,
+                                    Location = gl.Location,
+                                    ScheduleId = scheduleId,
+                                    OccurrenceDate = occurrenceDate
+                                } ).ToList();
 
-            return missingAttendanceOccurrences;
+                missingAttendanceOccurrenceList.AddRange( missingAttendanceOccurrencesForOccurrenceDate );
+            }
+
+            return missingAttendanceOccurrenceList;
         }
 
         /// <summary>
@@ -320,7 +326,7 @@ namespace Rock.Model
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>
-        public IQueryable<AttendanceOccurrenceGroupLocationScheduleConfigJoinResult> AttendanceOccurrenceGroupLocationScheduleConfigJoinQuery( DateTime occurrenceDate, int scheduleId, List<int> groupLocationIds )
+        public IQueryable<AttendanceOccurrenceGroupLocationScheduleConfigJoinResult> AttendanceOccurrenceGroupLocationScheduleConfigJoinQuery( List<DateTime> occurrenceDateList, int scheduleId, List<int> groupLocationIds )
         {
             var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).GetByIds( groupLocationIds );
 
@@ -329,7 +335,7 @@ namespace Rock.Model
                         && a.LocationId.HasValue
                         && groupLocationQuery.Any( gl => gl.GroupId == a.GroupId && gl.LocationId == a.LocationId )
                         && a.ScheduleId == scheduleId
-                        && a.OccurrenceDate == occurrenceDate );
+                        && occurrenceDateList.Contains( a.OccurrenceDate ) );
 
             // join with the GroupLocation 
             var joinQuery = from ao in attendanceOccurrencesQuery

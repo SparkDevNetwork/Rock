@@ -80,8 +80,6 @@ namespace RockWeb.Blocks.GroupScheduling
 </div>",
         Order = 2
          )]
-
-
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey
