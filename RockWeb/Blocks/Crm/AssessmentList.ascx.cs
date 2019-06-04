@@ -203,7 +203,6 @@ namespace Rockweb.Blocks.Crm
                     Title = t.Title,
                     AssessmentPath = t.AssessmentPath,
                     AssessmentResultsPath = t.AssessmentResultsPath,
-                    //AssessmentRetakePath = t.AssessmentPath + "?AssessmentId=0",
                     AssessmentRetakeLinkButton = "",
                     RequiresRequest = t.RequiresRequest,
                     MinDaysToRetake = t.MinimumDaysToRetake,
@@ -362,11 +361,6 @@ namespace Rockweb.Blocks.Crm
             public bool RequiresRequest { get; set; }
             public int MinDaysToRetake { get; set; }
             public LastAssessmentTaken LastRequestObject { get; set; }
-
-            //public object ToLiquid()
-            //{
-            //    return this;
-            //}
         }
 
         #endregion Methods
