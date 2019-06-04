@@ -94,6 +94,8 @@ else {
 #  - Replace web.config with an empty one w/ a high change notification setting
 #  - Request a page from the site
 
+# Note: this still doesn't work right :(
+
 Write-Host "Putting application in maintenence mode";
 
 Move-Item -Path (Join-Path $RootLocation "app_offline-template.htm") -Destination (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
@@ -113,7 +115,7 @@ Set-Content (Join-Path $RootLocation "web.config") @'
 Invoke-WebRequest "https://newpointe.org" | Out-Null
 
 
-# 3. Save server-specifig files like static files, logs, plugin packages, and caches
+# 3. Save server-specific files like static files, logs, plugin packages, and caches
 
 Write-Host "Saving server-specific files";
 

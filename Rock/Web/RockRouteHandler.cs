@@ -278,10 +278,18 @@ namespace Rock.Web
             try
             {
 
-
-
                 /*
+                 * By default, Rock allows accessing any page/route from any site (unless a more specific route is available).
+                 * We've found that causes issues when a search engine accidentaly finds a page from a different site - it'll
+                 * start indexing everything with the wrong domain! It also means it's impossible to completely seperate the
+                 * pages/routes for two different sites. If one site has an /about page, all of your sites have that page (unless they
+                 * overwrite it with their own route).
                  *
+                 * Here we attempt to remedy that by enforcing a "strict mode" for pages when we can reliably determine the
+                 * site a person is requesting. In this mode, we require the page being matched to be a part of the site that
+                 * was requested. This causes a few issues with some system pages that need to be available on all sites, but
+                 * is otherwise effective.
+                 * 
                  *
                  * Need to determine:
                  * 1. The Site
@@ -348,10 +356,12 @@ namespace Rock.Web
                  *   - any site + route
                  *   - any site + shortlink
                  *
-                 * Note: page id can't be restricted by matched site because that breaks Block Properties dialogs
-                 * Note 2: restricting routes breaks the Child Pages dialog, grrr
-                 * Let's try prioritizing layout type == Dialog
-                 *
+                 * Note 1: page id can't be restricted by matched site because that breaks Block Properties dialogs.
+                 * Note 2: restricting routes breaks the Child Pages dialog, grrr. Let's try prioritizing layout type == Dialog.
+                 * Note 3: page id can't be restricted by site id because that breaks the CMS -> Sites details page.
+                 * 
+                 * Conclusion: We either need a better way of deciding when to use "strict mode" (page or site setting?),
+                 * or we need to refactor how system pages work so they behave properly
                  *
                  */
 
