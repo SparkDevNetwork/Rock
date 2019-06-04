@@ -120,11 +120,6 @@ namespace Rock.Migrations
         {
             RockMigrationHelper.UpdatePageRoute( "1B580CA3-F1DB-443F-ABA4-F9C7EC6A8A1B", "06410598-3DA4-4710-A047-A518157753AB", "SpiritualGifts" );
             RockMigrationHelper.UpdatePageRoute( "B991B18C-9B71-4BA9-8149-760CF15F37F3", "06410598-3DA4-4710-A047-A518157753AB", "SpiritualGifts/{rckipid}" );
-            Sql( $@"
-                UPDATE [dbo].[AssessmentType]
-                SET [AssessmentPath] = 'SpiritualGifts'
-                    , [AssessmentResultsPath] = 'SpiritualGifts'
-                WHERE [Guid] = 'B8FBD371-6B32-4BE5-872F-51400D16EC5D'" );
         }
     }
 }
