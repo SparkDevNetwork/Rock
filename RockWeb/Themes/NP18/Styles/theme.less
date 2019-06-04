@@ -26,15 +26,33 @@
 // 1. HTML Overrides
 // -------------------------
 
+html,
+body,
+body > form {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body > form {
+    display: flex;
+    flex-direction: column;
+}
+
+body > form > main {
+    flex-grow: 1;
+}
+
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   font-size: 100%;
   //font-size: 0.75rem; //12px
   @media (min-width: @screen-sm) {
-  	font-size: 1.1rem; //16px
+    font-size: 1.1rem; //16px
   }
-	@media (min-width: @screen-xl) {
+
+  @media (min-width: @screen-xl) {
     font-size: 1.5rem; //24px
   }
 }
