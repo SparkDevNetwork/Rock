@@ -1,9 +1,10 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -18,40 +19,45 @@
 </script>
 
 <html class="no-js">
+
 <head runat="server">
 
     <meta charset="utf-8">
     <title></title>
-    
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
+    <!-- jQuery (Used by Rock RMS & Themes) -->
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
+
+    <!-- Modernizr (Used by Rock RMS & Themes for feature detection) -->
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <!-- Dynamicly added head tags -->
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Dynamicly added css tags -->
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-		<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.min.css", true) %>"/>
-		<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>"/>
-		<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>"/>
+    <!-- NewPointe 2018 Theme CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>" />
 
-		<!-- Adobe Fonts (Din 2014) -->
-		<link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" integrity="sha384-3Oksn1rfcunmyufe4U77X7mx3tf2WwJYDR9pMmX7iOZBO53RWIGodHaZtFkFBVZB" crossorigin="anonymous">
+    <!-- Adobe Fonts (Din 2014) -->
+    <link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" integrity="sha384-3Oksn1rfcunmyufe4U77X7mx3tf2WwJYDR9pMmX7iOZBO53RWIGodHaZtFkFBVZB" crossorigin="anonymous">
+
+    <!-- NewPointe 2018 Theme scripts -->
+    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>"></script>
     
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
-    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>" ></script>
-
-		<!-- addthis.com (Used for social/tracking buttons) -->
-		<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b2009499d65f890"></script>
-
-		<!-- animate.js (Used for scroll-triggered animations) -->
+    <!-- animate.js (Used for scroll-triggered animations) -->
     <script src="https://cdn.jsdelivr.net/npm/animate.js@1.4.1/assets/js/dist/animate.min.js" integrity="sha384-v878xwitWndgO2EepfRrgOy+ygmGIouBrMa0JoEE2iB850hugcMfv8Piilf9BPB8" crossorigin="anonymous"></script>
 
-		<!-- paroller.js (Used for scrolling parallax animations) -->
-		<script src="https://cdn.jsdelivr.net/npm/paroller.js@1.4.4/dist/jquery.paroller.min.js" integrity="sha384-xNAtEJGNci9hwWv3KQ+/mqwBRxn01jrGnxLG5ni29tS0YkZtUA90LGvB28mtBm76" crossorigin="anonymous"></script>
-    
+    <!-- paroller.js (Used for parallax scrolling animations) -->
+    <script src="https://cdn.jsdelivr.net/npm/paroller.js@1.4.4/dist/jquery.paroller.min.js" integrity="sha384-xNAtEJGNci9hwWv3KQ+/mqwBRxn01jrGnxLG5ni29tS0YkZtUA90LGvB28mtBm76" crossorigin="anonymous"></script>
+
 </head>
 <body runat="server" id="body">
 

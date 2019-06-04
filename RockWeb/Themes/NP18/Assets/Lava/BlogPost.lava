@@ -1,48 +1,46 @@
 <div id="blogpost">
-	<div class="row">
-		<div class="col-sm-8 col-md-6 col-sm-offset-1 col-md-offset-2">
-				
-				<h2 class="blogpost-title">{{ Item.Title }}</h2>
+    <div class="row">
 
-				{% assign Item_Subtitle = Item | Attribute:'Subtitle' %}
-				{% if Item_Subtitle != '' %}
-					<div class='intro-text'>{{ Item_Subtitle | StripHtml }}</div>
-				{% endif %}
-				
-				<p class='blogpost-date'><strong>{{ Item.StartDateTime | Date:'MMMM d, yyyy' }}</strong></p>
-				
-				{% assign Item_VimeoId = Item | Attribute:'VimeoId' %}
-				{% if Item_VimeoId != empty %}
-					<div class="embed-container embed-responsive embed-responsive-16by9">
-						<iframe src="https://player.vimeo.com/video/{{ Item_VimeoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
-					</div>
-				{% endif %}
+        <div class="col-sm-8 col-md-6 col-sm-offset-1 col-md-offset-2">
 
-				{{ Item.Content }}
+            <h2 class="blogpost-title">{{ Item.Title }}</h2>
 
-		</div>
-		<div class="col-sm-1 col-sm-offset-2">
-			<div class="sidebar">
-				<div class="addthis_toolbox vertical">
-					<div class="custom_images">
-						<a class="addthis_button_facebook" title="Share to Facebook">
-							<span class="fa-stack">
-								<i class="fa fa-fw fa-facebook-square fa-lg"></i>
-							</span>
-						</a>
-						<a class="addthis_button_twitter" title="Share to Twitter">
-							<span class="fa-stack">
-								<i class="fa fa-fw fa-twitter fa-lg"></i>
-							</span>
-						</a>
-						<a class="addthis_button_email" title="Share via Email">
-							<span class="fa-stack">
-								<i class="fa fa-fw fa-envelope fa-lg"></i>
-							</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+            {% assign Item_Subtitle = Item | Attribute:'Subtitle' %}
+            {% if Item_Subtitle != '' %}
+                <div class='intro-text'>{{ Item_Subtitle | StripHtml }}</div>
+            {% endif %}
+
+            <p class='blogpost-date'><strong>{{ Item.StartDateTime | Date:'MMMM d, yyyy' }}</strong></p>
+
+            {% assign Item_VimeoId = Item | Attribute:'VimeoId' %}
+            {% if Item_VimeoId != empty %}
+                <div class="embed-container embed-responsive embed-responsive-16by9">
+                    <iframe src="https://player.vimeo.com/video/{{ Item_VimeoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+                </div>
+            {% endif %}
+
+            {{ Item.Content }}
+
+        </div>
+
+        <div class="col-sm-1 col-sm-offset-2">
+            <div class="sidebar">
+
+              {% capture ShareText %}Check out {{ item.Title }} at NewPointe.org{% endcapture %}
+              <div class="sharelinks_toolbox">
+                  <a title="Share to Facebook" href="https://www.facebook.com/sharer/sharer.php?quote={{ ShareText | UrlEncode }}&amp;u={{ 'Global' | Page:'Url' | UrlEncode }}">
+                      <i class="fa fa-fw fa-facebook-square fa-lg"></i>
+                  </a>
+                  <a title="Share to Twitter" href="https://twitter.com/intent/tweet?text={{ ShareText | UrlEncode }}&amp;url={{ 'Global' | Page:'Url' | UrlEncode }}">
+                      <i class="fa fa-fw fa-twitter fa-lg"></i>
+                  </a>
+                  <a title="Share via Email" href="mailto:?subject={{ ShareText | UrlEncode }}&amp;body={{ 'Global' | Page:'Url' | UrlEncode }}">
+                      <i class="fa fa-fw fa-envelope fa-lg"></i>
+                  </a>
+              </div>
+        
+            </div>
+        </div>
+
+    </div>
 </div>

@@ -71,11 +71,9 @@ $("a[href*=\\#]:not([href=\\#])").click(function()
 	    if (st >= (headerImageHeight - navbarHeight)){
 	        $('.subnav').addClass('navbar-fixed-top').css('top',navbarHeight+'px');
 	        $('.headerImage').css('margin-bottom',pageSubnavHeight+'px');
-	        //$('.addthis_toolbox.vertical').addClass('navbar-fixed-top').css({'top':navbarHeight+'px','right':'15%'});
 	    } else {
 	        $('.subnav').removeClass('navbar-fixed-top').css('top','auto');
 	        $('.headerImage').css('margin-bottom',0);
-	        //$('.addthis_toolbox.vertical').removeClass('navbar-fixed-top').css({'top':0,'right':0});
 	    }
 	    
 	    lastScrollTop = st;

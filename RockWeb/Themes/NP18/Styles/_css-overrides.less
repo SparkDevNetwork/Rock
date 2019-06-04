@@ -178,41 +178,29 @@ p, ul, ol, blockquote {
 		}
 	}
 }
-.addthis_toolbox {
-	margin: 20px 0 0;
-	@media (min-width: @screen-sm) {
-		margin: 5px 0 20px 0;
-	}
-	&.vertical {
-		left: auto;
+.sharelinks_toolbox {
+	  margin: 20px 0 0;
+	  @media (min-width: @screen-sm) {
+		    margin: 5px 0 20px 0;
+	  }
+
+	  &.vertical {
+		    left: auto;
+		    a {
+			      @media (min-width: @screen-sm) {
+				        clear: both;
+				        float: left;
+			      }
+		    }
+	  }
+
 		a {
-			@media (min-width: @screen-sm) {
-				clear: both;
-				float: left;
-			}
-		}
-	}
-	.custom_images {
-		a {
-			color: @gray-light;
-			&:hover, &:focus, &:active {
-				color: @brand-primary;
-				text-decoration: none;
-			}
-			.fa-stack {
-				position: relative;
-				.fa-xs {
-					position: absolute;
-					top:0;
-					left:0;
-					color: @brand-primary;				
-			    background-color: white;
-			    border-radius: 100%;
-			    border: solid 1px white;
-				}
-			}
-		}
-	}
+			  color: @gray-light;
+			  &:hover, &:focus, &:active {
+				    color: @brand-primary;
+				    text-decoration: none;
+			  }
+	  }
 }
 .list-icons {
 	list-style-type: none;
