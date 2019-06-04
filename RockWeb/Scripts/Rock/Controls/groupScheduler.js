@@ -44,15 +44,40 @@
                     },
                     moves: function (el, source, handle, sibling) {
                         if (source.classList.contains('js-scheduler-source-container') && ($(el).data('has-blackout-conflict') || $(el).data('has-requirements-conflict'))) {
-                            // don't let resources with blackout or requirement conflicts to be scheduled
+                            // don't let resources with a full blackout or requirement conflicts to be scheduled
                             return false;
                         }
                         return true;
                     },
                     copy: function (el, source) {
+                        if (source.classList.contains('js-scheduler-source-container')) {
+                            // if the selected schedule has multiple occurrences for the selected week, keep the resource in the list of available resources
+                            return $(el).data('occurrence-date-count') > 1;
+                        }
                         return false;
                     },
                     accepts: function (el, target) {
+                        if (target.classList.contains('js-scheduler-target-container')) {
+                            var $resourceDiv = $(el);
+                            var blackoutDates = $resourceDiv.data('blackout-dates');
+                            if (blackoutDates) {
+                                // In the case of a schedule that has multiple occurrences during the week, the blackout logic is done when attempting to drag, vs preventing them from dragging
+                                // if there are blackout dates, see if they are trying to drag into an occurrence within those blackout dates
+                                var blackdateDateList = blackoutDates.map(function (d) {
+                                    // get the numeric value of date so we can compare
+                                    return new Date(d).getTime();
+                                })
+
+                                var $occurrence = $(target).closest('.js-scheduled-occurrence')
+                                var occurrenceDate = new Date($occurrence.find('.js-attendanceoccurrence-date').val()).getTime();
+                                if (blackdateDateList.includes(occurrenceDate)) {
+                                    $(el).data('allow-drop', false);
+                                    return false;
+                                }
+                            }
+                        }
+
+                        $(el).data('allow-drop', true);
                         return true;
                     },
                     invalid: function (el, handle) {
@@ -61,6 +86,7 @@
                         return isMenu;
                     },
                     ignoreInputTextSelection: true,
+
                     mirrorContainer: $blockInstance
                 })
                     .on('drag', function (el) {
@@ -72,6 +98,17 @@
                     .on('drop', function (el, target, source, sibling) {
                         if (source == target) {
                             // don't do anything if a person is dragged around within the same occurrence
+                            return;
+                        }
+
+                        if (target == null) {
+                            // don't do anything if a person is dragged into an invalid container
+                            return;
+                        }
+
+                        if ($(el).data('allow-drop') == false) {
+                            // move the el back to the source container
+                            $(el).detach().appendTo($(source));
                             return;
                         }
 
@@ -128,7 +165,6 @@
                                 // after adding a resource, repopulate the list of resources for the occurrence
                                 self.populateScheduledOccurrence($occurrence);
                             }).fail(function (a, b, c) {
-                                debugger
                                 console.log('fail');
                             });
                         }
@@ -171,7 +207,6 @@
                     // after removing a resource, repopulate the list of resources for the occurrence
                     self.populateScheduledOccurrence($occurrence);
                 }).fail(function (a, b, c) {
-                    debugger
                     console.log('fail');
                 });
             },
@@ -247,7 +282,7 @@
 
                     // set the progressbar max range to desired capacity if known
                     var progressMax = desiredCapacity;
-                    var totalScheduled = (totalPending + totalConfirmed );
+                    var totalScheduled = (totalPending + totalConfirmed);
                     if (!progressMax) {
                         // desired capacity isn't known, so just have it act as a stacked bar based on the sum of pending,confirmed,declined
                         progressMax = totalScheduled;
@@ -348,7 +383,6 @@
                     }, 0)
 
                 }).fail(function (a, b, c) {
-                    debugger
                     console.log('fail');
                     $loadingNotification.hide();
                 });
@@ -359,7 +393,15 @@
                 $resourceDiv.attr('data-status', schedulerResource.ConfirmationStatus);
                 $resourceDiv.attr('data-person-id', schedulerResource.PersonId);
                 $resourceDiv.attr('data-has-scheduling-conflict', schedulerResource.HasSchedulingConflict);
+
+                // entirely blacked out for all the occurrences for the selected week and schedule
                 $resourceDiv.attr('data-has-blackout-conflict', schedulerResource.HasBlackoutConflict);
+
+                // blacked out for some of the occurrences for the selected week and schedule, but has some dates that are not blacked out
+                $resourceDiv.attr('data-has-partial-blackout-conflict', schedulerResource.HasPartialBlackoutConflict);
+                $resourceDiv.data('occurrence-date-count', schedulerResource.OccurrenceDateCount);
+                $resourceDiv.data('blackout-dates', schedulerResource.BlackoutDates);
+
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
                 var $resourceMeta = $resourceDiv.find('.js-resource-meta');
 
@@ -372,12 +414,21 @@
                 } else if (schedulerResource.HasSchedulingConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " has a scheduling conflict.");
                     $resourceDiv.tooltip();
+                } else if (schedulerResource.HasPartialBlackoutConflict) {
+
+                    var blackdateDates = schedulerResource.BlackoutDates.map(function (d) {
+                        return new Date(d).toLocaleDateString()
+                    })
+                    var firstBlackoutDate = blackdateDates[0];
+                    var lastBlackoutDate = blackdateDates[blackdateDates.length - 1];
+                    $resourceDiv.attr('title', schedulerResource.PersonName + " has blackout from " + firstBlackoutDate + " to " + lastBlackoutDate);
+                    $resourceDiv.tooltip();
                 }
 
                 $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
                 if (schedulerResource.Note) {
                     $resourceDiv.addClass('has-note');
-                    $resourceMeta.parent().prepend('<div class="resource-note js-resource-note hide-transit">'+ schedulerResource.Note +'</div>');
+                    $resourceMeta.parent().prepend('<div class="resource-note js-resource-note hide-transit">' + schedulerResource.Note + '</div>');
                 }
 
                 if (schedulerResource.ConflictNote) {
@@ -390,6 +441,10 @@
 
                 if (schedulerResource.HasBlackoutConflict) {
                     $resourceMeta.append('<span class="resource-blackout-status hide-transit" title="Blackout"><i class="fa fa-user-times"></i></span>');
+                }
+
+                if (schedulerResource.HasPartialBlackoutConflict) {
+                    $resourceMeta.append('<span class="resource-partial-blackout-status hide-transit" title="Partial Blackout"><i class="fa fa-user-clock"></i></span>');
                 }
 
                 if (schedulerResource.HasGroupRequirementsConflict) {
@@ -442,7 +497,6 @@
                         var $occurrence = $resource.closest('.js-scheduled-occurrence');
                         self.populateScheduledOccurrence($occurrence);
                     }).fail(function (a, b, c) {
-                        debugger
                         console.log('fail');
                     })
                 });

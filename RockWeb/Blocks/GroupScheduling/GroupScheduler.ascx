@@ -184,6 +184,7 @@
 
                                                 <asp:Panel ID="pnlScheduledOccurrence" runat="server" CssClass="location js-scheduled-occurrence" data-hide-if-empty="0">
                                                     <Rock:HiddenFieldWithClass ID="hfAttendanceOccurrenceId" runat="server" CssClass="js-attendanceoccurrence-id" />
+                                                    <Rock:HiddenFieldWithClass ID="hfAttendanceOccurrenceDate" runat="server" CssClass="js-attendanceoccurrence-date" />
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleMinimumCapacity" runat="server" CssClass="js-minimum-capacity" />
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleDesiredCapacity" runat="server" CssClass="js-desired-capacity" />
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleMaximumCapacity" runat="server" CssClass="js-maximum-capacity" />
@@ -191,6 +192,7 @@
                                                         <div class="panel-heading">
                                                             <h1 class="panel-title">
                                                                 <asp:Literal ID="lLocationTitle" runat="server" />
+                                                                <small><asp:Literal runat="server" ID="lOccurrenceScheduledDateTime" /></small>
                                                             </h1>
                                                             <asp:Panel ID="pnlStatusLabels" runat="server" CssClass="panel-labels">
                                                                 <div class="scheduling-status js-scheduling-status pull-right">

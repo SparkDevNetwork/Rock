@@ -782,19 +782,28 @@ namespace Rock.Model
         #region GroupScheduling Related
 
         /// <summary>
-        /// Gets the person schedule exclusion query for the specified Group and OccurrenceDate
+        /// Gets the person schedule exclusion query for occurrence dates.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
-        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="occurrenceDateList">The occurrence date list.</param>
         /// <returns></returns>
-        private IQueryable<PersonScheduleExclusion> GetPersonScheduleExclusionQuery( int groupId, DateTime occurrenceDate )
+        private IQueryable<PersonScheduleExclusion> GetPersonScheduleExclusionQueryForOccurrenceDates( int groupId, List<DateTime> occurrenceDateList )
         {
             var rockContext = this.Context as RockContext;
-            var personScheduleExclusionQueryForOccurrence = new PersonScheduleExclusionService( rockContext ).Queryable()
-                .Where( a => !a.GroupId.HasValue || ( a.GroupId.Value == groupId ) )
-                    .Where( a => occurrenceDate >= a.StartDate && occurrenceDate <= a.EndDate );
+            var personScheduleExclusionQueryForOccurrenceDates = new PersonScheduleExclusionService( rockContext ).Queryable()
+                .Where( a => !a.GroupId.HasValue || ( a.GroupId.Value == groupId ) );
 
-            return personScheduleExclusionQueryForOccurrence;
+            if ( occurrenceDateList.Count == 1 )
+            {
+                var occurrenceDate = occurrenceDateList.First();
+                personScheduleExclusionQueryForOccurrenceDates = personScheduleExclusionQueryForOccurrenceDates.Where( a => occurrenceDate >= a.StartDate && occurrenceDate <= a.EndDate );
+            }
+            else
+            {
+                personScheduleExclusionQueryForOccurrenceDates = personScheduleExclusionQueryForOccurrenceDates.Where( a => occurrenceDateList.Any( occurrenceDate => occurrenceDate >= a.StartDate && occurrenceDate <= a.EndDate ) );
+            }
+
+            return personScheduleExclusionQueryForOccurrenceDates;
         }
 
         /// <summary>
@@ -819,11 +828,18 @@ namespace Rock.Model
             var occurrenceSundayDate = schedulerResourceParameters.AttendanceOccurrenceSundayDate;
             var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
 
-            var scheduleOccurrenceDateTime = occurrenceSchedule.GetNextStartDateTime( occurrenceSundayWeekStartDate );
-
-            if ( scheduleOccurrenceDateTime == null )
+            // don't include schedule dates in the past
+            if ( occurrenceSundayWeekStartDate <= RockDateTime.Today )
             {
-                // no next start date for schedule, return empty list
+                occurrenceSundayWeekStartDate = RockDateTime.Today;
+            }
+
+
+            // get all the occurrences for the selected week for this schedule (It could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc)
+            var scheduleOccurrenceDateTimeList = occurrenceSchedule.GetScheduledStartTimes( occurrenceSundayWeekStartDate, occurrenceSundayDate.AddDays( 1 ) );
+            if ( !scheduleOccurrenceDateTimeList.Any() )
+            {
+                // no occurrences for the selected week, so just return an empty list
                 return schedulerResourceList;
             }
 
@@ -859,7 +875,7 @@ namespace Rock.Model
                 }
             }
 
-            var scheduleOccurrenceDate = scheduleOccurrenceDateTime.Value.Date;
+            var scheduleOccurrenceDateList = scheduleOccurrenceDateTimeList.Select( a => a.Date ).ToList();
 
             if ( groupMemberQry != null )
             {
@@ -905,7 +921,7 @@ namespace Rock.Model
                         scheduleTemplateLookup = new Dictionary<int, Schedule>();
                     }
 
-                    TimeSpan occurrenceScheduledTime = scheduleOccurrenceDateTime.Value.TimeOfDay;
+                    TimeSpan occurrenceScheduledTime = scheduleOccurrenceDateList.First().TimeOfDay;
 
                     List<int> matchingScheduleGroupMemberIdList = new List<int>();
 
@@ -989,7 +1005,7 @@ namespace Rock.Model
             }
             else
             {
-                IQueryable<PersonScheduleExclusion> personScheduleExclusionQueryForOccurrence = GetPersonScheduleExclusionQuery( schedulerResourceParameters.AttendanceOccurrenceGroupId, scheduleOccurrenceDate );
+                IQueryable<PersonScheduleExclusion> personScheduleExclusionQueryForOccurrenceDates = GetPersonScheduleExclusionQueryForOccurrenceDates( schedulerResourceParameters.AttendanceOccurrenceGroupId, scheduleOccurrenceDateList );
 
                 // Get the last time they attended the group (in any location or schedule)
                 var lastAttendedDateTimeQuery = attendanceService.Queryable()
@@ -1000,12 +1016,12 @@ namespace Rock.Model
                 if ( groupMemberQry != null )
                 {
                     lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
-                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrenceDates = personScheduleExclusionQueryForOccurrenceDates.Where( a => groupMemberQry.Any( m => m.PersonId == a.PersonAlias.PersonId ) );
                 }
                 else if ( personQry != null )
                 {
                     lastAttendedDateTimeQuery = lastAttendedDateTimeQuery.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
-                    personScheduleExclusionQueryForOccurrence = personScheduleExclusionQueryForOccurrence.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
+                    personScheduleExclusionQueryForOccurrenceDates = personScheduleExclusionQueryForOccurrenceDates.Where( a => personQry.Any( p => p.Id == a.PersonAlias.PersonId ) );
                 }
 
                 var personIdLastAttendedDateTimeLookup = lastAttendedDateTimeQuery
@@ -1020,7 +1036,7 @@ namespace Rock.Model
                 var scheduledAttendanceGroupIdsLookup = attendanceService.Queryable()
                     .Where( a => ( a.RequestedToAttend == true || a.ScheduledToAttend == true )
                               && a.Occurrence.ScheduleId == schedulerResourceParameters.AttendanceOccurrenceScheduleId
-                              && a.Occurrence.OccurrenceDate == scheduleOccurrenceDate
+                              && scheduleOccurrenceDateList.Contains( a.Occurrence.OccurrenceDate )
                               && a.Occurrence.GroupId.HasValue )
                     .GroupBy( a => a.PersonAlias.PersonId )
                     .Select( a => new
@@ -1030,20 +1046,10 @@ namespace Rock.Model
                     } )
                     .ToDictionary( k => k.PersonId, v => v.ScheduledOccurrenceGroupIds );
 
-                // select personScheduleExclusionQueryForOccurrence into a List just in case resourcePersonIds is large (10000+ ids) , so we don't an exception when building personScheduleExclusionQueryForOccurrencePersonIds
-                var personScheduleExclusionForOccurrencePersonIdList = personScheduleExclusionQueryForOccurrence.Select( s => s.PersonAlias.PersonId ).ToList();
-
-                HashSet<int> personScheduleExclusionQueryForOccurrencePersonIds;
-
-                if ( true || personScheduleExclusionForOccurrencePersonIdList.Any() )
-                {
-                    var resourcePersonIdHash = new HashSet<int>( schedulerResourceList.Select( a => a.PersonId ).Distinct().ToArray() );
-                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>( personScheduleExclusionForOccurrencePersonIdList.Where( personId => resourcePersonIdHash.Contains( personId ) ).Distinct().ToList() );
-                }
-                else
-                {
-                    personScheduleExclusionQueryForOccurrencePersonIds = new HashSet<int>();
-                }
+                var personScheduleExclusionLookupByPersonId = personScheduleExclusionQueryForOccurrenceDates
+                    .Select( s => new { s.PersonAlias.PersonId, s.StartDate, s.EndDate } ).ToList()
+                    .GroupBy( a => a.PersonId )
+                    .ToDictionary( k => k.Key, v => new DateRange { Start = v.Min( x => x.StartDate ), End = v.Max( x => x.EndDate ) } );
 
                 foreach ( var schedulerResource in schedulerResourceList )
                 {
@@ -1058,12 +1064,19 @@ namespace Rock.Model
                     // see if they are scheduled for this group already for this occurrence
                     schedulerResource.IsAlreadyScheduledForGroup = scheduledForGroupIds?.Any( groupId => groupId == schedulerResourceParameters.AttendanceOccurrenceGroupId ) ?? false;
 
-                    schedulerResource.HasBlackoutConflict = personScheduleExclusionQueryForOccurrencePersonIds.Contains( schedulerResource.PersonId );
+                    DateRange personExclusionDateRange = personScheduleExclusionLookupByPersonId.GetValueOrNull( schedulerResource.PersonId );
+
+                    if ( personExclusionDateRange != null)
+                    {
+                        schedulerResource.BlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
+                        schedulerResource.OccurrenceDateCount = scheduleOccurrenceDateList.Count();
+                    }
                 }
 
-                // remove anybody that is already scheduled for this group, and sort by person
+                // If there is only one occurrence for the selected week, remove anybody that is already scheduled for this group, and sort by person
+                // However, if there are multiple occurrences, don't exclude them so the same person can be scheduled for multiple days. (if get dragged into the same occurrence more than once, the logic will see they are already scheduled and ignore it)
                 schedulerResourceList = schedulerResourceList
-                    .Where( a => a.IsAlreadyScheduledForGroup != true )
+                    .Where( a => a.OccurrenceDateCount > 1 || ( a.IsAlreadyScheduledForGroup != true ) )
                     .OrderBy( a => a.PersonLastName ).ThenBy( a => a.PersonNickName ).ThenBy( a => a.PersonId ).ToList();
 
                 return schedulerResourceList;
@@ -1082,15 +1095,26 @@ namespace Rock.Model
             var attendanceOccurrenceInfo = new AttendanceOccurrenceService( this.Context as RockContext ).GetSelect( attendanceOccurrenceId, s => new
             {
                 s.GroupId,
-                s.ScheduleId,
+                s.Schedule,
                 s.OccurrenceDate
             } );
 
-            int scheduleId = attendanceOccurrenceInfo.ScheduleId ?? 0;
+            int scheduleId = attendanceOccurrenceInfo.Schedule?.Id ?? 0;
             var groupId = attendanceOccurrenceInfo.GroupId ?? 0;
             DateTime occurrenceDate = attendanceOccurrenceInfo.OccurrenceDate;
+            var occurrenceSundayDate = attendanceOccurrenceInfo.OccurrenceDate.SundayDate();
+            var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
 
-            IQueryable<PersonScheduleExclusion> personScheduleExclusionQueryForOccurrence = GetPersonScheduleExclusionQuery( groupId, occurrenceDate );
+            // don't include schedule dates in the past
+            if ( occurrenceSundayWeekStartDate <= RockDateTime.Today )
+            {
+                occurrenceSundayWeekStartDate = RockDateTime.Today;
+            }
+
+            // get all the occurrences for the selected week for this schedule (It could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc)
+            var scheduleOccurrenceDateList = attendanceOccurrenceInfo.Schedule.GetScheduledStartTimes( occurrenceSundayWeekStartDate, occurrenceSundayDate.AddDays( 1 ) ).Select( a => a.Date ).ToList();
+
+            IQueryable<PersonScheduleExclusion> personScheduleExclusionQueryForOccurrence = GetPersonScheduleExclusionQueryForOccurrenceDates( groupId, scheduleOccurrenceDateList );
 
             var scheduledAttendancesQuery = this.Queryable()
                 .Where( a => a.OccurrenceId == attendanceOccurrenceId
@@ -1112,8 +1136,7 @@ namespace Rock.Model
                                                                                     && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
                                                                                     && c.Occurrence.ScheduleId == scheduleId
                                                                                     && c.Occurrence.OccurrenceDate == occurrenceDate ),
-                    HasBlackoutConflict = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == a.PersonAlias.PersonId ).Any()
-
+                    BlackoutDateRanges = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == a.PersonAlias.PersonId ).Select(s => new { s.StartDate, s.EndDate } ).ToList ()
                 } );
 
             var result = scheduledAttendancesQuery.ToList().Select( a =>
@@ -1128,14 +1151,23 @@ namespace Rock.Model
                     status = ScheduledAttendanceItemStatus.Confirmed;
                 }
 
+                List<DateTime> personBlackoutDates = null;
+                if ( a.BlackoutDateRanges.Any() )
+                {
+                    var personExclusionDateRange = new DateRange( a.BlackoutDateRanges.Min( d => d.StartDate ), a.BlackoutDateRanges.Max( d => d.EndDate ) );
+                    personBlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
+                }
+
                 return new SchedulerResourceAttend
                 {
                     AttendanceId = a.Id,
+                    OccurrenceDate = occurrenceDate,
                     ConfirmationStatus = status.ConvertToString( false ).ToLower(),
                     PersonId = a.PersonId,
                     PersonName = Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     HasSchedulingConflict = a.HasSchedulingConflict,
-                    HasBlackoutConflict = a.HasBlackoutConflict
+                    BlackoutDates = personBlackoutDates,
+                    OccurrenceDateCount = scheduleOccurrenceDateList.Count()
                 };
             } );
 
@@ -1573,6 +1605,22 @@ namespace Rock.Model
         /// The attendance identifier.
         /// </value>
         public int AttendanceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the occurrence date.
+        /// </summary>
+        /// <value>
+        /// The occurrence date.
+        /// </value>
+        public DateTime OccurrenceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this scheduled resource has a blackout conflict for the occurrence date
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has blackout conflict; otherwise, <c>false</c>.
+        /// </value>
+        public override bool HasBlackoutConflict => this.BlackoutDates?.Contains( this.OccurrenceDate ) == true;
     }
 
     /// <summary>
@@ -1690,12 +1738,36 @@ namespace Rock.Model
         public string ConflictNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance has blackout conflict.
+        /// Gets or sets a value indicating whether this instance has blackout conflict for all the occurrences
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance has blackout conflict; otherwise, <c>false</c>.
         /// </value>
-        public bool HasBlackoutConflict { get; set; }
+        public virtual bool HasBlackoutConflict => BlackoutDates?.Any() == true && BlackoutDates.Count() >= OccurrenceDateCount;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has partial blackout conflict (blackout for some of the occurrences, but not all of them)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has partial blackout conflict; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasPartialBlackoutConflict => BlackoutDates?.Any() == true && BlackoutDates.Count() < OccurrenceDateCount;
+
+        /// <summary>
+        /// Gets or sets the number of occurrences for the selected week
+        /// </summary>
+        /// <value>
+        /// The occurrence date count.
+        /// </value>
+        public int OccurrenceDateCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the blackout dates.
+        /// </summary>
+        /// <value>
+        /// The blackout dates.
+        /// </value>
+        public List<DateTime> BlackoutDates { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has group requirements conflict.
@@ -1761,7 +1833,7 @@ namespace Rock.Model
         /// <summary>
         /// The alternate group
         /// </summary>
-        [Description("Alt Group")]
+        [Description( "Alt Group" )]
         AlternateGroup,
 
         /// <summary>

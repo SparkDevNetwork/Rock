@@ -37,7 +37,7 @@
         <%-- Date Range Picker Modal --%>
         <Rock:ModalDialog ID="dlgDateRangeSlider" runat="server" Title="Dates" Visible="false" OnSaveClick="dlgDateRangeSlider_SaveClick">
             <Content>
-                <Rock:RangeSlider ID="rsDateRange" runat="server" Label="Number of upcomming weeks to display." MaxValue="16" MinValue="1" />
+                <Rock:RangeSlider ID="rsDateRange" runat="server" Label="Number of Weeks To Show." MaxValue="16" MinValue="1" />
             </Content>
         </Rock:ModalDialog>
         <script type="text/javascript">
