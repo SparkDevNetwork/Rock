@@ -34,6 +34,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.AssessmentType", "BadgeSummaryLava", c => c.String() );
 
             UpdateAssessmentTypeFields();
+            AddAssessmentBadge();
         }
 
         /// <summary>
@@ -56,6 +57,12 @@ namespace Rock.Migrations
             Sql( $"UPDATE [AssessmentType] SET IconCssClass = 'fa fa-handshake', BadgeColor = '#E15759' WHERE [Guid] = '{SystemGuid.AssessmentType.CONFLICT}'" );
             Sql( $"UPDATE [AssessmentType] SET IconCssClass = 'fa fa-theater-masks', BadgeColor = '#499894' WHERE [Guid] = '{SystemGuid.AssessmentType.EQ}'" );
             Sql( $"UPDATE [AssessmentType] SET IconCssClass = 'fa fa-key ', BadgeColor = '#F28E2B' WHERE [Guid] = '{SystemGuid.AssessmentType.MOTIVATORS}'" );
+        }
+
+        private void AddAssessmentBadge()
+        {
+            RockMigrationHelper.UpdateEntityType( "Rock.PersonProfile.Badge.Assessment", "C10B68B3-A13C-4B1A-9C56-91F0630AED90", false, true );
+            RockMigrationHelper.UpdatePersonBadge( "Assessments", "Shows the person's Personality Assessments.", "Rock.PersonProfile.Badge.Assessment", 0, "CCE09793-89F6-4042-A98A-ED38392BCFCC" );
         }
     }
 }
