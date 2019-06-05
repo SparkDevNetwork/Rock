@@ -190,7 +190,7 @@
                                 </h3>
                                 <hr class="margin-t-sm margin-b-sm" />
                                 <p>
-                                    <asp:Literal runat="server" ID="lBlackoutDatesHelp" Text="Please provide any dates you will not be able to attend." />
+                                    Please provide any dates <%= ( CurrentPersonId == null || CurrentPersonId != SelectedPersonId ? "they" : "you") %> will not be able to attend.
                                 </p>
 
                                 <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
