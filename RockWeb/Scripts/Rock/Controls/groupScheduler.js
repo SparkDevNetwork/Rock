@@ -56,10 +56,14 @@
                         }
                         return false;
                     },
-                    accepts: function (el, target) {
+                    accepts: function (el, target, source, sibling) {
                         if (target.classList.contains('js-scheduler-target-container')) {
                             var $resourceDiv = $(el);
                             var blackoutDates = $resourceDiv.data('blackout-dates');
+
+                            var $targetOccurrence = $(target).closest('.js-scheduled-occurrence')
+                            var targetOccurrenceDate = new Date($targetOccurrence.find('.js-attendanceoccurrence-date').val()).getTime();
+
                             if (blackoutDates) {
                                 // In the case of a schedule that has multiple occurrences during the week, the blackout logic is done when attempting to drag, vs preventing them from dragging
                                 // if there are blackout dates, see if they are trying to drag into an occurrence within those blackout dates
@@ -68,10 +72,20 @@
                                     return new Date(d).getTime();
                                 })
 
-                                var $occurrence = $(target).closest('.js-scheduled-occurrence')
-                                var occurrenceDate = new Date($occurrence.find('.js-attendanceoccurrence-date').val()).getTime();
-                                if (blackdateDateList.includes(occurrenceDate)) {
-                                    $(el).data('allow-drop', false);
+                                if (blackdateDateList.includes(targetOccurrenceDate)) {
+                                    $resourceDiv.data('allow-drop', false);
+                                    return false;
+                                }
+                            }
+
+                            // if getting dragged from the 'No Location Specified' div, restrict to occurrences that have the same date as they signed up for
+                            var $sourceOccurrence = $resourceDiv.closest('.js-scheduled-occurrence');
+                            var allowedDate = $resourceDiv.data('occurrenceDate');
+                            var hasLocation = $resourceDiv.data('hasLocation');
+
+                            if ($sourceOccurrence.length && hasLocation == 0) {
+                                if (allowedDate != targetOccurrenceDate) {
+                                    $resourceDiv.data('allow-drop', false);
                                     return false;
                                 }
                             }
@@ -124,9 +138,8 @@
 
                             self.$additionalPersonIds.val(additionalPersonIds);
 
-                            var attendanceId = $unscheduledResource.attr('data-attendance-id');
                             var $occurrence = $(source).closest('.js-scheduled-occurrence');
-                            self.removeResource(attendanceId, $occurrence);
+                            self.removeResource($unscheduledResource, $occurrence);
                         }
                         else {
                             // deal with the resource that was dragged into an scheduled occurrence (location)
@@ -142,20 +155,20 @@
                             // if they were dragged from another occurrence, remove them from that first
                             if (source.classList.contains('js-scheduler-target-container')) {
 
-                                var attendanceId = $scheduledResource.attr('data-attendance-id')
-
                                 // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
                                 var sourceConfirmationStatus = $scheduledResource.attr('data-status');
                                 if (sourceConfirmationStatus == 'confirmed') {
                                     scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
                                 }
                                 var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
-                                self.removeResource(attendanceId, $sourceOccurrence);
+                                self.removeResource($scheduledResource, $sourceOccurrence);
                             }
                             else {
                                 // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
                                 $scheduledResource.attr('data-status', 'pending');
                             }
+
+                            var refreshAllOccurrences = $scheduledResource.data('occurrence-date-count') > 1;
 
                             // add as pending (or confirmed if already confirmed) to target occurrence
                             $.ajax({
@@ -163,7 +176,13 @@
                                 url: scheduledPersonAddUrl + '?personId=' + personId + '&attendanceOccurrenceId=' + attendanceOccurrenceId
                             }).done(function (scheduledAttendance) {
                                 // after adding a resource, repopulate the list of resources for the occurrence
-                                self.populateScheduledOccurrence($occurrence);
+                                // If there are multiple occurrences during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
+                                if (refreshAllOccurrences) {
+                                    self.populateAllScheduledOccurrences();
+
+                                } else {
+                                    self.populateScheduledOccurrence($occurrence);
+                                }
                             }).fail(function (a, b, c) {
                                 console.log('fail');
                             });
@@ -176,11 +195,7 @@
 
                 self.populateSchedulerResources(self.$resourceList);
 
-                var occurrenceEls = $(".js-scheduled-occurrence", $control).toArray();
-                $.each(occurrenceEls, function (i) {
-                    var $occurrence = $(occurrenceEls[i]);
-                    self.populateScheduledOccurrence($occurrence);
-                });
+                self.populateAllScheduledOccurrences();
             },
             /** trims the source container if it just has whitespace, so that the :empty css selector works */
             trimSourceContainer: function () {
@@ -191,8 +206,11 @@
                 }
             },
             /** Removes the resource and repopulates the UI */
-            removeResource: function (attendanceId, $occurrence) {
+            removeResource: function ($scheduledResource, $occurrence) {
                 var self = this;
+
+                var attendanceId = $scheduledResource.attr('data-attendance-id');
+                var refreshAllOccurrences = $scheduledResource.data('occurrence-date-count') > 1;
 
                 // unschedule and repopulate ui
                 var scheduledPersonRemoveUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonRemove';
@@ -205,9 +223,24 @@
                     self.populateSchedulerResources(self.$resourceList);
 
                     // after removing a resource, repopulate the list of resources for the occurrence
-                    self.populateScheduledOccurrence($occurrence);
+                    // If there are multiple occurrences during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
+                    if (refreshAllOccurrences) {
+                        self.populateAllScheduledOccurrences();
+
+                    } else {
+                        self.populateScheduledOccurrence($occurrence);
+                    }
                 }).fail(function (a, b, c) {
                     console.log('fail');
+                });
+            },
+            /** populates the scheduled (requested/scheduled) resources for all the occurrence divs */
+            populateAllScheduledOccurrences() {
+                var self = this;
+                var occurrenceEls = $(".js-scheduled-occurrence", self.$groupScheduler).toArray();
+                $.each(occurrenceEls, function (i) {
+                    var $occurrence = $(occurrenceEls[i]);
+                    self.populateScheduledOccurrence($occurrence);
                 });
             },
             /** populates the scheduled (requested/scheduled) resources for the occurrence div */
@@ -221,6 +254,9 @@
                 var maximumCapacity = $occurrence.find('.js-maximum-capacity').val();
                 var $schedulingStatusContainer = $occurrence.find('.js-scheduling-status');
                 var $autoschedulerWarning = $occurrence.find('.js-autoscheduler-warning');
+                var occurrenceDate = new Date($occurrence.find('.js-attendanceoccurrence-date').val()).getTime();
+                var hasLocation = $occurrence.data('has-location')
+
                 if (!desiredCapacity) {
                     $autoschedulerWarning.show();
                     $autoschedulerWarning.tooltip();
@@ -258,6 +294,8 @@
                         }
 
                         var $resourceDiv = $('.js-scheduled-resource-template').find('.js-resource').clone();
+                        $resourceDiv.data('occurrenceDate', occurrenceDate);
+                        $resourceDiv.data('hasLocation', hasLocation);
                         self.populateResourceDiv($resourceDiv, scheduledAttendanceItem);
                         $schedulerTargetContainer.append($resourceDiv);
                     });
@@ -399,8 +437,9 @@
 
                 // blacked out for some of the occurrences for the selected week and schedule, but has some dates that are not blacked out
                 $resourceDiv.attr('data-has-partial-blackout-conflict', schedulerResource.HasPartialBlackoutConflict);
-                $resourceDiv.data('occurrence-date-count', schedulerResource.OccurrenceDateCount);
                 $resourceDiv.data('blackout-dates', schedulerResource.BlackoutDates);
+
+                $resourceDiv.attr('data-occurrence-date-count', schedulerResource.OccurrenceDateCount );
 
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
                 var $resourceMeta = $resourceDiv.find('.js-resource-meta');
@@ -411,17 +450,25 @@
                 } else if (schedulerResource.HasGroupRequirementsConflict) {
                     $resourceDiv.attr('title', schedulerResource.PersonName + " does not meet the requirements for this group.");
                     $resourceDiv.tooltip();
-                } else if (schedulerResource.HasSchedulingConflict) {
-                    $resourceDiv.attr('title', schedulerResource.PersonName + " has a scheduling conflict.");
-                    $resourceDiv.tooltip();
-                } else if (schedulerResource.HasPartialBlackoutConflict) {
+                } else if (schedulerResource.HasSchedulingConflict || schedulerResource.HasPartialBlackoutConflict) {
+                    var resourceTooltip = schedulerResource.PersonName;
+                    if (schedulerResource.HasSchedulingConflict) {
+                        resourceTooltip += " has a scheduling conflict";
+                    }
+                    if (schedulerResource.HasSchedulingConflict && schedulerResource.HasPartialBlackoutConflict) {
+                        resourceTooltip += " and";
+                    }
 
-                    var blackdateDates = schedulerResource.BlackoutDates.map(function (d) {
-                        return new Date(d).toLocaleDateString()
-                    })
-                    var firstBlackoutDate = blackdateDates[0];
-                    var lastBlackoutDate = blackdateDates[blackdateDates.length - 1];
-                    $resourceDiv.attr('title', schedulerResource.PersonName + " has blackout from " + firstBlackoutDate + " to " + lastBlackoutDate);
+                    if (schedulerResource.HasPartialBlackoutConflict) {
+                        var blackdateDates = schedulerResource.BlackoutDates.map(function (d) {
+                            return new Date(d).toLocaleDateString()
+                        })
+                        var firstBlackoutDate = blackdateDates[0];
+                        var lastBlackoutDate = blackdateDates[blackdateDates.length - 1];
+                        resourceTooltip += " has a blackout from " + firstBlackoutDate + " to " + lastBlackoutDate;
+                    }
+
+                    $resourceDiv.attr('title', resourceTooltip + ".");
                     $resourceDiv.tooltip();
                 }
 
@@ -528,10 +575,3 @@
         return exports;
     }());
 }(jQuery));
-
-
-
-
-
-
-
