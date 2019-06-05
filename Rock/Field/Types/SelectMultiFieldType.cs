@@ -374,8 +374,20 @@ namespace Rock.Field.Types
                 // OR ',' + Value + ',' like '%,lettuce,%'
                 // OR ',' + Value + ',' like '%,tomato,%'
 
-                // should be either "Contains" or "Not Contains"
+                // should be either "Contains" or "Not Contains" or "IsBlank"
                 ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    // If EqualTo was specified, treat it as Contains
+                    comparisonType = ComparisonType.Contains;
+                }
+
+                if ( comparisonType == ComparisonType.NotEqualTo )
+                {
+                    // If NotEqualTo was specified, treat it as DoesNotContain
+                    comparisonType = ComparisonType.DoesNotContain;
+                }
 
                 // No comparison value was specified, so we can filter if the Comparison Type using no value still makes sense
                 if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
