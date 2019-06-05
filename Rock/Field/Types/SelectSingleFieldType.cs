@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -135,7 +136,7 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 2 && configurationValues != null)
+            if ( controls != null && controls.Count > 2 && configurationValues != null )
             {
                 var tbValues = controls[0] as RockTextBox;
                 var ddlFieldType = controls[1] as RockDropDownList;
@@ -209,8 +210,8 @@ namespace Rock.Field.Types
                 string fieldType = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : "ddl";
                 if ( fieldType == "rb" )
                 {
-                    editControl = new RockRadioButtonList { ID = id }; 
-                    ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+                    editControl = new RockRadioButtonList { ID = id };
+                    ( ( RadioButtonList ) editControl ).RepeatDirection = RepeatDirection.Horizontal;
 
                     if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
                     {
@@ -220,12 +221,12 @@ namespace Rock.Field.Types
                 else
                 {
                     editControl = new RockDropDownList { ID = id };
-                    ( (RockDropDownList)editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
-                    ( (RockDropDownList)editControl ).DisplayEnhancedAsAbsolute = true;
+                    ( ( RockDropDownList ) editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
+                    ( ( RockDropDownList ) editControl ).DisplayEnhancedAsAbsolute = true;
                     editControl.Items.Add( new ListItem() );
                 }
 
-                foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -250,7 +251,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is ListControl )
             {
-                return ( (ListControl)control ).SelectedValue;
+                return ( ( ListControl ) control ).SelectedValue;
             }
 
             return null;
@@ -268,7 +269,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    ( (ListControl)control ).SetValue( value );
+                    ( ( ListControl ) control ).SetValue( value );
                 }
             }
         }
@@ -276,7 +277,7 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
-         
+
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -295,7 +296,7 @@ namespace Rock.Field.Types
 
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 
@@ -371,7 +372,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -405,7 +406,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -461,7 +462,7 @@ namespace Rock.Field.Types
         /// </remarks>
         public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
-            List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( selectedValues.Any() )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
@@ -469,14 +470,14 @@ namespace Rock.Field.Types
                 object constantValue;
                 if ( propertyType.IsEnum )
                 {
-                   constantValue = Enum.Parse( propertyType, selectedValues[0] );
+                    constantValue = Enum.Parse( propertyType, selectedValues[0] );
                 }
                 else
                 {
                     constantValue = selectedValues[0] as string;
                 }
 
-                 ConstantExpression constantExpression = Expression.Constant( constantValue );
+                ConstantExpression constantExpression = Expression.Constant( constantValue );
                 Expression comparison = Expression.Equal( propertyExpression, constantExpression );
 
                 foreach ( string selectedValue in selectedValues.Skip( 1 ) )
@@ -500,16 +501,57 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
+            List<string> selectedValues = null;
+            ComparisonType comparisonType = ComparisonType.Contains;
+
             if ( filterValues.Count == 1 )
             {
-                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
-                {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof(List<string>) );
-                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof(string) } ), propertyExpression );
-                }
+                // if there is only one filter value, it is a Contains comparison for the selectedValues
+                // This is the normal thing that DataViews would do with a SelectSingleFieldType
+                selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             }
+            else if ( filterValues.Count >= 2 )
+            {
+                // if there are 2 (or more) filter values, the first is the comparison type and the 2nd is the selected value(s)
+                // Note: Rock Lava Entity commands could do this, DataViews don't currently support more than just 'Contains'
+                comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    // If EqualTo was specified, treat it as Contains
+                    comparisonType = ComparisonType.Contains;
+                }
+
+                if ( comparisonType == ComparisonType.NotEqualTo )
+                {
+                    // If NotEqualTo was specified, treat it as DoesNotContain
+                    comparisonType = ComparisonType.DoesNotContain;
+                }
+
+                selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
+            // if IsBlank (or IsNotBlank)
+            if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+            {
+                // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
+            }
+
+            if ( selectedValues?.Any() == true )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                Expression expression = Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                if ( comparisonType == ComparisonType.DoesNotContain )
+                {
+                    expression = Expression.Not( expression );
+                }
+
+                return expression;
+            }
+
 
             return new NoAttributeFilterExpression();
         }
