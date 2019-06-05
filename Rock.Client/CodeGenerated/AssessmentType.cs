@@ -41,6 +41,12 @@ namespace Rock.Client
         public string AssessmentResultsPath { get; set; }
 
         /// <summary />
+        public string BadgeColor { get; set; }
+
+        /// <summary />
+        public string BadgeSummaryLava { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -48,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; }
@@ -107,9 +116,12 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AssessmentPath = source.AssessmentPath;
             this.AssessmentResultsPath = source.AssessmentResultsPath;
+            this.BadgeColor = source.BadgeColor;
+            this.BadgeSummaryLava = source.BadgeSummaryLava;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.MinimumDaysToRetake = source.MinimumDaysToRetake;

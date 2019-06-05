@@ -90,9 +90,12 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AssessmentPath = source.AssessmentPath;
             target.AssessmentResultsPath = source.AssessmentResultsPath;
+            target.BadgeColor = source.BadgeColor;
+            target.BadgeSummaryLava = source.BadgeSummaryLava;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.MinimumDaysToRetake = source.MinimumDaysToRetake;
