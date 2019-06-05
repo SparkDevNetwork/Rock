@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			form.addEventListener("submit", function(e){
 		        e.preventDefault();
 		        var destination = e.target.querySelector("[data-append-query]").dataset.appendQuery;
-		        var queryValue = e.target.querySelector("[data-append-query]").value;
+		        var queryValue = e.target.querySelector("[data-append-query]").value.trim();
 		        var url = destination + encodeURIComponent(queryValue);
 		        window.location.href = url;
 		    });
