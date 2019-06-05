@@ -320,6 +320,42 @@
     <Compile Include="Migrations\201905082317243_Rollup_0508.Designer.cs">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.cs" />
+    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.Designer.cs">
+      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905150435321_Assessments.cs" />
+    <Compile Include="Migrations\201905150435321_Assessments.Designer.cs">
+      <DependentUpon>201905150435321_Assessments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905291549561_UpdateSubjectLength.cs" />
+    <Compile Include="Migrations\201905291549561_UpdateSubjectLength.Designer.cs">
+      <DependentUpon>201905291549561_UpdateSubjectLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905291554185_Assessments2.cs" />
+    <Compile Include="Migrations\201905291554185_Assessments2.Designer.cs">
+      <DependentUpon>201905291554185_Assessments2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905291556006_UpdateMaxRegistrantsToNull.cs" />
+    <Compile Include="Migrations\201905291556006_UpdateMaxRegistrantsToNull.Designer.cs">
+      <DependentUpon>201905291556006_UpdateMaxRegistrantsToNull.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905291845488_Assessments3.cs" />
+    <Compile Include="Migrations\201905291845488_Assessments3.Designer.cs">
+      <DependentUpon>201905291845488_Assessments3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201905300056053_GroupSchedulingUpdates.cs" />
+    <Compile Include="Migrations\201905300056053_GroupSchedulingUpdates.Designer.cs">
+      <DependentUpon>201905300056053_GroupSchedulingUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906032320193_AssessmentBadges.cs" />
+    <Compile Include="Migrations\201906032320193_AssessmentBadges.Designer.cs">
+      <DependentUpon>201906032320193_AssessmentBadges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906051958565_Rollup_0605.cs" />
+    <Compile Include="Migrations\201906051958565_Rollup_0605.Designer.cs">
+      <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -800,6 +836,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905082317243_Rollup_0508.resx">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.resx">
+      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905150435321_Assessments.resx">
+      <DependentUpon>201905150435321_Assessments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905291549561_UpdateSubjectLength.resx">
+      <DependentUpon>201905291549561_UpdateSubjectLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905291554185_Assessments2.resx">
+      <DependentUpon>201905291554185_Assessments2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905291556006_UpdateMaxRegistrantsToNull.resx">
+      <DependentUpon>201905291556006_UpdateMaxRegistrantsToNull.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905291845488_Assessments3.resx">
+      <DependentUpon>201905291845488_Assessments3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201905300056053_GroupSchedulingUpdates.resx">
+      <DependentUpon>201905300056053_GroupSchedulingUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906032320193_AssessmentBadges.resx">
+      <DependentUpon>201906032320193_AssessmentBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906051958565_Rollup_0605.resx">
+      <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

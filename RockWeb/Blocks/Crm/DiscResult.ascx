@@ -53,10 +53,6 @@
 
                     <h3>Follower Style</h3>
                     <asp:Literal ID="lFollowerStyle" runat="server"></asp:Literal>
-
-                    <div class="disc-attribution margin-t-lg">
-                        <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
-                    </div>
                 </div>
             </div>
         </asp:Panel>

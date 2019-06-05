@@ -71,6 +71,9 @@ namespace Rock.Client
         public decimal? DefaultPayment { get; set; }
 
         /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
         public string DiscountCodeTerm { get; set; }
 
         /// <summary />
@@ -101,7 +104,7 @@ namespace Rock.Client
         public bool LoginRequired { get; set; }
 
         /// <summary />
-        public int MaxRegistrants { get; set; }
+        public int? MaxRegistrants { get; set; }
 
         /// <summary />
         public decimal? MinimumInitialPayment { get; set; }
@@ -249,6 +252,7 @@ namespace Rock.Client
             this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
             this.DefaultPayment = source.DefaultPayment;
+            this.Description = source.Description;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;

@@ -3833,31 +3833,51 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Set the page and browser title
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            return SetPageTitle( input, "All" );
+        }
+
+        /// <summary>
         /// adds a link tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="titleLocation">The title location. "BrowserTitle", "PageTitle" or "All"</param>
         /// <returns></returns>
-        public static string SetPageTitle( string input )
+        public static string SetPageTitle( string input, string titleLocation )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
             if ( page != null )
             {
-                // attempt to correct breadcrumbs
-                if ( page.BreadCrumbs != null && page.BreadCrumbs.Count != 0 )
-                {
-                    var lastBookMark = page.BreadCrumbs.Last();
+                
 
-                    if ( lastBookMark != null && lastBookMark.Name == page.PageTitle )
-                    {
-                        lastBookMark.Name = input;
-                    }
+                if ( titleLocation.Equals("BrowserTitle", StringComparison.InvariantCultureIgnoreCase) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
+                {
+                    page.BrowserTitle = input;
+                    page.Header.Title = input;
                 }
 
-                page.BrowserTitle = input;
-                page.PageTitle = input;
-                page.Title = input;
-                page.Header.Title = input;
+                if ( titleLocation.Equals( "PageTitle", StringComparison.InvariantCultureIgnoreCase ) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
+                {
+                    // attempt to correct breadcrumbs
+                    if ( page.BreadCrumbs != null && page.BreadCrumbs.Count != 0 )
+                    {
+                        var lastBookMark = page.BreadCrumbs.Last();
+
+                        if ( lastBookMark != null && lastBookMark.Name == page.PageTitle )
+                        {
+                            lastBookMark.Name = input;
+                        }
+                    }
+
+                    page.PageTitle = input;
+                    page.Title = input;
+                }
             }
 
             return null;
@@ -3999,6 +4019,11 @@ namespace Rock.Lava
                 switch ( parm )
                 {
                     case "Title":
+                        {
+                            return page.PageTitle;
+                        }
+
+                    case "BrowserTitle":
                         {
                             return page.BrowserTitle;
                         }

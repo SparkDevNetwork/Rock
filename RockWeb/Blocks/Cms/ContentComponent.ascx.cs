@@ -250,6 +250,7 @@ namespace RockWeb.Blocks.Cms
 
                 mergeFields.Add( "Items", contentChannelItems );
                 mergeFields.Add( "ContentChannel", this.GetContentChannel() );
+                mergeFields.Add( "CurrentPage", this.PageCache );
 
                 DefinedValueCache contentComponentTemplate = null;
                 var contentComponentTemplateValueGuid = this.GetAttributeValue( "ContentComponentTemplate" ).AsGuidOrNull();

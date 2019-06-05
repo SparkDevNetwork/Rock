@@ -29,10 +29,10 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes unselected schedules.
     /// </summary>
     [ActionCategory( "Check-In" )]
-    [Description( "Removes schedules from all locations if that shedule was not selected (in family mode)" )]
+    [Description( "Removes schedules from all locations if that schedule was not selected (in family mode)" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Filter Locations By Schedule" )]
-    [BooleanField( "Remove", "Select 'Yes' if schedules should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove", "Select 'Yes' if schedules should be removed. Select 'No' if they should just be marked as excluded.", true )]
     public class FilterLocationsBySchedule : CheckInActionComponent
     {
         /// <summary>
@@ -43,7 +43,6 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );

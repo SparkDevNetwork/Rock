@@ -30,5 +30,10 @@ namespace Rock.SystemGuid
         /// Unattended Checkin Workflow Type
         /// </summary>
         public const string UNATTENDED_CHECKIN = "011E9F5A-60D4-4FF5-912A-290881E37EAF";
+
+        /// <summary>
+        /// The Request Assessment Workflow Type
+        /// </summary>
+        public const string REQUEST_ASSESSMENT = "31DDC001-C91A-4418-B375-CAB1475F7A62";
     }
 }

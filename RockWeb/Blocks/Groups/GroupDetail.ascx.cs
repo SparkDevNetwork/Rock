@@ -229,9 +229,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
-            gLocations.DataKeyNames = new string[] { "Guid" };
-            gLocations.Actions.AddClick += gLocations_Add;
-            gLocations.GridRebind += gLocations_GridRebind;
+            gGroupLocations.DataKeyNames = new string[] { "Guid" };
+            gGroupLocations.Actions.AddClick += gGroupLocations_Add;
+            gGroupLocations.GridRebind += gGroupLocations_GridRebind;
 
             gGroupMemberAttributesInherited.Actions.ShowAdd = false;
             gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Groups
                     taglGroupTags.EntityTypeId = group.TypeId;
                     taglGroupTags.EntityGuid = group.Guid;
                     taglGroupTags.CategoryGuid = GetAttributeValue( "TagCategory" ).AsGuidOrNull();
-                    taglGroupTags.GetTagValues( null );
+                    taglGroupTags.GetTagValues( CurrentPersonId );
                     taglGroupTags.Visible = GetAttributeValue( ENABLE_GROUP_TAGS ).AsBoolean() && group.GroupType.EnableGroupTag;
 
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
@@ -1710,32 +1710,32 @@ namespace RockWeb.Blocks.Groups
             if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
             {
                 wpMeetingDetails.Visible = true;
-                gLocations.Visible = true;
-                BindLocationsGrid();
+                gGroupLocations.Visible = true;
+                BindGroupLocationsGrid();
             }
             else
             {
                 wpMeetingDetails.Visible = pnlSchedule.Visible;
-                gLocations.Visible = false;
+                gGroupLocations.Visible = false;
             }
 
-            gLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
+            gGroupLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
             spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
 
 
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpMeetingDetails.Visible = true;
-                    gLocations.Visible = true;
-                    BindLocationsGrid();
+                    gGroupLocations.Visible = true;
+                    BindGroupLocationsGrid();
                 }
                 else
                 {
                     wpMeetingDetails.Visible = pnlSchedule.Visible;
-                    gLocations.Visible = false;
+                    gGroupLocations.Visible = false;
                 }
 
-                gLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
+                gGroupLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
                 spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
 
                 phGroupAttributes.Controls.Clear();
@@ -2350,87 +2350,65 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
             var rockContext = new RockContext();
+
+            var selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
+
             // Get the selected schedules
-            var schedules = new ScheduleService( rockContext ).GetByIds( spSchedules.SelectedValuesAsInt().ToList() ).ToList();
+            var schedules = new ScheduleService( rockContext ).GetByIds( selectedScheduleIds ).ToList();
 
-            var locationGuid = Guid.Parse( hfLocationGuid.Value );
-            var groupLocationState = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals( locationGuid ) );
+            var groupLocationGuid = hfGroupLocationGuid.Value.AsGuid();
 
-            List<GroupLocationScheduleConfig> currentgroupLocationScheduleConfigs;
-         
-            if ( groupLocationState != null  && groupLocationState.GroupLocationScheduleConfigs.Count() > 0)
+            List<GroupLocationScheduleConfig> currentGroupLocationScheduleConfigs = new List<GroupLocationScheduleConfig>();
+
+            // Get the displayed GroupLocationScheduleConfigs from Controls in the repeater for the currently selectec scheduleds
+            foreach ( var repeaterItem in rptGroupLocationScheduleCapacities.Items.OfType<RepeaterItem>() )
             {
-                // Schedules from view state
-                var groupLocatinStateSchedules = groupLocationState.Schedules;
-                var groupLocationStateScheduleIds = groupLocatinStateSchedules.Select( s => s.Id );
-
-                // schedule from 
-                var selectedScheduleIds = schedules.Select( n => n.Id );
-
-                // GroupLocationScheduleConfigs from view state
-                currentgroupLocationScheduleConfigs = groupLocationState.GroupLocationScheduleConfigs.ToList();
-                var existingConfigCount = currentgroupLocationScheduleConfigs.Count();
-                if ( existingConfigCount > schedules.Count() )
+                var hfScheduleId = repeaterItem.FindControl( "hfScheduleId" ) as HiddenField;
+                int scheduleId = hfScheduleId.Value.AsInteger();
+                if ( selectedScheduleIds.Contains( scheduleId ) )
                 {
-                    List<GroupLocationScheduleConfig> accessModConfigsToRemove = new List<GroupLocationScheduleConfig>();
+                    var nbMinimumCapacity = repeaterItem.FindControl( "nbMinimumCapacity" ) as NumberBox;
+                    var nbDesiredCapacity = repeaterItem.FindControl( "nbDesiredCapacity" ) as NumberBox;
+                    var nbMaximumCapacity = repeaterItem.FindControl( "nbMaximumCapacity" ) as NumberBox;
 
-                    //Deleted
-                    var removedIds = currentgroupLocationScheduleConfigs
-                        .Where( cnfg => !selectedScheduleIds.Contains( cnfg.ScheduleId ) )
-                        .Select( r => r.Schedule.Id );
-
-                    // Build list of GroupLocationScheduleConfigs to be removed
-                    foreach ( var Id in removedIds )
+                    currentGroupLocationScheduleConfigs.Add( new GroupLocationScheduleConfig
                     {
-                        var configToRemove = currentgroupLocationScheduleConfigs.Where( cnfg => cnfg.ScheduleId == Id ).FirstOrDefault() as GroupLocationScheduleConfig;
-                        if ( configToRemove != null )
-                        {
-                            accessModConfigsToRemove.Add( configToRemove );
-                        }
-                    }
-
-                    // Remove GroupLocationScheduleConfigs from view state
-                    foreach ( var config in accessModConfigsToRemove )
-                    {
-                        currentgroupLocationScheduleConfigs.Remove( config );
-                        groupLocationState.GroupLocationScheduleConfigs.Remove( config );
-                    }
-                }
-
-                if ( existingConfigCount < schedules.Count() )
-                {
-                    // Added
-                    var addedSchedules = schedules.Where( s => groupLocationStateScheduleIds.Contains( s.Id ) ).ToList();
-                    foreach ( var addedSchedule in addedSchedules )
-                    {
-                        // check if already exist
-                        if ( !currentgroupLocationScheduleConfigs.Where( s => s.ScheduleId == addedSchedule.Id ).Any() )
-                        {
-                            var newSchedule = NewGroupLocationConfig( addedSchedule );
-                            currentgroupLocationScheduleConfigs.Add( newSchedule );
-                            groupLocationState.GroupLocationScheduleConfigs.Add( newSchedule );
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // Handles case where group location schedules existed without group location schedule configs
-                currentgroupLocationScheduleConfigs = new List<GroupLocationScheduleConfig>();
-                foreach ( var schedule in schedules )
-                {
-                    currentgroupLocationScheduleConfigs.Add( NewGroupLocationConfig( schedule ) );
+                        ScheduleId = scheduleId,
+                        Schedule = schedules.First( s => s.Id == scheduleId ),
+                        MinimumCapacity = nbMinimumCapacity.Text.AsIntegerOrNull(),
+                        DesiredCapacity = nbDesiredCapacity.Text.AsIntegerOrNull(),
+                        MaximumCapacity = nbMaximumCapacity.Text.AsIntegerOrNull(),
+                    } );
                 }
             }
 
+            // add any schedules that weren't shown in the repeater 
+            foreach ( var schedule in schedules.Where( s => !currentGroupLocationScheduleConfigs.Any( x => x.ScheduleId == s.Id ) ) )
+            {
+                currentGroupLocationScheduleConfigs.Add( new GroupLocationScheduleConfig
+                {
+                    ScheduleId = schedule.Id,
+                    Schedule = schedule
+                } );
+            }
+            
+
+            BindGroupLocationScheduleCapacities( currentGroupLocationScheduleConfigs );
+        }
+
+        /// <summary>
+        /// Binds the group location schedule capacities.
+        /// </summary>
+        /// <param name="currentGroupLocationScheduleConfigs">The current group location schedule configs.</param>
+        private void BindGroupLocationScheduleCapacities( List<GroupLocationScheduleConfig> currentGroupLocationScheduleConfigs )
+        {
             // Calculate the Next Start Date Time based on the start of the week so that schedules are in the correct order
             var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
 
-            rptGroupLocationScheduleCapacities.DataSource = currentgroupLocationScheduleConfigs.OrderBy( s => s.Schedule.GetNextStartDateTime( occurrenceDate ));
+            rptGroupLocationScheduleCapacities.DataSource = currentGroupLocationScheduleConfigs.OrderBy( s => s.Schedule.GetNextStartDateTime( occurrenceDate ) );
             rptGroupLocationScheduleCapacities.Visible = true;
             rptGroupLocationScheduleCapacities.DataBind();
-
-            rcwGroupLocationScheduleCapacities.Visible = currentgroupLocationScheduleConfigs.Any();
+            rcwGroupLocationScheduleCapacities.Visible = currentGroupLocationScheduleConfigs.Any();
         }
 
         /// <summary>
@@ -2442,55 +2420,42 @@ namespace RockWeb.Blocks.Groups
             var selectedLocation = locpGroupLocation.Location;
             return selectedLocation != null;
         }
-
-        /// <summary>
-        /// Creates new grouplocationconfig.
-        /// </summary>
-        /// <param name="s">The s.</param>
-        /// <returns></returns>
-        private GroupLocationScheduleConfig NewGroupLocationConfig( Schedule s )
-        {
-            return new GroupLocationScheduleConfig
-            {
-                Schedule = s,
-                ScheduleId = s.Id
-            };
-        }
+        
         #endregion
 
         #region Location Grid and Picker
 
         /// <summary>
-        /// Handles the Add event of the gLocations control.
+        /// Handles the Add event of the gGroupLocations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gLocations_Add( object sender, EventArgs e )
+        protected void gGroupLocations_Add( object sender, EventArgs e )
         {
             hfAction.Value = "Add";
-            gLocations_ShowEdit( Guid.Empty );
+            gGroupLocations_ShowEdit( Guid.Empty );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gLocations control.
+        /// Handles the Edit event of the gGroupLocations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gLocations_Edit( object sender, RowEventArgs e )
+        protected void gGroupLocations_Edit( object sender, RowEventArgs e )
         {
             hfAction.Value = "Edit";
             Guid locationGuid = ( Guid ) e.RowKeyValue;
-            gLocations_ShowEdit( locationGuid );
+            gGroupLocations_ShowEdit( locationGuid );
         }
 
         /// <summary>
         /// Gs the locations_ show edit.
         /// </summary>
         /// <param name="locationGuid">The location unique identifier.</param>
-        protected void gLocations_ShowEdit( Guid locationGuid )
+        protected void gGroupLocations_ShowEdit( Guid locationGuid )
         {
             ResetLocationDialog();
-            hfLocationGuid.Value = locationGuid.ToString();
+            hfGroupLocationGuid.Value = locationGuid.ToString();
 
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
@@ -2635,8 +2600,12 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
-                        return NewGroupLocationConfig( s );
-                    }
+                        return new GroupLocationScheduleConfig
+                        {
+                            ScheduleId = s.Id,
+                            Schedule = s
+                        };
+            }
                 } ).ToList();
 
                 // Handle case where schedules are created and no group location configuration exists yet
@@ -2646,14 +2615,15 @@ namespace RockWeb.Blocks.Groups
                     groupLocationScheduleConfigList = new List<GroupLocationScheduleConfig>();
                     foreach ( var schedule in schedules )
                     {
-                        groupLocationScheduleConfigList.Add( NewGroupLocationConfig( schedule ) );
+                        groupLocationScheduleConfigList.Add( new GroupLocationScheduleConfig
+                        {
+                            ScheduleId = schedule.Id,
+                            Schedule = schedule
+                        } );
                     }
                 }
 
-                rptGroupLocationScheduleCapacities.DataSource = groupLocationScheduleConfigList.OrderBy( s => s.ScheduleId );
-                rptGroupLocationScheduleCapacities.DataBind();
-                rptGroupLocationScheduleCapacities.Visible = true;
-                rcwGroupLocationScheduleCapacities.Visible = groupLocationScheduleConfigList.Any();
+                BindGroupLocationScheduleCapacities( groupLocationScheduleConfigList );
             }
 
             ShowSelectedPane();
@@ -2686,29 +2656,28 @@ namespace RockWeb.Blocks.Groups
             nbMinimumCapacity.Text = groupLocationScheduleConfig.MinimumCapacity.ToString();
             nbDesiredCapacity.Text = groupLocationScheduleConfig.DesiredCapacity.ToString();
             nbMaximumCapacity.Text = groupLocationScheduleConfig.MaximumCapacity.ToString();
-
         }
 
         /// <summary>
-        /// Handles the Delete event of the gLocations control.
+        /// Handles the Delete event of the gGroupLocations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gLocations_Delete( object sender, RowEventArgs e )
+        protected void gGroupLocations_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = ( Guid ) e.RowKeyValue;
             GroupLocationsState.RemoveEntity( rowGuid );
-            BindLocationsGrid();
+            BindGroupLocationsGrid();
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gLocations control.
+        /// Handles the GridRebind event of the gGroupLocations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gLocations_GridRebind( object sender, EventArgs e )
+        protected void gGroupLocations_GridRebind( object sender, EventArgs e )
         {
-            BindLocationsGrid();
+            BindGroupLocationsGrid();
         }
 
         /// <summary>
@@ -2829,7 +2798,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            BindLocationsGrid();
+            BindGroupLocationsGrid();
             spSchedules.SetValue( 0 );
             HideDialog();
         }
@@ -2843,7 +2812,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfAction.Value == "Add" && selectedLocation != null )
             {
-                List<GridLocation> existingLocations = gLocations.DataSourceAsList as List<GridLocation>;
+                List<GridLocation> existingLocations = gGroupLocations.DataSourceAsList as List<GridLocation>;
 
                 return existingLocations.Where( x => x.Location.Name == selectedLocation.Name && x.Location.Guid == selectedLocation.Guid ).Any();
             }
@@ -2854,11 +2823,11 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the locations grid.
         /// </summary>
-        private void BindLocationsGrid()
+        private void BindGroupLocationsGrid()
         {
-            gLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();
+            gGroupLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();
 
-            gLocations.DataSource = GroupLocationsState
+            gGroupLocations.DataSource = GroupLocationsState
                 .Select( gl => new GridLocation
                 {
                     Guid = gl.Guid,
@@ -2869,7 +2838,7 @@ namespace RockWeb.Blocks.Groups
                 } )
                 .OrderBy( i => i.Order )
                 .ToList();
-            gLocations.DataBind();
+            gGroupLocations.DataBind();
         }
 
         /// <summary>

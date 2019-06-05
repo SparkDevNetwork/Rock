@@ -77,6 +77,11 @@ iframe {
     padding-right: 5px;
     padding-left: 5px;
   }
+
+  .form-control-group & {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .clickable {
@@ -506,6 +511,16 @@ th[align="right"] {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+
+    h4 {
+      font-size: 16px;
+      font-weight: @font-weight-semibold;
+    }
+
+    hr {
+      margin-top: 6px;
+      margin-bottom: 12px;
     }
     // styles for matrix attributes
     .form-group.static-control.matrix-attribute label {

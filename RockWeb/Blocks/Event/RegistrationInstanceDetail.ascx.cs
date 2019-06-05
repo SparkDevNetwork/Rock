@@ -2790,8 +2790,10 @@ namespace RockWeb.Blocks.Event
             lAccount.Visible = registrationInstance.Account != null;
             lAccount.Text = registrationInstance.Account != null ? registrationInstance.Account.Name : string.Empty;
 
-            lMaxAttendees.Visible = registrationInstance.MaxAttendees > 0;
-            lMaxAttendees.Text = registrationInstance.MaxAttendees.ToString( "N0" );
+            lMaxAttendees.Visible = registrationInstance.MaxAttendees >= 0;
+            lMaxAttendees.Text = registrationInstance.MaxAttendees >= 0 ?
+                    registrationInstance.MaxAttendees.Value.ToString( "N0" ) :
+                    string.Empty;
             lWorkflowType.Text = registrationInstance.RegistrationWorkflowType != null ?
                 registrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );

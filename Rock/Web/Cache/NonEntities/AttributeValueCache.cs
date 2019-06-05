@@ -27,7 +27,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -144,6 +144,27 @@ namespace Rock.Web.Cache
             {
                 var attribute = AttributeCache.Get( AttributeId );
                 return attribute != null ? attribute.Name : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute abbreviated.
+        /// </summary>
+        /// <value>
+        /// The name of the attribute abbreviated.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeAbbreviatedName
+        {
+            get
+            {
+                var attribute = AttributeCache.Get( AttributeId );
+                if ( attribute == null )
+                {
+                    return string.Empty;
+                }
+
+                return attribute.AbbreviatedName.IsNotNullOrWhiteSpace() ? attribute.AbbreviatedName : attribute.Name;
             }
         }
 
