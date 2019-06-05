@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         if ( capacities.DesiredCapacity.HasValue && scheduledCount < capacities.DesiredCapacity.Value )
                         {
                             var countNeeded = capacities.DesiredCapacity.Value - scheduledCount;
-                            sbScheduledListHtml.AppendLine( string.Format( "<li class='slot persons-needed empty-slot'>{0} {1} needed</li>", countNeeded, "Person".PluralizeIf( countNeeded != 0 ) ) );
+                            sbScheduledListHtml.AppendLine( string.Format( "<li class='slot persons-needed empty-slot'>{0} {1} needed</li>", countNeeded, "person".PluralizeIf( countNeeded != 1 ) ) );
 
                             // add empty slots if we are under the desired count (not including the slot for the 'persons-needed' li)
                             var emptySlotsToAdd = countNeeded - 1;
