@@ -1,3 +1,7 @@
+{% if title and title != empty %}
+    {{ title | AddMetaTagToHead:'name','title' }}
+{% endif %}
+
 {% if description and description != empty %}
     {{ description | AddMetaTagToHead:'name','description' }}
 {% else %}

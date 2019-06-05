@@ -80,11 +80,11 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( CurrentCheckInType != null && this.CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                 {
-                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Phone or Name
+                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Name or Phone
                     pnlSearchName.Visible = true;
                     pnlSearchPhone.Visible = false;
-                    txtName.Label = "Phone or Name";
-                    searchType = "Phone or Name";
+                    txtName.Label = "Name or Phone";
+                    searchType = "Name or Phone";
                 }
                 else
                 {
@@ -104,8 +104,8 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         pnlSearchName.Visible = true;
                         pnlSearchPhone.Visible = false;
-                        txtName.Label = "Phone or Name";
-                        searchType = "Phone or Name";
+                        txtName.Label = "Name or Phone";
+                        searchType = "Name or Phone";
                     }
                 }
 
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.CheckIn
                 Guid searchTypeGuid = Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid();
                 if ( ( this.CurrentCheckInState != null ) && this.CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                 {
-                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Phone or Name
+                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Name or Phone
                     searchTypeGuid = Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME_AND_PHONE.AsGuid();
                 }
                 else if ( CurrentCheckInType != null )

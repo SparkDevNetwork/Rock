@@ -105,10 +105,5 @@ namespace Rock.SystemGuid
         /// Gets the template guid for a Spark Data notification
         /// </summary>
         public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
-
-        /// <summary>
-        /// Gets the template guid for a Assessment Request system email
-        /// </summary>
-        public const string ASSESSMENT_REQUEST = "41FF4269-7B48-40CD-81D4-C11370A13DED";
     }
 }

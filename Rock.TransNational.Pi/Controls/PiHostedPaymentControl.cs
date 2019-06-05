@@ -35,7 +35,7 @@ namespace Rock.TransNational.Pi.Controls
         /// <summary>
         /// Occurs when a payment token is received from the hosted gateway
         /// </summary>
-        public event EventHandler<Rock.Financial.HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
+        public event EventHandler TokenReceived;
 
         #endregion Rock.Financial.IHostedGatewayPaymentControlTokenEvent
 
@@ -124,12 +124,6 @@ namespace Rock.TransNational.Pi.Controls
             }
         }
 
-        /// <summary>
-        /// Gets the payment information token raw.
-        /// </summary>
-        /// <value>
-        /// The payment information token raw.
-        /// </value>
         public string PaymentInfoTokenRaw
         {
             get
@@ -175,7 +169,7 @@ namespace Rock.TransNational.Pi.Controls
                     postbackControlId = this.ID;
                 }
 
-                this.Attributes["data-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}=TokenizerPostback')";
+                this.Attributes["data-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}')";
             }
 
             base.Render( writer );
@@ -193,37 +187,11 @@ namespace Rock.TransNational.Pi.Controls
             {
                 string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
 
-                if ( eventArgs.Length >= 2 )
+                if ( eventArgs.Length >= 1 )
                 {
-                    // gatewayTokenizer will pass back '{this.ID}=TokenizerPostback' in a postback. If so, we know this is a postback from that
-                    if ( eventArgs[0] == this.ID && eventArgs[1] == "TokenizerPostback" )
+                    if ( eventArgs[0] == this.ID )
                     {
-                        Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
-
-                        var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<Pi.TokenizerResponse>();
-
-                        if ( tokenResponse?.IsSuccessStatus() != true )
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
-
-                            if ( tokenResponse.HasValidationError() && tokenResponse.Invalid.Any() )
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = $"Invalid {tokenResponse.Invalid.ToList().AsDelimited( "," ) }";
-                            }
-                            else
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = $"Failure: {tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken"}";
-                            }
-                        }
-                        else
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = true;
-                            hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
-                        }
-
-                        hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
-
-                        TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
+                        TokenReceived?.Invoke( this, new EventArgs() );
                     }
                 }
             }

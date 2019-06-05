@@ -16,32 +16,30 @@
             </div>
 
             <asp:HiddenField runat="server" ID="hfIsTestingDrawerOpen" Value="false" ClientIDMode="Static" />
-            <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-drawer" style="display: none">
-                <div class="drawer-content">
-                    <div class="alert alert-info" role="alert">
-                        Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
+            <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-heading margin-v-none" style="display: none">
+                <div class="alert alert-info" role="alert">
+                    Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
                     </div>
-
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
-                        </div>
-                        <div class="col-sm-6">
-                            <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" />
-                        </div>
+                    <div class="col-sm-6">
+                        <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" />
                     </div>
+                </div>
 
-                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
+                <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
 
-                    <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
+                <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
 
-                    <Rock:RockLiteral ID="lResponse" runat="server" Label="Response" CssClass="margin-t-lg" />
+                <Rock:RockLiteral ID="lResponse" runat="server" Label="Response" CssClass="margin-t-lg" />
 
-                    <div class="form-group static-control margin-t-lg">
-                        <label class="control-label">Action Outcomes</label>
-                        <div class="control-wrapper">
-                            <pre runat="server" id="preOutcomes"></pre>
-                        </div>
+                <div class="form-group static-control margin-t-lg">
+                    <label class="control-label">Action Outcomes</label>
+                    <div class="control-wrapper">
+                        <pre runat="server" id="preOutcomes"></pre>
                     </div>
                 </div>
             </div>
@@ -49,12 +47,13 @@
             <div class="panel-body padding-all-none">
                 <div class="row row-eq-height row-no-gutters">
                     <div class="col-md-2 col-sm-6 js-sms-action-components sms-action-components">
+
                         <ul class="components-list list-unstyled">
                             <li>
                                 <ol class="drag-container js-drag-container">
                                     <asp:Repeater ID="rptrComponents" runat="server">
                                         <ItemTemplate>
-                                            <li class="component unselectable" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
+                                            <li class="component" data-component-id="<%# Eval( "Id" ) %>" data-toggle="tooltip" title="<%# Eval( "Description" ) %>">
                                                 <i class="<%# Eval( "IconCssClass" ) %>"></i>
                                                 <span><%# Eval( "Title" ) %></span>
                                             </li>
@@ -63,16 +62,17 @@
                                 </ol>
                             </li>
                         </ul>
+
                     </div>
 
                     <div class="col-md-6 col-sm-6 js-sms-actions sms-actions-container">
                         <div class="sms-heading">
                             Incoming SMS Message
                         </div>
-                        <ol id="olActions" runat="server" class="drag-container js-drag-container list-unstyled">
+                        <ol class="drag-container js-drag-container list-unstyled">
                             <asp:Repeater ID="rptrActions" runat="server" OnItemCommand="rptrActions_ItemCommand">
                                 <ItemTemplate>
-                                    <li class="sms-action unselectable<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
+                                    <li class="sms-action<%# Eval( "IsActive" ).ToString() == "True" ? "" : " inactive" %><%# Eval( "Id" ).ToString() == hfEditActionId.Value ? " editing" : "" %>">
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                         <%# Eval( "Name" ) %>
                                         <div class="pull-right">
@@ -119,7 +119,7 @@
 
                                 <div class="actions">
                                     <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
-                                    <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" CausesValidation="false" />
+                                    <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" />
 
                                     <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
                                 </div>

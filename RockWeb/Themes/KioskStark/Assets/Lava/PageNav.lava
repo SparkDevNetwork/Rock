@@ -5,11 +5,5 @@
 				<a href="{{ childPage.Url }}" class="btn btn-primary btn-kiosk btn-kiosk-lg margin-b-lg">{{ childPage.Title }}</a>
             </li>
         {% endfor %}
-        {% for includedPage in IncludePageList  %}
-            {% assign attributeParts = includedPage | PropertyToKeyValue %}
-            <li>
-            	<a href="{{ attributeParts.Value }}" class="btn btn-primary btn-kiosk btn-kiosk-lg margin-b-lg">{{ attributeParts.Key }}</a>
-            </li>
-        {% endfor %}
     </ul>
 {% endif %}

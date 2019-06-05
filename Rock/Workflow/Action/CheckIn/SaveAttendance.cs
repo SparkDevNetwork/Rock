@@ -68,7 +68,6 @@ namespace Rock.Workflow.Action.CheckIn
                 var attendanceService = new AttendanceService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
-                var attendanceRecords = new List<Attendance>();
 
                 checkInState.Messages.Clear();
 
@@ -204,9 +203,6 @@ namespace Rock.Workflow.Action.CheckIn
 
                                         KioskLocationAttendance.AddAttendance( attendance );
                                         isCheckedIntoLocation = true;
-
-                                        // Keep track of attendance (Ids) for use by other actions later in the workflow pipeline
-                                        attendanceRecords.Add( attendance );
                                     }
 
                                     // If the person was NOT checked into the location for any schedule then remove the location
@@ -221,11 +217,6 @@ namespace Rock.Workflow.Action.CheckIn
                 }
 
                 rockContext.SaveChanges();
-
-                // Now that the records are persisted, take the Ids and save them to the temp CheckInFamliy object
-                family.AttendanceIds = attendanceRecords.Select( a => a.Id ).ToList();
-                attendanceRecords = null;
-
                 return true;
             }
 

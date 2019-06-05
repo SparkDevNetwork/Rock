@@ -214,16 +214,6 @@ namespace Rock.Model
             if ( this.FinancialPaymentDetail != null )
             {
                 reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
-
-                // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
-                if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
-                {
-                    if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )
-                    {
-                        reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
-                    }
-                }
-
                 if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                 {
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );

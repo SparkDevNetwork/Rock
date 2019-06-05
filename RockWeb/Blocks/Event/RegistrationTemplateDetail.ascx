@@ -50,11 +50,6 @@
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                        </div>
-                    </div>
 
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
@@ -74,7 +69,7 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
-                                         Help="The maximum number of registrants that a person is allowed to register at one time. Leave blank for unlimited." Visible="false" />
+                                            Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
                                     </div>
                                 </div>
 
@@ -87,7 +82,7 @@
                                                 Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                         </div>
 
-                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Check to enable a 'wait list' once the registration's maximum attendees has been reached." />
+                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
@@ -403,11 +398,6 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:RockLiteral ID="lDescription" runat="server" Label="Description" />
                         </div>
                     </div>
 

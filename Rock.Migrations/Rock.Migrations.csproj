@@ -320,30 +320,6 @@
     <Compile Include="Migrations\201905082317243_Rollup_0508.Designer.cs">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.cs" />
-    <Compile Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.Designer.cs">
-      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201905150435321_Assessments.cs" />
-    <Compile Include="Migrations\201905150435321_Assessments.Designer.cs">
-      <DependentUpon>201905150435321_Assessments.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201905171237436_UpdateSubjectLength.cs" />
-    <Compile Include="Migrations\201905171237436_UpdateSubjectLength.Designer.cs">
-      <DependentUpon>201905171237436_UpdateSubjectLength.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201905171602180_Assessments2.cs" />
-    <Compile Include="Migrations\201905171602180_Assessments2.Designer.cs">
-      <DependentUpon>201905171602180_Assessments2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201905202137447_AttributeAbbrName.cs" />
-    <Compile Include="Migrations\201905202137447_AttributeAbbrName.Designer.cs">
-      <DependentUpon>201905202137447_AttributeAbbrName.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201905211226291_UpdateMaxRegistrantsToNull.cs" />
-    <Compile Include="Migrations\201905211226291_UpdateMaxRegistrantsToNull.Designer.cs">
-      <DependentUpon>201905211226291_UpdateMaxRegistrantsToNull.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs" />
     <Compile Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.Designer.cs">
       <DependentUpon>201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>
@@ -828,24 +804,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905082317243_Rollup_0508.resx">
       <DependentUpon>201905082317243_Rollup_0508.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905142021095_AddDescriptionToRegistrationTemplate1.resx">
-      <DependentUpon>201905142021095_AddDescriptionToRegistrationTemplate1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905150435321_Assessments.resx">
-      <DependentUpon>201905150435321_Assessments.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905171237436_UpdateSubjectLength.resx">
-      <DependentUpon>201905171237436_UpdateSubjectLength.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905171602180_Assessments2.resx">
-      <DependentUpon>201905171602180_Assessments2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905202137447_AttributeAbbrName.resx">
-      <DependentUpon>201905202137447_AttributeAbbrName.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201905211226291_UpdateMaxRegistrantsToNull.resx">
-      <DependentUpon>201905211226291_UpdateMaxRegistrantsToNull.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.resx">
       <DependentUpon>201905242149577_AddGlobalAttrib_EnableRouteDomainMatching.cs</DependentUpon>

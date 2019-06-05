@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using Rock.Web.Cache;
 
 namespace Rock.Financial
@@ -41,11 +40,6 @@ namespace Rock.Financial
         /// Gets or sets the masked account number.
         /// </summary>
         public string MaskedAccountNumber { get; set; }
-
-        /// <summary>
-        /// If the payment method has an expiration date (for example a reference to a Credit Card payment), this is the expiration date
-        /// </summary>
-        public DateTime? PaymentExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the initial currency type value.

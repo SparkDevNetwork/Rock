@@ -10,7 +10,6 @@
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
-    max-width: 100%;
   }
 
   .toggle-additional-search-fields {
@@ -34,11 +33,10 @@
   .picker-label {
     float: left;
     width: 225px;
-    max-width: ~"calc(100% - 25px)";
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
     color: @input-color;
-    background-color: @input-bg;
+    background-color: transparent;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
     &:hover {
@@ -54,7 +52,8 @@
 
     span {
       float: left;
-      width: ~"calc(100% - 42px)";
+      width: 140px;
+      margin-right: 6px;
       overflow: hidden;
       line-height: @line-height-computed;
       text-overflow: ellipsis;

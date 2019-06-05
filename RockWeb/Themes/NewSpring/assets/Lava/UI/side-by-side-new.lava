@@ -85,7 +85,7 @@
             {% endif %}
 
             {% if lava and lava != empty %}
-                {{ lava }}
+                {{ lava | HtmlDecode }}
             {% endif %}
         </div>
     </div>

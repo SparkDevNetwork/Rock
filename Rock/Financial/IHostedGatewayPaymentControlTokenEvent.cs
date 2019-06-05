@@ -15,6 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rock.Financial
 {
@@ -26,37 +30,6 @@ namespace Rock.Financial
         /// <summary>
         /// Occurs when a payment token is received from the hosted gateway
         /// </summary>
-        event EventHandler<HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="System.EventArgs" />
-    public class HostedGatewayPaymentControlTokenEventArgs: EventArgs
-    {
-        /// <summary>
-        /// Returns true if the Token was received successfully. If this is false, <see cref="ErrorMessage" />
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsValid { get; set; }
-
-        /// <summary>
-        /// If <see cref="IsValid"/> is false, this is the ErrorMessage
-        /// </summary>
-        /// <value>
-        /// The error message.
-        /// </value>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// If <see cref="IsValid"/> is true, this is the token that was received
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        public string Token { get; set; }
+        event EventHandler TokenReceived;
     }
 }

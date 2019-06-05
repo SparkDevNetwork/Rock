@@ -30,6 +30,10 @@
                 {% if linkurl and linkurl != empty %}
                     {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
                 {% endif %}
+
+                {% if lava and lava != empty %}
+                    {{ lava | HtmlDecode }}
+                {% endif %}
             </div>
         </div>
     </div>

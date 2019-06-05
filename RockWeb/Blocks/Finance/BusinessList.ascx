@@ -36,7 +36,7 @@
                             <Rock:RockTemplateField>
                                 <HeaderTemplate>Address</HeaderTemplate>
                                 <ItemTemplate>
-                                    <%# Eval( "Address.FormattedHtmlAddress" ) %>
+                                    <%# Eval("Address") %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockTemplateField>

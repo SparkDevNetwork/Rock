@@ -52,7 +52,7 @@ namespace Rock.Financial
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage );
+        string GetHostedPaymentInfoToken( FinancialGateway financialGateway, Control hostedPaymentInfoControl, out string errorMessage );
 
         /// <summary>
         /// Gets the URL that the Gateway Information UI will navigate to when they click the 'Configure' link
@@ -75,10 +75,11 @@ namespace Rock.Financial
         /// and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentToken">The payment token.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
+        string CreateCustomerAccount( FinancialGateway financialGateway, string paymentToken, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
         /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.

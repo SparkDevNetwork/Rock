@@ -777,26 +777,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the PageId and/or Route for the given PageRouteGuid.
-        /// </summary>
-        /// <param name="pageRouteGuid">The page route unique identifier. Required</param>
-        /// <param name="pageGuid">The page unique identifier. Required.</param>
-        /// <param name="route">The route. Required.</param>
-        public void UpdatePageRoute( string pageRouteGuid, string pageGuid, string route )
-        {
-            string sql = $@"
-                DECLARE @pageId INT = (SELECT [Id] FROM [dbo].[Page] WHERE [Guid] = '{pageGuid}')
-                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}') AND @pageId IS NOT NULL)
-                BEGIN
-                    UPDATE [dbo].[PageRoute]
-                    SET [PageId] = @pageId, [Route] = '{route}'
-                    WHERE [Guid] = '{pageRouteGuid}'
-                END";
-
-            Migration.Sql( sql );
-        }
-
-        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
@@ -834,23 +814,6 @@ namespace Rock.Data
         public void DeletePageContext( string guid )
         {
             Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
-        }
-
-        /// <summary>
-        /// Values the tuple.
-        /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="layoutGuid">The layout unique identifier.</param>
-        public void UpdatePageLayout( string pageGuid, string layoutGuid )
-        {
-            string sql = $@"
-                DECLARE @layoutId INT = (SELECT [Id] FROM [dbo].[Layout] WHERE [Guid] = '{layoutGuid}' )
-                IF EXISTS(SELECT [Id] FROM [Page] WHERE [Guid] = '{pageGuid}' AND  [LayoutId] <> @layoutId )
-                BEGIN
-	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
-                END";
-
-            Migration.Sql( sql );
         }
 
         #endregion
@@ -3501,7 +3464,7 @@ DECLARE @attributeId int
 SET @attributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
 
 DECLARE @entityTypeId int
-SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Attribute')
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
 
 DELETE [dbo].[Auth]
 WHERE [EntityTypeId] = @EntityTypeId
@@ -4679,103 +4642,6 @@ END
                     guid,
                     categoryGuid )
             );
-        }
-
-        /// <summary>
-        /// Adds or Updates the person attribute for the provided guid.
-        /// </summary>
-        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="abbreviatedName">Name of the abbreviated.</param>
-        /// <param name="key">The key. If null/empty/whitespace the name without spaces is used.</param>
-        /// <param name="iconCssClass">The icon CSS class.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="guid">The unique identifier.</param>
-        public void AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, string categoryGuid, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
-        {
-            key = key.IsNotNullOrWhiteSpace() ? key : name.Replace( " ", string.Empty );
-            description = description.Replace( "'", "''" );
-            defaultValue = defaultValue.Replace( "'", "''" );
-
-            Migration.Sql( $@"
-                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
-                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person')
-
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = ''
-                    AND [EntityTypeQualifierValue] = ''
-                    AND [Guid] = '{guid}' )
-                BEGIN
-                    UPDATE [Attribute] SET
-                        [Name] = '{name}',
-                        [AbbreviatedName] = '{abbreviatedName}',
-                        [Key] = '{key}',
-                        [IconCssClass] = '{iconCssClass}',
-                        [Description] = '{description}',
-                        [Order] = {order},
-                        [DefaultValue] = '{defaultValue}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = ''
-                    AND [EntityTypeQualifierValue] = ''
-                    AND [Guid] = '{guid}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [Attribute] (
-                          [IsSystem]
-                        , [FieldTypeId]
-                        , [EntityTypeId]
-                        , [EntityTypeQualifierColumn]
-                        , [EntityTypeQualifierValue]
-                        , [Key]
-                        , [Name]
-                        , [IconCssClass]
-                        , [Description]
-                        , [Order]
-                        , [IsGridColumn]
-                        , [DefaultValue]
-                        , [IsMultiValue]
-                        , [IsRequired]
-                        , [Guid]
-                        , [AbbreviatedName])
-                    VALUES(
-                          1
-                        , @FieldTypeId
-                        , @EntityTypeId
-                        , ''
-                        , ''
-                        , '{key}'
-                        , '{name}'
-                        , '{iconCssClass}'
-                        , '{description}'
-                        , {order}
-                        , 0
-                        , '{defaultValue}'
-                        , 0
-                        , 0
-                        , '{guid}'
-                        , '{abbreviatedName}')
-                END" );
-
-            Migration.Sql( $@"
-                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{guid}')
-                DECLARE @CategoryId int = (SELECT [Id] FROM [Category] WHERE [Guid] = '{categoryGuid}')
-
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [AttributeCategory]
-                    WHERE [AttributeId] = @AttributeId
-                    AND [CategoryId] = CategoryId )
-                BEGIN
-                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
-                    VALUES( @AttributeId, @CategoryId )
-                END" );
         }
 
         #endregion

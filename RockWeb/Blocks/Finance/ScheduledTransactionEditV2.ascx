@@ -26,7 +26,7 @@
                 </div>
             </Rock:RockControlWrapper>
 
-            <div class="js-add-payment-new margin-b-md" style="display: none">
+            <div class="js-add-payment-new margin-b-md" style="border-style: solid; border-color: red; display: none">
                 <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
                 <Rock:DynamicPlaceholder ID="phHostedPaymentControl" runat="server" />
 

@@ -47,8 +47,8 @@ namespace Rock.Transactions
                 // Get the attendance record
                 var attendance = entry.Entity as Attendance;
 
-                // If attendance record is valid and the DidAttend is true (not null or false)
-                if ( attendance != null &&  ( attendance.DidAttend == true ) )
+                // If attendance record is valid and the DidAttend is selected
+                if ( attendance != null &&  ( attendance.DidAttend ?? false ) )
                 {
                     // Save for all adds
                     bool valid = entry.State == EntityState.Added;

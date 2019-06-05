@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls.Communication
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
         private HiddenField hfAttachments;
-        private FileUploader fupEmailAttachments;
+        private FileUploader fuAttachments;
 
         #endregion
 
@@ -218,11 +218,11 @@ namespace Rock.Web.UI.Controls.Communication
             hfAttachments.ID = string.Format( "hfAttachments_{0}", this.ID );
             Controls.Add( hfAttachments );
 
-            fupEmailAttachments = new FileUploader();
-            fupEmailAttachments.ID = string.Format( "fupEmailAttachments_{0}", this.ID );
-            fupEmailAttachments.Label = "Attachments";
-            fupEmailAttachments.FileUploaded += fupEmailAttachments_FileUploaded;
-            Controls.Add( fupEmailAttachments );
+            fuAttachments = new FileUploader();
+            fuAttachments.ID = string.Format( "fuAttachments_{0}", this.ID );
+            fuAttachments.Label = "Attachments";
+            fuAttachments.FileUploaded += fuAttachments_FileUploaded;
+            Controls.Add( fuAttachments );
 
             ebCcAddress = new EmailBox();
             ebCcAddress.ID = string.Format( "ebCcAddress_{0}", this.ID );
@@ -314,7 +314,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            fupEmailAttachments.RenderControl( writer );
+            fuAttachments.RenderControl( writer );
             hfAttachments.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "attachment" );
@@ -394,17 +394,17 @@ namespace Rock.Web.UI.Controls.Communication
         #region Events
 
         /// <summary>
-        /// Handles the FileUploaded event of the fupEmailAttachments control.
+        /// Handles the FileUploaded event of the fuAttachments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void fupEmailAttachments_FileUploaded( object sender, EventArgs e )
+        protected void fuAttachments_FileUploaded( object sender, EventArgs e )
         {
             EnsureChildControls();
             var attachmentList = hfAttachments.Value.SplitDelimitedValues().ToList();
-            attachmentList.Add( fupEmailAttachments.BinaryFileId.ToString() );
+            attachmentList.Add( fuAttachments.BinaryFileId.ToString() );
             hfAttachments.Value = attachmentList.AsDelimited( "," );
-            fupEmailAttachments.BinaryFileId = null;
+            fuAttachments.BinaryFileId = null;
         }
 
         #endregion

@@ -232,16 +232,6 @@ namespace Rock.Web.Cache
         public string PostHtml { get; private set; }
 
         /// <summary>
-        /// Gets or sets the shortened name of the attribute.
-        /// If null or whitespace then the full name is returned.
-        /// </summary>
-        /// <value>
-        /// The abbreviated name of the Attribute.
-        /// </value>
-        [DataMember]
-        public string  AbbreviatedName { get; private set; }
-
-        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -404,7 +394,6 @@ namespace Rock.Web.Cache
             EnableHistory = attribute.EnableHistory;
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
-            AbbreviatedName = attribute.AbbreviatedName;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
