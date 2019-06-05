@@ -231,7 +231,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
@@ -242,7 +242,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Posts the save changes.
+        /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )

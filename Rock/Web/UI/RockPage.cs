@@ -846,7 +846,7 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
                 {
                     // attempt to find the body tag
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );

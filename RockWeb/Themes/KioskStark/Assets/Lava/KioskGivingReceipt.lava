@@ -33,7 +33,7 @@
 			{% for amount in Amounts %}
 				<tr>
 					<td>{{ amount.AccountName }}</td>
-					<td>{{ 'Global' | Attribute:'CurrencySymbol' }} {{ amount.Amount }}</td>
+					<td>{{ amount.Amount | FormatAsCurrency }}</td>
 				</tr>
 			{% endfor %}
       </tbody>
@@ -41,7 +41,7 @@
       <tfoot>
 			  <tr>
 				  <td></td>
-				  <td style="border-top: 1px solid #000">{{ 'Global' | Attribute:'CurrencySymbol' }} {{ TotalAmount }}</td>
+				  <td style="border-top: 1px solid #000">{{ TotalAmount | FormatAsCurrency }}</td>
 			  </tr>
       </tfoot>
 

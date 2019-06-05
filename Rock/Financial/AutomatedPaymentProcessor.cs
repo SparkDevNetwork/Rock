@@ -39,6 +39,12 @@ namespace Rock.Financial
     /// </summary>
     public class AutomatedPaymentProcessor
     {
+        /// <summary>
+        /// Use this key to set metadata that will be used as the description of the transaction
+        /// in some gateways
+        /// </summary>
+        public const string DescriptionMetadataKey = "description";
+
         // Constructor params
         private RockContext _rockContext;
         private AutomatedPaymentArgs _automatedPaymentArgs;
@@ -492,8 +498,14 @@ namespace Rock.Financial
             var metadata = new Dictionary<string, string>
             {
                 ["giving_system"] = "RockRMS",
-                ["transaction_guid"] = transactionGuid.ToString(),
+                ["transaction_guid"] = transactionGuid.ToString()
             };
+
+            var description = GetDescription();
+            if ( !description.IsNullOrWhiteSpace() )
+            {
+                metadata[DescriptionMetadataKey] = description;
+            }
 
             var automatedGatewayComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
             _payment = automatedGatewayComponent.AutomatedCharge( _financialGateway, _referencePaymentInfo, out errorMessage, metadata );
@@ -659,7 +671,7 @@ namespace Rock.Financial
 
             financialPaymentDetail.SetFromPaymentInfo( _referencePaymentInfo, _automatedGatewayComponent, _rockContext );
             financialTransaction.FinancialPaymentDetail = financialPaymentDetail;
-            financialTransaction.FinancialPaymentDetailId = financialPaymentDetail.Id == 0 ? (int?)null : financialPaymentDetail.Id;
+            financialTransaction.FinancialPaymentDetailId = financialPaymentDetail.Id == 0 ? ( int? ) null : financialPaymentDetail.Id;
 
             // Future transactions already have the appropriate FinancialTransactionDetail models
             if ( _futureTransaction == null )
@@ -766,6 +778,24 @@ namespace Rock.Financial
                     Amount = td.Amount
                 } ).ToList()
             };
+        }
+
+        /// <summary>
+        /// Get a description of the transaction following the pattern:  "Source: Account Name".
+        /// Example:  Online: Building Fund
+        /// </summary>
+        /// <returns></returns>
+        private string GetDescription()
+        {
+            var firstAccountName = _financialAccounts?.Values.FirstOrDefault()?.Name;
+            var sourceName = _financialSource?.Value;
+
+            if ( firstAccountName.IsNullOrWhiteSpace() || sourceName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return $"{sourceName}: {firstAccountName}";
         }
     }
 }

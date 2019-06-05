@@ -3403,9 +3403,10 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
             }
-            catch
+            catch (Exception ex )
             {
-                // ignore
+                Rock.Model.ExceptionLogService.LogException( ex, Context );
+                // Log and move on...
             }
 
             return false;

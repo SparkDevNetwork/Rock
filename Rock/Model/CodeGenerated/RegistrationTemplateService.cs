@@ -100,6 +100,7 @@ namespace Rock.Model
             target.ConfirmationSubject = source.ConfirmationSubject;
             target.Cost = source.Cost;
             target.DefaultPayment = source.DefaultPayment;
+            target.Description = source.Description;
             target.DiscountCodeTerm = source.DiscountCodeTerm;
             target.FeeTerm = source.FeeTerm;
             target.FinancialGatewayId = source.FinancialGatewayId;

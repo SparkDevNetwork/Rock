@@ -124,7 +124,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the subject of an email that uses this template.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
+        [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Subject { get; set; }
         

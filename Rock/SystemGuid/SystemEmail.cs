@@ -72,14 +72,19 @@ namespace Rock.SystemGuid
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
-        /// The scheduling response
+        /// The scheduling response email
         /// </summary>
         public const string SCHEDULING_RESPONSE = "D095F78D-A5CF-4EF6-A038-C7B07E250611";
 
         /// <summary>
-        /// The scheduling update
+        /// The scheduling remainder email
         /// </summary>
-        public const string SCHEDULING_UPDATE = "F8E4CE07-68F5-4169-A865-ECE915CF421C";
+        public const string SCHEDULING_REMAINDER = "8A20FE79-B73C-447A-82B1-416F9B50C038";
+
+        /// <summary>
+        /// The scheduling confirmation email
+        /// </summary>
+        public const string SCHEDULING_CONFIRMATION = "F8E4CE07-68F5-4169-A865-ECE915CF421C";
 
         /// <summary>
         /// Gets the template guid for workflow form notifications
@@ -105,5 +110,10 @@ namespace Rock.SystemGuid
         /// Gets the template guid for a Spark Data notification
         /// </summary>
         public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
+
+        /// <summary>
+        /// Gets the template guid for a Assessment Request system email
+        /// </summary>
+        public const string ASSESSMENT_REQUEST = "41FF4269-7B48-40CD-81D4-C11370A13DED";
     }
 }

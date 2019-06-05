@@ -719,6 +719,11 @@ namespace RockWeb.Blocks.Groups
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
 
+                var systemEmailIdLookup = new SystemEmailService( new RockContext() ).Queryable().ToDictionary( k => k.Guid, v => v.Id );
+
+                groupType.ScheduleConfirmationSystemEmailId = systemEmailIdLookup.GetValueOrNull( Rock.SystemGuid.SystemEmail.SCHEDULING_CONFIRMATION.AsGuid() );
+                groupType.ScheduleReminderSystemEmailId = systemEmailIdLookup.GetValueOrNull( Rock.SystemGuid.SystemEmail.SCHEDULING_REMAINDER.AsGuid() );
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -1033,10 +1038,10 @@ namespace RockWeb.Blocks.Groups
 
             if ( systemEmails.Any() )
             {
-                foreach ( var template in systemEmails )
+                foreach ( var systemEmail in systemEmails )
                 {
-                    ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem( template.Title, template.Id.ToString() ) );
-                    ddlScheduleReminderSystemEmail.Items.Add( new ListItem( template.Title, template.Id.ToString() ) );
+                    ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    ddlScheduleReminderSystemEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
                 }
             }
         }

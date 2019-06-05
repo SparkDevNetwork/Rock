@@ -674,5 +674,177 @@ namespace Rock.SystemGuid
         public const string SPIRITUAL_GIFTS_WISDOM = "5F1F5A92-D981-4027-A4BC-C3642E784D0B";
 
         #endregion
+
+        #region Conflict Profile
+
+        /// <summary>
+        /// Conflict Profile: Avoiding 
+        /// </summary>
+        public const string CONFLICT_PROFILE_AVOIDING = "663B0F4A-DE1F-46BE-8BDD-D7C98863DDC4";
+
+        /// <summary>
+        /// Conflict Profile: Compromising 
+        /// </summary>
+        public const string CONFLICT_PROFILE_COMPROMISING = "CF78D6B1-38AA-4FF7-9A4B-E900438FA85A";
+
+        /// <summary>
+        /// Conflict Profile: Resolving 
+        /// </summary>
+        public const string CONFLICT_PROFILE_RESOLVING = "DF7B1EB2-7E7E-4F91-BD26-C6DFD88E38DF";
+
+        /// <summary>
+        /// Conflict Profile: Winning 
+        /// </summary>
+        public const string CONFLICT_PROFILE_WINNING = "56300095-86AD-43FE-98D2-50829E9223C2";
+
+        /// <summary>
+        /// Conflict Profile: Yielding 
+        /// </summary>
+        public const string CONFLICT_PROFILE_YEILDING = "4AB06A6F-F5B1-4385-9365-199EA7969E50";
+
+        #endregion
+
+        #region Motivator
+
+        /// <summary>
+        /// Motivator: Believing 
+        /// </summary>
+        public const string MOTIVATOR_BELIEVING = "99F598E0-E0AC-4B4B-BEAF-589D41764EE1";
+
+        /// <summary>
+        /// Motivator: Caring 
+        /// </summary>
+        public const string MOTIVATOR_CARING = "FFD7EF9C-5D68-40D2-A362-416B2D660D51";
+
+        /// <summary>
+        /// Motivator: Expressing 
+        /// </summary>
+        public const string MOTIVATOR_EXPRESSING = "FA70E27D-6642-4162-AF17-530F66B507E7";
+
+        /// <summary>
+        /// Motivator: Empowering 
+        /// </summary>
+        public const string MOTIVATOR_EMPOWERING = "C171D01E-C607-488B-A550-1E341081210B";
+
+        /// <summary>
+        /// Motivator: Engaging 
+        /// </summary>
+        public const string MOTIVATOR_ENGAGING = "5635E95B-3A07-43B7-837A-0F131EF1DA97";
+
+        /// <summary>
+        /// Motivator: Adapting 
+        /// </summary>
+        public const string MOTIVATOR_ADAPTING = "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89";
+
+        /// <summary>
+        /// Motivator: Gathering 
+        /// </summary>
+        public const string MOTIVATOR_GATHERING = "73087DD2-B892-4367-894F-8922477B2F10";
+
+        /// <summary>
+        /// Motivator: Innovating 
+        /// </summary>
+        public const string MOTIVATOR_INNOVATING = "D84E58E4-87FC-4CEB-B83E-A2C6D186366C";
+
+        /// <summary>
+        /// Motivator: Leading 
+        /// </summary>
+        public const string MOTIVATOR_LEADING = "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3";
+
+        /// <summary>
+        /// Motivator: Learning 
+        /// </summary>
+        public const string MOTIVATOR_LEARNING = "7EA44A56-58CB-4E40-9779-CC0A79772926";
+
+        /// <summary>
+        /// Motivator: Maximizing 
+        /// </summary>
+        public const string MOTIVATOR_MAXIMIZING = "3F678404-5844-494F-BDB0-DD9FEEBC98C9";
+
+        /// <summary>
+        /// Motivator: Organizing 
+        /// </summary>
+        public const string MOTIVATOR_ORGANIZING = "85459C0F-65A5-48F9-86F3-40B03F9C53E9";
+
+        /// <summary>
+        /// Motivator: Pacing 
+        /// </summary>
+        public const string MOTIVATOR_PACING = "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25";
+
+        /// <summary>
+        /// Motivator: Perceiving 
+        /// </summary>
+        public const string MOTIVATOR_PERCEIVING = "4C898A5C-B48E-4BAE-AB89-835F25A451BF";
+
+        /// <summary>
+        /// Motivator: Relating 
+        /// </summary>
+        public const string MOTIVATOR_RELATING = "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995";
+
+        /// <summary>
+        /// Motivator: Serving 
+        /// </summary>
+        public const string MOTIVATOR_SERVING = "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD";
+
+        /// <summary>
+        /// Motivator: Thinking 
+        /// </summary>
+        public const string MOTIVATOR_THINKING = "0D82DC77-334C-44B0-84A6-989910907DD4";
+
+        /// <summary>
+        /// Motivator: Transforming 
+        /// </summary>
+        public const string MOTIVATOR_TRANSFORMING = "2393C3CE-8E49-46FE-A75B-D5D624A37B49";
+
+        /// <summary>
+        /// Motivator: Uniting 
+        /// </summary>
+        public const string MOTIVATOR_UNITING = "D7601B56-7495-4D7B-A916-8C48F78675E3";
+
+        /// <summary>
+        /// Motivator: Persevering 
+        /// </summary>
+        public const string MOTIVATOR_PERSEVERING = "A027F6B2-56DD-4724-962D-F865606AEAB8";
+
+        /// <summary>
+        /// Motivator: Risk-Taking 
+        /// </summary>
+        public const string MOTIVATOR_RISKTAKING = "4D0A1A6D-3F5A-476E-A633-04EAEF457645";
+
+        /// <summary>
+        /// Motivator: Visioning 
+        /// </summary>
+        public const string MOTIVATOR_VISIONING = "EE1603BA-41AE-4CFA-B220-065768996501";
+
+        /// <summary>
+        /// Motivator: Growth Propensity 
+        /// </summary>
+        public const string MOTIVATOR_GROWTH_PROPENSITY = "605F3702-6AE7-4545-BEBE-23693E60031C";
+
+        #endregion
+
+        #region Motivator Cluster
+
+        /// <summary>
+        /// Motivator Cluster: Influential 
+        /// </summary>
+        public const string MOTIVATOR_CLUSTER_INFLUENTIAL = "840C414E-A261-4243-8302-6117E8949FE4";
+
+        /// <summary>
+        /// Motivator Cluster: Organizational 
+        /// </summary>
+        public const string MOTIVATOR_CLUSTER_ORGANIZATIONAL = "112A35BE-3108-48D9-B057-125A788AB531";
+
+        /// <summary>
+        /// Motivator Cluster: Intellectual 
+        /// </summary>
+        public const string MOTIVATOR_CLUSTER_INTELLECTUAL = "58FEF15F-561D-420E-8937-6CF51D296F0E";
+
+        /// <summary>
+        /// Motivator Cluster: Operational 
+        /// </summary>
+        public const string MOTIVATOR_CLUSTER_OPERATIONAL = "84322020-4E27-44EF-88F2-EAFDB7286A01";
+
+        #endregion
     }
 }
