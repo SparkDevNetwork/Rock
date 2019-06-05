@@ -352,6 +352,10 @@
     <Compile Include="Migrations\201906032320193_AssessmentBadges.Designer.cs">
       <DependentUpon>201906032320193_AssessmentBadges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906051958565_Rollup_0605.cs" />
+    <Compile Include="Migrations\201906051958565_Rollup_0605.Designer.cs">
+      <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -856,6 +860,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906032320193_AssessmentBadges.resx">
       <DependentUpon>201906032320193_AssessmentBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906051958565_Rollup_0605.resx">
+      <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
