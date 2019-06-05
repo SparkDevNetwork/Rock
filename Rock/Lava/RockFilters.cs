@@ -3833,12 +3833,22 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Set the page and browser title
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            return SetPageTitle( input, "All" );
+        }
+
+        /// <summary>
         /// adds a link tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the href of the tag.</param>
-        /// <param name="titleLocation">The title location.</param>
+        /// <param name="titleLocation">The title location. "BrowserTitle", "PageTitle" or "All"</param>
         /// <returns></returns>
-        public static string SetPageTitle( string input, string titleLocation = "All" )
+        public static string SetPageTitle( string input, string titleLocation )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
