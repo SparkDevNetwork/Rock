@@ -1069,8 +1069,9 @@ namespace Rock.Model
                     if ( personExclusionDateRange != null)
                     {
                         schedulerResource.BlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
-                        schedulerResource.OccurrenceDateCount = scheduleOccurrenceDateList.Count();
                     }
+
+                    schedulerResource.OccurrenceDateCount = scheduleOccurrenceDateList.Count();
                 }
 
                 // If there is only one occurrence for the selected week, remove anybody that is already scheduled for this group, and sort by person
