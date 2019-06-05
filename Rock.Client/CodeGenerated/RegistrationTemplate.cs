@@ -104,7 +104,7 @@ namespace Rock.Client
         public bool LoginRequired { get; set; }
 
         /// <summary />
-        public int MaxRegistrants { get; set; }
+        public int? MaxRegistrants { get; set; }
 
         /// <summary />
         public decimal? MinimumInitialPayment { get; set; }
