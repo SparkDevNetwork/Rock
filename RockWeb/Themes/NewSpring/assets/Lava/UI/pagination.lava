@@ -45,7 +45,7 @@
 
           {% for page in (startingPage..endingPage) %}
             {% if page > 0 and page <= paginationObject.TotalPages %}
-                <li {% if paginationObject.CurrentPage == page %}class="active"{% endif %}><a href="{{ paginationObject.UrlTemplate | Replace:'PageNum', page }}">{{ page }}</a></li>
+                <li {% if paginationObject.CurrentPage == page %}class="active"{% endif %}><a href="{% if page == '1' %}{{ 'Global' | Page:'Path' }}{% else %}{{ paginationObject.UrlTemplate | Replace:'PageNum', page }}{% endif %}">{{ page }}</a></li>
             {% endif %}
           {% endfor %}
           
