@@ -246,6 +246,14 @@ namespace Rock.Data
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendances data.
+        /// </summary>
+        /// <value>
+        /// The attendances data.
+        /// </value>
+        public DbSet<AttendanceData> AttendancesData { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance occurrences.
         /// </summary>
         /// <value>
