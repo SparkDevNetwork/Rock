@@ -1,3 +1,14 @@
+{% assign CurrentPersonCanEdit = CurrentPerson | HasRightsTo:'Edit' %}
+{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
 {% if Item.ParentItems %}
     {% for parent in Item.ParentItems %}
         {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}

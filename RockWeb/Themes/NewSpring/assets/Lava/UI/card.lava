@@ -3,7 +3,7 @@
 
 {%- assign modalid = uniqueid -%}
 {% if linkurl != empty or linkedpageid != empty %}
-    {% capture linkurl %}
+    {% capture cardlinkurl %}
         {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
             /{{ linkedpageroute }}
         {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
@@ -14,7 +14,7 @@
     {% endcapture %}
 {% endif %}
 
-{% assign linkurl = linkurl | Trim %}
+{% assign cardlinkurl = cardlinkurl | Trim %}
 
 <div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
     {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
@@ -23,7 +23,7 @@
         </div>
     {% endif %}
     {% if imageurl != null and imageurl != '' %}
-        {% if linkurl != empty %}<a href="{{ linkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
+        {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
             {% endif %}
@@ -36,7 +36,7 @@
                 <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
             {% endif %}
     
-        {% if linkurl != empty %}</a>{% else %}</div>{% endif %}
+        {% if cardlinkurl != empty %}</a>{% else %}</div>{% endif %}
     {% endif %}
 
     <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
@@ -47,9 +47,9 @@
         
         {% if title != null and title != '' %}
         <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">
-            {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
+            {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}">{% endif %}
                 {{ title }}
-            {% if linkurl != empty %}</a>{% endif %}
+            {% if cardlinkurl != empty %}</a>{% endif %}
         </h2>
         {% endif %}
 
@@ -76,9 +76,9 @@
             {{ lava | HtmlDecode }}
         {% endif %}
 
-        {% if linkurl and linkurl != empty %}
+        {% if cardlinkurl and cardlinkurl != empty %}
             <p>
-                {[ button linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
+                {[ button linkurl:'{{ cardlinkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' ]}
             </p>
         {% endif %}
 
