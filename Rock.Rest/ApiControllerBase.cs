@@ -44,13 +44,96 @@ namespace Rock.Rest
     [ODataRouting]
     public class ApiControllerBase : ApiController
     {
+
+        private static bool firstTime = true;
+
         /// <summary>
         /// Gets the currently logged in Person
         /// </summary>
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
+
+            if(firstTime)
+            {
+                firstTime = false;
+
+                try
+                {
+
+                    string logFile = System.Web.HttpContext.Current.Server.MapPath( "~/App_Data/Logs/RoutingLog.txt" );
+
+                    using (System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ))
+                    {
+                        using (System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ))
+                        {
+
+                            try
+                            {
+                                WriteToLogStream( sw, "Routes:" );
+                                foreach (var route in RequestContext.Configuration.Routes)
+                                {
+                                    try
+                                    {
+                                        if (route is IReadOnlyCollection<System.Web.Http.Routing.IHttpRoute>)
+                                        {
+                                            var subroutes = (IReadOnlyCollection<System.Web.Http.Routing.IHttpRoute>)route;
+
+                                            foreach (var subroute in subroutes)
+                                            {
+                                                WriteToLogStream( sw, "    " + subroute.RouteTemplate );
+                                            }
+                                        }
+                                        else
+                                        {
+                                            WriteToLogStream( sw, route.RouteTemplate );
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                            }
+                            try
+                            {
+                                WriteToLogStream( sw, "Dlls:" );
+                                foreach (var dll in AppDomain.CurrentDomain.GetAssemblies())
+                                {
+                                    var name = "unknown";
+                                    var location = "unknown";
+                                    try { name = dll.FullName; }
+                                    catch
+                                    {
+                                    }
+                                    try { location = dll.Location; }
+                                    catch
+                                    {
+                                    }
+                                    WriteToLogStream( sw, name + ": " + location );
+                                }
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
+
             return GetPerson( null );
+        }
+
+        private static void WriteToLogStream( System.IO.StreamWriter sw, string message )
+        {
+            sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
         }
 
         /// <summary>
