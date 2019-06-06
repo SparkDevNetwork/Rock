@@ -14,8 +14,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -42,7 +42,7 @@
 
     <!-- NewPointe 2018 Theme CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>" />
 
@@ -51,7 +51,7 @@
 
     <!-- NewPointe 2018 Theme scripts -->
     <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>"></script>
-    
+
     <!-- animate.js (Used for scroll-triggered animations) -->
     <script src="https://cdn.jsdelivr.net/npm/animate.js@1.4.1/assets/js/dist/animate.min.js" integrity="sha384-v878xwitWndgO2EepfRrgOy+ygmGIouBrMa0JoEE2iB850hugcMfv8Piilf9BPB8" crossorigin="anonymous"></script>
 
@@ -64,7 +64,7 @@
     <form id="form1" runat="server">
 
       <!-- Page Header -->
-      <header>        
+      <header>
         <nav class="primary">
           <Rock:Zone Name="Navigation" runat="server" />
 	        <div class="navbar-subheader">
@@ -104,11 +104,11 @@
         </nav>
         <Rock:Zone Name="Header" runat="server" />
       </header>
-	
+
       <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
       <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-      
+
       <div class="subfooter">
 			  <Rock:Zone Name="SubFooter" runat="server" />
 			</div>
@@ -133,7 +133,7 @@
 		        </div>
         </div>
 	    </footer>
-        
+
       <%-- controls for scriptmanager and update panel --%>
       <asp:ScriptManager ID="sManager" runat="server"/>
       <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
@@ -150,7 +150,7 @@
                   <div class="updateprogress-bg modal-backdrop"></div>
 	        </ProgressTemplate>
       </asp:UpdateProgress>
-		
+
     </form>
 
 		<script>
