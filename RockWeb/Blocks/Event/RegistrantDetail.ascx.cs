@@ -801,7 +801,7 @@ namespace RockWeb.Blocks.Event
                             FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                             {
                                 ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                                AttributeId = attribute.Id,
+                                RegistrationTemplateFormFieldId = field.Id,
                                 FieldVisibilityRules = field.FieldVisibilityRules
                             };
 
@@ -812,7 +812,7 @@ namespace RockWeb.Blocks.Event
                             var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
                             fieldVisibilityWrapper.EditControl = editControl;
 
-                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
+                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
 
                             if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                             {

@@ -551,6 +551,7 @@
     <Compile Include="Utility\WebRequestHelper.cs" />
     <Compile Include="Web\Cache\Entities\BlockCache.cs" />
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
+    <Compile Include="Web\Cache\Entities\RegistrationTemplateFormFieldCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\Entities\EventCalendarCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
