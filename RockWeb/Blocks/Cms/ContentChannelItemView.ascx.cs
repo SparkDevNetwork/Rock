@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Item Cache Duration", description: "Number of seconds to cache the content item specified by the parameter.", required: false, defaultValue: 3600, category: "CustomSetting", order: 0, key: "ItemCacheDuration" )]
     [CustomCheckboxListField( "Cache Tags", description: "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
 
+    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", description: "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
     [LinkedPage( "Detail Page", description: "Page used to view a content item.", order: 1, category: "CustomSetting", key: "DetailPage" )]
 
@@ -245,6 +246,7 @@ Guid - ContentChannelItem Guid
             }
 
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
 
             if ( this.GetAttributeValue( "LogInteractions" ).AsBoolean() )
             {
@@ -308,6 +310,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
             this.SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
@@ -422,6 +425,7 @@ Guid - ContentChannelItem Guid
                 pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
             }
 
+            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
             bool setPageTitle = GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             if ( outputContents == null )
@@ -468,7 +472,26 @@ Guid - ContentChannelItem Guid
                     }
                 }
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+
+                // Merge content and attribute fields if block is configured to do so.
+                if ( isMergeContentEnabled )
+                {
+                    var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
+
+                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    
+                    itemMergeFields.AddOrReplace( "Item", contentChannelItem );
+                    contentChannelItem.Content = contentChannelItem.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    contentChannelItem.LoadAttributes();
+                    foreach ( var attributeValue in contentChannelItem.AttributeValues )
+                    {
+                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    }
+                }
+
+                var mergeFields = new Dictionary<string, object>( commonMergeFields );
+
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
                 int detailPage = 0;
