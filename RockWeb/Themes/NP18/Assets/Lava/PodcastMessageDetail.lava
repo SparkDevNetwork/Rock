@@ -1,86 +1,79 @@
-﻿{% assign item = Items | First %}
-{% if item  %}
+﻿{% assign Part = Item | Attribute:'Part' %}
+{% assign Speaker = Item | Attribute:'Speaker' %}
+{% assign SpeakerTitle = Item | Attribute:'SpeakerTitle' %}
+{% assign VideoId = Item | Attribute:'VideoId' %}
+{% assign PodcastImage = Item | Attribute:'PodcastImage' %}
+{% assign TalkItOverVideoId = Item | Attribute:'TalkItOverVideoId' %}
+{% assign TalkItOver = Item | Attribute:'TalkItOver','Url' %}
+{% assign PodcastLength = Item | Attribute:'PodcastLength' %}
+{% assign PodcastAudio = Item | Attribute:'PodcastAudio','Url' %}
+{% assign MessageNotes = Item | Attribute:'MessageNotes','Url' %}
+{% assign MessageNotesHTML = Item | Attribute:'MessageNotesHTML' %}
+{% assign ScriptureCard = Item | Attribute:'ScriptureCard','Url' %}
 
-	{% assign Part = item | Attribute:'Part' %}
-	{% assign Speaker = item | Attribute:'Speaker' %}
-	{% assign SpeakerTitle = item | Attribute:'SpeakerTitle' %}
-	{% assign VideoId = item | Attribute:'VideoId' %}
-	{% assign PodcastImage = item | Attribute:'PodcastImage' %}
-	{% assign TalkItOverVideoId = item | Attribute:'TalkItOverVideoId' %}
-	{% assign TalkItOver = item | Attribute:'TalkItOver','Url' %}
-	{% assign PodcastLength = item | Attribute:'PodcastLength' %}
-	{% assign PodcastAudio = item | Attribute:'PodcastAudio','Url' %}
-	{% assign MessageNotes = item | Attribute:'MessageNotes','Url' %}
-	{% assign MessageNotesHTML = item | Attribute:'MessageNotesHTML' %}
-	{% assign ScriptureCard = item | Attribute:'ScriptureCard','Url' %}
-	
-	{% for parentItem in item.ParentItems | First %}
-		{% assign Series = parentItem.ContentChannelItem.Title %}
-	{% endfor %}
-	
-	<article class="message-detail">
-		<div class="row">
-			<div class="col-md-5 col-md-offset-7 z1">
+{% assign Series = Item.ParentItems.first.ContentChannelItem.Title %}
 
-                <a class="backlink btn btn-gray hidden-xs hidden-sm" href="{{ LinkedPages.DetailPage }}"><i class="np-icon np-caret"></i> Back</a>
-                
-                {% capture ShareText %}Check out {{ Series }}: {{ item.Title }} from NewPointe{% endcapture %}
-                <div class="sharelinks_toolbox">
-				    <a title="Share to Facebook" href="https://www.facebook.com/sharer/sharer.php?quote={{ ShareText | UrlEncode }}&amp;u={{ 'Global' | Page:'Url' | UrlEncode }}">
-					    <i class="fa fa-fw fa-facebook-square fa-lg"></i>
-					</a>
-				    <a title="Share to Twitter" href="https://twitter.com/intent/tweet?text={{ ShareText | UrlEncode }}&amp;url={{ 'Global' | Page:'Url' | UrlEncode }}">
-					    <i class="fa fa-fw fa-twitter fa-lg"></i>
-					</a>
-				    <a title="Share via Email" href="mailto:?subject={{ ShareText | UrlEncode }}&amp;body={{ 'Global' | Page:'Url' | UrlEncode }}">
-					    <i class="fa fa-fw fa-envelope fa-lg"></i>
-					</a>
-				</div>
+<article class="message-detail">
+	<div class="row">
+		<div class="col-md-5 col-md-offset-7 z1">
 
-				<div class="message-action-items visible-xs-inline-block visible-sm-inline-block">
-					<ul class="list-inline">
-						{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
-						{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
-					</ul>
-				</div>
+            <a class="backlink btn btn-gray hidden-xs hidden-sm" href="/messages"><i class="np-icon np-caret"></i> Back</a>
 
-			</div> 
-		</div>
-		<div class="row">
-			<div class="col-md-7 z10 sermon-video">
-				<div class="embed-responsive embed-responsive-16by9">		
-					{% if VideoId != '' %}
-			      <iframe src="https://player.vimeo.com/video/{{ VideoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
-					{% endif %}
-				</div>
-				<div class="message-action-items hidden-xs hidden-sm">
-					<ul class="list-inline">
-						{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
-						{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
-					</ul>
-				</div>
+            {% capture ShareText %}Check out {{ Series }}: {{ Item.Title }} from NewPointe{% endcapture %}
+            <div class="addthis_toolbox">
+			    <div class="custom_images">
+			        <a title="Share to Facebook" href="https://www.facebook.com/sharer/sharer.php?quote={{ ShareText | UrlEncode }}&u={{ 'Global' | Page:'Url' | UrlEncode }}">
+				    	<i class="fa fa-fw fa-facebook-square fa-lg"></i>
+				    </a>
+			        <a title="Share to Twitter" href="https://twitter.com/intent/tweet?text={{ ShareText | UrlEncode }}&url={{ 'Global' | Page:'Url' | UrlEncode }}">
+				    	<i class="fa fa-fw fa-twitter fa-lg"></i>
+				    </a>
+			        <a title="Share via Email" href="mailto:?subject={{ ShareText | UrlEncode }}&body={{ 'Global' | Page:'Url' | UrlEncode }}">
+				    	<i class="fa fa-fw fa-envelope fa-lg"></i>
+				    </a>
+			    </div>
 			</div>
-			<div class="col-md-5 z1">
-				<div class="message-details">
-					<p class="series-part"><strong>{{ Series }}{% if Part != 0 %}, Part {{ Part }}{% endif %}</strong></p>
-					<h1 class="sermon-title">{{ item.Title }}</h1>
-					<p class="speaker-date">{{ item.StartDateTime | Date:'MMMM d, yyyy' }} | {{ item | Attribute:'Speaker' }}</p>
+
+			<div class="message-action-items visible-xs-inline-block visible-sm-inline-block">
+				<ul class="list-inline">
+					{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
+					{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
+				</ul>
+			</div>
+
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-7 z10 sermon-video">
+			<div class="embed-responsive embed-responsive-16by9">		
+				{% if VideoId != '' %}
+		      <iframe src="https://player.vimeo.com/video/{{ VideoId }}?wmode=transparent" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+				{% endif %}
+			</div>
+			<div class="message-action-items hidden-xs hidden-sm">
+				<ul class="list-inline">
+					{% if PodcastAudio != '' %}<li><a href="{{PodcastAudio}}" target="_blank"><i class="np-audio"></i> Listen</a></li>{% endif %}
+					{% if MessageNotes != '' %}<li><a href="{{MessageNotes}}" target="_blank"><i class="np-writebox"></i> Notes</a></li>{% endif %}
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-5 z1">
+			<div class="message-details">
+				<p class="series-part"><strong>{{ Series }}{% if Part != 0 %}, Part {{ Part }}{% endif %}</strong></p>
+				<h1 class="sermon-title">{{ Item.Title }}</h1>
+				<p class="speaker-date">{{ Item.StartDateTime | Date:'MMMM d, yyyy' }} | {{ Item | Attribute:'Speaker' }}</p>
+			
+				{{ Item.Content }}
 				
-					{{ item.Content }}
-					
-					<dl class="talkitover list-inline">
-					  {% if TalkItOverVideoId != '' %}<dd><a href="https://vimeo.com/{{TalkItOverVideoId}}" target="_blank"><i class="np-videochat"></i> Video</a></dd>{% endif %}
-					  {% if TalkItOver != '' %}<dd><a href="{{TalkItOver}}" target="_blank"><i class="np-chat"></i> Talk It Over</a></dd>{% endif %}
-					  {% if ScriptureCard != '' %}<dd><a href="{{ScriptureCard}}" target="_blank"><i class="np-document"></i> Scripture Card</a></dd>{% endif %}
-					</dl>
+				<dl class="talkitover list-inline">
+				  {% if TalkItOverVideoId != '' %}<dd><a href="https://vimeo.com/{{TalkItOverVideoId}}" target="_blank"><i class="np-videochat"></i> Video</a></dd>{% endif %}
+				  {% if TalkItOver != '' %}<dd><a href="{{TalkItOver}}" target="_blank"><i class="np-chat"></i> Talk It Over</a></dd>{% endif %}
+				  {% if ScriptureCard != '' %}<dd><a href="{{ScriptureCard}}" target="_blank"><i class="np-document"></i> Scripture Card</a></dd>{% endif %}
+				</dl>
 
-				</div>
 			</div>
 		</div>
-		<a class="backlink btn btn-gray visible-xs-inline-block visible-sm-inline-block" href="{{ LinkedPages.DetailPage }}"><i class="np-icon np-caret"></i> Back</a>
-	</article>
-	
-{% else %}
-	<h1>Could not find message.</h1>
-{% endif %}
+	</div>
+	<a class="backlink btn btn-gray visible-xs-inline-block visible-sm-inline-block" href="/messages"><i class="np-icon np-caret"></i> Back</a>
+</article>
 

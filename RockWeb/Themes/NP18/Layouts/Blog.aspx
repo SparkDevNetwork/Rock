@@ -2,38 +2,35 @@
 
 <asp:Content ID="ctFeature" ContentPlaceHolderID="feature" runat="server">
 
-  <Rock:Zone Name="Feature" runat="server" />
+    <Rock:Zone Name="Feature" runat="server" />
 
 </asp:Content>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-    
-	<main>
-        
-        <!-- Start Content Area -->
-        
-        <!-- Ajax Error -->
-        <div class="alert alert-danger ajax-error" style="display:none">
-            <p><strong>Error</strong></p>
-            <span class="ajax-error-message"></span>
-        </div>
 
-        <Rock:Zone Name="Sub Feature" runat="server" />
+    <!-- Start Content Area -->
 
-<div id="blogslist" class="css-grid-section">
+    <!-- Ajax Error -->
+    <div class="alert alert-danger ajax-error" style="display: none">
+        <p><strong>Error</strong></p>
+        <span class="ajax-error-message"></span>
+    </div>
+
+    <Rock:Zone Name="Main" runat="server" />
+
+    <div id="blogslist" class="css-grid-section">
 
         <Rock:Zone Name="Section A" runat="server" />
 
-</div>
-        <Rock:Zone Name="Section B" runat="server" />
+    </div>
 
-        <Rock:Zone Name="Section C" runat="server" />
+    <Rock:Zone Name="Section B" runat="server" />
 
-        <Rock:Zone Name="Section D" runat="server" />
+    <Rock:Zone Name="Section C" runat="server" />
 
-        <!-- End Content Area -->
+    <Rock:Zone Name="Section D" runat="server" />
 
-	</main>
-        
+    <!-- End Content Area -->
+
 </asp:Content>
 

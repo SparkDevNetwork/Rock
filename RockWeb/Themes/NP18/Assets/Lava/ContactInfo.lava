@@ -1,9 +1,0 @@
-<h5>{{ 'Global' | Attribute:'OrganizationName' }}</h5>
-<p>
-    {% assign OrganizationAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
-    {{ OrganizationAddress.Street1 }}, {{ OrganizationAddress.City }}, {{ OrganizationAddress.State }} {{ OrganizationAddress.PostalCode }}
-    <br>
-    <a href="tel:+1{{ 'Global' | Attribute:'OrganizationPhone' }}">p: {{ 'Global' | Attribute:'OrganizationPhone' }}</a>
-    <br>
-    <a href="mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}">e: {{ 'Global' | Attribute:'OrganizationEmail' }}</a>
-</p>

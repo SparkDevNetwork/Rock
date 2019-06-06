@@ -1,0 +1,21 @@
+<div class="contact-info">
+    {% assign OrganizationName = 'Global' | Attribute:'OrganizationName' | Trim %}
+    {% assign OrganizationAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
+    {% assign OrganizationPhone = 'Global' | Attribute:'OrganizationPhone | Trim' %}
+    {% assign OrganizationEmail = 'Global' | Attribute:'OrganizationEmail' | Trim %}
+
+    <h5>{{ OrganizationName }}</h5>
+    <p>
+        {% if OrganizationAddress != null %}
+            {{ OrganizationAddress.Street1 }}, {{ OrganizationAddress.City }}, {{ OrganizationAddress.State }} {{ OrganizationAddress.PostalCode }}
+            <br>
+        {% endif %}
+        {% if OrganizationPhone != '' %}
+            <a href="tel:+1{{ OrganizationPhone }}">p: {{ OrganizationPhone }}</a>
+            <br>
+        {% endif %}
+        {% if OrganizationEmail != '' %}
+            <a href="mailto:{{ OrganizationEmail }}">e: {{ OrganizationEmail }}</a>
+        {% endif %}
+    </p>
+</div>

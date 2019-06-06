@@ -30,6 +30,7 @@ html,
 body,
 body > form {
     height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
 }
@@ -44,68 +45,85 @@ body > form > main {
 }
 
 html {
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  font-size: 100%;
-  //font-size: 0.75rem; //12px
-  @media (min-width: @screen-sm) {
-    font-size: 1.1rem; //16px
-  }
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-size: 1rem;
 
-  @media (min-width: @screen-xl) {
-    font-size: 1.5rem; //24px
-  }
+    @media (min-width: @screen-sm) {
+        font-size: 1.1rem;
+    }
+
+    @media (min-width: @screen-xl) {
+        font-size: 1.5rem;
+    }
 }
 
 body {
-  font-size: 1em;
-  line-height: 1.5;
+    font-size: 1em;
+    line-height: 1.5;
 }
 
+// 2. Bootstrap Overides
+// -------------------------
+
+// 3. Theme Styling
+// -------------------------
+
+@import "partials/_social-icons.less";
+
+// 4. Responsive Overrides
+// -------------------------
 main {
     display: block;
 }
 
 .container {
-  @media (min-width: @screen-xl-min) {
-    width: @container-xl;
-  }
+    @media (min-width: @screen-xl-min) {
+        width: @container-xl;
+    }
 }
+
 .modal {
-	.navbar-nav.contextsetter {
-		float: none;
-	}
-	.modal-header {
-		.modal-title {
-			.font(36,bold);		
-		}
-	}
-	.modal-body {
-		.btn {
-			font-size: 16px !important;
-			font-weight: normal !important;
-			border-width: 1px !important;
-		}
-	}
+    .navbar-nav.contextsetter {
+        float: none;
+    }
+
+    .modal-header {
+        .modal-title {
+            .font(36,bold);
+        }
+    }
+
+    .modal-body {
+        .btn {
+            font-size: 16px !important;
+            font-weight: normal !important;
+            border-width: 1px !important;
+        }
+    }
 }
+
 .lava-debug {
-	.panel-lavadebug {
-		li {
-			display: block !important;
-			margin:0 !important;
-			text-transform: none !important;
-		}
-	}
+    .panel-lavadebug {
+        li {
+            display: block !important;
+            margin: 0 !important;
+            text-transform: none !important;
+        }
+    }
 }
+
 #cms-admin-footer {
-	.btn {
-		padding: 7px 10px;
-	}
+    .btn {
+        padding: 7px 10px;
+    }
 }
+
 body.block-highlight,
 body.zone-highlight {
-	nav {
-		position: relative !important;
-	}
+    nav {
+        position: relative !important;
+    }
 }
+
 @import "_css-overrides.less";

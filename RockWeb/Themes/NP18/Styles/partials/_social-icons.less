@@ -1,0 +1,50 @@
+
+.fa-link-color(@color) {
+    & > .fa,
+    & > .fab,
+    & > .fas,
+    & > .far,
+    & > .fal {
+        color: @color;
+    }
+}
+
+.social-icons {
+    display: flex;
+
+    a {
+        display: block;
+        position: relative;
+        font-size: 1.5em;
+        margin-left: -0.3em;
+        padding: 0.3em;
+        line-height: 1em;
+        margin-right: 0.5em;
+        color: @gray-light;
+
+        &:hover {
+            .fa-link-color( @brand-primary );
+        }
+    }
+}
+
+.social-icons.vertical {
+    flex-direction: column;
+}
+
+
+
+footer .social-icons {
+    a {
+        color: @gray-lighter;
+
+        &:hover {
+            .fa-link-color( @brand-primary );
+        }
+    }
+
+    @media only screen and (max-width: 768px) {
+        justify-content: center;
+    }
+
+}

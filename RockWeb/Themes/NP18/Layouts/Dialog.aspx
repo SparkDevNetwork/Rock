@@ -1,11 +1,12 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
+
 <%@ Import Namespace="System.Web.Optimization" %>
 <%@ Import Namespace="Rock" %>
 
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     /// <summary>
     /// An optional subtitle
     /// </summary>
@@ -16,11 +17,11 @@
     {
         get
         {
-            return lSubTitle.Text.TrimStart( "<small>".ToCharArray() ).TrimEnd( "</small>".ToCharArray() );
+            return lSubTitle.Text.TrimStart("<small>".ToCharArray()).TrimEnd("</small>".ToCharArray());
         }
         set
         {
-            lSubTitle.Text = string.IsNullOrWhiteSpace( value ) ? "" : "<small>" + value + "</small>";
+            lSubTitle.Text = string.IsNullOrWhiteSpace(value) ? "" : "<small>" + value + "</small>";
         }
     }
 
@@ -47,18 +48,18 @@
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-    protected void btnSave_Click( object sender, EventArgs e )
+    protected void btnSave_Click(object sender, EventArgs e)
     {
-        base.FireSave( sender, e );
+        base.FireSave(sender, e);
     }
 
     /// <summary>
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
     /// </summary>
     /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
+    protected override void OnInit(EventArgs e)
     {
-        base.OnInit( e );
+        base.OnInit(e);
 
         lTitle.Text = Request.QueryString["t"] ?? "Title";
 
@@ -67,12 +68,12 @@
 
         btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
         btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
-        if ( !btnSave.Visible )
+        if (!btnSave.Visible)
         {
-            btnCancel.AddCssClass( "btn-primary" );
+            btnCancel.AddCssClass("btn-primary");
         }
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -116,7 +117,7 @@
                     <div class="modal-body">
 
                         <!-- Ajax Error -->
-                        <div class="alert alert-danger ajax-error" style="display:none">
+                        <div class="alert alert-danger ajax-error" style="display: none">
                             <p><strong>Error</strong></p>
                             <span class="ajax-error-message"></span>
                         </div>
@@ -139,8 +140,7 @@
 </html>
 <script>
     Sys.Application.add_load(function () {
-        new ResizeSensor($('#dialog'), function ()
-        {
+        new ResizeSensor($('#dialog'), function () {
             $('#modal-popup iframe', window.parent.document).height($('#dialog').height());
         });
     });

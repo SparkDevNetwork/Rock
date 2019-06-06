@@ -22,17 +22,19 @@
 </head>
 <body id="splash" class="error">
     <form id="form1" runat="server">
-    
-        
+
+
         <div id="content">
-            
+
             <div id="content-box">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="error-wrap">
                             <h1>That Wasn't Supposed To Happen...</h1>
-                            <p><strong>An Error Occurred...</strong>  The website administrators have 
-                            been notified of this problem.</p>
+                            <p>
+                                <strong>An Error Occurred...</strong>  The website administrators have 
+                            been notified of this problem.
+                            </p>
 
                             <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
 

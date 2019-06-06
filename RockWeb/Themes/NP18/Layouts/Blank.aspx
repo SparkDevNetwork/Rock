@@ -6,21 +6,29 @@
 <head runat="server">
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
+    <!-- Modernizr (Used by Rock RMS & Themes for feature detection) -->
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <!-- jQuery (Used by Rock RMS & Themes) -->
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
+    <!-- Dynamicly added head tags -->
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- NewPointe 2018 Theme CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
 
+    <!-- Dynamicly added css tags -->
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
     <style>
         html, body {
-            height: auto;
+            height: 100%;
             width: 100%;
-            min-width: 100%;
-            margin: 0 0 0 0;
-            padding: 0 0 0 0;
-            vertical-align: top;
+            margin: 0;
+            padding: 0;
         }
     </style>
 
@@ -28,8 +36,14 @@
 
 <body class="rock-blank">
     <form id="form1" runat="server">
-        <asp:ScriptManager ID="sManager" runat="server" />
 
+        <!-- Main Content -->
+        <main class="container-fluid">
+            <Rock:Zone Name="Main" runat="server" />
+        </main>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
         <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
             <ProgressTemplate>
                 <div class="updateprogress-status">
@@ -41,15 +55,10 @@
                         <div class="rect5"></div>
                     </div>
                 </div>
-                <div class="updateprogress-bg modal-backdrop">
-                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
             </ProgressTemplate>
         </asp:UpdateProgress>
 
-        <main class="container-fluid">
-            <!-- Start Content Area -->
-            <Rock:Zone Name="Main" runat="server" />
-        </main>
     </form>
 </body>
 </html>
