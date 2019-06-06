@@ -139,7 +139,7 @@ namespace Rock.Workflow.Action
                                                 .ToList();
 
                                             string deviceIds = String.Join(",", devices);
-                                               
+
                                             if ( deviceIds.AsBoolean() )
                                             {
                                                 var recipient = new RecipientData( deviceIds, mergeFields );
@@ -231,4 +231,3 @@ namespace Rock.Workflow.Action
         }
     }
 }
- 
