@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Web.UI;
@@ -33,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFormField" )]
     [DataContract]
-    public partial class RegistrationTemplateFormField : Model<RegistrationTemplateFormField>, IOrdered
+    public partial class RegistrationTemplateFormField : Model<RegistrationTemplateFormField>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -192,6 +193,29 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return RegistrationTemplateFormFieldCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            RegistrationTemplateFormFieldCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
 
         #region Virtual Properties
 
@@ -564,7 +588,7 @@ namespace Rock.Model
     public enum RegistrationFieldSource
     {
         /// <summary>
-        /// Person attribute
+        /// Person field
         /// </summary>
         PersonField = 0,
 
