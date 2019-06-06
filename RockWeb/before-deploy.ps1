@@ -98,6 +98,8 @@ else {
 
 Write-Host "Putting application in maintenence mode";
 
+Stop-IISSite "Default Web Site"
+
 Move-Item -Path (Join-Path $RootLocation "app_offline-template.htm") -Destination (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
 
 Set-Content (Join-Path $RootLocation "web.config") @'
@@ -145,6 +147,9 @@ foreach ($Theme in Get-ChildItem $ThemesLocation) {
     }
 
 }
+
+# 4. Clear out the asp.net temp files
+Remove-Item -Recurse -Force "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\root"
 
 # Done!
 

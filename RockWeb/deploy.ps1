@@ -157,7 +157,7 @@ if(Test-Path $InstalledPluginsPath) {
         if($PluginVersions.Count -gt 0) {
 
             $LatestVersion = $PluginVersions  | Sort-Object {Get-VersionId $_.BaseName} | Select-Object -Last 1;
-            Write-Host "Restoring ${LatestVersion.Name}";
+            Write-Host "Restoring ${LatestVersion.FullName}";
             Restore-RockPlugin $LatestVersion.FullName;
 
         }
@@ -179,6 +179,7 @@ Write-Host "Taking application out of maintenence mode";
 Move-Item -Path (Join-Path $RootLocation "app_offline.htm") -Destination (Join-Path $RootLocation "app_offline-template.htm") -ErrorAction SilentlyContinue;
 Remove-Item -Path (Join-Path $RootLocation "app_offline.htm") -ErrorAction SilentlyContinue;
 
+Start-IISSite "Default Web Site"
 
 # 6. Move the backup so we know we completed successfully
 
