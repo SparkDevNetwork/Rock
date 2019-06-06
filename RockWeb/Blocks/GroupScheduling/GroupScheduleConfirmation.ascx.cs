@@ -150,10 +150,12 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 var rockContext = new RockContext();
 
-                int? declineReasonValueId = null;
+                // Use the value selected in the drop down list if it was set.
+                int? declineReasonValueId = ddlDeclineReason.SelectedItem.Value.AsIntegerOrNull();
 
                 new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
                 rockContext.SaveChanges();
+                DetermineRecipientAndSendResponseEmail( attendanceId, rockContext );
             }
 
             BindPendingConfirmations();
@@ -539,6 +541,19 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         /// Determines the recipient and send confirmation email.
         /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void DetermineRecipientAndSendResponseEmail( int? attendanceId, RockContext rockContext )
+        {
+            if ( attendanceId.HasValue )
+            {
+                DetermineRecipientAndSendResponseEmail( new AttendanceService( rockContext ).Get( attendanceId.Value ) );
+            }
+        }
+
+        /// <summary>
+        /// Determines the recipient and send confirmation email.
+        /// </summary>
         /// <param name="attendance">The attendance.</param>
         private void DetermineRecipientAndSendResponseEmail( Attendance attendance )
         {
@@ -569,9 +584,6 @@ namespace RockWeb.Blocks.GroupScheduling
             try
             {
                 var mergeFields = MergeFields( attendance );
-                mergeFields.Add( "ScheduledDate", attendance.Occurrence.Schedule.EffectiveStartDate.ToString() );
-                mergeFields.Add( "Person", attendance.PersonAlias.Person );
-                mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
 
                 // Distinct is used so that if the same email address is for both the Scheduler and ScheduleCancellationPersonAlias
                 // Only one email will be sent
@@ -600,6 +612,10 @@ namespace RockWeb.Blocks.GroupScheduling
             var group = attendance.Occurrence.Group;
             mergeFields.Add( "Group", group );
             mergeFields.Add( "ScheduledItem", attendance );
+            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
 
             return mergeFields;
         }
