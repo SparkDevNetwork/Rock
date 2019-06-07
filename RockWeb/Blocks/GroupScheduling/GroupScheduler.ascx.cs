@@ -381,11 +381,25 @@ btnCopyToClipboard.ClientID );
             }
 
             int scheduleId = rblSchedule.SelectedValue.AsInteger();
-            var groupLocationIdList = cblGroupLocations.SelectedValues.AsIntegerList();
+            var allSelectedLocationIds = new HashSet<int>( hfAllSelectedLocationIds.Value.SplitDelimitedValues().AsIntegerList() );
+            foreach ( var displayedLocationItem in cblGroupLocations.Items.OfType<ListItem>() )
+            {
+                var locationId = displayedLocationItem.Value.AsInteger();
+                if ( displayedLocationItem.Selected )
+                {
+                    allSelectedLocationIds.Add( locationId );
+                }
+                else
+                {
+                    allSelectedLocationIds.Remove( locationId );
+                }
+            }
+
+            hfAllSelectedLocationIds.Value = allSelectedLocationIds.ToList().AsDelimited( "," );
 
             this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, groupId.ToString() );
             this.SetBlockUserPreference( UserPreferenceKey.SelectedDate, ddlWeek.SelectedValue );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupLocationIds, groupLocationIdList.AsDelimited( "," ) );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupLocationIds, allSelectedLocationIds.ToList().AsDelimited( "," ) );
             this.SetBlockUserPreference( UserPreferenceKey.SelectedScheduleId, rblSchedule.SelectedValue );
 
             if ( group != null && group.SchedulingMustMeetRequirements )
@@ -415,7 +429,7 @@ btnCopyToClipboard.ClientID );
             pnlResourceFilterAlternateGroup.Visible = resourceListSourceType == SchedulerResourceListSourceType.AlternateGroup;
             pnlResourceFilterDataView.Visible = resourceListSourceType == SchedulerResourceListSourceType.DataView;
 
-            bool filterIsValid = groupId > 0 && scheduleId > 0 && groupLocationIdList.Any();
+            bool filterIsValid = groupId > 0 && scheduleId > 0 && cblGroupLocations.SelectedValues.Any();
 
             pnlScheduler.Visible = filterIsValid;
             nbFilterInstructions.Visible = !filterIsValid;
@@ -491,7 +505,9 @@ btnCopyToClipboard.ClientID );
                 }
 
                 // get the location ids of the selected group locations so that we can keep the selected locations even if the group changes
-                var selectedGroupLocationIds = cblGroupLocations.SelectedValuesAsInt;
+                var allSelectedLocationIds = hfAllSelectedLocationIds.Value.SplitDelimitedValues().AsIntegerList();
+
+                var selectedGroupLocationIds = allSelectedLocationIds;
                 var selectedLocationIds = new GroupLocationService( new RockContext() ).GetByIds( selectedGroupLocationIds ).Select( a => a.LocationId ).ToList();
 
                 cblGroupLocations.Items.Clear();
@@ -856,6 +872,7 @@ btnCopyToClipboard.ClientID );
 
         protected void cblGroupLocations_SelectedIndexChanged( object sender, EventArgs e )
         {
+            var toggledLocation = sender;
             ApplyFilter();
         }
 
