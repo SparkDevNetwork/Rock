@@ -146,7 +146,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// GET a person record based on a temporary person token
+        /// GET a person record based on a temporary person token and increment the usage count of the token
         /// </summary>
         /// <param name="token">The token.</param>
         /// <returns></returns>
