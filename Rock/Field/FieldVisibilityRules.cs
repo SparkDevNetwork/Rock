@@ -187,21 +187,21 @@ namespace Rock.Field
         internal string DebuggerFormattedRules => $"{FilterExpressionType} {this.RuleList.AsDelimited( " and " )}";
 
         /// <summary>
-        /// Determines if the registration field type is supported for condition field visibility
+        /// Determines if the registration field type is supported for conditional field visibility
         /// </summary>
         /// <param name="fieldType"></param>
         /// <returns></returns>
         public static bool IsFieldSupported( RegistrationPersonFieldType fieldType )
         {
-            return GetFieldTypeCache( fieldType ) != null;
+            return GetSupportedFieldTypeCache( fieldType ) != null;
         }
 
         /// <summary>
-        /// Gets the field type cache used for the given registration field type
+        /// Gets the field type cache used for the given registration field type if it is supported
         /// </summary>
         /// <param name="fieldType"></param>
         /// <returns></returns>
-        public static FieldTypeCache GetFieldTypeCache( RegistrationPersonFieldType fieldType )
+        public static FieldTypeCache GetSupportedFieldTypeCache( RegistrationPersonFieldType fieldType )
         {
             switch ( fieldType )
             {
