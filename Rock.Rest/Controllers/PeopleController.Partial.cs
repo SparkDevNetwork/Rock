@@ -146,6 +146,32 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// GET a person record based on a temporary person token
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByToken/{token}" )]
+        public Person GetByToken( string token )
+        {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var personService = Service as PersonService;
+            var person = personService.GetByImpersonationToken( token, true, null );
+
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
+        }
+
+        /// <summary>
         /// GET a person record based on the specified username
         /// </summary>
         /// <param name="username">The username.</param>
