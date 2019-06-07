@@ -300,7 +300,7 @@ namespace Rock.Web.UI.Controls
         {
             _gLocations = new Grid();
 
-            _gLocations.ID = this.ID + "_gCheckinLabels";
+            _gLocations.ID = this.ID + "_gLocations";
 
             _gLocations.DisplayType = GridDisplayType.Light;
             _gLocations.ShowActionRow = true;
