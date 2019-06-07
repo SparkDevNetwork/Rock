@@ -1589,7 +1589,7 @@ namespace RockWeb.Blocks.Groups
             cpCampus.SelectedCampusId = group.CampusId;
 
             GroupRequirementsState = group.GetGroupRequirements( rockContext ).Where( a => a.GroupId.HasValue ).ToList();
-            GroupLocationsState = group.GroupLocations.ToList();
+            GroupLocationsState = group.GroupLocations.OrderBy(a => a.Order).ThenBy(a => a.Location.Name).ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
             BindAdministratorPerson( group, groupTypeCache );
@@ -2735,6 +2735,10 @@ namespace RockWeb.Blocks.Groups
                 if ( groupLocation == null )
                 {
                     groupLocation = new GroupLocation();
+                    if ( GroupLocationsState.Any() )
+                    {
+                        groupLocation.Order = GroupLocationsState.Max( l => l.Order ) + 1;
+                    }
                     GroupLocationsState.Add( groupLocation );
                 }
 
