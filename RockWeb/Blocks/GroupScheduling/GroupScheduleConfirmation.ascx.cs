@@ -582,14 +582,14 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             List<string> recipientEmailAddresses = new List<string>();
 
-            // if scheduler receives  email add as a recipient
-            if ( GetAttributeValue( "SchedulerReceiveConfirmationEmails" ).AsBoolean() )
+            // if scheduler receives email add as a recipient
+            if ( GetAttributeValue( "SchedulerReceiveConfirmationEmails" ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
             {
                 recipientEmailAddresses.Add( attendance.ScheduledByPersonAlias.Person.Email );
             }
 
             // if attendance is decline (no) send email to Schedule Cancellation Person
-            if ( attendance.RSVP == RSVP.No )
+            if ( attendance.RSVP == RSVP.No && attendance.Occurrence.Group.ScheduleCancellationPersonAlias != null && attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.IsEmailActive )
             {
                 recipientEmailAddresses.Add( attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.Email );
             }
@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
                 // Distinct is used so that if the same email address is for both the Scheduler and ScheduleCancellationPersonAlias
                 // Only one email will be sent
-                foreach ( var recipient in recipientEmailAddresses.Distinct( StringComparer.CurrentCultureIgnoreCase ) )
+                foreach ( var recipient in recipientEmailAddresses.Distinct( StringComparer.CurrentCultureIgnoreCase ).Where( s => s.IsNotNullOrWhiteSpace() ) )
                 {
                     var emailMessage = new RockEmailMessage( GetAttributeValue( "SchedulingResponseEmail" ).AsGuid() );
                     emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
