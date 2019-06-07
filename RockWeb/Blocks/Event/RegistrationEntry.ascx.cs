@@ -4528,7 +4528,7 @@ namespace RockWeb.Blocks.Event
             {
                 var fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
-                    ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString(),
+                    ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
                     RegistrationTemplateFormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
@@ -4555,7 +4555,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( hasDependantVisibilityRule && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
-                    var fieldType = FieldVisibilityRules.GetFieldTypeCache( field.PersonFieldType ).Field;
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType ).Field;
 
                     if ( fieldType.HasChangeHandler( personFieldControl ) )
                     {

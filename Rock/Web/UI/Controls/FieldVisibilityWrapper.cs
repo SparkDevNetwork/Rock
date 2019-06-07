@@ -113,7 +113,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
-                    var fieldType = FieldVisibilityRules.GetFieldTypeCache( field.PersonFieldType );
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
                     return fieldType.Field.GetEditValue( this.EditControl, null );
                 }
                 else
@@ -133,7 +133,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
-                    var fieldType = FieldVisibilityRules.GetFieldTypeCache( field.PersonFieldType );
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
                     fieldType.Field.SetEditValue( this.EditControl, null, value );
                 }
                 else

@@ -369,7 +369,7 @@ namespace Rock.Web.UI.Controls
                     }
                     else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
                     {
-                        var fieldType = FieldVisibilityRules.GetFieldTypeCache( selectedField.PersonFieldType );
+                        var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
                         var filterValues = fieldType.Field.GetFilterValues( filterControl, null, Reporting.FilterMode.AdvancedFilter );
 
                         // NOTE: If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
@@ -630,7 +630,7 @@ namespace Rock.Web.UI.Controls
             }
             else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
             {
-                var fieldType = FieldVisibilityRules.GetFieldTypeCache( selectedField.PersonFieldType );
+                var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
                 var filterControl = fieldType.Field.FilterControl( null, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
                 if ( filterControl != null )
                 {
