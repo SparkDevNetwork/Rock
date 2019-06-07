@@ -33,16 +33,17 @@ namespace RockWeb.Blocks.GroupScheduling
 {
     [DisplayName( "Group Schedule Confirmation" )]
     [Category( "Group Scheduling" )]
-    [Description( "Allows a person to confirm a schedule RSVP and view pending schedules." )]
+    [Description( "Allows a person to confirm a schedule RSVP and view pending schedules.  Uses PersonActionIdentifier in 'Person' with action 'ScheduleConfirm' when supplied." )]
 
     [CodeEditorField( "Confirm Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }}<br></p>
-<p>Thanks again!</p>
-<p>{{ Group.Scheduler.FullName }}<br>{{ 'Global' | Attribute:'OrganizationName' }}</p>", "", 1, "ConfirmHeadingTemplate" )]
+    @"<h2 class='margin-t-none'>{{ Person.NickName }}, You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
+<p class='margin-b-lg'>Thanks again!<br>
+{{ Scheduler.FullName }}</p>", "", 1, "ConfirmHeadingTemplate" )]
 
     [CodeEditorField( "Decline Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
-<p>{{ Group.Name }}<br>
+    @"<h2 class='margin-t-none'>{{ Person.NickName }}, Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
+<p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
+{{ Group.Name }}<br>
 {{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>", "", 2, "DeclineHeadingTemplate" )]
 
     [BooleanField( "Scheduler Receive Confirmation Emails", "If checked, the scheduler will receive an email response for each confirmation or decline.", false, "", 3 )]
@@ -75,6 +76,8 @@ namespace RockWeb.Blocks.GroupScheduling
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -334,7 +337,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void ShowIsConfirmedMissingParameterMessage()
         {
-            nbError.Title = "Sorry";
+            nbError.Title = "Sorry,";
             nbError.NotificationBoxType = NotificationBoxType.Warning;
             nbError.Text = "something is not right with the link you used to get here.";
             nbError.Visible = true;
@@ -367,10 +370,17 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                // otherwise use the currently logged in person
-                if ( CurrentPerson == null )
+                // Is a person selected?
+                if ( _selectedPerson == null )
                 {
                     nbError.Visible = true;
+                }
+                else if ( CurrentPerson != null && _selectedPerson != CurrentPerson )
+                {
+                    nbError.Visible = true;
+                    nbError.Title = "Note:";
+                    nbError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Info;
+                    nbError.Text = string.Format( "You are setting and viewing the confirmations for {0}.", _selectedPerson.FullName );
                 }
 
                 var request = Context.Request;
@@ -493,23 +503,36 @@ namespace RockWeb.Blocks.GroupScheduling
             }
             else
             {
-                _selectedPerson = this.CurrentPerson;
-                hfSelectedPersonId.Value = this.CurrentPersonId.ToString();
+                // Use the PersonActionIdentifier if given...
+                string personKey = PageParameter( "Person" );
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    _selectedPerson = new PersonService( new RockContext() ).GetByPersonActionIdentifier( personKey, "ScheduleConfirm" );
+                    if ( _selectedPerson != null )
+                    {
+                        hfSelectedPersonId.Value = _selectedPerson.Id.ToString();
+                    }
+                }
+                // ...otherwise use the current person.
+                else
+                {
+                    _selectedPerson = this.CurrentPerson;
+                    hfSelectedPersonId.Value = this.CurrentPersonId.ToString();
+                }
             }
         }
 
         /// <summary>
         /// Gets the attendance identifier from parameters.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The id if found or null otherwise.</returns>
         private int? GetAttendanceIdFromParameters()
         {
             if ( PageParameter( "attendanceId" ).IsNotNullOrWhiteSpace() )
             {
                 var attendanceId = PageParameter( "attendanceId" ).AsIntegerOrNull();
 
-                //_targetPerson null if Log out is was called
-                if ( attendanceId != null && CurrentPerson != null )
+                if ( attendanceId != null && _selectedPerson != null )
                 {
                     return attendanceId;
                 }
