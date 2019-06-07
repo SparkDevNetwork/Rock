@@ -31,6 +31,7 @@ namespace Rock.Migrations
         {
             UpdateSchedulingResponseEmailTemplateUp();
             UpdateSchedulingConfirmationSystemEmailUp();
+            UpdateScehdulingReminderEmailUp();
         }
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Migrations
         {
             ResetSchedulingResponseEmailTemplateDown();
             ResetSchedulingConfirmationSystemEmailDown();
+            UpdateScehdulingReminderEmailDown();
         }
 
         /// <summary>
@@ -52,7 +54,7 @@ namespace Rock.Migrations
 <h1>Scheduling Response</h1>
 <p>Hi {{ Scheduler.NickName }}!</p>
 
-<p>{{ Person.FullName }}{%- assign rsvp = ScheduledItem.RSVP | AsBoolean -%} {% if rsvp %} has confirmed and will be at the:{%else %} is unable to attend the: {% endif %}</p>
+<p>{{ Person.FullName }}{%- assign rsvp = ScheduledItem.RSVP | AsBoolean -%} {% if rsvp %} has confirmed and will be at the:{% else %} is unable to attend the: {% endif %}</p>
 
 <h2>{{OccurrenceDate | Date:'dddd, MMMM d, yyyy'}}</h2>
 {{ Group.Name }}
@@ -113,17 +115,17 @@ namespace Rock.Migrations
     <tr><td>{{ attendance.Location.Name }}&nbsp;{{ attendance.Schedule.Name }}</td></tr>
     {% if forloop.first  %}
     <tr><td>  
-        <!--[if mso]><v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&isConfirmed=true"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""5%"" strokecolor=""#339933"" fillcolor=""#669966"">
+        <!--[if mso]><v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&Person={{Attendance.PersonAlias.Person | PersonActionIdentifier:'ScheduleConfirm'}}&isConfirmed=true"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""5%"" strokecolor=""#339933"" fillcolor=""#669966"">
     			<w:anchorlock/>
     			<center style=""color:#ffffff;font-family:sans-serif;font-size:18px;font-weight:normal;"">Accept</center>
     		  </v:roundrect>
-    		<![endif]--><a style=""mso-hide:all; background-color:#669966;border:1px solid #339933;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&isConfirmed=true"">Accept</a>&nbsp;
+    		<![endif]--><a style=""mso-hide:all; background-color:#669966;border:1px solid #339933;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&Person={{Attendance.PersonAlias.Person | PersonActionIdentifier:'ScheduleConfirm'}}&isConfirmed=true"">Accept</a>&nbsp;
     		
-    	<!--[if mso]><v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&isConfirmed=false"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""5%"" strokecolor=""#cc0000"" fillcolor=""#cc3333"">
+    	<!--[if mso]><v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&Person={{Attendance.PersonAlias.Person | PersonActionIdentifier:'ScheduleConfirm'}}&isConfirmed=false"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""5%"" strokecolor=""#cc0000"" fillcolor=""#cc3333"">
     			<w:anchorlock/>
     			<center style=""color:#ffffff;font-family:sans-serif;font-size:18px;font-weight:normal;"">Decline</center>
     		  </v:roundrect>
-    		<![endif]--><a style=""background-color:#cc3333;border:1px solid #cc0000;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&isConfirmed=false"">Decline</a>
+    		<![endif]--><a style=""background-color:#cc3333;border:1px solid #cc0000;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"" href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}ScheduleConfirmation?attendanceId={{attendance.Id}}&Person={{Attendance.PersonAlias.Person | PersonActionIdentifier:'ScheduleConfirm'}}&isConfirmed=false"">Decline</a>
     </td>
     </tr>
     <tr><td>&nbsp;</td></tr>
@@ -170,5 +172,68 @@ namespace Rock.Migrations
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "F8E4CE07-68F5-4169-A865-ECE915CF421C" );
         }
+
+        /// <summary>
+        /// Updates the Scheduling Reminder Email's date formatting.
+        /// </summary>
+        private void UpdateScehdulingReminderEmailUp()
+        {
+            // Scheduling Reminder Email
+            RockMigrationHelper.UpdateSystemEmail( "Groups", "Scheduling Reminder Email", "", "", "", "", "", "Scheduling Reminder for {{ Attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}", @"{{ 'Global' | Attribute:'EmailHeader' }}
+<h1>Scheduling Reminder</h1>
+<p>Hi {{  Attendance.PersonAlias.Person.NickName  }}!</p>
+
+<p>This is just a reminder that you are scheduled for the following on {{ Attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }} </p>
+
+<p>Thanks!</p>
+{{ Attendance.ScheduledByPersonAlias.Person.FullName  }}
+<br/>
+{{ 'Global' | Attribute:'OrganizationName' }}
+
+<table>
+{% for attendance in Attendances %}
+    <tr><td>&nbsp;</td></tr>
+    <tr><td><strong>{{ attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</strong></td></tr>
+    <tr><td><strong>{{ attendance.Occurrence.Group.Name }}</strong></td></tr>
+    <tr><td>{{ attendance.Location.Name }}&nbsp;{{ attendance.Schedule.Name }}</td></tr>
+{% endfor %}
+</table>
+
+<br/>
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "8A20FE79-B73C-447A-82B1-416F9B50C038" );
+        }
+
+        /// <summary>
+        /// Updates the Scheduling Reminder Email back to the previous version.
+        /// </summary>
+        private void UpdateScehdulingReminderEmailDown()
+        {
+            // Scheduling Reminder Email
+            RockMigrationHelper.UpdateSystemEmail( "Groups", "Scheduling Reminder Email", "", "", "", "", "", "Scheduling Reminder for {{Attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM, d, yyyy'}}", @"{{ 'Global' | Attribute:'EmailHeader' }}
+<h1>Scheduling Reminder</h1>
+<p>Hi {{  Attendance.PersonAlias.Person.NickName  }}!</p>
+
+<p>This is just a reminder that you are scheduled for the following on {{Attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM, d, yyyy'}} </p>
+
+<p>Thanks!</p>
+{{ Attendance.ScheduledByPersonAlias.Person.FullName  }}
+<br/>
+{{ 'Global' | Attribute:'OrganizationName' }}
+
+<table>
+{% for attendance in Attendances %}
+    <tr><td>&nbsp;</td></tr>
+    <tr><td><strong>{{attendance.Occurrence.OccurrenceDate | Date:'dddd, MMMM, d, yyyy'}}</strong></td></tr>
+    <tr><td><strong>{{ attendance.Occurrence.Group.Name }}</strong></td></tr>
+    <tr><td>{{ attendance.Location.Name }}&nbsp;{{ attendance.Schedule.Name }}</td></tr>
+{% endfor %}
+</table>
+
+<br/>
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "8A20FE79-B73C-447A-82B1-416F9B50C038" );
+        }
+
     }
 }
