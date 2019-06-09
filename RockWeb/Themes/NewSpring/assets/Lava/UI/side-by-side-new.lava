@@ -17,7 +17,6 @@
 
 {% assign linkurl = linkurl | Trim %}
 
-
 <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
 
 <div class="row {% if imagealignment == 'Right' %}row-reverse{% endif %} floating floating-left">
@@ -34,7 +33,15 @@
         </div>
 
         {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
-            <div class="position-relative ratio-square push-bottom">
+            <div class="position-relative ratio-square push-bottom overflow-hidden">
+                {% if cciid and cciid != empty %}
+                    {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+                    {% if hasRights == 'true' %}
+                        <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
+                            {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' linktarget:'_blank' ]}
+                        </div>
+                    {% endif %}
+                {% endif %}
                 <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %} rounded" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
             </div>
         {% if linkurl != empty %}</a>{% endif %}
@@ -74,17 +81,21 @@
                 </div>
             {% endif %}
 
-            {% if linkurl and linkurl != empty %}                        
-                <p class="{% if video != null and video != '' %}push-half-bottom{% endif %}">{[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}</p>
+            
+
+            {% if linkurl and linkurl != empty %}
+                <p>
+                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+
+                    {% if video != null and video != '' %}
+                        <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                        <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+                        <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><a href="#" class="btn btn-primary">Play Video</a></span>
+                    {% endif %}
+                </p>
             {% endif %}
 
-            {% if video != null and video != '' %}
-                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-                <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-                <p><span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link" style="display:inline;position:relative"><a href="#" class="btn btn-primary">Watch Video</a></span></p>
-            {% endif %}
-
-            {% if lava and lava != empty %}
+            {% if lava and lava != empty and 1 == 2 %}
                 {{ lava | HtmlDecode }}
             {% endif %}
         </div>
