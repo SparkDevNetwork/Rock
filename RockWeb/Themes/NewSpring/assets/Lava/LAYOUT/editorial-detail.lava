@@ -1,4 +1,6 @@
-{% assign CurrentPersonCanEdit = CurrentPerson | HasRightsTo:'Edit' %}
+<!-- Redirect to 404 if Entry is Expired -->
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
 {% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
 {% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
 {% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
@@ -9,6 +11,7 @@
     {% endif %}
 {% endif %}
 
+<!-- Set Parent Variables-->
 {% if Item.ParentItems %}
     {% for parent in Item.ParentItems %}
         {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
@@ -30,6 +33,7 @@
     {% endfor %}
 {% endif %}
 
+<!-- Set Page/Browser Titles -->
 {% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
@@ -47,6 +51,7 @@
     {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
     {% assign cciid = Item.Id %}
     {% assign subtitle = Item | Attribute:'Subtitle' %}
+    {% assign summary = Item | Attribute:'Summary' %}
     {% assign video = Item | Attribute:'Video','RawValue' %}
     {% assign date = Item.StartDateTime | Date:'MMMM d, yyyy' %}
     {% assign itemimageurl = Item | Attribute:'ImageLandscape','Url' %}
@@ -64,10 +69,13 @@
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
         <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom hard-bottom">
 
-            {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
-                <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
-                    {[ button linkurl:'/page/342?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' ]}
-                </div>
+            {% if cciid and cciid != empty %}
+                {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+                {% if hasRights == 'true' %}
+                    <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
+                        {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' linktarget:'_blank' ]}
+                    </div>
+                {% endif %}
             {% endif %}
 
             {% if label and label != empty %}
@@ -88,8 +96,9 @@
             {% endif %}
 
             {% capture communicatorNames %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
-            {% if communicatorNames and communicatorNames != empty %}
-                <p class="stronger">{{ communicatorNames }}</p>
+            {% assign communicatorNames = communicatorNames | Trim %}
+            {% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}
+                <p class="stronger">{{ communicatorNames | Trim }}</p>
             {% endif %}
             
             {% if imageurl and imageurl != empty %}
@@ -110,7 +119,7 @@
             {% if video != empty %}
                 <p id="video" class="text-center">
                     <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
-                        <a href="#" class="btn btn-primary">Watch Video <i class="fas fa-xs fa-play"></i></a>
+                        <a href="#" class="btn btn-primary">Play Video</a>
                     </span>
                 </p>
             
@@ -148,10 +157,10 @@
             {% assign sharehashtag = '' %}
             
             {[ modalShare ]}
-
+            {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
             <div class="row">
                 <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
-                    {[ tags guid:'{{ Item.Guid }}']}
+                    {{ tags }}
                 </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
                     <p><small><b>{{ date }}</b></small></p>
                 </div>
@@ -161,6 +170,48 @@
 
 {[ endscripturize ]}
 
+<!-- Structured Data -->
+{% capture tagsData %}{[ tagData guid:'{{ Item.Guid }}' ]}{% endcapture %}
+{% assign tagsData = tagsData | Trim %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://newspring.cc/GetImage.ashx?id=661329"
+    }
+  },
+  "author": "{% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}{{ communicatorNames | Trim }}{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}",
+  {% if tagsData and tagsData != empty %}
+    "keywords": "{{ tagsData }}",
+  {% endif %}
+  "headline": "{{ Item.Title | Escape }}",
+  {% if summary and summary != empty %}
+    "description": "{{ summary | StripHtml | Escape }}",
+  {% endif %}
+  "articleBody": "{{ Item.Content | StripHtml | Escape }}",
+  {% if subtitle and subtitle != empty %}
+    "alternativeHeadline": "{{ subtitle }}",
+  {% endif %}
+  "datePublished": "{{ Item.StartDateTime }}",
+  "dateModified": "{{ Item.ModifiedDateTime }}",
+  {% if Item.ExpireDateTime %}
+  "expires": "{{ Item.ExpireDateTime }}",
+  {% endif %}
+  {% if imageurl and imageurl != empty %}
+    "image": "{{ imageurl }}",
+  {% endif %}
+  "mainEntityOfPage": "{{ 'Global' | Page:'Url' }}",
+  "name": "{{ Item.Title | Escape }}"
+}
+</script>
+
+
+<!-- Set Meta Tags -->
 {% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
 {% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
 {% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}

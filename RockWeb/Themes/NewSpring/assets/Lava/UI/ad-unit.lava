@@ -94,6 +94,15 @@
                             </p>
                         {% endif %}
 
+                        {% if video != null and video != '' %}
+                            <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
+                                <a href="#" class="btn btn-primary">Play Video</a>
+                            </span>
+
+                            <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+                        {% endif %}
+
                         {% if lava != null and lava != '' %}
                             {{ lava | HtmlDecode }}
                         {% endif %}
