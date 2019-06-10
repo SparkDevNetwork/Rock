@@ -17,11 +17,15 @@
 {% assign cardlinkurl = cardlinkurl | Trim %}
 
 <div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
-    {% if CurrentPerson | HasRightsTo:'Edit' and cciid and cciid != empty %}
-        <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
-            {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' ]}
-        </div>
+    {% if cciid and cciid != empty %}
+        {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+        {% if hasRights == 'true' %}
+            <div class="position-absolute top-zero right-zero bg-info bring-forward shadowed" style="border-bottom-left-radius: 8px;">
+                {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' linktarget:'_blank' ]}
+            </div>
+        {% endif %}
     {% endif %}
+
     {% if imageurl != null and imageurl != '' %}
         {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image">{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
