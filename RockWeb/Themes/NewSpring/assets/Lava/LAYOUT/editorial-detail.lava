@@ -67,7 +67,7 @@
 
 
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
-        <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom hard-bottom">
+        <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom">
 
             {% if cciid and cciid != empty %}
                 {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
