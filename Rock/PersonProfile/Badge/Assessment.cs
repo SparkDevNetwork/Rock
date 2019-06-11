@@ -123,7 +123,7 @@ namespace Rock.PersonProfile.Badge
                     .FirstOrDefault();
 
                 string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
-                string mergedBadgeSummaryLava = "The latest request for this test has not been taken.";
+                string mergedBadgeSummaryLava = "Not taken";
 
                 // If the latest request has been taken we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
@@ -139,7 +139,7 @@ namespace Rock.PersonProfile.Badge
                     <div class='badge'>
                         <span class='fa-stack'>
                             <i style='color:{badgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i style='font-size:15px; color:#FFFFFF;' class='{iconCssClass} fa-stack-1x'></i>
+                            <i class='{iconCssClass} fa-stack-1x'></i>
                         </span>
                     </div>" );
 
@@ -151,18 +151,17 @@ namespace Rock.PersonProfile.Badge
 
                 // Build the tool tip. Need to take out the comment marker when we can override the tooltip colors, otherwise we just see a white circle.
                 toolTipText.AppendLine( $@"
-                    <p>
+                    <p class='margin-b-sm'>
                         <span class='fa-stack'>
-                            <!-- <i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i> -->
-                            <i style='font-size:15px; color:#000000;' class='{iconCssClass} fa-stack-1x'></i>
+                            <!--<i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>--><i style='font-size:15px; color:#000000;' class='{iconCssClass} fa-stack-1x'></i>
                         </span>
-                        {assessmentTitle}: {mergedBadgeSummaryLava}
-                    <p>" );
+                        <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
+                    </p>" );
             }
 
-            writer.Write( $@"<div class='badge badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=""{toolTipText.ToString()}"">" );
+            writer.Write( $@"<div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeIcons.ToString() );
-            writer.Write( "</div>" );
+            writer.Write( "</div></div>" );
         }
     }
 }

@@ -270,6 +270,8 @@
 
 // 3. Badge Bar
 // -------------------------
+@badge-icon-height: 45px;
+
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
@@ -286,6 +288,10 @@
       display: inline-block; // fixes issue in default browser on Android
       padding: 3px 7px 0;
       background-color: inherit;
+
+      .tooltip-inner {
+        max-width: 300px;
+      }
     }
 
     .badge-debug {
@@ -294,6 +300,42 @@
       z-index: 9999;
       width: 900px;
       text-align: left;
+    }
+
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      height: @badge-icon-height;
+      margin-top: -12px;
+      > .badge {
+        display: flex;
+        flex-basis: 33.3%;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin-bottom: .5%;
+
+        &:nth-last-child(n+6),
+        &:nth-last-child(n+6) ~ & {
+          flex-basis: 20%;
+        }
+
+        .fa-stack {
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+        }
+
+        .fa-stack-1x {
+          font-size: 12px;
+          color: #fff;
+        }
+
+        .fa-stack-2x {
+          font-size: 24px;
+        }
+      }
     }
   }
 }
@@ -307,7 +349,7 @@
 
   &::before {
     font-family: @fa-font-face;
-    font-size: 45px;
+    font-size: @badge-icon-height;
     font-weight: @fa-theme-weight;
     color: @brand-success;
     content: @fa-var-circle;
@@ -326,7 +368,7 @@
 }
 
 .badge-icon {
-  font-size: 45px;
+  font-size: @badge-icon-height;
 
   &.badge-disabled {
     color: #939393;
@@ -1306,11 +1348,14 @@ tr.inactive {
   padding: 0;
   margin: 0 auto;
   clear: both;
+  background-image:
+    linear-gradient(
+      to bottom,
+      @ui-4 0%,
+      transparent 2%,
+      transparent 100%
+    );
   background-size: 100% (@disc-chart-height/10);
-  background-image: linear-gradient(to bottom,
-                                    @ui-4 0%,
-                                    transparent 2%,
-                                    transparent 100%);
 
   li {
     position: relative;
@@ -1351,10 +1396,10 @@ tr.inactive {
       top: -25px;
       right: 0;
       left: 0;
-      color: @text-color;
       display: block;
       font-size: 20px;
       line-height: 1em;
+      color: @text-color;
       text-align: center;
       word-wrap: break-word;
       content: attr(title);
