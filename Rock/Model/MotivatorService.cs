@@ -524,6 +524,13 @@ namespace Rock.Model
         /// </summary>
         public class MotivatorQuestion
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MotivatorQuestion"/> class.
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <param name="question">The question.</param>
+            /// <param name="optionType">Type of the option.</param>
+            /// <param name="motivatorId">The motivator identifier.</param>
             public MotivatorQuestion( string id, string question, OptionType optionType, string motivatorId )
             {
                 this.Id = id;
@@ -570,6 +577,9 @@ namespace Rock.Model
         /// </summary>
         public class AssessmentResults
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="AssessmentResults"/> class.
+            /// </summary>
             public AssessmentResults()
             {
                 MotivatorScores = new List<MotivatorScore>();
@@ -678,20 +688,57 @@ namespace Rock.Model
         /// </summary>
         public class ResponseOption
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ResponseOption"/> class.
+            /// </summary>
+            /// <param name="name">The name.</param>
+            /// <param name="positive">The positive.</param>
+            /// <param name="negative">The negative.</param>
             public ResponseOption( string name, int positive, int negative )
             {
                 this.Name = name;
                 this.Positive = positive;
                 this.Negative = negative;
             }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the positive.
+            /// </summary>
+            /// <value>
+            /// The positive.
+            /// </value>
             public int Positive { get; set; }
+
+            /// <summary>
+            /// Gets or sets the negative.
+            /// </summary>
+            /// <value>
+            /// The negative.
+            /// </value>
             public int Negative { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum OptionType
         {
+            /// <summary>
+            /// The agreement
+            /// </summary>
             Agreement,
+
+            /// <summary>
+            /// The frequency
+            /// </summary>
             Frequency
         }
     }
