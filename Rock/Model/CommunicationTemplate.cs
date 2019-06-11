@@ -133,16 +133,6 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
-        /// <summary>
-        /// Gets or sets a Json formatted string containing the Medium specific data.
-        /// </summary>
-        /// <value>
-        /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumDataJson is no longer used.", true )]
-        public string MediumDataJson { get; set; }
-
         #region Email Fields
 
         /// <summary>
@@ -390,52 +380,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the data used by the selected communication medium.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used. Communication Template now has specific properties for medium data.", true )]
-        public virtual Dictionary<string, string> MediumData
-        {
-            get
-            {
-                var mediumData = new Dictionary<string, string>();
-
-                if ( SMSFromDefinedValueId.HasValue )
-                {
-                    mediumData.AddIfNotBlank( "FromValue", SMSFromDefinedValueId.Value.ToString() );
-                    mediumData.AddIfNotBlank( "Subject", Subject );
-                    mediumData.AddIfNotBlank( "Message", SMSMessage );
-                }
-                else if ( PushMessage.IsNotNullOrWhiteSpace() )
-                {
-                    mediumData.AddIfNotBlank( "Title", PushTitle );
-                    mediumData.AddIfNotBlank( "Message", PushMessage );
-                    mediumData.AddIfNotBlank( "Sound", PushSound );
-                }
-                else
-                {
-                    mediumData.AddIfNotBlank( "FromName", FromName );
-                    mediumData.AddIfNotBlank( "FromAddress", FromEmail );
-                    mediumData.AddIfNotBlank( "ReplyTo", ReplyToEmail );
-                    mediumData.AddIfNotBlank( "CC", CCEmails );
-                    mediumData.AddIfNotBlank( "BCC", BCCEmails );
-                    mediumData.AddIfNotBlank( "Subject", Subject );
-                    mediumData.AddIfNotBlank( "HtmlMessage", Message );
-                    mediumData.AddIfNotBlank( "Attachments", AttachmentBinaryFileIds.ToList().AsDelimited( "," ) );
-                }
-
-                return mediumData;
-            }
-
-            set { }
-        }
-
-        /// <summary>
         /// Gets or sets the SMS from defined value.
         /// </summary>
         /// <value>
@@ -443,23 +387,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds", true )]
-        public virtual IEnumerable<int> AttachmentBinaryFileIds
-        {
-            get
-            {
-                return this.Attachments.Select( a => a.BinaryFileId ).ToList();
-            }
-        }
 
         /// <summary>
         /// Gets or sets a list of email binary file ids
@@ -516,44 +443,6 @@ namespace Rock.Model
         public IEnumerable<CommunicationTemplateAttachment> GetAttachments( CommunicationType communicationType )
         {
             return this.Attachments.Where( a => a.CommunicationType == communicationType );
-        }
-
-        /// <summary>
-        /// Returns a medium data value.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
-        /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public string GetMediumDataValue( string key )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                return MediumData[key];
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Sets a medium data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public void SetMediumDataValue( string key, string value )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                MediumData[key] = value;
-            }
-            else
-            {
-                MediumData.Add( key, value );
-            }
         }
 
         /// <summary>

@@ -68,6 +68,7 @@ namespace Rock.Field
         /// Returns true if the field for these FieldVisibilityRules should be visible given the supplied attributeValues
         /// </summary>
         /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="personFieldValues">The person field values.</param>
         /// <returns></returns>
         public bool Evaluate( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {

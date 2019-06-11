@@ -157,29 +157,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the page properties merge object.
-        /// </summary>
-        /// <param name="rockPage">The rock page.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete("Just use the PageCache of the CurrentPage instead", true )]
-        public static Dictionary<string, object> GetPagePropertiesMergeObject( RockPage rockPage )
-        {
-            Dictionary<string, object> pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "Id", rockPage.PageId.ToString() );
-            pageProperties.Add( "BrowserTitle", rockPage.BrowserTitle );
-            pageProperties.Add( "PageTitle", rockPage.PageTitle );
-            pageProperties.Add( "Site", rockPage.Site.Name );
-            pageProperties.Add( "SiteId", rockPage.Site.Id.ToString() );
-            pageProperties.Add( "LayoutId", rockPage.Layout.Id.ToString() );
-            pageProperties.Add( "Layout", rockPage.Layout.Name );
-            pageProperties.Add( "SiteTheme", rockPage.Site.Theme );
-            pageProperties.Add( "PageIcon", rockPage.PageIcon );
-            pageProperties.Add( "Description", rockPage.MetaDescription );
-            return pageProperties;
-        }
-
-        /// <summary>
         /// Gets a list of custom lava commands.
         /// </summary>
         /// <returns></returns>

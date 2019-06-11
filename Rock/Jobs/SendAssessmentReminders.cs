@@ -36,36 +36,54 @@ namespace Rock.Jobs
 {
     #region Job Attributes
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Quartz.IJob" />
     [IntegerField( "Reminder Every",
-        Key = AttributeKeys.ReminderEveryDays,
-        Description = "The number of days between reminder emails.",
-        IsRequired = true,
-        DefaultValue = "7",
-        Order = 0)]
+            Key = AttributeKeys.ReminderEveryDays,
+            Description = "The number of days between reminder emails.",
+            IsRequired = true,
+            DefaultValue = "7",
+            Order = 0 )]
 
     [IntegerField( "Cut off Days",
-        Key = AttributeKeys.CutoffDays,
-        Description = "The number of days past the initial requested date to stop sending reminders. After this cut-off, reminders will need to be sent manually by a person.",
-        IsRequired = true,
-        DefaultValue = "60",
-        Order = 1)]
+            Key = AttributeKeys.CutoffDays,
+            Description = "The number of days past the initial requested date to stop sending reminders. After this cut-off, reminders will need to be sent manually by a person.",
+            IsRequired = true,
+            DefaultValue = "60",
+            Order = 1 )]
 
-    [SystemEmailField("Assessment Reminder System Email",
-        Key = AttributeKeys.AssessmentSystemEmail,
-        Description = "",
-        IsRequired = true,
-        DefaultValue = Rock.SystemGuid.SystemEmail.ASSESSMENT_REQUEST,
-        Order = 2)]
+    [SystemEmailField( "Assessment Reminder System Email",
+            Key = AttributeKeys.AssessmentSystemEmail,
+            Description = "",
+            IsRequired = true,
+            DefaultValue = Rock.SystemGuid.SystemEmail.ASSESSMENT_REQUEST,
+            Order = 2 )]
 
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
     public class SendAssessmentReminders : IJob
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected static class AttributeKeys
         {
+            /// <summary>
+            /// The reminder every days
+            /// </summary>
             public const string ReminderEveryDays = "ReminderEveryDays";
+
+            /// <summary>
+            /// The cutoff days
+            /// </summary>
             public const string CutoffDays = "CutoffDays";
+
+            /// <summary>
+            /// The assessment system email
+            /// </summary>
             public const string AssessmentSystemEmail = "AssessmentSystemEmail";
         }
 
@@ -95,7 +113,7 @@ namespace Rock.Jobs
             int assessmentRemindersSent = 0;
             int errorCount = 0;
             var errorMessages = new List<string>();
-            
+
             using ( var rockContext = new RockContext() )
             {
                 // Get a list of unique PersonAliasIDs from Assessments where the CreatedDateTime is less than the cut off date and LastReminderDate is null or greater than the reminder date.
@@ -112,7 +130,7 @@ namespace Rock.Jobs
                     .ToList();
 
                 // Go through the list, send a reminder, and update the LastReminderDate for all pending assessments for the person alias
-                foreach( var personAliasId in personAliasIds )
+                foreach ( var personAliasId in personAliasIds )
                 {
                     var errors = SendReminderEmail( assessmentSystemEmailGuid, personAliasId );
 
@@ -129,11 +147,11 @@ namespace Rock.Jobs
                 }
 
                 context.Result = string.Format( "{0} assessment reminders sent", assessmentRemindersSent );
-                if (errorMessages.Any())
+                if ( errorMessages.Any() )
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine();
-                    sb.Append( string.Format( "{0} Errors: ", errorCount ));
+                    sb.Append( string.Format( "{0} Errors: ", errorCount ) );
                     errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
                     context.Result += errors;
@@ -158,7 +176,7 @@ namespace Rock.Jobs
             var errors = new List<string>();
             var emailMessage = new RockEmailMessage( assessmentSystemEmailGuid );
             emailMessage.SetRecipients( recipients );
-            emailMessage.Send(out errors);
+            emailMessage.Send( out errors );
 
             return errors;
         }

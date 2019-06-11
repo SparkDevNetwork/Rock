@@ -283,7 +283,7 @@ namespace Rock.Model
         /// <summary>
         /// Creates and returns a list of missing attendance occurrences for the specified dates, scheduleId and groupLocationIds.
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence dates.</param>
+        /// <param name="occurrenceDateList">The occurrence date list.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>
@@ -322,7 +322,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the join queryable of AttendanceOccurrence, GroupLocation, and GroupLocationScheduleConfig for the specified occurrenceDate, scheduleId and groupLocationIds
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="occurrenceDateList">The occurrence date list.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>

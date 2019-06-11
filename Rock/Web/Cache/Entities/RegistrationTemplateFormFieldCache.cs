@@ -149,10 +149,10 @@ namespace Rock.Web.Cache
         public bool ShowOnWaitlist { get; private set; }
 
         /// <summary>
-        /// JSON Serialized <see cref="FieldVisibilityRules"/>
+        /// JSON Serialized <see cref="Rock.Model.RegistrationTemplateFormField.FieldVisibilityRules" />
         /// </summary>
         /// <value>
-        /// The field visibility rules json.
+        /// The field visibility rules json. 
         /// </value>
         [DataMember]
         public string FieldVisibilityRulesJSON { get; private set; }

@@ -256,7 +256,7 @@ namespace Rock.Web
         /// Flushes this instance.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove() method instead" )]
+        [Obsolete( "Use Remove() method instead", true )]
         public static void Flush()
         {
             Remove();

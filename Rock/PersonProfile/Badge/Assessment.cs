@@ -85,7 +85,7 @@ namespace Rock.PersonProfile.Badge
             {
                 var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuid.AsGuid() );
                 string resultsPath = assessmentType.AssessmentResultsPath;
-                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?PersonId={Person.Id}" );
+                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
                 string iconCssClass = assessmentType.IconCssClass;
                 string badgeHtml = string.Empty;
                 string assessmentTitle = string.Empty;
@@ -123,8 +123,10 @@ namespace Rock.PersonProfile.Badge
                     .FirstOrDefault();
 
                 string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
-                string mergedBadgeSummaryLava = "The latest request for this test has not been taken.";
+                string mergedBadgeSummaryLava = "Not taken";
 
+
+                badgeIcons.AppendLine( $@"<div class='badge'>" );
                 // If the latest request has been taken we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
                 {
@@ -136,12 +138,10 @@ namespace Rock.PersonProfile.Badge
                 }
 
                 badgeIcons.AppendLine( $@"
-                    <div class='badge'>
                         <span class='fa-stack'>
                             <i style='color:{badgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i style='font-size:15px; color:#FFFFFF;' class='{iconCssClass} fa-stack-1x'></i>
-                        </span>
-                    </div>" );
+                            <i class='{iconCssClass} fa-stack-1x'></i>
+                        </span>" );
 
                 // Close the anchor for the linked assessment test
                 if ( assessmentTest != null )
@@ -149,20 +149,21 @@ namespace Rock.PersonProfile.Badge
                     badgeIcons.AppendLine( "</a>" );
                 }
 
+                badgeIcons.AppendLine( $@"</div>" );
+
                 // Build the tool tip. Need to take out the comment marker when we can override the tooltip colors, otherwise we just see a white circle.
                 toolTipText.AppendLine( $@"
-                    <p>
+                    <p class='margin-b-sm'>
                         <span class='fa-stack'>
-                            <!-- <i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i> -->
-                            <i style='font-size:15px; color:#000000;' class='{iconCssClass} fa-stack-1x'></i>
+                            <!--<i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>--><i style='font-size:15px; color:#000000;' class='{iconCssClass} fa-stack-1x'></i>
                         </span>
-                        {assessmentTitle}: {mergedBadgeSummaryLava}
-                    <p>" );
+                        <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
+                    </p>" );
             }
 
-            writer.Write( $@"<div class='badge badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=""{toolTipText.ToString()}"">" );
+            writer.Write( $@"<div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeIcons.ToString() );
-            writer.Write( "</div>" );
+            writer.Write( "</div></div>" );
         }
     }
 }

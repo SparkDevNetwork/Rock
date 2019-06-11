@@ -61,7 +61,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to. 
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that was checked in to.
@@ -126,7 +126,7 @@ namespace Rock.Model
         public int? AttendanceCodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value id.  Qualifier can be used to 
+        /// Gets or sets the qualifier value id.  Qualifier can be used to
         /// "qualify" attendance records.  There are not any system values
         /// for this particular defined type
         /// </summary>
@@ -299,7 +299,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Device"/> that was used to check in 
+        /// The <see cref="Rock.Model.Device"/> that was used to check in
         /// </value>
         [DataMember]
         public virtual Device Device { get; set; }
@@ -318,7 +318,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
-        /// </value>        
+        /// </value>
         [LavaInclude]
         public virtual Group SearchResultGroup { get; set; }
 
@@ -439,7 +439,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
+        [Obsolete( "Use Occurrence.GroupId instead", true )]
         public int? GroupId
         {
             get
@@ -458,7 +458,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
+        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
@@ -466,7 +466,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.LocationId instead", false )]
+        [Obsolete( "Use Occurrence.LocationId instead", true )]
         public int? LocationId
         {
             get
@@ -493,7 +493,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
+        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
         public int? ScheduleId
         {
             get
@@ -520,7 +520,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
+        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
         public bool? DidNotOccur
         {
             get
@@ -547,7 +547,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.SundayDate instead", false )]
+        [Obsolete( "Use Occurrence.SundayDate instead", true )]
         public DateTime SundayDate
         {
             get
@@ -573,7 +573,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Group instead", false )]
+        [Obsolete( "Use Occurrence.Group instead", true )]
         public virtual Group Group
         {
             get
@@ -600,7 +600,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Location instead", false )]
+        [Obsolete( "Use Occurrence.Location instead", true )]
         public virtual Location Location
         {
             get
@@ -627,7 +627,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Schedule instead", false )]
+        [Obsolete( "Use Occurrence.Schedule instead", true )]
         public virtual Schedule Schedule
         {
             get
@@ -681,10 +681,6 @@ namespace Rock.Model
                 new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
             }
 
-#pragma warning disable 612, 618
-            ProcessObsoleteOccurrenceFields( entry );
-#pragma warning restore 612, 618
-
             base.PreSaveChanges( dbContext, entry );
         }
 
@@ -709,12 +705,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entry">The entry.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete]
+        [Obsolete("", true )]
         private void ProcessObsoleteOccurrenceFields( DbEntityEntry entry )
         {
             if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
             {
-                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
+                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurrenceDate in that situation
                 if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
                 {
                     if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
@@ -724,7 +720,7 @@ namespace Rock.Model
                         {
                             var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
 
-                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurrence if Group,Location or Schedule changes
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurrence since it is really a completely different Occurrence if Group,Location or Schedule changes
                             var occurrenceDate = this.StartDateTime.Date;
 
                             var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();

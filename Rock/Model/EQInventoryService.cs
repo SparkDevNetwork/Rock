@@ -337,6 +337,9 @@ namespace Rock.Model
             public AssessmentData AssessmentData { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class AssessmentData
         {
             /// <summary>

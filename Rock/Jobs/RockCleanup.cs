@@ -1132,7 +1132,7 @@ WHERE ExpireDateTime IS NOT NULL
         {
             int totalRowsDeleted = 0;
             int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
-            
+
             using ( var rockContext = new RockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
@@ -1146,7 +1146,7 @@ WHERE ExpireDateTime IS NOT NULL
                     .Count();
 
                 if ( totalPossibleItemsToDelete > 0 )
-                { 
+                {
                     bool keepDeleting = true;
                     while ( keepDeleting )
                     {
@@ -1265,7 +1265,7 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
             var duplicateQuery = groupMemberService.Queryable()
                 // Duplicates are the same person, group, and role occuring more than once
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
-                // Filter out sets with only one occurence because those are not duplicates
+                // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
                 // Leave the oldest membership and delete the others
                 .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
