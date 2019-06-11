@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function(){
             if (status == google.maps.GeocoderStatus.OK) {
                 originLatitude = results[0].geometry.location.lat();
                 originLongitude = results[0].geometry.location.lng();
-            } 
+            }
         
             // Loop through locations to get distances
             for (var i = 0; i < locationsCount; i++) {
