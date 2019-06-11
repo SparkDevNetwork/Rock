@@ -796,21 +796,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Obsolete: Gets the search details
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
-        public string GetImpersonationParameterObsolete( int personId )
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
         /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
         /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
         /// </summary>

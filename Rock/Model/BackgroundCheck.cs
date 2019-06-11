@@ -188,17 +188,6 @@ namespace Rock.Model
         [DataMember]
         public virtual Rock.Model.EntityType ProcessorEntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the response XML.
-        /// </summary>
-        /// <value>
-        /// The response XML.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use ResponseData Instead", true )]
-        public virtual string ResponseXml { get; set; }
-
         #endregion
     }
 

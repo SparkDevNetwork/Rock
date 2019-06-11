@@ -79,16 +79,6 @@ namespace Rock.Transactions
         public string HtmlMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the text message.
-        /// </summary>
-        /// <value>
-        /// The text message.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete("Text Message property is no longer supported for emails", true )]
-        public string TextMessage { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [bulk communication].
         /// </summary>
         /// <value>

@@ -35,7 +35,7 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
     /// <param name="directory">The directory.</param>
     /// <param name="baseType">Type of the base.</param>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Use SafeDirectoryCatalog(baseType) instead" )]
+    [Obsolete( "Use SafeDirectoryCatalog(baseType) instead", true )]
     public SafeDirectoryCatalog( string directory, Type baseType )
     : this( baseType )
     {
