@@ -223,11 +223,6 @@ namespace Rockweb.Blocks.Crm
         protected static class PageParameterKey
         {
             /// <summary>
-            /// The person identifier. Use this to get a person's Conflict Profile results.
-            /// </summary>
-            public const string PersonId = "PersonId";
-
-            /// <summary>
             /// The assessment identifier
             /// </summary>
             public const string AssessmentId = "AssessmentId";
@@ -311,17 +306,10 @@ namespace Rockweb.Blocks.Crm
             SetPanelTitleAndIcon();
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
+            string personKey = PageParameter( PageParameterKey.Person );
 
             // set the target person according to the parameter or use Current user if not provided.
-            string personKey = PageParameter( PageParameterKey.Person );
-            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-
-            if ( personId.HasValue )
-            {
-                // Try the person ID first.
-                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
-            }
-            else if ( personKey.IsNotNullOrWhiteSpace() )
+            if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 try
                 {
@@ -340,7 +328,7 @@ namespace Rockweb.Blocks.Crm
 
             if ( _targetPerson == null )
             {
-                if ( _isQuerystringPersonKey || personId.HasValue )
+                if ( _isQuerystringPersonKey )
                 {
                     HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
                 }

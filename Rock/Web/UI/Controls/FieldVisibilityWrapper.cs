@@ -74,6 +74,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the visibility based on the value of other attributes
         /// </summary>
         /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="personFieldValues">The person field values.</param>
         public void UpdateVisibility( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {
             var visible = FieldVisibilityRules.Evaluate( attributeValues, personFieldValues );
@@ -95,7 +96,7 @@ namespace Rock.Web.UI.Controls
         public Control EditControl { get; set; }
 
         /// <summary>
-        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="AttributeId"/>
+        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="RegistrationTemplateFormFieldId"/>
         /// </summary>
         /// <value>
         /// The edit value.

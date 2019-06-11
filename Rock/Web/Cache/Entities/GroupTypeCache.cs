@@ -760,7 +760,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get Instead" )]
+        [Obsolete( "Use Get Instead", true )]
         public static GroupTypeCache Read( string guid )
         {
             return Get( new Guid( guid ) );

@@ -352,8 +352,8 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that has otherRegistrants instead.")]
+        [RockObsolete( "1.8" )]
+        [Obsolete("Use the override that has otherRegistrants instead.", true )]
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
         {
             AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );

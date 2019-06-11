@@ -188,17 +188,6 @@ namespace Rock.Model
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json formatted string containing the Medium specific data.
-        /// </summary>
-        /// <value>
-        /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumDataJson is no longer used.", true )]
-        public string MediumDataJson { get; set; }
-
-        /// <summary>
         /// Gets or sets a Json string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>
@@ -423,62 +412,6 @@ namespace Rock.Model
         private ICollection<CommunicationAttachment> _attachments;
 
         /// <summary>
-        /// Gets or sets the data used by the selected communication medium.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data.", true )]
-        public virtual Dictionary<string, string> MediumData
-        {
-            get
-            {
-                // Get the MediumData from the new property values. This is provided due to the fact that there may be Lava that is 
-                // referencing the "MediumData" property of a communication.
-
-                var mediumData = new Dictionary<string, string>();
-
-                switch ( CommunicationType )
-                {
-                    case CommunicationType.SMS:
-                        {
-                            mediumData.AddIfNotBlank( "FromValue", SMSFromDefinedValueId.Value.ToString() );
-                            mediumData.AddIfNotBlank( "Subject", Subject );
-                            mediumData.AddIfNotBlank( "Message", SMSMessage );
-                            break;
-                        }
-
-                    case CommunicationType.PushNotification:
-                        {
-                            mediumData.AddIfNotBlank( "Title", PushTitle );
-                            mediumData.AddIfNotBlank( "Message", PushMessage );
-                            mediumData.AddIfNotBlank( "Sound", PushSound );
-                            break;
-                        }
-
-                    default:
-                        {
-                            mediumData.AddIfNotBlank( "FromName", FromName );
-                            mediumData.AddIfNotBlank( "FromAddress", FromEmail );
-                            mediumData.AddIfNotBlank( "ReplyTo", ReplyToEmail );
-                            mediumData.AddIfNotBlank( "CC", CCEmails );
-                            mediumData.AddIfNotBlank( "BCC", BCCEmails );
-                            mediumData.AddIfNotBlank( "Subject", Subject );
-                            mediumData.AddIfNotBlank( "HtmlMessage", Message );
-                            mediumData.AddIfNotBlank( "Attachments", GetAttachmentBinaryFileIds( CommunicationType.Email ).AsDelimited( "," ) );
-                            break;
-                        }
-                }
-
-                return mediumData;
-            }
-
-            set { }
-        }
-
-        /// <summary>
         /// Gets or sets the additional merge field list. When a communication is created
         /// from a grid, the grid may add additional merge fields that will be available
         /// for the communication.
@@ -619,58 +552,6 @@ namespace Rock.Model
         public List<int> GetAttachmentBinaryFileIds( CommunicationType communicationType )
         {
             return this.GetAttachments( communicationType ).Select( a => a.BinaryFileId ).ToList();
-        }
-
-        /// <summary>
-        /// Returns a medium data value.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
-        /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public string GetMediumDataValue( string key )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                return MediumData[key];
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Sets a medium data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumData is no longer used", true )]
-        public void SetMediumDataValue( string key, string value )
-        {
-            if ( MediumData.ContainsKey( key ) )
-            {
-                MediumData[key] = value;
-            }
-            else
-            {
-                MediumData.Add( key, value );
-            }
-        }
-
-        /// <summary>
-        /// Gets the recipient count.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7.4" )]
-        [Obsolete( "This can return incorrect results if Recipients has been modified and not saved to the database. So don't use this.", true )]
-        public int GetRecipientCount( RockContext rockContext )
-        {
-            var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
-
-            return count;
         }
 
         /// <summary>
@@ -965,40 +846,6 @@ namespace Rock.Model
             return recipient;
         }
 
-        /// <summary>
-        /// Gets the next pending.
-        /// </summary>
-        /// <param name="communicationId">The communication identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead.", true )]
-        public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
-        {
-            CommunicationRecipient recipient = null;
-
-            var delayTime = RockDateTime.Now.AddMinutes( -10 );
-
-            lock ( _obj )
-            {
-                recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
-                    .Where( r =>
-                        r.CommunicationId == communicationId &&
-                        ( r.PersonAlias.Person.IsDeceased == false ) &&
-                        ( r.Status == CommunicationRecipientStatus.Pending ||
-                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime ) ) )
-                    .FirstOrDefault();
-
-                if ( recipient != null )
-                {
-                    recipient.Status = CommunicationRecipientStatus.Sending;
-                    rockContext.SaveChanges();
-                }
-            }
-
-            return recipient;
-        }
-
         #endregion
     }
 
@@ -1087,14 +934,7 @@ namespace Rock.Model
         /// <summary>
         /// Push notification
         /// </summary>
-        PushNotification = 3,
-
-        /// <summary>
-        /// Some other communication type
-        /// </summary>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Not Supported" )]
-        Other = 4
+        PushNotification = 3
     }
 
     /// <summary>
