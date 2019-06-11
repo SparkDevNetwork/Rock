@@ -168,17 +168,6 @@ namespace Rock.Model
         public bool? AllowGuests { get; set; }
 
         /// <summary>
-        /// Gets or sets whether a group member can only be added if all the GroupRequirements have been met
-        /// </summary>
-        /// <value>
-        /// The must meet requirements to add member.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
-        [NotMapped]
-        public bool? MustMeetRequirementsToAddMember { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the group should be shown in group finders
         /// </summary>
         /// <value>
@@ -499,7 +488,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -645,22 +634,6 @@ namespace Rock.Model
         public IQueryable<GroupRequirement> GetGroupRequirements( RockContext rockContext )
         {
             return new GroupRequirementService( rockContext ).Queryable().Include( a => a.GroupRequirementType ).Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ) );
-        }
-
-        /// <summary>
-        /// Persons the meets group requirements.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="groupRoleId">The group role identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead", true )]
-        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return this.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
-            }
         }
 
         /// <summary>

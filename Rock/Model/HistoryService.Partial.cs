@@ -667,7 +667,7 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
         {
             AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, modifiedByPersonAliasId );
@@ -700,7 +700,7 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
             var historyChanges = new History.HistoryChangeList();
@@ -777,7 +777,7 @@ namespace Rock.Model
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
             SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
@@ -813,7 +813,7 @@ namespace Rock.Model
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
             if ( changes.Any() )

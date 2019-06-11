@@ -181,7 +181,7 @@ namespace Rock.Model
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", true )]
         public virtual bool IsScheduleActive
         {
             get
@@ -197,7 +197,7 @@ namespace Rock.Model
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", true )]
         public virtual bool IsCheckInActive
         {
             get
@@ -213,7 +213,7 @@ namespace Rock.Model
         /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", true )]
         public virtual bool IsScheduleOrCheckInActive
         {
             get
@@ -253,7 +253,7 @@ namespace Rock.Model
         [NotMapped]
         [LavaInclude]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead." )]
+        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
         public virtual DateTime? NextStartDateTime
         {
             get
@@ -401,6 +401,7 @@ namespace Rock.Model
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
         [Obsolete( "Use GetCalendarEvent() instead " )]
+        [RockObsolete( "1.9" )]
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
             return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
@@ -1210,6 +1211,7 @@ namespace Rock.Model
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
         [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
+        [RockObsolete( "1.9" )]
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
         {
             return GetCalendarEvent( iCalendarContent );

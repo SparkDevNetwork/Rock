@@ -99,7 +99,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Moved to Theme", false )]
+        [Obsolete( "Moved to Theme", true )]
         public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
 
         /// <summary />
@@ -221,9 +221,6 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            #pragma warning disable 612, 618
-            this.IconCssWeight = source.IconCssWeight;
-            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;

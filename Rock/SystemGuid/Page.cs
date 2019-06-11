@@ -1409,7 +1409,7 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         [Obsolete("Use SMS_PHONE_NUMBERS instead")]
-        [RockObsolete("1.9")]
+        [RockObsolete( "1.9" )]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>

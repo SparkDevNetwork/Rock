@@ -612,49 +612,6 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Activates the specified <see cref="Rock.Model.WorkflowType"/>.
-        /// </summary>
-        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/>  being activated.</param>
-        /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
-        /// <returns>The <see cref="Rock.Model.Workflow"/> instance.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead.", true )]
-        public static Workflow Activate( WorkflowType workflowType, string name )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return Activate( workflowType, name, rockContext );
-            }
-        }
-
-        /// <summary>
-        /// Activates the specified <see cref="Rock.Model.WorkflowType" />.
-        /// </summary>
-        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" />  being activated.</param>
-        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>
-        /// The <see cref="Rock.Model.Workflow" /> instance.
-        /// </returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead.", true )]
-        public static Workflow Activate( WorkflowType workflowType, string name, RockContext rockContext )
-        {
-            if ( workflowType != null )
-            {
-                var workflowTypeCache = WorkflowTypeCache.Get( workflowType.Id );
-                var workflow = Activate( workflowTypeCache, name, rockContext );
-                if ( workflow != null )
-                {
-                    workflow.WorkflowType = workflowType;
-                }
-                return workflow;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Activates the specified workflow type cache.
         /// </summary>
         /// <param name="workflowTypeCache">The workflow type cache.</param>
