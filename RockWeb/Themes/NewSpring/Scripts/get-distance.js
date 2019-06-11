@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function(){
             if (status == google.maps.GeocoderStatus.OK) {
                 originLatitude = results[0].geometry.location.lat();
                 originLongitude = results[0].geometry.location.lng();
-            } 
+            }
         
             // Loop through locations to get distances
             for (var i = 0; i < locationsCount; i++) {
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function(){
                       ? 0
                       : (Number(a.dataset.distance) > Number(b.dataset.distance) ? 1 : -1);
             });
-
+            
             for (i = 0; i < itemsArr.length; ++i) {
                 distanceSearchLocations.appendChild(itemsArr[i]);
             }
@@ -115,16 +115,15 @@ document.addEventListener("DOMContentLoaded", function(){
             var anchor = document.querySelector('#locations');
 
             // Scroll constructor located in _smooth-scroll.js, compiled into main.js
+            window.scroll.animateScroll(anchor);
         });
     }
 
     // Get location query string value
-    var origin = getQueryString('location');
+    var origin = decodeURI(getQueryString('location')).trim();
 
     // If origin exists as query string, go ahead and reorder locations
-    if (origin) {
-
-        var anchor = document.querySelector('#locations');
+    if (origin !== 'null') {
 
         // Reorder location cards
         reorderLocations(origin);
@@ -136,15 +135,4 @@ document.addEventListener("DOMContentLoaded", function(){
     var locations = distanceSearchLocations.children;
     var locationsCount = locations.length;
 
-    // Find a location query search
-    // distanceSearchForm.addEventListener("submit", function(e){
-    //     e.preventDefault();
-
-    //     // Get origin location data from form input field
-    //     var origin = distanceSearchForm.querySelector('input').value;
-
-    //     // Reorder location cards
-    //     reorderLocations(origin);
-
-    // });
 });

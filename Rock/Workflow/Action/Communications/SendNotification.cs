@@ -91,7 +91,7 @@ namespace Rock.Workflow.Action
                                         else
                                         {
 
-                                            var recipient = new RecipientData( deviceIds );
+                                            var recipient = new RecipientData( deviceIds, mergeFields );
                                             recipients.Add( recipient );
 
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
@@ -139,10 +139,10 @@ namespace Rock.Workflow.Action
                                                 .ToList();
 
                                             string deviceIds = String.Join(",", devices);
-                                               
+
                                             if ( deviceIds.AsBoolean() )
                                             {
-                                                var recipient = new RecipientData( deviceIds );
+                                                var recipient = new RecipientData( deviceIds, mergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( "Person", person );
                                             }
@@ -158,7 +158,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ) ) );
+                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
                 }
             }
 
@@ -231,4 +231,3 @@ namespace Rock.Workflow.Action
         }
     }
 }
- 

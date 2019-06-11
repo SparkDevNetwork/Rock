@@ -1,3 +1,15 @@
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
 {% if Item.ParentItems %}
     {% capture parentId %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% endfor %}{% endcapture %}
     {% contentchannelitem Id:'{{ parentId }}' iterator:'parents' %}
@@ -37,6 +49,7 @@
 <div class="row">
 	<div class="col-md-4 col-sm-12 col-xs-12">
         {% capture guid %}{{ Item.Guid }}{% endcapture %}
+        {% capture cciid %}{{ Item.Id }}{% endcapture %}
         {% capture id %}{{ Item.Id }}{% endcapture %}
         {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
         {% capture titlesize %}h3{% endcapture %}
@@ -67,7 +80,7 @@
         {% capture linkurl %}{% endcapture %}
         {% capture linktext %}{% endcapture %}
 
-       {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+       {[ card id:'{{ id }}' cciid:'{{ cciid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
         
         {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
         {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}

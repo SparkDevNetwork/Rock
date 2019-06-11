@@ -1,3 +1,15 @@
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
 {% assign pagePath = 'Global' | Page:'Path' %}
 {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
 {% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
@@ -24,6 +36,7 @@
 
     <!-- SIDE BY SIDE -->
     {% capture id %}{% endcapture %}
+    {% capture cciid %}{{ Item.Id }}{% endcapture %}
     {% capture guid %}{{ Item.Guid }}{% endcapture %}
     {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
     {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
@@ -61,7 +74,7 @@
         {% capture linktext %}{% if childType contains "Sermon" %}Watch{% else %}Read{% endif %} {{ childType }}{% endcapture %}
     {% endif %}
 
-    {[ sideBySide id:'{{ id }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava | Escape }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+    {[ sideBySide id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava | Escape }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
 
 {[ endscripturize ]}
 
