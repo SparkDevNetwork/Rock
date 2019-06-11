@@ -125,6 +125,8 @@ namespace Rock.PersonProfile.Badge
                 string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
                 string mergedBadgeSummaryLava = "Not taken";
 
+
+                badgeIcons.AppendLine( $@"<div class='badge'>" );
                 // If the latest request has been taken we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
                 {
@@ -136,18 +138,18 @@ namespace Rock.PersonProfile.Badge
                 }
 
                 badgeIcons.AppendLine( $@"
-                    <div class='badge'>
                         <span class='fa-stack'>
                             <i style='color:{badgeColor};' class='fa fa-circle fa-stack-2x'></i>
                             <i class='{iconCssClass} fa-stack-1x'></i>
-                        </span>
-                    </div>" );
+                        </span>" );
 
                 // Close the anchor for the linked assessment test
                 if ( assessmentTest != null )
                 {
                     badgeIcons.AppendLine( "</a>" );
                 }
+
+                badgeIcons.AppendLine( $@"</div>" );
 
                 // Build the tool tip. Need to take out the comment marker when we can override the tooltip colors, otherwise we just see a white circle.
                 toolTipText.AppendLine( $@"
