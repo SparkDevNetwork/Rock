@@ -542,6 +542,7 @@ namespace Rock.Model
         /// </value>
         [RockObsolete( "1.8" )]
         [Obsolete( "Moved to Theme", true )]
+        [NotMapped]
         public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
