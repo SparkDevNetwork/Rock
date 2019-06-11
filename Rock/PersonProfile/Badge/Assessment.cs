@@ -85,7 +85,7 @@ namespace Rock.PersonProfile.Badge
             {
                 var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuid.AsGuid() );
                 string resultsPath = assessmentType.AssessmentResultsPath;
-                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?PersonId={Person.Id}" );
+                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
                 string iconCssClass = assessmentType.IconCssClass;
                 string badgeHtml = string.Empty;
                 string assessmentTitle = string.Empty;
