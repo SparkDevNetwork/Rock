@@ -35,7 +35,7 @@ namespace Rock.Financial
     /// 1. Charging a payment immediately (most common)
     /// 2. "Dry-run" a payment that will be made in the future (probably from text-to-give)
     /// 3. Charging a "future payment" that originated from mode 2.
-    /// 
+    ///
     /// </summary>
     public class AutomatedPaymentProcessor
     {
@@ -119,7 +119,7 @@ namespace Rock.Financial
 
             // The job charging these future transactions could have a variable run frequency and be charging a days worth at a time, so the duplicate
             // checking could very easily provide false positives. Therefore, we rely on the "dry-run" to have previously validated
-            _enableDuplicateChecking = false; // These future transactions should have already had a "dry-run" and been validated. 
+            _enableDuplicateChecking = false; // These future transactions should have already had a "dry-run" and been validated.
             _enableScheduleAdherenceProtection = false; // These future transactions should have already had a "dry-run" and been validated
 
             _personAliasService = new PersonAliasService( _rockContext );
@@ -208,7 +208,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Validates that the frequency of the scheduled transaction appears to be adhered to 
+        /// Validates that the frequency of the scheduled transaction appears to be adhered to
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge appears to follow the schedule frequency. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge appears to follow the schedule. False otherwise</returns>
@@ -257,7 +257,7 @@ namespace Rock.Financial
 
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
-                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurence. {0}", instructionsToIgnore );
+                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurrences. {0}", instructionsToIgnore );
                     return false;
                 }
             }
