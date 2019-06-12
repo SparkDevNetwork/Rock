@@ -193,7 +193,7 @@ namespace Rockweb.Blocks.Crm
 </div>
 
 <p>
-    This graph is based on the average composite score for each cluster of Motivators.
+    This graph is based on the average composite score for each Motivator Theme.
 </p>
 
 {% for motivatorThemeScore in MotivatorThemeScores %}
