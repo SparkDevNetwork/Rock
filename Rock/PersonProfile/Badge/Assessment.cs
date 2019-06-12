@@ -155,7 +155,8 @@ namespace Rock.PersonProfile.Badge
                 toolTipText.AppendLine( $@"
                     <p class='margin-b-sm'>
                         <span class='fa-stack'>
-                            <!--<i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>--><i style='font-size:15px; color:#000000;' class='{iconCssClass} fa-stack-1x'></i>
+                            <i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>
+                            <i style='font-size:15px; color:#ffffff;' class='{iconCssClass} fa-stack-1x'></i>
                         </span>
                         <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
                     </p>" );
@@ -164,6 +165,13 @@ namespace Rock.PersonProfile.Badge
             writer.Write( $@"<div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeIcons.ToString() );
             writer.Write( "</div></div>" );
+            writer.Write( $@"
+                <script>
+                    Sys.Application.add_load(function () {{
+                        $('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});
+                    }});
+                </script>" );
+
         }
     }
 }
