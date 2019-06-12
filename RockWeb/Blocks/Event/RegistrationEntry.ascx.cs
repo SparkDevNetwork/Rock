@@ -3369,10 +3369,6 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
                     }
 
-                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                    batch.ControlAmount = newControlAmount;
-
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
                     // If this is a new Batch, SaveChanges so that we can get the Batch.Id
@@ -3381,6 +3377,8 @@ namespace RockWeb.Blocks.Event
                         rockContext.SaveChanges();
                     }
 
+                    var errorMessage = string.Empty;
+                    batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch

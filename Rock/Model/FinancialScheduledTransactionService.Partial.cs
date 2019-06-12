@@ -232,7 +232,6 @@ namespace Rock.Model
             int totalStatusChanges = 0;
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
-            var initialControlAmounts = new Dictionary<Guid, decimal>();
 
             var newTransactions = new List<FinancialTransaction>();
             var failedPayments = new List<FinancialTransaction>();
@@ -456,7 +455,8 @@ namespace Rock.Model
                             }
 
                             // Get the batch
-                            var batch = new FinancialBatchService( rockContext ).Get(
+                            var batchService = new FinancialBatchService( rockContext );
+                            var batch = batchService.Get(
                                 batchNamePrefix,
                                 string.Empty,
                                 currencyTypeValue,
@@ -472,13 +472,9 @@ namespace Rock.Model
                                 rockContext.SaveChanges();
                             }
 
-                            initialControlAmounts.AddOrIgnore( batch.Guid, batch.ControlAmount );
-
                             transaction.BatchId = batch.Id;
                             financialTransactionService.Add( transaction );
-
-
-                            batch.ControlAmount += transaction.TotalAmount;
+                            batch = batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, null, out var errorMessage );
 
                             if ( receiptEmail.HasValue && txnAmount > 0.0M )
                             {
