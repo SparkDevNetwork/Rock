@@ -344,7 +344,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 string required = Required ? " required" : string.Empty;
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-b-md js-number-up-down-group " + required );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group margin-b-md js-number-up-down-group " + required );
                 RockControlHelper.RenderControl( this, writer );
             }
         }
