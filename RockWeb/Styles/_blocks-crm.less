@@ -1444,6 +1444,25 @@ tr.inactive {
       }
     }
   }
+
+  .likert-7 > span {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+
+
+    @media (max-width: @likert-screen-column) {
+      -ms-flex-align: start;
+      align-items: flex-start;
+      -ms-flex-direction: column;
+      flex-direction: column;
+    }
+
+    .radio-inline {
+      flex: 0 0 14.28571428571429%;
+    }
+  }
 }
 
 // 18. Edit Person
