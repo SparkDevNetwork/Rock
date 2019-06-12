@@ -13,59 +13,32 @@ namespace Rock.Model
     public class MotivatorService
     {
         private const string ATTRIBUTE_MOTIVATOR_BELIEVING = "core_MotivatorBelieving";
-
         private const string ATTRIBUTE_MOTIVATOR_CARING = "core_MotivatorCaring";
-
         private const string ATTRIBUTE_MOTIVATOR_EXPRESSING = "core_MotivatorExpressing";
-
         private const string ATTRIBUTE_MOTIVATOR_EMPOWERING = "core_MotivatorEmpowering";
-
         private const string ATTRIBUTE_MOTIVATOR_ENGAGING = "core_MotivatorEngaging";
-
         private const string ATTRIBUTE_MOTIVATOR_ADAPTING = "core_MotivatorAdapting";
-
         private const string ATTRIBUTE_MOTIVATOR_GATHERING = "core_MotivatorGathering";
-
         private const string ATTRIBUTE_MOTIVATOR_INNOVATING = "core_MotivatorInnovating";
-
         private const string ATTRIBUTE_MOTIVATOR_LEADING = "core_MotivatorLeading";
-
         private const string ATTRIBUTE_MOTIVATOR_LEARNING = "core_MotivatorLearning";
-
         private const string ATTRIBUTE_MOTIVATOR_MAXIMIZING = "core_MotivatorMaximizing";
-
         private const string ATTRIBUTE_MOTIVATOR_ORGANIZING = "core_MotivatorOrganizing";
-
         private const string ATTRIBUTE_MOTIVATOR_PACING = "core_MotivatorPacing";
-
         private const string ATTRIBUTE_MOTIVATOR_PERCEIVING = "core_MotivatorPerceiving";
-
         private const string ATTRIBUTE_MOTIVATOR_RELATING = "core_MotivatorRelating";
-
         private const string ATTRIBUTE_MOTIVATOR_SERVING = "core_MotivatorServing";
-
         private const string ATTRIBUTE_MOTIVATOR_THINKING = "core_MotivatorThinking";
-
         private const string ATTRIBUTE_MOTIVATOR_TRANSFORMING = "core_MotivatorTransforming";
-
         private const string ATTRIBUTE_MOTIVATOR_UNITING = "core_MotivatorUniting";
-
         private const string ATTRIBUTE_MOTIVATOR_PERSERVERING = "core_MotivatorPersevering";
-
         private const string ATTRIBUTE_MOTIVATOR_RISKING = "core_MotivatorRisking";
-
         private const string ATTRIBUTE_MOTIVATOR_VISIONING = "core_MotivatorVisioning";
-
         private const string ATTRIBUTE_MOTIVATOR_GROWTHPROPENSITY = "core_MotivatorGrowthPropensity";
-
-        private const string ATTRIBUTE_MOTIVATOR_CLUSTER_INFLUENTIAL = "core_MotivatorClusterInfluential";
-
-        private const string ATTRIBUTE_MOTIVATOR_CLUSTER_ORGANIZATIONAL = "core_MotivatorClusterOrganizational";
-
-        private const string ATTRIBUTE_MOTIVATOR_CLUSTER_INTELLECTUAL = "core_MotivatorClusterIntellectual";
-
-        private const string ATTRIBUTE_MOTIVATOR_CLUSTER_OPERATIONAL = "core_MotivatorClusterOperational";
-
+        private const string ATTRIBUTE_MOTIVATOR_RELATIONAL_THEME = "core_MotivatorsRelationalTheme";
+        private const string ATTRIBUTE_MOTIVATOR_DIRECTIONAL_THEME = "core_MotivatorsDirectionalTheme";
+        private const string ATTRIBUTE_MOTIVATOR_INTELLECTUAL_THEME = "core_MotivatorsIntellectualTheme";
+        private const string ATTRIBUTE_MOTIVATOR_POSITIONAL_THEME = "core_MotivatorsPositionalTheme";
         private const string ATTRIBUTE_MOTIVATOR_TOP_5_MOTIVATORS = "core_MotivatorsTop5Motivators";
 
         /// <summary>
