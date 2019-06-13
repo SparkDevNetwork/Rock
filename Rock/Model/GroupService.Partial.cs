@@ -425,22 +425,104 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of a specified group.
+        /// Gets the group descendents Common Table Expression.
         /// </summary>
-        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to retrieve descendants for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <returns></returns>
+        private string GetGroupDescendentsCTESql( int parentGroupId )
+        {
+            string sql = $@"
+                with CTE as (
+                select * from [Group] where [ParentGroupId]={parentGroupId} and [IsArchived] = 0
+                union all
+                select [a].* from [Group] [a] 
+                inner join CTE pcte on pcte.Id = [a].[ParentGroupId] where [a].[IsArchived] = 0
+                )";
+
+            return sql;
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" /> to retrieve descendents for.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
+        /// </returns>
+        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
-            return this.ExecuteQuery(
-                @"
-                with CTE as (
-                select * from [Group] where [ParentGroupId]={0}
-                union all
-                select [a].* from [Group] [a]
-                inner join CTE pcte on pcte.Id = [a].[ParentGroupId]
-                )
-                select * from CTE
-                ", parentGroupId );
+            return GetAllDescendentGroups( parentGroupId, true );
+        }
+
+        /// <summary>
+        /// Returns a list of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" /> to retrieve descendents for.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
+        /// </returns>
+        public List<Group> GetAllDescendentGroups( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId );
+
+            var sql = $@"
+                {cte}
+                select * from CTE";
+
+            if ( !includeInactiveChildGroups )
+            {
+                sql += " where [IsActive] = 1";
+            }
+
+            return this.ExecuteQuery( sql ).ToList();
+        }
+
+        /// <summary>
+        /// Gets all descendent group ids that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns></returns>
+        public List<int> GetAllDescendentGroupIds( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId );
+
+            var sql = $@"
+                {cte}
+                select Id from CTE";
+
+            if ( !includeInactiveChildGroups )
+            {
+                sql += " where [IsActive] = 1";
+            }
+
+            return ( this.Context as RockContext ).Database.SqlQuery<int>( sql ).ToList();
+        }
+        
+        /// <summary>
+        /// Returns a List of <see cref="GroupTypeCache">Group Types</see> of the groups that are descendents of the specified parentGroupId
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <returns></returns>
+        public List<GroupTypeCache> GetAllDescendentsGroupTypes( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId );
+
+            var sql = $@"
+                {cte}
+                select distinct GroupTypeId from CTE";
+
+            if ( !includeInactiveChildGroups )
+            {
+                sql += " where [IsActive] = 1";
+            }
+
+            var groupTypeIds = ( this.Context as RockContext ).Database.SqlQuery<int>( sql );
+                
+
+            return groupTypeIds.Select( a => GroupTypeCache.Get( a ) ).ToList();
         }
 
         /// <summary>
@@ -448,17 +530,17 @@ namespace Rock.Model
         /// </summary>
         /// <param name="childGroupId">The child group identifier.</param>
         /// <returns>
-        /// An enumerable collection of the group Ids that are descendants of referenced groupId.
+        /// An enumerable collection of the group Ids that are descendents of referenced groupId.
         /// </returns>
         public IOrderedEnumerable<int> GetAllAncestorIds( int childGroupId )
         {
             var result = this.Context.Database.SqlQuery<int>(
                 @"
                 with CTE as (
-                select *, 0 as [Level] from [Group] where [Id]={0}
+                select *, 0 as [Level] from [Group] where [Id]={0} and [IsArchived] = 0
                 union all
                 select [a].*, [Level] + 1 as [Level] from [Group] [a]
-                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]  and a.[IsArchived] = 0
                 )
                 select Id from CTE where Id != {0} order by Level
                 ", childGroupId );
@@ -479,13 +561,13 @@ namespace Rock.Model
                 (
 	                SELECT [ParentGroupId], CAST ( [Name] AS VARCHAR(MAX) ) AS [Name]
 	                FROM [Group] 
-	                WHERE [Id] = {0}
+	                WHERE [Id] = {0} and [IsArchived] = 0
 	
 	                UNION ALL
 	
 	                SELECT G.[ParentGroupId], CAST ( G.[Name] + ' > ' + CTE.[Name] AS VARCHAR(MAX) )
 	                FROM [Group] G
-	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id]
+	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id] where g.[IsArchived] = 0
                 )
 
                 SELECT [Name]

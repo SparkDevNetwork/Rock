@@ -79,7 +79,9 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic );
+            var qry = groupService
+                .GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic )
+                .AsNoTracking();
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -101,7 +103,7 @@ namespace Rock.Rest.Controllers
                         }
                         else
                         {
-                            bool hasChildScheduledEnabledGroups = groupService.GetAllDescendents( group.Id ).Any( a => a.GroupType.IsSchedulingEnabled == true );
+                            bool hasChildScheduledEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.IsSchedulingEnabled == true );
                             if ( hasChildScheduledEnabledGroups )
                             {
                                 includeGroup = true;
@@ -622,15 +624,15 @@ namespace Rock.Rest.Controllers
 
             var groupService = (GroupService)Service;
             var groupLocationService = new GroupLocationService( groupService.Context as RockContext );
-            IEnumerable<Group> childGroups;
+            List<Group> childGroups;
 
             if ( !includeDescendants )
             {
-                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId );
+                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId ).AsNoTracking().ToList();
             }
             else
             {
-                childGroups = groupService.GetAllDescendents( groupId );
+                childGroups = groupService.GetAllDescendentGroups( groupId, false ).ToList();
             }
 
             if ( !string.IsNullOrWhiteSpace( groupTypeIds ) ) 
@@ -638,14 +640,14 @@ namespace Rock.Rest.Controllers
                 var groupTypeIdList = groupTypeIds.Split( ',' ).AsIntegerList();
                 if ( groupTypeIdList.Any() )
                 {
-                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) );
+                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) ).ToList();
                 }
             }
 
             var childGroupIds = childGroups.Select( a => a.Id ).ToList();
 
             // fetch all the groupLocations for all the groups we are going to show (to reduce SQL traffic)
-            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).Select( a => new
+            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).AsNoTracking().Select( a => new
             {
                 a.GroupId,
                 a.Location
