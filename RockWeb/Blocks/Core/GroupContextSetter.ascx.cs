@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Core
                 var rootGroup = groupService.Get( rootGroupGuid.Value );
                 if ( rootGroup != null )
                 {
-                    qryGroups = groupService.GetAllDescendents( rootGroup.Id ).AsQueryable();
+                    qryGroups = groupService.GetAllDescendentGroups( rootGroup.Id, false ).AsQueryable();
                 }
             }
             else if ( groupTypeGuid.HasValue )

@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group.IsActive == false && cbInactivateChildGroups.Checked )
                 {
-                    var allActiveChildGroupsId = groupService.GetAllDescendents( group.Id ).Where( a => a.IsActive ).Select( a => a.Id ).ToList();
+                    var allActiveChildGroupsId = groupService.GetAllDescendentGroupIds( group.Id, false );
                     var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
                     foreach ( var childGroup in allActiveChildGroups )
                     {
