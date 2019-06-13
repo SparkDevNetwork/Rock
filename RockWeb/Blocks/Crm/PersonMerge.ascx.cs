@@ -116,10 +116,10 @@ namespace RockWeb.Blocks.Crm
 ", hfSelectedColumn.ClientID );
             ScriptManager.RegisterStartupScript( gValues, gValues.GetType(), "primary-person-click", script, true );
 
-            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the 
-records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account 
+            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the
+records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account
 through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ?
-        @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the 
+        @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the
 validity of the request before completing this merge." :
         @"Because of this, make sure to confirm the validity of the request before completing this merge." );
 
@@ -540,7 +540,7 @@ validity of the request before completing this merge." :
                         }
                         rockContext.SaveChanges();
 
-                        // If there was more than one email address and user has logins, then set any of the local 
+                        // If there was more than one email address and user has logins, then set any of the local
                         // logins ( database & AD ) to require a reconfirmation
                         if ( reconfirmRequired )
                         {
@@ -925,7 +925,7 @@ validity of the request before completing this merge." :
     #region MergeData Class
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     class MergeData
@@ -1224,7 +1224,7 @@ validity of the request before completing this merge." :
 
             AddProperty( "Photo", "Photo", person.Id,
                 person.PhotoId.HasValue ? person.PhotoId.ToString() : string.Empty,
-                Person.GetPersonPhotoImageTag( person, 65, 65, "merge-photo" ) );
+                Person.GetPersonPhotoImageTag( person, 65, 65, "Merge Photo", "margin-all-sm" ) );
             AddProperty( "Title", person.Id, person.TitleValue );
             AddProperty( "FirstName", person.Id, person.FirstName );
             AddProperty( "NickName", person.Id, person.NickName );
@@ -1338,7 +1338,7 @@ validity of the request before completing this merge." :
     #region MergePerson Class
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     class MergePerson
@@ -1375,7 +1375,7 @@ validity of the request before completing this merge." :
     #region PersonProperty Class
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     class PersonProperty
