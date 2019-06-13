@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string HeaderContent
         {
-            get 
+            get
             {
                 var headerContent = ViewState["HeaderContent"] as string;
                 if (headerContent == null)
@@ -73,9 +73,9 @@ namespace Rock.Web.UI.Controls
                 return headerContent;
             }
 
-            set 
+            set
             {
-                ViewState["HeaderContent"] = value; 
+                ViewState["HeaderContent"] = value;
             }
         }
 
@@ -172,7 +172,7 @@ namespace Rock.Web.UI.Controls
                 OnDelete( this, e );
             }
         }
-        
+
         /// <summary>
         /// Occurs when [delete].
         /// </summary>
@@ -182,7 +182,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {
@@ -200,7 +200,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var lbDelete = new LinkButton();
                     lbDelete.CausesValidation = false;
-                    lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
+                    lbDelete.CssClass = "btn btn-danger btn-xs btn-square pull-right";
                     lbDelete.ToolTip = "Remove Person";
                     cell.Controls.Add( lbDelete );
 
@@ -220,7 +220,7 @@ namespace Rock.Web.UI.Controls
                     var i = new HtmlGenericControl( "i" );
                     i.Attributes.Add( "class", "fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
                     headerSummary.Controls.Add( i );
-                   
+
                     headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
 
                     string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
