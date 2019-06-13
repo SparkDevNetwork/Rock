@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
-
+using System.Text;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -429,17 +429,29 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parentGroupId">The parent group identifier.</param>
         /// <returns></returns>
-        private string GetGroupDescendentsCTESql( int parentGroupId )
+        private string GetGroupDescendentsCTESql( int parentGroupId, bool includeInactiveChildGroups )
         {
-            string sql = $@"
-                with CTE as (
-                select * from [Group] where [ParentGroupId]={parentGroupId} and [IsArchived] = 0
-                union all
-                select [a].* from [Group] [a] 
-                inner join CTE pcte on pcte.Id = [a].[ParentGroupId] where [a].[IsArchived] = 0
-                )";
+            StringBuilder cteBuilder = new StringBuilder( "with CTE as");
+            cteBuilder.AppendLine( "(" );
+            cteBuilder.AppendLine( $"select * from [Group] where [ParentGroupId]={parentGroupId} and [IsArchived] = 0" );
+            if ( !includeInactiveChildGroups )
+            {
+                cteBuilder.AppendLine( " and [IsActive] = 1" );
+            }
+            cteBuilder.AppendLine( "union all" );
+            cteBuilder.AppendLine( "select a.* from [Group] [a]" );
 
-            return sql;
+            
+
+            cteBuilder.AppendLine( "inner join CTE pcte on pcte.Id = [a].[ParentGroupId] where [a].[IsArchived] = 0" );
+            if ( !includeInactiveChildGroups )
+            {
+                cteBuilder.AppendLine( " and a.[IsActive] = 1" );
+            }
+            cteBuilder.AppendLine( ")" );
+
+
+            return cteBuilder.ToString();
         }
 
         /// <summary>
@@ -465,16 +477,11 @@ namespace Rock.Model
         /// </returns>
         public List<Group> GetAllDescendentGroups( int parentGroupId, bool includeInactiveChildGroups )
         {
-            var cte = GetGroupDescendentsCTESql( parentGroupId );
+            var cte = GetGroupDescendentsCTESql( parentGroupId , includeInactiveChildGroups );
 
             var sql = $@"
                 {cte}
                 select * from CTE";
-
-            if ( !includeInactiveChildGroups )
-            {
-                sql += " where [IsActive] = 1";
-            }
 
             return this.ExecuteQuery( sql ).ToList();
         }
@@ -487,16 +494,11 @@ namespace Rock.Model
         /// <returns></returns>
         public List<int> GetAllDescendentGroupIds( int parentGroupId, bool includeInactiveChildGroups )
         {
-            var cte = GetGroupDescendentsCTESql( parentGroupId );
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
 
             var sql = $@"
                 {cte}
                 select Id from CTE";
-
-            if ( !includeInactiveChildGroups )
-            {
-                sql += " where [IsActive] = 1";
-            }
 
             return ( this.Context as RockContext ).Database.SqlQuery<int>( sql ).ToList();
         }
@@ -508,16 +510,11 @@ namespace Rock.Model
         /// <returns></returns>
         public List<GroupTypeCache> GetAllDescendentsGroupTypes( int parentGroupId, bool includeInactiveChildGroups )
         {
-            var cte = GetGroupDescendentsCTESql( parentGroupId );
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
 
             var sql = $@"
                 {cte}
                 select distinct GroupTypeId from CTE";
-
-            if ( !includeInactiveChildGroups )
-            {
-                sql += " where [IsActive] = 1";
-            }
 
             var groupTypeIds = ( this.Context as RockContext ).Database.SqlQuery<int>( sql );
                 
