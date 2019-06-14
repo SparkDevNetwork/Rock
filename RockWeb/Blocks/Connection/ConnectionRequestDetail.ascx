@@ -67,7 +67,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
                         </div>
                     </div>
 
@@ -149,7 +149,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DynamicPlaceHolder ID="phEditAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
