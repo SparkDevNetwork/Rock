@@ -211,8 +211,8 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
-            var eventItemOccurenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
-            LinkedRegistrationsState.Remove( eventItemOccurenceGroupMap );
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
+            LinkedRegistrationsState.Remove( eventItemOccurrenceGroupMap );
             BindEditRegistrationsRepeater();
         }
 
@@ -1130,17 +1130,17 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowEditLinkageDialog( int groupMapId )
         {
-            var eventItemOccurenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
 
             rieEditLinkage.ShowActive = false;
             rieEditLinkage.ShowUrlSlug = false;
 
             hfEditLinkageGroupMapId.Value = groupMapId.ToString();
-            lEditLinkageTemplate.Text = eventItemOccurenceGroupMap.RegistrationInstance.RegistrationTemplate.Name;
-            gpEditLinkageGroup.SetValue( eventItemOccurenceGroupMap.Group );
-            tbEditLinkagePublicName.Text = eventItemOccurenceGroupMap.PublicName;
-            tbEditLinkageUrlSlug.Text = eventItemOccurenceGroupMap.UrlSlug;
-            rieEditLinkage.SetValue( eventItemOccurenceGroupMap.RegistrationInstance );
+            lEditLinkageTemplate.Text = eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate.Name;
+            gpEditLinkageGroup.SetValue( eventItemOccurrenceGroupMap.Group );
+            tbEditLinkagePublicName.Text = eventItemOccurrenceGroupMap.PublicName;
+            tbEditLinkageUrlSlug.Text = eventItemOccurrenceGroupMap.UrlSlug;
+            rieEditLinkage.SetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
 
             ShowDialog( "EventItemEditLinkage", true );
         }
@@ -1153,29 +1153,29 @@ namespace RockWeb.Blocks.Event
         protected void dlgEditLinkage_SaveClick( object sender, EventArgs e )
         {
             int groupMapId = hfEditLinkageGroupMapId.ValueAsInt();
-            var eventItemOccurenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
+            var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Id == groupMapId );
 
-            if ( eventItemOccurenceGroupMap.RegistrationInstance != null )
+            if ( eventItemOccurrenceGroupMap.RegistrationInstance != null )
             {
                 var rockContext = new RockContext();
 
-                rieEditLinkage.GetValue( eventItemOccurenceGroupMap.RegistrationInstance );
+                rieEditLinkage.GetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
 
                 int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
-                if ( groupId.HasValue && groupId.Value != ( eventItemOccurenceGroupMap.GroupId ?? 0 ) )
+                if ( groupId.HasValue && groupId.Value != ( eventItemOccurrenceGroupMap.GroupId ?? 0 ) )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     if ( group != null )
                     {
-                        eventItemOccurenceGroupMap.GroupId = group.Id;
-                        eventItemOccurenceGroupMap.Group = group;
+                        eventItemOccurrenceGroupMap.GroupId = group.Id;
+                        eventItemOccurrenceGroupMap.Group = group;
                     }
                 }
 
-                eventItemOccurenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
-                eventItemOccurenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
+                eventItemOccurrenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
+                eventItemOccurrenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
 
-                if ( !eventItemOccurenceGroupMap.IsValid )
+                if ( !eventItemOccurrenceGroupMap.IsValid )
                 {
                     return;
                 }

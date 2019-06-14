@@ -319,16 +319,16 @@ namespace RockWeb.Blocks.Groups
         protected void gOccurrences_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var occurenceService = new AttendanceOccurrenceService( rockContext );
+            var occurrenceService = new AttendanceOccurrenceService( rockContext );
             var attendanceService = new AttendanceService( rockContext );
-            var occurrence = occurenceService.Get( e.RowKeyId );
+            var occurrence = occurrenceService.Get( e.RowKeyId );
 
             if ( occurrence != null )
             {
                 var locationId = occurrence.LocationId;
 
                 string errorMessage;
-                if ( !occurenceService.CanDelete( occurrence, out errorMessage ) )
+                if ( !occurrenceService.CanDelete( occurrence, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
                     return;
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Groups
                 var attendees = attendanceService.Queryable().Where( a => a.OccurrenceId == occurrence.Id );
                 rockContext.BulkDelete<Attendance>( attendees );
 
-                occurenceService.Delete( occurrence );
+                occurrenceService.Delete( occurrence );
                 rockContext.SaveChanges();
 
                 if ( locationId.HasValue )
