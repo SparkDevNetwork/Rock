@@ -190,18 +190,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
             }
-            else
-            {
-                hfGroupMemberAttributeValues.Value = GetGroupMemberAttributeValues();
-
-                var connectionRequest = new ConnectionRequest();
-                connectionRequest.Id = hfConnectionRequestId.ValueAsInt();
-                connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
-                connectionRequest.LoadAttributes();
-                phEditAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( connectionRequest, phEditAttributes, true, BlockValidationGroup );
-
-            }
         }
 
         /// <summary>
@@ -434,7 +422,7 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionRequest.LoadAttributes( rockContext );
-                    Rock.Attribute.Helper.GetEditValues( phEditAttributes, connectionRequest );
+                    avcAttributes.GetEditValues( connectionRequest );
 
                     rockContext.SaveChanges();
                     connectionRequest.SaveAttributeValues( rockContext );
@@ -1466,11 +1454,6 @@ namespace RockWeb.Blocks.Connection
                     else
                     {
                         ShowEditDetails( connectionRequest, rockContext );
-
-                        // This is adding a request, show as Edit since it doesn't exist yet.
-                        connectionRequest.LoadAttributes();
-                        phEditAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( connectionRequest, phEditAttributes, false, BlockValidationGroup );
                     }
                 }
             }
@@ -1678,9 +1661,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                connectionRequest.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddDisplayControls( connectionRequest, phAttributes, null, false, false );
+                avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
 
                 BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
                 BindConnectionRequestWorkflowsGrid();
@@ -1763,6 +1744,8 @@ namespace RockWeb.Blocks.Connection
             }
 
             hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
+
+            avcAttributes.AddEditControls( connectionRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
             // Connectors, Groups, Member Roles, Member Status & Group Member Attributes
             RebindGroupsAndConnectors( connectionRequest, rockContext );
