@@ -1,14 +1,26 @@
-﻿{% if Item == null %}{% assign Item = Items.first %}{% endif %}
-{% assign Channel = Item.ContentChannel %}
+{% comment %}
 
-{% assign Card_HeaderImg = Item | Attribute:'Image','Url' %}
-{% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Channel | Attribute:'BlogImage','Url' %}{% endif %}
+    BlogPostList_Card.lava
 
-{% assign Card_ActionLabel = Item | Attribute:'ActionLabel' %}
-{% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = Channel | Attribute:'ActionLabel' %}{% endif %}
-{% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = 'Read' %}{% endif %}
+    Renders a Card for a Blog Post
 
-{% capture Card_ActionUrl %}{{ Channel.ItemUrl }}/{{ Item.Id }}{% endcapture %}
+{% endcomment %}
+
+{% capture _ %}
+
+    {% if Item == null %}{% assign Item = Items.first %}{% endif %}
+    {% assign Channel = Item.ContentChannel %}
+
+    {% assign Card_HeaderImg = Item | Attribute:'Image','Url' %}
+    {% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Channel | Attribute:'PreviewImage','Url' %}{% endif %}
+    
+    {% assign Card_ActionLabel = Item | Attribute:'ActionLabel' %}
+    {% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = Channel | Attribute:'ActionLabel' %}{% endif %}
+    {% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = 'Read' %}{% endif %}
+
+    {% capture Card_ActionUrl %}{{ Channel.ItemUrl }}/{{ Item.Id }}{% endcapture %}
+
+{% endcapture %}
 
 <div class="css-grid-item {{ Channel.Name | ToCssClass }} {{ Item.StartDateTime | Date:'dddd' | ToCssClass }}">
 	<div class="blog-header"><a class="" href="{{ Card_ActionUrl }}" style="background-image:url('{{ Card_HeaderImg }}')"></a></div>

@@ -1,4 +1,12 @@
-﻿<div id="blogslist" class="css-grid">
+{% comment %}
+
+    BlogPostList.lava
+
+    Renders a grid of Blog Posts
+
+{% endcomment %}
+
+<div id="blogslist" class="css-grid">
 	{% for Item in Items %}
 		{% include "~~/Assets/Lava/BlogPostList_Card.lava" %}
 	{% endfor %}
@@ -9,23 +17,23 @@
 		{% assign nextPageString = Pagination.NextPage | ToString %}
 		{% assign prevPageString = Pagination.PreviousPage | ToString %}
 
-		{% if Pagination.PreviousPage == -1 %}
-			<div class="btn btn-default disabled pull-right">
-				Newer <i class="fa fa-chevron-right"></i>
-			</div>
-		{% else %}
-			<a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
-				Newer <i class="fa fa-chevron-right"></i>
-			</a>
-		{% endif %}
-
 		{% if Pagination.NextPage == -1 %}
 			<div class="btn btn-default disabled pull-left">
-				<i class="fa fa-chevron-left"></i> Older
+				Older <i class="fa fa-chevron-right"></i>
 			</div>
 		{% else %}
 			<a class="btn btn-primary pull-left backlink" href="{{Pagination.UrlTemplate | Replace:'PageNum', nextPageString}}">
-				<i class="fa fa-chevron-left"></i> Older
+				Older <i class="fa fa-chevron-right"></i>
+			</a>
+		{% endif %}
+
+		{% if Pagination.PreviousPage == -1 %}
+			<div class="btn btn-default disabled pull-right">
+				<i class="fa fa-chevron-left"></i> Newer 
+			</div>
+		{% else %}
+			<a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
+				<i class="fa fa-chevron-left"></i> Newer 
 			</a>
 		{% endif %}
 	</div>
