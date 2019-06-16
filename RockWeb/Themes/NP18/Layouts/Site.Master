@@ -28,11 +28,11 @@
     <!-- Set the viewport width to device width for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <!-- jQuery (Used by Rock RMS & Themes) -->
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
-
     <!-- Modernizr (Used by Rock RMS & Themes for feature detection) -->
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <!-- jQuery (Used by Rock RMS & Themes) -->
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
     <!-- Dynamicly added head tags -->
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>

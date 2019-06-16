@@ -12,16 +12,10 @@
     <!-- jQuery (Used by Rock RMS & Themes) -->
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
-    <!-- Dynamicly added head tags -->
-    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-
     <!-- NewPointe 2018 Theme CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
-
-    <!-- Dynamicly added css tags -->
-    <asp:ContentPlaceHolder ID="css" runat="server" />
 
     <style>
         html, body {
