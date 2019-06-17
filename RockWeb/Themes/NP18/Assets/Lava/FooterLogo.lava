@@ -1,1 +1,9 @@
-<a class="footerlogo" href="/"><img src="~~/Assets/Images/logo.svg" alt="{{ 'Global' | Attribute:'OrganizationName' }}" /></a>
+<a href="{{ '~' | ResolveRockUrl }}" title="{{ 'Global' | Attribute:'OrganizationName' | Escape }}" class="footerlogo">
+
+    {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
+        <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}" alt="{{ 'Global' | Attribute:'OrganizationName' | Escape }}" class="logo" />
+    {%- else -%}
+        {{ 'Global' | Attribute:'OrganizationName' | Escape }}
+    {%- endif -%}
+
+</a>

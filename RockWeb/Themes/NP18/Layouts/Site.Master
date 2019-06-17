@@ -11,9 +11,9 @@
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
     /// </summary>
     /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
+    protected override void OnInit(EventArgs e)
     {
-        base.OnInit( e );
+        base.OnInit(e);
     }
 
 </script>
@@ -42,7 +42,7 @@
 
     <!-- NewPointe 2018 Theme CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.min.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>" />
 
@@ -63,103 +63,107 @@
 
     <form id="form1" runat="server">
 
-      <!-- Page Header -->
-      <header>
-        <nav class="primary">
-          <Rock:Zone Name="Navigation" runat="server" />
-	        <div class="navbar-subheader">
-	        	<ul class="list-inline navbar-subnav">
-	        		<li>
-					      <a class="church-menu-opener" href="/locations" aria-expanded="false">
-					        <span class="sr-only">Toggle locations menu</span>
-					        <span class="np-location"></span>
-					      </a>
-					    </li>
-	        		<li>
-					      <a class="events-opener" href="/events">
-					        <span class="sr-only">Events</span>
-					        <span class="np-calendar"></span>
-					      </a>
-					    </li>
-	        		<li>
-					      <a class="give-opener" href="/give">
-					        <span class="sr-only">Give</span>
-					        <span class="np-give"></span>
-					      </a>
-					    </li>
-	        		<li>
-					      <a class="search-opener" href="#search">
-					        <span class="sr-only">Toggle search menu</span>
-					        <span class="np-search"></span>
-					      </a>
-					    </li>
-	        		<li>
-					      <a class="menu-opener" href="#menu" aria-expanded="false">
-					        <span class="sr-only">Toggle navigation</span>
-					        <span class="np-menu"></span>
-					      </a>
-					    </li>
-					  </ul>
-			    </div>
-        </nav>
-        <Rock:Zone Name="Header" runat="server" />
-      </header>
+        <!-- Page Header -->
+        <header>
+            <nav class="primary">
+                <Rock:Zone Name="Navigation" runat="server" />
+                <div class="navbar-subheader">
+                    <ul class="list-inline navbar-subnav">
+                        <li>
+                            <a class="church-menu-opener" href="/locations" aria-expanded="false">
+                                <span class="sr-only">Toggle locations menu</span>
+                                <span class="np-location"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="events-opener" href="/events">
+                                <span class="sr-only">Events</span>
+                                <span class="np-calendar"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="give-opener" href="/give">
+                                <span class="sr-only">Give</span>
+                                <span class="np-give"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="search-opener" href="#search">
+                                <span class="sr-only">Toggle search menu</span>
+                                <span class="np-search"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="menu-opener" href="#menu" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="np-menu"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <Rock:Zone Name="Header" runat="server" />
+        </header>
 
-      <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+        <main>
 
-      <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
-      <div class="subfooter">
-			  <Rock:Zone Name="SubFooter" runat="server" />
-			</div>
+            <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
-	    <footer>
-        <div class="container">
-          <div class="row">
-		        <div class="col-sm-3">
-			        <Rock:Zone Name="Footer Column 1" runat="server" />
-		        </div>
-		        <div class="col-sm-3  col-sm-offset-1 col-sm-push-4">
-			        <Rock:Zone Name="Footer Column 3" runat="server" />
-							<Rock:Zone Name="Login" runat="server" />
-		        </div>
-		        <div class="col-sm-3 col-sm-offset-1 col-sm-pull-4">
-			        <Rock:Zone Name="Footer Column 2" runat="server" />
-		        </div>
-	        </div>
-          <div class="row">
-		        <div class="col-sm-12">
-			        <Rock:Zone Name="Footer" runat="server" />
-		        </div>
+        </main>
+
+        <div class="subfooter">
+            <Rock:Zone Name="SubFooter" runat="server" />
         </div>
-	    </footer>
 
-      <%-- controls for scriptmanager and update panel --%>
-      <asp:ScriptManager ID="sManager" runat="server"/>
-      <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
-	        <ProgressTemplate>
-	            <div class="updateprogress-status">
-                      <div class="spinner">
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <Rock:Zone Name="Footer Column 1" runat="server" />
+                    </div>
+                    <div class="col-sm-3  col-sm-offset-1 col-sm-push-4">
+                        <Rock:Zone Name="Footer Column 3" runat="server" />
+                        <Rock:Zone Name="Login" runat="server" />
+                    </div>
+                    <div class="col-sm-3 col-sm-offset-1 col-sm-pull-4">
+                        <Rock:Zone Name="Footer Column 2" runat="server" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
+                </div>
+        </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
                         <div class="rect1"></div>
                         <div class="rect2"></div>
                         <div class="rect3"></div>
                         <div class="rect4"></div>
                         <div class="rect5"></div>
-                      </div>
-                  </div>
-                  <div class="updateprogress-bg modal-backdrop"></div>
-	        </ProgressTemplate>
-      </asp:UpdateProgress>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
 
     </form>
 
-		<script>
-    	var animate = new Animate({
-      	remove: false
-    	});
-    	animate.init();
-    	$('.paroller').paroller();
-		</script>
+    <script>
+        var animate = new Animate({
+            remove: false
+        });
+        animate.init();
+        $('.paroller').paroller();
+    </script>
 
 </body>
 

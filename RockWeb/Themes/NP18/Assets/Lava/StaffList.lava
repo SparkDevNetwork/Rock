@@ -1,19 +1,30 @@
-<div class='block-grid-sm-3 block-grid-md-4' id="stafflist">
+
+{% assign lastCampus = "" %}
 {% for member in Items %}
-	<div class='block-grid-item'>
-	    <div class='staff-member'>
-	        <a href='{{ LinkedPages.DetailPage }}?Item={{ member.Id }}' title='{{ member.Title }}'>{{ member | Attribute:'MemberPhoto' }}</a>
-	        <h2 class='member-name'>{{ member.Title }}</h2>
-	        {%- assign jobTitle = member | Attribute:'JobTitle' %}
-	        {%- if jobTitle != "" %}
-		        <p class='member-title'>{{ jobTitle }}</p>
-	        {%- else %}
-		        {%- assign personId = member | Attribute:'LinkedPerson', 'Id' %}
-		        {%- person id:'{{personId}}' %}
-		        <p class='member-title'>{{ person.Position }}</p>
-						{%- endperson %}
-	        {% endif %}
-	    </div>
+
+    {% assign memberPerson = member | Attribute:'LinkedPerson','Object' %}
+    {% assign memberCampusName = memberPerson | Attribute:'EmploymentCampus','Name' %}
+    {% if memberCampusName == null or memberCampusName == empty %}{% assign memberCampusName = memberPerson | Campus | Property:'Name' %}{% endif %}
+
+    {% if lastCampus != memberCampusName %}
+        {% unless forloop.first %}
+            </div>
+        {% endunless %}
+        <h2 class="group-title">{{ memberCampusName | Escape }}</h2>
+        <div class='block-grid-sm-3 block-grid-md-4' id="stafflist">
+        {% assign lastCampus = memberCampusName %}
+    {% endif %}
+
+	<div class='block-grid-item staff-member'>
+	    <a href="{% assign ContentChannelItemId = member.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'ContentChannelItemId' ]}" title="{{ member.Title | Escape }}">
+            {{ memberPerson | Attribute:'StaffPhoto' }}
+        </a>
+	    <h2 class='member-name'>{{ memberPerson.FullName | Escape }}</h2>
+	    <p class='member-title'>{{ memberPerson | Attribute:'StaffPosition' | Escape }}</p>
 	</div>
+            
+    {% if forloop.last %}
+        </div>
+    {% endif %}
+
 {% endfor %}
-</div>

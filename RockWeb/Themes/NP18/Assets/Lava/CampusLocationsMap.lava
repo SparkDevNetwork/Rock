@@ -1,4 +1,4 @@
-﻿<div id="campus-locations">
+<div id="campus-locations">
 	<div class="drop-shadow">
 		<div class="mission-statement"><span>One</span> <span>Church.</span> <span>Multiple</span> <span>Locations.</span></div>
 		<div class="campuslist">
@@ -16,7 +16,7 @@
 	        <div id="collapse{{campus.ShortCode}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{campus.ShortCode}}">
 	          <div class="panel-body">
 							<p><strong>Service Times</strong><br />{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif -%}{%- if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true -%}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</p>
-							<p><a target="_blank" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
+							<p><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
 	          </div>
 	        </div>
 	      </div>
@@ -121,7 +121,7 @@
 						placement: 'bottom',
 						backgroundColor: '#fff',
 						fontColor: '#000',
-						content: '<div class="infowindow"><h2>{{ campus.Name }}</h2><p><strong>Service Times</strong><br />{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif %}{% if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true %}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</p><p><strong>Address</strong><br />{{campus.Location.Street1}}<br />{{campus.Location.City}}, {{campus.Location.State}} {{campus.Location.PostalCode}}</p><p><strong>P:</strong> {{ campus.PhoneNumber }}</p><p style="margin:20px 0 0"><a target="_blank" class="btn btn-primary btn-sm btn-block" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}">Directions</a></p></div>',
+						content: '<div class="infowindow"><h2>{{ campus.Name }}</h2><p><strong>Service Times</strong><br />{%- for serviceTime in campus.ServiceTimes -%}{%- if serviceTime.Day != serviceDay -%}{{ serviceTime.Day | Pluralize}} at {% assign serviceDay = serviceTime.Day %}{% endif %}{% if forloop.length > 1 %}{% if forloop.last %} and {% elseif forloop.first != true %}, {% endif %}{% endif %}{{ serviceTime.Time }}{%- endfor -%}</p><p><strong>Address</strong><br />{{campus.Location.Street1}}<br />{{campus.Location.City}}, {{campus.Location.State}} {{campus.Location.PostalCode}}</p><p><strong>P:</strong> {{ campus.PhoneNumber }}</p><p style="margin:20px 0 0"><a target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm btn-block" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}">Directions</a></p></div>',
 						maxWidth: undefined,
 						maxHeight: undefined,
 						padding: "35px",

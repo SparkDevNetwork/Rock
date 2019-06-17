@@ -9,17 +9,22 @@
     }
 }
 
+// ------------------------------ //
+//      Mobile-First Styles       //
+// ------------------------------ //
 .social-icons {
     display: flex;
+    margin-left: -0.4em;
+    margin-right: -0.4em;
 
     a {
         display: block;
         position: relative;
         font-size: 1.5em;
-        margin-left: -0.3em;
         padding: 0.3em;
         line-height: 1em;
-        margin-right: 0.5em;
+        margin-left: 0.1em;
+        margin-right: 0.1em;
         color: @gray-light;
 
         &:hover {
@@ -32,9 +37,9 @@
     flex-direction: column;
 }
 
-
-
 footer .social-icons {
+    justify-content: center;
+
     a {
         color: @gray-lighter;
 
@@ -42,9 +47,14 @@ footer .social-icons {
             .fa-link-color( @brand-primary );
         }
     }
+}
 
-    @media only screen and (max-width: 768px) {
-        justify-content: center;
+
+// ------------------------------ //
+//         Medium Screens         //
+// ------------------------------ //
+@media screen and (min-width: @screen-sm-min) {
+    footer .social-icons {
+        justify-content: flex-start;
     }
-
 }

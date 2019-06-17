@@ -1,0 +1,53 @@
+
+// ------------------------------ //
+//      Mobile-First Styles       //
+// ------------------------------ //
+a.app-banner {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: block;
+    color: @truewhite;
+    background-color: @gray;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-align: center;
+
+    span {
+        display: block;
+    }
+
+    &:hover, &:active {
+        color: @truewhite;
+        text-decoration: none;
+        background-color: @brand-primary;
+    }
+}
+
+// ------------------------------ //
+//         Medium Screens         //
+// ------------------------------ //
+@media screen and (min-width: @screen-sm-min) {
+    a.app-banner {
+        padding: 30px;
+        font-size: 1.5em;
+        font-weight: bold;
+        letter-spacing: 2px;
+
+        span {
+            display: inline;
+        }
+    }
+}
+
+// ------------------------------ //
+//         Large Screens          //
+// ------------------------------ //
+@media screen and (min-width: @screen-xl-min) {
+    a.app-banner {
+        padding: 45px;
+    }
+}

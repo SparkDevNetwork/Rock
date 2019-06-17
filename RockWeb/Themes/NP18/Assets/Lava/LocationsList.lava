@@ -29,7 +29,7 @@
 						    {{ campus.Location.Street1 }}<br />
 						    {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
 						  </p>
-	            <p><a target="_blank" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
+	            <p><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a></p>
             [[endcolumn]]
             [[column]]
 						  <p>
@@ -37,7 +37,7 @@
 						    {%comment%}<strong>e.</strong> {{ campus | Attribute:'CampusEmail' }}{%endcomment%}
 						  </p>
 						  {% assign campusFB = campus | Attribute:'CampusFacebookPage', 'RawValue' | Remove:'https://www.facebook.com' | Remove:'http://www.facebook.com' | Remove:'https://facebook.com' | Remove:'http://facebook.com' %}
-              {% if campusFB != "" %}<p><a target="_blank" href="{{ campus | Attribute:'CampusFacebookPage', 'RawValue' }}"><i class="fa fa-facebook-square"></i> {{ campusFB }}</a></p>{% endif %}
+              {% if campusFB != "" %}<p><a target="_blank" rel="noopener noreferrer" href="{{ campus | Attribute:'CampusFacebookPage', 'RawValue' }}"><i class="fa fa-facebook-square"></i> {{ campusFB }}</a></p>{% endif %}
             [[endcolumn]]
           {[endgrid]}
         </div>

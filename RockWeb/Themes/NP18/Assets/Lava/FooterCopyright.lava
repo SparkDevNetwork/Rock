@@ -1,4 +1,4 @@
 <div class="copyright-credits">
-	<p class="copyright">© {{ 'Now' | Date:'yyyy' }} {{ 'Global' | Attribute:'OrganizationName' }} | <a href="/privacy-policy">Privacy Policy</a></p>
-	<p class="credits">Created by <a href="http://www.fishhook.us" target="_blank">Fishhook</a>. Powered by <a href="http://www.rockrms.com" target="_blank">Rock</a>.</p>
+	<p class="copyright">© {{ 'Now' | Date:'yyyy' }} {{ 'Global' | Attribute:'OrganizationName' | Escape }} | <a href="{{ '~' | ResolveRockUrl }}privacy-policy">Privacy Policy</a></p>
+	<p class="credits">Designed by <a href="https://www.fishhook.us" target="_blank" rel="noopener noreferrer">Fishhook</a>. Powered by <a href="https://www.rockrms.com" target="_blank" rel="noopener noreferrer">Rock</a>.</p>
 </div>
