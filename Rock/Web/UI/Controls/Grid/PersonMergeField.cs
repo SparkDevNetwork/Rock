@@ -184,7 +184,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Obsolete( "Use MergePersonFieldHeaderTemplate Instead" )]
     [RockObsolete( "1.10" )]
@@ -204,7 +204,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var lbDelete = new LinkButton();
                     lbDelete.CausesValidation = false;
-                    lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
+                    lbDelete.CssClass = "btn btn-danger btn-xs btn-square pull-right";
                     lbDelete.ToolTip = "Remove Person";
                     cell.Controls.Add( lbDelete );
 
