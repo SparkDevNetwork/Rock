@@ -25,6 +25,8 @@ namespace Rock.Web.UI.Controls
     /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
     /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
     /// </summary>
+    [Obsolete( "Use MergePersonField Instead" )]
+    [RockObsolete( "1.10" )]
     public class PersonMergeField : SelectField, INotRowSelectedField
     {
 
@@ -62,10 +64,10 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string HeaderContent
         {
-            get 
+            get
             {
                 var headerContent = ViewState["HeaderContent"] as string;
-                if (headerContent == null)
+                if ( headerContent == null )
                 {
                     headerContent = string.Empty;
                     HeaderContent = headerContent;
@@ -73,9 +75,9 @@ namespace Rock.Web.UI.Controls
                 return headerContent;
             }
 
-            set 
+            set
             {
-                ViewState["HeaderContent"] = value; 
+                ViewState["HeaderContent"] = value;
             }
         }
 
@@ -172,7 +174,7 @@ namespace Rock.Web.UI.Controls
                 OnDelete( this, e );
             }
         }
-        
+
         /// <summary>
         /// Occurs when [delete].
         /// </summary>
@@ -184,6 +186,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "Use MergePersonFieldHeaderTemplate Instead" )]
+    [RockObsolete( "1.10" )]
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {
         /// <summary>
@@ -220,17 +224,17 @@ namespace Rock.Web.UI.Controls
                     var i = new HtmlGenericControl( "i" );
                     i.Attributes.Add( "class", "fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
                     headerSummary.Controls.Add( i );
-                   
-                    headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
 
-                    string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
-                        (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
+                    headerSummary.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
+
+                    string created = ( mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "" ) +
+                        ( !string.IsNullOrWhiteSpace( mergeField.ModifiedBy ) ? "by " + mergeField.ModifiedBy : "" );
                     if ( created != string.Empty )
                     {
                         headerSummary.Controls.Add( new LiteralControl( string.Format( "<small>Last Modified {0}</small>", created ) ) );
                     }
 
-                    cell.Controls.Add(headerSummary);
+                    cell.Controls.Add( headerSummary );
                 }
             }
         }
