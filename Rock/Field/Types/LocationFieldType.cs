@@ -60,7 +60,7 @@ namespace Rock.Field.Types
             var locationTypes = ( LocationPickerMode[] ) Enum.GetValues( typeof( LocationPickerMode ) );
             foreach ( LocationPickerMode locationType in locationTypes )
             {
-                if ( locationType != LocationPickerMode.None || locationType !=LocationPickerMode.All)
+                if ( locationType != LocationPickerMode.None && locationType !=LocationPickerMode.All)
                 {
                     cblAvailableLocationTypes.Items.Add( new ListItem( locationType.ConvertToString(), locationType.ConvertToInt().ToString() ) );
                 }
@@ -78,7 +78,7 @@ namespace Rock.Field.Types
 
             foreach ( LocationPickerMode locationType in locationTypes )
             {
-                if ( locationType != LocationPickerMode.None || locationType != LocationPickerMode.All )
+                if ( locationType != LocationPickerMode.None && locationType != LocationPickerMode.All )
                 {
                     rblDefaultLocationType.Items.Add( new ListItem( locationType.ConvertToString(), locationType.ConvertToInt().ToString() ) );
                 }
