@@ -1,6 +1,6 @@
 <div class="social-icons">
     {% for each item in Items %}
-        <a title="{{ item.Title | Escape }}" href="{{ item | Attribute:'Url','RawValue' | Escape }}" target="_blank" rel="noopener noreferrer">
+        <a title="{{ item.Title | Escape }}" href="{{ item | Attribute:'LinkUrl','RawValue' | Escape }}" target="_blank" rel="noopener noreferrer">
             <i class="{{ item | Attribute:'IconCssClass' | Escape }}"></i>
         </a>
     {% endfor %}

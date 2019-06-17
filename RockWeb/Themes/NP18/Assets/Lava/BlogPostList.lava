@@ -22,7 +22,7 @@
 				Older <i class="fa fa-chevron-right"></i>
 			</div>
 		{% else %}
-			<a class="btn btn-primary pull-left backlink" href="{{Pagination.UrlTemplate | Replace:'PageNum', nextPageString}}">
+			<a class="btn btn-primary pull-left backlink" href="{{ Pagination.UrlTemplate | Replace:'PageNum',nextPageString }}">
 				Older <i class="fa fa-chevron-right"></i>
 			</a>
 		{% endif %}

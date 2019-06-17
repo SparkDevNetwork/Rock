@@ -1,4 +1,4 @@
-{% if Item == null %}{% assign Item = Items.first %}
+{% if Item == null %}{% assign Item = Items.first %}{% endif %}
 
 {% assign itemPerson = Item | Attribute:'LinkedPerson','Object' %}
 {% assign jobTitle = itemPerson | Attribute:'StaffPosition' %}

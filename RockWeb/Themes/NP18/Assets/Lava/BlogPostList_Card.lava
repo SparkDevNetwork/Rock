@@ -10,10 +10,13 @@
 
     {% if Item == null %}{% assign Item = Items.first %}{% endif %}
     {% assign Channel = Item.ContentChannel %}
-
+    
+    {% assign Card_HeaderImg = "" %}
     {% assign Card_HeaderImg = Item | Attribute:'Image','Url' %}
+    {% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Item | Attribute:'PreviewImage','Url' %}{% endif %}
     {% if Card_HeaderImg == "" %}{% assign Card_HeaderImg = Channel | Attribute:'PreviewImage','Url' %}{% endif %}
     
+    {% assign Card_ActionLabel = "" %}
     {% assign Card_ActionLabel = Item | Attribute:'ActionLabel' %}
     {% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = Channel | Attribute:'ActionLabel' %}{% endif %}
     {% if Card_ActionLabel == "" %}{% assign Card_ActionLabel = 'Read' %}{% endif %}
