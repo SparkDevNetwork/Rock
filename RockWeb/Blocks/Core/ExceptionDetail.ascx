@@ -5,11 +5,12 @@
         <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bug"></i> <asp:Literal ID="lPageTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-bug"></i>
+                    <asp:Literal ID="lPageTitle" runat="server" /></h1>
             </div>
 
             <div class="panel-body">
-                
+
                 <fieldset>
                     <h4>Summary</h4>
                     <div class="row">
@@ -17,18 +18,13 @@
                             <asp:Literal ID="lExceptionSummary" runat="server" />
                         </div>
                     </div>
-                    <div class="row actions">
-                        <div class="col-md-3">
-                            <a href="#" id="btnShowCookies" runat="server" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="#" id="btnShowVariables" runat="server" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="#" id="btnShowFormData" runat="server" class="btn-show-formdata btn btn-action"><i class="fa fa-hdd-o"></i> Show Form Data</a>
-                        </div>
-                        <div class="col-md-6"></div>
+
+                    <div class="actions">
+                        <a href="#" id="btnShowCookies" runat="server" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i>Show Cookies</a>
+                        <a href="#" id="btnShowVariables" runat="server" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i>Show Server Variables</a>
+                        <a href="#" id="btnShowFormData" runat="server" class="btn-show-formdata btn btn-action"><i class="fa fa-hdd-o"></i>Show Form Data</a>
                     </div>
+
                 </fieldset>
 
                 <div id="divCookies" style="display: none;">
@@ -52,34 +48,40 @@
                 <div id="divExceptionDetails">
                     <fieldset>
                         <h4>Details</h4>
-
-                        <asp:Repeater ID="rptExcpetionDetails" runat="server">
+                        <p>
+                            This list shows the complete exception hierarchy with a full call-stack trace. The top-level exception is listed first, and subsequent entries provide more specific detail about the origin of the error.
+                        </p>
+                        <asp:Repeater ID="rptExceptionDetails" runat="server">
 
                             <HeaderTemplate>
-                                <table class="table table-bordered table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Exception Type</th>
-                                            <th>Source</th>
-                                            <th>Description</th>
-                                            <th>&nbsp;</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Id</th>
+                                                <th>Exception Type</th>
+                                                <th>Source</th>
+                                                <th>Description</th>
+                                                <th>&nbsp;</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
                             </HeaderTemplate>
                             <ItemTemplate>
                                 <tr>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("ExceptionType") ) %></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Source") )%></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Description") ) %></td>
+                                    <td><%# EncodeHtml( Eval("Id") ) %></td>
+                                    <td><%# EncodeHtml( Eval("ExceptionType") ) %></td>
+                                    <td><%# EncodeHtml( Eval("Source") )%></td>
+                                    <td><%# EncodeHtml( Eval("Description") ) %></td>
+
                                     <td style="text-align: center;">
                                         <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
-                                            <i class="fa fa-file-o"></i> Show Stack Trace
+                                            <i class="fa fa-layer-group"></i>Show Stack Trace
                                         </a>
                                     </td>
                                 </tr>
-                                <tr id="<%# "trStackTrace_" + Eval("Id").ToString() %>" class="exceptionDetail-stackTrace-hide" onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>">
-                                    <td colspan="4">
+                                <tr id="<%# "trStackTrace_" + Eval("Id").ToString() %>" class="exceptionDetail-stackTrace-hide">
+                                    <td colspan="5">
                                         <pre><%#Eval("StackTrace") %></pre>
                                     </td>
                                 </tr>
@@ -87,6 +89,7 @@
                             <FooterTemplate>
                                 </tbody>
                                 </table>
+                                </div>
                             </FooterTemplate>
                         </asp:Repeater>
                     </fieldset>
@@ -119,7 +122,7 @@
             if (document.location.port != 80 && document.location.port != 443) {
                 host = host + ":" + document.location.port;
             }
-        document.location.href = pageUrl;
+            document.location.href = pageUrl;
         }
     }
 
@@ -137,7 +140,4 @@
         $("#divCookies").slideToggle();
         return false;
     });
-
-
-
 </script>
