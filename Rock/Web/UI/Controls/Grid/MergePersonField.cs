@@ -316,9 +316,6 @@ namespace Rock.Web.UI.Controls
                 selectionControlRadioButton.Attributes["data-person-id"] = MergePersonField.PersonId.ToString();
                 selectionControlContainer.Controls.Add( selectionControlRadioButton );
 
-                Literal contentHtmlLiteral = new Literal { ID = $"contentHtmlLiteral_{MergePersonField.PersonId}" };
-                cell.Controls.Add( contentHtmlLiteral );
-
                 cell.CssClass = "js-merge-field-cell merge-field-cell";
 
                 cell.DataBinding += cell_DataBinding;
@@ -353,7 +350,6 @@ namespace Rock.Web.UI.Controls
                 DataControlFieldCell cell = sender as DataControlFieldCell;
                 var row = cell.DataItemContainer as GridViewRow;
 
-                Literal contentHtmlLiteral = cell.FindControl( $"contentHtmlLiteral_{MergePersonField.PersonId}" ) as Literal;
                 Panel selectionControlContainer = cell.FindControl( $"selectionControlContainer_{MergePersonField.PersonId}" ) as Panel;
                 RockCheckBox selectionControlCheckbox = selectionControlContainer.FindControl( $"selectionControlCheckbox_{MergePersonField.PersonId}" ) as RockCheckBox;
                 RockRadioButton selectionControlRadioButton = selectionControlContainer.FindControl( $"selectionControlRadioButton_{MergePersonField.PersonId}" ) as RockRadioButton;
@@ -361,13 +357,13 @@ namespace Rock.Web.UI.Controls
                 MergePersonFieldRowEventArgs mergePersonFieldRowEventArgs = new MergePersonFieldRowEventArgs( row, MergePersonField );
                 MergePersonField.HandleOnDataBound( sender, mergePersonFieldRowEventArgs );
 
-                contentHtmlLiteral.Text = mergePersonFieldRowEventArgs.ContentHTML;
-
+                selectionControlCheckbox.Text = mergePersonFieldRowEventArgs.ContentHTML;
                 selectionControlCheckbox.Visible = mergePersonFieldRowEventArgs.SelectionControlType == SelectionControlType.Checkbox;
                 selectionControlCheckbox.Checked = mergePersonFieldRowEventArgs.Selected;
 
                 selectionControlRadioButton.Visible = mergePersonFieldRowEventArgs.SelectionControlType == SelectionControlType.RadioButton;
                 selectionControlRadioButton.Checked = mergePersonFieldRowEventArgs.Selected;
+                selectionControlRadioButton.Text = mergePersonFieldRowEventArgs.ContentHTML;
                 selectionControlRadioButton.GroupName = $"selectionControlRadioButtonGroup_{row.RowIndex}";
             }
         }
