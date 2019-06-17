@@ -875,7 +875,6 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
-                this.RemoveCssClass( "table-hover" );
                 this.AddCssClass( "table-condensed" );
                 this.AddCssClass( "table-light" );
             }
@@ -885,7 +884,16 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
                 this.AddCssClass( "table-striped" );
+            }
+
+            if ( DisplayType == GridDisplayType.Full
+                 && this.RowClickEnabled )
+            {
                 this.AddCssClass( "table-hover" );
+            }
+            else
+            {
+                this.RemoveCssClass( "table-hover" );
             }
 
             base.RenderControl( writer );
