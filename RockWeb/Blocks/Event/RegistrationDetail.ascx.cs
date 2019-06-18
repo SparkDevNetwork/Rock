@@ -1793,6 +1793,8 @@ namespace RockWeb.Blocks.Event
                 paymentInfo.LastName = registration.LastName;
 
                 paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+                var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+                paymentInfo.TransactionTypeValueId = txnType.Id;
 
                 if ( threeStepGateway == null )
                 {

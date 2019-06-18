@@ -355,6 +355,8 @@ namespace RockWeb.Blocks.Finance
                     // create swipe object
                     SwipePaymentInfo swipeInfo = new SwipePaymentInfo( swipeData );
                     swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
+                    var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                    swipeInfo.TransactionTypeValueId = txnType.Id;
 
                     // if not anonymous then add contact info to the gateway transaction
                     if ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId )
