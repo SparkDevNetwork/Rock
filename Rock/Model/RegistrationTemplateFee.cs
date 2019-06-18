@@ -303,7 +303,8 @@ namespace Rock.Model
             numberUpDownGroup.ID = "fee_" + fee.Id.ToString();
             numberUpDownGroup.Label = fee.Name;
             numberUpDownGroup.Required = fee.IsRequired;
-            numberUpDownGroup.Controls.Clear();
+
+            numberUpDownGroup.NumberUpDownControls = new List<NumberUpDown>();
 
             foreach ( var feeItem in fee.FeeItems )
             {
@@ -331,7 +332,7 @@ namespace Rock.Model
                     }
                 }
 
-                numberUpDownGroup.Controls.Add( numUpDown );
+                numberUpDownGroup.NumberUpDownControls.Add( numUpDown );
 
                 if ( setValues && feeValues != null && feeValues.Any() )
                 {
@@ -483,7 +484,7 @@ namespace Rock.Model
 
                         foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
                         {
-                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.NumberUpDownControls )
                             {
                                 if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
                                 {
