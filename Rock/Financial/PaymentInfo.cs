@@ -41,6 +41,16 @@ namespace Rock.Financial
         /// </summary>
         public decimal Amount { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> indicating
+        /// the type of the transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> for this transaction.
+        /// </value>
+        public int? TransactionTypeValueId { get; set; }
+
         /// <summary>
         /// Gets or sets the first name.
         /// </summary>
