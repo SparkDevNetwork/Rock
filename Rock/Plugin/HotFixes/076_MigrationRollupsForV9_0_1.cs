@@ -27,7 +27,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AssessmentBadges();
+            //AssessmentBadges();
         }
 
         /// <summary>
