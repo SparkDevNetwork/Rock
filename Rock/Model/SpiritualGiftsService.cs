@@ -25,13 +25,9 @@ namespace Rock.Model
     /// </summary>
     public class SpiritualGiftsService
     {
-        private static readonly double minDominantGiftScore = 0.5;
+        private static readonly double minDominantGiftScore = 1.0; // 84.1%
 
-        private static readonly double maxSupportiveGiftScore = 0.4;
-
-        private static readonly double minSupportiveGiftScore = -0.4;
-
-        private static readonly double maxOtherGiftScore = -0.5;
+        private static readonly double minSupportiveGiftScore = 0.0; // 50.0%
 
         private const string ATTRIBUTE_DOMINANT_GIFTS = "core_DominantGifts";
 
@@ -263,8 +259,8 @@ namespace Rock.Model
             }
 
             testResults.DominantGifts = zScores.Where( a => a.Value >= minDominantGiftScore ).OrderByDescending(a=>a.Value).Select( a => a.Key ).ToList();
-            testResults.SupportiveGifts = zScores.Where( a => a.Value >= minSupportiveGiftScore && a.Value <= maxSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
-            testResults.OtherGifts = zScores.Where( a => a.Value <= maxOtherGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
+            testResults.SupportiveGifts = zScores.Where( a => a.Value < minDominantGiftScore && a.Value >= minSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
+            testResults.OtherGifts = zScores.Where( a => a.Value < minSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
             return testResults;
         }
 
