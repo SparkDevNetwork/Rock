@@ -323,10 +323,12 @@ validity of the request before completing this merge." :
             if ( rowValue.PersonProperty.Attribute != null && rowValue.PersonProperty.Attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
             {
                 personMergeFieldRowEventArgs.SelectionControlType = MergePersonField.SelectionControlType.Checkbox;
+                personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.ContentWrapper;
             }
             else
             {
                 personMergeFieldRowEventArgs.SelectionControlType = MergePersonField.SelectionControlType.RadioButton;
+                personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.SelectionLabel;
             }
 
             personMergeFieldRowEventArgs.ContentHTML = valuesRowPersonPersonProperty.PersonPropertyValue.FormattedValue;
