@@ -1301,7 +1301,7 @@ validity of the request before completing this merge." :
 
         private void AddPerson( Person person )
         {
-            string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px' class='margin-all-sm'>", Person.GetPersonPhotoUrl( person ) + "&width=65" );
+            string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px'>", Person.GetPersonPhotoUrl( person ) + "&width=65" );
 
             People.Add( new MergePerson( person ) );
             AddProperty( "Photo", "Photo", person.Id, person.PhotoId.ToString(), personPhotoTag );
