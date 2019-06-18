@@ -1876,6 +1876,72 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Limits a number to a maximum value.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object AtMost( object input, object operand )
+        {
+            if ( input == null || operand == null )
+            {
+                return input;
+            }
+
+            int intInput = -1;
+            int intOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput > intOperand ? intOperand : input;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput > iOperand ? iOperand : iInput;
+            }
+            else
+            {
+                return "Could not convert input to number";
+            }
+        }
+
+        /// <summary>
+        /// Limits a number to a minimum value.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object AtLeast( object input, object operand )
+        {
+            if ( input == null || operand == null )
+            {
+                return input;
+            }
+
+            int intInput = -1;
+            int intOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput < intOperand ? intOperand : input;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput < iOperand ? iOperand : iInput;
+            }
+            else
+            {
+                return "Could not convert input to number";
+            }
+        }
+
         #endregion
 
         #region Attribute Filters
@@ -3854,7 +3920,7 @@ namespace Rock.Lava
 
             if ( page != null )
             {
-                
+
 
                 if ( titleLocation.Equals("BrowserTitle", StringComparison.InvariantCultureIgnoreCase) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
                 {
@@ -4985,7 +5051,7 @@ namespace Rock.Lava
 
             // They didn't provide a valid amount so give back the original color
             return input;
-            
+
         }
 
         /// <summary>
