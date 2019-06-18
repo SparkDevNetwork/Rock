@@ -102,6 +102,10 @@ textarea,
   }
 }
 
+.btn {
+  transition: @btn-transition;
+}
+
 .btn-square {
   &.btn-xs {
     width: 25px;
@@ -259,7 +263,7 @@ textarea,
 
 .has-error .form-control:focus {
   border-color: @brand-danger;
-  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
+  box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
 }
 
 .has-error .control-label {

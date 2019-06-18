@@ -135,12 +135,13 @@ namespace Rock.Workflow.Action
                     if ( requestContentType == RequestContentType.JSON )
                     {
                         request.RequestFormat = DataFormat.Json;
+                        request.AddParameter( "application/json", body, ParameterType.RequestBody );
                     }
                     else
                     {
                         request.RequestFormat = DataFormat.Xml;
+                        request.AddParameter( "application/xml", body, ParameterType.RequestBody );
                     }
-                    request.AddParameter( requestContentType.ToString(), body, ParameterType.RequestBody );
                 }
 
                 switch ( responseContentType )

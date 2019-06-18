@@ -88,7 +88,7 @@
                         <ItemTemplate>
                             <div class="question-row">
                                 <asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "Code") %>' />
-                                <Rock:RockRadioButtonList ID="rblQuestion" runat="server" RepeatDirection="Horizontal" FormGroupCssClass="likert" CssClass="js-gift-questions">
+                                <Rock:RockRadioButtonList ID="rblQuestion" runat="server" RepeatDirection="Horizontal" FormGroupCssClass="likert" CssClass="js-gift-questions likert-7">
                                 </Rock:RockRadioButtonList>
                             </div>
                         </ItemTemplate>

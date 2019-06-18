@@ -792,10 +792,12 @@ namespace RockWeb.Blocks.Cms
                             }
                         }
 
+                        var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
+
                         // Remove any blank numbers
                         var phoneNumberService = new PhoneNumberService( rockContext );
                         foreach ( var phoneNumber in person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
                             .ToList() )
                         {
                             person.PhoneNumbers.Remove( phoneNumber );
