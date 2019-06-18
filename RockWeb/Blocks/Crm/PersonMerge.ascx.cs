@@ -96,8 +96,8 @@ namespace RockWeb.Blocks.Crm
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
 
-            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the 
-records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account 
+            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the
+records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account
 through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ?
         @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the
 validity of the request before completing this merge." :
@@ -395,7 +395,7 @@ validity of the request before completing this merge." :
                     var phoneNumberService = new PhoneNumberService( rockContext );
                     var taggedItemService = new TaggedItemService( rockContext );
                     var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                    
+
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
@@ -1299,7 +1299,7 @@ validity of the request before completing this merge." :
 
         private void AddPerson( Person person )
         {
-            string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px' />", Person.GetPersonPhotoUrl( person ) + "&width=65" );
+            string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px' class='margin-all-sm'>", Person.GetPersonPhotoUrl( person ) + "&width=65" );
 
             People.Add( new MergePerson( person ) );
             AddProperty( "Photo", "Photo", person.Id, person.PhotoId.ToString(), personPhotoTag );
