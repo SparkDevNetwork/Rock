@@ -301,7 +301,7 @@
 @smartsearch-text-color:                 @header-text-color;
 
 @control-label-weight: @font-weight-bold;
-@input-focus-rgba:            rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
+@input-focus-rgba:            fade(@input-border-focus, 60%);
 @input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
@@ -332,6 +332,10 @@
 @tree-selected-color:         #fff; // Text color of selected items in the treeview.
 
 // Buttons
+@enable-btn-focus-outline:    false;
+@btn-focus-width:             0.2rem;
+@btn-transition:              ~"color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out";
+
 @btn-action-color:            @theme-8-text;
 @btn-action-bg:               @theme-8;
 @btn-action-border:           darken(@btn-action-bg, 5%);
@@ -392,6 +396,9 @@
 
 // Helper Variables
 // -------------------------
+
+// Max size before likert moves to columns
+@likert-screen-column: @screen-md-max;
 
 // Bootstrap 4 Variables
 // Used when @enable-flexbox: true;

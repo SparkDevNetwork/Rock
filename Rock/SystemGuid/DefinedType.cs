@@ -205,7 +205,7 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_TYPE = "1DFF1804-0055-491E-9559-54EA3F8F89D1";
 
         /// <summary>
-        /// Motivator Cluster Type
+        /// Motivator Theme Type
         /// </summary>
         public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
 
