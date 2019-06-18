@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
     /// </summary>
     [Obsolete( "Use MergePersonField Instead" )]
-    [RockObsolete( "1.10" )]
+    [RockObsolete( "1.9" )]
     public class PersonMergeField : SelectField, INotRowSelectedField
     {
 
@@ -187,7 +187,7 @@ namespace Rock.Web.UI.Controls
     ///
     /// </summary>
     [Obsolete( "Use MergePersonFieldHeaderTemplate Instead" )]
-    [RockObsolete( "1.10" )]
+    [RockObsolete( "1.9" )]
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {
         /// <summary>
@@ -224,7 +224,6 @@ namespace Rock.Web.UI.Controls
                     var i = new HtmlGenericControl( "i" );
                     i.Attributes.Add( "class", "fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
                     headerSummary.Controls.Add( i );
-
                     headerSummary.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
 
                     string created = ( mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "" ) +
