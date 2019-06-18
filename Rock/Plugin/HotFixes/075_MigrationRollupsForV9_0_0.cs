@@ -27,12 +27,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Fix3731();
-            UpdateCheckScannerURL();
-            UpdateMotivatorClusterToTheme();
-            UpdateCalendarAttributePanel();
-            Fix2784();
-            RemoveAssessmentsTabFromPersonProfilePage();
+            //Fix3731();
+            //UpdateCheckScannerURL();
+            //UpdateMotivatorClusterToTheme();
+            //UpdateCalendarAttributePanel();
+            //Fix2784();
+            //RemoveAssessmentsTabFromPersonProfilePage();
         }
 
         /// <summary>
