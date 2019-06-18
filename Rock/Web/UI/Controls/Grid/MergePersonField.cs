@@ -225,6 +225,14 @@ namespace Rock.Web.UI.Controls
             public SelectionControlType SelectionControlType { set; get; }
 
             /// <summary>
+            /// Gets or sets the display type of the content.
+            /// </summary>
+            /// <value>
+            /// The display type of the content.
+            /// </value>
+            public ContentDisplayType ContentDisplayType { set; get; }
+
+            /// <summary>
             /// Sets the content HTML.
             /// </summary>
             /// <value>
@@ -275,6 +283,22 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
+        public enum ContentDisplayType
+        {
+            /// <summary>
+            /// Display the property/attribute value as the Checkbox/Radiobutton label
+            /// </summary>
+            SelectionLabel,
+
+            /// <summary>
+            /// Display the property/attribute value in a merge-property-value div
+            /// </summary>
+            ContentWrapper
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <seealso cref="System.Web.UI.ITemplate" />
         public class MergePersonSelectFieldTemplate : ITemplate
         {
@@ -295,13 +319,13 @@ namespace Rock.Web.UI.Controls
                 DataControlFieldCell cell = container as DataControlFieldCell;
                 this.MergePersonField = cell.ContainingField as MergePersonField;
 
-                Panel selectionControlContainer = new Panel { ID = $"selectionControlContainer_{MergePersonField.PersonId}", CssClass = "js-selection-control-container" };
+                Panel selectionControlContainer = new Panel { ID = $"selectionControlContainer_{MergePersonField.PersonId}", CssClass = "js-selection-control-container selection-control-container", };
                 cell.Controls.Add( selectionControlContainer );
 
                 RockCheckBox selectionControlCheckbox = new RockCheckBox
                 {
                     ID = $"selectionControlCheckbox_{MergePersonField.PersonId}",
-                    CssClass = "js-selection-control"
+                    CssClass = "js-selection-control selection-control"
                 };
 
                 selectionControlCheckbox.Attributes["data-person-id"] = MergePersonField.PersonId.ToString();
@@ -310,11 +334,14 @@ namespace Rock.Web.UI.Controls
                 RockRadioButton selectionControlRadioButton = new RockRadioButton
                 {
                     ID = $"selectionControlRadioButton_{MergePersonField.PersonId}",
-                    CssClass = "js-selection-control"
+                    CssClass = "js-selection-control selection-control"
                 };
 
                 selectionControlRadioButton.Attributes["data-person-id"] = MergePersonField.PersonId.ToString();
                 selectionControlContainer.Controls.Add( selectionControlRadioButton );
+
+                Literal contentHtmlLiteral = new Literal { ID = $"contentHtmlLiteral_{MergePersonField.PersonId}" };
+                cell.Controls.Add( contentHtmlLiteral );
 
                 cell.CssClass = "js-merge-field-cell merge-field-cell";
 
@@ -350,6 +377,7 @@ namespace Rock.Web.UI.Controls
                 DataControlFieldCell cell = sender as DataControlFieldCell;
                 var row = cell.DataItemContainer as GridViewRow;
 
+                Literal contentHtmlLiteral = cell.FindControl( $"contentHtmlLiteral_{MergePersonField.PersonId}" ) as Literal;
                 Panel selectionControlContainer = cell.FindControl( $"selectionControlContainer_{MergePersonField.PersonId}" ) as Panel;
                 RockCheckBox selectionControlCheckbox = selectionControlContainer.FindControl( $"selectionControlCheckbox_{MergePersonField.PersonId}" ) as RockCheckBox;
                 RockRadioButton selectionControlRadioButton = selectionControlContainer.FindControl( $"selectionControlRadioButton_{MergePersonField.PersonId}" ) as RockRadioButton;
@@ -357,13 +385,26 @@ namespace Rock.Web.UI.Controls
                 MergePersonFieldRowEventArgs mergePersonFieldRowEventArgs = new MergePersonFieldRowEventArgs( row, MergePersonField );
                 MergePersonField.HandleOnDataBound( sender, mergePersonFieldRowEventArgs );
 
-                selectionControlCheckbox.Text = mergePersonFieldRowEventArgs.ContentHTML;
+                if ( mergePersonFieldRowEventArgs.ContentDisplayType == ContentDisplayType.ContentWrapper )
+                {
+                    contentHtmlLiteral.Visible = true;
+                    contentHtmlLiteral.Text = $"<div class='merge-property-value'>{mergePersonFieldRowEventArgs.ContentHTML}</div>";
+                    selectionControlCheckbox.Text = null;
+                    selectionControlRadioButton.Text = null;
+                }
+                else
+                {
+                    contentHtmlLiteral.Visible = false;
+                    selectionControlCheckbox.Text = mergePersonFieldRowEventArgs.ContentHTML;
+                    selectionControlRadioButton.Text = mergePersonFieldRowEventArgs.ContentHTML;
+                }
+
                 selectionControlCheckbox.Visible = mergePersonFieldRowEventArgs.SelectionControlType == SelectionControlType.Checkbox;
                 selectionControlCheckbox.Checked = mergePersonFieldRowEventArgs.Selected;
 
                 selectionControlRadioButton.Visible = mergePersonFieldRowEventArgs.SelectionControlType == SelectionControlType.RadioButton;
                 selectionControlRadioButton.Checked = mergePersonFieldRowEventArgs.Selected;
-                selectionControlRadioButton.Text = mergePersonFieldRowEventArgs.ContentHTML;
+
                 selectionControlRadioButton.GroupName = $"selectionControlRadioButtonGroup_{row.RowIndex}";
             }
         }
@@ -405,7 +446,7 @@ namespace Rock.Web.UI.Controls
                         headerSummary.Attributes.Add( "data-person-id", mergeField.PersonId.ToString() );
 
                         var i = new HtmlGenericControl( "i" );
-                        i.Attributes.Add( "class", "js-header-checkbox-icon fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
+                        i.Attributes.Add( "class", "header-checkbox-icon js-header-checkbox-icon fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
                         headerSummary.Controls.Add( i );
 
                         headerSummary.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
