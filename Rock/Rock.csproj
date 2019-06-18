@@ -475,6 +475,7 @@
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="PersonProfile\Badge\Assessment.cs" />
     <Compile Include="Model\AttributeMatrixService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
     <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
