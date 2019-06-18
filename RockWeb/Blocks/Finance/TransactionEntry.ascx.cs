@@ -2357,6 +2357,9 @@ TransactionAccountDetails: [
             paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
 
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( "TransactionType" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
+
             return paymentInfo;
         }
 
