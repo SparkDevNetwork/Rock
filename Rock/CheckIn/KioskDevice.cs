@@ -193,7 +193,7 @@ namespace Rock.CheckIn
         /// <param name="configuredGroupTypes">The configured group types.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead.", true )]
+        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead." )]
         public static KioskDevice Read( int id, List<int> configuredGroupTypes )
         {
             return Get( id, configuredGroupTypes );
@@ -252,7 +252,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.", true )]
+        [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {
             Remove( id );
@@ -262,7 +262,7 @@ namespace Rock.CheckIn
         /// Flushes all.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Clear() instead.", true )]
+        [Obsolete( "Use Clear() instead." )]
         public static void FlushAll()
         {
             Clear();

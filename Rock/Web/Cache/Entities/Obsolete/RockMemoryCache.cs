@@ -33,7 +33,7 @@ namespace Rock.Web.Cache
     /// 
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "use RockCache instead", true )]
+    [Obsolete( "use RockCache instead" )]
     public class RockMemoryCache : MemoryCache
     {
         const string REDIS_CHANNEL_NAME = "rock-cache-instructions";

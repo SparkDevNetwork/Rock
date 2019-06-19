@@ -77,6 +77,11 @@ namespace Rock.Client
         public int? LogoBinaryFileId { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.7"
+        [Obsolete( "MediumDataJson is no longer used.", true )]
+        public string MediumDataJson { get; set; }
+
+        /// <summary />
         public string Message { get; set; }
 
         /// <summary />

@@ -326,7 +326,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList", true )]
+        [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>

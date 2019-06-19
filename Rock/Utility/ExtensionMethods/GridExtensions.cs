@@ -30,7 +30,7 @@ namespace Rock
         /// <param name="headerText">The header text.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead", true )]
+        [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead" )]
         public static DataControlField GetColumnByHeaderText( this DataControlFieldCollection dataControlFieldCollection, string headerText )
         {
             foreach ( DataControlField column in dataControlFieldCollection )
@@ -51,7 +51,7 @@ namespace Rock
         /// <param name="headerText">The header text.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead", true )]
+        [System.Obsolete( "Use Rock's Grid.GetColumnByHeaderText instead" )]
         public static DataControlField GetColumnByHeaderText( this GridView grid, string headerText )
         {
             if ( grid is Rock.Web.UI.Controls.Grid )

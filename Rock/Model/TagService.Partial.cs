@@ -29,6 +29,21 @@ namespace Rock.Model
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Tag">Tags</see> by EntityType, Qualifier Column, Qualifier Value and Owner.
         /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use one of the other Gets", true )]
+        public IQueryable<Tag> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
+        {
+            return this.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, ownerId, null, null );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Tag">Tags</see> by EntityType, Qualifier Column, Qualifier Value and Owner.
+        /// </summary>
         /// <param name="entityTypeId">A <see cref="System.Int32" /> representing the EntityTypeID of the <see cref="Rock.Model.EntityType" /> of the entities that are eligible for the <see cref="Rock.Model.Tag" />.</param>
         /// <param name="entityQualifierColumn">A <see cref="System.String" /> that represents the EntityQualifierColumn of the <see cref="Rock.Model.Tag" />. This value can be null.</param>
         /// <param name="entityQualifierValue">A <see cref="System.String" /> that represents the EntityQualifierValue of the <see cref="Rock.Model.Tag" />. This value can be null.</param>
