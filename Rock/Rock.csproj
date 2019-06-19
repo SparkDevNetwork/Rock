@@ -474,10 +474,34 @@
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="PersonProfile\Badge\Assessment.cs" />
+    <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Model\AttributeMatrixService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
+    <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
+    <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
+    <Compile Include="Plugin\HotFixes\055_MigrationRollupsForV8_3.cs" />
+    <Compile Include="Plugin\HotFixes\056_MigrationRollupsForV8_4.cs" />
+    <Compile Include="Plugin\HotFixes\057_MigrationRollupsForV8_5.cs" />
+    <Compile Include="Plugin\HotFixes\058_CheckinRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2.cs" />
+    <Compile Include="Plugin\HotFixes\060_MigrationRollupsForV8_6.cs" />
+    <Compile Include="Plugin\HotFixes\061_MigrationRollupsForV8_6_2.cs" />
+    <Compile Include="Plugin\HotFixes\062_MigrationRollupsForV8_7.cs" />
+    <Compile Include="Plugin\HotFixes\063_WhitelistBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\064_MigrationRollupsForV8_7_2.cs" />
+    <Compile Include="Plugin\HotFixes\065_ThresholdValue.cs" />
+    <Compile Include="Plugin\HotFixes\066_MigrationRollupsForV8_7_3.cs" />
+    <Compile Include="Plugin\HotFixes\067_MigrationRollupsForV8_7_4.cs" />
+    <Compile Include="Plugin\HotFixes\068_MigrationRollupsForV8_7_5.cs" />
+    <Compile Include="Plugin\HotFixes\069_MigrationRollupsForV8_7_6.cs" />
+    <Compile Include="Plugin\HotFixes\070_MigrationRollupsForV8_7_7.cs" />
+    <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
+    <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
+    <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
     <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
     <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\077_MigrationRollupsForV9_0_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -643,6 +667,8 @@
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\AnalyticsAttribute.cs" />
+    <Compile Include="Data\IAnalyticHistorical.cs" />
+    <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IFeed.cs" />
@@ -848,8 +874,10 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
+    <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
+    <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
@@ -1376,7 +1404,20 @@
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
     <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
+    <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
+    <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\044_EnsureCommunicationMigration.cs" />
+    <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
+    <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
+    <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
+    <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
+    <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
+    <Compile Include="Plugin\HotFixes\048_InteractionSessionPerformance.cs" />
+    <Compile Include="Plugin\HotFixes\047_DataAutomation.cs" />
+    <Compile Include="Plugin\HotFixes\049_UpdateGivingAnalyticsAccounts.cs" />
     <Compile Include="Reporting\DataFilter\Person\AttendanceCampusFilter.cs" />
+    <Compile Include="Plugin\HotFixes\050_MigrationRollupsForV7_4.cs" />
     <Compile Include="Reporting\DataFilter\FinancialScheduledTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
@@ -1461,6 +1502,7 @@
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Sitemap.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
+    <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberAttributesFilter.cs" />
@@ -1508,6 +1550,42 @@
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
     <Compile Include="PersonProfile\IconBadge.cs" />
+    <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
+    <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
+    <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
+    <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\023_SecurityCodeLength.cs" />
+    <Compile Include="Plugin\HotFixes\022_Fundraising.cs" />
+    <Compile Include="Plugin\HotFixes\017_FixBackgroundCheckOptionalCampus.cs" />
+    <Compile Include="Plugin\HotFixes\016_SetInactiveFamilies.cs" />
+    <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
+    <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
+    <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
+    <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
+    <Compile Include="Plugin\HotFixes\014_FixEraGiveAttribValues.cs" />
+    <Compile Include="Plugin\HotFixes\013_FixSystemEmailTo_1828.cs" />
+    <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
+    <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
+    <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
+    <Compile Include="Plugin\HotFixes\020_FixCommunicationTemplate.cs" />
+    <Compile Include="Plugin\HotFixes\021_UpdateCheckInMergefieldDebugInfo.cs" />
+    <Compile Include="Plugin\HotFixes\019_FixIpadClientPrinting.cs" />
+    <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
+    <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
+    <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
+    <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
+    <Compile Include="Plugin\HotFixes\032_MigrationRollupsForV6_9.cs" />
+    <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
+    <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
+    <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
+    <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
+    <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
+    <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
+    <Compile Include="Plugin\HotFixes\035_TransactionListSummary.cs" />
+    <Compile Include="Plugin\HotFixes\036_PrayerRequestFollowingEvent.cs" />
+    <Compile Include="Plugin\HotFixes\037_MigrationRollupsForV6_10.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1924,6 +2002,7 @@
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs" />
+    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
@@ -1957,6 +2036,7 @@
     <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
     <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\MergePersonField.cs" />
@@ -2258,6 +2338,87 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt" />
+    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy_UpdateCheckInMergefieldDebugInfo.sql">
+      <DependentUpon>040_BusinessTransactionDetailLinks.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
+      <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers.sql">
+      <DependentUpon>041_MigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_FixBenevolenceCaseWorker.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\047_DataAutomation_ShortLinkInteractionFix.sql">
+      <DependentUpon>047_DataAutomation.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_AccountTotals.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_PersonSummary.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\049_GivingAnalyticsAccounts_TransactionData.sql">
+      <DependentUpon>049_UpdateGivingAnalyticsAccounts.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_AddVimeoShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixAccordionShortCode.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_FixThankyouAndOngoingHyphenations.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\050_MigrationRollupsForV7_4_spCrm_PersonMerge.sql">
+      <DependentUpon>050_MigrationRollupsForV7_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\052_MigrationRollupsForV8_1_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>052_MigrationRollupsForV8_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\056_MigrationRollupsForV8_4_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>056_MigrationRollupsForV8_4.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_AddCheck-inLabelToInstallIconFont.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCheckin_BadgeAttendance.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\057_MigrationRollupsForV8_5_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate.sql">
+      <DependentUpon>057_MigrationRollupsForV8_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\059_MigrationRollupsForV8_5_2_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>059_MigrationRollupsForV8_5_2.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_FixChartShortcode.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Down.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
+      <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />

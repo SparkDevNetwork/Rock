@@ -217,6 +217,22 @@ namespace Rock.Model
         /// <param name="payments">The payments.</param>
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="receiptEmail">The receipt email.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use method with failed payment email and workflow type parameters", true )]
+        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
+        {
+            return ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, null, null );
+        }
+
+        /// <summary>
+        /// Processes the payments.
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="batchNamePrefix">The batch name prefix.</param>
+        /// <param name="payments">The payments.</param>
+        /// <param name="batchUrlFormat">The batch URL format.</param>
+        /// <param name="receiptEmail">The receipt email.</param>
         /// <param name="failedPaymentEmail">The failed payment email.</param>
         /// <param name="failedPaymentWorkflowType">Type of the failed payment workflow.</param>
         /// <returns></returns>

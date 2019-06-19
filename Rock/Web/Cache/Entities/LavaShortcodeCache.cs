@@ -171,7 +171,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
+        [Obsolete( "No Longer Supported" )]
         public static LavaShortcodeCache Read( string tagName, RockContext rockContext = null )
         {
             return LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault();

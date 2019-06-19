@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,10 +66,10 @@ END" );
 
             // JE: Makes the interaction channel for Short Links a well known channel, changes the name of the channel to something more readable 
             // and adds formatting to the lists and details that one would expect.
-            Sql( MigrationSQL._201803131953247_AddDataAutomation_ShortLinkInteractionFix );
+            Sql( Plugin.HotFixes.HotFixMigrationResource._047_DataAutomation_ShortLinkInteractionFix );
 
             // SK: Fixes #2761 Mapped case worker correct address  while printing Benevolence Request
-            Sql( MigrationSQL._201803131953247_AddDataAutomation_FixBenevolenceCaseWorker );
+            Sql( Plugin.HotFixes.HotFixMigrationResource._047_DataAutomation_FixBenevolenceCaseWorker );
 
 
         }

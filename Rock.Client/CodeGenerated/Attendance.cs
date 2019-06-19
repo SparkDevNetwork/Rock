@@ -54,7 +54,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
+        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
         public bool? DidNotOccur { get; set; }
 
         /// <summary />
@@ -68,12 +68,12 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.GroupId instead", true )]
+        [Obsolete( "Use Occurrence.GroupId instead", false )]
         public int? GroupId { get; set; }
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.LocationId instead", true )]
+        [Obsolete( "Use Occurrence.LocationId instead", false )]
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
+        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -136,7 +136,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.SundayDate instead", true )]
+        [Obsolete( "Use Occurrence.SundayDate instead", false )]
         public DateTime SundayDate { get; set; }
 
         /// <summary>
@@ -178,9 +178,18 @@ namespace Rock.Client
             this.DeclineReasonValueId = source.DeclineReasonValueId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
+            #pragma warning disable 612, 618
+            this.DidNotOccur = source.DidNotOccur;
+            #pragma warning restore 612, 618
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            #pragma warning disable 612, 618
+            this.GroupId = source.GroupId;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
+            this.LocationId = source.LocationId;
+            #pragma warning restore 612, 618
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.OccurrenceId = source.OccurrenceId;
@@ -193,11 +202,17 @@ namespace Rock.Client
             this.ScheduleConfirmationSent = source.ScheduleConfirmationSent;
             this.ScheduledByPersonAliasId = source.ScheduledByPersonAliasId;
             this.ScheduledToAttend = source.ScheduledToAttend;
+            #pragma warning disable 612, 618
+            this.ScheduleId = source.ScheduleId;
+            #pragma warning restore 612, 618
             this.ScheduleReminderSent = source.ScheduleReminderSent;
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
             this.StartDateTime = source.StartDateTime;
+            #pragma warning disable 612, 618
+            this.SundayDate = source.SundayDate;
+            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

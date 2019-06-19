@@ -823,7 +823,7 @@ namespace Rock.Web.Cache
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed", true )]
+        [Obsolete("No longer needed")]
         public static string CacheKey( int pageId )
         {
             return string.Format( "Rock:Page:{0}", pageId );

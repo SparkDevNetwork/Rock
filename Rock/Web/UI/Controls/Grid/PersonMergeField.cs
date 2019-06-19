@@ -22,8 +22,8 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
-    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
+    /// This obsolete PersonMergeField was used in the RockWeb.Blocks.Crm.PersonMerge block
+    /// to handle controlling the fields that are displayed/edited during a merge.
     /// </summary>
     [Obsolete( "Use MergePersonField Instead" )]
     [RockObsolete( "1.9" )]

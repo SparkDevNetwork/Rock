@@ -168,12 +168,23 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true) ]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
         public bool IsAnalyticSupported
         {
             get
             {
-                return EntityTypeCache.Get( this.Id ).IsAnalyticAttributesSupported( null, null );
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalytic ).IsAssignableFrom( type );
+                }
+
+                return false;
             }
         }
 
@@ -184,12 +195,23 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead", true )]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
         public bool IsAnalyticHistoricalSupported
         {
             get
             {
-                return EntityTypeCache.Get( this.Id ).IsAnalyticsHistoricalSupported( null, null );
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalyticHistorical ).IsAssignableFrom( type );
+                }
+
+                return false;
             }
         }
 

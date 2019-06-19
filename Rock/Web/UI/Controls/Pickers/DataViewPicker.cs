@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete("Use DataViewItemPicker instead", true )]
+    [Obsolete("Use DataViewItemPicker instead")]
     public class DataViewPicker : RockDropDownList
     {
 
