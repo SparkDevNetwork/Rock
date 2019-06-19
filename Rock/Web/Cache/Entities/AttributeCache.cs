@@ -332,7 +332,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead", true )]
+        [Obsolete("Use SetFromEntity instead")]
         public override void CopyFromModel( Data.IEntity model )
         {
             this.SetFromEntity( model );
@@ -367,7 +367,7 @@ namespace Rock.Web.Cache
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
+        [Obsolete( "Use SetFromEntity instead" )]
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
             this.SetFromEntity( attribute, qualifiers );
@@ -658,7 +658,7 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead", true )]
+        [Obsolete("Use Get instead")]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
             return Get( attributeModel, qualifiers );
@@ -764,7 +764,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed", true )]
+        [Obsolete("No longer needed")]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
             //
@@ -774,7 +774,7 @@ namespace Rock.Web.Cache
         /// Flushes the entity attributes.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead", true )]
+        [Obsolete( "Use RemoveEntityAttributes instead" )]
         public static void FlushEntityAttributes()
         {
             EntityAttributesCache.Remove();

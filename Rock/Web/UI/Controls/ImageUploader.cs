@@ -840,6 +840,18 @@ Rock.controls.imageUploader.initialize({{
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ImageUploaderEventArgs"/> class.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "ImageUploaderEventArgs(binaryFileId, eventArgument) instead", true )]
+        public ImageUploaderEventArgs( int? binaryFileId ) : base()
+        {
+            BinaryFileId = binaryFileId;
+            EventArgument = ArgumentType.ImageUploaded;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImageUploaderEventArgs" /> class.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>

@@ -439,7 +439,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.GroupId instead", true )]
+        [Obsolete( "Use Occurrence.GroupId instead", false )]
         public int? GroupId
         {
             get
@@ -466,7 +466,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.LocationId instead", true )]
+        [Obsolete( "Use Occurrence.LocationId instead", false )]
         public int? LocationId
         {
             get
@@ -493,7 +493,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
+        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
         public int? ScheduleId
         {
             get
@@ -520,7 +520,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
+        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
         public bool? DidNotOccur
         {
             get
@@ -547,7 +547,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.SundayDate instead", true )]
+        [Obsolete( "Use Occurrence.SundayDate instead", false )]
         public DateTime SundayDate
         {
             get
@@ -573,7 +573,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Group instead", true )]
+        [Obsolete( "Use Occurrence.Group instead", false )]
         public virtual Group Group
         {
             get
@@ -600,7 +600,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Location instead", true )]
+        [Obsolete( "Use Occurrence.Location instead", false )]
         public virtual Location Location
         {
             get
@@ -627,7 +627,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Schedule instead", true )]
+        [Obsolete( "Use Occurrence.Schedule instead", false )]
         public virtual Schedule Schedule
         {
             get
@@ -681,6 +681,10 @@ namespace Rock.Model
                 new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
             }
 
+#pragma warning disable 612, 618
+            ProcessObsoleteOccurrenceFields( entry );
+#pragma warning restore 612, 618
+
             base.PreSaveChanges( dbContext, entry );
         }
 
@@ -705,7 +709,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entry">The entry.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("", true )]
+        [Obsolete]
         private void ProcessObsoleteOccurrenceFields( DbEntityEntry entry )
         {
             if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )

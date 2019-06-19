@@ -109,7 +109,7 @@ namespace Rock.Model
         /// The CSS class.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
+        [Obsolete( "No Longer Supported" )]
         [NotMapped]
         [LavaIgnore]
         public string CssClass

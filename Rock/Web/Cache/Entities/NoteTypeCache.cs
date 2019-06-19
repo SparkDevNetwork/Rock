@@ -96,7 +96,7 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
+        [Obsolete( "No Longer Supported" )]
         public string CssClass { get; private set; }
 
         /// <summary>

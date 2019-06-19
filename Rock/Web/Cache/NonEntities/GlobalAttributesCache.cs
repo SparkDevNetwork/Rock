@@ -161,7 +161,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
+        [Obsolete( "Use Get instead" )]
         public static GlobalAttributesCache Read()
         {
             return Get();
@@ -173,7 +173,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
+        [Obsolete( "Use Get instead" )]
         public static GlobalAttributesCache Read( RockContext rockContext )
         {
             return Get();
@@ -348,7 +348,7 @@ namespace Rock.Web.Cache
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed", true )]
+        [Obsolete("No longer needed")]
         public new static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
             // Note we still need the private method, we are just making the public method obsolete

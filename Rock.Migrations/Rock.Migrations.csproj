@@ -360,10 +360,6 @@
     <Compile Include="Migrations\201906060208084_UpdateGroupScheduleSystemEmails.Designer.cs">
       <DependentUpon>201906060208084_UpdateGroupScheduleSystemEmails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201906112322224_RemoveObsoleteFields.cs" />
-    <Compile Include="Migrations\201906112322224_RemoveObsoleteFields.Designer.cs">
-      <DependentUpon>201906112322224_RemoveObsoleteFields.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -875,9 +871,6 @@
     <EmbeddedResource Include="Migrations\201906060208084_UpdateGroupScheduleSystemEmails.resx">
       <DependentUpon>201906060208084_UpdateGroupScheduleSystemEmails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201906112322224_RemoveObsoleteFields.resx">
-      <DependentUpon>201906112322224_RemoveObsoleteFields.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
@@ -1167,12 +1160,6 @@
     </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_PersonicxGroup.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\Version 8.0\Version 1.8.0\201803131953247_AddDataAutomation_FixBenevolenceCaseWorker.sql">
-      <DependentUpon>201803131953247_AddDataAutomation.cs</DependentUpon>
-    </Content>
-    <Content Include="Migrations\Version 8.0\Version 1.8.0\201803131953247_AddDataAutomation_ShortLinkInteractionFix.sql">
-      <DependentUpon>201803131953247_AddDataAutomation.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\201809142151587_ContentComponents_AdUnit.Lava">
