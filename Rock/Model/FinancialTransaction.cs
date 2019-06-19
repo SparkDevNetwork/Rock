@@ -466,7 +466,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead", true )]
+        [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -486,7 +486,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BatchHistoryChangeList instead", true )]
+        [Obsolete( "Use BatchHistoryChangeList instead" )]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
         /// <summary>

@@ -150,7 +150,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead", true )]
+        [Obsolete( "Use HistoryChangeList instead" )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>

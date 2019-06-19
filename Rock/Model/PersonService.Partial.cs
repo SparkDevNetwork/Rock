@@ -159,7 +159,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindPersons instead.", true )]
+        [Obsolete( "Use FindPersons instead.", false )]
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses );
@@ -679,7 +679,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindBusinesses instead.", true )]
+        [Obsolete( "Use FindBusinesses instead.", false )]
         public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
             businessName = businessName ?? string.Empty;
@@ -2277,6 +2277,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
+        /// </summary>
+        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
+        /// </returns>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead", true )]
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
+        {
+            return GetByEncryptedKey( encryptedKey, true, true, null );
+        }
+
+        /// <summary>
         /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
@@ -2581,7 +2596,7 @@ namespace Rock.Model
         /// <param name="reasonNote">The reason note.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "", true )]
+        [Obsolete]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {
             History.HistoryChangeList historyChangeList;

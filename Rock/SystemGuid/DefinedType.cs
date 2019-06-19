@@ -288,7 +288,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry background package types
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>

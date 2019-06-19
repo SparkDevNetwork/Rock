@@ -559,6 +559,22 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Find the <see cref="Rock.Web.UI.Controls.Zone"/> for the specified zone name.  Looks in the
+        /// <see cref="Zones"/> property to see if it has been defined.  If an existing zone
+        /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the <see cref="HtmlForm"/> control
+        /// is returned
+        /// </summary>
+        /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
+        /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
+        [RockObsolete( "1.7" )]
+        [Obsolete("Use the other FindZone()", true )]
+        protected virtual Control FindZone( string zoneName )
+        {
+            // Find the zone, or use the Form if not found
+            return FindZone( zoneName, this.Form );
+        }
+
+        /// <summary>
         /// Find the <see cref="Rock.Web.UI.Controls.Zone" /> for the specified zone name.  Looks in the
         /// <see cref="Zones" /> property to see if it has been defined.  If an existing zone
         /// <see cref="Rock.Web.UI.Controls.Zone" /> cannot be found, the defaultZone will be returned

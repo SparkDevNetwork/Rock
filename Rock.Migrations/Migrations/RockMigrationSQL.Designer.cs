@@ -266,45 +266,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = &apos;7D78DD9F-F5D0-4660-A099-DEFDC70A6664&apos;)
-        ///
-        ///UPDATE 
-        ///    [AttributeValue] 
-        ///SET 
-        ///    [Value] = REPLACE([Value],&apos;&lt;p&gt;
-        ///        &lt;strong&gt;{{ caseworker.FullName }}&lt;/strong&gt; &lt;br /&gt;
-        ///        {{ Request.Location.FormattedHtmlAddress }} &lt;br /&gt;
-        ///        {% if Request.HomePhoneNumber %}
-        ///            Home Phone: {{ Request.HomePhoneNumber }} &lt;br /&gt;
-        ///        {% endif %}
-        ///        {% if Request.CellPhoneNumber %}
-        ///            Cell Phone: {{ Request.Ce [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201803131953247_AddDataAutomation_FixBenevolenceCaseWorker {
-            get {
-                return ResourceManager.GetString("_201803131953247_AddDataAutomation_FixBenevolenceCaseWorker", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to DECLARE @ShortLinkMediumValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = &apos;371066D5-C5F9-4783-88C8-D9AC8DC67468&apos;)
-        ///
-        ///IF NOT EXISTS (SELECT * FROM [InteractionChannel]  WHERE [ChannelTypeMediumValueId] = @ShortLinkMediumValueId )
-        ///	BEGIN
-        ///		DECLARE @ShortlinkEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.PageShortLink&apos;)
-        ///		
-        ///		INSERT INTO [InteractionChannel]
-        ///			([Name], [ChannelTypeMediumValueId], [ComponentEntityTypeId], [Guid])
-        ///			VALUES
-        ///			(&apos;Short  [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201803131953247_AddDataAutomation_ShortLinkInteractionFix {
-            get {
-                return ResourceManager.GetString("_201803131953247_AddDataAutomation_ShortLinkInteractionFix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to -- Update AttributeValues
         ///----------------------------------------------------------------------------------------------------------------
         ///

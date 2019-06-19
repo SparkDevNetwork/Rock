@@ -402,7 +402,49 @@ namespace Rock.Lava
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Checks CommunicationTemplate model for legacy lava and outputs SQL to correct it.
+        /// Fields evaluated: MediumDataJson Subject
+        /// </summary>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10" )]
+        public void CheckCommunicationTemplate()
+        {
+            #pragma warning disable 0618
+            RockContext rockContext = new RockContext();
+            CommunicationTemplateService communicationTemplateService = new CommunicationTemplateService( rockContext );
+
+            foreach ( CommunicationTemplate communicationTemplate in communicationTemplateService.Queryable().ToList() )
+            {
+                // don't change if modified
+                if ( communicationTemplate.ModifiedDateTime != null )
+                {
+                    continue;
+                }
+
+                bool isUpdated = false;
+                
+                communicationTemplate.MediumDataJson = ReplaceUnformatted( communicationTemplate.MediumDataJson, ref isUpdated );
+                communicationTemplate.MediumDataJson = ReplaceUrl( communicationTemplate.MediumDataJson, ref isUpdated );
+                communicationTemplate.MediumDataJson = ReplaceGlobal( communicationTemplate.MediumDataJson, ref isUpdated );
+                communicationTemplate.MediumDataJson = ReplaceDotNotation( communicationTemplate.MediumDataJson, ref isUpdated );
+
+                communicationTemplate.Subject = ReplaceUnformatted( communicationTemplate.Subject, ref isUpdated );
+                communicationTemplate.Subject = ReplaceUrl( communicationTemplate.Subject, ref isUpdated );
+                communicationTemplate.Subject = ReplaceGlobal( communicationTemplate.Subject, ref isUpdated );
+                communicationTemplate.Subject = ReplaceDotNotation( communicationTemplate.Subject, ref isUpdated );
+
+                if ( isUpdated )
+                {
+                    string sql = $"UPDATE [CommunicationTemplate] SET [MediumDataJson] = '{communicationTemplate.MediumDataJson.Replace( "'", "''" )}', [Subject] = '{communicationTemplate.Subject.Replace( "'", "''" )}' WHERE [Guid] = '{communicationTemplate.Guid}';";
+                    _sqlUpdateScripts.Add( sql );
+                }
+            }
+
+            #pragma warning restore 0618
+        }
+
         /// <summary>
         /// Checks SystemEmail model for legacy lava and outputs SQL to correct it.
         /// Fields evaluated: Title From To Cc Bcc Subject Body

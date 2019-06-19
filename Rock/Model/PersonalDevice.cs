@@ -150,6 +150,21 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue PersonalDeviceType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the personal device type identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device type identifier.
+        /// </value>
+        [NotMapped]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonalDeviceTypeValueId instead.", true )]
+        public virtual int PersonalDeviceTypeId
+        {
+            get { return PersonalDeviceTypeValueId ?? 0; }
+            set { PersonalDeviceTypeValueId = value; }
+        }
+
         #endregion
     }
 
