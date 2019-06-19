@@ -364,6 +364,10 @@
     <Compile Include="Migrations\201906112322224_RemoveObsoleteFields.Designer.cs">
       <DependentUpon>201906112322224_RemoveObsoleteFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906190019085_Rollup_0618.cs" />
+    <Compile Include="Migrations\201906190019085_Rollup_0618.Designer.cs">
+      <DependentUpon>201906190019085_Rollup_0618.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -877,6 +881,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906112322224_RemoveObsoleteFields.resx">
       <DependentUpon>201906112322224_RemoveObsoleteFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906190019085_Rollup_0618.resx">
+      <DependentUpon>201906190019085_Rollup_0618.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
