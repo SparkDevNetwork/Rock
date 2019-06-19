@@ -261,7 +261,7 @@ namespace Rock.Migrations
                 IF( ( SELECT COUNT(*) FROM [dbo].[AttributeValue] WHERE [Guid] = @avGuid AND [Value] LIKE '%CCE09793-89F6-4042-A98A-ED38392BCFCC%' ) = 0 )
                 BEGIN
                     -- Check if the value is blank or null, if not then preceed new value with a comma
-                    IF( ( SELECT COUNT(*) FROM [dbo].[AttributeValue] WHERE [Guid] = @avGuid AND TRIM(COALESCE([Value], '') ) = '' ) = 0 )
+                    IF( ( SELECT COUNT(*) FROM [dbo].[AttributeValue] WHERE [Guid] = @avGuid AND RTRIM(LTRIM(COALESCE([Value], '') )) = '' ) = 0 )
                     BEGIN
                         UPDATE [dbo].[AttributeValue]
                         SET [Value] = [Value] + ', CCE09793-89F6-4042-A98A-ED38392BCFCC'
