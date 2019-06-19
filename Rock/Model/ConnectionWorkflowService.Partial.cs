@@ -17,8 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -65,7 +64,7 @@ namespace Rock.Model
         /// Flushes the cached triggers.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveCachedTriggers() instead.")]
+        [Obsolete( "Use RemoveCachedTriggers() instead.", true )]
         public static void FlushCachedTriggers()
         {
             RemoveCachedTriggers();

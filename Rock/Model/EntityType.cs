@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -168,23 +168,12 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true) ]
         public bool IsAnalyticSupported
         {
             get
             {
-                Type type = null;
-                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-                {
-                    type = Type.GetType( this.AssemblyName );
-                }
-
-                if ( type != null )
-                {
-                    return typeof( IAnalytic ).IsAssignableFrom( type );
-                }
-
-                return false;
+                return EntityTypeCache.Get( this.Id ).IsAnalyticAttributesSupported( null, null );
             }
         }
 
@@ -195,23 +184,12 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead", true )]
         public bool IsAnalyticHistoricalSupported
         {
             get
             {
-                Type type = null;
-                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-                {
-                    type = Type.GetType( this.AssemblyName );
-                }
-
-                if ( type != null )
-                {
-                    return typeof( IAnalyticHistorical ).IsAssignableFrom( type );
-                }
-
-                return false;
+                return EntityTypeCache.Get( this.Id ).IsAnalyticsHistoricalSupported( null, null );
             }
         }
 
@@ -373,7 +351,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             EntityTypeCache.UpdateCachedEntity( this.Id, entityState );
         }

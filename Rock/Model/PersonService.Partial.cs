@@ -159,7 +159,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindPersons instead.", false )]
+        [Obsolete( "Use FindPersons instead.", true )]
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses );
@@ -534,7 +534,8 @@ namespace Rock.Model
             /// <returns></returns>
             public int ConfidenceScore
             {
-                get {
+                get
+                {
                     int total = 0;
 
                     if ( FirstNameMatched )
@@ -678,7 +679,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindBusinesses instead.", false )]
+        [Obsolete( "Use FindBusinesses instead.", true )]
         public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
             businessName = businessName ?? string.Empty;
@@ -721,6 +722,90 @@ namespace Rock.Model
                 email != "" && p.Email == email &&
                 businessName != "" && p.LastName == businessName )
             .ToList();
+        }
+
+        /// <summary>
+        /// Adds a contact to a business.
+        /// </summary>
+        /// <param name="businessId">The business identifier.</param>
+        /// <param name="contactPersonId">The contact person identifier.</param>
+        public void AddContactToBusiness( int businessId, int contactPersonId )
+        {
+            var rockContext = this.Context as RockContext;
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupService = new GroupService( rockContext );
+
+            // Get the relationship roles to use
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            int businessContactRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            int businessRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            int ownerRoleId = knownRelationshipGroupType.Roles
+                .Where( r =>
+                    r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+
+            // get the known relationship group of the business contact
+            // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
+            var contactKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRoleId == ownerRoleId &&
+                    g.PersonId == contactPersonId )
+                .Select( g => g.Group )
+                .FirstOrDefault();
+            if ( contactKnownRelationshipGroup == null )
+            {
+                // In some cases person may not yet have a know relationship group type
+                contactKnownRelationshipGroup = new Group();
+                groupService.Add( contactKnownRelationshipGroup );
+                contactKnownRelationshipGroup.Name = "Known Relationship";
+                contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                var ownerMember = new GroupMember();
+                ownerMember.PersonId = contactPersonId;
+                ownerMember.GroupRoleId = ownerRoleId;
+                contactKnownRelationshipGroup.Members.Add( ownerMember );
+            }
+
+            var groupMember = new GroupMember();
+            groupMember.PersonId = businessId;
+            groupMember.GroupRoleId = businessRoleId;
+            contactKnownRelationshipGroup.Members.Add( groupMember );
+
+            // get the known relationship group of the business
+            // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
+            var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == businessId )
+                .Select( g => g.Group )
+                .FirstOrDefault();
+            if ( businessKnownRelationshipGroup == null )
+            {
+                // In some cases business may not yet have a known relationship group type
+                businessKnownRelationshipGroup = new Group();
+                groupService.Add( businessKnownRelationshipGroup );
+                businessKnownRelationshipGroup.Name = "Known Relationship";
+                businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                var ownerMember = new GroupMember();
+                ownerMember.PersonId = businessId;
+                ownerMember.GroupRoleId = ownerRoleId;
+                businessKnownRelationshipGroup.Members.Add( ownerMember );
+            }
+
+            var businessGroupMember = new GroupMember();
+            businessGroupMember.PersonId = contactPersonId;
+            businessGroupMember.GroupRoleId = businessContactRoleId;
+            businessKnownRelationshipGroup.Members.Add( businessGroupMember );
         }
 
         /// <summary>
@@ -1149,20 +1234,51 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return Queryable( includeDeceased, includeBusinesses )
-                        .Where( p =>
-                            p.LastName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+                    // Originally written as:
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .Where( p =>
+                    //        p.LastName.StartsWith( singleName ) ||
+                    //        previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+
+                    // The LEFT OUTER JOIN version below is faster than the original
+                    // because SQL uses a different index for the WHERE EXISTS version
+                    // due to the fact that it will require the entire table to be scanned
+                    // and return 1 where the criteria match.
+                    //
+                    // The query below could have been written in fluent syntax, but it's a
+                    // bit more complicated like this (they produce the exact same SQL):
+                    //
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .GroupJoin(
+                    //            previousNamesQry,
+                    //            Person => Person.Id,
+                    //            PrevName => PrevName.PersonAlias.PersonId,
+                    //            ( x, y ) => new { Person = x, PrevNames = y } )
+                    //    .SelectMany(
+                    //            x => x.PrevNames.DefaultIfEmpty(),
+                    //            ( x, y ) => new { Person = x.Person, PrevName = y } )
+                    //    .Where( x => x.Person.LastName.StartsWith( singleName ) || x.PrevName.LastName.StartsWith( singleName ) )
+                    //    .Select( x => x.Person );
+
+                    return from person in Queryable( includeDeceased, includeBusinesses )
+                           join personPreviousName in previousNamesQry
+                                on person.Id equals personPreviousName.PersonAlias.PersonId into pnQuery
+                           from ppn in pnQuery.DefaultIfEmpty()
+                           where person.LastName.StartsWith( singleName ) || ppn.LastName.StartsWith( singleName )
+                           select person;
                 }
             }
             else
             {
                 if ( firstNames.Any() && lastNames.Any() )
                 {
-                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    // Find all matching First and LastName, or LastName, but only select the person IDs to reduce
+                    // the pressure that the UNION below would otherwise have (SELECT DISTINCT * issue).
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses )
+                        .Select( p => p.Id );
                     for ( var i = 1; i < firstNames.Count; i++ )
                     {
-                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
                     // always include a search for just last name using the last two parts of name search
@@ -1170,18 +1286,18 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    //
                     // If searching for businesses, search by the full name as well to handle "," in the name
-                    //
                     if ( includeBusinesses )
                     {
-                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    return qry;
+                    // Lastly, return all people with those person Ids using the base Queryable used
+                    // initially by the GetByFirstLastName() call.
+                    return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
                 else
                 {
@@ -2083,20 +2199,22 @@ namespace Rock.Model
             string key = encryptedKey.Replace( '!', '%' );
             key = System.Web.HttpUtility.UrlDecode( key );
             string concatinatedKeys = Rock.Security.Encryption.DecryptString( key );
-            string[] keyParts = concatinatedKeys.Split( '>' );
-            if ( keyParts.Length == 2 )
+            if ( concatinatedKeys.IsNotNullOrWhiteSpace() )
             {
-                Guid guid = new Guid( keyParts[0] );
-                string actionPart = keyParts[1];
-
-                Person person = Get( guid );
-
-                if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                string[] keyParts = concatinatedKeys.Split( '>' );
+                if ( keyParts.Length == 2 )
                 {
-                    return person;
+                    Guid guid = new Guid( keyParts[0] );
+                    string actionPart = keyParts[1];
+
+                    Person person = Get( guid );
+
+                    if ( person != null && actionPart.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return person;
+                    }
                 }
             }
-
             return null;
         }
 
@@ -2154,21 +2272,6 @@ namespace Rock.Model
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
         public override Person GetByEncryptedKey( string encryptedKey )
-        {
-            return GetByEncryptedKey( encryptedKey, true, true, null );
-        }
-
-        /// <summary>
-        /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
-        /// </summary>
-        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
-        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
-        /// <returns>
-        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
-        /// </returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead", true )]
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
             return GetByEncryptedKey( encryptedKey, true, true, null );
         }
@@ -2478,7 +2581,7 @@ namespace Rock.Model
         /// <param name="reasonNote">The reason note.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete]
+        [Obsolete( "", true )]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {
             History.HistoryChangeList historyChangeList;
@@ -2601,11 +2704,42 @@ namespace Rock.Model
                 .Select( l => l.Location.GeoPoint );
         }
 
-        #region Static Methods 
+        #region Static Methods
 
         /// <summary>
-        /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
-        /// a new person.
+        /// Updates Person.BirthDate for each person that is not deceased or inactive, and has a non-null <seealso cref="Person.BirthYear"/> greater than 1800
+        /// </summary>
+        public static void UpdateBirthDateAll( RockContext rockContext = null )
+        {
+            var inactiveStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+
+            // NOTE: if BirthYear is 1800 or earlier, set BirthDate to null so that database Age calculations don't get an exception
+            string sql = $@"
+                UPDATE Person
+                    SET [BirthDate] = (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    FROM Person
+                    WHERE IsDeceased = 0
+                    AND RecordStatusValueId <> {inactiveStatusId}";
+
+            rockContext = rockContext ?? new RockContext();
+            using ( rockContext )
+            {
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+        }
+
+        /// <summary>
+        /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
+        /// Returns the new Family(Group) that was created for the person.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -2694,6 +2828,7 @@ namespace Rock.Model
                 }
             }
 
+            // shouldn't happen unless somehow the core FamilyGroupType and Roles are missing
             return null;
         }
 
@@ -3378,6 +3513,83 @@ FROM (
             p.PrimaryFamilyId IS NULL
             OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
             )" );
+
+            if ( personId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+
+            sqlUpdateBuilder.Append( @"    ) x " );
+
+            if ( personId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
+            }
+        }
+
+        /// <summary>
+        /// Ensures the GivingLeaderId is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdateGivingLeaderId( int personId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonGivingLeaderId( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the GivingLeaderId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingLeaderIdAll( RockContext rockContext )
+        {
+            return UpdatePersonGivingLeaderId( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person giving leader identifier for the specified person, or for all persons in the database if personId is null.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static int UpdatePersonGivingLeaderId( int? personId, RockContext rockContext )
+        {
+            var sqlUpdateBuilder = new StringBuilder();
+            sqlUpdateBuilder.Append( @"
+UPDATE x
+SET x.GivingLeaderId = x.CalculatedGivingLeaderId
+FROM (
+	SELECT p.Id
+		,p.NickName
+		,p.LastName
+		,p.GivingLeaderId
+		,isnull(pf.CalculatedGivingLeaderId, p.Id) CalculatedGivingLeaderId
+	FROM Person p
+	OUTER APPLY (
+		SELECT TOP 1 p2.[Id] CalculatedGivingLeaderId
+		FROM [GroupMember] gm
+		INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
+		INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
+		WHERE gm.[GroupId] = p.GivingGroupId
+			AND p2.[IsDeceased] = 0
+			AND p2.[GivingGroupId] = p.GivingGroupId
+		ORDER BY r.[Order]
+			,p2.[Gender]
+			,p2.[BirthYear]
+			,p2.[BirthMonth]
+			,p2.[BirthDay]
+		) pf
+	WHERE (
+			p.GivingLeaderId IS NULL
+			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			)" );
 
             if ( personId.HasValue )
             {

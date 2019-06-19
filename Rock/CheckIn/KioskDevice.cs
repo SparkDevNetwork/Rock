@@ -15,15 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -193,7 +193,7 @@ namespace Rock.CheckIn
         /// <param name="configuredGroupTypes">The configured group types.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead." )]
+        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead.", true )]
         public static KioskDevice Read( int id, List<int> configuredGroupTypes )
         {
             return Get( id, configuredGroupTypes );
@@ -252,7 +252,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.")]
+        [Obsolete( "Use Remove( int id ) instead.", true )]
         public static void Flush( int id )
         {
             Remove( id );
@@ -262,7 +262,7 @@ namespace Rock.CheckIn
         /// Flushes all.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Clear() instead." )]
+        [Obsolete( "Use Clear() instead.", true )]
         public static void FlushAll()
         {
             Clear();

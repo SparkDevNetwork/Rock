@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -127,6 +125,33 @@ namespace Rock.Model
                     t.PageId == pageId &&
                     string.Compare( t.Zone, zone ) == 0 )
                 .OrderBy( t => t.Order );
+        }
+
+        /// <summary>
+        /// Returns a collection of blocks for a given page and block type. This will usually be one but in some cases may be more.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="blockTypeGuid">The block type unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Block> GetByPageAndBlockType( Guid pageGuid, Guid blockTypeGuid )
+        {
+            int? pageId = PageCache.GetId( pageGuid ) ?? -1;
+            int? blockTypeId = BlockTypeCache.GetId( blockTypeGuid ) ?? -1;
+            return GetByPageAndBlockType( pageId.Value, blockTypeId.Value );
+        }
+
+        /// <summary>
+        /// Returns a collection of blocks for a given page and block type. This will usually be one but in some cases may be more.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <param name="blockTypeId">The block type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Block> GetByPageAndBlockType( int pageId, int blockTypeId )
+        {
+            return Queryable()
+                .Where( b => b.PageId == pageId )
+                .Where( b => b.BlockTypeId == blockTypeId )
+                .OrderBy( b => b.Order );
         }
 
         /// <summary>

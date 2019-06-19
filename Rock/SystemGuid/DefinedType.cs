@@ -90,6 +90,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Conflict Profile assessment.
+        /// </summary>
+        public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
+
+        /// <summary>
         /// Guid for the Domains Sharing Logins
         /// </summary>
         public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
@@ -193,7 +198,17 @@ namespace Rock.SystemGuid
         /// Metric Source Type
         /// </summary>
         public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
-        
+
+        /// <summary>
+        /// Motivator Type
+        /// </summary>
+        public const string MOTIVATOR_TYPE = "1DFF1804-0055-491E-9559-54EA3F8F89D1";
+
+        /// <summary>
+        /// Motivator Theme Type
+        /// </summary>
+        public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
+
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
@@ -273,7 +288,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry background package types
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
@@ -332,9 +347,13 @@ namespace Rock.SystemGuid
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
 
         /// <summary>
+        /// The group schedule decline reason
+        /// </summary>
+        public const string GROUP_SCHEDULE_DECLINE_REASON = "70C9F9C4-20CC-43DD-888D-9243853A0E52";
+
+        /// <summary>
         /// Used to store various liquid templates for features in Rock.
         /// </summary>
         public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
-
     }
 }

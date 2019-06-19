@@ -21,6 +21,7 @@ _Put an `x` in the boxes that apply_
 
 _Put an `x` in the boxes that apply. You can also fill these out after creating the PR. If you're unsure about any of them, don't hesitate to ask. We're here to help! This is simply a reminder of what we are going to look for before merging your code._
 
+- [ ] This is a single-commit PR. (If not, please squash your commit and re-submit it.)
 - [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.	
 - [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
 - [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)
@@ -35,5 +36,8 @@ If this is a relatively large or complex change, kick off the discussion by expl
 
 ## Documentation
 <!--
-If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here
+If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here.
 -->
+
+## Migrations
+If your pull request requires a migration, please *exclude the migration from the Rock.Migration project*, but submit it with your pull request. Please add a note to your pull request that provides a heads up that a migration file is present.

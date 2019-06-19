@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -37,7 +32,12 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
-        /// The benevolenc e_ request
+        /// The pin authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The benevolence request
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 

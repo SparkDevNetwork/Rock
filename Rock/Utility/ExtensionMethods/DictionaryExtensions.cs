@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock
 {
     /// <summary>
-    /// Dictionary Extensions
+    /// Dictionary Extensions that don't reference Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -184,6 +184,25 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        public static DateTime? GetValueOrNull<TKey>( this IDictionary<TKey, DateTime> dictionary, TKey key )
+        {
+            if ( dictionary.ContainsKey( key ) )
+            {
+                return dictionary[key];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value or null.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public static Guid? GetValueOrNull<TKey>( this IDictionary<TKey, Guid> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
@@ -197,21 +216,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets ConfigurationValue's Value for the specified key, or null if the dictionary doesn't contain the key or the ConfigurationValue is null
+        /// Gets the value associated with the specified key or a default value if the key is not found.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
+        /// <param name="key">The default value returned if the key does not exist.</param>
         /// <returns></returns>
-        public static string GetValueOrNull<TKey>( this IDictionary<TKey, Rock.Field.ConfigurationValue> dictionary, TKey key )
+        public static TValue GetValueOrDefault<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
         {
-            if ( dictionary.ContainsKey( key ) && dictionary[key] != null )
+            if ( dictionary.ContainsKey( key ) )
             {
-                return dictionary[key].Value;
+                return dictionary[key];
             }
             else
             {
-                return null;
+                return defaultValue;
             }
         }
 

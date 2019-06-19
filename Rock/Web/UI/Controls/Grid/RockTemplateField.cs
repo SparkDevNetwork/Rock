@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -22,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// <see cref="Grid"/> Column to display a boolean value.
+    /// A Rock implementation of <seealso cref="TemplateField"/>
     /// </summary>
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
     public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField

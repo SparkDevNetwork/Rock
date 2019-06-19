@@ -16,15 +16,14 @@
 //
 using System;
 using System.Linq;
-using System.Collections.Generic;
 
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Data;
-using Rock.Model;
 using Rock.Jobs;
+using Rock.Model;
 
 namespace Rock.Transactions
 {
@@ -76,6 +75,24 @@ namespace Rock.Transactions
                             // the job is currently running as a RunNow job
                             return;
                         }
+
+                        // Check if another scheduler is running this job
+                        try
+                        {
+                            var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers
+                                .Where( s => s.SchedulerName != runNowSchedulerName );
+
+                            foreach ( var scheduler in otherSchedulers )
+                            {
+                                if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == JobId.ToString() &&
+                                    j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+                                {
+                                    // A job with that Id is already running and ConcurrentExectionDisallowed is true 
+                                    return;
+                                }
+                            }
+                        }
+                        catch { }
 
                         // create the quartz job and trigger
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );

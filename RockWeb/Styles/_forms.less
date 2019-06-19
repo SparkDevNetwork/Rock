@@ -26,10 +26,10 @@ input[type="number"] {
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  margin: 0;
 }
 
 // Prevent Text Areas from oversizing beyond 100%
@@ -43,21 +43,12 @@ legend {
   border-width: 0;
 }
 
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
-  padding-left: 30px;
-}
-
 a.aspNetDisabled {
   opacity: .5;
 }
 
 .form-group.rock-literal,
 .rock-control-wrapper {
-  /*label {
-        margin-bottom: 0;
-    }*/ // commented out to match default bootstrap behavior (Lanio group member filter) JME 1/18/2016
 
   p.form-control-static {
     padding-top: 0;
@@ -121,8 +112,6 @@ a.aspNetDisabled {
 // styling to get rock controls to layout horizontal
 .form-horizontal {
   .form-group {
-    margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
-
     .form-control-group,
     .form-control {
       float: left;
@@ -188,7 +177,8 @@ a.aspNetDisabled {
 
 
 .controls {
-  .checkbox:first-child {
+  .checkbox:first-child,
+  .radio:first-child {
     margin-top: 0;
   }
 }
@@ -196,7 +186,7 @@ a.aspNetDisabled {
 
 // highlight required fields
 .form-group.required {
-  .control-label::after {
+  > .control-label::after {
     margin-left: 4px;
     font-family: @fa-font-face;
     font-size: 6px;
@@ -347,6 +337,11 @@ dl:not(.dl-horizontal) {
 // -------------------------
 .btn-controlaligned {
   margin-top: 24px;
+}
+
+/* SK Add margin in ListItems */
+.list-items-rows .controls-row {
+  margin-bottom: 6px;
 }
 
 // 7. Static Controls

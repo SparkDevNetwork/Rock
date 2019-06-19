@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
@@ -27,8 +26,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
@@ -397,7 +396,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.", true )]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -429,7 +428,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
+        [Obsolete("Use RemoveCacheItem( string key ) instead.", true )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -442,7 +441,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.")]
+        [Obsolete( "Method is no longer supported.", true )]
         protected virtual void FlushSharedBlock( int blockId )
         {
         }
@@ -839,6 +838,29 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Navigates to current page reference including current page and query parameters not included in the removeQueryParameterKeys parameter.
+        /// </summary>
+        /// <param name="removeQueryParameterKeys">The remove query parameter keys.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReferenceWithRemove( List<string> removeQueryParameterKeys )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            var currentQueryStrings = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+
+            if ( removeQueryParameterKeys != null )
+            {
+                foreach ( var key in removeQueryParameterKeys )
+                {
+                    currentQueryStrings.Remove( key );
+                }
+            }
+
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( currentQueryStrings );
+
+            return NavigateToPage( pageReference );
+        }
+
+        /// <summary>
         /// Navigates/redirects to the parent <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.
@@ -1112,7 +1134,8 @@ namespace Rock.Web.UI
         #region User Preferences
 
         /// <summary>
-        /// Returns the user preference value for the current user for a given key
+        /// Returns the application user preference value for the current user for a given key
+        /// NOTE: To get a user preference for a specific block, use <see cref="GetBlockUserPreference(string)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
@@ -1137,7 +1160,8 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets a user preference for the current user with the specified key and value, and optionally save value to database
+        /// Sets an application user preference for the current user with the specified key and value, and optionally save value to database.
+        /// NOTE: To set a user preference for a specific block, use <see cref="SetBlockUserPreference(string, string, bool)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> that represents the key value that identifies the
         /// user preference.</param>
@@ -1193,6 +1217,20 @@ namespace Rock.Web.UI
         public string GetBlockUserPreference( string key )
         {
             return RockPage.GetUserPreference( BlockUserPreferencePrefix + key );
+        }
+
+        /// <summary>
+        /// Returns the preference values for the current user and the current block
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, string> GetBlockUserPreferences()
+        {
+            var userPreferences = RockPage.GetUserPreferences( BlockUserPreferencePrefix );
+            int blockUserPreferencePrefixLength = BlockUserPreferencePrefix.Length;
+
+            // remove the block id prefix since we only want the key that the block knows about
+            var blockUserPreferences = userPreferences.ToDictionary( k => k.Key.Substring( blockUserPreferencePrefixLength ), v => v.Value );
+            return blockUserPreferences;
         }
 
         /// <summary>

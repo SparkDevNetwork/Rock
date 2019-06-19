@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 
 namespace Rock.Utility
@@ -163,6 +162,12 @@ namespace Rock.Utility
                 var book = match.Groups[2].ToString();
                 var verses = match.Groups[3].ToString();
                 var translation = match.Groups[4].ToString().Replace( ")", "" ).Replace( "(", "" );
+
+                // Check that the reference isn't for a chapter range, this is not supported (e.g. John 1-16)
+                if (verses.Contains("-") && !verses.Contains( ":" ) )
+                {
+                    return match.Value;
+                }
 
                 // Catch the case of 'The 3 of us went downtown' which triggers a link to 1 Thess 3
                 if ( book.ToLower() == "the" && volume.IsNullOrWhiteSpace() )
@@ -772,7 +777,6 @@ namespace Rock.Utility
 		""name"": ""Mark"",
         ""aliases"": [
             ""Mrk"",
-            ""Mar"",
             ""Mk"",
             ""Mr"",
             ""Mr?k""

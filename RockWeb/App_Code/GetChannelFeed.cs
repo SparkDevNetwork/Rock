@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,17 @@ namespace RockWeb
         {
             request = context.Request;
             response = context.Response;
+
+            string cacheKey = "Rock:GetChannelFeed:" + request.RawUrl;
+            var contentCache = RockCache.Get( cacheKey );
+            var mimeTypeCache = RockCache.Get( cacheKey + ":MimeType" );
+            if ( mimeTypeCache != null && contentCache != null )
+            {
+                response.ContentType = ( string ) mimeTypeCache;
+                response.Write( ( string ) contentCache );
+                response.StatusCode = 200;
+                return;
+            }
 
             RockContext rockContext = new RockContext();
 
@@ -172,11 +183,11 @@ namespace RockWeb
             {
                 if ( channel.ContentChannelType.IncludeTime )
                 {
-                    content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
                 }
                 else
                 {
-                    content = content.Where( c => c.ExpireDateTime > RockDateTime.Today );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
                 }
             }
 
@@ -213,8 +224,19 @@ namespace RockWeb
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-            response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
+            var outputContent = rssTemplate.ResolveMergeFields( mergeFields );
+            response.Write( outputContent );
 
+            var cacheDuration = dvRssTemplate.GetAttributeValue( "CacheDuration" ).AsInteger();
+            if ( cacheDuration > 0 )
+            {
+                var expiration = RockDateTime.Now.AddMinutes( cacheDuration );
+                if ( expiration > RockDateTime.Now )
+                {
+                    RockCache.AddOrUpdate( cacheKey + ":MimeType", null, response.ContentType, expiration );
+                    RockCache.AddOrUpdate( cacheKey, null, outputContent, expiration );
+                };
+            }
         }
 
         /// <summary>

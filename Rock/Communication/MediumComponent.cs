@@ -158,43 +158,6 @@ namespace Rock.Communication
                 }
             }
         }
-
-        #region Obsolete 
-
-        /// <summary>
-        /// Gets the HTML preview.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete("The GetCommunication now creates the HTML Preview directly", true )]
-        public abstract string GetHtmlPreview( Model.Communication communication, Person person );
-
-        /// <summary>
-        /// Gets the read-only message details.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "The CommunicationDetail block now creates the details", true )]
-        public abstract string GetMessageDetails( Model.Communication communication );
-
-        /// <summary>
-        /// Gets a value indicating whether [supports bulk communication].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "All mediums now support bulk communications", true )]
-        public abstract bool SupportsBulkCommunication
-        {
-            get;
-        }
-
-        #endregion
-
     }
 
 }

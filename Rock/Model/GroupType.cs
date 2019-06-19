@@ -23,12 +23,11 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
 using Rock.Security;
 using Rock.Transactions;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -598,6 +597,15 @@ namespace Rock.Model
         public bool EnableGroupHistory { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether group tag should be enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group tag]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableGroupTag { get; set; } = false;
+
+        /// <summary>
         /// The color used to visually distinguish groups on lists.
         /// </summary>
         /// <value>
@@ -615,6 +623,73 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? GroupStatusDefinedTypeId { get; set; }
+
+        #endregion Entity Properties
+
+        #region Group Scheduling Related
+
+        /// <summary>
+        /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is scheduling enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsSchedulingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled system email identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system email identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The schedule cancellation workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleCancellationWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupMember.ScheduleReminderEmailOffsetDays"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires reason if decline schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresReasonIfDeclineSchedule { get; set; }
 
         /// <summary>
         /// Gets or sets the administrator term for the group of this GroupType.
@@ -757,6 +832,33 @@ namespace Rock.Model
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled system email.
+        /// </value>
+        [DataMember]
+        public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email to use when sending a Schedule Reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder system email.
+        /// </value>
+        [DataMember]
+        public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
+        /// </summary>
+        /// <value>
+        /// The type of the schedule cancellation workflow.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType ScheduleCancellationWorkflowType { get; set; }
+
+        /// <summary>
         /// Gets a count of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </summary>
         /// <value>
@@ -829,6 +931,7 @@ namespace Rock.Model
                     _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
                     _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                     _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
                 }
                 return _supportedActions;
             }
@@ -887,9 +990,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
-            if (state == System.Data.Entity.EntityState.Deleted)
+            if (state == EntityState.Deleted)
             {
                 ChildGroupTypes.Clear();
 
@@ -903,11 +1006,11 @@ namespace Rock.Model
             }
 
             // clean up the index
-            if ( state == System.Data.Entity.EntityState.Deleted && IsIndexEnabled )
+            if ( state == EntityState.Deleted && IsIndexEnabled )
             {
                 this.DeleteIndexedDocumentsByGroupType( this.Id );
             }
-            else if ( state == System.Data.Entity.EntityState.Modified )
+            else if ( state == EntityState.Modified )
             {
                 // check if indexing is enabled
                 var changeEntry = dbContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == this ).FirstOrDefault();
@@ -1101,7 +1204,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
             if ( parentGroupTypeIds?.Any() == true )
@@ -1134,6 +1237,9 @@ namespace Rock.Model
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupStatusDefinedType ).WithMany().HasForeignKey( p => p.GroupStatusDefinedTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleConfirmationSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleReminderSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

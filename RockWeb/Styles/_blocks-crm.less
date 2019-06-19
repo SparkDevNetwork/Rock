@@ -270,6 +270,8 @@
 
 // 3. Badge Bar
 // -------------------------
+@badge-icon-height: 45px;
+
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
@@ -286,6 +288,10 @@
       display: inline-block; // fixes issue in default browser on Android
       padding: 3px 7px 0;
       background-color: inherit;
+
+      .tooltip-inner {
+        max-width: 300px;
+      }
     }
 
     .badge-debug {
@@ -294,6 +300,43 @@
       z-index: 9999;
       width: 900px;
       text-align: left;
+    }
+
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      height: @badge-icon-height;
+      margin-top: -12px;
+
+      .badge {
+        display: flex;
+        flex-basis: 33.3%;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin-bottom: .5%;
+
+        &:nth-last-child(n+6),
+        &:nth-last-child(n+6) ~ & {
+          flex-basis: 20%;
+        }
+
+        .fa-stack {
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+        }
+
+        .fa-stack-1x {
+          font-size: 12px;
+          color: #fff;
+        }
+
+        .fa-stack-2x {
+          font-size: 24px;
+        }
+      }
     }
   }
 }
@@ -307,7 +350,7 @@
 
   &::before {
     font-family: @fa-font-face;
-    font-size: 45px;
+    font-size: @badge-icon-height;
     font-weight: @fa-theme-weight;
     color: @brand-success;
     content: @fa-var-circle;
@@ -326,7 +369,7 @@
 }
 
 .badge-icon {
-  font-size: 45px;
+  font-size: @badge-icon-height;
 
   &.badge-disabled {
     color: #939393;
@@ -1040,7 +1083,7 @@ span.field-value {
         background-color: @grid-column-header-bg;
         border-bottom: 2px solid @grid-column-header-border-color;
 
-        &:before {
+        &::before {
           content: "Contact Info: ";
         }
       }
@@ -1154,8 +1197,9 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-photo {
-  border: 3px solid @photo-border;
+/* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
+.person-merge .merge-header-summary {
+  cursor: pointer;
 }
 
 // 12. Person Page Views
@@ -1262,28 +1306,28 @@ tr.inactive {
 // 17. DISC & Assessments
 // -------------------------
 .disc-assessment {
-  table-layout: fixed;
-
   th {
     padding: 6px;
 
     &:last-child {
       border-radius: 0 @border-radius-base 0 0;
     }
+
+    &.disc-question {
+      padding: 6px;
+      font-weight: 700;
+      border-radius: @border-radius-base 0 0 0;
+    }
   }
 
-  th.disc-question {
-    padding: 6px;
-    font-weight: 700;
-    border-radius: @border-radius-base 0 0 0;
-  }
-
-  .disc-question {
-    width: 100%;
+  td {
+    vertical-align: middle;
   }
 
   .disc-answer {
-    width: 80px;
+    width: 20%;
+    min-width: (@custom-control-indicator-size + 30px);
+    text-align: center;
   }
 }
 
@@ -1291,14 +1335,24 @@ tr.inactive {
   text-align: center;
 }
 
+
+@disc-chart-height: 425px;
 .discchart {
   position: relative;
   width: 80%;
   max-width: 650px;
-  height: 425px;
+  height: @disc-chart-height;
   padding: 0;
   margin: 0 auto;
   clear: both;
+  background-image:
+    linear-gradient(
+      to bottom,
+      @ui-4 0%,
+      transparent 2%,
+      transparent 100%
+    );
+  background-size: 100% (@disc-chart-height/10);
 
   li {
     position: relative;
@@ -1311,7 +1365,6 @@ tr.inactive {
     text-align: center;
     vertical-align: bottom;
     background-color: lighten(@brand-primary, 10%);
-    border-radius: @border-radius-large @border-radius-large 0 0;
 
     &.discchart-midpoint {
       position: absolute;
@@ -1326,28 +1379,25 @@ tr.inactive {
 
   .discbar-label {
     position: absolute;
-    bottom: 20px;
+    bottom: 10px;
     width: 100%;
     overflow: hidden;
     font-size: 28px;
-    font-weight: 500;
-    text-transform: uppercase;
+    font-weight: @font-weight-bold;
+    text-shadow: 0 0 3px @brand-primary;
   }
 
   .discbar {
-    border: 1px solid #ddd;
-
     &::before {
       position: absolute;
-      top: 5%;
+      top: -25px;
       right: 0;
       left: 0;
       display: block;
-      padding: 5px 1em 0;
       font-size: 20px;
       line-height: 1em;
+      color: @text-color;
       text-align: center;
-      letter-spacing: -3px;
       word-wrap: break-word;
       content: attr(title);
     }
@@ -1388,6 +1438,25 @@ tr.inactive {
         left: 8px;
         transform: translateY(-50%);
       }
+    }
+  }
+
+  .likert-7 > span {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+
+
+    @media (max-width: @likert-screen-column) {
+      -ms-flex-align: start;
+      align-items: flex-start;
+      -ms-flex-direction: column;
+      flex-direction: column;
+    }
+
+    .radio-inline {
+      flex: 0 0 14.28571428571429%;
     }
   }
 }

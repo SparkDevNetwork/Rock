@@ -51,6 +51,7 @@ namespace Rock.Rest.Controllers
         /// <param name="campusId">if set it will filter groups based on campus</param>
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
         /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
+        /// <param name="limitToSchedulingEnabled">if set to <c>true</c> only includes groups that have SchedulingEnabled (or has a child group that has SchedulingEnabled).</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
@@ -64,7 +65,8 @@ namespace Rock.Rest.Controllers
             TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None,
             int campusId = 0,
             bool includeNoCampus = false,
-            bool limitToPublic  = false)
+            bool limitToPublic  = false,
+            bool limitToSchedulingEnabled = false)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -77,7 +79,9 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic );
+            var qry = groupService
+                .GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic )
+                .AsNoTracking();
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -88,30 +92,48 @@ namespace Rock.Rest.Controllers
             {
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
-                    groupList.Add( group );
-                    var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = group.Id.ToString();
-                    treeViewItem.Name = group.Name;
-                    treeViewItem.IsActive = group.IsActive;
-
-                    // if there a IconCssClass is assigned, use that as the Icon.
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
-                    if ( groupType != null )
+                    bool includeGroup = true;
+                    if ( limitToSchedulingEnabled )
                     {
-                        treeViewItem.IconCssClass = groupType.IconCssClass;
+                        includeGroup = false;
+                        if ( groupType?.IsSchedulingEnabled == true )
+                        {
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            bool hasChildScheduledEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.IsSchedulingEnabled == true );
+                            if ( hasChildScheduledEnabledGroups )
+                            {
+                                includeGroup = true;
+                            }
+                        }
                     }
 
-                    if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
+                    if ( includeGroup )
                     {
-                        int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active).Count();
-                        treeViewItem.CountInfo = groupMemberCount;
-                    }
-                    else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
-                    {
-                        treeViewItem.CountInfo = groupService.Queryable().Where( a => a.ParentGroupId.HasValue && a.ParentGroupId == group.Id ).Count();
-                    }
+                        groupList.Add( group );
+                        var treeViewItem = new TreeViewItem();
+                        treeViewItem.Id = group.Id.ToString();
+                        treeViewItem.Name = group.Name;
+                        treeViewItem.IsActive = group.IsActive;
 
-                    groupNameList.Add( treeViewItem );
+                        // if there a IconCssClass is assigned, use that as the Icon.
+                        treeViewItem.IconCssClass = groupType?.IconCssClass;
+
+                        if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
+                        {
+                            int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                            treeViewItem.CountInfo = groupMemberCount;
+                        }
+                        else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
+                        {
+                            treeViewItem.CountInfo = groupService.Queryable().Where( a => a.ParentGroupId.HasValue && a.ParentGroupId == group.Id ).Count();
+                        }
+
+                        groupNameList.Add( treeViewItem );
+                    }
                 }
             }
 
@@ -602,15 +624,15 @@ namespace Rock.Rest.Controllers
 
             var groupService = (GroupService)Service;
             var groupLocationService = new GroupLocationService( groupService.Context as RockContext );
-            IEnumerable<Group> childGroups;
+            List<Group> childGroups;
 
             if ( !includeDescendants )
             {
-                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId );
+                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId ).AsNoTracking().ToList();
             }
             else
             {
-                childGroups = groupService.GetAllDescendents( groupId );
+                childGroups = groupService.GetAllDescendentGroups( groupId, false ).ToList();
             }
 
             if ( !string.IsNullOrWhiteSpace( groupTypeIds ) ) 
@@ -618,14 +640,14 @@ namespace Rock.Rest.Controllers
                 var groupTypeIdList = groupTypeIds.Split( ',' ).AsIntegerList();
                 if ( groupTypeIdList.Any() )
                 {
-                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) );
+                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) ).ToList();
                 }
             }
 
             var childGroupIds = childGroups.Select( a => a.Id ).ToList();
 
             // fetch all the groupLocations for all the groups we are going to show (to reduce SQL traffic)
-            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).Select( a => new
+            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).AsNoTracking().Select( a => new
             {
                 a.GroupId,
                 a.Location

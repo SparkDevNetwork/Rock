@@ -22,9 +22,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Model;
 
 namespace Rock.Web
 {
@@ -143,8 +143,15 @@ namespace Rock.Web
                 }
             }
 
-            Parameters = parameters;
-            QueryString = queryString;
+            if ( parameters != null )
+            {
+                Parameters = new Dictionary<string, string>( parameters );
+            }
+
+            if ( queryString != null )
+            {
+                QueryString = new NameValueCollection( queryString );
+            }
         }
 
         /// <summary>
@@ -177,7 +184,7 @@ namespace Rock.Web
         public PageReference( int pageId, int routeId, Dictionary<string, string> parameters )
             : this( pageId, routeId )
         {
-            Parameters = parameters;
+            Parameters = parameters != null ? new Dictionary<string, string>( parameters ) : new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -190,7 +197,7 @@ namespace Rock.Web
         public PageReference( int pageId, int routeId, Dictionary<string, string> parameters, NameValueCollection queryString )
             : this( pageId, routeId, parameters )
         {
-            QueryString = queryString;
+            QueryString = queryString != null ? new NameValueCollection( queryString ) : new NameValueCollection();
         }
 
         /// <summary>
@@ -298,7 +305,7 @@ namespace Rock.Web
             // skipping those parms that are already in the dictionary
             if ( QueryString != null )
             {
-                foreach ( string key in QueryString.AllKeys )
+                foreach ( string key in QueryString.AllKeys.Where(a => a.IsNotNullOrWhiteSpace() ) )
                 {
                     if ( !removeMagicToken || key.ToLower() != "rckipid" )
                     {

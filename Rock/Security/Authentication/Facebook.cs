@@ -20,13 +20,15 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Security;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -90,8 +92,9 @@ namespace Rock.Security.ExternalAuthentication
         {
             string returnUrl = request.QueryString["returnurl"];
             string redirectUri = GetRedirectUrl( request );
+            string scopeUserFriends = ( GetAttributeValue( "SyncFriends" ).AsBoolean( false ) ) ? ",user_friends" : string.Empty;
 
-            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email,user_friends",
+            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
                 GetAttributeValue( "AppID" ),
                 HttpUtility.UrlEncode( redirectUri ),
                 HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );

@@ -19,7 +19,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Web.Cache
 {

@@ -17,6 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -35,7 +36,7 @@ namespace Rock.Model
         /// <param name="transactionCode">The transaction code.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code" )]
+        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code", true )]
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
             return this.GetByTransactionCode( null, transactionCode );
@@ -64,6 +65,15 @@ namespace Rock.Model
                 return qry.FirstOrDefault();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Get transactions that have a FutureProcessingDateTime.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetFutureTransactions()
+        {
+            return Queryable().Where( t => t.FutureProcessingDateTime.HasValue );
         }
 
         /// <summary>
@@ -254,13 +264,17 @@ namespace Rock.Model
                 timespan = transaction.FinancialGateway.GetBatchTimeOffset();
             }
             var batch = batchService.GetByNameAndDate( batchName, refundTransaction.TransactionDateTime.Value, timespan );
-            decimal controlAmount = batch.ControlAmount + refundTransaction.TotalAmount;
-            batch.ControlAmount = controlAmount;
+
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0)
+            {
+                rockContext.SaveChanges();
+            }
 
             refundTransaction.BatchId = batch.Id;
-            batch.Transactions.Add( refundTransaction );
+            Add( refundTransaction );
 
-            errorMessage = string.Empty;
+            batchService.IncrementControlAmount( batch.Id, refundTransaction.TotalAmount, null, out errorMessage );
             return refundTransaction;
         }
 

@@ -13,11 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -56,6 +55,11 @@ namespace Rock.Web.UI.Controls
         /// Name control
         /// </summary>
         protected RockTextBox _tbName;
+
+        /// <summary>
+        /// The abbreviated name control
+        /// </summary>
+        protected RockTextBox _tbAbbreviatedName;
 
         /// <summary>
         /// Description control
@@ -427,6 +431,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the abbreviated name.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        public string AbbreviatedName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbAbbreviatedName.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label of the abbreviated name field.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name label.
+        /// </value>
+        public string AbbreviatedNameLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return string.IsNullOrEmpty( _tbAbbreviatedName.Label ) ? "Abbreviated Name" : _tbAbbreviatedName.Label;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Label = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -605,28 +650,6 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbIconCssClass.Visible = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether Show in Grid option is displayed
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsShowInGridVisible instead.", true )]
-        public bool ShowInGridVisible
-        {
-            get
-            {
-                EnsureChildControls();
-                return _cbShowInGrid.Visible;
-            }
-            set
-            {
-                EnsureChildControls();
-                _cbShowInGrid.Visible = value;
             }
         }
 
@@ -921,7 +944,7 @@ namespace Rock.Web.UI.Controls
         /// The field type id.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead", true )]
         public int? FieldTypeId
         {
             get
@@ -958,7 +981,7 @@ namespace Rock.Web.UI.Controls
         /// The qualifiers.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead", true )]
         public Dictionary<string, ConfigurationValue> Qualifiers
         {
             get
@@ -1244,6 +1267,12 @@ namespace Rock.Web.UI.Controls
             _tbName.Required = true;
             Controls.Add( _tbName );
 
+            _tbAbbreviatedName = new RockTextBox();
+            _tbAbbreviatedName.ID = "tbAbbreviatedName";
+            _tbAbbreviatedName.Label = AbbreviatedNameLabel;
+            _tbAbbreviatedName.Required = false;
+            Controls.Add( _tbAbbreviatedName );
+
             _cbIsActive = new RockCheckBox();
             _cbIsActive.ID = "_cbIsActive";
             _cbIsActive.Label = "Active";
@@ -1471,6 +1500,7 @@ namespace Rock.Web.UI.Controls
             string validationGroup = ValidationGroup;
             _validationSummary.ValidationGroup = validationGroup;
             _tbName.ValidationGroup = validationGroup;
+            _tbAbbreviatedName.ValidationGroup = validationGroup;
             _tbDescription.ValidationGroup = validationGroup;
             _cpCategories.ValidationGroup = validationGroup;
             _tbKey.ValidationGroup = validationGroup;
@@ -1555,10 +1585,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _tbDescription.RenderControl( writer );
+            _tbAbbreviatedName.RenderControl( writer );
             writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag(); // empty column
 
             writer.RenderEndTag();  // row
 
@@ -1566,7 +1600,18 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // row 3 col 1
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbDescription.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // row
+
+            // row 4
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // row 4 col 1
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cpCategories.RenderControl( writer );
@@ -1591,7 +1636,7 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
 
-            // row 3 col 2
+            // row 4 col 2
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfReadOnlyFieldTypeId.RenderControl( writer );
@@ -1719,6 +1764,7 @@ namespace Rock.Web.UI.Controls
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
+                this.AbbreviatedName = attribute.AbbreviatedName;
 
                 // only allow the fieldtype to be set if this a new attribute
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
@@ -1787,6 +1833,7 @@ namespace Rock.Web.UI.Controls
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;
+                attribute.AbbreviatedName = this.AbbreviatedName;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>

@@ -174,7 +174,7 @@ namespace Rock.Communication.Transport
                     }
 
                     // Subject
-                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left(998);
                     restRequest.AddParameter( "subject", subject );
 
                     // Body (html)
@@ -294,6 +294,7 @@ namespace Rock.Communication.Transport
                 {
                     // Resolve any possible merge fields in the replyTo address
                     replyTo.Name = "h:Reply-To";
+                    replyTo.Type = ParameterType.GetOrPost;
                     replyTo.Value = communication.ReplyToEmail.ResolveMergeFields( mergeFields, currentPerson );
                 }
 
@@ -500,6 +501,12 @@ namespace Rock.Communication.Transport
                         recipient.StatusNote = "No Email Address";
                         valid = false;
                     }
+                    else if ( !person.IsEmailActive )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Recipient Email Address is not active";
+                        valid = false;
+                    }
                     else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
@@ -596,213 +603,5 @@ namespace Rock.Communication.Transport
                 restRequest.AddParameter( "v:X-Mailgun-Variables", string.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
             }
         }
-
-        #region Obsolete
-        /// <summary>
-        /// Sends the specified communication.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead", true )]
-        public override void Send( Rock.Model.Communication communication )
-        {
-            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
-            Send( communication, mediumEntityId, null );
-        }
-
-        /// <summary>
-        /// Sends the specified template.
-        /// </summary>
-        /// <param name="template">The template.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
-        {
-            Send( template, recipients, appRoot, themeRoot, false );
-        }
-
-        /// <summary>
-        /// Sends the specified template.
-        /// </summary>
-        /// <param name="template">The template.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
-        {
-            var message = new RockEmailMessage();
-            message.FromEmail = template.From;
-            message.FromName = template.FromName;
-            message.SetRecipients( recipients );
-            template.To.SplitDelimitedValues().ToList().ForEach( to => message.AddRecipient( to ) );
-            message.CCEmails = template.Cc.SplitDelimitedValues().ToList();
-            message.BCCEmails = template.Bcc.SplitDelimitedValues().ToList();
-            message.Subject = template.Subject;
-            message.Message = template.Body;
-            message.ThemeRoot = themeRoot;
-            message.AppRoot = appRoot;
-            message.CreateCommunicationRecord = createCommunicationHistory;
-
-            var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
-            Send( message, mediumEntityId, null, out errorMessages );
-        }
-
-        /// <summary>
-        /// Sends the specified medium data to the specified list of recipients.
-        /// </summary>
-        /// <param name="mediumData">The medium data.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public override void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot )
-        {
-            Send( mediumData, recipients, appRoot, themeRoot, true );
-        }
-
-        /// <summary>
-        /// Sends the specified medium data to the specified list of recipients.
-        /// </summary>
-        /// <param name="mediumData">The medium data.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
-        {
-            Send( mediumData, recipients, appRoot, themeRoot, createCommunicationHistory, null );
-        }
-
-        /// <summary>
-        /// Sends the specified medium data to the specified list of recipients.
-        /// </summary>
-        /// <param name="mediumData">The medium data.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        /// <param name="metaData">The meta data.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
-        {
-            var message = new RockEmailMessage();
-            message.FromEmail = mediumData.GetValueOrNull( "From" ) ?? string.Empty;
-            message.ReplyToEmail = mediumData.GetValueOrNull( "ReplyTo" ) ?? string.Empty;
-            message.SetRecipients( recipients );
-            message.Subject = mediumData.GetValueOrNull( "Subject" ) ?? string.Empty;
-            message.Message = mediumData.GetValueOrNull( "Body" ) ?? string.Empty;
-            message.ThemeRoot = themeRoot;
-            message.AppRoot = appRoot;
-            message.CreateCommunicationRecord = createCommunicationHistory;
-            message.MessageMetaData = metaData;
-
-            var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
-            Send( message, mediumEntityId, null, out errorMessages );
-        }
-
-        /// <summary>
-        /// Sends the specified recipients.
-        /// </summary>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="from">From.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="body">The body.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
-        {
-            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, null );
-        }
-
-        /// <summary>
-        /// Sends the specified recipients.
-        /// </summary>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="from">From.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="body">The body.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="attachments">Attachments.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
-        {
-            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, attachments );
-        }
-
-        /// <summary>
-        /// Sends the specified recipients.
-        /// </summary>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="from">From.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="body">The body.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="attachments">Attachments.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
-        {
-            Send( recipients, from, fromName, subject, body, appRoot, themeRoot, attachments, true );
-        }
-
-        /// <summary>
-        /// Sends the specified recipients.
-        /// </summary>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="from">From.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="body">The body.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="attachments">Attachments.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
-        public void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
-        {
-            var message = new RockEmailMessage();
-            message.FromEmail = from;
-            message.FromName = fromName;
-            message.SetRecipients( recipients );
-            message.Subject = subject;
-            message.Message = body;
-            message.ThemeRoot = themeRoot;
-            message.AppRoot = appRoot;
-            message.CreateCommunicationRecord = createCommunicationHistory;
-
-            foreach ( var attachment in attachments )
-            {
-                var binaryFile = new BinaryFile();
-                binaryFile.ContentStream = attachment.ContentStream;
-                binaryFile.FileName = attachment.Name;
-                message.Attachments.Add( binaryFile );
-            }
-
-            var errorMessages = new List<string>();
-            int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
-            Send( message, mediumEntityId, null, out errorMessages );
-        }
-
-        #endregion
     }
 }

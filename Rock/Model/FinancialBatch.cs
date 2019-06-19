@@ -20,8 +20,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -116,14 +116,16 @@ namespace Rock.Model
         public string AccountingSystemCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the control amount. This should match the total value of all <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
-        /// included in the batch.
+        /// Gets or sets the control amount. This should match the total value of all
+        /// <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in the batch.
+        /// Use <see cref="FinancialBatchService.IncrementControlAmount"/> if you are incrementing the control amount
+        /// based on a transaction amount.
         /// </summary>
         /// <value>
         /// A <see cref="System.Decimal"/> representing the control amount of the batch.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal ControlAmount { get; set; }
 
         /// <summary>
@@ -345,5 +347,38 @@ namespace Rock.Model
 
     #endregion
 
+    #region Batch Classes
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [RockClientInclude( "Control Total Result from ~api/FinancialBatches/GetControlTotals/{id}" )]
+    public class ControlTotalResult
+    {
+        /// <summary>
+        /// Gets or sets the financial batch identifier.
+        /// </summary>
+        /// <value>
+        /// The financial batch identifier.
+        /// </value>
+        public int FinancialBatchId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total count.
+        /// </summary>
+        /// <value>
+        /// The control total count.
+        /// </value>
+        public int ControlTotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control total amount.
+        /// </summary>
+        /// <value>
+        /// The control total amount.
+        /// </value>
+        public decimal ControlTotalAmount { get; set; }
+    }
+
+    #endregion Batch Classes
 }

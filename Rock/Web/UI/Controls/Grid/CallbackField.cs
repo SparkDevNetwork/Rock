@@ -17,8 +17,6 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {

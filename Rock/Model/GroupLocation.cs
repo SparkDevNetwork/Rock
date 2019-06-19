@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -164,12 +164,16 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual ICollection<Schedule> Schedules
-        {
-            get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }
-            set { _schedules = value; }
-        }
-        private ICollection<Schedule> _schedules;
+        public virtual ICollection<Schedule> Schedules { get; set; } = new Collection<Schedule>();
+
+        /// <summary>
+        /// Gets or sets properties that are specific to Group+Location+Schedule 
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; } = new Collection<GroupLocationScheduleConfig>();
 
         /// <summary>
         /// Gets or sets the history changes.
@@ -189,7 +193,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
 
@@ -197,7 +201,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         string locationType = History.GetDefinedValueValue( null, GroupLocationTypeValueId );
                         locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
@@ -208,7 +212,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string locationTypeName = DefinedValueCache.GetName( GroupLocationTypeValueId ) ?? "Unknown";
                         int? oldLocationTypeId = entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
@@ -229,7 +233,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         string locationType = History.GetDefinedValueValue( null, entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull() );
                         locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";

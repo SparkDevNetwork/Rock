@@ -67,6 +67,12 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                             <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
                             <div class="margin-b-md">
@@ -138,6 +144,12 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 

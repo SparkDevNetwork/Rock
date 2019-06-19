@@ -21,10 +21,11 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    ///
+    /// Creates a bootstrap btn-group based off the items in a RadioButtonList.
+    /// Use <see cref="ButtonGroup.SelectedItemClass"/> and <see cref="ButtonGroup.UnselectedItemClass"/> to set the style of the buttons.
     /// </summary>
     [ToolboxData( "<{0}:ButtonGroup runat=server></{0}:ButtonGroup>" )]
-    public class ButtonGroup : RadioButtonList, IRockControl
+    public class ButtonGroup : RadioButtonList, IRockControl 
     {
         #region IRockControl implementation
 

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -130,6 +131,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this the Address control has a State drop-down list.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it uses a drop-down list; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasStateList
+        {
+            get
+            {
+                return ViewState["HasStateList"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["HasStateList"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
@@ -164,14 +184,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                return CustomValidator != null ? CustomValidator.ErrorMessage : string.Empty;
             }
 
             set
             {
-                if ( RequiredFieldValidator != null )
+                if ( CustomValidator != null )
                 {
-                    RequiredFieldValidator.ErrorMessage = value;
+                    CustomValidator.ErrorMessage = value;
                 }
             }
         }
@@ -186,7 +206,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                return !Required || CustomValidator == null || CustomValidator.IsValid;
             }
         }
 
@@ -205,6 +225,14 @@ namespace Rock.Web.UI.Controls
         /// The warning block.
         /// </value>
         public WarningBlock WarningBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
 
         /// <summary>
         /// Gets or sets the required field validator.
@@ -333,7 +361,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( _tbState.Visible )
+                if ( !HasStateList )
                 {
                     return _tbState.Text;
                 }
@@ -384,7 +412,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlCountry.SelectedValue;
+                if ( _ddlCountry.SelectedValue.IsNotNullOrWhiteSpace() )
+                {
+                    return _ddlCountry.SelectedValue;
+                }
+                else
+                {
+                    return GetDefaultCountry();
+                }
             }
 
             set
@@ -499,7 +534,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                this.RequiredFieldValidator.ValidationGroup = value;
+                this.CustomValidator.ValidationGroup = value;
                 _tbStreet1.ValidationGroup = value;
                 _tbStreet2.ValidationGroup = value;
                 _tbCity.ValidationGroup = value;
@@ -520,12 +555,26 @@ namespace Rock.Web.UI.Controls
         public AddressControl()
             : base()
         {
-            RockControlHelper.Init( this );
+            CustomValidator = new CustomValidator();
+            CustomValidator.ValidationGroup = this.ValidationGroup;
+
+            HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
         }
 
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            EnsureChildControls();
+            base.OnInit( e );
+        }
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -536,12 +585,14 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
+            this.Attributes["data-itemlabel"] = this.Label != string.Empty ? this.Label : "Address";
+            this.Attributes["data-required"] = this.Required.ToTrueFalse().ToLower();
+
             _tbStreet1 = new TextBox();
             Controls.Add( _tbStreet1 );
             _tbStreet1.ID = "tbStreet1";
-            _tbStreet1.CssClass = "form-control";
+            _tbStreet1.CssClass = "form-control js-street1";
 
-            this.RequiredFieldValidator.ControlToValidate = _tbStreet1.ID;
 
             _tbStreet2 = new TextBox();
             Controls.Add( _tbStreet2 );
@@ -551,7 +602,7 @@ namespace Rock.Web.UI.Controls
             _tbCity = new TextBox();
             Controls.Add( _tbCity );
             _tbCity.ID = "tbCity";
-            _tbCity.CssClass = "form-control";
+            _tbCity.CssClass = "form-control js-city";
 
             _tbCounty = new TextBox();
             Controls.Add( _tbCounty );
@@ -561,13 +612,13 @@ namespace Rock.Web.UI.Controls
             _tbState = new TextBox();
             Controls.Add( _tbState );
             _tbState.ID = "tbState";
-            _tbState.CssClass = "form-control";
+            _tbState.CssClass = "form-control js-state";
 
             _ddlState = new DropDownList();
             Controls.Add( _ddlState );
             _ddlState.ID = "ddlState";
             _ddlState.DataValueField = "Id";
-            _ddlState.CssClass = "form-control";
+            _ddlState.CssClass = "form-control js-state";
 
             _tbPostalCode = new TextBox();
             Controls.Add( _tbPostalCode );
@@ -582,6 +633,17 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.AutoPostBack = true;
             _ddlCountry.SelectedIndexChanged += _ddlCountry_SelectedIndexChanged;
             _ddlCountry.CssClass = "form-control";
+
+            // add custom validator
+            CustomValidator = new CustomValidator();
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.ClientValidationFunction = "Rock.controls.addressControl.clientValidate";
+            CustomValidator.ErrorMessage = ( this.Label != string.Empty ? this.Label : "Address" ) + " is required.";
+            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.Enabled = true;
+            CustomValidator.Display = ValidatorDisplay.Dynamic;
+            CustomValidator.ValidationGroup = ValidationGroup;
+            Controls.Add( CustomValidator );
 
             string defaultCountry = GetDefaultCountry();
             string defaultState = GetDefaultState();
@@ -657,6 +719,9 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // div.row
                 }
 
+                writer.AddAttribute( "class", "js-addressControl" );
+                writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
+                writer.AddAttribute( "data-itemlabel", this.Label != string.Empty ? this.Label : "Address" );
                 writer.AddAttribute( "id", this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( "class", "form-group " + ( this.Required ? "required" : string.Empty ) );
@@ -679,7 +744,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
+                writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3 " : "form-group col-sm-6 " + ( this.Required ? "required" : string.Empty ) ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbCity.Attributes["placeholder"] = cityLabel;
                 _tbCity.Attributes["autocomplete"] = "address-level2";
@@ -696,7 +761,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // div.form-group
                 }
 
-                writer.AddAttribute( "class", "form-group col-sm-3" );
+                writer.AddAttribute( "class", "form-group col-sm-3 " + ( this.Required ? "required" : string.Empty ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbState.Attributes["placeholder"] = stateLabel;
                 _tbState.Attributes["autocomplete"] = "address-level1";
@@ -712,6 +777,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // div.form-group
 
                 writer.RenderEndTag();  // div.form-row
+
+                CustomValidator.RenderControl( writer );
 
                 writer.RenderEndTag();      // div
             }
@@ -740,7 +807,7 @@ namespace Rock.Web.UI.Controls
 
             BindStates( _ddlCountry.SelectedValue );
 
-            if ( _tbState.Visible )
+            if ( !HasStateList )
             {
                 State = selectedStateFromEdit;
             }
@@ -755,7 +822,7 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the values. Use SetValues(null) to set defaults.
         /// </summary>
         /// <param name="location">The location.</param>
         public void SetValues( Rock.Model.Location location )
@@ -909,6 +976,7 @@ namespace Rock.Web.UI.Controls
 
             if ( stateList.Any() )
             {
+                HasStateList = true;
                 _ddlState.Visible = true;
                 _tbState.Visible = false;
 
@@ -930,6 +998,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
+                HasStateList = false;
                 _ddlState.Visible = false;
                 _tbState.Visible = true;
             }

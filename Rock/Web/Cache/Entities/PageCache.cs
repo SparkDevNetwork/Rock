@@ -25,7 +25,6 @@ using System.Xml.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 
 namespace Rock.Web.Cache
 {
@@ -779,12 +778,12 @@ namespace Rock.Web.Cache
             {
                 {"Id", Id},
                 {"Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle},
-                {"Current", isCurrentPage.ToString().ToLower()},
-                {"IsParentOfCurrent", isParentOfCurrent.ToString().ToLower()},
+                {"Current", isCurrentPage},
+                {"IsParentOfCurrent", isParentOfCurrent},
                 {"Url", new PageReference(Id, 0, parameters, queryString).BuildUrl()},
-                {"DisplayDescription", MenuDisplayDescription.ToString().ToLower()},
+                {"DisplayDescription", MenuDisplayDescription},
                 {"DisplayIcon", MenuDisplayIcon.ToString().ToLower()},
-                {"DisplayChildPages", MenuDisplayChildPages.ToString().ToLower()},
+                {"DisplayChildPages", MenuDisplayChildPages},
                 {"IconCssClass", IconCssClass ?? string.Empty},
                 {"Description", Description ?? string.Empty},
                 {"IconUrl", iconUrl}
@@ -824,7 +823,7 @@ namespace Rock.Web.Cache
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete("No longer needed", true )]
         public static string CacheKey( int pageId )
         {
             return string.Format( "Rock:Page:{0}", pageId );

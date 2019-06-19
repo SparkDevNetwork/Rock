@@ -18,23 +18,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using DotLiquid;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 using System.Linq.Dynamic;
-using DotLiquid.Util;
-using System.Text.RegularExpressions;
 using System.Linq.Expressions;
-using Rock.Reporting.DataFilter;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Utility;
+
+using DotLiquid;
+
+using Rock.Data;
+using Rock.Model;
 using Rock.Reporting;
+using Rock.Reporting.DataFilter;
 using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -69,7 +68,7 @@ namespace Rock.Lava.Blocks
         public override void Render( Context context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
-            if ( ! this.IsAuthorized(context) )
+            if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
@@ -83,7 +82,7 @@ namespace Rock.Lava.Blocks
 
             var model = string.Empty;
 
-            if (_entityName == "business" )
+            if ( _entityName == "business" )
             {
                 model = "Rock.Model.Person";
             }
@@ -219,12 +218,12 @@ namespace Rock.Lava.Blocks
                         {
                             case "person":
                                 {
-                                    queryResult = PersonFilters( (IQueryable<Person>)queryResult, parms );
+                                    queryResult = PersonFilters( ( IQueryable<Person> ) queryResult, parms );
                                     break;
                                 }
                             case "business":
                                 {
-                                    queryResult = BusinessFilters( (IQueryable<Person>)queryResult, parms );
+                                    queryResult = BusinessFilters( ( IQueryable<Person> ) queryResult, parms );
                                     break;
                                 }
                         }
@@ -240,7 +239,7 @@ namespace Rock.Lava.Blocks
                         if ( parms.Any( p => p.Key == "ids" ) )
                         {
                             var value = parms["ids"].ToString().Split( ',' ).Select( int.Parse ).ToList();
-                            queryResult = queryResult.Where( x => value.Contains(x.Id ) );
+                            queryResult = queryResult.Where( x => value.Contains( x.Id ) );
                             hasFilter = true;
                         }
 
@@ -295,7 +294,7 @@ namespace Rock.Lava.Blocks
                                     if ( attributeId.HasValue )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        if ( dbContext is RockContext)
+                                        if ( dbContext is RockContext )
                                         {
                                             var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
                                             ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
@@ -395,7 +394,7 @@ namespace Rock.Lava.Blocks
         /// <param name="query">The query.</param>
         /// <param name="parms">The parms.</param>
         /// <returns></returns>
-        private IQueryable<IEntity> PersonFilters(IQueryable<Person> query, Dictionary<string,string> parms)
+        private IQueryable<IEntity> PersonFilters( IQueryable<Person> query, Dictionary<string, string> parms )
         {
             // limit to record type of person
             var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
@@ -405,7 +404,7 @@ namespace Rock.Lava.Blocks
             // filter out deceased records unless they specifically want them
             var includeDeceased = false;
 
-            if (parms.Any( p => p.Key == "includedeceased" ) )
+            if ( parms.Any( p => p.Key == "includedeceased" ) )
             {
                 includeDeceased = parms["includedeceased"].AsBoolean( false );
             }
@@ -723,29 +722,33 @@ namespace Rock.Lava.Blocks
                         AttributeCache filterAttribute = null;
                         Expression attributeWhereExpression = null;
 
+                        var attributeKey = property;
+
                         // We would really love to further qualify this beyond the EntityType by including the
                         // EntityTypeQualifier and EntityTypeQualifierValue but we can't easily do that so, we
                         // will do that "Just in case..." code below (because this actually happened in our Spark
                         // environment.
-                        foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
+                        // Also, there could be multiple attributes that have the same key (due to attribute qualifiers or just simply a duplicate key)
+                        var entityAttributeListForAttributeKey = AttributeCache.GetByEntity( entityTypeCache.Id )
+                            .SelectMany( a => a.AttributeIds )
+                            .Select( a => AttributeCache.Get( a ) )
+                            .Where( a => a != null && a.Key == attributeKey ).ToList();
+
+
+                        // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
+                        // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type
+                        foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
-                            var attribute = AttributeCache.Get( id );
+                            filterAttribute = attribute;
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
-                            // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
-                            // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type
-                            if ( attribute.Key == property )
+                            if ( attributeWhereExpression == null )
                             {
-                                filterAttribute = attribute;
-                                var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
-
-                                if ( attributeWhereExpression == null )
-                                {
-                                    attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
-                                }
-                                else
-                                {
-                                    attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
-                                }
+                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            }
+                            else
+                            {
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
                             }
                         }
 
@@ -755,12 +758,18 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                   if ( returnExpression == null )
+                    if ( returnExpression == null )
                     {
                         returnExpression = expression;
                     }
                     else
                     {
+                        if ( expression == null )
+                        {
+                            // unable to match to property or attribute, so just return what we got
+                            return returnExpression;
+                        }
+
                         if ( currentExpressionComparisonType == ExpressionComparisonType.And )
                         {
                             returnExpression = Expression.AndAlso( returnExpression, expression );

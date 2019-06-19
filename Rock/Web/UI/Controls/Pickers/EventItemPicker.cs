@@ -16,6 +16,7 @@
 //
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -45,6 +46,7 @@ namespace Rock.Web.UI.Controls
                                         Name = i.EventItem.Name
                                     } )
                                 .OrderBy( i => i.Calendar )
+                                .ThenBy( i => i.Name )
                                 .ToList();
 
                 foreach ( var calendarItem in calendarItems )

@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -48,6 +50,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the Attribute.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the description of the registration template.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the category identifier.
@@ -388,7 +399,7 @@ namespace Rock.Model
         /// The maximum registrants.
         /// </value>
         [DataMember]
-        public int MaxRegistrants { get; set; }
+        public int? MaxRegistrants { get; set; }
 
         /// <summary>
         /// Gets or sets the financial gateway identifier.

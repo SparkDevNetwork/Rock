@@ -19,10 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web
 {
@@ -256,7 +256,7 @@ namespace Rock.Web
         /// Flushes this instance.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove() method instead" )]
+        [Obsolete( "Use Remove() method instead", true )]
         public static void Flush()
         {
             Remove();

@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -163,6 +161,43 @@ namespace Rock.Attribute
             {
                 FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the EntityType.Guid that the Attribute List should be limited to.
+        /// </summary>
+        /// <value>
+        /// The entity type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_COLUMN_KEY );
+            set => FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_VALUE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( value ) );
         }
     }
 }

@@ -222,7 +222,7 @@ namespace Rock.Model
             {
                 for ( int responseIndex = 0; responseIndex < 4; responseIndex++ )
                 {
-                    response.QuestionNumber = ( questionIndex + 1 ).ToString( "D2" );
+                    response.QuestionNumber = ( questionIndex + 1 ).ToString();
                     response.ResponseNumber = ( responseIndex + 1 ).ToString();
                     response.ResponseID = response.QuestionNumber + response.ResponseNumber;
                     ;

@@ -16,11 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -28,6 +29,7 @@ namespace Rock.CheckIn
     /// Cached Check-in Label
     /// </summary>
     [DataContract]
+    [Serializable]
     public class KioskLabel : ItemCache<KioskLabel>
     {
         /// <summary>
@@ -88,7 +90,6 @@ namespace Rock.CheckIn
         /// <value>
         /// The merge fields.
         /// </value>
-        [DataMember]
         public Dictionary<string, string> MergeFields
         {
             get
@@ -122,8 +123,8 @@ namespace Rock.CheckIn
             }
         }
 
-
-        private Dictionary<string, int> _mergeCodeDefinedValueIds = null;
+        [DataMember]
+        private Dictionary<string, int> _mergeCodeDefinedValueIds { get; set; } = null;
 
         #region Static Methods
 
@@ -133,7 +134,7 @@ namespace Rock.CheckIn
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( Guid guid ) instead.")]
+        [Obsolete( "Use Get( Guid guid ) instead.", true)]
         public static KioskLabel Read( Guid guid )
         {
             return Get( guid );
@@ -205,7 +206,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( Guid guid ) instead.")]
+        [Obsolete( "Use Remove( Guid guid ) instead.", true )]
         public static void Flush( Guid guid )
         {
             Remove( guid );

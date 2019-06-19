@@ -19,7 +19,11 @@ using System;
 namespace Rock
 {
     /// <summary>
-    /// Marks the version at which an [Obsolete] item became obsolete
+    /// Marks the version at which an [Obsolete] item became obsolete. If the hot-fix version matters then include it, otherwise only the major version is required (e.g. 1.8, 1.8.5, 1.9.1).
+    /// This helps identify obsolete items that should throw warning, error, or get removed using the following rules
+    ///     - Current major public release and develop: Warning
+    ///     - Previous major public release: Error (set [Obsolete] error parameter to true which will prevent it from getting compiled if used)
+    ///     - Two major public versions ago:: Delete the obsolete item
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Constructor | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Event | AttributeTargets.Interface | AttributeTargets.Delegate, Inherited = false )]

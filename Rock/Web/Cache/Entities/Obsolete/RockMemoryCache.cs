@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+
 using StackExchange.Redis;
 
 namespace Rock.Web.Cache
@@ -32,7 +33,7 @@ namespace Rock.Web.Cache
     /// 
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "use RockCache instead" )]
+    [Obsolete( "use RockCache instead", true )]
     public class RockMemoryCache : MemoryCache
     {
         const string REDIS_CHANNEL_NAME = "rock-cache-instructions";

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -86,6 +87,8 @@ namespace Rock.Model
 		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
 		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
                     WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
+					-- and the child group type can't be a parent group type
+					AND [a].[ChildGroupTypeId] <> acte.[GroupTypeId]
                  )
                 SELECT *
                 FROM [GroupType]
@@ -134,6 +137,8 @@ namespace Rock.Model
 		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
 		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
                       WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+					  -- and the child group type can't be a parent group type
+					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
                 )
                 SELECT GT3.*
                 FROM CTE
@@ -170,6 +175,8 @@ namespace Rock.Model
 		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
 		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
                       WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+					  -- and the child group type can't be a parent group type
+					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
                 )
                 SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
                 FROM CTE

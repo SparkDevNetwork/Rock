@@ -1536,7 +1536,7 @@ namespace RockWeb.Blocks.Crm
                 int tagId = ddlTagList.SelectedValue.AsInteger();
 
                 var tag = new TagService( rockContext ).Get( tagId );
-                if ( tag != null && tag.IsAuthorized( "Tag", CurrentPerson ) )
+                if ( tag != null && tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson ) )
                 {
                     var taggedItemService = new TaggedItemService( rockContext );
 
@@ -1592,6 +1592,7 @@ namespace RockWeb.Blocks.Crm
 
                     var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
+                    launchWorkflowsTxn.InitiatorPersonAliasId = CurrentPersonAliasId;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }

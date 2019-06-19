@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -302,7 +303,8 @@ namespace Rock.Model
             numberUpDownGroup.ID = "fee_" + fee.Id.ToString();
             numberUpDownGroup.Label = fee.Name;
             numberUpDownGroup.Required = fee.IsRequired;
-            numberUpDownGroup.Controls.Clear();
+
+            numberUpDownGroup.NumberUpDownControls = new List<NumberUpDown>();
 
             foreach ( var feeItem in fee.FeeItems )
             {
@@ -330,7 +332,7 @@ namespace Rock.Model
                     }
                 }
 
-                numberUpDownGroup.Controls.Add( numUpDown );
+                numberUpDownGroup.NumberUpDownControls.Add( numUpDown );
 
                 if ( setValues && feeValues != null && feeValues.Any() )
                 {
@@ -351,8 +353,8 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that has otherRegistrants instead.")]
+        [RockObsolete( "1.8" )]
+        [Obsolete("Use the override that has otherRegistrants instead.", true )]
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
         {
             AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );
@@ -482,7 +484,7 @@ namespace Rock.Model
 
                         foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
                         {
-                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.NumberUpDownControls )
                             {
                                 if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
                                 {

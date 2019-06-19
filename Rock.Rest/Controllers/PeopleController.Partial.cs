@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
+
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
@@ -142,6 +143,32 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = new Rock.Data.RockContext();
             return new PersonService( rockContext ).GetByPhonePartial( number, true ).Include( a => a.Aliases );
+        }
+
+        /// <summary>
+        /// GET a person record based on a temporary person token and increment the usage count of the token
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByToken/{token}" )]
+        public Person GetByToken( string token )
+        {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var personService = Service as PersonService;
+            var person = personService.GetByImpersonationToken( token, true, null );
+
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
         }
 
         /// <summary>
@@ -306,9 +333,6 @@ namespace Rock.Rest.Controllers
         /// <param name="person">The person.</param>
         /// <returns></returns>
         ///
-        [Authenticate, Secured]
-        [HttpPost]
-        [System.Web.Http.Route( "api/People" )]
         public override System.Net.Http.HttpResponseMessage Post( Person person )
         {
             SetProxyCreation( true );
@@ -395,6 +419,85 @@ namespace Rock.Rest.Controllers
             }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <summary>
+        /// Allows setting a configuration for the person for text-to-give.
+        /// </summary>
+        /// <param name="personId">The person to configure text-to-give options</param>
+        /// <param name="args">The options to set</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
+        public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody]ConfigureTextToGiveArgs args )
+        {
+            // Validate the person
+            var person = Service.Get( personId );
+
+            if ( person == null )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The person ID is not valid" );
+            }
+
+            // Load the person's saved accounts
+            var rockContext = Service.Context as RockContext;
+            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personsSavedAccounts = savedAccountService.Queryable()
+                .Include( sa => sa.PersonAlias )
+                .Where( sa => sa.PersonAlias.PersonId == personId )
+                .ToList();
+
+            // Loop through each saved account. Set default to false unless the args dictate that it is the default
+            var foundDefaultAccount = false;
+
+            foreach ( var savedAccount in personsSavedAccounts )
+            {
+                if ( !foundDefaultAccount && savedAccount.Id == args.FinancialPersonSavedAccountId )
+                {
+                    savedAccount.IsDefault = true;
+                    foundDefaultAccount = true;
+                }
+                else
+                {
+                    savedAccount.IsDefault = false;
+                }
+            }
+
+            // If the args specified an account to be default but it was not found, then return an error
+            if ( args.FinancialPersonSavedAccountId.HasValue && !foundDefaultAccount )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The saved account ID is not valid" );
+            }
+
+            // Validate the account if it is being set
+            if ( args.ContributionFinancialAccountId.HasValue )
+            {
+                var accountService = new FinancialAccountService( rockContext );
+                var account = accountService.Get( args.ContributionFinancialAccountId.Value );
+
+                if ( account == null )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The financial account ID is not valid" );
+                }
+
+                if ( !account.IsActive )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not active" );
+                }
+
+                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
+                {
+                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not public" );
+                }
+            }
+
+            // Set the person's contribution account ID
+            person.ContributionFinancialAccountId = args.ContributionFinancialAccountId;
+
+            // Success
+            rockContext.SaveChanges();
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
         #endregion
@@ -676,7 +779,7 @@ namespace Rock.Rest.Controllers
             }
 
             // force the link to open a new scrollable, re-sizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-            personInfoHtmlBuilder.Append( $"<p class='margin-t-sm'><small><a href='/person/{person.Id}' class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>" );
+            personInfoHtmlBuilder.Append( $"<p class='margin-t-sm'><small><a href='/person/{person.Id}' class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\" tabindex=\"-1\">View Profile</a></small></p>" );
 
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
             personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtmlBuilder.ToString();
@@ -690,21 +793,6 @@ namespace Rock.Rest.Controllers
 ";
 
             personSearchResult.PickerItemDetailsHtml = itemDetailHtml;
-        }
-
-        /// <summary>
-        /// Obsolete: Gets the search details
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Returns incorrect results, will be removed in a future version", true )]
-        public string GetImpersonationParameterObsolete( int personId )
-        {
-            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -1057,5 +1145,23 @@ namespace Rock.Rest.Controllers
         /// The picker item details person information HTML.
         /// </value>
         public string PickerItemDetailsPersonInfoHtml { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ConfigureTextToGiveArgs
+    {
+        /// <summary>
+        /// The Financial Account Id that will be the default gift designation for the person. Null value
+        /// clears the setting and requires the user to set before text-to-give will work for them.
+        /// </summary>
+        public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// The Saved Account associated with the person that will be used as the default payment method for
+        /// the person throughout Rock
+        /// </summary>
+        public int? FinancialPersonSavedAccountId { get; set; }
     }
 }

@@ -461,6 +461,13 @@ TransactionAccountDetails: [
                 return;
             }
 
+            if ( ( _ccGatewayComponent is IHostedGatewayComponent ) || _achGatewayComponent is IHostedGatewayComponent )
+            {
+                SetPage( 0 );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block does not support Gateways that have a hosted payment interface." );
+                return;
+            }
+
             var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
             if ( ( _ccGatewayComponent != null && _ccGatewayComponent.TypeGuid == testGatewayGuid ) ||
                 ( _achGatewayComponent != null && _achGatewayComponent.TypeGuid == testGatewayGuid ) )
@@ -1943,80 +1950,8 @@ TransactionAccountDetails: [
                     // Create Person/Family
                     familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
 
-                    // Get the relationship roles to use
-                    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-                    int businessContactRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    int businessRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    int ownerRoleId = knownRelationshipGroupType.Roles
-                        .Where( r =>
-                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-
-                    if ( ownerRoleId > 0 && businessContactRoleId > 0 && businessRoleId > 0 )
-                    {
-                        // get the known relationship group of the business contact
-                        // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
-                        var contactKnownRelationshipGroup = groupMemberService.Queryable()
-                            .Where( g =>
-                                g.GroupRoleId == ownerRoleId &&
-                                g.PersonId == person.Id )
-                            .Select( g => g.Group )
-                            .FirstOrDefault();
-                        if ( contactKnownRelationshipGroup == null )
-                        {
-                            // In some cases person may not yet have a know relationship group type
-                            contactKnownRelationshipGroup = new Group();
-                            groupService.Add( contactKnownRelationshipGroup );
-                            contactKnownRelationshipGroup.Name = "Known Relationship";
-                            contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                            var ownerMember = new GroupMember();
-                            ownerMember.PersonId = person.Id;
-                            ownerMember.GroupRoleId = ownerRoleId;
-                            contactKnownRelationshipGroup.Members.Add( ownerMember );
-                        }
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = business.Id;
-                        groupMember.GroupRoleId = businessRoleId;
-                        contactKnownRelationshipGroup.Members.Add( groupMember );
-
-                        // get the known relationship group of the business
-                        // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
-                        var businessKnownRelationshipGroup = groupMemberService.Queryable()
-                            .Where( g =>
-                                g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                                g.PersonId == business.Id )
-                            .Select( g => g.Group )
-                            .FirstOrDefault();
-                        if ( businessKnownRelationshipGroup == null )
-                        {
-                            // In some cases business may not yet have a know relationship group type
-                            businessKnownRelationshipGroup = new Group();
-                            groupService.Add( businessKnownRelationshipGroup );
-                            businessKnownRelationshipGroup.Name = "Known Relationship";
-                            businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                            var ownerMember = new GroupMember();
-                            ownerMember.PersonId = business.Id;
-                            ownerMember.GroupRoleId = ownerRoleId;
-                            businessKnownRelationshipGroup.Members.Add( ownerMember );
-                        }
-                        var businessGroupMember = new GroupMember();
-                        businessGroupMember.PersonId = person.Id;
-                        businessGroupMember.GroupRoleId = businessContactRoleId;
-                        businessKnownRelationshipGroup.Members.Add( businessGroupMember );
-
-                        rockContext.SaveChanges();
-                    }
+                    personService.AddContactToBusiness( business.Id, person.Id );
+                    rockContext.SaveChanges();
                 }
 
                 business.LastName = txtBusinessName.Text;
@@ -2421,6 +2356,9 @@ TransactionAccountDetails: [
             paymentInfo.State = acAddress.State;
             paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( "TransactionType" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
         }
@@ -2854,18 +2792,6 @@ TransactionAccountDetails: [
                 DeleteOldTransaction( _scheduledTransactionToBeTransferred.Id );
             }
 
-            // Add a note about the change
-            var noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
-            if ( noteType != null )
-            {
-                var noteService = new NoteService( rockContext );
-                var note = new Note();
-                note.NoteTypeId = noteType.Id;
-                note.EntityId = scheduledTransaction.Id;
-                note.Caption = "Created Transaction";
-                note.Text = changeSummary.ToString();
-                noteService.Add( note );
-            }
             rockContext.SaveChanges();
 
             ScheduleId = scheduledTransaction.Id;
@@ -2963,13 +2889,8 @@ TransactionAccountDetails: [
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            }            
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
-            transaction.BatchId = batch.Id;
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2982,7 +2903,20 @@ TransactionAccountDetails: [
                 }
             }
 
-            batch.Transactions.Add( transaction );
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0 )
+            {
+                rockContext.SaveChanges();
+            }
+
+            var errorMessage = string.Empty;
+            batch = batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
+            transaction.BatchId = batch.Id;
+
+            // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+            financialTransactionService.Add( transaction );
 
             rockContext.SaveChanges();
             transaction.SaveAttributeValues();

@@ -1,4 +1,6 @@
 
+@enable-global-custom-controls: true;
+
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;                      // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
 @body-background:             #fafafa;                      // The page background color. #color
@@ -245,6 +247,8 @@
 @input-group-addon-bg:           @gray-lighter;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
 @input-group-addon-border-color: @input-border;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
 
+@control-label-weight:           @font-weight-semibold;
+
 //// Picker
 @picker-action-bg:            @ui-2;                          // The background color of the actions bar at the bottom of the picker dropdown.
 
@@ -480,6 +484,7 @@
 @tree-selected-color:         #fff;                           // Text color of selected items in the treeview.
 
 // Buttons
+@enable-btn-focus-outline:    true;
 @btn-font-weight:             normal;
 //--
 @btn-default-color:           @gray-dark;
@@ -556,3 +561,16 @@
 @dropdown-header-color:          @gray-light;
 //--
 @dropdown-caret-color:           @link-color;
+
+// Add Button focus shadow
+.btn-outline-mixin(true) {
+  .button-variant(@color; @background; @border) {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      outline: 0;
+      box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
+    }
+  }
+}
+.btn-outline-mixin(false) { }
+.btn-outline-mixin(@enable-btn-focus-outline);

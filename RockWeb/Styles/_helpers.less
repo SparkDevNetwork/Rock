@@ -120,7 +120,7 @@
 }
 
 .text-normal {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 .text-light {
@@ -419,7 +419,7 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  overflow: hidden;
+  height: 100%;
 }
 
 @media @md {
@@ -427,7 +427,7 @@
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    overflow: hidden;
+    height: 100%;
   }
 }
 
@@ -501,14 +501,21 @@
   width: 33.33333%;
 }
 
-.text-center {
-  text-align: center;
+.unselectable {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.text-left {
-  text-align: left;
-}
+.text-left           { text-align: left !important; }
+.text-right          { text-align: right !important;  }
+.text-center         { text-align: center !important; }
 
-.text-right {
-  text-align: right;
-}
+// BS4 Alignment Utilities
+.align-baseline    { vertical-align: baseline !important; } // Browser default
+.align-top         { vertical-align: top !important; }
+.align-middle      { vertical-align: middle !important; }
+.align-bottom      { vertical-align: bottom !important; }
+.align-text-bottom { vertical-align: text-bottom !important; }
+.align-text-top    { vertical-align: text-top !important; }

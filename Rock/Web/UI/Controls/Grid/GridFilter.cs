@@ -17,9 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -562,33 +562,6 @@ namespace Rock.Web.UI.Controls
             /// The value.
             /// </value>
             public string Value { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs" /> class.
-            /// </summary>
-            /// <param name="key">The key.</param>
-            /// <param name="name">The name.</param>
-            /// <param name="value">The value.</param>
-            [RockObsolete( "1.7.4" )]
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
-            public DisplayFilterValueArgs( string key, string name, string value )
-            {
-                Key = key;
-                Name = name;
-                Value = value;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
-            /// </summary>
-            /// <param name="userPreference">The user preference.</param>
-            [RockObsolete( "1.7.4" )]
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
-            public DisplayFilterValueArgs( UserPreference userPreference ) :
-                this( userPreference, null )
-            {
-                //
-            }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.

@@ -178,7 +178,7 @@ namespace Rock.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
-                            if ( attribute != null )
+                            if ( attribute != null && attribute.IsActive )
                             {
                                 selectedAttributes.Add( columnIndex, attribute );
 
@@ -198,10 +198,11 @@ namespace Rock.Reporting
                                     boundField.HtmlEncode = false;
                                     ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
                                         string resultHtml = null;
-                                        if (e.DataValue != null)
+                                        var attributeValue = e.DataValue ?? attribute.DefaultValueAsType;
+                                        if ( attributeValue != null)
                                         {
                                             bool condensed = true;
-                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue.ToString(), attribute.QualifierValues, condensed );
+                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, attributeValue.ToString(), attribute.QualifierValues, condensed );
                                             
                                         }
 
@@ -415,7 +416,7 @@ namespace Rock.Reporting
         /// <param name="phFilters">The ph filters.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete()]
+        [Obsolete("", true )]
         public static DataViewFilterOverrides GetFilterOverridesFromControls( PlaceHolder phFilters )
         {
             return GetFilterOverridesFromControls( null, phFilters );

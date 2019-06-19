@@ -18,9 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-
-using Rock.Utility;
 
 namespace Rock
 {
@@ -138,23 +135,22 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the enum fields sorted by <see cref="EnumOrderAttribute"/>
+        /// Gets the individual enum values of a Flags enumeration value.
         /// </summary>
-        /// <typeparam name="TEnum">The type of the enum.</typeparam>
-        /// <param name="enumType">Type of the enum.</param>
-        /// <returns></returns>
-        public static IEnumerable<TEnum> GetOrderedValues<TEnum>( this Type enumType ) where TEnum : struct
+        /// <typeparam name="T">The Enum type of enumValue.</typeparam>
+        /// <param name="enumValue">The enum value whose flags should be retrieved.</param>
+        /// <returns>An enumerable collection of the individual flag values.</returns>
+        public static IEnumerable<T> GetFlags<T>( this Enum enumValue )
         {
-
-            var enumFields = enumType.GetFields( BindingFlags.Public | BindingFlags.Static );
-            var enumFieldsOrder = new Dictionary<TEnum, int>();
-            foreach ( var enumField in enumFields )
+            foreach ( var value in Enum.GetValues( enumValue.GetType() ).Cast<T>() )
             {
-                var enumFieldOrder = enumField.GetCustomAttribute<EnumOrderAttribute>()?.Order ?? int.MaxValue;
-                enumFieldsOrder.Add( ( TEnum ) enumField.GetValue( null ), enumFieldOrder );
-            }
+                Enum flag = ( Enum ) Enum.Parse( typeof( T ), value.ToString() );
 
-            return enumFieldsOrder.OrderBy( f => f.Value ).ThenBy( f => f.Key ).Select( a => a.Key ).ToList();
+                if ( enumValue.HasFlag( flag ) )
+                {
+                    yield return value;
+                }
+            }
         }
 
         #endregion Enum Extensions

@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
@@ -59,7 +57,7 @@ namespace Rock.Attribute
         /// <value>
         /// The editor mode.
         /// </value>
-        public CodeEditorMode EditorMode
+        public virtual CodeEditorMode EditorMode
         {
             get
             {
@@ -78,16 +76,16 @@ namespace Rock.Attribute
         /// <value>
         /// The editor theme.
         /// </value>
-        public CodeEditorTheme EditorTheme
+        public virtual CodeEditorTheme EditorTheme
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).ConvertToEnumOrNull<CodeEditorTheme>() ?? CodeEditorTheme.Rock;
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_THEME ).ConvertToEnumOrNull<CodeEditorTheme>() ?? CodeEditorTheme.Rock;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( EDITOR_THEME, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
 
@@ -97,16 +95,16 @@ namespace Rock.Attribute
         /// <value>
         /// The height of the editor.
         /// </value>
-        public int EditorHeight
+        public virtual int EditorHeight
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).AsIntegerOrNull() ?? 200;
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_HEIGHT ).AsIntegerOrNull() ?? 200;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( EDITOR_HEIGHT, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }
