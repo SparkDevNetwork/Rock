@@ -856,6 +856,13 @@ namespace Rock.NMI
         /// <returns></returns>
         private XElement GetBilling( PaymentInfo paymentInfo )
         {
+            // If giving from a Business, FirstName will be blank
+            // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
+            if ( paymentInfo.FirstName.IsNullOrWhiteSpace())
+            {
+                paymentInfo.FirstName = "-";
+            }
+
             XElement billingElement = new XElement( "billing",
                 new XElement( "first-name", paymentInfo.FirstName ),
                 new XElement( "last-name", paymentInfo.LastName ),
