@@ -91,21 +91,6 @@ namespace RockWeb.Blocks.Core
             return _dataContext;
         }
 
-        private bool _blockContextIsValid = false;
-
-        /// <summary>
-        /// Initialize the essential context in which this block is operating.
-        /// </summary>
-        /// <returns>True, if the block context is valid.</returns>
-        private bool InitializeBlockContext()
-        {
-            _entityId = PageParameter( PageParameterKey.EntityId ).AsInteger();
-
-            _blockContextIsValid = true;
-
-            return true;
-        }
-
         /// <summary>
         /// Get a unique friendly description for the current entity.
         /// </summary>
