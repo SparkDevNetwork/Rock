@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Communication
         defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
         order: 11,
         key: "AttachmentBinaryFileType" )]
+    [BooleanField( "Inactive Recipients Require Approval", "If any of the recipients are inactive the communication will need to be approved", true, "", 12 )]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
@@ -663,8 +664,15 @@ namespace RockWeb.Blocks.Communication
                         communication.Status = CommunicationStatus.Draft;
                         rockContext.SaveChanges();
 
-                        if ( CheckApprovalRequired( communication.Recipients.Count() ) && !IsUserAuthorized( "Approve" ) )
-                        {
+                        var personService = new PersonService( rockContext );
+                        var inactiveRecordStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                        var recipientPersonIds = this.Recipients.Select( r => r.PersonId ).ToList();
+                        var inactiveRecipientCount = personService.Queryable( true ).AsNoTracking().Where( a => recipientPersonIds.Contains( a.Id ) && a.RecordStatusValueId == inactiveRecordStatusId ).Count();
+
+                        bool inactiveApprove = GetAttributeValue( "InactiveRecipientsRequireApproval" ).AsBoolean();
+                        if ( CheckApprovalRequired( communication.Recipients.Count()) && !IsUserAuthorized( "Approve" ) 
+                            || ( inactiveApprove && inactiveRecipientCount > 0 && !IsUserAuthorized( "Approve" ) ))
+                       {
                             communication.Status = CommunicationStatus.PendingApproval;
                             message = "Communication has been submitted for approval.";
                         }

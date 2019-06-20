@@ -54,6 +54,9 @@
                                     <asp:Panel ID="pnlIndividualRecipientCount" runat="server" CssClass="label label-info">
                                         <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
                                     </asp:Panel>
+                                    <asp:Panel ID="pnlInactiveRecipientCount" runat="server" Visible="false" CssClass="label label-danger">
+                                        <asp:Literal ID="lInactiveRecipientCount" runat="server"  Text="" />
+                                    </asp:Panel>
                                 </p>
                             </div>
                             <div class="col-md-6">
@@ -77,6 +80,7 @@
                                     <Rock:SelectField></Rock:SelectField>
                                     <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
                                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <asp:BoundField DataField="RecordStatusValue" HeaderText="Record Status" SortExpression="RecordStatusValue" />
                                     <Rock:RockLiteralField ID="lRecipientAlert" HeaderText="Notes" />
                                     <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" />
                                     <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" />
