@@ -27,13 +27,13 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddMotivatorsEngagement();
-            MoveLegacyDiscAttributesToPADCategory();
-            CopyLegacyDiscPersonalityTypeToAssessmentDiscScore();
-            UpdateDiscProfileAttributeCategory();
-            UdpateLegacyBlockName();
-            CalendarAttributeStyling();
-            RemoveInvalidFirstNamesFromMetaFirstNameGenderLookup();
+            //AddMotivatorsEngagement();
+            //MoveLegacyDiscAttributesToPADCategory();
+            //CopyLegacyDiscPersonalityTypeToAssessmentDiscScore();
+            //UpdateDiscProfileAttributeCategory();
+            //UdpateLegacyBlockName();
+            //CalendarAttributeStyling();
+            //RemoveInvalidFirstNamesFromMetaFirstNameGenderLookup();
         }
 
         /// <summary>
