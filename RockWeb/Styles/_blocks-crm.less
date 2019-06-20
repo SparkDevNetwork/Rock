@@ -1336,6 +1336,18 @@ tr.inactive {
   text-align: center;
 }
 
+.disc-row {
+  margin-bottom: @disc-question-spacing;
+
+  &:after {
+    content: ' ';
+    display: block;
+    margin: @disc-question-spacing 0;
+    border-bottom: 1px solid @ui-4;
+    width: 100%;
+  }
+}
+
 
 @disc-chart-height: 425px;
 .discchart {
