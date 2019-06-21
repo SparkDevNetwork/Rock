@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
-    [Description( "Block used to set values specific to data automation (Updating Person Status, Family Campus, Etc)." )]
+    [Description( "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc)." )]
     public partial class DataAutomationSettings : RockBlock
     {
         #region private variables
@@ -505,18 +505,15 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                if ( isInterationTypeEnabled.Checked )
-                {
                     _reactivateSettings.Interactions = _reactivateSettings.Interactions ?? new List<InteractionItem>();
                     HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
                     NumberBox lastInteractionDays = rItem.FindControl( "nbInteractionDays" ) as NumberBox;
                     var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
                     {
-                        IsInteractionTypeEnabled = true,
+                        IsInteractionTypeEnabled = isInterationTypeEnabled.Checked,
                         LastInteractionDays = lastInteractionDays.Text.AsInteger()
                     };
                     _reactivateSettings.Interactions.Add( item );
-                }
             }
 
             // Inactivate
@@ -546,19 +543,17 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                if ( isInterationTypeEnabled.Checked )
-                {
                     _inactivateSettings.NoInteractions = _inactivateSettings.NoInteractions ?? new List<InteractionItem>();
                     HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
                     NumberBox lastInteractionDays = rItem.FindControl( "nbNoInteractionDays" ) as NumberBox;
-                    var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
-                    {
-                        IsInteractionTypeEnabled = true,
-                        LastInteractionDays = lastInteractionDays.Text.AsInteger()
-                    };
+                var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
+                {
+                    IsInteractionTypeEnabled =  isInterationTypeEnabled.Checked,
+                    LastInteractionDays = lastInteractionDays.Text.AsInteger()
+                };
 
                     _inactivateSettings.NoInteractions.Add( item );
-                }
+ 
             }
 
             // Campus Update
