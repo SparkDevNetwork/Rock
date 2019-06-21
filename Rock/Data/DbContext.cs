@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -38,6 +39,15 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        /// <summary>
+        /// This is the default SQL server isolation level
+        /// https://docs.microsoft.com/en-us/ef/ef6/saving/transactions#what-ef-does-by-default
+        /// </summary>
+        private const IsolationLevel DefaultIsolationLevel = IsolationLevel.ReadCommitted;
+
+        /// <summary>
+        /// Is there a transaction in progress?
+        /// </summary>
         private bool _transactionInProgress = false;
 
         /// <summary>
@@ -73,10 +83,20 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         public void WrapTransaction( Action action )
         {
+            WrapTransaction( DefaultIsolationLevel, action );
+        }
+
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="isolationLevel">The action.</param>
+        public void WrapTransaction( IsolationLevel isolationLevel, Action action )
+        {
             if ( !_transactionInProgress )
             {
                 _transactionInProgress = true;
-                using ( var dbContextTransaction = this.Database.BeginTransaction() )
+                using ( var dbContextTransaction = this.Database.BeginTransaction( isolationLevel ) )
                 {
                     try
                     {
