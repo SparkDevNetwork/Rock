@@ -218,14 +218,13 @@ namespace Rock.Model
 
             // Prevent simultaneous updates to the batch by guaranteeing repeatable reads (someone else can't change the database record
             // while it is also here in memory)
-            using ( var dbTransaction = rockContext.Database.BeginTransaction( IsolationLevel.RepeatableRead ) )
+            rockContext.WrapTransaction( IsolationLevel.RepeatableRead, () =>
             {
                 batch = Get( batchId );
 
                 if ( batch == null )
                 {
-                    errorMessage = "The batch id did not resolve";
-                    return null;
+                    throw new ArgumentException( "The batch id did not resolve" );
                 }
 
                 // Add the new transaction amount to the batch control amount
@@ -240,8 +239,7 @@ namespace Rock.Model
 
                 // Commit the changes to the database and release the locks
                 rockContext.SaveChanges();
-                dbTransaction.Commit();
-            }
+            } );
 
             return batch;
         }
