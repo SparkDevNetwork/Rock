@@ -2957,7 +2957,10 @@ END
         /// <summary>
         /// Deletes the security authentication for page.
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeTableName">Name of the entity type table.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="entityGuidField">The entity unique identifier field.</param>
         private void DeleteSecurityAuthForEntityBase( string entityTypeName, string entityTypeTableName, string entityGuid, string entityGuidField = "Guid" )
         {
             EnsureEntityTypeExists( entityTypeName );

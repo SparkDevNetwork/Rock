@@ -51,6 +51,7 @@
                         <asp:Panel ID="pnlGroupScheduleLocations" runat="server">
                             <Rock:RockRadioButtonList ID="rblSchedule" runat="server" Label="Schedule" AutoPostBack="true" OnSelectedIndexChanged="rblSchedule_SelectedIndexChanged" />
                             <label class="control-label js-location-label">Locations</label>
+                            <asp:HiddenField ID="hfAllSelectedLocationIds" runat="server" />
                             <Rock:RockCheckBoxList ID="cblGroupLocations" runat="server" AutoPostBack="true" OnSelectedIndexChanged="cblGroupLocations_SelectedIndexChanged" />
                         </asp:Panel>
 

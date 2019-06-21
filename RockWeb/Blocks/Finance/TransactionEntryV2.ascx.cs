@@ -2476,8 +2476,14 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                paymentInfo.Comment1 = paymentComment;
+                paymentInfo.Comment1 = paymentComment; 
             }
+
+            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
+            paymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
         }
@@ -2615,11 +2621,7 @@ mission. We are so grateful for your commitment.</p>
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
-
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
+            }            
 
             transaction.LoadAttributes( rockContext );
 
@@ -2641,6 +2643,8 @@ mission. We are so grateful for your commitment.</p>
                 rockContext.SaveChanges();
             }
 
+            var errorMessage = string.Empty;
+            batch = batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
             transaction.BatchId = batch.Id;
 
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch

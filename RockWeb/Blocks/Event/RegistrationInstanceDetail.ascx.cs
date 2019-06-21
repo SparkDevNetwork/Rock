@@ -5562,9 +5562,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( parentGroupId.HasValue )
                     {
-                        var validGroupIds = new GroupService( rockContext ).GetAllDescendents( parentGroupId.Value )
-                            .Select( g => g.Id )
-                            .ToList();
+                        var validGroupIds = new GroupService( rockContext ).GetAllDescendentGroupIds( parentGroupId.Value, false );
 
                         var existingPeopleInGroups = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()

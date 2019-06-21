@@ -100,10 +100,10 @@ namespace Rock.Model
         public Boolean RequiresRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of days given for the <see cref="Rock.Model.AssessmentType"/>. to be retaken.
+        /// Gets or sets the number of days given for the <see cref="Rock.Model.AssessmentType" />. to be retaken.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> for the minimum days allowed to retake the <see cref="Rock.Model.AssessmentType"/>.
+        /// The minimum days allowed to retake the <see cref="Rock.Model.AssessmentType" />.
         /// </value>
         [DataMember]
         public int MinimumDaysToRetake { get; set; }
@@ -113,7 +113,7 @@ namespace Rock.Model
         /// How long is this assessment valid before it must be taken again.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> for the valid duration of the <see cref="Rock.Model.AssessmentType"/>..
+        /// The valid duration of the <see cref="Rock.Model.AssessmentType"/>..
         /// </value>
         [DataMember]
         public int ValidDuration { get; set; }
@@ -128,14 +128,32 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color of the badge.
+        /// </summary>
+        /// <value>
+        /// The color of the badge.
+        /// </value>
         [MaxLength( 7 )]
         [DataMember]
         public string BadgeColor { get; set; }
 
+        /// <summary>
+        /// Gets or sets the badge summary lava.
+        /// </summary>
+        /// <value>
+        /// The badge summary lava.
+        /// </value>
         [DataMember]
         public string BadgeSummaryLava { get; set; }
 

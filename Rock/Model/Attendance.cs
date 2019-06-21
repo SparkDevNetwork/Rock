@@ -61,7 +61,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to. 
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that was checked in to.
@@ -126,7 +126,7 @@ namespace Rock.Model
         public int? AttendanceCodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value id.  Qualifier can be used to 
+        /// Gets or sets the qualifier value id.  Qualifier can be used to
         /// "qualify" attendance records.  There are not any system values
         /// for this particular defined type
         /// </summary>
@@ -299,7 +299,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Device"/> that was used to check in 
+        /// The <see cref="Rock.Model.Device"/> that was used to check in
         /// </value>
         [DataMember]
         public virtual Device Device { get; set; }
@@ -318,7 +318,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
-        /// </value>        
+        /// </value>
         [LavaInclude]
         public virtual Group SearchResultGroup { get; set; }
 
@@ -458,7 +458,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
+        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
@@ -714,7 +714,7 @@ namespace Rock.Model
         {
             if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
             {
-                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
+                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurrenceDate in that situation
                 if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
                 {
                     if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
@@ -724,7 +724,7 @@ namespace Rock.Model
                         {
                             var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
 
-                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurrence if Group,Location or Schedule changes
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurrence since it is really a completely different Occurrence if Group,Location or Schedule changes
                             var occurrenceDate = this.StartDateTime.Date;
 
                             var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();

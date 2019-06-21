@@ -190,10 +190,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
             }
-            else
-            {
-                hfGroupMemberAttributeValues.Value = GetGroupMemberAttributeValues();
-            }
         }
 
         /// <summary>
@@ -425,7 +421,11 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestService.Add( connectionRequest );
                     }
 
+                    connectionRequest.LoadAttributes( rockContext );
+                    avcAttributes.GetEditValues( connectionRequest );
+
                     rockContext.SaveChanges();
+                    connectionRequest.SaveAttributeValues( rockContext );
 
                     if ( newConnectorPersonAliasId.HasValue && !newConnectorPersonAliasId.Equals( oldConnectorPersonAliasId ) )
                     {
@@ -1661,6 +1661,8 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
+                avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
+
                 BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
                 BindConnectionRequestWorkflowsGrid();
             }
@@ -1742,6 +1744,8 @@ namespace RockWeb.Blocks.Connection
             }
 
             hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
+
+            avcAttributes.AddEditControls( connectionRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
             // Connectors, Groups, Member Roles, Member Status & Group Member Attributes
             RebindGroupsAndConnectors( connectionRequest, rockContext );

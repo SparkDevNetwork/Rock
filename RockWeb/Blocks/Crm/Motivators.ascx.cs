@@ -69,7 +69,7 @@ namespace Rockweb.Blocks.Crm
         Key = AttributeKeys.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
-        DefaultValue = "fa-key",
+        DefaultValue = "fa fa-key",
         Order = 3 )]
 
     [IntegerField( "Number of Questions",
@@ -106,11 +106,6 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         protected static class PageParameterKey
         {
-            /// <summary>
-            /// The person identifier. Use this to get a person's Motivator Assessment results.
-            /// </summary>
-            public const string PersonId = "PersonId";
-
             /// <summary>
             /// The assessment identifier
             /// </summary>
@@ -198,7 +193,7 @@ namespace Rockweb.Blocks.Crm
 </div>
 
 <p>
-    This graph is based on the average composite score for each cluster of Motivators.
+    This graph is based on the average composite score for each Motivator Theme.
 </p>
 
 {% for motivatorThemeScore in MotivatorThemeScores %}
@@ -303,15 +298,9 @@ namespace Rockweb.Blocks.Crm
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             string personKey = PageParameter( PageParameterKey.Person );
-            int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
 
             // set the target person according to the parameter or use Current user if not provided.
-            if ( personId.HasValue )
-            {
-                // Try the person ID first.
-                _targetPerson = new PersonService( new RockContext() ).Get( personId.Value );
-            }
-            else if ( personKey.IsNotNullOrWhiteSpace() )
+            if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 try
                 {
@@ -330,7 +319,7 @@ namespace Rockweb.Blocks.Crm
 
             if ( _targetPerson == null )
             {
-                if ( _isQuerystringPersonKey || personId.HasValue )
+                if ( _isQuerystringPersonKey )
                 {
                     HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
                 }

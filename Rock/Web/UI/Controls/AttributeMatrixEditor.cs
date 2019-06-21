@@ -226,7 +226,7 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.RowSelected += gMatrixItems_RowSelected;
 
             // Edit Item
-            _pnlEditMatrixItem = new Panel { ID = "_pnlEditMatrixItem", Visible = false, CssClass = "well js-validation-group" };
+            _pnlEditMatrixItem = new Panel { ID = "_pnlEditMatrixItem", Visible = false, CssClass = "well js-validation-group validation-group" };
             _hfMatrixItemId = new HiddenField { ID = "_hfMatrixItemId" };
             _pnlEditMatrixItem.Controls.Add( _hfMatrixItemId );
 

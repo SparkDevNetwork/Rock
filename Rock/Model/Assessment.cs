@@ -38,7 +38,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the person <see cref="Rock.Model.Person"/> who is associated with the assesment.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> representing the PersonAliasId of <see cref="Rock.Model.PersonAlias"/> associated with the Assessment.
+        /// A <see cref="System.Int32"/> representing the PersonAliasId of <see cref="Rock.Model.PersonAlias"/> associated with the Assessment.
         /// </value>
         [Required]
         [DataMember]
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.AssessmentType"/>
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> of the <see cref="Rock.Model.AssessmentType"/> associated with the Assessment.
+        /// A <see cref="System.Int32"/> of the <see cref="Rock.Model.AssessmentType"/> associated with the Assessment.
         /// </value>
         [Required]
         [DataMember]
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// Gets or sets the RequesterPersonAliasId of the <see cref="Rock.Model.Person"/> that requested the assessment.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> of the <see cref="Rock.Model.PersonAlias"/> making the request for the Assessment.
+        /// A <see cref="System.Int32"/> of the <see cref="Rock.Model.PersonAlias"/> making the request for the Assessment.
         /// </value>
         [DataMember]
         public int? RequesterPersonAliasId { get; set; }

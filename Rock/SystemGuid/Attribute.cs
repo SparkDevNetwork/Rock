@@ -311,22 +311,22 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_GROWTHPROPENSITY = "3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA";
 
         /// <summary>
-        /// The person attribute for the Motivator Cluster Influential
+        /// The person attribute for the Motivator Relational Theme
         /// </summary>
         public const string PERSON_MOTIVATORS_RELATIONAL_THEME = "CDCBA1D3-4129-43DB-9607-74F57BEBF807";
 
         /// <summary>
-        /// The person attribute for the Motivator Cluster Organizational
+        /// The person attribute for the Motivator Directional Theme
         /// </summary>
         public const string PERSON_MOTIVATOR_DIRECTIONAL_THEME = "0815E9BE-BC24-4568-AC1A-3ECCDFF44D9F";
 
         /// <summary>
-        /// The person attribute for the Motivator Cluster Intellectual
+        /// The person attribute for the Motivator Intellectual Theme
         /// </summary>
         public const string PERSON_MOTIVATORS_INTELLECTUAL_THEME = "592A5F89-5E8A-43D8-8843-760207D71699";
 
         /// <summary>
-        /// The person attribute for the Motivator Cluster Operational
+        /// The person attribute for the Motivator Positional Theme
         /// </summary>
         public const string PERSON_MOTIVATOR_POSITIONAL_THEME = "075FDF4D-DDEC-4106-B996-F48CD1EFC978";
 

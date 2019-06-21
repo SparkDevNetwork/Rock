@@ -60,6 +60,45 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the specified occurrence record, creating it if necessary.
+        /// </summary>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <returns></returns>
+        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
+        {
+            var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId );
+
+            if ( occurrence == null )
+            {
+                // If occurrence does not yet exist, create it
+                // A new context is used so the occurrence can be saved and used on multiple new attendance records that will be saved at once.
+                using ( var newContext = new RockContext() )
+                {
+                    occurrence = new AttendanceOccurrence
+                                 {
+                                     OccurrenceDate = occurrenceDate,
+                                     GroupId = groupId,
+                                     LocationId = locationId,
+                                     ScheduleId = scheduleId,
+                                 };
+
+                    var newOccurrenceService = new AttendanceOccurrenceService( newContext );
+                    newOccurrenceService.Add( occurrence );
+                    newContext.SaveChanges();
+
+                    // Query for the new occurrence using original context.
+                    occurrence = Get( occurrence.Id );
+                }
+            }
+
+            return occurrence;
+        }
+
+
+        /// <summary>
         /// Gets occurrence data for the selected group.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -283,7 +322,7 @@ namespace Rock.Model
         /// <summary>
         /// Creates and returns a list of missing attendance occurrences for the specified dates, scheduleId and groupLocationIds.
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence dates.</param>
+        /// <param name="occurrenceDateList">The occurrence date list.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>
@@ -322,7 +361,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the join queryable of AttendanceOccurrence, GroupLocation, and GroupLocationScheduleConfig for the specified occurrenceDate, scheduleId and groupLocationIds
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="occurrenceDateList">The occurrence date list.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="groupLocationIds">The group location ids.</param>
         /// <returns></returns>

@@ -484,6 +484,7 @@
 @tree-selected-color:         #fff;                           // Text color of selected items in the treeview.
 
 // Buttons
+@enable-btn-focus-outline:    true;
 @btn-font-weight:             normal;
 //--
 @btn-default-color:           @gray-dark;
@@ -560,3 +561,16 @@
 @dropdown-header-color:          @gray-light;
 //--
 @dropdown-caret-color:           @link-color;
+
+// Add Button focus shadow
+.btn-outline-mixin(true) {
+  .button-variant(@color; @background; @border) {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      outline: 0;
+      box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
+    }
+  }
+}
+.btn-outline-mixin(false) { }
+.btn-outline-mixin(@enable-btn-focus-outline);

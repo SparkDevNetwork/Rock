@@ -104,30 +104,8 @@ namespace Rock.Model
                     int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
         {
             // Check to see if an occurrence exists already
-            var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
-            var occurrence = occurrenceService.Get( checkinDateTime.Date, groupId, locationId, scheduleId );
-
-            if ( occurrence == null )
-            {
-                // If occurrence does not yet exists, use a new context and create it
-                using ( var newContext = new RockContext() )
-                {
-                    occurrence = new AttendanceOccurrence
-                    {
-                        OccurrenceDate = checkinDateTime.Date,
-                        GroupId = groupId,
-                        LocationId = locationId,
-                        ScheduleId = scheduleId,
-                    };
-
-                    var newOccurrenceService = new AttendanceOccurrenceService( newContext );
-                    newOccurrenceService.Add( occurrence );
-                    newContext.SaveChanges();
-
-                    // Query for the new occurrence using original context.
-                    occurrence = occurrenceService.Get( occurrence.Id );
-                }
-            }
+            var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
+            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId );
 
             // If we still don't have an occurrence record (i.e. validation failed) return null 
             if ( occurrence == null )

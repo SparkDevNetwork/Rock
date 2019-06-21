@@ -356,6 +356,22 @@
     <Compile Include="Migrations\201906051958565_Rollup_0605.Designer.cs">
       <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906060208084_UpdateGroupScheduleSystemEmails.cs" />
+    <Compile Include="Migrations\201906060208084_UpdateGroupScheduleSystemEmails.Designer.cs">
+      <DependentUpon>201906060208084_UpdateGroupScheduleSystemEmails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906192243232_Rollup_0618.cs" />
+    <Compile Include="Migrations\201906192243232_Rollup_0618.Designer.cs">
+      <DependentUpon>201906192243232_Rollup_0618.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906201538380_Assessments4.cs" />
+    <Compile Include="Migrations\201906201538380_Assessments4.Designer.cs">
+      <DependentUpon>201906201538380_Assessments4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906202222262_Rollup_0620.cs" />
+    <Compile Include="Migrations\201906202222262_Rollup_0620.Designer.cs">
+      <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -863,6 +879,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906051958565_Rollup_0605.resx">
       <DependentUpon>201906051958565_Rollup_0605.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906060208084_UpdateGroupScheduleSystemEmails.resx">
+      <DependentUpon>201906060208084_UpdateGroupScheduleSystemEmails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906192243232_Rollup_0618.resx">
+      <DependentUpon>201906192243232_Rollup_0618.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906201538380_Assessments4.resx">
+      <DependentUpon>201906201538380_Assessments4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906202222262_Rollup_0620.resx">
+      <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

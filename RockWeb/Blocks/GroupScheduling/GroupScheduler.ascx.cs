@@ -381,11 +381,25 @@ btnCopyToClipboard.ClientID );
             }
 
             int scheduleId = rblSchedule.SelectedValue.AsInteger();
-            var groupLocationIdList = cblGroupLocations.SelectedValues.AsIntegerList();
+            var allSelectedLocationIds = new HashSet<int>( hfAllSelectedLocationIds.Value.SplitDelimitedValues().AsIntegerList() );
+            foreach ( var displayedLocationItem in cblGroupLocations.Items.OfType<ListItem>() )
+            {
+                var locationId = displayedLocationItem.Value.AsInteger();
+                if ( displayedLocationItem.Selected )
+                {
+                    allSelectedLocationIds.Add( locationId );
+                }
+                else
+                {
+                    allSelectedLocationIds.Remove( locationId );
+                }
+            }
+
+            hfAllSelectedLocationIds.Value = allSelectedLocationIds.ToList().AsDelimited( "," );
 
             this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, groupId.ToString() );
             this.SetBlockUserPreference( UserPreferenceKey.SelectedDate, ddlWeek.SelectedValue );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupLocationIds, groupLocationIdList.AsDelimited( "," ) );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupLocationIds, allSelectedLocationIds.ToList().AsDelimited( "," ) );
             this.SetBlockUserPreference( UserPreferenceKey.SelectedScheduleId, rblSchedule.SelectedValue );
 
             if ( group != null && group.SchedulingMustMeetRequirements )
@@ -415,7 +429,7 @@ btnCopyToClipboard.ClientID );
             pnlResourceFilterAlternateGroup.Visible = resourceListSourceType == SchedulerResourceListSourceType.AlternateGroup;
             pnlResourceFilterDataView.Visible = resourceListSourceType == SchedulerResourceListSourceType.DataView;
 
-            bool filterIsValid = groupId > 0 && scheduleId > 0 && groupLocationIdList.Any();
+            bool filterIsValid = groupId > 0 && scheduleId > 0 && cblGroupLocations.SelectedValues.Any();
 
             pnlScheduler.Visible = filterIsValid;
             nbFilterInstructions.Visible = !filterIsValid;
@@ -491,7 +505,9 @@ btnCopyToClipboard.ClientID );
                 }
 
                 // get the location ids of the selected group locations so that we can keep the selected locations even if the group changes
-                var selectedGroupLocationIds = cblGroupLocations.SelectedValuesAsInt;
+                var allSelectedLocationIds = hfAllSelectedLocationIds.Value.SplitDelimitedValues().AsIntegerList();
+
+                var selectedGroupLocationIds = allSelectedLocationIds;
                 var selectedLocationIds = new GroupLocationService( new RockContext() ).GetByIds( selectedGroupLocationIds ).Select( a => a.LocationId ).ToList();
 
                 cblGroupLocations.Items.Clear();
@@ -638,23 +654,26 @@ btnCopyToClipboard.ClientID );
 
             var attendanceOccurrencesOrderedList = attendanceOccurrencesList.OrderBy( a => a.ScheduledDateTime ).ThenBy( a => a.GroupLocationOrder ).ThenBy( a => a.LocationName ).ToList();
 
-            var unassignedLocationOccurrence = attendanceOccurrenceService.Queryable()
+            // if there are any people that signed up with no location preference, add the to a special list of "No Location Preference" occurrences to the top of the list
+            var unassignedLocationOccurrenceList = attendanceOccurrenceService.Queryable()
                 .Where( a => occurrenceDateList.Contains( a.OccurrenceDate ) && a.ScheduleId == scheduleId.Value && a.GroupId == groupId && a.LocationId.HasValue == false )
                 .Where( a => a.Attendees.Any( x => x.RequestedToAttend == true || x.ScheduledToAttend == true ) )
-                .FirstOrDefault();
+                .Select( a => new AttendanceOccurrenceRowItem
+                {
+                    LocationName = "No Location Preference",
+                    GroupLocationOrder = 0,
+                    LocationId = null,
+                    Schedule = a.Schedule,
+                    OccurrenceDate = a.OccurrenceDate,
+                    AttendanceOccurrenceId = a.Id,
+                    CapacityInfo = new CapacityInfo()
+                } )
+                .ToList()
+                .OrderBy( a => a.ScheduledDateTime )
+                .ToList();
 
-            if ( unassignedLocationOccurrence != null )
-            {
-                attendanceOccurrencesOrderedList.Insert(
-                    0,
-                    new AttendanceOccurrenceRowItem
-                    {
-                        LocationName = "No Location Preference",
-                        LocationId = null,
-                        AttendanceOccurrenceId = unassignedLocationOccurrence.Id,
-                        CapacityInfo = new CapacityInfo()
-                    } );
-            }
+
+            attendanceOccurrencesOrderedList.InsertRange( 0, unassignedLocationOccurrenceList );
 
             rptAttendanceOccurrences.DataSource = attendanceOccurrencesOrderedList;
             rptAttendanceOccurrences.DataBind();
@@ -807,7 +826,8 @@ btnCopyToClipboard.ClientID );
             lLocationTitle.Text = attendanceOccurrenceRowItem.LocationName;
             if ( attendanceOccurrenceRowItem.ScheduledDateTime.HasValue )
             {
-                lOccurrenceScheduledDateTime.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToShortDateTimeString();
+                // show date in 'Sunday, June 15, 2008 9:15 PM' format
+                lOccurrenceScheduledDateTime.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "f" );
                 hfAttendanceOccurrenceDate.Value = attendanceOccurrenceRowItem.ScheduledDateTime.Value.Date.ToISO8601DateString();
             }
         }
@@ -852,6 +872,7 @@ btnCopyToClipboard.ClientID );
 
         protected void cblGroupLocations_SelectedIndexChanged( object sender, EventArgs e )
         {
+            var toggledLocation = sender;
             ApplyFilter();
         }
 

@@ -260,6 +260,7 @@ namespace RockWeb.Blocks.GroupScheduling
                                 .OrderBy( a => a.RSVP == RSVP.Yes ? 0 : 1 )
                                 .ThenBy( a => ( a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown ) ? 0 : 1 )
                                 .ThenBy( a => a.RSVP == RSVP.No ? 0 : 1 )
+                                .ThenBy( a => a.ScheduledPerson.LastName )
                                 .ToList();
 
                             foreach ( var scheduledPerson in scheduledPersonList )

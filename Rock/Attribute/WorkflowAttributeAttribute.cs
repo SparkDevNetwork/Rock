@@ -47,6 +47,12 @@ namespace Rock.Attribute
             }
         }
 
+        /// <summary>
+        /// Gets or sets the field type class names.
+        /// </summary>
+        /// <value>
+        /// The field type class names.
+        /// </value>
         public string[] FieldTypeClassNames
         {
             get
