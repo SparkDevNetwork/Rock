@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -3337,7 +3338,7 @@ namespace RockWeb.Blocks.Event
 
                 var batchChanges = new History.HistoryChangeList();
 
-                rockContext.WrapTransaction( () =>
+                rockContext.WrapTransaction( IsolationLevel.RepeatableRead, () =>
                 {
                     var batchService = new FinancialBatchService( rockContext );
 
