@@ -733,13 +733,17 @@ namespace Rock.Financial
                 // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
-                _financialTransactionService.Add( financialTransaction );
-
-                // Update the batch control amount
-                batch = _financialBatchService.IncrementControlAmount( batch.Id, financialTransaction.TotalAmount, batchChanges, out var errorMessage );                
+                _financialTransactionService.Add( financialTransaction );                             
             }
 
             _rockContext.SaveChanges();
+
+            if ( _futureTransaction == null )
+            {
+                // Update the batch control amount
+                _financialBatchService.IncrementControlAmount( batch.Id, financialTransaction.TotalAmount, batchChanges );
+                _rockContext.SaveChanges();
+            }
 
             // Save the changes history for the batch
             HistoryService.SaveChanges(
