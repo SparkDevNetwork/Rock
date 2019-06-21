@@ -821,30 +821,30 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOTIVATOR_GROWTH_PROPENSITY = "605F3702-6AE7-4545-BEBE-23693E60031C";
 
-        #endregion
+        #endregion Motivator
 
-        #region Motivator Cluster
-
-        /// <summary>
-        /// Motivator Cluster: Influential 
-        /// </summary>
-        public const string MOTIVATOR_CLUSTER_INFLUENTIAL = "840C414E-A261-4243-8302-6117E8949FE4";
+        #region Motivator Theme
 
         /// <summary>
-        /// Motivator Cluster: Organizational 
+        /// Motivator Theme: Relational
         /// </summary>
-        public const string MOTIVATOR_CLUSTER_ORGANIZATIONAL = "112A35BE-3108-48D9-B057-125A788AB531";
+        public const string MOTIVATOR_RELATIONAL_THEME = "840C414E-A261-4243-8302-6117E8949FE4";
 
         /// <summary>
-        /// Motivator Cluster: Intellectual 
+        /// Motivator Theme: Directional 
         /// </summary>
-        public const string MOTIVATOR_CLUSTER_INTELLECTUAL = "58FEF15F-561D-420E-8937-6CF51D296F0E";
+        public const string MOTIVATOR_DIRECTIONAL_THEME = "112A35BE-3108-48D9-B057-125A788AB531";
 
         /// <summary>
-        /// Motivator Cluster: Operational 
+        /// Motivator Theme: Intellectual 
         /// </summary>
-        public const string MOTIVATOR_CLUSTER_OPERATIONAL = "84322020-4E27-44EF-88F2-EAFDB7286A01";
+        public const string MOTIVATOR_INTELLECTUAL_THEME = "58FEF15F-561D-420E-8937-6CF51D296F0E";
 
-        #endregion
+        /// <summary>
+        /// Motivator Theme: Positional 
+        /// </summary>
+        public const string MOTIVATOR_POSITIONAL_THEME = "84322020-4E27-44EF-88F2-EAFDB7286A01";
+
+        #endregion Motivator Theme
     }
 }

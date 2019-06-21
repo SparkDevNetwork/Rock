@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -67,63 +68,80 @@ namespace Rock.Field
         /// Returns true if the field for these FieldVisibilityRules should be visible given the supplied attributeValues
         /// </summary>
         /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="personFieldValues">The person field values.</param>
         /// <returns></returns>
-        public bool Evaluate( Dictionary<int, AttributeValueCache> attributeValues )
+        public bool Evaluate( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {
             bool visible = true;
             var fieldVisibilityRules = this;
 
-            if ( !fieldVisibilityRules.RuleList.Any() || !attributeValues.Any() )
+            if ( !fieldVisibilityRules.RuleList.Any() || ( !attributeValues.Any() && !personFieldValues.Any() ) )
             {
-                // if no rules or attribute values, just exit
+                // if no rules or no values, just exit
                 return visible;
             }
 
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToAttributeGuid.HasValue ) )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
             {
+                bool conditionResult;
                 var filterValues = new List<string>();
+                var comparedToField = RegistrationTemplateFormFieldCache.Get( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.Value );
 
-                var comparedToAttribute = AttributeCache.Get( fieldVisibilityRule.ComparedToAttributeGuid.Value );
-
-                // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
-                if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                if ( comparedToField?.AttributeId != null )
                 {
-                    fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
+                    var comparedToAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+
+                    // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
+                    if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                    {
+                        fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
+                    }
+
+                    filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
+                    filterValues.Add( fieldVisibilityRule.ComparedToValue );
+                    Expression entityCondition;
+
+                    ParameterExpression parameterExpression = Expression.Parameter( typeof( Rock.Model.AttributeValue ) );
+
+                    entityCondition = comparedToAttribute.FieldType.Field.AttributeFilterExpression( comparedToAttribute.QualifierValues, filterValues, parameterExpression );
+                    if ( entityCondition is NoAttributeFilterExpression )
+                    {
+                        continue;
+                    }
+
+                    var conditionLambda = Expression.Lambda<Func<Rock.Model.AttributeValue, bool>>( entityCondition, parameterExpression );
+                    var conditionFunc = conditionLambda.Compile();
+                    var comparedToAttributeValue = attributeValues.GetValueOrNull( comparedToAttribute.Id )?.Value;
+
+                    // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
+                    if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+                    {
+                        comparedToAttributeValue = comparedToAttributeValue?.ToLower();
+                    }
+
+                    // create an instance of an AttributeValue to run the expressions against
+                    var attributeValueToEvaluate = new Rock.Model.AttributeValue
+                    {
+                        AttributeId = comparedToAttribute.Id,
+                        Value = comparedToAttributeValue,
+                        ValueAsBoolean = comparedToAttributeValue.AsBooleanOrNull(),
+                        ValueAsNumeric = comparedToAttributeValue.AsDecimalOrNull(),
+                        ValueAsDateTime = comparedToAttributeValue.AsDateTime()
+                    };
+
+                    conditionResult = conditionFunc.Invoke( attributeValueToEvaluate );
                 }
-
-                filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
-                filterValues.Add( fieldVisibilityRule.ComparedToValue );
-                Expression entityCondition;
-
-                ParameterExpression parameterExpression = Expression.Parameter( typeof( Rock.Model.AttributeValue ) );
-
-                entityCondition = comparedToAttribute.FieldType.Field.AttributeFilterExpression( comparedToAttribute.QualifierValues, filterValues, parameterExpression );
-                if ( entityCondition is NoAttributeFilterExpression )
+                else if ( IsFieldSupported( comparedToField.PersonFieldType ) )
                 {
+                    var comparedToFieldValue = personFieldValues.GetValueOrNull( comparedToField.PersonFieldType );
+                    conditionResult = comparedToFieldValue == fieldVisibilityRule.ComparedToValue;
+                }
+                else
+                {
+                    // ignore if not an attribute and not a supported field type
                     continue;
                 }
 
-                var conditionLambda = Expression.Lambda<Func<Rock.Model.AttributeValue, bool>>( entityCondition, parameterExpression );
-                var conditionFunc = conditionLambda.Compile();
-                var comparedToAttributeValue = attributeValues.GetValueOrNull( comparedToAttribute.Id )?.Value;
-
-                // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
-                if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
-                {
-                    comparedToAttributeValue = comparedToAttributeValue?.ToLower();
-                }
-
-                // create an instance of an AttributeValue to run the expressions against
-                var attributeValueToEvaluate = new Rock.Model.AttributeValue
-                {
-                    AttributeId = comparedToAttribute.Id,
-                    Value = comparedToAttributeValue,
-                    ValueAsBoolean = comparedToAttributeValue.AsBooleanOrNull(),
-                    ValueAsNumeric = comparedToAttributeValue.AsDecimalOrNull(),
-                    ValueAsDateTime = comparedToAttributeValue.AsDateTime()
-                };
-
-                var conditionResult = conditionFunc.Invoke( attributeValueToEvaluate );
                 switch ( fieldVisibilityRules.FilterExpressionType )
                 {
                     case Rock.Model.FilterExpressionType.GroupAll:
@@ -168,6 +186,32 @@ namespace Rock.Field
         /// The debugger formatted rules.
         /// </value>
         internal string DebuggerFormattedRules => $"{FilterExpressionType} {this.RuleList.AsDelimited( " and " )}";
+
+        /// <summary>
+        /// Determines if the registration field type is supported for conditional field visibility
+        /// </summary>
+        /// <param name="fieldType"></param>
+        /// <returns></returns>
+        public static bool IsFieldSupported( RegistrationPersonFieldType fieldType )
+        {
+            return GetSupportedFieldTypeCache( fieldType ) != null;
+        }
+
+        /// <summary>
+        /// Gets the field type cache used for the given registration field type if it is supported
+        /// </summary>
+        /// <param name="fieldType"></param>
+        /// <returns></returns>
+        public static FieldTypeCache GetSupportedFieldTypeCache( RegistrationPersonFieldType fieldType )
+        {
+            switch ( fieldType )
+            {
+                case RegistrationPersonFieldType.Gender:
+                    return FieldTypeCache.Get( SystemGuid.FieldType.GENDER );
+                default:
+                    return null;
+            }
+        }
     }
 
     /// <summary>
@@ -177,13 +221,13 @@ namespace Rock.Field
     public class FieldVisibilityRule
     {
         /// <summary>
-        /// Gets or sets the compared to attribute unique identifier.
+        /// Gets or sets the compared to Form Field unique identifier.
         /// </summary>
         /// <value>
-        /// The compared to attribute unique identifier.
+        /// The compared to form field unique identifier.
         /// </value>
         [DataMember]
-        public Guid? ComparedToAttributeGuid { get; set; }
+        public Guid? ComparedToRegistrationTemplateFormFieldGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -220,10 +264,23 @@ namespace Rock.Field
         /// </returns>
         public override string ToString()
         {
-            var comparedToAttribute = this.ComparedToAttributeGuid.HasValue ? AttributeCache.Get( this.ComparedToAttributeGuid.Value ) : null;
-            List<string> filterValues = new List<string>( new string[2] { this.ComparisonType.ConvertToString(), this.ComparedToValue } );
-            var result = $"{comparedToAttribute?.Name} {comparedToAttribute?.FieldType.Field.FormatFilterValues( comparedToAttribute.QualifierValues, filterValues ) } ";
-            return result;
+            if ( ComparedToRegistrationTemplateFormFieldGuid.HasValue )
+            {
+                var comparedToField = RegistrationTemplateFormFieldCache.Get( this.ComparedToRegistrationTemplateFormFieldGuid.Value );                
+
+                if ( comparedToField?.AttributeId.HasValue == true )
+                {
+                    var comparedToAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                    var filterValues = new List<string>( new string[2] { this.ComparisonType.ConvertToString(), this.ComparedToValue } );
+                    return $"{comparedToAttribute?.Name} {comparedToAttribute?.FieldType.Field.FormatFilterValues( comparedToAttribute.QualifierValues, filterValues ) } ";
+                }
+                else if ( comparedToField.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    return $"{comparedToField.PersonFieldType.ConvertToString()} is {ComparedToValue}";
+                }
+            }
+            
+            return base.ToString();            
         }
     }
 }

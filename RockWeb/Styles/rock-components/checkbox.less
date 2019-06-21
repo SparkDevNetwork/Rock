@@ -87,11 +87,6 @@
     -webkit-column-break-inside: avoid-column;
     break-inside: avoid-column;
   }
-
-  .radio-inline + .radio-inline,
-  .checkbox-inline + .checkbox-inline {
-    margin-left: 0;
-  }
 }
 
 // Mixin
@@ -215,6 +210,11 @@
     input:checked ~ .label-text::after {
       background-image: @custom-radio-indicator-icon-checked;
     }
+  }
+
+  .radio-inline + .radio-inline,
+  .checkbox-inline + .checkbox-inline {
+    margin-left: 0;
   }
 }
 

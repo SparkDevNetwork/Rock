@@ -55,7 +55,14 @@ namespace Rock.Workflow.Action.CheckIn
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The load all
+            /// </summary>
             public const string LoadAll = "LoadAll";
+
+            /// <summary>
+            /// The remove
+            /// </summary>
             public const string Remove = "Remove";
         }
 

@@ -2701,11 +2701,11 @@ The logged-in person's information will be used to complete the registrar inform
                 hfFormGuidFilter.Value = formGuid.ToString();
                 hfFormFieldGuidFilter.Value = formFieldGuid.ToString();
                 var formField = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid == formFieldGuid );
-                var otherFormFields = FormFieldsState[formGuid].Where( a => a != formField && a.Attribute != null ).ToList();
+                var otherFormFields = FormFieldsState[formGuid].Where( a => a != formField ).ToList();
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableAttributes = otherFormFields.Select( a => a.Attribute ).ToDictionary( k => k.Guid, v => v );
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => rtff );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 

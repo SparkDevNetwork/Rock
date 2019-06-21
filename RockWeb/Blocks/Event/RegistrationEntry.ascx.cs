@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
@@ -37,6 +38,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Helper = Rock.Attribute.Helper;
 
 namespace RockWeb.Blocks.Event
 {
@@ -1320,7 +1322,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = false );
+                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
 
                 RegistrationTemplateDiscount discount = null;
                 bool validDiscount = true;
@@ -1937,7 +1939,7 @@ namespace RockWeb.Blocks.Event
                 // Reset the order after removing any registrants
                 RegistrationState.Registrants.Reverse();
             }
-            
+
         }
 
         #endregion
@@ -3367,10 +3369,6 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
                     }
 
-                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                    batch.ControlAmount = newControlAmount;
-
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
                     // If this is a new Batch, SaveChanges so that we can get the Batch.Id
@@ -3379,6 +3377,8 @@ namespace RockWeb.Blocks.Event
                         rockContext.SaveChanges();
                     }
 
+                    var errorMessage = string.Empty;
+                    batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -4477,13 +4477,15 @@ namespace RockWeb.Blocks.Event
                         value = firstRegistrant.FieldValues[field.Id].FieldValue;
                     }
 
+                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
+
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        CreatePersonField( field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
+                        CreatePersonField( hasDependantVisibilityRule, field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
                     }
                     else
                     {
-                        CreateAttributeField( form, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
                     }
                 }
 
@@ -4516,22 +4518,50 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
+        private static void CreatePersonField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
         {
             Control personFieldControl = field.GetPersonControl( setValue, fieldValue, familyMemberSelected, validationGroup );
 
             if ( personFieldControl != null )
             {
+                var fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
+                    RegistrationTemplateFormFieldId = field.Id,
+                    FieldVisibilityRules = field.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                };
+
+                parentControl.Controls.Add( fieldVisibilityWrapper );
+
                 if ( !string.IsNullOrWhiteSpace( field.PreText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PreText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PreText ) );
                 }
 
-                parentControl.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.EditControl = personFieldControl;
 
                 if ( !string.IsNullOrWhiteSpace( field.PostText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PostText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
+                }
+
+                if ( hasDependantVisibilityRule && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType ).Field;
+
+                    if ( fieldType.HasChangeHandler( personFieldControl ) )
+                    {
+                        fieldType.AddChangeHandler( personFieldControl, () =>
+                        {
+                            fieldVisibilityWrapper.TriggerEditValueUpdated( personFieldControl, new FieldVisibilityWrapper.FieldEventArgs( null, personFieldControl ) );
+                        } );
+                    }
                 }
             }
         }
@@ -4543,7 +4573,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4561,7 +4591,7 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                    AttributeId = attribute.Id,
+                    RegistrationTemplateFormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
@@ -4584,8 +4614,6 @@ namespace RockWeb.Blocks.Event
                 {
                     fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
                 }
-
-                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
 
                 if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                 {
@@ -5436,6 +5464,7 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var discount in discounts )
                 {
+                    RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
                     bool validDiscount = true;
 
                     if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
@@ -5477,7 +5506,6 @@ namespace RockWeb.Blocks.Event
 
                     if ( validDiscount && discount.MaxRegistrants.HasValue )
                     {
-                        RegistrationState.Registrants.ForEach( r => r.DiscountApplies = false );
                         for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
                         {
                             RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;

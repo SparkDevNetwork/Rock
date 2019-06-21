@@ -35,7 +35,7 @@ namespace Rock.Financial
     /// 1. Charging a payment immediately (most common)
     /// 2. "Dry-run" a payment that will be made in the future (probably from text-to-give)
     /// 3. Charging a "future payment" that originated from mode 2.
-    /// 
+    ///
     /// </summary>
     public class AutomatedPaymentProcessor
     {
@@ -81,10 +81,12 @@ namespace Rock.Financial
         /// Create a new payment processor to handle a single automated payment.
         /// </summary>
         /// <param name="currentPersonAliasId">The current user's person alias ID. Possibly the REST user.</param>
-        /// <param name="automatedPaymentArgs">The arguments describing how toi charge the payment and store the resulting transaction</param>
+        /// <param name="automatedPaymentArgs">The arguments describing how to charge the payment and store the resulting transaction</param>
         /// <param name="rockContext">The context to use for loading and saving entities</param>
-        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person
+        /// within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if
+        /// the schedule has already been processed according to it's frequency.</param>
         public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool enableDuplicateChecking = true, bool enableScheduleAdherenceProtection = true )
         {
             _rockContext = rockContext;
@@ -119,7 +121,7 @@ namespace Rock.Financial
 
             // The job charging these future transactions could have a variable run frequency and be charging a days worth at a time, so the duplicate
             // checking could very easily provide false positives. Therefore, we rely on the "dry-run" to have previously validated
-            _enableDuplicateChecking = false; // These future transactions should have already had a "dry-run" and been validated. 
+            _enableDuplicateChecking = false; // These future transactions should have already had a "dry-run" and been validated.
             _enableScheduleAdherenceProtection = false; // These future transactions should have already had a "dry-run" and been validated
 
             _personAliasService = new PersonAliasService( _rockContext );
@@ -158,7 +160,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Validates that the args do not seem to be a repeat charge on the same person in a short timeframe.
-        /// Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge does not seem repeated. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge is a repeat. False otherwise.</returns>
@@ -208,7 +210,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Validates that the frequency of the scheduled transaction appears to be adhered to 
+        /// Validates that the frequency of the scheduled transaction appears to be adhered to
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge appears to follow the schedule frequency. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge appears to follow the schedule. False otherwise</returns>
@@ -257,7 +259,7 @@ namespace Rock.Financial
 
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
-                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurence. {0}", instructionsToIgnore );
+                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurrences. {0}", instructionsToIgnore );
                     return false;
                 }
             }
@@ -322,7 +324,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if arguments are valid. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the arguments are valid. False otherwise.</returns>
@@ -728,15 +730,13 @@ namespace Rock.Financial
 
             if ( _futureTransaction == null )
             {
-                // Add the new transaction amount into the batch control amount
-                var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                // use the financialTransactionService to add the transaction instead of batch.Transactions
+                // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
                 _financialTransactionService.Add( financialTransaction );
+
+                // Update the batch control amount
+                batch = _financialBatchService.IncrementControlAmount( batch.Id, financialTransaction.TotalAmount, batchChanges, out var errorMessage );                
             }
 
             _rockContext.SaveChanges();
@@ -754,7 +754,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// If this payment porocessor is handling charging a future transaction, this method copies that future transaction into the appropriate args
+        /// If this payment processor is handling charging a future transaction, this method copies that future transaction into the appropriate args
         /// </summary>
         private void CopyFutureTransactionToArgs()
         {

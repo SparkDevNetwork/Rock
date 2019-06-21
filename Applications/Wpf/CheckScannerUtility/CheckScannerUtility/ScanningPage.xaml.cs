@@ -637,12 +637,12 @@ namespace Rock.Apps.CheckScannerUtility
 
             foreach ( var account in filteredAccounts )
             {
-                displayedAccountList.Add( new DisplayAccountValueModel( account ));
+                displayedAccountList.Add( new DisplayAccountValueModel( account ) );
             }
 
             int index = 0;
             displayedAccountList = displayedAccountList.OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
-            foreach (var displayedAccount in displayedAccountList)
+            foreach ( var displayedAccount in displayedAccountList )
             {
                 displayedAccount.Index = index++;
             }
@@ -1222,23 +1222,21 @@ namespace Rock.Apps.CheckScannerUtility
                 scannedDoc.Upload = true;
                 scannedDoc.CurrencyTypeValue = this._batchPage.SelectedCurrencyValue;
                 scannedDoc.SourceTypeValue = this._batchPage.SelectedSourceTypeValue;
-                if ( scannedDoc.IsCheck )
-                {
-                    if ( _isBackScan )
-                    {
-                        scannedDoc = _currentMagtekScannedDoc;
-                        scannedDoc.BackImageData = e.ImageData;
-                    }
-                    else
-                    {
-                        // Check Bad Read without prompt
-                        if ( e.ScannedCheckMicrData.Contains( "?" ) )
-                        {
-                            scannedDoc.BadMicr = true;
-                        }
 
-                        scannedDoc.FrontImageData = e.ImageData;
+                if ( _isBackScan )
+                {
+                    scannedDoc = _currentMagtekScannedDoc;
+                    scannedDoc.BackImageData = e.ImageData;
+                }
+                else
+                {
+                    // Check Bad Read without prompt
+                    if ( scannedDoc.IsCheck && e.ScannedCheckMicrData.Contains( "?" ) )
+                    {
+                        scannedDoc.BadMicr = true;
                     }
+
+                    scannedDoc.FrontImageData = e.ImageData;
                 }
 
                 _isBackScan = false;

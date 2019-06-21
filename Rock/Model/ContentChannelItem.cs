@@ -419,6 +419,21 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Assigns the item global key to the current instance if one does not exist.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void AssignItemGlobalKey( Data.DbContext dbContext )
+        {
+            if ( this.ItemGlobalKey.IsNullOrWhiteSpace() )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                this.ItemGlobalKey = contentChannelItemSlugService.GetUniqueContentSlug( this.Title, null );
+            }
+        }
+
         /// <summary>
         /// Pres the save.
         /// </summary>
@@ -432,6 +447,10 @@ namespace Rock.Model
             {
                 ChildItems.Clear();
                 ParentItems.Clear();
+            }
+            else
+            {
+                AssignItemGlobalKey( dbContext );
             }
 
             base.PreSaveChanges( dbContext, state );

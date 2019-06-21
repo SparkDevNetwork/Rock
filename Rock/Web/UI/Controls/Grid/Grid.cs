@@ -875,7 +875,6 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
-                this.RemoveCssClass( "table-hover" );
                 this.AddCssClass( "table-condensed" );
                 this.AddCssClass( "table-light" );
             }
@@ -885,7 +884,16 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
                 this.AddCssClass( "table-striped" );
+            }
+
+            if ( DisplayType == GridDisplayType.Full
+                 && this.RowClickEnabled )
+            {
                 this.AddCssClass( "table-hover" );
+            }
+            else
+            {
+                this.RemoveCssClass( "table-hover" );
             }
 
             base.RenderControl( writer );
@@ -2133,7 +2141,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                             {
                                 var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
                                 string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
-                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false ).ReverseCurrencyFormatting().ToString();
+                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
                                 if ( !string.IsNullOrEmpty( resultHtml ) )
                                 {
                                     worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;

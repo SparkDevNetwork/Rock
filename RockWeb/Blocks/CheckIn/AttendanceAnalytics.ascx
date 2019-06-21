@@ -188,67 +188,65 @@
                                     </asp:Panel>
                                 </asp:Panel>
 
-                                <asp:Panel ID="pnlShowByAttendees" runat="server">
-                                    <div class="panel">
-                                        <div class="grid-filter">
-                                            <div class="controls pull-right margin-t-sm">
-                                                <div class="js-view-by">
-                                                    <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
-                                                    <asp:panel ID="pnlViewBy" runat="server" CssClass="btn-group">
-                                                        <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
-                                                            Attendees
-                                                        </asp:HyperLink>
-                                                        <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
-                                                            Parents of Attendees
-                                                        </asp:HyperLink>
-                                                        <asp:HyperLink ID="btnViewChildrenOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
-                                                            Children of Attendees
-                                                        </asp:HyperLink>
-                                                    </asp:panel>
-                                                </div>
+                                <asp:Panel ID="pnlShowByAttendees" CssClass="analytics-details" runat="server">
+                                    <div class="grid-filter">
+                                        <div class="controls pull-right margin-t-sm">
+                                            <div class="js-view-by">
+                                                <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
+                                                <asp:panel ID="pnlViewBy" runat="server" CssClass="btn-group">
+                                                    <asp:HyperLink ID="btnViewAttendees" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
+                                                        Attendees
+                                                    </asp:HyperLink>
+                                                    <asp:HyperLink ID="btnViewParentsOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
+                                                        Parents of Attendees
+                                                    </asp:HyperLink>
+                                                    <asp:HyperLink ID="btnViewChildrenOfAttendees" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
+                                                        Children of Attendees
+                                                    </asp:HyperLink>
+                                                </asp:panel>
                                             </div>
-                                            <Rock:RockControlWrapper ID="rcwAttendeesFilter" runat="server" Label="Filter">
-                                                <p>
-                                                    <Rock:RockRadioButton ID="radAllAttendees" runat="server" GroupName="grpFilterBy" Text="All Attendees" CssClass="js-attendees-all" />
-                                                </p>
-                                                <p>
-                                                    <Rock:RockRadioButton ID="radByVisit" runat="server" GroupName="grpFilterBy" Text="By Visit" CssClass="js-attendees-by-visit" />
-                                                    <asp:Panel ID="pnlByVisitOptions" runat="server" CssClass="js-attendees-by-visit-options padding-l-lg form-inline">
-                                                        <Rock:RockDropDownList ID="ddlNthVisit" CssClass="input-width-md" runat="server">
-                                                            <asp:ListItem />
-                                                            <asp:ListItem Text="1st" Value="1" />
-                                                            <asp:ListItem Text="2nd" Value="2" />
-                                                            <asp:ListItem Text="3rd" Value="3" />
-                                                            <asp:ListItem Text="4th" Value="4" />
-                                                            <asp:ListItem Text="5th" Value="5" />
-                                                            <asp:ListItem Text="No" Value="0" />
-                                                        </Rock:RockDropDownList>
-                                                        <span>visit</span>
-                                                    </asp:Panel>
-                                                </p>
-                                                <p>
-                                                    <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-attendees-by-pattern" />
+                                        </div>
+                                        <Rock:RockControlWrapper ID="rcwAttendeesFilter" runat="server" Label="Filter">
+                                            <p>
+                                                <Rock:RockRadioButton ID="radAllAttendees" runat="server" GroupName="grpFilterBy" Text="All Attendees" CssClass="js-attendees-all" />
+                                            </p>
+                                            <p>
+                                                <Rock:RockRadioButton ID="radByVisit" runat="server" GroupName="grpFilterBy" Text="By Visit" CssClass="js-attendees-by-visit" />
+                                                <asp:Panel ID="pnlByVisitOptions" runat="server" CssClass="js-attendees-by-visit-options padding-l-lg form-inline">
+                                                    <Rock:RockDropDownList ID="ddlNthVisit" CssClass="input-width-md" runat="server">
+                                                        <asp:ListItem />
+                                                        <asp:ListItem Text="1st" Value="1" />
+                                                        <asp:ListItem Text="2nd" Value="2" />
+                                                        <asp:ListItem Text="3rd" Value="3" />
+                                                        <asp:ListItem Text="4th" Value="4" />
+                                                        <asp:ListItem Text="5th" Value="5" />
+                                                        <asp:ListItem Text="No" Value="0" />
+                                                    </Rock:RockDropDownList>
+                                                    <span>visit</span>
+                                                </asp:Panel>
+                                            </p>
+                                            <p>
+                                                <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-attendees-by-pattern" />
 
-                                                    <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-attendees-by-pattern-options padding-l-lg">
+                                                <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-attendees-by-pattern-options padding-l-lg">
+                                                    <div class="form-inline">
+                                                        <span>Attended at least </span>
+                                                        <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><asp:Literal ID="lPatternXFor" runat="server" Text=" times for the selected date range" />
+                                                    </div>
+                                                    <div class="padding-l-lg margin-t-sm">
                                                         <div class="form-inline">
-                                                            <span>Attended at least </span>
-                                                            <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><asp:Literal ID="lPatternXFor" runat="server" Text=" times for the selected date range" />
-                                                        </div>
-                                                        <div class="padding-l-lg margin-t-sm">
-                                                            <div class="form-inline">
-                                                                <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least
-                                                                            <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
-                                                                <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
-                                                                <div class="margin-t-sm">
-                                                                    <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
-                                                                </div>
+                                                            <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least
+                                                                        <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
+                                                            <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
+                                                            <div class="margin-t-sm">
+                                                                <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
                                                             </div>
                                                         </div>
-                                                    </asp:Panel>
-                                                </p>
-                                            </Rock:RockControlWrapper>
+                                                    </div>
+                                                </asp:Panel>
+                                            </p>
+                                        </Rock:RockControlWrapper>
 
-                                        </div>
                                     </div>
 
                                     <Rock:NotificationBox ID="nbAttendeesError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />

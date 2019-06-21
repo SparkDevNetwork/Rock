@@ -33,16 +33,17 @@ namespace RockWeb.Blocks.GroupScheduling
 {
     [DisplayName( "Group Schedule Confirmation" )]
     [Category( "Group Scheduling" )]
-    [Description( "Allows a person to confirm a schedule RSVP and view pending schedules." )]
+    [Description( "Allows a person to confirm a schedule RSVP and view pending schedules.  Uses PersonActionIdentifier in 'Person' with action 'ScheduleConfirm' when supplied." )]
 
     [CodeEditorField( "Confirm Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }}<br></p>
-<p>Thanks again!</p>
-<p>{{ Group.Scheduler.FullName }}<br>{{ 'Global' | Attribute:'OrganizationName' }}</p>", "", 1, "ConfirmHeadingTemplate" )]
+    @"<h2 class='margin-t-none'>{{ Person.NickName }}, You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
+<p class='margin-b-lg'>Thanks again!<br>
+{{ Scheduler.FullName }}</p>", "", 1, "ConfirmHeadingTemplate" )]
 
     [CodeEditorField( "Decline Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
-<p>{{ Group.Name }}<br>
+    @"<h2 class='margin-t-none'>{{ Person.NickName }}, Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
+<p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
+{{ Group.Name }}<br>
 {{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>", "", 2, "DeclineHeadingTemplate" )]
 
     [BooleanField( "Scheduler Receive Confirmation Emails", "If checked, the scheduler will receive an email response for each confirmation or decline.", false, "", 3 )]
@@ -75,6 +76,8 @@ namespace RockWeb.Blocks.GroupScheduling
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -150,10 +153,12 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 var rockContext = new RockContext();
 
-                int? declineReasonValueId = null;
+                // Use the value selected in the drop down list if it was set.
+                int? declineReasonValueId = ddlDeclineReason.SelectedItem.Value.AsIntegerOrNull();
 
                 new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
                 rockContext.SaveChanges();
+                DetermineRecipientAndSendResponseEmail( attendanceId, rockContext );
             }
 
             BindPendingConfirmations();
@@ -332,7 +337,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void ShowIsConfirmedMissingParameterMessage()
         {
-            nbError.Title = "Sorry";
+            nbError.Title = "Sorry,";
             nbError.NotificationBoxType = NotificationBoxType.Warning;
             nbError.Text = "something is not right with the link you used to get here.";
             nbError.Visible = true;
@@ -365,10 +370,17 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                // otherwise use the currently logged in person
-                if ( CurrentPerson == null )
+                // Is a person selected?
+                if ( _selectedPerson == null )
                 {
                     nbError.Visible = true;
+                }
+                else if ( CurrentPerson != null && _selectedPerson != CurrentPerson )
+                {
+                    nbError.Visible = true;
+                    nbError.Title = "Note:";
+                    nbError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Info;
+                    nbError.Text = string.Format( "You are setting and viewing the confirmations for {0}.", _selectedPerson.FullName );
                 }
 
                 var request = Context.Request;
@@ -491,23 +503,36 @@ namespace RockWeb.Blocks.GroupScheduling
             }
             else
             {
-                _selectedPerson = this.CurrentPerson;
-                hfSelectedPersonId.Value = this.CurrentPersonId.ToString();
+                // Use the PersonActionIdentifier if given...
+                string personKey = PageParameter( "Person" );
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    _selectedPerson = new PersonService( new RockContext() ).GetByPersonActionIdentifier( personKey, "ScheduleConfirm" );
+                    if ( _selectedPerson != null )
+                    {
+                        hfSelectedPersonId.Value = _selectedPerson.Id.ToString();
+                    }
+                }
+                // ...otherwise use the current person.
+                else
+                {
+                    _selectedPerson = this.CurrentPerson;
+                    hfSelectedPersonId.Value = this.CurrentPersonId.ToString();
+                }
             }
         }
 
         /// <summary>
         /// Gets the attendance identifier from parameters.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The id if found or null otherwise.</returns>
         private int? GetAttendanceIdFromParameters()
         {
             if ( PageParameter( "attendanceId" ).IsNotNullOrWhiteSpace() )
             {
                 var attendanceId = PageParameter( "attendanceId" ).AsIntegerOrNull();
 
-                //_targetPerson null if Log out is was called
-                if ( attendanceId != null && CurrentPerson != null )
+                if ( attendanceId != null && _selectedPerson != null )
                 {
                     return attendanceId;
                 }
@@ -539,19 +564,32 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         /// Determines the recipient and send confirmation email.
         /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void DetermineRecipientAndSendResponseEmail( int? attendanceId, RockContext rockContext )
+        {
+            if ( attendanceId.HasValue )
+            {
+                DetermineRecipientAndSendResponseEmail( new AttendanceService( rockContext ).Get( attendanceId.Value ) );
+            }
+        }
+
+        /// <summary>
+        /// Determines the recipient and send confirmation email.
+        /// </summary>
         /// <param name="attendance">The attendance.</param>
         private void DetermineRecipientAndSendResponseEmail( Attendance attendance )
         {
             List<string> recipientEmailAddresses = new List<string>();
 
-            // if scheduler receives  email add as a recipient
-            if ( GetAttributeValue( "SchedulerReceiveConfirmationEmails" ).AsBoolean() )
+            // if scheduler receives email add as a recipient
+            if ( GetAttributeValue( "SchedulerReceiveConfirmationEmails" ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
             {
                 recipientEmailAddresses.Add( attendance.ScheduledByPersonAlias.Person.Email );
             }
 
             // if attendance is decline (no) send email to Schedule Cancellation Person
-            if ( attendance.RSVP == RSVP.No )
+            if ( attendance.RSVP == RSVP.No && attendance.Occurrence.Group.ScheduleCancellationPersonAlias != null && attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.IsEmailActive )
             {
                 recipientEmailAddresses.Add( attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.Email );
             }
@@ -569,13 +607,10 @@ namespace RockWeb.Blocks.GroupScheduling
             try
             {
                 var mergeFields = MergeFields( attendance );
-                mergeFields.Add( "ScheduledDate", attendance.Occurrence.Schedule.EffectiveStartDate.ToString() );
-                mergeFields.Add( "Person", attendance.PersonAlias.Person );
-                mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
 
                 // Distinct is used so that if the same email address is for both the Scheduler and ScheduleCancellationPersonAlias
                 // Only one email will be sent
-                foreach ( var recipient in recipientEmailAddresses.Distinct( StringComparer.CurrentCultureIgnoreCase ) )
+                foreach ( var recipient in recipientEmailAddresses.Distinct( StringComparer.CurrentCultureIgnoreCase ).Where( s => s.IsNotNullOrWhiteSpace() ) )
                 {
                     var emailMessage = new RockEmailMessage( GetAttributeValue( "SchedulingResponseEmail" ).AsGuid() );
                     emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
@@ -600,6 +635,10 @@ namespace RockWeb.Blocks.GroupScheduling
             var group = attendance.Occurrence.Group;
             mergeFields.Add( "Group", group );
             mergeFields.Add( "ScheduledItem", attendance );
+            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
 
             return mergeFields;
         }
