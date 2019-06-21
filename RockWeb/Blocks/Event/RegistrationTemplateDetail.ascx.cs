@@ -1230,10 +1230,13 @@ The logged-in person's information will be used to complete the registrar inform
                     foreach ( var feeItem in fee.FeeItems )
                     {
                         var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
-                        feeItem.Order = feeItemUI.Order;
-                        feeItem.Name = feeItemUI.Name;
-                        feeItem.Cost = feeItemUI.Cost;
-                        feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                        if ( feeItemUI != null )
+                        {
+                            feeItem.Order = feeItemUI.Order;
+                            feeItem.Name = feeItemUI.Name;
+                            feeItem.Cost = feeItemUI.Cost;
+                            feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                        }
                     }
 
                     fee.DiscountApplies = feeUI.DiscountApplies;
@@ -2024,11 +2027,13 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 var hfFeeItemGuid = item.FindControl( "hfFeeItemGuid" ) as HiddenField;
+                var hfFeeItemId = item.FindControl( "hfFeeItemId" ) as HiddenField;
                 var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
                 registrationTemplateFeeItem.Guid = hfFeeItemGuid.Value.AsGuid();
+                registrationTemplateFeeItem.Id = hfFeeItemId.Value.AsInteger();
                 registrationTemplateFeeItem.Order = feeItemOrder++;
                 registrationTemplateFeeItem.Name = tbFeeItemName.Text;
                 registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
@@ -3279,10 +3284,45 @@ The logged-in person's information will be used to complete the registrar inform
         {
             rcwFeeItemsSingle.Visible = ( registrationFeeType == RegistrationFeeType.Single );
             rcwFeeItemsMultiple.Visible = ( registrationFeeType == RegistrationFeeType.Multiple );
+            nbFeeItemsConfigurationWarning.Visible = false;
 
             if ( registrationFeeType == RegistrationFeeType.Single )
             {
-                var singleFeeItem = feeItems.FirstOrDefault();
+                RegistrationTemplateFeeItem singleFeeItem;
+
+                // If switching to Single fee type and there are more than 1 fees currently configured, we'll have to figure which one to use for the Single fee type
+                // and it is possible that more than one of the fee items have already been used for a registrant. So we have to figure that out...
+                singleFeeItem = feeItems.FirstOrDefault();
+                if ( feeItems.Count > 1 )
+                {
+                    bool canUseSingleFeeType = true;
+                    var rockContext = new RockContext();
+                    var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+                    var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                    var configuredFeeItemIds = feeItems.Select( a => a.Id ).ToList();
+                    var usedFeeQuery = registrationRegistrantFeeService.Queryable()
+                        .Where( a => a.RegistrationTemplateFeeItemId.HasValue && configuredFeeItemIds.Contains( a.RegistrationTemplateFeeItemId.Value ) );
+                    var usedFeeItemList = registrationTemplateFeeItemService.Queryable().Where( a => usedFeeQuery.Any( x => x.RegistrationTemplateFeeItemId == a.Id ) ).ToList();
+
+                    if ( usedFeeItemList.Count() > 1 )
+                    {
+                        canUseSingleFeeType = false;
+                    }
+                    else if ( usedFeeItemList.Count == 1 )
+                    {
+                        // only one FeeItem has been used, so have that bee the single fee item
+                        singleFeeItem = usedFeeItemList.First();
+                    }
+
+                    if ( canUseSingleFeeType == false )
+                    {
+                        nbFeeItemsConfigurationWarning.Text = "Unable to use single fee type. More than one of these fees have already been used.";
+                        nbFeeItemsConfigurationWarning.Visible = true;
+                        rblFeeType.SetValue( RegistrationFeeType.Multiple.ConvertToInt() );
+                        return;
+                    }
+                }
+                     
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();
@@ -3309,11 +3349,13 @@ The logged-in person's information will be used to complete the registrar inform
             RegistrationTemplateFeeItem registrationTemplateFeeItem = e.Item.DataItem as RegistrationTemplateFeeItem;
             if ( registrationTemplateFeeItem != null )
             {
+                var hfFeeItemId = e.Item.FindControl( "hfFeeItemId" ) as HiddenField;
                 var hfFeeItemGuid = e.Item.FindControl( "hfFeeItemGuid" ) as HiddenField;
                 var tbFeeItemName = e.Item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = e.Item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = e.Item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
+                hfFeeItemId.Value = registrationTemplateFeeItem.Id.ToString();
                 hfFeeItemGuid.Value = registrationTemplateFeeItem.Guid.ToString();
                 tbFeeItemName.Text = registrationTemplateFeeItem.Name;
 
@@ -3345,7 +3387,17 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
             if ( feeItem != null )
             {
-                feeItems.Remove( feeItem );
+                string errorMessage;
+                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out errorMessage ) )
+                {
+                    nbFeeItemsConfigurationWarning.Text = errorMessage;
+                    nbFeeItemsConfigurationWarning.Visible = true;
+                    return;
+                }
+                else
+                {
+                    feeItems.Remove( feeItem );
+                }
             }
 
             BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
