@@ -774,7 +774,7 @@ namespace Rock.Web.UI.Controls
                 _cbDefaultPaymentAmount = new CurrencyBox();
                 _cbDefaultPaymentAmount.ID = this.ID + "_cbDefaultPaymentAmount";
                 _cbDefaultPaymentAmount.Label = "Default Payment Amount";
-                _cbDefaultPaymentAmount.Help = "The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined.";
+                _cbDefaultPaymentAmount.Help = "The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0.";
                 Controls.Add( _cbDefaultPaymentAmount );
 
                 _apAccount = new AccountPicker();
