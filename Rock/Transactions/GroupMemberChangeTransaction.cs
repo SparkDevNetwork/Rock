@@ -40,6 +40,8 @@ namespace Rock.Transactions
         private int GroupMemberRoleId;
         private GroupMemberStatus PreviousGroupMemberStatus;
         private int PreviousGroupMemberRoleId;
+        private bool IsArchived;
+        private bool PreviousIsArchived;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
@@ -56,6 +58,7 @@ namespace Rock.Transactions
                 PersonId = groupMember.PersonId;
                 GroupMemberStatus = groupMember.GroupMemberStatus;
                 GroupMemberRoleId = groupMember.GroupRoleId;
+                IsArchived = groupMember.IsArchived;
 
                 if ( groupMember.Group != null )
                 {
@@ -68,12 +71,18 @@ namespace Rock.Transactions
                     var dbStatusProperty = entry.Property( "GroupMemberStatus" );
                     if ( dbStatusProperty != null )
                     {
-                        PreviousGroupMemberStatus = (GroupMemberStatus)dbStatusProperty.OriginalValue;
+                        PreviousGroupMemberStatus = ( GroupMemberStatus ) dbStatusProperty.OriginalValue;
                     }
                     var dbRoleProperty = entry.Property( "GroupRoleId" );
                     if ( dbRoleProperty != null )
                     {
-                        PreviousGroupMemberRoleId = (int)dbRoleProperty.OriginalValue;
+                        PreviousGroupMemberRoleId = ( int ) dbRoleProperty.OriginalValue;
+                    }
+
+                    var dbIsArchived = entry.Property( "IsArchived" );
+                    if ( dbIsArchived != null )
+                    {
+                        PreviousIsArchived = ( bool ) dbIsArchived.OriginalValue;
                     }
                 }
 
@@ -91,7 +100,7 @@ namespace Rock.Transactions
         public void Execute()
         {
             // if a GroupMember is getting added, call CalculateRequirements to make sure that group member requirements are calculated (if the group has requirements)
-            if ( State == EntityState.Added )
+            if ( State == EntityState.Added || ( PreviousIsArchived && IsArchived != PreviousIsArchived ) )
             {
                 if ( GroupMemberGuid.HasValue )
                 {
