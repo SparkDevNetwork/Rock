@@ -363,7 +363,7 @@ namespace Rock.Model
 
             assessmentResults.TopFiveMotivatorScores = assessmentResults.MotivatorScores.Take( 5 ).ToList();
 
-            foreach ( var m in assessmentResults.TopFiveMotivatorScores )
+            foreach ( var m in assessmentResults.MotivatorScores )
             {
                 var themeGuid = m.DefinedValue.GetAttributeValue( "Theme" ).AsGuidOrNull();
                 if ( themeGuid.HasValue )
