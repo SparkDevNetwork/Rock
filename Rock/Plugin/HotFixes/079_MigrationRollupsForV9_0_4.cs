@@ -27,8 +27,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AssessmentBadgeSummaryText();
-            AssessmentWorkFlowDoNotAutoPersist();
+            //AssessmentBadgeSummaryText();
+            //AssessmentWorkFlowDoNotAutoPersist();
         }
 
         /// <summary>
