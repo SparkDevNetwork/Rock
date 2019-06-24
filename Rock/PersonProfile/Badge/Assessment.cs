@@ -111,7 +111,7 @@ namespace Rock.PersonProfile.Badge
                         break;
 
                     case Rock.SystemGuid.AssessmentType.EQ:
-                        assessmentTitle = "EQ";
+                        assessmentTitle = "EQ Self Aware";
                         break;
 
                     case Rock.SystemGuid.AssessmentType.GIFTS:
