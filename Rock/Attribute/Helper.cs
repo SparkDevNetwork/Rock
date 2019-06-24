@@ -368,7 +368,7 @@ namespace Rock.Attribute
             entities = entities.Where(entity => !( entity is Rock.Web.Cache.IEntityCache ) );
 
             // Filter out entities who's attributes are already loaded
-            entities = entities.Where( e => e.Attributes == null );
+            entities = entities.Where( e => e.Attributes == null ).ToList();
 
             // Get the Attribute information for each entity
             Dictionary<IHasAttributes, List<int>> entitiesToLookUp = new Dictionary<IHasAttributes, List<int>>();
