@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -202,48 +203,35 @@ namespace Rock.Model
         /// <summary>
         /// Use this to increment <see cref="FinancialBatch.ControlAmount"/> in cases where a transaction amount should increase the control
         /// amount. In the event that multiple transactions charge simultaneously, it is possible that the control amount additions will
-        /// be overwritten if a record lock is not placed upon the batch record. This method ensures that the control amount is
-        /// safely updated and no data is lost because the database record wasn't locked.
+        /// be overwritten. This method ensures that the control amount is safely updated and no data is lost.
         /// </summary>
         /// <param name="batchId"></param>
         /// <param name="newTransactionAmount">Use a negative amount to decrease the control amount</param>
         /// <param name="history"></param>
-        /// <param name="errorMessage"></param>
-        /// <returns></returns>
-        public FinancialBatch IncrementControlAmount( int batchId, decimal newTransactionAmount, History.HistoryChangeList history, out string errorMessage )
+        public void IncrementControlAmount( int batchId, decimal newTransactionAmount, History.HistoryChangeList history )
         {
-            errorMessage = string.Empty;
-            var rockContext = Context as RockContext;
-            FinancialBatch batch = null;
+            var result = Context.Database.SqlQuery<ControlAmountUpdateResult>(
+@"UPDATE [FinancialBatch]
+SET [ControlAmount] = [ControlAmount] + @newTransactionAmount
+OUTPUT 
+    deleted.[ControlAmount] [OldAmount],
+    inserted.[ControlAmount] [NewAmount]
+WHERE [Id] = @batchId;",
+                new SqlParameter( "@newTransactionAmount", newTransactionAmount ),
+                new SqlParameter( "@batchId", batchId ) ).FirstOrDefault();
 
-            // Prevent simultaneous updates to the batch by guaranteeing repeatable reads (someone else can't change the database record
-            // while it is also here in memory)
-            using ( var dbTransaction = rockContext.Database.BeginTransaction( IsolationLevel.RepeatableRead ) )
+            if ( history != null && result != null )
             {
-                batch = Get( batchId );
-
-                if ( batch == null )
-                {
-                    errorMessage = "The batch id did not resolve";
-                    return null;
-                }
-
-                // Add the new transaction amount to the batch control amount
-                var oldControlAmount = batch.ControlAmount;
-                var newControlAmount = oldControlAmount + newTransactionAmount;
-                batch.ControlAmount = newControlAmount;
-
-                if ( history != null )
-                {
-                    History.EvaluateChange( history, "Control Amount", oldControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                }
-
-                // Commit the changes to the database and release the locks
-                rockContext.SaveChanges();
-                dbTransaction.Commit();
+                History.EvaluateChange( history, "Control Amount", result.OldAmount.FormatAsCurrency(), result.NewAmount.FormatAsCurrency() );
             }
+        }
 
-            return batch;
+        /// <summary>
+        /// Type used to get the control amount changes from SQL Server within <see cref="IncrementControlAmount"/>
+        /// </summary>
+        private class ControlAmountUpdateResult {
+            public decimal OldAmount { get; set; }
+            public decimal NewAmount { get; set; }
         }
     }
 }

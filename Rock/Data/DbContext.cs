@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -38,6 +39,9 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        /// <summary>
+        /// Is there a transaction in progress?
+        /// </summary>
         private bool _transactionInProgress = false;
 
         /// <summary>

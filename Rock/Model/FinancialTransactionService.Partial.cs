@@ -120,6 +120,8 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialTransaction ProcessRefund( FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             // Validate parameters
             if ( transaction == null )
             {
@@ -273,8 +275,11 @@ namespace Rock.Model
 
             refundTransaction.BatchId = batch.Id;
             Add( refundTransaction );
+            rockContext.SaveChanges();
 
-            batchService.IncrementControlAmount( batch.Id, refundTransaction.TotalAmount, null, out errorMessage );
+            batchService.IncrementControlAmount( batch.Id, refundTransaction.TotalAmount, null );
+            rockContext.SaveChanges();
+
             return refundTransaction;
         }
 

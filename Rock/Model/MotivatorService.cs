@@ -276,7 +276,7 @@ namespace Rock.Model
         /// </summary>
         public static List<ResponseOption> Agreement_Option = new List<ResponseOption>()
         {
-            new ResponseOption ("Strongly Disagree",0,1 ),
+            new ResponseOption ("Strongly Disagree",0,6 ),
             new ResponseOption ("Disagree",1,5 ),
             new ResponseOption ("Somewhat Disagree",2,4 ),
             new ResponseOption ("Undecided",3,3 ),
@@ -290,7 +290,7 @@ namespace Rock.Model
         /// </summary>
         public static List<ResponseOption> Frequency_Option = new List<ResponseOption>()
         {
-            new ResponseOption ("Never",0,1 ),
+            new ResponseOption ("Never",0,6 ),
             new ResponseOption ("Rarely",1,5 ),
             new ResponseOption ("Occasionally",2,4 ),
             new ResponseOption ("Sometimes",3,3 ),
@@ -363,7 +363,7 @@ namespace Rock.Model
 
             assessmentResults.TopFiveMotivatorScores = assessmentResults.MotivatorScores.Take( 5 ).ToList();
 
-            foreach ( var m in assessmentResults.TopFiveMotivatorScores )
+            foreach ( var m in assessmentResults.MotivatorScores )
             {
                 var themeGuid = m.DefinedValue.GetAttributeValue( "Theme" ).AsGuidOrNull();
                 if ( themeGuid.HasValue )

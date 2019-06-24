@@ -129,11 +129,18 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadDropDowns();
-            BindMetrics();
+            if ( CheckSelection() )
+            {
+                LoadDropDowns();
+                BindMetrics();
+            }
         }
 
-
+        /// <summary>
+        /// Handles the ItemCommand event of the rptrSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptrSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             switch( e.CommandName )
@@ -252,7 +259,6 @@ namespace RockWeb.Blocks.Reporting
                 nbMetricsSaved.Visible = true;
 
                 BindMetrics();
-
             }
         }
 

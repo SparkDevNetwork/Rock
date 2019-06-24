@@ -816,7 +816,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database
+        /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database or if person is restored from archived
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -833,14 +833,14 @@ namespace Rock.Model
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
                 // existing groupmember record, but person or role was changed
-                var hasChanged = this.PersonId != databaseGroupMemberRecord.PersonId || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId;
+                var hasChanged = this.PersonId != databaseGroupMemberRecord.PersonId || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId || ( databaseGroupMemberRecord.IsArchived && databaseGroupMemberRecord.IsArchived != this.IsArchived );
 
                 if ( !hasChanged )
                 {
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() );
                     }
                 }
 

@@ -372,6 +372,10 @@
     <Compile Include="Migrations\201906202222262_Rollup_0620.Designer.cs">
       <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906242102336_Rollup_0624.cs" />
+    <Compile Include="Migrations\201906242102336_Rollup_0624.Designer.cs">
+      <DependentUpon>201906242102336_Rollup_0624.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -891,6 +895,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906202222262_Rollup_0620.resx">
       <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906242102336_Rollup_0624.resx">
+      <DependentUpon>201906242102336_Rollup_0624.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

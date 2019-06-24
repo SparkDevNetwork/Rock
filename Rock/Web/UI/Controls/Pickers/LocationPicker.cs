@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                // first try to determine it from ViewState
+                // first try to determine it from ViewState 
                 var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
 
                 // if ViewState didn't know, try to get it from _hfCurrentPickerMode 
@@ -249,7 +249,23 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // If there is no location then then don't change the mode.
+            // If there is no location, then base the best picker mode based on the allowed picker modes and the current picker mode
+            if ( ( this.AllowedPickerModes & CurrentPickerMode ) == CurrentPickerMode )
+            {
+                // if the current picker mode is allowed, just use that
+                return CurrentPickerMode;
+            }
+
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Named ) == LocationPickerMode.Named )
+                return LocationPickerMode.Named;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
+                return LocationPickerMode.Address;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point )
+                return LocationPickerMode.Point;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon )
+                return LocationPickerMode.Polygon;
+
+            // probably won't happen unless a new LocationPickerMode is added later, but just in case we get this far, return CurrentPickerMode
             return CurrentPickerMode;
         }
 
