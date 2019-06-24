@@ -384,41 +384,34 @@ namespace RockWeb.Blocks.Event
             if ( eventItemOccurrence.Linkages.Any() )
             {
                 var linkageTable = new System.Text.StringBuilder();
-                linkageTable.AppendLine( "<table class='table table-striped table-sm'>" );
-                linkageTable.AppendLine( "<tr><th>Registration</th><th>Group</th></tr>" );
+                linkageTable.AppendLine( "<table>" );
 
                 foreach ( var linkage in eventItemOccurrence.Linkages )
                 {
                     if ( linkage.RegistrationInstance != null )
                     {
-                        var qryParams = new Dictionary<string, string>();
-                        qryParams.Add( "RegistrationInstanceId", linkage.RegistrationInstance.Id.ToString() );
+                        
+                        var qryParams = new Dictionary<string, string> { { "RegistrationInstanceId", linkage.RegistrationInstance.Id.ToString() } };
                         string registrationLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.RegistrationInstancePage, qryParams ), linkage.RegistrationInstance.Name );
+                        string separator = string.Empty;
                         string groupLink = string.Empty;
 
                         if ( linkage.Group != null )
                         {
-                            qryParams = new Dictionary<string, string>();
-                            qryParams.Add( "GroupId", linkage.Group.Id.ToString() );
+                            separator = " - ";
+
+                            qryParams = new Dictionary<string, string> { {  "GroupId", linkage.Group.Id.ToString() } };
                             groupLink = string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( AttributeKey.GroupDetailPage, qryParams ), linkage.Group.Name );
                         }
 
-                        linkageTable.AppendLine( "<tr>" );
-
-                        linkageTable.AppendLine( "<td>" );
-                        linkageTable.AppendLine( registrationLink );
-                        linkageTable.AppendLine( "</td>" );
-
-                        linkageTable.AppendLine( "<td>" );
-                        linkageTable.AppendLine( groupLink );
-                        linkageTable.AppendLine( "</td>" );
-
-                        linkageTable.AppendLine( "</tr>" );
+                        linkageTable.AppendLine( "<tr><td>" );
+                        linkageTable.AppendLine( registrationLink + separator + groupLink );
+                        linkageTable.AppendLine( "</td></tr>" );
                     }
                 }
 
                 linkageTable.AppendLine( "</table>" );
-                leftDesc.Add( "Linkages", linkageTable.ToString() );
+                leftDesc.Add( "Linkages (Registration Instance - Group)", linkageTable.ToString() );
             }
 
             lLeftDetails.Text = leftDesc.Html;
