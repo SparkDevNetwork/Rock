@@ -89,10 +89,20 @@ namespace Rock.PersonProfile.Badge
                 string iconCssClass = assessmentType.IconCssClass;
                 string badgeHtml = string.Empty;
                 string assessmentTitle = string.Empty;
+                var mergeFields = new Dictionary<string, object>();
+                string mergedBadgeSummaryLava = "Not taken";
 
                 switch ( assessmentTypeGuid.ToUpper() )
                 {
                     case Rock.SystemGuid.AssessmentType.CONFLICT:
+
+                        var conflictsThemes = new Dictionary<string, decimal>();
+                        conflictsThemes.Add( "Winning", Person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 );
+                        conflictsThemes.Add( "Solving", Person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 );
+                        conflictsThemes.Add( "Accommodating", Person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 );
+
+                        string highestScoringTheme = conflictsThemes.Where( x => x.Value == conflictsThemes.Max( v => v.Value ) ).Select( x => x.Key ).FirstOrDefault() ?? string.Empty;
+                        mergeFields.Add( "ConflictTheme", highestScoringTheme );
                         assessmentTitle = "Conflict Theme";
                         break;
 
@@ -123,8 +133,6 @@ namespace Rock.PersonProfile.Badge
                     .FirstOrDefault();
 
                 string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
-                string mergedBadgeSummaryLava = "Not taken";
-
 
                 badgeIcons.AppendLine( $@"<div class='badge'>" );
                 // If the latest request has been taken we want to link to it and provide a Lava merged summary
@@ -132,7 +140,6 @@ namespace Rock.PersonProfile.Badge
                 {
                     badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
-                    var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "Person", Person );
                     mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
                 }
@@ -151,7 +158,6 @@ namespace Rock.PersonProfile.Badge
 
                 badgeIcons.AppendLine( $@"</div>" );
 
-                // Build the tool tip. Need to take out the comment marker when we can override the tooltip colors, otherwise we just see a white circle.
                 toolTipText.AppendLine( $@"
                     <p class='margin-b-sm'>
                         <span class='fa-stack'>
@@ -171,7 +177,6 @@ namespace Rock.PersonProfile.Badge
                         $('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});
                     }});
                 </script>" );
-
         }
     }
 }
