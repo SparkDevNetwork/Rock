@@ -2643,15 +2643,15 @@ mission. We are so grateful for your commitment.</p>
                 rockContext.SaveChanges();
             }
 
-            var errorMessage = string.Empty;
-            batch = batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
             transaction.BatchId = batch.Id;
 
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
             financialTransactionService.Add( transaction );
             rockContext.SaveChanges();
-
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,

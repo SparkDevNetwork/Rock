@@ -481,7 +481,6 @@ namespace Rock.Model
                                 gateway.GetBatchTimeOffset(),
                                 gateway.BatchDayOfWeek );
 
-                            var batchChanges = new List<string>();
                             if ( batch.Id == 0 )
                             {
                                 // get a batch Id
@@ -490,7 +489,7 @@ namespace Rock.Model
 
                             transaction.BatchId = batch.Id;
                             financialTransactionService.Add( transaction );
-                            batch = batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, null, out var errorMessage );
+                            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, null );
 
                             if ( receiptEmail.HasValue && txnAmount > 0.0M )
                             {

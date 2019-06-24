@@ -501,6 +501,7 @@
     <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
     <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\079_MigrationRollupsForV9_0_4.cs" />
     <Compile Include="Plugin\HotFixes\078_MigrationRollupsForV9_0_3.cs" />
     <Compile Include="Plugin\HotFixes\077_MigrationRollupsForV9_0_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">

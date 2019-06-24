@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -3376,14 +3377,14 @@ namespace RockWeb.Blocks.Event
                     {
                         rockContext.SaveChanges();
                     }
-
-                    var errorMessage = string.Empty;
-                    batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges, out errorMessage );
+              
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
                     financialTransactionService.Add( transaction );
+                    rockContext.SaveChanges();
 
+                    batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
                     rockContext.SaveChanges();
                 } );
 
