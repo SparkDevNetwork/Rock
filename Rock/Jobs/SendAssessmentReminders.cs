@@ -170,8 +170,8 @@ namespace Rock.Jobs
             var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             mergeObjects.Add( "Person", person );
 
-            var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( person.Email, mergeObjects ) );
+            var recipients = new List<RockEmailMessageRecipient>();
+            recipients.Add( new RockEmailMessageRecipient( person, mergeObjects ) );
 
             var errors = new List<string>();
             var emailMessage = new RockEmailMessage( assessmentSystemEmailGuid );

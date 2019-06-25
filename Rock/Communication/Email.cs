@@ -83,23 +83,25 @@ namespace Rock.Communication
         {
             try
             {
-                List<string> recipients = null;
+                List<Person> personList = null;
 
                 Guid adminGroup = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
 
                 using ( var rockContext = new RockContext() )
                 {
-                    recipients = new GroupMemberService( rockContext ).Queryable()
+                    personList = new GroupMemberService( rockContext ).Queryable()
                         .Where( m =>
                             m.Group.Guid.Equals( adminGroup ) &&
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person.Email != null &&
                             m.Person.Email != "" )
-                        .Select( m => m.Person.Email )
+                        .Select( m => m.Person )
                         .ToList();
                 }
 
                 var errorMessages = new List<string>();
+
+                var recipients = personList.Select( a => new RockEmailMessageRecipient( a, null ) ).ToList();
 
                 var emailMessage = new RockEmailMessage();
                 emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );

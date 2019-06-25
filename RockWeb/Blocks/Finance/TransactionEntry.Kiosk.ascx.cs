@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Finance
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
 
                 var emailMessage = new RockEmailMessage( receiptEmail.Guid );
-                emailMessage.AddRecipient( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( givingUnit, GetMergeFields( givingUnit ) ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.Send();

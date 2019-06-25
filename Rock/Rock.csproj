@@ -389,6 +389,10 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\RockSMSMessageRecipient.cs" />
+    <Compile Include="Communication\RockPushMessageRecipient.cs" />
+    <Compile Include="Communication\RockEmailMessageRecipient.cs" />
+    <Compile Include="Communication\RockMessageRecipient.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
