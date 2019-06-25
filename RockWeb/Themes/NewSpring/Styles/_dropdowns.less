@@ -1,0 +1,23 @@
+// Dropdowns
+.dropdown-menu {
+	font-family: @font-family-sans-serif;
+	max-height: 330px;
+	overflow-y: auto;
+
+	& > li {
+		& > a {
+			font-size: @font-size-base*.9;
+			font-weight: 500;
+			text-decoration: none;
+			padding-top: @base-spacing-unit/4 + 1;
+			padding-bottom: @base-spacing-unit/4 - 1;
+			// border-bottom: 1px solid rgba(0,0,0,.1);
+		}
+
+		&:last-child {
+			& > a {
+				border-bottom: none;
+			}
+		}
+	}
+}

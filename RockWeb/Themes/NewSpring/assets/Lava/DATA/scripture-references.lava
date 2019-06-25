@@ -1,0 +1,29 @@
+{% if guid != null %}
+{% sql %}
+SELECT 
+    CASE
+        WHEN av.AttributeId = 68247 THEN (
+            SELECT TOP 1 Value
+            FROM DefinedValue
+            WHERE Guid = av.Value
+        )
+        ELSE Value
+    END "Value"
+FROM AttributeMatrix am
+INNER JOIN AttributeMatrixItem ami
+ON ami.AttributeMatrixId = am.Id
+INNER JOIN AttributeValue av
+ON av.EntityId = ami.Id
+WHERE am.Guid = '{{ guid }}' AND 
+av.Value != '' AND
+av.AttributeId IN (
+    SELECT a1.Id
+    FROM AttributeMatrix am1
+    INNER JOIN Attribute a1
+    ON a1.EntityTypeQualifierValue = am1.AttributeMatrixTemplateId
+    WHERE am1.Guid = '{{ guid }}' AND a1.EntityTypeQualifierColumn = 'AttributeMatrixTemplateId'
+)
+ORDER BY ami.Id, av.AttributeId
+{% endsql %}
+{% for item in results %}{% assign evenodd = forloop.index | Modulo:2 %}{{ item.Value }}{% if evenodd == 0 and forloop.last != true%}, {% else %} {% endif %}{% endfor %}
+{% endif %}

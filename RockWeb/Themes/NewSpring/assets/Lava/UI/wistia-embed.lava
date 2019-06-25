@@ -1,0 +1,17 @@
+<script src="https://fast.wistia.com/embed/medias/{{ id }}.jsonp" async></script>
+<script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+<div class="wistia_responsive_padding rounded shadowed overflow-hidden push-bottom xs-push-half-bottom" style="padding:56.25% 0 0 0;position:relative;">
+    {% if CurrentPerson | HasRightsTo:'Edit' %}
+    <div class="position-absolute top-zero right-zero push-top push-right bring-forward text-right">
+        <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
+        <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
+    </div>
+    {% endif %}
+    <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+        <div class="wistia_embed wistia_async_{{ id }} videoFoam=true {% if color %}playerColor={{ color }}{% endif %}" style="height:100%;position:relative;width:100%">
+            <div class="wistia_swatch" style="height:100%;left:0;opacity:0;overflow:hidden;position:absolute;top:0;transition:opacity 200ms;width:100%;">
+                <img src="https://fast.wistia.com/embed/medias/{{ id }}/swatch" style="filter:blur(5px);height:100%;object-fit:contain;width:100%;" alt="" onload="this.parentNode.style.opacity=1;" />
+            </div>
+        </div>
+    </div>
+</div>

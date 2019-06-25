@@ -1,0 +1,220 @@
+<!-- Redirect to 404 if Entry is Expired -->
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+<!-- Set Parent Variables-->
+{% if Item.ParentItems %}
+    {% for parent in Item.ParentItems %}
+        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+            {% for parent in parents %}
+                {% assign parentTitle = parent.Title %}
+                {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
+                {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                    {% assign backgroundColor = baseBackgroundColor %}
+                    <style>
+                        .brand-bg {
+                            background-color: {{ backgroundColor | Darken:'10%' }};
+                        }
+                    </style>
+                {% endif %}
+
+            {% endfor %}
+        {% endcontentchannelitem %}
+    {% endfor %}
+{% endif %}
+
+<!-- Set Page/Browser Titles -->
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+
+
+
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+    {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
+    {% assign cciid = Item.Id %}
+    {% assign subtitle = Item | Attribute:'Subtitle' %}
+    {% assign summary = Item | Attribute:'Summary' %}
+    {% assign video = Item | Attribute:'Video','RawValue' %}
+    {% assign date = Item.StartDateTime | Date:'MMMM d, yyyy' %}
+    {% assign itemimageurl = Item | Attribute:'ImageLandscape','Url' %}
+
+    {% capture imageurl %}
+        {% if itemimageurl and itemimageurl != empty %}
+            {{ itemimageurl }}
+        {% elseif Item.ParentItems %}
+            {{ parentImage }}
+        {% endif %}
+    {% endcapture %}
+    {% assign imageurl = imageurl | Trim %}
+
+
+    <div class="md-text-constrained md-mx-auto panel overflow-hidden">
+        <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom">
+
+            {% if cciid and cciid != empty %}
+                {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+                {% if hasRights == 'true' %}
+                    <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
+                        {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' linktarget:'_blank' ]}
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {% if label and label != empty %}
+                <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+            {% endif %}
+            
+            <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
+
+            {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+            {% assign collectiontext = collectiontext | Trim %}
+            {% capture collectionurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+            {% if collectiontext and collectiontext != empty %}
+                <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+            {% endif %}
+            
+            {% if subtitle != empty %}
+                <p class="lead text-gray-light"><i>{{ subtitle }}</i></p>
+            {% endif %}
+
+            {% capture communicatorNames %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+            {% assign communicatorNames = communicatorNames | Trim %}
+            {% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}
+                <p class="stronger">{{ communicatorNames | Trim }}</p>
+            {% endif %}
+            
+            {% if imageurl and imageurl != empty %}
+                <div class="ratio-landscape background-cover push-bottom rounded" style="background-image:url('{{ imageurl }}');"></div>
+            {% endif %}
+
+            {% assign scripturesguid = Item | Attribute:'Scriptures','RawValue' %}
+            {% capture scripturereferences %}{[ scriptureReferences guid:'{{ scripturesguid }}' ]}{% endcapture %}
+            {% assign scripturereferences = scripturereferences | Trim %}
+
+            {%  if scripturereferences and scripturereferences != empty %}
+                <div class="text-center soft-ends">
+                    <h2 class="h3 flush">Read</h2>
+                    <p class="lead">{{ scripturereferences }}</p>
+                </div>
+            {% endif %}
+            
+            {% if video != empty %}
+                <p id="video" class="text-center">
+                    <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
+                        <a href="#" class="btn btn-primary">Play Video</a>
+                    </span>
+                </p>
+            
+                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
+                <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
+
+            {% endif %}
+
+            {{ Item.Content }}
+            
+            <div class="push-bottom">
+                <div class="row row-condensed">
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share="">Share <i class="fas fa-fw fa-share flush"></i></a>
+                    </div><div class="col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom hidden">
+                        <a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like=""><i class="far fa-fw fa-heart flush"></i> 8</a>
+                    </div>
+                </div>
+            </div>
+            
+            {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
+            {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+
+            {% assign shareimageurl = imageurl %}
+            {% assign shareauthor = 'newspring' %}
+            {% assign sharetitle = Item.Title %}
+            {% assign summary = Item | Attribute:'Summary' %}
+            {%- capture sharesummary -%}
+                {% if summary and summary != empty %}
+                    {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
+                {% else %}
+                    {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
+                {% endif %}
+            {%- endcapture -%}
+            {% assign sharehashtag = '' %}
+            
+            {[ modalShare ]}
+            {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
+            <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                    {{ tags }}
+                </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                    <p><small><b>{{ date }}</b></small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{[ endscripturize ]}
+
+<!-- Structured Data -->
+{% capture tagsData %}{[ tagData guid:'{{ Item.Guid }}' ]}{% endcapture %}
+{% assign tagsData = tagsData | Trim %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://newspring.cc/GetImage.ashx?id=661329"
+    }
+  },
+  "author": "{% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}{{ communicatorNames | Trim }}{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}",
+  {% if tagsData and tagsData != empty %}
+    "keywords": "{{ tagsData }}",
+  {% endif %}
+  "headline": "{{ Item.Title | Escape }}",
+  {% if summary and summary != empty %}
+    "description": "{{ summary | StripHtml | Escape }}",
+  {% endif %}
+  "articleBody": "{{ Item.Content | StripHtml | Escape }}",
+  {% if subtitle and subtitle != empty %}
+    "alternativeHeadline": "{{ subtitle }}",
+  {% endif %}
+  "datePublished": "{{ Item.StartDateTime }}",
+  "dateModified": "{{ Item.ModifiedDateTime }}",
+  {% if Item.ExpireDateTime %}
+  "expires": "{{ Item.ExpireDateTime }}",
+  {% endif %}
+  {% if imageurl and imageurl != empty %}
+    "image": "{{ imageurl }}",
+  {% endif %}
+  "mainEntityOfPage": "{{ 'Global' | Page:'Url' }}",
+  "name": "{{ Item.Title | Escape }}"
+}
+</script>
+
+
+<!-- Set Meta Tags -->
+{% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
+{% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
+{% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
+{% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ imageurl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}

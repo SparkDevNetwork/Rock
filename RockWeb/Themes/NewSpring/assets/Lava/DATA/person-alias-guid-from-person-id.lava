@@ -1,0 +1,1 @@
+{% personalias where:'PersonId == {{ id }}' iterator:'alii' limit:'1' %}{% for alias in alii %}{{ alias.Guid }}{% endfor %}{% endpersonalias %}

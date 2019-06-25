@@ -1,0 +1,27 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Uppercase %}
+{% campus where:'Name == "{{ campusSlug }}"' iterator:'campuses' %}
+{% for campus in campuses %}
+
+{[ section title:'Campus Information' ]}
+
+<div class="row text-center">
+    <div class="col-xs-12 col-sm-12 col-md-4">
+        <h3 class="push-half-bottom">Address</h3>
+        <p class="lead">{{ campus.Location.Street1 }}
+        {% if campus.Location.Street2 != '' %}
+        <br>{{ campus.Location.Street2 }}
+        {% endif %}
+        <br>{{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}</p>
+    </div><div class="col-xs-12 col-sm-12 col-md-4">
+        <h3 class="push-half-bottom">Phone</h3>
+        <p class="lead"><a href="tel:+1{{ campus.PhoneNumber | Remove:'-' }}">({{ campus.PhoneNumber | Slice:0,3 }}) {{ campus.PhoneNumber | Slice:4,9 }}</a></p>
+    </div><div class="col-xs-12 col-sm-12 col-md-4">
+        <h3 class="push-half-bottom">Email</h3>
+        <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
+    </div>
+</div>
+
+{[ endsection ]}
+
+{% endfor %}
+{% endcampus %}
