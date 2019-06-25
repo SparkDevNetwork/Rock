@@ -428,6 +428,7 @@ namespace Rock.Model
         /// Gets the group descendents Common Table Expression.
         /// </summary>
         /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
         /// <returns></returns>
         private string GetGroupDescendentsCTESql( int parentGroupId, bool includeInactiveChildGroups )
         {
@@ -461,6 +462,7 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
         /// </returns>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
@@ -502,11 +504,12 @@ namespace Rock.Model
 
             return ( this.Context as RockContext ).Database.SqlQuery<int>( sql ).ToList();
         }
-        
+
         /// <summary>
         /// Returns a List of <see cref="GroupTypeCache">Group Types</see> of the groups that are descendents of the specified parentGroupId
         /// </summary>
         /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
         /// <returns></returns>
         public List<GroupTypeCache> GetAllDescendentsGroupTypes( int parentGroupId, bool includeInactiveChildGroups )
         {
