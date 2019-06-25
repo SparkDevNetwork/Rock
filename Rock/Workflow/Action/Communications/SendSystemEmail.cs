@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var mergeFields = GetMergeFields( action );
-            var recipients = new List<RecipientData>();
+            var recipients = new List<RockMessageRecipient>();
 
             string to = GetAttributeValue( action, "Recipient" );
 
@@ -76,7 +76,7 @@ namespace Rock.Workflow.Action
                                     var recipientList = toValue.SplitDelimitedValues().ToList();
                                     foreach ( string recipient in recipientList )
                                     {
-                                        recipients.Add( new RecipientData( recipient, mergeFields ) );
+                                        recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );
                                     }
                                     break;
                                 }
@@ -109,7 +109,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
-                                            recipients.Add( new RecipientData( person.Email, personDict ) );
+                                            recipients.Add( new RockEmailMessageRecipient( person, personDict ) );
                                         }
                                     }
                                     break;
@@ -149,7 +149,7 @@ namespace Rock.Workflow.Action
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
-                                                recipients.Add( new RecipientData( person.Email, personDict ) );
+                                                recipients.Add( new RockEmailMessageRecipient( person, personDict ) );
                                             }
                                         }
                                     }
@@ -164,7 +164,7 @@ namespace Rock.Workflow.Action
                 var recipientList = to.SplitDelimitedValues().ToList();
                 foreach ( string recipient in recipientList )
                 {
-                    recipients.Add( new RecipientData( recipient, mergeFields ) );
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );
                 }
             }
 

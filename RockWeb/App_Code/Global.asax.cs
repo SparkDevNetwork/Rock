@@ -1099,10 +1099,10 @@ namespace RockWeb
                             }
 
                             mergeFields.Add( "Person", person );
-                            var recipients = new List<RecipientData>();
+                            var recipients = new List<RockEmailMessageRecipient>();
                             foreach ( string emailAddress in emailAddresses )
                             {
-                                recipients.Add( new RecipientData( emailAddress, mergeFields ) );
+                                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( emailAddress, mergeFields ) );
                             }
 
                             if ( recipients.Any() )

@@ -56,7 +56,7 @@ namespace Rock.Workflow.Action
             {
                 if ( action.Activity != null && ( action.Activity.AssignedPersonAliasId.HasValue || action.Activity.AssignedGroupId.HasValue ) )
                 {
-                    var recipients = new List<RecipientData>();
+                    var recipients = new List<RockMessageRecipient>();
                     var workflowMergeFields = GetMergeFields( action );
 
                     if ( action.Activity.AssignedPersonAliasId.HasValue)
@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
 
                         if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
                         {
-                            recipients.Add( new RecipientData( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) ) );
+                            recipients.Add( new RockEmailMessageRecipient( person, CombinePersonMergeFields( person, workflowMergeFields ) ) );
                             action.AddLogEntry( string.Format( "Form notification sent to '{0}'", person.FullName ) );
                         }
                     }
@@ -84,7 +84,7 @@ namespace Rock.Workflow.Action
 
                         foreach( var person in personList)
                         {
-                            recipients.Add( new RecipientData( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) ) );
+                            recipients.Add( new RockEmailMessageRecipient( person, CombinePersonMergeFields( person, workflowMergeFields ) ) );
                             action.AddLogEntry( string.Format( "Form notification sent to '{0}'", person.FullName ) );
                         }
                     }

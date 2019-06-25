@@ -221,7 +221,7 @@ namespace Rock.Jobs
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                    emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
                     var emailErrors = new List<string>();
                     emailMessage.Send( out emailErrors );
                     errors.AddRange( emailErrors );
@@ -242,7 +242,7 @@ namespace Rock.Jobs
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
-                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                         recipients++;
                     }
                     var emailErrors = new List<string>();
