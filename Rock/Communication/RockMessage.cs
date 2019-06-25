@@ -279,7 +279,7 @@ namespace Rock.Communication
 
         /// <summary>
         /// Sends this message(Email, SMS, or PushDevice, depending which RockMessage class you are using).
-        /// NOTE: Email exceptions will be logged to exception log, but won't throw an exception. To get the list of errorMessages, use Send( out List<string> errorMessages )
+        /// NOTE: Email exceptions will be logged to exception log, but won't throw an exception. To get the list of errorMessages, use Send( out List&lt;string&gt; errorMessages )
         /// </summary>
         /// <returns></returns>
         public virtual bool Send()

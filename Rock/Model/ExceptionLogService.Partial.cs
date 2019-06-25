@@ -109,7 +109,8 @@ namespace Rock.Model
         /// <summary>
         /// Filter a query for exceptions having a description matching the specified prefix.
         /// </summary>
-        /// <param name="descriptionPrefix"></param>
+        /// <param name="query">The query.</param>
+        /// <param name="descriptionPrefix">The description prefix.</param>
         /// <returns></returns>
         public IQueryable<ExceptionLog> FilterByDescriptionPrefix( IQueryable<ExceptionLog> query, string descriptionPrefix )
         {
