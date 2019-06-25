@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,31 +34,31 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
 {
-    [DisplayName( "Fundraising Opportunity View" )]
-    [Category( "NewSpring" )]
-    [Description( "Public facing block that shows a fundraising opportunity" )]
+    [DisplayName("Fundraising Opportunity View")]
+    [Category("NewSpring")]
+    [Description("Public facing block that shows a fundraising opportunity")]
 
-    [CodeEditorField( "Summary Lava Template", "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunitySummary.lava' %}", order: 1 )]
+    [CodeEditorField("Summary Lava Template", "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+        @"{% include '~~/Assets/Lava/FundraisingOpportunitySummary.lava' %}", order: 1)]
 
-    [CodeEditorField( "Sidebar Lava Template", "Lava template for what to display on the left side bar. Usually used to show event registration or other info.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunitySidebar.lava' %}", order: 2 )]
+    [CodeEditorField("Sidebar Lava Template", "Lava template for what to display on the left side bar. Usually used to show event registration or other info.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+        @"{% include '~~/Assets/Lava/FundraisingOpportunitySidebar.lava' %}", order: 2)]
 
-    [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
+    [CodeEditorField("Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+        @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3)]
 
 
-    [CodeEditorField( "Participant Lava Template", "Lava template for how the participant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}", order: 4 )]
+    [CodeEditorField("Participant Lava Template", "Lava template for how the participant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+        @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}", order: 4)]
 
-    [NoteTypeField( "Note Type", "Note Type to use for comments", false, "Rock.Model.Group", defaultValue: "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", order: 5 )]
-    [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
-    [LinkedPage( "Leader Toolbox Page", "The toolbox page for a leader of this fundraising opportunity", required: false, order: 7 )]
-    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 8 )]
+    [NoteTypeField("Note Type", "Note Type to use for comments", false, "Rock.Model.Group", defaultValue: "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", order: 5)]
+    [LinkedPage("Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6)]
+    [LinkedPage("Leader Toolbox Page", "The toolbox page for a leader of this fundraising opportunity", required: false, order: 7)]
+    [LinkedPage("Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 8)]
 
-    [BooleanField( "Set Page Title to Opportunity Title", "", true, order: 9 )]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", required: false, order: 10 )]
-    [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 11 )]
+    [BooleanField("Set Page Title to Opportunity Title", "", true, order: 9)]
+    [LinkedPage("Registration Page", "The page to use for registrations.", required: false, order: 10)]
+    [TextField("Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 11)]
     public partial class FundraisingOpportunityView : RockBlock
     {
         #region Base Control Methods
@@ -67,37 +67,37 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        protected override void OnInit(EventArgs e)
         {
-            base.OnInit( e );
+            base.OnInit(e);
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            this.AddConfigurationUpdateTrigger(upnlContent);
         }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        protected override void OnLoad(EventArgs e)
         {
-            base.OnLoad( e );
+            base.OnLoad(e);
 
-            if ( !Page.IsPostBack )
+            if (!Page.IsPostBack)
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = this.PageParameter("GroupId").AsIntegerOrNull();
 
-                if ( groupId.HasValue )
+                if (groupId.HasValue)
                 {
-                    ShowView( groupId.Value );
+                    ShowView(groupId.Value);
                 }
                 else
                 {
                     pnlView.Visible = false;
                 }
 
-                imgOpportunityPhoto.CssClass = GetAttributeValue( "ImageCssClass" );
+                imgOpportunityPhoto.CssClass = GetAttributeValue("ImageCssClass");
             }
         }
 
@@ -110,18 +110,18 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// <returns>
         /// A <see cref="T:System.Collections.Generic.List`1" /> of block related <see cref="T:Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
         /// </returns>
-        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        public override List<BreadCrumb> GetBreadCrumbs(PageReference pageReference)
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupId = PageParameter( pageReference, "GroupId" ).AsIntegerOrNull();
-            if ( groupId != null )
+            int? groupId = PageParameter(pageReference, "GroupId").AsIntegerOrNull();
+            if (groupId != null)
             {
-                Group group = new GroupService( new RockContext() ).Get( groupId.Value );
-                if ( group != null )
+                Group group = new GroupService(new RockContext()).Get(groupId.Value);
+                if (group != null)
                 {
                     group.LoadAttributes();
-                    breadCrumbs.Add( new BreadCrumb( group.GetAttributeValue( "OpportunityTitle" ), pageReference ) );
+                    breadCrumbs.Add(new BreadCrumb(group.GetAttributeValue("OpportunityTitle"), pageReference));
                 }
             }
             else
@@ -140,104 +140,99 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// Shows the view.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
-        protected void ShowView( int groupId )
+        protected void ShowView(int groupId)
         {
             pnlView.Visible = true;
             hfGroupId.Value = groupId.ToString();
             var rockContext = new RockContext();
 
-            var group = new GroupService( rockContext ).Get( groupId );
-            if ( group == null )
+            var group = new GroupService(rockContext).Get(groupId);
+            if (group == null)
             {
                 pnlView.Visible = false;
                 return;
             }
 
-            group.LoadAttributes( rockContext );
-            var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
+            group.LoadAttributes(rockContext);
+            var opportunityType = DefinedValueCache.Get(group.GetAttributeValue("OpportunityType").AsGuid());
 
-            if ( this.GetAttributeValue( "SetPageTitletoOpportunityTitle" ).AsBoolean() )
+            if (this.GetAttributeValue("SetPageTitletoOpportunityTitle").AsBoolean())
             {
-                RockPage.Title = group.GetAttributeValue( "OpportunityTitle" );
-                RockPage.BrowserTitle = group.GetAttributeValue( "OpportunityTitle" );
-                RockPage.Header.Title = group.GetAttributeValue( "OpportunityTitle" );
+                RockPage.Title = group.GetAttributeValue("OpportunityTitle");
+                RockPage.BrowserTitle = group.GetAttributeValue("OpportunityTitle");
+                RockPage.Header.Title = group.GetAttributeValue("OpportunityTitle");
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            mergeFields.Add( "Block", this.BlockCache );
-            mergeFields.Add( "Group", group );
+            var mergeFields = LavaHelper.GetCommonMergeFields(this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false });
+            mergeFields.Add("Block", this.BlockCache);
+            mergeFields.Add("Group", group);
 
             // Left Sidebar
-            var photoGuid = group.GetAttributeValue( "OpportunityPhoto" ).AsGuidOrNull();
+            var photoGuid = group.GetAttributeValue("OpportunityPhoto").AsGuidOrNull();
             imgOpportunityPhoto.Visible = photoGuid.HasValue;
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            imgOpportunityPhoto.ImageUrl = string.Format("~/GetImage.ashx?Guid={0}", photoGuid);
 
             var groupMembers = group.Members.ToList();
-            foreach ( var gm in groupMembers )
+            foreach (var gm in groupMembers)
             {
-                gm.LoadAttributes( rockContext );
+                gm.LoadAttributes(rockContext);
             }
 
             // only show the 'Donate to a Participant' button if there are participants that are taking contribution requests
-            btnDonateToParticipant.Visible = groupMembers.Where( a => !a.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() ).Any();
-            if ( !string.IsNullOrWhiteSpace( opportunityType.GetAttributeValue( "core_DonateButtonText" ) ) )
+            btnDonateToParticipant.Visible = groupMembers.Where(a => !a.GetAttributeValue("DisablePublicContributionRequests").AsBoolean()).Any();
+            if (!string.IsNullOrWhiteSpace(opportunityType.GetAttributeValue("core_DonateButtonText")))
             {
-                btnDonateToParticipant.Text = opportunityType.GetAttributeValue( "core_DonateButtonText" );
+                btnDonateToParticipant.Text = opportunityType.GetAttributeValue("core_DonateButtonText");
             }
 
             RegistrationInstance registrationInstance = null;
-            var registrationInstanceId = group.GetAttributeValue( "RegistrationInstance" ).AsIntegerOrNull();
-            if ( registrationInstanceId.HasValue )
+            var registrationInstanceId = group.GetAttributeValue("RegistrationInstance").AsIntegerOrNull();
+            if (registrationInstanceId.HasValue)
             {
-                registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
+                registrationInstance = new RegistrationInstanceService(rockContext).Get(registrationInstanceId.Value);
             }
 
-            mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
+            mergeFields.Add("RegistrationPage", LinkedPageRoute("RegistrationPage"));
 
-            if ( registrationInstance != null )
+            if (registrationInstance != null)
             {
-                mergeFields.Add( "RegistrationInstance", registrationInstance );
-                mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages );
+                mergeFields.Add("RegistrationInstance", registrationInstance);
+                mergeFields.Add("RegistrationInstanceLinkages", registrationInstance.Linkages);
 
                 // populate merge fields for Registration Counts
-                var maxRegistrantCount = 0;
+                int? maxRegistrantCount = registrationInstance.MaxAttendees;
                 var currentRegistrationCount = 0;
 
-                if ( registrationInstance.MaxAttendees != 0 )
-                {
-                    maxRegistrantCount = registrationInstance.MaxAttendees;
-                }
-               
-                currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
-                                                .Where( r =>
-                                                    r.Registration.RegistrationInstanceId == registrationInstance.Id
-                                                    && r.OnWaitList == false )
+                currentRegistrationCount = new RegistrationRegistrantService(rockContext).Queryable().AsNoTracking()
+                                                .Where(r =>
+                                                   r.Registration.RegistrationInstanceId == registrationInstance.Id
+                                                   && r.OnWaitList == false)
                                                 .Count();
 
-                mergeFields.Add( "CurrentRegistrationCount", currentRegistrationCount );
-                if ( maxRegistrantCount != 0 )
+                mergeFields.Add("CurrentRegistrationCount", currentRegistrationCount);
+                if (maxRegistrantCount.HasValue)
                 {
-                    mergeFields.Add( "MaxRegistrantCount", maxRegistrantCount );
-                    mergeFields.Add( "RegistrationSpotsAvailable", maxRegistrantCount - currentRegistrationCount );
+                    mergeFields.Add("MaxRegistrantCount", maxRegistrantCount);
+                    mergeFields.Add("RegistrationSpotsAvailable", maxRegistrantCount - currentRegistrationCount);
                 }
             }
 
-            string sidebarLavaTemplate = this.GetAttributeValue( "SidebarLavaTemplate" );
-            lSidebarHtml.Text = sidebarLavaTemplate.ResolveMergeFields( mergeFields );
+            string sidebarLavaTemplate = this.GetAttributeValue("SidebarLavaTemplate");
+            lSidebarHtml.Text = sidebarLavaTemplate.ResolveMergeFields(mergeFields);
 
-            SetActiveTab( "Details" );
+            SetActiveTab("Details");
 
             // Top Main
-            string summaryLavaTemplate = this.GetAttributeValue( "SummaryLavaTemplate" );
-            lMainTopContentHtml.Text = summaryLavaTemplate.ResolveMergeFields( mergeFields );
+            string summaryLavaTemplate = this.GetAttributeValue("SummaryLavaTemplate");
+            lMainTopContentHtml.Text = summaryLavaTemplate.ResolveMergeFields(mergeFields);
 
             // only show the leader toolbox link of the currentperson has a leader role in the group
-            btnLeaderToolbox.Visible = group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
+            btnLeaderToolbox.Visible = group.Members.Any(a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader);
 
-            //// Participant Actions 
+            //// Participant Actions
             // only show if the current person is a group member
-            var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
-            if ( groupMember != null )
+            var groupMember = group.Members.FirstOrDefault(a => a.PersonId == this.CurrentPersonId);
+            if (groupMember != null)
             {
                 hfGroupMemberId.Value = groupMember.Id.ToString();
                 pnlParticipantActions.Visible = true;
@@ -248,80 +243,80 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
                 pnlParticipantActions.Visible = false;
             }
 
-            mergeFields.Add( "GroupMember", groupMember );
+            mergeFields.Add("GroupMember", groupMember);
 
             // Progress
-            if ( groupMember != null && pnlParticipantActions.Visible )
+            if (groupMember != null && pnlParticipantActions.Visible)
             {
                 var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
-                var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                            .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                    && d.EntityId == groupMember.Id )
-                            .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+                var contributionTotal = new FinancialTransactionDetailService(rockContext).Queryable()
+                            .Where(d => d.EntityTypeId == entityTypeIdGroupMember
+                                   && d.EntityId == groupMember.Id)
+                            .Sum(a => (decimal?)a.Amount) ?? 0.00M;
 
-                var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                if ( !individualFundraisingGoal.HasValue )
+                var individualFundraisingGoal = groupMember.GetAttributeValue("IndividualFundraisingGoal").AsDecimalOrNull();
+                if (!individualFundraisingGoal.HasValue)
                 {
-                    individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                    individualFundraisingGoal = group.GetAttributeValue("IndividualFundraisingGoal").AsDecimalOrNull();
                 }
 
                 var amountLeft = individualFundraisingGoal - contributionTotal;
                 var percentMet = individualFundraisingGoal > 0 ? contributionTotal * 100 / individualFundraisingGoal : 100;
 
-                mergeFields.Add( "AmountLeft", amountLeft );
-                mergeFields.Add( "PercentMet", percentMet );
+                mergeFields.Add("AmountLeft", amountLeft);
+                mergeFields.Add("PercentMet", percentMet);
 
                 var queryParams = new Dictionary<string, string>();
-                queryParams.Add( "GroupId", hfGroupId.Value );
-                queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
-                mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ) );
-                mergeFields.Add( "ParticipantPageUrl", LinkedPageUrl( "ParticipantPage", queryParams ) );
+                queryParams.Add("GroupId", hfGroupId.Value);
+                queryParams.Add("GroupMemberId", hfGroupMemberId.Value);
+                mergeFields.Add("MakeDonationUrl", LinkedPageUrl("DonationPage", queryParams));
+                mergeFields.Add("ParticipantPageUrl", LinkedPageUrl("ParticipantPage", queryParams));
 
                 string makeDonationButtonText = null;
-                if ( groupMember.PersonId == this.CurrentPersonId )
+                if (groupMember.PersonId == this.CurrentPersonId)
                 {
                     makeDonationButtonText = "Make Payment";
                 }
                 else
                 {
-                    makeDonationButtonText = string.Format( "Contribute to {0} {1}", RockFilters.Possessive( groupMember.Person.NickName ), opportunityType );
+                    makeDonationButtonText = string.Format("Contribute to {0} {1}", RockFilters.Possessive(groupMember.Person.NickName), opportunityType);
                 }
 
-                mergeFields.Add( "MakeDonationButtonText", makeDonationButtonText );
+                mergeFields.Add("MakeDonationButtonText", makeDonationButtonText);
 
-                var participantLavaTemplate = this.GetAttributeValue( "ParticipantLavaTemplate" );
-                lParticipantActionsHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
+                var participantLavaTemplate = this.GetAttributeValue("ParticipantLavaTemplate");
+                lParticipantActionsHtml.Text = participantLavaTemplate.ResolveMergeFields(mergeFields);
             }
 
             // Tab:Details
-            lDetailsHtml.Text = group.GetAttributeValue( "OpportunityDetails" );
-            btnDetailsTab.Text = string.Format( "{0} Details", opportunityType );
+            lDetailsHtml.Text = group.GetAttributeValue("OpportunityDetails");
+            btnDetailsTab.Text = string.Format("{0} Details", opportunityType);
 
             // Tab:Updates
             liUpdatesTab.Visible = false;
-            var updatesContentChannelGuid = group.GetAttributeValue( "UpdateContentChannel" ).AsGuidOrNull();
-            if ( updatesContentChannelGuid.HasValue )
+            var updatesContentChannelGuid = group.GetAttributeValue("UpdateContentChannel").AsGuidOrNull();
+            if (updatesContentChannelGuid.HasValue)
             {
-                var contentChannel = new ContentChannelService( rockContext ).Get( updatesContentChannelGuid.Value );
-                if ( contentChannel != null )
+                var contentChannel = new ContentChannelService(rockContext).Get(updatesContentChannelGuid.Value);
+                if (contentChannel != null)
                 {
                     liUpdatesTab.Visible = true;
-                    string updatesLavaTemplate = this.GetAttributeValue( "UpdatesLavaTemplate" );
-                    var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).AsNoTracking().ToList();
+                    string updatesLavaTemplate = this.GetAttributeValue("UpdatesLavaTemplate");
+                    var contentChannelItems = new ContentChannelItemService(rockContext).Queryable().Where(a => a.ContentChannelId == contentChannel.Id).AsNoTracking().ToList();
 
-                    mergeFields.Add( "ContentChannelItems", contentChannelItems );
-                    lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
+                    mergeFields.Add("ContentChannelItems", contentChannelItems);
+                    lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields(mergeFields);
 
-                    btnUpdatesTab.Text = string.Format( "{0} Updates ({1})", opportunityType, contentChannelItems.Count() );
+                    btnUpdatesTab.Text = string.Format("{0} Updates ({1})", opportunityType, contentChannelItems.Count());
                 }
             }
 
             // Tab:Comments
-            var noteType = NoteTypeCache.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
-            if ( noteType != null )
+            var noteType = NoteTypeCache.Get(this.GetAttributeValue("NoteType").AsGuid());
+            if (noteType != null)
             {
-                notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<NoteTypeCache> { noteType } );
+                notesCommentsTimeline.NoteOptions.SetNoteTypes(new List<NoteTypeCache> { noteType });
             }
 
             notesCommentsTimeline.NoteOptions.EntityId = groupId;
@@ -329,12 +324,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
             // show the Add button on comments for any logged in person
             notesCommentsTimeline.AddAllowed = true;
 
-            var enableCommenting = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
-            btnCommentsTab.Text = string.Format( "Comments ({0})", notesCommentsTimeline.NoteCount );
+            var enableCommenting = group.GetAttributeValue("EnableCommenting").AsBoolean();
+            btnCommentsTab.Text = string.Format("Comments ({0})", notesCommentsTimeline.NoteCount);
 
-            if ( CurrentPerson == null )
+            if (CurrentPerson == null)
             {
-                notesCommentsTimeline.Visible = enableCommenting && ( notesCommentsTimeline.NoteCount > 0 );
+                notesCommentsTimeline.Visible = enableCommenting && (notesCommentsTimeline.NoteCount > 0);
                 lNoLoginNoCommentsYet.Visible = notesCommentsTimeline.NoteCount == 0;
                 liCommentsTab.Visible = enableCommenting;
                 btnLoginToComment.Visible = enableCommenting;
@@ -348,7 +343,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
             }
 
             // if btnDetailsTab is the only visible tab, hide the tab since there is nothing else to tab to
-            if ( !liCommentsTab.Visible && !liUpdatesTab.Visible )
+            if (!liCommentsTab.Visible && !liUpdatesTab.Visible)
             {
                 tlTabList.Visible = false;
             }
@@ -358,30 +353,30 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// Sets the active tab.
         /// </summary>
         /// <param name="tabName">Name of the tab.</param>
-        protected void SetActiveTab( string tabName )
+        protected void SetActiveTab(string tabName)
         {
             hfActiveTab.Value = tabName;
             pnlDetails.Visible = tabName == "Details";
             pnlUpdates.Visible = tabName == "Updates";
             pnlComments.Visible = tabName == "Comments";
 
-            if ( tabName == "Details" )
+            if (tabName == "Details")
             {
-                liUpdatesTab.RemoveCssClass( "active" );
-                liDetailsTab.AddCssClass( "active" );
-                liCommentsTab.RemoveCssClass( "active" );
+                liUpdatesTab.RemoveCssClass("active");
+                liDetailsTab.AddCssClass("active");
+                liCommentsTab.RemoveCssClass("active");
             }
-            else if ( tabName == "Updates" )
+            else if (tabName == "Updates")
             {
-                liUpdatesTab.AddCssClass( "active" );
-                liDetailsTab.RemoveCssClass( "active" );
-                liCommentsTab.RemoveCssClass( "active" );
+                liUpdatesTab.AddCssClass("active");
+                liDetailsTab.RemoveCssClass("active");
+                liCommentsTab.RemoveCssClass("active");
             }
-            else if ( tabName == "Comments" )
+            else if (tabName == "Comments")
             {
-                liUpdatesTab.RemoveCssClass( "active" );
-                liDetailsTab.RemoveCssClass( "active" );
-                liCommentsTab.AddCssClass( "active" );
+                liUpdatesTab.RemoveCssClass("active");
+                liDetailsTab.RemoveCssClass("active");
+                liCommentsTab.AddCssClass("active");
             }
         }
 
@@ -394,9 +389,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
+        protected void Block_BlockUpdated(object sender, EventArgs e)
         {
-            ShowView( hfGroupId.Value.AsInteger() );
+            ShowView(hfGroupId.Value.AsInteger());
         }
 
         /// <summary>
@@ -404,9 +399,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDetailsTab_Click( object sender, EventArgs e )
+        protected void btnDetailsTab_Click(object sender, EventArgs e)
         {
-            SetActiveTab( "Details" );
+            SetActiveTab("Details");
         }
 
         /// <summary>
@@ -414,9 +409,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnUpdatesTab_Click( object sender, EventArgs e )
+        protected void btnUpdatesTab_Click(object sender, EventArgs e)
         {
-            SetActiveTab( "Updates" );
+            SetActiveTab("Updates");
         }
 
         /// <summary>
@@ -424,21 +419,21 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCommentsTab_Click( object sender, EventArgs e )
+        protected void btnCommentsTab_Click(object sender, EventArgs e)
         {
-            SetActiveTab( "Comments" );
+            SetActiveTab("Comments");
         }
-               
+
         /// <summary>
         /// Handles the Click event of the btnDonateToParticipant control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDonateToParticipant_Click( object sender, EventArgs e )
+        protected void btnDonateToParticipant_Click(object sender, EventArgs e)
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "GroupId", hfGroupId.Value );
-            NavigateToLinkedPage( "DonationPage", queryParams );
+            queryParams.Add("GroupId", hfGroupId.Value);
+            NavigateToLinkedPage("DonationPage", queryParams);
         }
 
         /// <summary>
@@ -446,11 +441,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnLeaderToolbox_Click( object sender, EventArgs e )
+        protected void btnLeaderToolbox_Click(object sender, EventArgs e)
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "GroupId", hfGroupId.Value );
-            NavigateToLinkedPage( "LeaderToolboxPage", queryParams );
+            queryParams.Add("GroupId", hfGroupId.Value);
+            NavigateToLinkedPage("LeaderToolboxPage", queryParams);
         }
 
         /// <summary>
@@ -458,12 +453,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Fundraising
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnLoginToComment_Click( object sender, EventArgs e )
+        protected void btnLoginToComment_Click(object sender, EventArgs e)
         {
             var site = RockPage.Layout.Site;
-            if ( site.LoginPageId.HasValue )
+            if (site.LoginPageId.HasValue)
             {
-                site.RedirectToLoginPage( true );
+                site.RedirectToLoginPage(true);
             }
             else
             {
