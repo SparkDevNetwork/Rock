@@ -334,6 +334,10 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["LocationId"] = location.Id;
             }
+            else
+            {
+                ViewState["LocationId"] = null;
+            }
 
             return base.SaveViewState();
         }
