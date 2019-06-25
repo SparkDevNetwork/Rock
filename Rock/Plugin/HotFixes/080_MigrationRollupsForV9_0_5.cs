@@ -39,7 +39,7 @@ namespace Rock.Plugin.HotFixes
         }
 
         /// <summary>
-        /// ED: Assessment Badge lava
+        /// ED: Fix the duplicate defined type category "Personality Assessments"
         /// </summary>
         private void FixDefinedTypeCategoryPersonalityAssessments()
         {
