@@ -5,7 +5,17 @@
 {% assign showEmail = Item | Attribute:'DisplayEmailAddress' %}
 
 <div class="row staff-detail">
-    <a href='{{ LinkedPages.DetailPage }}' title='Back to "Our Team"' class='backlink'><i class="np-icon np-close"></i></a>
+
+    {% assign DetailPageId = DetailPage %}
+    {% assign DetailPageCache = DetailPageId | FromCache:'Page' %}
+    {% assign DetailPageRoutes = DetailPageCache.PageRoutes %}
+    {% if DetailPageRoutes.size > 0 %}
+        {% capture DetailPageUrl %}/{{ DetailPageRoutes.first | Property:'Route' }}{% endcapture %}
+    {% else %}
+        {% assign DetailPageUrl = "/Page/" | Append:PageId %}
+    {% endif %}
+
+    <a href="{{ DetailPageUrl | Escape }}" title='Back to "Our Team"' class="backlink"><i class="np-icon np-close"></i></a>
 	<div class="col-sm-5">
         
         {% assign photoGuid = itemPerson | Attribute:'StaffPhoto','RawValue' %}

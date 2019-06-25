@@ -17,7 +17,7 @@
 
 	<div class='block-grid-item staff-member'>
 	    <a href="{% assign ContentChannelItemId = member.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'ContentChannelItemId' ]}" title="{{ member.Title | Escape }}">
-            {{ memberPerson | Attribute:'StaffPhoto' }}
+            <img src="{{ memberPerson | Attribute:'StaffPhoto','Url' }}" class="img-responsive" />
         </a>
 	    <h2 class='member-name'>{{ memberPerson.FullName | Escape }}</h2>
 	    <p class='member-title'>{{ memberPerson | Attribute:'StaffPosition' | Escape }}</p>

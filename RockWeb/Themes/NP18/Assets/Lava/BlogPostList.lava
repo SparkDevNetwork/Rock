@@ -17,6 +17,16 @@
 		{% assign nextPageString = Pagination.NextPage | ToString %}
 		{% assign prevPageString = Pagination.PreviousPage | ToString %}
 
+		{% if Pagination.PreviousPage == -1 %}
+			<div class="btn btn-default disabled pull-right">
+				<i class="fa fa-chevron-left"></i> Newer 
+			</div>
+		{% else %}
+			<a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
+				<i class="fa fa-chevron-left"></i> Newer 
+			</a>
+		{% endif %}
+
 		{% if Pagination.NextPage == -1 %}
 			<div class="btn btn-default disabled pull-left">
 				Older <i class="fa fa-chevron-right"></i>
@@ -27,14 +37,5 @@
 			</a>
 		{% endif %}
 
-		{% if Pagination.PreviousPage == -1 %}
-			<div class="btn btn-default disabled pull-right">
-				<i class="fa fa-chevron-left"></i> Newer 
-			</div>
-		{% else %}
-			<a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum',prevPageString }}">
-				<i class="fa fa-chevron-left"></i> Newer 
-			</a>
-		{% endif %}
 	</div>
 {% endif %}
