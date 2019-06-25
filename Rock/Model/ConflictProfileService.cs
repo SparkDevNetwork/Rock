@@ -143,13 +143,14 @@ namespace Rock.Model
 
         /// <summary>
         /// Raw question data with code as key.
+        /// The mean and standard deviation values are in reference with the Dr. Greg Wiens Conflict Profile document.
         /// </summary>
         private static Dictionary<Guid, ConflictProfile> constructData = new Dictionary<Guid, ConflictProfile>()
         {
             { SystemGuid.DefinedValue.CONFLICT_PROFILE_AVOIDING.AsGuid(),  new ConflictProfile(17.009, 2.69, new List<string>(){ "a01", "a03", "a04", "a06", "a07","a08","a09","a10" }) },
             { SystemGuid.DefinedValue.CONFLICT_PROFILE_COMPROMISING.AsGuid(), new ConflictProfile(21.061, 1.59,  new List<string>(){ "c01", "c02", "c04", "c05","c08","c09","c10","c11"}) },
             { SystemGuid.DefinedValue.CONFLICT_PROFILE_RESOLVING.AsGuid(), new ConflictProfile(22.193,2.40, new List<string>(){ "r02", "r03", "r05", "r06", "r07","r08","r09","r10"}) },
-            { SystemGuid.DefinedValue.CONFLICT_PROFILE_WINNING.AsGuid(), new ConflictProfile( 21.459, 2.90, new List<string>(){ "w01", "w03", "w04", "w06", "w07", "w09", "w10" } )},
+            { SystemGuid.DefinedValue.CONFLICT_PROFILE_WINNING.AsGuid(), new ConflictProfile( 21.459, 2.90, new List<string>(){ "w01", "w03", "w04", "w05", "w06", "w07", "w09", "w10" } )},
             { SystemGuid.DefinedValue.CONFLICT_PROFILE_YEILDING.AsGuid(), new ConflictProfile(18.276,2.22, new List<string>(){ "y01", "y02", "y03", "y05", "y06","y07","y08","y11" } )}
         };
 
