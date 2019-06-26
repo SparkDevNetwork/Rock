@@ -14,17 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
-using System.Text;
-
-using DotLiquid;
 
 using Quartz;
-
-using Rock.Communication;
-using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -37,6 +29,9 @@ namespace Rock.Jobs
     /// </summary>
     public class RockTriggerListener : ITriggerListener
     {
+        /// <summary>
+        /// Get the name of the <see cref="ITriggerListener"/>.
+        /// </summary>
         public string Name => "RockTriggerListener";
 
         /// <summary>
