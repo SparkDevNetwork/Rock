@@ -1,4 +1,4 @@
-////////////////////////////////
+﻿////////////////////////////////
 // Live Video All Staff Plugin
 //
 // Author
@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive {
 
                         var scheduleExpired = schedule.IsValid;
 
-                        bool scheduleActive = schedule.IsScheduleOrCheckInActive;
+                        bool scheduleActive = schedule.WasScheduleOrCheckInActive( RockDateTime.Now );
 
                         // Check if Check in or Schedule is active and set the state accordingly
                         if ( scheduleActive ) {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Dashboard
                 string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
                 if ( entityValues.Length == 2 )
                 {
-                    var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                    var entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
                     if ( entityType != null )
                     {
                         result += string.Format( "?entityTypeId={0}", entityType.Id );
@@ -71,7 +71,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Dashboard
                 {
                     if ( this.ContextEntity() != null )
                     {
-                        var entityType = EntityTypeCache.Read( this.ContextEntity().GetType(), false );
+                        var entityType = EntityTypeCache.Get( this.ContextEntity().GetType(), false );
                         if ( entityType != null )
                         {
                             result += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );
