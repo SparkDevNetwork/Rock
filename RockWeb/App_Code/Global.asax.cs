@@ -229,7 +229,6 @@ namespace RockWeb
                     bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                     if ( runJobsInContext )
                     {
-
                         ISchedulerFactory sf;
 
                         // create scheduler
@@ -285,6 +284,9 @@ namespace RockWeb
 
                         // set up the listener to report back from jobs as they complete
                         sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                        // set up a trigger listener that can prevent a job from running if another scheduler is
+                        // already running it (i.e., someone running it manually).
+                        sched.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
 
                         // start the scheduler
                         sched.Start();
