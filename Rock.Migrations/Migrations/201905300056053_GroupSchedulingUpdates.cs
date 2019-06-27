@@ -54,7 +54,7 @@ namespace Rock.Migrations
             // Attrib for BlockType: Group Schedule Toolbox:Sign Up Instructions
             RockMigrationHelper.UpdateBlockTypeAttribute( "7F9CEA6F-DCE5-4F60-A551-924965289F1D", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Sign Up Instructions", "SignupInstructions", "", @"Instructions here will show up on Sign Up tab. <span class='tip tip-lava'></span>", 2, @"<div class=""alert alert-info"">
     {%- if IsSchedulesAvailable -%}
-        {%- if CurrentPerson.Id != Person.Id -%}
+        {%- if CurrentPerson.Id == Person.Id -%}
             Sign up to attend a group and location on the given date.
         {%- else -%}
             Sign up {{ Person.FullName }} to attend a group and location on a given date.
