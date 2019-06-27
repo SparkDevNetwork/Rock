@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -165,6 +164,9 @@ namespace RockWeb.Blocks.Communication
             componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( "ImageBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupMobileAttachment.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+
+            var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
+            lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
 
             hfSMSCharLimit.Value = ( this.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160 ).ToString();
 
@@ -512,7 +514,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
-            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues(false);
+            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues( false );
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
@@ -1259,8 +1261,8 @@ namespace RockWeb.Blocks.Communication
                 selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
             }
 
-            if ( selectedTemplate == null || 
-                ( ( communicationType == CommunicationType.Email  || communicationType == CommunicationType.RecipientPreference ) && !selectedTemplate.SupportsEmailWizard() ) )
+            if ( selectedTemplate == null ||
+                ( ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference ) && !selectedTemplate.SupportsEmailWizard() ) )
             {
                 nbTemplateSelectionWarning.Text = "Please select a template.";
                 nbTemplateSelectionWarning.Visible = true;
@@ -1382,7 +1384,7 @@ namespace RockWeb.Blocks.Communication
                     string testPersonOriginalEmailAddress = CurrentPerson.Email;
                     var testPersonOriginalSMSPhoneNumber = CurrentPerson.PhoneNumbers
                                             .Where( p => p.IsMessagingEnabled )
-                                            .Select(a => a.Number)
+                                            .Select( a => a.Number )
                                             .FirstOrDefault();
 
                     Rock.Model.Communication testCommunication = null;
@@ -1465,7 +1467,7 @@ namespace RockWeb.Blocks.Communication
                                 }
                             }
                         }
-                        
+
                         testRecipient.PersonAliasId = sendTestToPerson.PrimaryAliasId.Value;
 
                         testRecipient.MediumEntityTypeId = mediumEntityTypeId;
@@ -1575,7 +1577,7 @@ namespace RockWeb.Blocks.Communication
                                             }
                                         }
                                     }
-                                    
+
                                 }
                             }
                         }
