@@ -28,7 +28,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // There were a couple of things from the old MoreMigrationRollupsForV7_3 hotfix migration that got missed 
-            MoreMigrationRollupsForV7_3();
+            // MoreMigrationRollupsForV7_3();
         }
 
         /// <summary>
