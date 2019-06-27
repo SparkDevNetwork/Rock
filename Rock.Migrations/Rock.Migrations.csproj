@@ -60,7 +60,11 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs" />
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201807250211476_AddNoteAttachments.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201807250211476_AddNoteAttachments.Designer.cs">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
@@ -1078,7 +1082,7 @@
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
-      <LastGenOutput>RockMigrationSQL1.Designer.cs</LastGenOutput>
+      <LastGenOutput>RockMigrationSQL.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.resx">
       <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>

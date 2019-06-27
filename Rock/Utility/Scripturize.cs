@@ -44,6 +44,7 @@ namespace Rock.Utility
         /// <param name="defaultTranslation">The default translation.</param>
         /// <param name="landingSite">The landing site.</param>
         /// <param name="cssClass">The CSS class.</param>
+        /// <param name="openInTab">if set to <c>true</c> [open in tab].</param>
         /// <returns></returns>
         public static string Parse( string text, string defaultTranslation = "NLT", LandingSite landingSite = LandingSite.YouVersion, string cssClass = "", bool openInTab = false )
         {
@@ -133,6 +134,7 @@ namespace Rock.Utility
         /// <param name="defaultTranslation">The default translation.</param>
         /// <param name="landingSite">The landing site.</param>
         /// <param name="cssClass">The CSS class.</param>
+        /// <param name="openInTab">if set to <c>true</c> [open in tab].</param>
         /// <returns></returns>
         private static string AddScriptureLinks( string token, string defaultTranslation, LandingSite landingSite, string cssClass = "", bool openInTab = false )
         {
