@@ -1962,7 +1962,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
-                
+
 
                 if ( CustomColumns != null && CustomColumns.Any() )
                 {
@@ -1994,8 +1994,14 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
                 {
-                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                    //var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    Type dotLiquidDropType = typeof( DotLiquid.Drop );
+                    allprops = allprops.Where( a => a.DeclaringType != dotLiquidDropType ).ToList();
+                }
+                else if ( typeof( RockDynamic ).IsAssignableFrom( oType ) )
+                {
+                    Type rockDynamicType = typeof( RockDynamic );
+                    allprops = allprops.Where( a => a.DeclaringType != typeof( RockDynamic ) ).ToList();
                 }
 
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
