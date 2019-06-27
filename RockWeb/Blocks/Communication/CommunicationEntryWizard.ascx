@@ -396,6 +396,33 @@
                                         </div>
 					                </div>
 
+                                    <!-- Video Properties -->
+                                    <div class="propertypanel propertypanel-video" data-component="video" style="display: none;">
+						                <h4 class="propertypanel-title">Video</h4>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="component-video-url">
+                                                        Video URL
+                                                        <asp:LinkButton ID="lbVideoUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                            data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
+                                                            data-original-title="Your video preview image will link to this URL. Preview images are generated automatically for "/>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input class="form-control" id="component-video-url" type="url" />
+                                                        <span class="input-group-addon" id="component-video-addon"><i class="fa fa-arrow-right"></i></span>
+                                                    </div>
+                                                </div>
+                                                <div id="component-video-error" class="alert alert-warning" role="alert">
+                                                    Sorry, we couldn't generate a preview image for that URL. Please upload an image.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <Rock:ImageUploader ID="componentVideoImageUploader" ClientIDMode="Static" runat="server" Label="Preview Image" UploadAsTemporary="false" DoneFunctionClientScript="handleVideoImageUpdate(e, data)" DeleteFunctionClientScript="handleVideoImageUpdate()" />
+                                            </div>
+                                        </div>
+					                </div>
+
                                     <!-- Section Properties -->
                                     <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						                <h4 class="propertypanel-title">Section</h4>
@@ -757,7 +784,9 @@
 				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' alt='' />" data-state="template">
 					                    <i class="fa fa-picture-o"></i> <br /> Image
 				                    </div>
-
+                                    <div class="component component-video" data-content="<a href=''><img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/video-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' /></a>" data-state="template">
+					                    <i class="fa fa-video"></i> <br /> Video
+				                    </div>
 				                    <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
 					                    <i class="fa fa-minus"></i> <br /> Divider
 				                    </div>
@@ -1264,6 +1293,7 @@
                     Rock.controls.emailEditor.codeComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.videoComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
                 }
@@ -1290,6 +1320,9 @@
 						break;
 				    case 'image':
 				        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
+                        break;
+                    case 'video':
+				        Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'section':
 				        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
@@ -1347,7 +1380,13 @@
 			function handleImageUpdate(e, data)
 			{
 			    Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
-			}
+            }
+
+            function handleVideoImageUpdate(e, data)
+			{
+			    Rock.controls.emailEditor.videoComponentHelper.handleVideoImageUpdate(e, data);
+            }
+
 
 			// debouncing function from John Hann
 			// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
@@ -1453,6 +1492,9 @@
 
         <!-- Image Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>' ></script>
+
+        <!-- Video Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/videoComponentHelper.js", true)%>' ></script>
 
         <!-- Divider Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/dividerComponentHelper.js", true)%>' ></script>
