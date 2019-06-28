@@ -35,7 +35,7 @@ namespace Rock.Migrations
         /// <value>
         ///   <c>true</c> if this instance is frozen; otherwise, <c>false</c>.
         /// </value>
-        public bool IsFrozen => false;
+        public bool IsFrozen => true;
 
         /// <summary>
         /// Generates the primary code file that the user can view and edit.
