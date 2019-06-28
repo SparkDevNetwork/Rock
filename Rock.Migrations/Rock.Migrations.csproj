@@ -645,6 +645,18 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906201538380_Assessments4.cs" />
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906201538380_Assessments4.designer.cs">
+      <DependentUpon>201906201538380_Assessments4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906202222262_Rollup_0620.cs" />
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906202222262_Rollup_0620.designer.cs">
+      <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906242102336_Rollup_0624.cs" />
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906242102336_Rollup_0624.designer.cs">
+      <DependentUpon>201906242102336_Rollup_0624.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockStartup\DataMigrationsStartup.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
@@ -1086,6 +1098,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 8.0\Version 1.8.1\201807200941565_Rollup_PreAlphaRelease_0719.resx">
       <DependentUpon>201807200941565_Rollup_PreAlphaRelease_0719.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201906201538380_Assessments4.resx">
+      <DependentUpon>201906201538380_Assessments4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201906202222262_Rollup_0620.resx">
+      <DependentUpon>201906202222262_Rollup_0620.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201906242102336_Rollup_0624.resx">
+      <DependentUpon>201906242102336_Rollup_0624.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
