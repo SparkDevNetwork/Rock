@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Transaction Matching" )]
     [Category( "Finance" )]
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 4 )]
 
-    [BooleanField( 
+    [BooleanField(
         "Expand Person Search Options",
         Key = AttributeKey.ExpandPersonSearchOptions,
         Description = "When selecting a person, expand the additional search options by default.",
@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum Direction
         {
@@ -756,7 +756,7 @@ namespace RockWeb.Blocks.Finance
                             .OrderBy( i => i.Order )
                             .FirstOrDefault();
 
-                        lImage.Text = string.Format( "<a href='{0}'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId ) ) );
+                        lImage.Text = string.Format( "<a href='{0}' target='_blank'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId ) ) );
                         lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
