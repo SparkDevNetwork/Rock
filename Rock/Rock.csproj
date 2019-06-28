@@ -506,6 +506,7 @@
     <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
     <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\081_EnsureCoreConnectionStatusIsSystem.cs" />
     <Compile Include="Plugin\HotFixes\080_MigrationRollupsForV9_0_5.cs" />
     <Compile Include="Plugin\HotFixes\079_MigrationRollupsForV9_0_4.cs" />
     <Compile Include="Plugin\HotFixes\078_MigrationRollupsForV9_0_3.cs" />
@@ -2492,6 +2493,9 @@
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
