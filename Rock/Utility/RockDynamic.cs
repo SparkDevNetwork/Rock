@@ -38,21 +38,21 @@ namespace Rock.Utility
 
         private Type _instanceType;
 
-        private PropertyInfo[] InstancePropertyInfo
+        private Dictionary<string, PropertyInfo> InstancePropertyLookup
         {
             get
             {
-                if ( _instancePropertyInfo == null && _instance != null )
+                if ( _instancePropertyInfoLookup == null && _instance != null )
                 {
                     var rockDynamicType = typeof( RockDynamic );
-                    _instancePropertyInfo = _instance.GetType().GetProperties().Where( a => a.DeclaringType != rockDynamicType ).ToArray();
+                    _instancePropertyInfoLookup = _instance.GetType().GetProperties().Where( a => a.DeclaringType != rockDynamicType ).ToDictionary( k => k.Name, v => v );
                 }
 
-                return _instancePropertyInfo;
+                return _instancePropertyInfoLookup;
             }
         }
 
-        private PropertyInfo[] _instancePropertyInfo;
+        private Dictionary<string, PropertyInfo> _instancePropertyInfoLookup;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockDynamic"/> class.
@@ -150,15 +150,11 @@ namespace Rock.Utility
                 instance = this;
             }
 
-            var miArray = _instanceType.GetMember( name, BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance );
-            if ( miArray != null && miArray.Length > 0 )
+            var prop = InstancePropertyLookup.GetValueOrNull( name );
+            if ( prop != null )
             {
-                var mi = miArray[0];
-                if ( mi.MemberType == MemberTypes.Property )
-                {
-                    result = ( ( PropertyInfo ) mi ).GetValue( instance, null );
-                    return true;
-                }
+                result = prop.GetValue( instance, null );
+                return true;
             }
 
             result = null;
@@ -184,15 +180,11 @@ namespace Rock.Utility
                 return false;
             }
 
-            var miArray = _instanceType.GetMember( name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance );
-            if ( miArray != null && miArray.Length > 0 )
+            var prop = InstancePropertyLookup.GetValueOrNull( name );
+            if ( prop != null )
             {
-                var mi = miArray[0];
-                if ( mi.MemberType == MemberTypes.Property )
-                {
-                    ( ( PropertyInfo ) mi ).SetValue( _instance, value, null );
-                    return true;
-                }
+                prop.SetValue( _instance, value, null );
+                return true;
             }
 
             return false;
@@ -210,23 +202,21 @@ namespace Rock.Utility
         {
             get
             {
-                try
+                // try to get from properties collection first
+                if ( _members.ContainsKey( key ) )
                 {
-                    // try to get from properties collection first
                     return _members[key];
                 }
-                catch ( KeyNotFoundException )
-                {
-                    // try reflection on instanceType
-                    object result = null;
-                    if ( GetProperty( _instance, key, out result ) )
-                    {
-                        return result;
-                    }
 
-                    // nope doesn't exist
-                    return null;
+                // try reflection on instanceType
+                object result = null;
+                if ( GetProperty( _instance, key, out result ) )
+                {
+                    return result;
                 }
+
+                // nope doesn't exist
+                return null;
             }
 
             set
@@ -240,8 +230,8 @@ namespace Rock.Utility
                     }
 
                     // check instance for existence of type first
-                    var miArray = _instanceType.GetMember( key, BindingFlags.Public | BindingFlags.GetProperty );
-                    if ( miArray != null && miArray.Length > 0 )
+                    var prop = InstancePropertyLookup.GetValueOrNull( key );
+                    if ( prop != null )
                     {
                         SetProperty( _instance, key, value );
                     }
@@ -262,7 +252,7 @@ namespace Rock.Utility
         {
             if ( includeInstanceProperties && _instance != null )
             {
-                foreach ( var prop in this.InstancePropertyInfo )
+                foreach ( var prop in this.InstancePropertyLookup.Values )
                 {
                     yield return new KeyValuePair<string, object>( prop.Name, prop.GetValue( _instance, null ) );
                 }
@@ -284,9 +274,9 @@ namespace Rock.Utility
         {
             List<string> propertyNames = new List<string>();
 
-            foreach ( var prop in this.InstancePropertyInfo )
+            foreach ( var propName in this.InstancePropertyLookup.Keys )
             {
-                propertyNames.Add( prop.Name );
+                propertyNames.Add( propName );
             }
 
             foreach ( var key in this._members.Keys )
@@ -346,13 +336,7 @@ namespace Rock.Utility
 
             if ( includeInstanceProperties && _instance != null )
             {
-                foreach ( var prop in this.InstancePropertyInfo )
-                {
-                    if ( prop.Name == item.Key )
-                    {
-                        return true;
-                    }
-                }
+                return InstancePropertyLookup.ContainsKey( item.Key );
             }
 
             return false;
