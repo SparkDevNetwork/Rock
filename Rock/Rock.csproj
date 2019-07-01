@@ -530,6 +530,7 @@
     <Compile Include="SystemGuid\Layout.cs" />
     <Compile Include="SystemGuid\PageRoute.cs" />
     <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
+    <Compile Include="Transactions\SaveHistoryTransaction.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
