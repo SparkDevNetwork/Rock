@@ -189,14 +189,14 @@
 			animateRotate: false,
 			animateScale: false
 		},
-		cutoutPercentage: 95,
+		cutoutPercentage: 80,
 		rotation: Math.PI,
 		circumference: Math.PI,
 		legend: {
 			display: false
 		},
 		scales: {},
-		arrowColor: "#444"
+        arrowColor: "#444"
 	};
 	Chart.controllers.tsgauge = Chart.controllers.doughnut.extend({
 		initialize: function(chart) {
