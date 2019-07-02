@@ -48,12 +48,6 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Private Variables
-
-        private int _entityId = 0;
-
-        #endregion
-
         #region Configuration Properties
 
         private Type _entitySystemType = typeof( Rock.Model.ExceptionLog );
