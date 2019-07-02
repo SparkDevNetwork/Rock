@@ -8,9 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// since this is code generated, we can safely ignore any release compiler warnings
-#pragma warning disable CS1587, CS1570
-
 namespace Rock.Plugin.HotFixes {
     using System;
     
@@ -368,7 +365,6 @@ namespace Rock.Plugin.HotFixes {
             }
         }
         
-
         /// <summary>
         ///   Looks up a localized string similar to 
         ////*
@@ -438,8 +434,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -665,8 +660,21 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode]
+        ///	SET [Documentation] = 
+        ///  &apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _082_MigrationRollupsForV9_0_6_SegmentedChartUpdate {
+            get {
+                return ResourceManager.GetString("_082_MigrationRollupsForV9_0_6_SegmentedChartUpdate", resourceCulture);
+            }
+        }
     }
 }
-
-
-#pragma warning restore CS1587, CS1570
