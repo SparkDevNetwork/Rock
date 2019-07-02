@@ -69,7 +69,7 @@
 		this.gaugeRadius = this.chart.innerRadius;
 		this.gaugeCenterX = (chartArea.left + chartArea.right) / 2;
 		this.gaugeCenterY = (chartArea.top + chartArea.bottom + this.chart.outerRadius) / 2;
-		this.arrowLength = this.chart.radiusLength * 2;
+		this.arrowLength = this.chart.radiusLength * 0.65;
 	};
 	GaugeChartHelper.prototype.getCoordOnCircle = function(r, alpha) {
 		return {
@@ -189,14 +189,14 @@
 			animateRotate: false,
 			animateScale: false
 		},
-		cutoutPercentage: 95,
+		cutoutPercentage: 80,
 		rotation: Math.PI,
 		circumference: Math.PI,
 		legend: {
 			display: false
 		},
 		scales: {},
-		arrowColor: "#444"
+        arrowColor: "#444"
 	};
 	Chart.controllers.tsgauge = Chart.controllers.doughnut.extend({
 		initialize: function(chart) {
