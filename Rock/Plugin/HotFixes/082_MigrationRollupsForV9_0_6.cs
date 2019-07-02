@@ -27,9 +27,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixIssue3497();
-            MotivatorsUpdate();
-            SegmentedChartUpdate();
+            //FixIssue3497();
+            //MotivatorsUpdate();
+            //SegmentedChartUpdate();
         }
 
         /// <summary>
