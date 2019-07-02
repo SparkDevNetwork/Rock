@@ -520,8 +520,8 @@ namespace Rock.Financial
             // Generate metadata which supporting gateways can utilize to provide context information about the transaction
             var metadata = new Dictionary<string, string>
             {
-                ["giving_system"] = "RockRMS",
-                ["transaction_guid"] = transactionGuid.ToString()
+                [MetadataKeys.GivingSystem] = "RockRMS",
+                [MetadataKeys.TransactionGuid] = transactionGuid.ToString()
             };
 
             var description = GetDescription();
