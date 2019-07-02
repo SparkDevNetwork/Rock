@@ -376,6 +376,8 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
 
                     registrant.LoadAttributes();
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     foreach ( var field in TemplateState.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
@@ -782,6 +784,8 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                     {
                         if ( field.AttributeId.HasValue )
@@ -909,6 +913,8 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
+                            // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                            // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                             if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             {
                                 object value = null;
