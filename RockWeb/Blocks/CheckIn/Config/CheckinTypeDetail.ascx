@@ -99,7 +99,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlSearchType_SelectedIndexChanged"
-                                        Help="The type of search that is available after person clicks the 'Check In' button on the check-in Welcome screen. Note, the user can also always check-in using
+                                        Help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the user can also always check-in using
                                         a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode."/>
                                     <Rock:NumberBox ID="nbMaxResults" runat="server" Label="Maximum Number of Results"  NumberType="Integer" 
                                         Help="The maximum number of search results to return when searching (default is 100)." />
