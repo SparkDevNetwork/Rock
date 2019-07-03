@@ -524,8 +524,7 @@ namespace Rock.Model
                         historyItem.GroupId = historyItem.Group?.Id;
                     }
 
-                    HistoryService.SaveChanges(
-                        ( RockContext ) dbContext,
+                    var changes = HistoryService.GetChanges(
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(),
                         personId,
@@ -533,12 +532,12 @@ namespace Rock.Model
                         historyItem.Caption,
                         typeof( Group ),
                         historyItem.GroupId,
-                        true,
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    HistoryService.SaveChanges(
-                        ( RockContext ) dbContext,
+                    new SaveHistoryTransaction( changes ).Enqueue();
+
+                    var groupMemberChanges = HistoryService.GetChanges(
                         typeof( GroupMember ),
                         Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(),
                         this.Id,
@@ -546,10 +545,12 @@ namespace Rock.Model
                         historyItem.Caption,
                         typeof( Group ),
                         historyItem.GroupId,
-                        true,
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
+
+                    new SaveHistoryTransaction( groupMemberChanges ).Enqueue();
                 }
+
             }
 
             base.PostSaveChanges( dbContext );
