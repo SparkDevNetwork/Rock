@@ -549,7 +549,7 @@ namespace RockWeb.Blocks.Event
                 registrationInstance.MaxAttendees = maximumAttendees;
             }
 
-            //Set Completyion Workflow
+            // Set Completion Workflow
             var workFlowGuid = GetAttributeValue( AttributeKey.CompletionWorkflow ).AsGuidOrNull();
             if ( workFlowGuid != null )
             {
