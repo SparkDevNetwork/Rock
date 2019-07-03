@@ -82,13 +82,22 @@ namespace RockWeb.Blocks.Event
         Order = 3 )]
 
     [LinkedPage(
+        "Registration Instance Page",
+        Key = AttributeKey.RegistrationInstancePage,
+        Description = "Determines which page the link in the final confirmation screen will take you to.",
+        Category = "",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE,
+        Order = 4)]
+
+    [LinkedPage(
         "Group Viewer Page",
         Key = AttributeKey.GroupViewerPage,
         Description = "Determines which page the link in the final confirmation screen will take you to.",
         Category = "",
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField(
         "Require Group",
@@ -97,7 +106,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = true,
         DefaultBooleanValue = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField(
         "Set Registration Instance Active",
@@ -106,7 +115,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        Order = 5 )]
+        Order = 7 )]
 
     [BooleanField(
         "Enable Calendar Events",
@@ -115,7 +124,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        Order = 6 )]
+        Order = 8 )]
 
     [BooleanField(
         "Allow Creating New Calendar Events",
@@ -124,7 +133,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = true,
         DefaultBooleanValue = false,
-        Order = 7 )]
+        Order = 9 )]
 
     [BooleanField(
         "Require Calendar Events",
@@ -133,7 +142,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        Order = 8 )]
+        Order = 10 )]
 
     [BooleanField(
         "Include Inactive Calendar Items",
@@ -142,7 +151,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = false,
         DefaultBooleanValue = true,
-        Order = 9 )]
+        Order = 11 )]
 
     [WorkflowTypeField(
         "Completion Workflow",
@@ -152,7 +161,7 @@ namespace RockWeb.Blocks.Event
         IsRequired = false,
         DefaultValue = "",
         AllowMultiple = false,
-        Order = 10 )]
+        Order = 12 )]
 
     [GroupTypesField(
         "Check-In Group Types",
@@ -161,7 +170,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = false,
         DefaultValue = "",
-        Order = 11 )]
+        Order = 13 )]
 
     [BooleanField(
         "Display Link to Event Details Page on Confirmation Screen",
@@ -170,7 +179,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = false,
         DefaultBooleanValue = false,
-        Order = 12 )]
+        Order = 14 )]
 
     [LinkedPage(
         "External Event Details Page",
@@ -179,7 +188,7 @@ namespace RockWeb.Blocks.Event
         Category = "",
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.Page.EVENT_DETAILS,
-        Order = 13 )]
+        Order = 15 )]
 
     #region Advanced Block Attribute Settings 
 
@@ -258,6 +267,7 @@ namespace RockWeb.Blocks.Event
             public const string DefaultCalendar = "DefaultCalendar";
             public const string AvailableRegistrationTemplates = "AvailableRegistrationTemplates";
             public const string RootGroup = "RootGroup";
+            public const string RegistrationInstancePage = "RegistrationInstancePage";
             public const string GroupViewerPage = "GroupViewerPage";
             public const string RequireGroup = "RequireGroup";
             public const string SetRegistrationInstanceActive = "SetRegistrationInstanceActive";
@@ -777,8 +787,7 @@ namespace RockWeb.Blocks.Event
             {
                 var qryRegistrationInstance = new Dictionary<string, string>();
                 qryRegistrationInstance.Add( "RegistrationInstanceId", result.RegistrationInstanceId );
-                //ToDo:  should this be in the system guid collection?
-                hlRegistrationInstance.NavigateUrl = GetPageUrl( "844dc54b-daec-47b3-a63a-712dd6d57793", qryRegistrationInstance );
+                hlRegistrationInstance.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.RegistrationInstancePage ), qryRegistrationInstance );
             }
 
             if ( string.IsNullOrWhiteSpace( result.GroupId ) )
