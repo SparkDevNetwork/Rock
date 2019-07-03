@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Event
     [WorkflowTypeField(
         "Completion Workflow",
         Key = AttributeKey.CompletionWorkflow,
-        Description = "A workflow that will be launched when a new registration is created.",
+        Description = "A workflow that will be launched when the wizard is complete.",
         Category = "",
         IsRequired = false,
         DefaultValue = "",
@@ -559,14 +559,6 @@ namespace RockWeb.Blocks.Event
                 registrationInstance.MaxAttendees = maximumAttendees;
             }
 
-            // Set Completion Workflow
-            var workFlowGuid = GetAttributeValue( AttributeKey.CompletionWorkflow ).AsGuidOrNull();
-            if ( workFlowGuid != null )
-            {
-                var workflowType = new WorkflowTypeService( rockContext ).Get( workFlowGuid.Value );
-                registrationInstance.RegistrationWorkflowTypeId = workflowType.Id;
-            }
-
             // Set Cost variables if Cost is to be determined on the instance.
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationTemplate = registrationTemplateService.Get( registrationInstance.RegistrationTemplateId );
@@ -769,6 +761,8 @@ namespace RockWeb.Blocks.Event
             var linkageService = new EventItemOccurrenceGroupMapService( rockContext );
             linkageService.Add( linkage );
             rockContext.SaveChanges();
+
+            LaunchPostWizardWorkflow( rockContext, linkage );
 
             return result;
         }
@@ -1784,5 +1778,52 @@ namespace RockWeb.Blocks.Event
 
         #endregion Control Event Handlers
 
+
+        /// <summary>
+        /// Starts the workflow.
+        /// </summary>
+        /// <param name="rockContext">The workflow service.</param>
+        /// <param name="linkage">Type <see cref="T:EventItemOccurrenceGroupMap" /> created by the wizard.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="workflowNameSuffix">The workflow instance name suffix (the part that is tacked onto the end fo the name to distinguish one instance from another).</param>
+        protected void LaunchPostWizardWorkflow( RockContext rockContext, EventItemOccurrenceGroupMap linkage )
+        {
+            //Set Completion Workflow
+            var workFlowGuid = GetAttributeValue( AttributeKey.CompletionWorkflow ).AsGuidOrNull();
+            if ( workFlowGuid != null )
+            {
+                var workflowService = new WorkflowService( rockContext );
+                var workflowType = WorkflowTypeCache.Get( workFlowGuid.Value );
+
+                //launch workflow if configured
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // set workflow name
+                    string workflowName = "New " + workflowType.WorkTerm;
+                    var workflow = Workflow.Activate( workflowType, workflowName );
+
+                    // set attributes
+                    if ( linkage.Group != null )
+                    {
+                        workflow.SetAttributeValue("Group", linkage.Group.Guid);
+                    }
+
+                    if ( linkage.RegistrationInstance != null )
+                    {
+                        workflow.SetAttributeValue( "RegistrationInstance", linkage.RegistrationInstance.Guid );
+                    }
+
+                    if ( linkage.EventItemOccurrence != null )
+                    {
+                        workflow.SetAttributeValue( "EventItemOccurrenceGuid", linkage.EventItemOccurrence.Guid );
+                    }
+
+                    // launch workflow
+                    List<string> workflowErrors;
+                    workflowService.Process( workflow, out workflowErrors );
+                }
+            }
+
+        }
     }
 }
