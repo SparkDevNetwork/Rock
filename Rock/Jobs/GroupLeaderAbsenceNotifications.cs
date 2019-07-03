@@ -48,7 +48,7 @@ namespace Rock.Jobs
             {
                 int notificationsSent = 0;
                 int errorsEncountered = 0;
-                int pendingMembersCount = 0;
+                int absentMembersCount = 0;
                 int sendFailed = 0;
 
                 // get groups set to sync
@@ -97,6 +97,7 @@ namespace Rock.Jobs
                 foreach ( var groupGroupMember in groupMembers )
                 {
                     var group = groupGroupMember.Key;
+                    var filteredPersons = groupGroupMember.Select( a => a.PersonId );
                     // get list of leaders
                     var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true && m.Person != null && m.Person.Email != null && m.Person.Email != string.Empty );
 
@@ -106,7 +107,7 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    // Get all the occurrences for this group for the selected dates, location and schedule
+                    // Get all the occurrences for this group
                     var occurrences = new AttendanceOccurrenceService( rockContext )
                         .Queryable( "Attendees.PersonAlias.Person" )
                         .Where( a => a.DidNotOccur.HasValue && !a.DidNotOccur.Value )
@@ -118,7 +119,7 @@ namespace Rock.Jobs
                     {
                         var absentPersons = occurrences
                                                     .SelectMany( a => a.Attendees )
-                                                    .Where( a => a.DidAttend.HasValue && !a.DidAttend.Value )
+                                                    .Where( a => a.DidAttend.HasValue && !a.DidAttend.Value && filteredPersons.Contains( a.PersonAlias.PersonId ) )
                                                     .GroupBy( a => a.PersonAlias.Person )
                                                     .Where( a => a.Count() == minimumAbsences )
                                                     .Select( a => a.Key )
@@ -156,12 +157,13 @@ namespace Rock.Jobs
                                 continue;
                             }
 
+                            absentMembersCount += absentPersons.Count;
                             notificationsSent += recipients.Count();
                         }
                     }
                 }
 
-                context.Result = string.Format( "Sent {0} emails to leaders for {1} absent members. {2} errors encountered. {3} times Send reported a fail.", notificationsSent, pendingMembersCount, errorsEncountered, sendFailed );
+                context.Result = string.Format( "Sent {0} emails to leaders for {1} absent members. {2} errors encountered. {3} times Send reported a fail.", notificationsSent, absentMembersCount, errorsEncountered, sendFailed );
                 if ( errorList.Any() )
                 {
                     StringBuilder sb = new StringBuilder();
