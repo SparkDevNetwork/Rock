@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue =
     @"<div class=""alert alert-info"">
     {%- if IsSchedulesAvailable -%}
-        {%- if CurrentPerson.Id != Person.Id -%}
+        {%- if CurrentPerson.Id == Person.Id -%}
             Sign up to attend a group and location on the given date.
         {%- else -%}
             Sign up {{ Person.FullName }} to attend a group and location on a given date.
@@ -1223,9 +1223,11 @@ $('#{0}').tooltip();
                 .ThenBy( a => a.LocationName )
                 .ToList();
 
+            var selectedPerson = new PersonService( new RockContext() ).GetNoTracking( this.SelectedPersonId );
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "IsSchedulesAvailable", availableSchedules.Any() );
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "Person", selectedPerson );
             lSignupMsg.Text = GetAttributeValue( AttributeKey.SignupInstructions ).ResolveMergeFields( mergeFields );
 
             foreach ( var availableSchedule in availableSchedules )
@@ -1430,15 +1432,32 @@ $('#{0}').tooltip();
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
+                var groupService = new GroupService( rockContext );
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
 
                 var groupLocationService = new GroupLocationService( rockContext );
-                var personGroupLocationQry = groupLocationService.Queryable();
+                var personGroupLocationQry = groupLocationService.Queryable().AsNoTracking();
 
                 // get GroupLocations that are for Groups that the person is an active member of
-                personGroupLocationQry = personGroupLocationQry.Where( a => a.Group.GroupType.IsSchedulingEnabled == true && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+                personGroupLocationQry = personGroupLocationQry.Where( a => a.Group.IsArchived == false
+                    && a.Group.GroupType.IsSchedulingEnabled == true
+                    && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
+
+                var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
+
+
+                var personDoesntMeetSchedulingRequirementGroupIds = new HashSet<int>();
+
+                foreach ( var groupThatHasSchedulingRequirements in groupsThatHaveSchedulingRequirements )
+                {
+                    var personDoesntMeetSchedulingRequirements = groupService.GroupMembersNotMeetingRequirements( groupThatHasSchedulingRequirements, false, false ).Where( a => a.Key.PersonId == this.SelectedPersonId ).Any();
+                    if ( personDoesntMeetSchedulingRequirements )
+                    {
+                        personDoesntMeetSchedulingRequirementGroupIds.Add( groupThatHasSchedulingRequirements.Id );
+                    }
+                }
 
                 foreach ( var personGroupLocation in personGroupLocationList )
                 {
@@ -1457,6 +1476,12 @@ $('#{0}').tooltip();
                             if ( personScheduleExclusionService.IsExclusionDate( this.SelectedPersonId, personGroupLocation.GroupId, occurrenceDate ) )
                             {
                                 // Don't show dates they have blacked out
+                                continue;
+                            }
+
+                            if ( personDoesntMeetSchedulingRequirementGroupIds.Contains( personGroupLocation.GroupId ) )
+                            {
+                                // don't show groups that have scheduling requirements that the person hasn't met
                                 continue;
                             }
 

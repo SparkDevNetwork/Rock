@@ -87,7 +87,8 @@ namespace Rock.Transactions
                                 if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == JobId.ToString() &&
                                     j.JobDetail.ConcurrentExectionDisallowed ).Any() )
                                 {
-                                    // A job with that Id is already running and ConcurrentExectionDisallowed is true 
+                                    // A job with that Id is already running and ConcurrentExectionDisallowed is true
+                                    System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{JobId}' (name: {job.Name})" );
                                     return;
                                 }
                             }

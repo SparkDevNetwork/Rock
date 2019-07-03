@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -952,7 +953,7 @@ namespace RockWeb.Blocks.Finance
 
         #region Helper Class
 
-        public class BatchAccountSummary : DotLiquid.Drop
+        public class BatchAccountSummary : RockDynamic
         {
             public int AccountId { get; set; }
             public int AccountOrder
@@ -979,7 +980,7 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        public class BatchRow : DotLiquid.Drop
+        public class BatchRow : RockDynamic
         {
             public int Id { get; set; }
             public DateTime BatchStartDateTime { get; set; }

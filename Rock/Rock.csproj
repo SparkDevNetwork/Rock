@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.0</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -389,6 +389,10 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\RockSMSMessageRecipient.cs" />
+    <Compile Include="Communication\RockPushMessageRecipient.cs" />
+    <Compile Include="Communication\RockEmailMessageRecipient.cs" />
+    <Compile Include="Communication\RockMessageRecipient.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
@@ -401,6 +405,7 @@
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
     <Compile Include="Field\Types\ConditionalScaleFieldType.cs" />
+    <Compile Include="Jobs\RockTriggerListener.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
@@ -501,6 +506,9 @@
     <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
     <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\082_MigrationRollupsForV9_0_6.cs" />
+    <Compile Include="Plugin\HotFixes\081_EnsureCoreConnectionStatusIsSystem.cs" />
+    <Compile Include="Plugin\HotFixes\080_MigrationRollupsForV9_0_5.cs" />
     <Compile Include="Plugin\HotFixes\079_MigrationRollupsForV9_0_4.cs" />
     <Compile Include="Plugin\HotFixes\078_MigrationRollupsForV9_0_3.cs" />
     <Compile Include="Plugin\HotFixes\077_MigrationRollupsForV9_0_2.cs" />
@@ -523,6 +531,7 @@
     <Compile Include="SystemGuid\Layout.cs" />
     <Compile Include="SystemGuid\PageRoute.cs" />
     <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
+    <Compile Include="Transactions\SaveHistoryTransaction.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
@@ -2421,11 +2430,9 @@
     <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
       <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
     </Content>
-    <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
-    <Content Include="Scripts\jquery-1.12.4.js" />
-    <Content Include="Scripts\jquery-1.12.4.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
+    <Content Include="Plugin\HotFixes\082_MigrationRollupsForV9_0_6_SegmentedChartUpdate.sql">
+      <DependentUpon>082_MigrationRollupsForV9_0_6.cs</DependentUpon>
+    </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
@@ -2447,7 +2454,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Scripts\jquery-1.12.4.min.map" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource" />
     <None Include="Service References\MelissaData.AddressCheck\Service.wsdl" />
     <None Include="Service References\MelissaData.AddressCheck\Service.xsd">
@@ -2492,6 +2498,9 @@
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

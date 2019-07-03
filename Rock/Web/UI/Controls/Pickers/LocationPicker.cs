@@ -48,6 +48,26 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Indicates whether inactive named locations should be included.  This only affects named locations.
+        /// (Note:  prior to Rock 9.1, the default behavior of this control was to include inactive locations.)
+        /// </summary>
+        public bool IncludeInactiveNamedLocations
+        {
+            get
+            {
+                return ViewState["IncludeInactiveNamedLocations"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["IncludeInactiveNamedLocations"] = value;
+                if ( _namedPicker != null )
+                {
+                    _namedPicker.IncludeInactive = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the allowed picker modes.
         /// </summary>
         /// <value>
@@ -334,6 +354,10 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["LocationId"] = location.Id;
             }
+            else
+            {
+                ViewState["LocationId"] = null;
+            }
 
             return base.SaveViewState();
         }
@@ -446,6 +470,7 @@ namespace Rock.Web.UI.Controls
             _namedPicker = new LocationItemPicker();
             _namedPicker.ID = this.ID + "_namedPicker";
             _namedPicker.SelectItem += _namedPicker_SelectItem;
+            _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;
 
             _addressPicker = new LocationAddressPicker();
             _addressPicker.ID = this.ID + "_addressPicker";
@@ -552,6 +577,7 @@ namespace Rock.Web.UI.Controls
             
             _namedPicker.Visible = CurrentPickerMode == LocationPickerMode.Named;
             _namedPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Named;
+            _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;
 
             _addressPicker.Visible = CurrentPickerMode == LocationPickerMode.Address;
             _addressPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Address;

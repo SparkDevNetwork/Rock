@@ -1518,7 +1518,7 @@ namespace RockWeb.Blocks.Event
                                 mergeFields.Add( "User", user );
 
                                 var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
-                                emailMessage.AddRecipient( new RecipientData( authorizedPersonAlias.Person.Email, mergeFields ) );
+                                emailMessage.AddRecipient( new RockEmailMessageRecipient( authorizedPersonAlias.Person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = false;
