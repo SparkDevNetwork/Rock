@@ -500,7 +500,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme", true )]
+        [Obsolete( "Moved to Theme" )]
         public IconCssWeight IconCssWeight { get; set; }
 
         #endregion
@@ -541,8 +541,7 @@ namespace Rock.Model
         /// The icon extensions.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme", true )]
-        [NotMapped]
+        [Obsolete( "Moved to Theme" )]
         public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
@@ -922,7 +921,7 @@ namespace Rock.Model
     /// Font Awesome Icon CSS Weight
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Moved to Theme", true )]
+    [Obsolete( "Moved to Theme" )]
     public enum IconCssWeight
     {
 
@@ -976,6 +975,16 @@ namespace Rock.Model
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SiteLogoBinaryFile ).WithMany().HasForeignKey( p => p.SiteLogoBinaryFileId ).WillCascadeOnDelete( false );
+
+#pragma warning disable 0618
+            // Need Associative table for IconExtensions (which are Defined Values)
+            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
+            {
+                p.MapLeftKey( "SiteId" );
+                p.MapRightKey( "DefinedValueId" );
+                p.ToTable( "SiteIconExtensions" );
+            } );
+#pragma warning restore 0618
         }
     }
 

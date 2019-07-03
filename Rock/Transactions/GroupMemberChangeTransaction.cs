@@ -141,10 +141,10 @@ namespace Rock.Transactions
                         using ( var rockContext = new RockContext() )
                         {
                             // If there were any group type triggers, will now need to read the group's group type id
-                            // and then further filter these triggers by the current txn's group type
+                            // and then further filter these triggers by the current transaction's group type
                             if ( groupTypeTriggers.Any() )
                             {
-                                // Get the current txn's group type id
+                                // Get the current transaction's group type id
                                 if ( !GroupTypeId.HasValue )
                                 {
                                     GroupTypeId = new GroupService( rockContext )
@@ -163,7 +163,7 @@ namespace Rock.Transactions
                                     .ToList();
                             }
 
-                            // Combine group and grouptype trigers
+                            // Combine group and group type triggers
                             var triggers = groupTriggers.Union( groupTypeTriggers ).ToList();
 
                             // If any triggers were found
@@ -192,7 +192,7 @@ namespace Rock.Transactions
                                             }
                                         case GroupMemberWorkflowTriggerType.MemberRoleChanged:
                                             {
-                                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, trigger, PreviousGroupMemberRoleId, GroupMemberRoleId ) )
+                                                if ( State == EntityState.Modified && PreviousGroupMemberRoleId != GroupMemberRoleId && QualifiersMatch( rockContext, trigger, PreviousGroupMemberRoleId, GroupMemberRoleId ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
                                                 }
@@ -200,7 +200,7 @@ namespace Rock.Transactions
                                             }
                                         case GroupMemberWorkflowTriggerType.MemberStatusChanged:
                                             {
-                                                if ( State == EntityState.Modified && QualifiersMatch( rockContext, trigger, PreviousGroupMemberStatus, GroupMemberStatus ) )
+                                                if ( State == EntityState.Modified && PreviousGroupMemberStatus != GroupMemberStatus && QualifiersMatch( rockContext, trigger, PreviousGroupMemberStatus, GroupMemberStatus ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
                                                 }

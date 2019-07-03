@@ -263,7 +263,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList", true )]
+        [Obsolete( "Use HistoryChangeList" )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -288,6 +288,20 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.AccountNumberMasked;
+        }
+
+        /// <summary>
+        /// Sets from payment information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="paymentGateway">The payment gateway.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="changes">The changes.</param>
+        [RockObsolete( "1.7.1" )]
+        [Obsolete( "Use other SetFromPaymentInfo", true )]
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
+        {
+            this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );
         }
 
         /// <summary>

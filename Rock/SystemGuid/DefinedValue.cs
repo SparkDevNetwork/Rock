@@ -821,9 +821,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOTIVATOR_GROWTH_PROPENSITY = "605F3702-6AE7-4545-BEBE-23693E60031C";
 
-        #endregion
+        #endregion Motivator
 
-        #region Motivator Cluster
+        #region Motivator Theme
 
         /// <summary>
         /// Motivator Theme: Relational
@@ -845,6 +845,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOTIVATOR_POSITIONAL_THEME = "84322020-4E27-44EF-88F2-EAFDB7286A01";
 
-        #endregion
+        #endregion Motivator Theme
     }
 }

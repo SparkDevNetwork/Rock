@@ -235,7 +235,7 @@
                 });
             },
             /** populates the scheduled (requested/scheduled) resources for all the occurrence divs */
-            populateAllScheduledOccurrences() {
+            populateAllScheduledOccurrences: function() {
                 var self = this;
                 var occurrenceEls = $(".js-scheduled-occurrence", self.$groupScheduler).toArray();
                 $.each(occurrenceEls, function (i) {

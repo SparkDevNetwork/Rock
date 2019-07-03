@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue =
     @"<div class=""alert alert-info"">
     {%- if IsSchedulesAvailable -%}
-        {%- if CurrentPerson.Id != Person.Id -%}
+        {%- if CurrentPerson.Id == Person.Id -%}
             Sign up to attend a group and location on the given date.
         {%- else -%}
             Sign up {{ Person.FullName }} to attend a group and location on a given date.
@@ -1223,9 +1223,11 @@ $('#{0}').tooltip();
                 .ThenBy( a => a.LocationName )
                 .ToList();
 
+            var selectedPerson = new PersonService(new RockContext()).GetNoTracking( this.SelectedPersonId );
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "IsSchedulesAvailable", availableSchedules.Any() );
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "Person", selectedPerson );
             lSignupMsg.Text = GetAttributeValue( AttributeKey.SignupInstructions ).ResolveMergeFields( mergeFields );
 
             foreach ( var availableSchedule in availableSchedules )

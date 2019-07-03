@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                // first try to determine it from ViewState
+                // first try to determine it from ViewState 
                 var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
 
                 // if ViewState didn't know, try to get it from _hfCurrentPickerMode 
@@ -249,13 +249,24 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            // Couldn't determine best picker, so return the first allowed type
-            if ( ( this.AllowedPickerModes & LocationPickerMode.Named ) == LocationPickerMode.Named ) return LocationPickerMode.Named;
-            if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address ) return LocationPickerMode.Address;
-            if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point ) return LocationPickerMode.Point;
-            if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon ) return LocationPickerMode.Polygon;
+            // If there is no location, then base the best picker mode based on the allowed picker modes and the current picker mode
+            if ( ( this.AllowedPickerModes & CurrentPickerMode ) == CurrentPickerMode )
+            {
+                // if the current picker mode is allowed, just use that
+                return CurrentPickerMode;
+            }
 
-            return LocationPickerMode.None;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Named ) == LocationPickerMode.Named )
+                return LocationPickerMode.Named;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
+                return LocationPickerMode.Address;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point )
+                return LocationPickerMode.Point;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon )
+                return LocationPickerMode.Polygon;
+
+            // probably won't happen unless a new LocationPickerMode is added later, but just in case we get this far, return CurrentPickerMode
+            return CurrentPickerMode;
         }
 
         /// <summary>
@@ -364,28 +375,26 @@ namespace Rock.Web.UI.Controls
 
             int modesEnabled = 0;
 
-            var currentPickerMode = this.CurrentPickerMode;
-
             _radNamed.Visible = nameEnabled;
-            _radNamed.Checked = currentPickerMode == LocationPickerMode.Named;
+            _radNamed.Checked = this.CurrentPickerMode == LocationPickerMode.Named;
             modesEnabled = nameEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radAddress.Visible = addressEnabled;
-            _radAddress.Checked = currentPickerMode == LocationPickerMode.Address;
+            _radAddress.Checked = this.CurrentPickerMode == LocationPickerMode.Address;
             modesEnabled = addressEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPoint.Visible = pointEnabled;
-            _radPoint.Checked = currentPickerMode == LocationPickerMode.Point;
+            _radPoint.Checked = this.CurrentPickerMode == LocationPickerMode.Point;
             modesEnabled = pointEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPolygon.Visible = polygonEnabled;
-            _radPolygon.Checked = currentPickerMode == LocationPickerMode.Polygon;
+            _radPolygon.Checked = this.CurrentPickerMode == LocationPickerMode.Polygon;
             modesEnabled = polygonEnabled ? modesEnabled + 1 : modesEnabled;
 
-            _namedPicker.Visible = nameEnabled && currentPickerMode == LocationPickerMode.Named;
-            _addressPicker.Visible = addressEnabled && currentPickerMode == LocationPickerMode.Address;
-            _pointPicker.Visible = pointEnabled && currentPickerMode == LocationPickerMode.Point;
-            _polygonPicker.Visible = polygonEnabled && currentPickerMode == LocationPickerMode.Polygon;
+            _namedPicker.Visible = nameEnabled && this.CurrentPickerMode == LocationPickerMode.Named;
+            _addressPicker.Visible = addressEnabled && this.CurrentPickerMode == LocationPickerMode.Address;
+            _pointPicker.Visible = pointEnabled && this.CurrentPickerMode == LocationPickerMode.Point;
+            _polygonPicker.Visible = polygonEnabled && this.CurrentPickerMode == LocationPickerMode.Polygon;
 
             _pnlModeSelection.Visible = modesEnabled > 1;
 
@@ -534,42 +543,24 @@ namespace Rock.Web.UI.Controls
             }
 
             _hfCurrentPickerMode.Value = eventArgument;
+            CurrentPickerMode = eventArgument.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
 
-            CurrentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
+            _radNamed.Checked = CurrentPickerMode == LocationPickerMode.Named;
+            _radAddress.Checked = CurrentPickerMode == LocationPickerMode.Address;
+            _radPoint.Checked = CurrentPickerMode == LocationPickerMode.Point;
+            _radPolygon.Checked = CurrentPickerMode == LocationPickerMode.Polygon;
+            
+            _namedPicker.Visible = CurrentPickerMode == LocationPickerMode.Named;
+            _namedPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Named;
 
-            _radNamed.Checked = eventArgument == "Named";
-            _radAddress.Checked = eventArgument == "Address";
-            _radPoint.Checked = eventArgument == "Point";
-            _radPolygon.Checked = eventArgument == "Polygon";
+            _addressPicker.Visible = CurrentPickerMode == LocationPickerMode.Address;
+            _addressPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Address;
 
-            _namedPicker.Visible = _radNamed.Checked;
-            _namedPicker.ShowDropDown = _radNamed.Checked;
+            _pointPicker.Visible = CurrentPickerMode == LocationPickerMode.Point;
+            _pointPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Point;
 
-            _addressPicker.Visible = _radAddress.Checked;
-            _addressPicker.ShowDropDown = _radAddress.Checked;
-
-            _pointPicker.Visible = _radPoint.Checked;
-            _pointPicker.ShowDropDown = _radPoint.Checked;
-
-            _polygonPicker.Visible = _radPolygon.Checked;
-            _polygonPicker.ShowDropDown = _radPolygon.Checked;
-
-            if ( _radAddress.Checked )
-            {
-                this.CurrentPickerMode = LocationPickerMode.Address;
-            }
-            else if ( _radNamed.Checked )
-            {
-                this.CurrentPickerMode = LocationPickerMode.Named;
-            }
-            else if ( _radPoint.Checked )
-            {
-                this.CurrentPickerMode = LocationPickerMode.Point;
-            }
-            else if ( _radPolygon.Checked )
-            {
-                this.CurrentPickerMode = LocationPickerMode.Polygon;
-            }
+            _polygonPicker.Visible = CurrentPickerMode == LocationPickerMode.Polygon;
+            _polygonPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Polygon;
         }
 
         #endregion

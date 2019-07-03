@@ -220,7 +220,7 @@
                                 <Rock:NumberBox ID="nbScheduleConfirmationEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Email Offset Days" Help="The number of days prior to the schedule to send a confirmation email." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow Type" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />
+                                <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />
 
                                 <Rock:RockDropDownList ID="ddlScheduleReminderSystemEmail" runat="server" Label="Schedule Reminder Email" Help="The system email to use when sending a schedule reminder." />
                                 <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The default number of days prior to the schedule to send a reminder email." />

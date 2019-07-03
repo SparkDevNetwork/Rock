@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class RemoveObsoleteFields : IMigrationMetadata
+    public sealed partial class Rollup_0618 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(RemoveObsoleteFields));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_0618));
         
         string IMigrationMetadata.Id
         {
-            get { return "201906112322224_RemoveObsoleteFields"; }
+            get { return "201906192243232_Rollup_0618"; }
         }
         
         string IMigrationMetadata.Source
