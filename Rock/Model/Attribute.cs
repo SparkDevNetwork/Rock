@@ -276,7 +276,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string  AbbreviatedName
+        public string AbbreviatedName
         {
             get
             {
@@ -294,6 +294,15 @@ namespace Rock.Model
         }
 
         private string _abbreviatedName;
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be shown publicly.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
 
         #endregion
 

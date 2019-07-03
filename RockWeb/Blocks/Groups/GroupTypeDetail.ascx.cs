@@ -526,6 +526,9 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
+            // RSVP
+            groupType.EnableRsvp = cbGroupRSVPEnabled.Checked;
+
             // Scheduling
             groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
             groupType.ScheduleConfirmationSystemEmailId = ddlScheduleConfirmationSystemEmail.SelectedValue.AsIntegerOrNull();
@@ -874,6 +877,9 @@ namespace RockWeb.Blocks.Groups
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
             cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
+
+            // RSVP
+            cbGroupRSVPEnabled.Checked = groupType.EnableRsvp;
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
