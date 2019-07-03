@@ -598,6 +598,12 @@ namespace Rock.SystemGuid
         public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
 
         /// <summary>
+        /// Gets the Registration Instance page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
         /// Gets the Exception Detail page guid
         /// ParentPage: Exception List
         /// </summary>
