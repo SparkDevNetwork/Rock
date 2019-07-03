@@ -128,6 +128,40 @@ namespace Rock.Model
         [DataMember]
         public int? AnonymousAttendanceCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Accept Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Decline Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not to show the Decline Confirmation Message.
+        /// </summary>
+        [DataMember]
+        public bool ShowDeclineMessage { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
+        /// </summary>
+        /// <value>
+        /// The integer IDs.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string DeclineReasons { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -624,6 +624,15 @@ namespace Rock.Model
         [DataMember]
         public int? GroupStatusDefinedTypeId { get; set; }
 
+        /// <summary>
+        /// Indicates whether RSVP functionality should be enabled for this group.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool EnableRsvp { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related

@@ -139,6 +139,10 @@
                                             Help="Determines if groups of this type should be allowed to manage tags." />
 
                                     </div>
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" Text="Yes"
+                                            Help="This option will allow group RSVP." />
+                                    </div>
                         </div>
                             </div>
                         </div>

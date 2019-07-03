@@ -66,6 +66,13 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = "1815D8C6-7C4A-4C05-A810-CF23BA937477,D0F198E2-6111-4EC1-8D1D-55AC10E28D04",
         Order = 16)]
 
+    [LinkedPage("Group RSVP Page",
+        Key = "GroupRSVPPage",
+        Description = "The page to schedule this group.",
+        IsRequired = false,
+        Order = 17)]
+    
+
     [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 17 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -1931,6 +1938,17 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlMap.Visible = false;
+            }
+
+            string groupRSVPUrl = LinkedPageUrl( "GroupRSVPPage", pageParams );
+            if ( groupRSVPUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupRSVP.Visible = groupType != null && groupType.EnableRsvp;
+                hlGroupRSVP.NavigateUrl = groupRSVPUrl;
+            }
+            else
+            {
+                hlGroupRSVP.Visible = false;
             }
 
             string groupSchedulerUrl = LinkedPageUrl( "GroupSchedulerPage", pageParams );
