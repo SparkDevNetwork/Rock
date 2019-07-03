@@ -291,6 +291,7 @@
 
       .tooltip-inner {
         max-width: 300px;
+        padding: 12px;
       }
     }
 
@@ -308,6 +309,7 @@
       justify-content: center;
       height: @badge-icon-height;
       margin-top: -12px;
+      width: @badge-grid-width;
 
       .badge {
         display: flex;
@@ -1197,12 +1199,8 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-photo {
-  border: 3px solid @photo-border;
-}
-
 /* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
-.merge-personselect .merge-header-summary {
+.person-merge .merge-header-summary {
   cursor: pointer;
 }
 
@@ -1339,6 +1337,18 @@ tr.inactive {
   text-align: center;
 }
 
+.disc-row {
+  margin-bottom: @disc-question-spacing;
+
+  &:after {
+    content: ' ';
+    display: block;
+    margin: @disc-question-spacing 0;
+    border-bottom: 1px solid @ui-4;
+    width: 100%;
+  }
+}
+
 
 @disc-chart-height: 425px;
 .discchart {
@@ -1349,6 +1359,7 @@ tr.inactive {
   padding: 0;
   margin: 0 auto;
   clear: both;
+  font-size: 0;
   background-image:
     linear-gradient(
       to bottom,
@@ -1361,7 +1372,7 @@ tr.inactive {
   li {
     position: relative;
     display: inline-block;
-    width: 20%;
+    width: 22.5%;
     height: 425px;
     padding: 0;
     margin: 0 2% 0 0;
@@ -1375,6 +1386,7 @@ tr.inactive {
       bottom: 0;
       width: 100%;
       height: 70%;
+      margin: 0;
       background-color: transparent;
       border-top: 2px solid @brand-danger;
       border-radius: 0;
@@ -1397,6 +1409,7 @@ tr.inactive {
       top: -25px;
       right: 0;
       left: 0;
+      z-index: 1;
       display: block;
       font-size: 20px;
       line-height: 1em;
@@ -1442,6 +1455,25 @@ tr.inactive {
         left: 8px;
         transform: translateY(-50%);
       }
+    }
+  }
+
+  .likert-7 > span {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+
+
+    @media (max-width: @likert-screen-column) {
+      -ms-flex-align: start;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .radio-inline {
+      flex: 0 0 14.28571428571429%;
     }
   }
 }

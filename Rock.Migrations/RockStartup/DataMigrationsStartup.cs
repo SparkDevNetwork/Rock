@@ -41,11 +41,9 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_84.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_90_DISC.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_90.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_HISTORY_SUMMARY_DATA.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS.AsGuid(),
                 SystemGuid.ServiceJob.MIGRATE_INTERACTIONS_DATA.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_COMMUNICATION_MEDIUM_DATA.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

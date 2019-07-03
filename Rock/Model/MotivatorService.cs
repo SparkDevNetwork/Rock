@@ -276,7 +276,7 @@ namespace Rock.Model
         /// </summary>
         public static List<ResponseOption> Agreement_Option = new List<ResponseOption>()
         {
-            new ResponseOption ("Strongly Disagree",0,1 ),
+            new ResponseOption ("Strongly Disagree",0,6 ),
             new ResponseOption ("Disagree",1,5 ),
             new ResponseOption ("Somewhat Disagree",2,4 ),
             new ResponseOption ("Undecided",3,3 ),
@@ -290,7 +290,7 @@ namespace Rock.Model
         /// </summary>
         public static List<ResponseOption> Frequency_Option = new List<ResponseOption>()
         {
-            new ResponseOption ("Never",0,1 ),
+            new ResponseOption ("Never",0,6 ),
             new ResponseOption ("Rarely",1,5 ),
             new ResponseOption ("Occasionally",2,4 ),
             new ResponseOption ("Sometimes",3,3 ),
@@ -363,7 +363,7 @@ namespace Rock.Model
 
             assessmentResults.TopFiveMotivatorScores = assessmentResults.MotivatorScores.Take( 5 ).ToList();
 
-            foreach ( var m in assessmentResults.TopFiveMotivatorScores )
+            foreach ( var m in assessmentResults.MotivatorScores )
             {
                 var themeGuid = m.DefinedValue.GetAttributeValue( "Theme" ).AsGuidOrNull();
                 if ( themeGuid.HasValue )
@@ -430,10 +430,10 @@ namespace Rock.Model
             }
 
             //var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_THEME_TYPE.AsGuid() );
-            foreach ( var motivatorClusterScore in assessmentResults.MotivatorThemeScores )
+            foreach ( var motivatorThemeScore in assessmentResults.MotivatorThemeScores )
             {
-                var scoreKey = motivatorClusterScore.DefinedValue.GetAttributeValue( "AttributeScoreKey" );
-                person.SetAttributeValue( scoreKey, motivatorClusterScore.Value );
+                var scoreKey = motivatorThemeScore.DefinedValue.GetAttributeValue( "AttributeScoreKey" );
+                person.SetAttributeValue( scoreKey, motivatorThemeScore.Value );
             }
 
             person.SaveAttributeValues();
@@ -450,17 +450,17 @@ namespace Rock.Model
 
             person.LoadAttributes();
 
-            var motivatorClusterScores = new Dictionary<DefinedValueCache, decimal>();
+            var motivatorThemeScores = new Dictionary<DefinedValueCache, decimal>();
             var motivatorScores = new Dictionary<DefinedValueCache, decimal>();
 
-            var motivatorClusterTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_THEME_TYPE.AsGuid() );
-            foreach ( var motivatorClusterType in motivatorClusterTypes.DefinedValues )
+            var motivatorThemeTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.MOTIVATOR_THEME_TYPE.AsGuid() );
+            foreach ( var motivatorThemeType in motivatorThemeTypes.DefinedValues )
             {
-                var scoreKey = motivatorClusterType.GetAttributeValue( "AttributeScoreKey" );
-                motivatorClusterScores.Add( motivatorClusterType, person.GetAttributeValue( scoreKey ).AsDecimal() );
+                var scoreKey = motivatorThemeType.GetAttributeValue( "AttributeScoreKey" );
+                motivatorThemeScores.Add( motivatorThemeType, person.GetAttributeValue( scoreKey ).AsDecimal() );
             }
 
-            savedScores.MotivatorThemeScores = motivatorClusterScores
+            savedScores.MotivatorThemeScores = motivatorThemeScores
                                            .OrderByDescending( a => a.Value )
                                            .Select( a => new MotivatorScore()
                                            {
@@ -561,7 +561,7 @@ namespace Rock.Model
             }
 
             /// <summary>
-            /// Gets or sets the Motivator Score data.
+            /// Gets or sets the Motivator Scores.
             /// </summary>
             /// <value>
             /// The Motivator Score data.
@@ -569,10 +569,10 @@ namespace Rock.Model
             public List<MotivatorScore> MotivatorScores { get; set; }
 
             /// <summary>
-            /// Gets or sets the Motivator Cluster Score data.
+            /// Gets or sets the Motivator Theme Scores
             /// </summary>
             /// <value>
-            /// The Motivator Cluster Score data.
+            /// The Motivator Theme Score data.
             /// </value>
             public List<MotivatorScore> MotivatorThemeScores { get; set; }
 

@@ -168,7 +168,29 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsIndexingSupported { get; private set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
+        /// </value>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true)]
+        [DataMember]
+        public bool IsAnalyticSupported { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic historical supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
+        /// </value>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue ) instead", true )]
+        [DataMember]
+        public bool IsAnalyticHistoricalSupported { get; private set; }
+
         /// <summary>
         /// Determines whether [is analytics supported] [the specified entity type qualifier column].
         /// </summary>
@@ -459,7 +481,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead", true )]
+        [Obsolete("Use Get instead")]
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
             return Get( type, createIfNotFound, rockContext );
@@ -473,7 +495,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
+        [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
         {
             return Get<T>( createIfNotFound, rockContext );
@@ -486,7 +508,7 @@ namespace Rock.Web.Cache
         /// <param name="name">The name.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
+        [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read( string name )
         {
             return Get( name, true );
@@ -500,7 +522,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
+        [Obsolete( "Use Get instead" )]
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
             return Get( name, createNew, rockContext );

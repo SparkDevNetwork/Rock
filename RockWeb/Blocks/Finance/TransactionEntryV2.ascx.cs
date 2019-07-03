@@ -2476,8 +2476,14 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                paymentInfo.Comment1 = paymentComment;
+                paymentInfo.Comment1 = paymentComment; 
             }
+
+            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
+            paymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
         }

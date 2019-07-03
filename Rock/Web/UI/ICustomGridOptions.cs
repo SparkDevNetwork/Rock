@@ -35,7 +35,7 @@ namespace Rock.Web.UI
         /// The enable sticker headers attribute key
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EnableStickyHeadersAttributeKey instead", true ) ]
+        [Obsolete( "Use EnableStickyHeadersAttributeKey instead") ]
         public const string EnableStickerHeadersAttributeKey = "core.CustomGridEnableStickerHeaders";
 
         /// <summary>

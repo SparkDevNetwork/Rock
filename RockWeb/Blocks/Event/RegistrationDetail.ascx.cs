@@ -1794,6 +1794,9 @@ namespace RockWeb.Blocks.Event
 
                 paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
 
+                var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+                paymentInfo.TransactionTypeValueId = txnType.Id;
+
                 if ( threeStepGateway == null )
                 {
                     transaction = ProcessTransaction( gateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage );
