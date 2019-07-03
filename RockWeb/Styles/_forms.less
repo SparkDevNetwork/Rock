@@ -173,6 +173,33 @@ a.aspNetDisabled {
       }
     }
   }
+
+  &.label-auto {
+    .form-group {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      margin-right: -15px;
+      margin-left: -15px;
+      -ms-flex-pack: end!important;
+      justify-content: flex-end!important;
+
+      label {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+        min-width: 180px;
+      }
+      .control-wrapper {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+  }
 }
 
 

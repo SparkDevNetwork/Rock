@@ -31,12 +31,12 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to run quick SQL queries on a schedule
     /// </summary>
-    [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order:0 )]
+    [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order: 0 )]
     [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
     [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]
-    [TextField ("Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3)]
+    [TextField( "Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3 )]
 
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each step to complete.", false, 900, "Advanced", 4, "CommandTimeout")]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each step to complete.", false, 900, "Advanced", 4, "CommandTimeout" )]
     [IntegerField( "Minimum Index Page Count", "The minimum size in pages that an index must be before it's considered for being re-built. Default value is 100.", false, 100, category: "Advanced", order: 5 )]
     [IntegerField( "Minimum Fragmentation Percentage", "The minimum fragmentation percentage for an index to be considered for re-indexing. If the fragmentation is below is amount nothing will be done. Default value is 10%.", false, 10, category: "Advanced", order: 6 )]
     [IntegerField( "Rebuild Threshold Percentage", "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.", false, 30, category: "Advanced", order: 7 )]
@@ -71,7 +71,7 @@ namespace Rock.Jobs
             bool runIndexRebuild = dataMap.GetBoolean( "RunIndexRebuild" );
             bool runStatisticsUpdate = dataMap.GetBoolean( "RunStatisticsUpdate" );
 
-            int commandTimeout = dataMap.GetString( "CommandTimeout").AsInteger();
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
             int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
             int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
@@ -85,7 +85,8 @@ namespace Rock.Jobs
             bool errorsFound = false;
 
             // run integrity check
-            if ( runIntegrityCheck ) {
+            if ( runIntegrityCheck )
+            {
                 string databaseName = new RockContext().Database.Connection.Database;
                 string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
 
@@ -93,13 +94,18 @@ namespace Rock.Jobs
                 int errors = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
                 stopwatch.Stop();
 
-                resultsMessage.Append( $"Integrity Check took {(stopwatch.ElapsedMilliseconds / 1000)}s" );
+                resultsMessage.Append( $"Integrity Check took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+                
 
-                if (errors > 0 )
+                if ( errors > 0 )
                 {
                     // oh no...
                     errorsFound = true;
                     string errorMessage = $"Some errors were reported when running a database integrity check on your Rock database. We'd recommend running the command below under 'Admin Tools > Power Tools > SQL Command' to get further details. <p>DBCC CHECKDB ('{ databaseName }') WITH NO_INFOMSGS, ALL_ERRORMSGS</p>";
+
+                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null );
+                    mergeFields.Add( "ErrorMessage", errorMessage );
+                    mergeFields.Add( "Errors", errors );
 
                     resultsMessage.Append( errorMessage );
 
@@ -111,7 +117,8 @@ namespace Rock.Jobs
                         string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
 
                         var emailMessage = new RockEmailMessage();
-                        emailMessage.SetRecipients( alertEmail.Split( ',' ).ToList() );
+                        var alertEmailList = alertEmail.Split( ',' ).ToList();
+                        var recipients = alertEmailList.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, mergeFields ) ).ToList();
                         emailMessage.Subject = "Rock: Database Integrity Check Error";
                         emailMessage.Message = messageBody;
                         emailMessage.Send();
@@ -122,7 +129,7 @@ namespace Rock.Jobs
             if ( !errorsFound )
             {
                 // rebuild fragmented indexes
-                if ( runIndexRebuild)
+                if ( runIndexRebuild )
                 {
                     Dictionary<string, object> parms = new Dictionary<string, object>();
                     parms.Add( "@PageCountLimit", minimumIndexPageCount );
@@ -134,9 +141,9 @@ namespace Rock.Jobs
                     DbService.ExecuteCommand( "spDbaRebuildIndexes", System.Data.CommandType.StoredProcedure, parms, commandTimeout );
                     stopwatch.Stop();
 
-                    resultsMessage.Append( $", Index Rebuild took {(stopwatch.ElapsedMilliseconds / 1000)}s" );
+                    resultsMessage.Append( $", Index Rebuild took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
                 }
-                
+
                 // update statistics
                 if ( runStatisticsUpdate )
                 {
@@ -181,11 +188,11 @@ DEALLOCATE updatestats
                     DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );
                     stopwatch.Stop();
 
-                    resultsMessage.Append( $", Statistics Update took {(stopwatch.ElapsedMilliseconds / 1000)}s" );
+                    resultsMessage.Append( $", Statistics Update took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
                 }
             }
 
-            context.Result = resultsMessage.ToString().TrimStart(',');
+            context.Result = resultsMessage.ToString().TrimStart( ',' );
         }
 
     }

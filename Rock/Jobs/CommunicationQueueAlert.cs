@@ -79,7 +79,7 @@ namespace Rock.Jobs
                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                     foreach ( var email in recipientEmails )
                     {
-                        emailMessage.AddRecipient( new RecipientData( email, mergeFields ) );
+                        emailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( email, mergeFields ) );
                     }
 
                     var errors = new List<string>();

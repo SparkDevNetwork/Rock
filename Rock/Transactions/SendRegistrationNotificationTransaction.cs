@@ -80,26 +80,31 @@ namespace Rock.Transactions
                     mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                     mergeFields.Add( "Registration", registration );
 
-                    var recipients = new Dictionary<string, Dictionary<string, object>>();
+                    var anonymousHash = new HashSet<string>();
+                    var messageRecipients = new List<RockMessageRecipient>();
 
                     // Contact
                     if ( !string.IsNullOrWhiteSpace( registration.RegistrationInstance.ContactEmail ) &&
                         ( template.Notify & RegistrationNotify.RegistrationContact ) == RegistrationNotify.RegistrationContact )
                     {
-                        recipients.AddOrIgnore( registration.RegistrationInstance.ContactEmail, mergeFields );
+                        var messageRecipient = registration.RegistrationInstance.GetContactRecipient( mergeFields );
+                        if (!anonymousHash.Contains( messageRecipient.To ) )
+                        {
+                            messageRecipients.Add( messageRecipient );
+                            anonymousHash.Add( messageRecipient.To );
+                        }
                     }
 
                     // Group Followers
                     if ( registration.GroupId.HasValue &&
                         ( template.Notify & RegistrationNotify.GroupFollowers ) == RegistrationNotify.GroupFollowers )
                     {
-                        new GroupService( rockContext ).GetFollowers( registration.GroupId.Value )
-                            .Where( f =>
-                                f.Email != null &&
-                                f.Email != "" )
-                            .Select( f => f.Email )
+                        new GroupService( rockContext ).GetFollowers( registration.GroupId.Value ).AsNoTracking()
+                            .Where( p =>
+                                p.Email != null &&
+                                p.Email != "" )
                             .ToList()
-                            .ForEach( f => recipients.AddOrIgnore( f, mergeFields ) );
+                            .ForEach( p => messageRecipients.Add( new RockEmailMessageRecipient( p, mergeFields ) ) );
                     }
 
                     // Group Leaders
@@ -111,16 +116,16 @@ namespace Rock.Transactions
                                 m.Person != null &&
                                 m.Person.Email != null &&
                                 m.Person.Email != "" )
-                            .Select( m => m.Person.Email )
+                            .Select( m => m.Person )
                             .ToList()
-                            .ForEach( m => recipients.AddOrIgnore( m, mergeFields ) );
+                            .ForEach( p => messageRecipients.Add( new RockEmailMessageRecipient( p, mergeFields ) ) );
                     }
 
-                    if ( recipients.Any() )
+                    if ( messageRecipients.Any() )
                     {
                         var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.REGISTRATION_NOTIFICATION.AsGuid() );
                         emailMessage.AdditionalMergeFields = mergeFields;
-                        recipients.ToList().ForEach( r => emailMessage.AddRecipient( new RecipientData( r.Key, r.Value ) ) );
+                        emailMessage.SetRecipients( messageRecipients );
                         emailMessage.AppRoot = AppRoot;
                         emailMessage.ThemeRoot = ThemeRoot;
                         emailMessage.Send();

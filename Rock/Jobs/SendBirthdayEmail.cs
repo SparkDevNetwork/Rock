@@ -104,7 +104,7 @@ namespace Rock.Jobs
             // only include people that have an email address and want an email
             personQry = personQry.Where( a => ( a.Email != null ) && ( a.Email != string.Empty ) && ( a.EmailPreference != EmailPreference.DoNotEmail ) && (a.IsEmailActive) );
 
-            var recipients = new List<RecipientData>();
+            var recipients = new List<RockEmailMessageRecipient>();
 
             var personList = personQry.AsNoTracking().ToList();
             foreach ( var person in personList )
@@ -112,7 +112,7 @@ namespace Rock.Jobs
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "Person", person );
 
-                recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
             }
 
             var emailMessage = new RockEmailMessage( systemEmail.Guid );

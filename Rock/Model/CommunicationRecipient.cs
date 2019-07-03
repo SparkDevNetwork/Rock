@@ -26,6 +26,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 
 using Rock.Data;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// The client.
         /// </value>
         [DataMember]
-        [MaxLength(200)]
+        [MaxLength( 200 )]
         public string OpenedClient { get; set; }
 
         /// <summary>
@@ -169,13 +170,13 @@ namespace Rock.Model
                 var objectKeys = AdditionalMergeValues
                     .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
                     .Select( m => m.Key ).ToList();
-                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( (JObject)AdditionalMergeValues[k] ).ToDictionary() );
+                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JObject ) AdditionalMergeValues[k] ).ToDictionary() );
 
                 // Convert any arrays to a list, and also check to see if it contains objects that need to be converted to a dictionary for Lava
                 var arrayKeys = AdditionalMergeValues
                     .Where( m => m.Value != null && m.Value.GetType() == typeof( JArray ) )
                     .Select( m => m.Key ).ToList();
-                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( (JArray)AdditionalMergeValues[k] ).ToObjectArray() );
+                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JArray ) AdditionalMergeValues[k] ).ToObjectArray() );
             }
         }
 
@@ -342,7 +343,35 @@ namespace Rock.Model
             {
                 if ( !mergeValues.ContainsKey( mergeField.Key ) )
                 {
-                    mergeValues.Add( mergeField.Key, mergeField.Value );
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeField.Key );
+                    if ( entityTypeInfo?.EntityType != null )
+                    {
+                        // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
+                        var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
+                        var entityIdString = mergeField.Value.ToString();
+                        IEntity mergeEntity = null;
+                        var entityId = entityIdString.AsIntegerOrNull();
+                        if ( entityId.HasValue )
+                        {
+                            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
+                        }
+                        else
+                        {
+                            var entityGuid = entityIdString.AsGuidOrNull();
+                            if ( entityGuid.HasValue )
+                            {
+                                mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
+                            }
+                        }
+
+                        // Add Entity as Merge field. For example ("GroupMember", groupMember)
+                        mergeValues.Add( entityTypeType.Name, mergeEntity );
+                    }
+                    else
+                    {
+                        // regular mergefield value
+                        mergeValues.Add( mergeField.Key, mergeField.Value );
+                    }
                 }
             }
 
@@ -418,7 +447,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationRecipientConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
             this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
         }

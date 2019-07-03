@@ -159,7 +159,7 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    var recipients = new List<RecipientData>();
+                    var recipients = new List<RockEmailMessageRecipient>();
                     foreach ( var leader in groupLeaders )
                     {
                         // create merge object
@@ -168,7 +168,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "Group", group );
                         mergeFields.Add( "ParentGroup", group.ParentGroup );
                         mergeFields.Add( "Person", leader.Person );
-                        recipients.Add( new RecipientData( leader.Person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
                     }
 
 

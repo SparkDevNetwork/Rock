@@ -64,7 +64,7 @@ namespace Rock.Jobs
                 List<int> groupIds = new List<int>();
                 GetGroupIds( groupIds, sendToDescendants, group );
 
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
 
                 var groupMemberList = new GroupMemberService( rockContext ).Queryable().Where( gm =>
                     groupIds.Contains( gm.GroupId ) &&
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 
-                    recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
+                    recipients.Add( new RockEmailMessageRecipient( groupMember.Person, mergeFields ) );
                 }
 
                 var errors = new List<string>();

@@ -28,11 +28,115 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of connection statuses
-    /// Stored as ConnectionStatus.Guid
+    /// Field Type used to display a dropdown list of Connection Statuses.
+    /// The selected value is stored as a Guid.
     /// </summary>
-    public class ConnectionStatusFieldType : FieldType
+    public class ConnectionStatusFieldType : FieldType, IEntityFieldType
     {
+        #region Configuration
+
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+        private const string CONNECTION_TYPE_FILTER_KEY = "connectionTypeFilter";
+
+        private const string HELP_TEXT_INCLUDE_INACTIVE = "When set, inactive connection statuses will be included in the list.";
+        private const string HELP_TEXT_CONNECTION_TYPE = "Select a Connection Type to limit selection to a specific connection type. Leave blank to allow selection of statuses from any connection type.";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( CONNECTION_TYPE_FILTER_KEY );
+
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add checkbox for deciding if the list should include inactive items
+            var cbIncludeInactive = new RockCheckBox();
+            controls.Add( cbIncludeInactive );
+            cbIncludeInactive.AutoPostBack = true;
+            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
+            cbIncludeInactive.Label = "Include Inactive";
+            cbIncludeInactive.Text = "Yes";
+            cbIncludeInactive.Help = HELP_TEXT_INCLUDE_INACTIVE;
+
+            // Add ConnectionType Filter ddl
+            var ddlConnectionTypeFilter = new RockDropDownList();
+            controls.Add( ddlConnectionTypeFilter );
+            ddlConnectionTypeFilter.Label = "Connection Type";
+            ddlConnectionTypeFilter.Help = HELP_TEXT_CONNECTION_TYPE;
+            ddlConnectionTypeFilter.SelectedIndexChanged += OnQualifierUpdated;
+            ddlConnectionTypeFilter.AutoPostBack = true;
+
+            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            ddlConnectionTypeFilter.Items.Add( new ListItem() );
+            ddlConnectionTypeFilter.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
+
+            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", HELP_TEXT_INCLUDE_INACTIVE, string.Empty ) );
+            configurationValues.Add( CONNECTION_TYPE_FILTER_KEY, new ConfigurationValue( "Connection Type", HELP_TEXT_CONNECTION_TYPE, string.Empty ) );
+
+            if ( controls != null && controls.Count() == 2 )
+            {
+                if ( controls[0] != null && controls[0] is CheckBox )
+                {
+                    configurationValues[INCLUDE_INACTIVE_KEY].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+                }
+
+                if ( controls[1] != null && controls[1] is DropDownList )
+                {
+                    configurationValues[CONNECTION_TYPE_FILTER_KEY].Value = ( ( DropDownList ) controls[1] ).SelectedValue;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count() == 2 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
+                {
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                }
+
+                if ( controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( CONNECTION_TYPE_FILTER_KEY ) )
+                {
+                    ( ( DropDownList ) controls[1] ).SelectedValue = configurationValues[CONNECTION_TYPE_FILTER_KEY].Value;
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -46,10 +150,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
+            var formattedValue = string.Empty;
 
-            Guid? guid = value.AsGuidOrNull();
-            if (guid.HasValue)
+            var guid = value.AsGuidOrNull();
+
+            if ( guid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -78,27 +183,44 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Items.Add( new ListItem() );
+            var includeInactive = false;
+            int? connectionTypeFilterId = null;
+
+            if ( configurationValues != null )
+            {
+                includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                connectionTypeFilterId = configurationValues.ContainsKey( CONNECTION_TYPE_FILTER_KEY ) ? configurationValues[CONNECTION_TYPE_FILTER_KEY].Value.AsIntegerOrNull() : null;
+            }
 
             var statuses = new ConnectionStatusService( new RockContext() )
                 .Queryable().AsNoTracking()
-                .OrderBy( s => s.ConnectionType.Name )
-                .ThenBy( s => s.Name )
-                .Select( s => new
-                {
-                    s.Guid,
-                    s.Name,
-                    ConnectionTypeName = s.ConnectionType.Name
-                } )
+                .Where( o => o.IsActive || includeInactive )
+                .OrderBy( o => o.ConnectionType.Name )
+                .ThenBy( o => o.Name )
+                .Select( o => new { o.Guid, o.Name, o.ConnectionType } )
                 .ToList();
+
+            var editControl = new RockDropDownList { ID = id };
+
+            editControl.Items.Add( new ListItem() );
 
             if ( statuses.Any() )
             {
                 foreach ( var status in statuses )
                 {
+                    if ( connectionTypeFilterId != null && status.ConnectionType.Id != connectionTypeFilterId )
+                    {
+                        continue;
+                    }
+
                     var listItem = new ListItem( status.Name, status.Guid.ToString().ToUpper() );
-                    listItem.Attributes.Add( "OptionGroup", status.ConnectionTypeName );
+
+                    // Don't add an option group if there is a filter since that would be only one group.
+                    if ( connectionTypeFilterId == null )
+                    {
+                        listItem.Attributes.Add( "OptionGroup", status.ConnectionType.Name );
+                    }
+
                     editControl.Items.Add( listItem );
                 }
 
@@ -117,7 +239,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as DropDownList;
-            if (picker != null)
+            if ( picker != null )
             {
                 // picker has value as ConnectionStatus.Guid
                 return picker.SelectedValue;
@@ -143,5 +265,65 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new ConnectionStatusService( new RockContext() ).Get( guid );
+
+            return item != null ? item.Id : ( int? ) null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new ConnectionStatusService( new RockContext() ).Get( id ?? 0 );
+            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
+
+            SetEditValue( control, configurationValues, guidValue );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var guid = value.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new ConnectionStatusService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

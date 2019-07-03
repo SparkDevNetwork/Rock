@@ -267,6 +267,76 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the entity type information from the merge field identifier.
+        /// </summary>
+        /// <param name="mergeFieldId">The merge field identifier.</param>
+        /// <returns></returns>
+        public static EntityTypeInfo GetEntityTypeInfoFromMergeFieldId( string mergeFieldId )
+        {
+            var entityTypeInfo = new EntityTypeInfo();
+            var entityTypeParts = mergeFieldId.Split( new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries );
+            var entityTypeName = entityTypeParts[0];
+            var entityType = EntityTypeCache.Get( entityTypeName, false );
+            if ( entityType?.IsEntity == true )
+            {
+                entityTypeInfo.EntityType = entityType;
+            }
+            else
+            {
+                return null;
+            }
+
+            if ( entityTypeParts.Length >= 3 )
+            {
+                entityTypeInfo.EntityTypeQualifierColumn = entityTypeParts[1];
+                entityTypeInfo.EntityTypeQualifierValue = entityTypeParts[2];
+            }
+
+            return entityTypeInfo;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class EntityTypeInfo
+        {
+            /// <summary>
+            /// Gets or sets the type of the entity.
+            /// </summary>
+            /// <value>
+            /// The type of the entity.
+            /// </value>
+            public EntityTypeCache EntityType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity type qualifier column.
+            /// </summary>
+            /// <value>
+            /// The entity type qualifier column.
+            /// </value>
+            public string EntityTypeQualifierColumn { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity type qualifier value.
+            /// </summary>
+            /// <value>
+            /// The entity type qualifier value.
+            /// </value>
+            public string EntityTypeQualifierValue { get; set; }
+
+            /// <summary>
+            /// Gets the merge field identifier which includes the information to add an entity as a merge field. For example "GroupMember, groupMember"
+            /// </summary>
+            /// <returns></returns>
+            public static string GetMergeFieldId<T>(string entityTypeQualifierColumn, string entityTypeQualifierValue )
+            {
+                var entityTypeMergeFieldId = $"{EntityTypeCache.Get<T>().Name}~{entityTypeQualifierColumn}~{entityTypeQualifierValue}";
+
+                return entityTypeMergeFieldId;
+            }
+        }
+
+        /// <summary>
         /// Formats the selected value (node path) into a liquid merge field.
         /// </summary>
         /// <param name="selectedValue">The selected value.</param>
@@ -350,9 +420,10 @@ namespace Rock.Web.UI.Controls
                     string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
                     string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
-                    string itemType = itemParts.Length > 1 ? itemParts[1] : item;
+                    string mergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
 
-                    entityType = EntityTypeCache.Get( itemType, false );
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                    entityType = entityTypeInfo?.EntityType;
 
                     workingParts.Add( entityType != null ? 
                         ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :

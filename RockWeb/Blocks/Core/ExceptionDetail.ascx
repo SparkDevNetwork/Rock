@@ -20,9 +20,9 @@
                     </div>
 
                     <div class="actions">
-                        <a href="#" id="btnShowCookies" runat="server" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i>Show Cookies</a>
-                        <a href="#" id="btnShowVariables" runat="server" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i>Show Server Variables</a>
-                        <a href="#" id="btnShowFormData" runat="server" class="btn-show-formdata btn btn-action"><i class="fa fa-hdd-o"></i>Show Form Data</a>
+                        <a href="#" id="btnShowCookies" runat="server" class="js-btn-show-cookies btn btn-default"><i class="fa fa-laptop"></i> Show Cookies</a>
+                        <a href="#" id="btnShowVariables" runat="server" class="js-btn-show-servervars btn btn-default"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
+                        <a href="#" id="btnShowFormData" runat="server" class="js-btn-show-formdata btn btn-default"><i class="fa fa-hdd-o"></i> Show Form Data</a>
                     </div>
 
                 </fieldset>
@@ -72,17 +72,17 @@
                                     <td><%# EncodeHtml( Eval("Id") ) %></td>
                                     <td><%# EncodeHtml( Eval("ExceptionType") ) %></td>
                                     <td><%# EncodeHtml( Eval("Source") )%></td>
-                                    <td><%# EncodeHtml( Eval("Description") ) %></td>
+                                    <td class="wrap-contents"><%# EncodeHtml( Eval("Description") ) %></td>
 
                                     <td style="text-align: center;">
                                         <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
-                                            <i class="fa fa-layer-group"></i>Show Stack Trace
+                                            <i class="fa fa-layer-group"></i> Show Stack Trace
                                         </a>
                                     </td>
                                 </tr>
                                 <tr id="<%# "trStackTrace_" + Eval("Id").ToString() %>" class="exceptionDetail-stackTrace-hide">
                                     <td colspan="5">
-                                        <pre><%#Eval("StackTrace") %></pre>
+                                        <pre style="white-space: pre-wrap;"><%#Eval("StackTrace") %></pre>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -126,17 +126,20 @@
         }
     }
 
-    $(".btn-show-servervars").click(function () {
+    $(".js-btn-show-servervars").click(function () {
+        $(this).toggleClass("btn-default btn-action");
         $("#divServerVariables").slideToggle();
         return false;
     });
 
-    $(".btn-show-formdata").click(function () {
+    $(".js-btn-show-formdata").click(function () {
+        $(this).toggleClass("btn-default btn-action");
         $("#divFormData").slideToggle();
         return false;
     });
 
-    $(".btn-show-cookies").click(function () {
+    $(".js-btn-show-cookies").click(function () {
+        $(this).toggleClass("btn-default btn-action");
         $("#divCookies").slideToggle();
         return false;
     });
