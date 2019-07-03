@@ -1,5 +1,48 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RSVPList.ascx.cs" Inherits="RockWeb.Blocks.RSVP.RSVPList" %>
 
+<script type="text/javascript">
+    var borderColor = '#E0E0E0';
+    var bgColor_Accepted = '#16C98D';
+    var bgColor_Declined = '#D4442E';
+    var bgColor_NoResponse = '#FFC870';
+    function drawBarChart(canvasId, accepted, declined, noResponse) {
+        var barCtx = $('#' + canvasId)[0].getContext('2d');
+
+        var barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Accepted', 'Declined', 'No Response'],
+                datasets: [
+                    {
+                        label: 'Accepted',
+                        backgroundColor: bgColor_Accepted,
+                        borderColor: borderColor,
+                        data: [ accepted ],
+                    },
+                    {
+                        label: 'Declined',
+                        backgroundColor: bgColor_Declined,
+                        borderColor: borderColor,
+                        data: [ declined ]
+                    },
+                    {
+                        label: 'No Response',
+                        backgroundColor: bgColor_NoResponse,
+                        borderColor: borderColor,
+                        data: [ noResponse ]
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{ stacked: true }],
+                    yAxes: [{ stacked: true }]
+                }
+            }
+        });
+    }
+</script>
+
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
