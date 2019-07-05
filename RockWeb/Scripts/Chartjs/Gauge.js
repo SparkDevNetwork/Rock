@@ -120,7 +120,7 @@
 	GaugeChartHelper.prototype.renderValueLabel = function() {
 		var label = this.data.value.toString();
 		var ctx = this.ctx;
-		ctx.font = "30px " + this.fontStyle;
+		ctx.font = "34px " + this.fontStyle;
 		var stringWidth = ctx.measureText(label).width;
 		var elementWidth = 0.75 * this.gaugeRadius * 2;
 		var widthRatio = elementWidth / stringWidth;
