@@ -262,6 +262,7 @@
                         } else {
                             link.text('Show More').prop('title', 'Show additional addresses');
                         }
+                        $("#account_entry").height($("#individual_details").height());
                     });
                 });
 
