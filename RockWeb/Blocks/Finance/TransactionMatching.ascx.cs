@@ -1344,8 +1344,27 @@ namespace RockWeb.Blocks.Finance
                 var campus = person.GetCampus();
                 lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
 
-                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
-                rptrAddresses.DataBind();
+                var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
+                var addresses = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
+                if ( addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).Count() > 1 )
+                {
+                    var primaryAddresses = addresses.Where( a => a.GroupLocationTypeValueId != previousDefinedValue.Id ).ToList();
+                    var previousAddress = addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).ToList();
+                    primaryAddresses.Add( previousAddress.First() );
+
+                    rptrAddresses.DataSource = primaryAddresses;
+                    rptrAddresses.DataBind();
+                    rptPrevAddresses.DataSource = previousAddress.Skip( 1 );
+                    rptPrevAddresses.DataBind();
+                    btnMoreAddress.Visible = true;
+                }
+                else
+                {
+                    rptrAddresses.DataSource = addresses;
+                    rptrAddresses.DataBind();
+                    btnMoreAddress.Visible = false;
+                }
+                
             }
         }
 
