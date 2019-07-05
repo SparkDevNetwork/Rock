@@ -1470,7 +1470,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var childWorkflows = GetAttributeValue( "ChildWorkflows" ).SplitDelimitedValues().AsGuidList();
             var groupWorkflows = GetAttributeValue( "GroupWorkflows" ).SplitDelimitedValues().AsGuidList();
 
-            if ( true || personWorkflows.Any() || adultWorkflows.Any() || childWorkflows.Any() || groupWorkflows.Any() )
+            if ( personWorkflows.Any() || adultWorkflows.Any() || childWorkflows.Any() || groupWorkflows.Any() )
             {
                 var group = new GroupService( rockContext ).Get( groupId );
                 if ( group != null )
