@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Event
     [WorkflowTypeField(
         "Completion Workflow",
         Key = AttributeKey.CompletionWorkflow,
-        Description = "A workflow that will be launched when the wizard is complete.",
+        Description = "A workflow that will be launched when the wizard is complete.  The following attributes will be passed to the workflow:\r\n + Group\r\n + RegistrationInstance\r\n + EventItemOccurrenceGuid",
         Category = "",
         IsRequired = false,
         DefaultValue = "",
