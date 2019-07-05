@@ -99,10 +99,6 @@
                                                         </li>
                                                     </ItemTemplate>
                                                 </asp:Repeater>
-                                                <li>
-                                                    <a class="btn btn-xs btn-default address-showmore" id="btnMoreAddress" runat="server">More.. <i class="fa fa-chevron-down"></i>
-                                                    </a>
-                                                </li>
                                             </ul>
                                             <ul class="list-unstyled address-extended" style="display: none">
                                                 <asp:Repeater ID="rptPrevAddresses" runat="server">
@@ -116,13 +112,12 @@
                                                         </li>
                                                     </ItemTemplate>
                                                 </asp:Repeater>
+                                            </ul>
+                                            <ul class="list-unstyled">
                                                 <li>
-                                                    <a class="btn btn-xs btn-default address-showless" style="display: none">Less.. <i class="fa fa-chevron-up"></i>
-                                                    </a>
-
+                                                    <a class="js-address-toggle btn btn-xs btn-link" id="btnMoreAddress" title="Show additional addresses" runat="server">Show More</a>
                                                 </li>
                                             </ul>
-
                                         </asp:Panel>
                                     </div>
 
@@ -252,33 +247,24 @@
 
                 updateRemainingAccountAllocation();
 
-                $('.address-showmore').on('click', function (e) {
+                $('.js-address-toggle').on('click', function (e) {
                     if (e && e.preventDefault) {
                         e.preventDefault();
                     }
                     else if (e) {
                         e.returnValue = false;
                     }
+                    var link = $(this);
 
-                    $('.address-extended').slideDown();
-                    $(this).hide();
-                    $('.address-showless').show();
-                });
-
-                $('.address-showless').on('click', function (e) {
-                    if (e && e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    else if (e) {
-                        e.returnValue = false;
-                    }
-
-
-                    $('.address-extended').slideUp(function () {
-                        $(this).hide();
-                        $('.address-showmore').show();
+                    $('.address-extended').slideToggle(function() {
+                        if ($(this).is(':visible')) {
+                            link.text('Show Less').prop('title', 'Hide additional addresses');
+                        } else {
+                            link.text('Show More').prop('title', 'Show additional addresses');
+                        }
                     });
                 });
+
                 // sort the amount boxes in the order that they were added
                 $('.js-accounts .currency-box').detach().sort(function (a, b) {
                     var sortA = $(a).find("input").data("sort-order");
