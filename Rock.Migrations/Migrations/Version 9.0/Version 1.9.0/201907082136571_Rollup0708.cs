@@ -160,7 +160,7 @@ namespace Rock.Migrations
         /// </summary>
         private void AddFinancialTransactionNoCashAssetTypeValueIdUp()
         {
-            AddColumn("dbo.FinancialTransaction", "NonCashAssetTypeValueId", c => c.Int(nullable: false));
+            AddColumn("dbo.FinancialTransaction", "NonCashAssetTypeValueId", c => c.Int(nullable: true));
             CreateIndex("dbo.FinancialTransaction", "NonCashAssetTypeValueId");
             AddForeignKey("dbo.FinancialTransaction", "NonCashAssetTypeValueId", "dbo.DefinedValue", "Id");
         }
