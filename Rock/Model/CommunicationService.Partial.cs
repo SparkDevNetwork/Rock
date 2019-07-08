@@ -162,15 +162,27 @@ namespace Rock.Model
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null )
         {
-            var recipientPersonIds = recipients.Select( a => a.PersonId ).ToList();
+            var recipientsWithPersonIds = recipients.Where( a => a.PersonId.HasValue ).Select( a => a.PersonId ).ToList();
+            var recipientEmailsUnknownPersons = recipients.Where( a => a.PersonId == null ).Select( a => a.EmailAddress );
 
             var recipientPersonList = new PersonService( ( RockContext ) Context )
                 .Queryable()
-                .Where( p => recipientPersonIds.Contains( p.Id ) )
+                .Where( p => recipientsWithPersonIds.Contains( p.Id ) )
                 .ToList();
 
+            if ( !recipientPersonList.Any() && recipientEmailsUnknownPersons.Any( a => a != null ) )
+            {
+                // For backwards compatibility, if no PersonIds where specified, but there are recipients that are only specified by EmailAddress, take a guess at the personIds by looking for matching email addresses
+                recipientPersonList = new PersonService( ( RockContext ) Context )
+                .Queryable()
+                .Where( p => recipientEmailsUnknownPersons.Contains( p.Email ) )
+                .ToList();
+            }
+
             if ( !recipientPersonList.Any() )
+            {
                 return null;
+            }
 
             var communication = new Communication
             {
@@ -178,6 +190,7 @@ namespace Rock.Model
                 Status = CommunicationStatus.Approved,
                 SenderPersonAliasId = senderPersonAliasId
             };
+
             communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
             communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
             communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
