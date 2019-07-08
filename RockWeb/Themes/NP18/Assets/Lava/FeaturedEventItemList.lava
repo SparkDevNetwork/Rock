@@ -18,15 +18,17 @@
                 {% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
 
                 <div class="css-grid-item {{event.Name | ToCssClass }}">
-    	    		      <div class="event-header"><a class="" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}#events_list" style="background-image:url('{{event.EventItem.Photo.Path}}')"></a></div>
-    			          <div class="event-content">
-      				          <h2>{{event.Name}}</h2>
-      				          {% if event.Summary != "" %}
-    	  				            <p class="event-summary">{{ event.Summary }}</p>
-    		  		          {% else %}
-    			  		            <p class="event-summary">{{ event.Description | StripHtml | TruncateWords:15 }}</p>
-    				            {% endif %}
-      			        </div>
+                    <div class="event-header">
+                        <a class="" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}&date={{ event.EventItemOccurrence.Schedule.NextStartDateTime | Date:'yyyy-MM-dd' }}#events_list" style="background-image:url('{{event.EventItem.Photo.Path}}')"></a>
+                    </div>
+                    <div class="event-content">
+                          <h2>{{event.Name}}</h2>
+                          {% if event.Summary != "" %}
+                              <p class="event-summary">{{ event.Summary }}</p>
+                          {% else %}
+                              <p class="event-summary">{{ event.Description | StripHtml | TruncateWords:15 }}</p>
+                        {% endif %}
+                      </div>
                 </div>
   
             {% endif %}

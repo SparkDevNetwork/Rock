@@ -42,8 +42,9 @@
         </div>
 
         <div class="col-sm-4 col-sm-offset-1">
-        
-            {% for eventItemOccurrenceLinkage in EventItemOccurrence.Linkages %}
+
+            {% assign SortedLinkages = EventItemOccurrence.Linkages | Sort:'PublicName' %}
+            {% for eventItemOccurrenceLinkage in SortedLinkages %}
 
                 {% assign RegistrationName = eventItemOccurrenceLinkage.RegistrationInstance.Name | Split:'//' | Last %}
                 {% assign StartDateTime = eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime %}
