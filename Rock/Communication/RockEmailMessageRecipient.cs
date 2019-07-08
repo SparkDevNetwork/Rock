@@ -41,7 +41,7 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="mergeFields">The merge fields.</param>
-        public RockEmailMessageRecipient( Person person, Dictionary<string, object> mergeFields ) : base( person, person.Email, mergeFields )
+        public RockEmailMessageRecipient( Person person, Dictionary<string, object> mergeFields ) : base( person, person?.Email, mergeFields )
         {
         }
 
