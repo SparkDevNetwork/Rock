@@ -297,7 +297,7 @@ namespace Rock.Model
         /// The non cash asset type value identifier.
         /// </value>
         [DataMember]
-        public int NonCashAssetTypeValueId { get; set; }
+        public int? NonCashAssetTypeValueId { get; set; }
 
         #endregion Entity Properties
 
