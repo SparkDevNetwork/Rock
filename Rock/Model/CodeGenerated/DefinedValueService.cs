@@ -160,6 +160,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.NonCashAssetTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
