@@ -1850,6 +1850,9 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds a new attribute value for the given attributeGuid if it does not already exist.
+        /// Note: Attribute values are sometimes deleted and inserted, so GUID is not reliable to find a value.
+        /// This methods uses the attribute ID and EntityId to check for an existing row before inserting.
+        /// If the provided Guid already exists or is not a valid GUID then a new one is created before inserting.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="entityId">The entity id.</param>
@@ -1857,22 +1860,40 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         public void AddAttributeValue( string attributeGuid, int entityId, string value, string guid )
         {
-            Migration.Sql( string.Format( @"
+            Guid outGuid;
+            string guidQuery = string.Empty;
+            if (guid.IsNotNullOrWhiteSpace() && Guid.TryParse( guid, out outGuid ) )
+            {
+                guidQuery = $@"
+                    -- A GUID was provided, try to use it if it is available
+                    IF NOT EXISTS(SELECT * FROM [AttributeValue] WHERE [Guid] = '{guid}')
+                    BEGIN
+	                    SET @AttributeValueGuid = '{guid}'
+                    END";
+            }
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+            Migration.Sql( $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+                DECLARE @AttributeValueGuid UNIQUEIDENTIFIER = NEWID()
 
-                IF NOT EXISTS(Select * FROM [AttributeValue] WHERE [Guid] = '{3}')
+                {guidQuery}
+
+                -- Now check if the attribute/entity pair already has a row and insert it if not
+                IF NOT EXISTS(SELECT [Id] FROM [dbo].[AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = {entityId})
+                BEGIN
                     INSERT INTO [AttributeValue] (
-                        [IsSystem],[AttributeId],[EntityId],[Value],[Guid])
+                          [IsSystem]
+		                , [AttributeId]
+		                , [EntityId]
+		                , [Value]
+		                , [Guid])
                     VALUES(
-                        1,@AttributeId,{1},'{2}','{3}')
-",
-                    attributeGuid,
-                    entityId,
-                    value,
-                    guid )
-            );
+                          1
+		                , @AttributeId
+		                , {entityId}
+		                , '{value}'
+		                , @AttributeValueGuid)
+                END" );
         }
 
         /// <summary>

@@ -290,6 +290,15 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? SundayDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the non cash asset type value identifier.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value identifier.
+        /// </value>
+        [DataMember]
+        public int? NonCashAssetTypeValueId { get; set; }
+
         #endregion Entity Properties
 
         #region Virtual Properties
@@ -511,6 +520,15 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the non cash asset type value.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue NonCashAssetTypeValue { get; set; }
+
         #endregion Virtual Properties
 
         #region Public Methods
@@ -714,7 +732,8 @@ namespace Rock.Model
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
-        }
+            this.HasRequired( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
+            }
     }
 
     #endregion Entity Configuration
