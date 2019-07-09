@@ -30,11 +30,11 @@
     <pubDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:00:00 EST' }}</pubDate>
     <category>{{ channelNameParts[1] }}</category>
     <generator>Rock RMS, https://www.rockrms.com/</generator>
-    
+
     {% if Channel.TimeToLive > 0 %}
         <ttl>{{ Channel.TimeToLive }}</ttl>
     {% endif %}
-    
+
     {% if channelImage and channelImage != empty %}
         <image>
             <url>{{ channelImage }}</url>
@@ -115,7 +115,7 @@
             <link>{{ itemLink | Trim }}</link>
             <pubDate>{% if itemActualDate and itemActualDate != empty %}{{ itemActualDate }}{% else %}{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}{% endif %}</pubDate>
             <category>{{ channelNameParts[1] }}</category>
-            
+
             {% if itemImage and itemImage != empty %}
                 <media:content
                   url="{{ itemImage | Escape }}"
@@ -154,13 +154,13 @@
 
                 {% if feedtype and feedtype != 'Editorial' %}
                     {% if feedtype and feedtype == 'Audio' %}
-                        <enclosure url="{{ itemAudio }}" length="" type="audio/mp3"/>
+                        <enclosure url="{{ itemAudio | Attribute:'AssetItem' | Split:'?' | First }}" length="" type="audio/mp3"/>
                     {% elseif feedtype and feedtype == 'Video' %}
-                        <enclosure url="{{ itemVideo }}" length="" type="video/mp4"/>
+                        <enclosure url="{{ itemVideo | Attribute:'AssetItem' | Split:'?' | First }}" length="" type="video/mp4"/>
                     {% endif %}
                 {% endif %}
             {% endif %}
-            
+
 
         </item>
     {% endif %}
