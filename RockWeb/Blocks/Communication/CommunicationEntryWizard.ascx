@@ -775,20 +775,20 @@
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-6 small-12 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-12 last' width='50%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%' role='presentation'><tr><td class='dropzone columns large-6 small-12 first' width='50%' valign='top'></td><td class='dropzone columns large-6 small-12 last' width='50%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-12' width='34%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%' role='presentation'><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-4 small-12' width='34%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
                                     <!--
-                                    <div class="component component-section" data-content="<table class='row' width='100%'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%' role='presentation'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-four-column"></i> <br /> Four
 				                    </div> -->
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-12 last' width='67%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%' role='presentation'><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-12 last' width='67%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
-                                    <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-8 small-12 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table class='row' width='100%' role='presentation'><tr><td class='dropzone columns large-8 small-12 first' width='67%' valign='top'></td><td class='dropzone columns large-4 small-12 last' width='33%' valign='top'></td></tr></table>" data-state="template">
 					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>

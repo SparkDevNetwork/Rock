@@ -18,7 +18,7 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <fieldset>
-                    
+
                         <asp:HiddenField ID="hfEntityTypeId" runat="server" />
 
                         <div class="row">
@@ -57,7 +57,7 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-destructive" OnClick="btnDelete_Click" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
                     </div>
 

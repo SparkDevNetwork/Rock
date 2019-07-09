@@ -357,98 +357,6 @@ th[align="right"] {
   margin: -15px -15px 15px -15px;
 }
 
-.panel {
-  .panel-heading {
-    a.btn-link {
-      color: @panel-heading-text-color;
-    }
-
-    .panel-title {
-      small {
-        opacity: .5;
-      }
-    }
-
-    .panel-toggle {
-      margin-top: -2px;
-      margin-bottom: -2px;
-    }
-
-    .panel-options {
-      float: right;
-      margin: -10px -15px -10px 10px;
-
-      button {
-        padding: 9px 12px 10px;
-        border: 0;
-        border-radius: 0;
-      }
-    }
-
-    .checkbox {
-      // Important to override fancy checkbox important
-      margin: 0 !important;
-    }
-
-    .panel-labels {
-      float: right;
-      margin-top: -2px;
-
-      .panel-text {
-        float: left;
-        margin-top: 5px;
-        font-size: 12px;
-      }
-    }
-
-    .panel-actions {
-      margin-top: 4px;
-    }
-
-    .form-group {
-      margin-bottom: 0;
-    }
-  }
-
-  .panel-body {
-    border-radius: 0 0 4px 4px;
-  }
-
-  .panel-footer {
-    color: @panel-footer-color;
-    background-color: @panel-footer-bg;
-  }
-
-  .panel-settings {
-    padding: @panel-body-padding;
-    margin: -(@panel-body-padding);
-    border-bottom: 1px solid lighten(@panel-heading-border, 3%);
-  }
-
-  .panel-settings-group {
-    margin: -(@panel-body-padding);
-
-    .btn {
-      border-color: @panel-heading-border;
-      border-top-width: 0;
-      border-right-width: 0;
-      border-radius: 0 !important;
-    }
-
-    .btn-group:first-child .btn {
-      border-left-width: 0;
-    }
-
-    &.btn-group-justified {
-      width: auto;
-    }
-
-    &.btn-group-justified > .btn-group .dropdown-menu {
-      width: 100%;
-    }
-  }
-}
-
 .no-border {
   // removes borders from a panel
   border-color: transparent;
@@ -632,16 +540,7 @@ th[align="right"] {
 }
 
 .drawer-pull {
-  padding: 6px 8px;
-  color: @panel-heading-text-color;
-  cursor: pointer;
-  border-bottom: 1px solid @panel-border;
-
-  .clearfix();
-
-  i {
-    float: right;
-  }
+  display: none;
 }
 
 // paneleditor is used to provide a small edit surface in a panel header.
@@ -899,6 +798,10 @@ div.aspNetDisabled {
 // Danger and error appear as red
 .btn-danger {
   .button-outline-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+}
+
+.btn-destructive {
+  .button-variant(@btn-danger-bg; #fff; #f4f6f9);
 }
 // Danger and error appear as red
 .btn-danger-solid {

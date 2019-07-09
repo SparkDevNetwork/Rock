@@ -17,63 +17,72 @@
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
 
-        <div class="treeview js-grouptreeview">
-            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+        <div class="panel">
 
-                <div class="btn-group pull-left margin-r-sm">
-                    <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i>&nbsp;Add Group <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li>
-                            <asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                        <li>
-                            <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                    </ul>
-                </div>
+                <div class="treeview js-grouptreeview">
+                    <div class="panel-heading clearfix">
+                        <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+                            <div class="panel-title pull-left"><span>All Groups</span></div>
 
-                <div class="rollover-item" id="pnlRolloverConfig" runat="server">
-                    <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
-                </div>
-            </div>
+                            <div class="btn-group pull-right margin-l-sm">
+                                <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    Add Group <span class="fa fa-caret-down"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                    <li>
+                                        <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                                </ul>
+                            </div>
 
-            <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:Toggle ID="tglLimitPublicGroups" runat="server" OnText="Is Public" OffText="All" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglLimitPublicGroups_CheckedChanged" Label="Public" />
-                    </div>
-                </div>
-                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
-                <Rock:CampusPicker ID="ddlCampuses" runat="server" Label="Filter by Campus" OnSelectedIndexChanged="ddlCampuses_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
-                <Rock:Toggle ID="tglIncludeNoCampus" runat="server" OnText="Yes" OffText="No" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglIncludeNoCampus_CheckedChanged" Label="Include groups with no campus" />
-                <div class="form-group">
-                    <asp:Label runat="server" AssociatedControlID="tbSearch" Text="Search" CssClass="control-label" />
-                    <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
-                        <asp:TextBox ID="tbSearch" runat="server" CssClass="form-control input-sm" />
-                        <span class="input-group-btn">
-                            <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="fa fa-search"></i></asp:LinkButton>
-                        </span>
-                    </asp:Panel>
-                </div>
-            </div>
-
-            <div class="treeview-scroll scroll-container scroll-container-horizontal">
-
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                            <div class="rollover-item pull-right" id="pnlRolloverConfig" runat="server">
+                                <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
+                            </div>
                         </div>
-
                     </div>
-                </div>
-                <div class="scrollbar">
-                    <div class="track">
-                        <div class="thumb">
-                            <div class="end"></div>
+
+                    <div class="panel-body">
+
+                    <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:Toggle ID="tglLimitPublicGroups" runat="server" OnText="Is Public" OffText="All" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglLimitPublicGroups_CheckedChanged" Label="Public" />
+                            </div>
+                        </div>
+                        <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
+                        <Rock:CampusPicker ID="ddlCampuses" runat="server" Label="Filter by Campus" OnSelectedIndexChanged="ddlCampuses_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
+                        <Rock:Toggle ID="tglIncludeNoCampus" runat="server" OnText="Yes" OffText="No" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglIncludeNoCampus_CheckedChanged" Label="Include groups with no campus" />
+                        <div class="form-group">
+                            <asp:Label runat="server" AssociatedControlID="tbSearch" Text="Search" CssClass="control-label" />
+                            <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
+                                <asp:TextBox ID="tbSearch" runat="server" CssClass="form-control input-sm" />
+                                <span class="input-group-btn">
+                                    <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="fa fa-search"></i></asp:LinkButton>
+                                </span>
+                            </asp:Panel>
+                        </div>
+                    </div>
+
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="panel-body treeview-frame">
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

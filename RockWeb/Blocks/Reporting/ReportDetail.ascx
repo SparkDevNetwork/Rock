@@ -97,7 +97,7 @@
                             <div class="actions">
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+                                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-destructive" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:HyperLink ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" />
                                     <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
@@ -110,12 +110,12 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">
                             <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
-                                
+
                             <div class="panel-labels">
                                 <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
                             </div>
                         </div>
-                      
+
                         <asp:Panel ID="pnlResultsGrid" runat="server">
                             <div class="panel-body">
                                 <div class="grid grid-panel">
@@ -178,7 +178,7 @@
 
                         // set displayed text of title
                         $(this).find('.js-header-title').text(title);
-                        
+
                         // update displayed sorting field names to match updated title
                         var $kvSortFields = $('#<%=kvSortFields.ClientID %>');
                         var $vMergeFields = $('#<%=vMergeFields.ClientID %>');

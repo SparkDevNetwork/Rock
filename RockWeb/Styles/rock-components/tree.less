@@ -2,14 +2,15 @@
 // Tree - used for tree control
 // --------------------------------------------------
 
-ul.rocktree,
-ul.rocktree ul {
+.rocktree,
+.rocktree ul {
   padding: 0;
   margin-bottom: @spacing-lg-px;
-  list-style-type: none;
+  list-style: none;
+  width: 100%;
 }
 
-ul.rocktree ul {
+.rocktree ul {
   margin: 0 0 0 @spacing-md-px;
 }
 
@@ -17,6 +18,7 @@ ul.rocktree ul {
   .rocktree-item {
     color: @text-color;
     white-space: nowrap;
+    margin: 0;
 
     &.is-inactive {
       color: lighten(@text-color, 20%);
@@ -37,10 +39,6 @@ ul.rocktree ul {
         display: inline;
       }
     }
-  }
-
-  li {
-    margin: 0;
   }
 
   span,
@@ -97,14 +95,14 @@ ul.rocktree ul {
 .treeview {
   margin-bottom: @spacing-md-px;
   .treeview-frame {
-    padding-left: 0;
+    padding: 0;
   }
 
-  .treeview-actions {
-    margin-bottom: @spacing-sm-px;
+  // .treeview-actions {
+  //   margin-bottom: @spacing-sm-px;
 
-    .btn {
-      margin-bottom: 4px;
-    }
-  }
+  //   .btn {
+  //     margin-bottom: 4px;
+  //   }
+  // }
 }

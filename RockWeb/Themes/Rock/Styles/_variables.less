@@ -3,7 +3,7 @@
 
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;                      // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
-@body-background:             #fafafa;                      // The page background color. #color
+@body-background:             #F7F7F7;                      // The page background color. #color
 @text-color:                  #484848;                      // The default text color. #color
 @text-muted:                  #767676;                      // The muted color for text #color
 
@@ -41,7 +41,7 @@
 //--
 @ui-2:                        #f7f7f7;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
 @ui-3:                        #f0f3f6;                        // Modal footer background. #color
-@ui-4:                        #dbdbdb;                        // Table, panel, well, and hr border color. #color
+@ui-4:                        #ececec;                        // Table, panel, well, and hr border color. #color
 @ui-5:                        #aaa;                        // Grid action button color. #color
 
 // Text *show in editor*
@@ -64,8 +64,8 @@
 @help-color:                  fade(@help-color-hex, 80%);
 
 // Layers
-@shadow-raised:               0 0 1px 0 rgba(0, 0, 0, .03), 0 1px 3px 0 rgba(0, 0, 0, .08);
-@shadow-overlay:              0 4px 8px 0 rgba(0,0,0,.1);
+@shadow-raised:               none; //0 2px 2px 0 rgba(0,0,0,.1); // 0 0 1px 0 rgba(0, 0, 0, .03), 0 1px 3px 0 rgba(0, 0, 0, .08);
+@shadow-overlay:              0 2px 3px 0 rgba(0,0,0,.16); // 0 4px 8px 0 rgba(0,0,0,.1);
 @shadow-sticky-nav:           0 6px 12px 0 rgba(0,0,0,.1);
 @shadow-temporary-nav:        0 8px 16px 0 rgba(0,0,0,.1);
 @shadow-modal:                0 12px 24px 0 rgba(0,0,0,.1);
@@ -272,14 +272,15 @@
 // Panel
 @panel-bg:                    #fff;                         // The background color of the panel body.
 @panel-body-padding:          16px;
-@panel-heading-padding:       16px;
-@panel-heading-bg:            @gray-lightest;                 // The background color of the panel's header.
+@panel-heading-font-size:     16px;
+@panel-heading-padding:       12px 16px;
+@panel-heading-bg:            #fff;                 // The background color of the panel's header.
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @ui-4;                          // The panel's border color.
 @panel-top-border-color:      @ui-4;                          // Color of the panel's top border often used as an accent color.
-@panel-border-radius:         @border-radius-base + 1;        // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
+@panel-border-radius:         @border-radius-base;            // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
-@drawer-bg:                   @panel-subheading;
+@drawer-bg:                   #fff;
 //--
 @panel-heading-text-color:    #484848;                      // The heading's text color.
 @panel-heading-border:        @panel-heading-bg;              // The headings border color.
@@ -481,10 +482,10 @@
 @wizard-item-icon-bg:                   #fff;
 
 // Tree Viewer
-@tree-rollover-bg:            lighten(@tree-selected-bg, 20%);  // Background color of the rollover for items in the treeview.
+@tree-rollover-bg:            #eee;  // Background color of the rollover for items in the treeview.
 @tree-rollover-color:         @tree-selected-color;             // Text color of the rollover for items in the treeview.
-@tree-selected-bg:            #6a6a6a;                        // Background color of selected items in the treeview.
-@tree-selected-color:         #fff;                           // Text color of selected items in the treeview.
+@tree-selected-bg:            #d9e4ea;                        // Background color of selected items in the treeview.
+@tree-selected-color:         @text-color;                           // Text color of selected items in the treeview.
 
 // Buttons
 @enable-btn-focus-outline:    true;
@@ -514,9 +515,9 @@
 @btn-info-bg:                 @brand-info;
 @btn-info-border:             @btn-info-bg;
 //--
-@btn-action-color:            #fff;
-@btn-action-bg:               @gray;
-@btn-action-border:           @btn-action-bg;
+@btn-action-color:            @link-color;
+@btn-action-bg:               #fff;
+@btn-action-border:           @link-color;
 //--
 @btn-security-color:          @btn-default-color;
 @btn-security-bg:             @btn-default-bg;
@@ -548,13 +549,13 @@
 
 // Dropdowns
 @dropdown-bg:                    #fff;
-@dropdown-border:                rgba(0,0,0,.15);
+@dropdown-border:                #dddbda;
 @dropdown-fallback-border:       #ccc;
 @dropdown-divider-bg:            #e5e5e5;
 //--
 @dropdown-link-color:            @gray-dark;
-@dropdown-link-hover-color:      darken(@gray-dark, 5%);
-@dropdown-link-hover-bg:         #f5f5f5;
+@dropdown-link-hover-color:      @gray-dark;
+@dropdown-link-hover-bg:         #f3f2f2;
 //--
 @dropdown-link-active-color:     @component-active-color;
 @dropdown-link-active-bg:        @component-active-bg;
