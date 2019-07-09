@@ -154,9 +154,9 @@
 
                 {% if feedtype and feedtype != 'Editorial' %}
                     {% if feedtype and feedtype == 'Audio' %}
-                        <enclosure url="{{ itemAudio | Attribute:'AssetItem' | Split:'?' | First }}" length="" type="audio/mp3"/>
+                        <enclosure url="{{ itemAudio | Split:'?' | First }}" length="" type="audio/mp3"/>
                     {% elseif feedtype and feedtype == 'Video' %}
-                        <enclosure url="{{ itemVideo | Attribute:'AssetItem' | Split:'?' | First }}" length="" type="video/mp4"/>
+                        <enclosure url="{{ itemVideo | Split:'?' | First }}" length="" type="video/mp4"/>
                     {% endif %}
                 {% endif %}
             {% endif %}
