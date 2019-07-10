@@ -23,10 +23,10 @@
                 <div class="panel-toolbar" role="menu">
                     <a href="#" class="btn btn-toolbar-master" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
                     <ul id="menu1" class="dropdown-menu" aria-labelledby="drop4">
-                    <li><a href="#">Settings</a></li>
-                    <li><a href="#">Fullscreen</a></li>
+                    <li><a href="#"><i class="js-selectionicon fa fa-fw"></i> Settings</a></li>
+                    <li><a href="#"><i class="js-selectionicon fa fa-fw"></i> Fullscreen</a></li>
                     <li role="separator" class="divider"></li>
-                    <li><a href="#">Show Details</a></li>
+                    <li><a href="#" class="js-drawershow"><i class="js-selectionicon fa fa-fw"></i> <span class="text-truncate">Show Details</span></a></li>
                     </ul>
                 </div>
             </div>
@@ -54,5 +54,51 @@
 
         </asp:Panel>
 
+
+<script>
+Sys.Application.add_load(function () {
+
+    $('.js-drawershow').on('click', function () {
+        var link = $(this);
+        $( this ).closest( '.panel' ).find('.panel-drawer').toggleClass('open').find( '.drawer-content' ).slideToggle(function(){
+            if ($(this).is(':visible')) {
+                link.find('span').text('Hide Details').prop('title', 'Hide additional addresses');
+                link.find('.js-selectionicon').toggleClass('fa-check');
+            } else {
+                link.find('span').text('Show Details').prop('title', 'Show additional addresses');
+                link.find('.js-selectionicon').toggleClass('fa-check');
+            }
+        });
+
+        $expanded = $(this).children('input.filter-expanded');
+        $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
+
+
+    });
+
+});
+
+</script>
+
     </ContentTemplate>
 </asp:UpdatePanel>
+
+        <!-- var icon = $( this ).find( 'i' );
+        var iconOpenClass = icon.attr( 'data-icon-open' ) || 'fa fa-chevron-up';
+        var iconCloseClass = icon.attr( 'data-icon-closed' ) || 'fa fa-chevron-down';
+
+        if ($( this ).closest( '.panel-drawer' ).hasClass( 'open' )) {
+            icon.attr( 'class', iconOpenClass );
+        }
+        else {
+            icon.attr( 'class', iconCloseClass );
+        }
+
+                    $('.address-extended').slideToggle(function() {
+                        if ($(this).is(':visible')) {
+                            link.text('Show Less').prop('title', 'Hide additional addresses');
+                        } else {
+                            link.text('Show More').prop('title', 'Show additional addresses');
+                        }
+                        $("#account_entry").height($("#individual_details").height());
+                    }); -->

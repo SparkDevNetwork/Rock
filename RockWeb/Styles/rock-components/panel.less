@@ -75,8 +75,21 @@
   }
 
   .panel-subheading {
-    padding: 3px @panel-body-padding;
+    display: -ms-flexbox;
+    display: flex;
+    align-items: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+
+    padding: 0 @panel-body-padding;
     border-bottom: 1px solid @panel-border;
+    min-height: 32px;
+
+    .badges {
+      font-size: 26px;
+    }
   }
 
   .panel-body {
