@@ -6,7 +6,8 @@
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:content="http://purl.org/rss/1.0/modules/content/"
 	xmlns:media="http://search.yahoo.com/mrss/"
-    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+    xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0">
 
 {% cache key:'feed-{{ Channel.Id }}-{{ feedtype }}' tags:'rss,feed-{{ Channel.Id }}-{{ feedtype }}' duration:'{{ Channel.TimeToLive | Timems:60 }}' %}
 
@@ -27,7 +28,6 @@
     <language>en-US</language>
     <copyright>Free to distribute. Do not sell.</copyright>
     <webMaster>web@newspring.cc (NewSpring Web)</webMaster>
-    <pubDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:00:00 EST' }}</pubDate>
     <category>{{ channelNameParts[1] }}</category>
     <generator>Rock RMS, https://www.rockrms.com/</generator>
 
@@ -37,7 +37,7 @@
 
     {% if channelImage and channelImage != empty %}
         <image>
-            <url>{{ channelImage }}</url>
+            <url>{{ channelImage | Split:'?' | First }}</url>
             <title>{{ channelNameParts[1] }} - {{ orgName }}</title>
             <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
         </image>
@@ -47,7 +47,7 @@
         Add iTunes Tags for Audio/Video Feeds
     {% endcomment %}
     {% if feedtype and feedtype != empty and feedtype == 'Audio' OR feedtype == 'Video' %}
-        <itunes:image href="{{ fallbackImage }}"/>
+        <itunes:image href="{{ fallbackImage | Split:'?' | First }}"/>
         <itunes:author>{{ orgName}}</itunes:author>
         <itunes:summary>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</itunes:summary>
         <itunes:keywords>{% if channelFeedKeywords and channelFeedKeywords != empty %}{{ channelFeedKeywords }}{% else %}newspring,church,newspring church,fuse,community,god,jesus,anderson{% endif %}</itunes:keywords>
@@ -59,6 +59,10 @@
             <itunes:category text="Christianity"/>
         </itunes:category>
     {% endif %}
+
+    {% comment %}
+        Add Google Tags for Audio/Video Feeds
+    {% endcomment %}
 
 
 {% for item in Items -%}
@@ -118,7 +122,7 @@
 
             {% if itemImage and itemImage != empty %}
                 <media:content
-                  url="{{ itemImage | Escape }}"
+                  url="{{ itemImage| Split:'?' | First | Escape }}"
                   medium="image"
                   isDefault="true"/>
             {% endif %}
@@ -142,7 +146,7 @@
             <guid>{{ item.Guid }}</guid>
 
             {% if feedtype and feedtype != 'Editorial' %}
-                <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare }}{% elseif parentImageSquare != empty %}{{ parentImageSquare }}{% else %}{{ fallbackImage }}{% endif %}"/>
+                <itunes:image href="{% if itemImageSquare != empty %}{{ itemImageSquare | Split:'?' | First }}{% elseif parentImageSquare != empty %}{{ parentImageSquare | Split:'?' | First }}{% else %}{{ fallbackImage | Split:'?' | First }}{% endif %}"/>
                 {% if communicators and communicators != empty %}
                     <itunes:author>{{ communicators}}</itunes:author>
                 {% endif %}
