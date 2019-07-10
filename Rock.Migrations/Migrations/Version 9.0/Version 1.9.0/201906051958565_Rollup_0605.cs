@@ -37,6 +37,7 @@ namespace Rock.Migrations
             AddAttributesForSmartyStreets();
             FixGoogleShortCode();
             CodeGenMigrationsUp();
+            AddEventWizardPage();
         }
 
         /// <summary>
