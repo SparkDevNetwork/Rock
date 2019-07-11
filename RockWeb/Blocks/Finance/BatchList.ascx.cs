@@ -453,9 +453,7 @@ namespace RockWeb.Blocks.Finance
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var batchRow = e.Row.DataItem as BatchRow;
-                var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
-                var cell = ( e.Row.Cells[gBatchList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
-
+                
                 if ( batchRow != null )
                 {
                     if ( batchRow.TransactionCount > 0 )
@@ -464,6 +462,8 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     // Hide delete button if the batch is closed.
+                    var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
+                    var cell = ( e.Row.Cells[gBatchList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
                     if ( batchRow.Status == BatchStatus.Closed && cell != null )
                     {
                         cell.Visible = false;
@@ -782,8 +782,12 @@ namespace RockWeb.Blocks.Finance
                         .ToList()
                 } );
 
-                gBatchList.ObjectList = financialBatchQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
+                if ( CampusCache.All().Count == 1 )
+                {
+                    gBatchList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "CampusName").Visible = false;
+                }
 
+                gBatchList.ObjectList = financialBatchQry.ToList().ToDictionary( k => k.Id.ToString(), v => v as object );
                 gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
                 gBatchList.EntityTypeId = EntityTypeCache.Get<FinancialBatch>().Id;
                 gBatchList.DataBind();

@@ -20,7 +20,7 @@
 
                     <asp:Literal ID="lEventIntro" runat="server" />
 
-                    <asp:Repeater ID="rptEvents" runat="server">
+                    <asp:Repeater ID="rptEvents" runat="server" OnItemDataBound="rptEvents_ItemDataBound">
                          <ItemTemplate>
                              <div class="well eventitem js-eventitem <%# Container.ItemIndex == 0 ? "selected" : "" %>">
                                  <div class="row">
@@ -48,7 +48,7 @@
                                             </div>
 
                                              <div class="col-sm-4">
-                                                 <div class="pull-right label label-campus">
+                                                 <div class="pull-right label label-campus" id="campusLabel" runat="server">
                                                      <%# Eval("Campus") %>
                                                  </div>
                                              </div>

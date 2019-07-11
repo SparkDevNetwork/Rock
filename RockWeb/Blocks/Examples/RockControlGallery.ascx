@@ -407,12 +407,12 @@
 
                     <a id="CampusPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" />
+                        <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" ForceVisible="true" />
                     </div>
 
                     <a id="CampusesPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" />
+                        <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" ForceVisible="true" />
                     </div>
 
                     <a id="Connections"></a>
