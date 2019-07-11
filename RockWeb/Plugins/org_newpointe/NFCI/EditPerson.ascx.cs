@@ -94,8 +94,6 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
             person.LoadAttributes();
             rtbAllergy.Text = person.GetAttributeValue( "Allergy" );
 
-            ebEmail.Text = person.Email;
-
             var phoneNumbers = dtcPersonPhoneTypes.DefinedValues.Select( dv =>
                 person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == dv.Id )
                 ?? new PhoneNumber { NumberTypeValueId = dv.Id, NumberTypeValue = new DefinedValue { Id = dv.Id, Value = dv.Value } }
@@ -120,9 +118,6 @@ namespace RockWeb.Plugins.org_newpointe.NFCI
 
             person.LoadAttributes();
             person.SetAttributeValue( "Allergy", rtbAllergy.Text );
-
-            person.Email = ebEmail.Text;
-
 
             var newPhoneNumbers = new List<PhoneNumber>();
             foreach ( RepeaterItem item in rContactInfo.Items )

@@ -16,29 +16,43 @@
 
                     <h1>Personal Info</h1>
 
+                    <!-- NickName -->
                     <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
 
                     <br />
-
+                
+                    <!-- Title -->
                     <Rock:DefinedValuePicker ID="dvpTitle" runat="server" Label="Title" />
-                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" />
+
+                    <!-- First Name -->
+                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" />
+
+                    <!-- Middle Name -->
                     <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" />
-                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
+
+                    <!-- Last Name -->
+                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" />
+
+                    <!-- Suffix -->
                     <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" Label="Suffix" />
 
                     <br />
-
+                
+                    <!-- Gender -->
                     <Rock:RockRadioButtonList ID="rblGender" runat="server" Label="Gender" RepeatDirection="Horizontal" />
+
+                    <!-- Birthday -->
                     <Rock:BirthdayPicker ID="bpBirthday" runat="server" Label="Birthday" />
+
+                    <!-- Grade -->
                     <Rock:GradePicker ID="gpGrade" runat="server" UseGradeOffsetAsValue="true" />
+
+                    <!-- Allergies -->
                     <Rock:RockTextBox ID="rtbAllergy" runat="server" Label="Allergies (Leave blank if none)" />
 
                     <br />
 
                     <h1>Contact Info</h1>
-                    <h3>Email</h3>
-
-                    <Rock:EmailBox ID="ebEmail" runat="server" />
 
                     <h3>Phone</h3>
 
