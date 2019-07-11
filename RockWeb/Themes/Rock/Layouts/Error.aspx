@@ -20,11 +20,11 @@
         });
     </script>
 </head>
-<body id="splash" class="error">
+<body id="splash" class="splash-page error">
     <form id="form1" runat="server">
 
 
-        <div id="content">
+        <div id="content" class="content">
 
             <div id="content-box">
                 <div class="row">

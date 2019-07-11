@@ -34,12 +34,12 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/theme.css", true) %>"/>
 
 </head>
-<body id="splash">
+<body id="splash" class="splash-page">
 
     <form id="form1" runat="server">
 
-        <div id="content">
-            <div id="logo">
+        <div id="content" class="content">
+            <div id="logo" class="rock-logo">
                 <asp:Literal ID="lLogoSvg" runat="server" />
             </div>
 

@@ -1,0 +1,277 @@
+
+
+.well {
+  .box-shadow(none);
+}
+
+.toggle-container {
+  .btn-group {
+    vertical-align: top;
+  }
+}
+
+.btn {
+  transition: @btn-transition;
+
+  &.active,
+  &:active { // removes the shadow from the toggles
+    .box-shadow(none);
+  }
+}
+
+.btn-square {
+  &.btn-xs {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+  }
+
+  &.btn-sm {
+    width: 33px;
+    height: 33px;
+    padding: 5px 8px;
+  }
+
+  i.fa {
+    width: auto;
+    line-height: @line-height-base;
+    text-align: center;
+  }
+}
+
+.nav-tabs {
+  border-bottom: 1px solid @nav-tabs-border-color;
+
+  > li {
+    padding: 0;
+    margin: 0 0 -1px 0;
+
+    // Actual tabs (as links)
+    > a {
+      padding: 2px 24px 17px;
+      margin-right: 0;
+      line-height: @line-height-base;
+      color: @gray-dark;
+      border: 0;
+      transition: color 300ms ease-in-out;
+      &::after {
+        position: absolute;
+        right: 24px;
+        bottom: 0;
+        left: 24px;
+        height: 0;
+        content: " ";
+        opacity: 0;
+        transition: height 300ms ease-in-out, opacity 300ms ease-in-out;
+      }
+
+      &:hover,
+      &:focus {
+        color: @gray-dark;
+        background-color: transparent;
+        border: 0;
+        &::after {
+          height: 4px;
+          background-color: @gray;
+          opacity: 1;
+        }
+      }
+    }
+
+
+    // Active state, and its :hover to override normal :hover
+    &.active > a {
+      font-weight: bold;
+      color: @gray-dark;
+      &,
+      &:hover,
+      &:focus {
+        background-color: transparent;
+        border: 0;
+      }
+      &::after {
+        height: 4px;
+        background-color: @brand-primary;
+        opacity: 1;
+      }
+    }
+  }
+
+  > li:first-child > a {
+    padding-left: 0;
+    &::after {
+      left: 0;
+    }
+  }
+}
+
+.tooltip {
+  &.top {
+    margin-bottom: 1px;
+    .tooltip-arrow {
+      bottom: 1px;
+      border-width: 0 1px 1px 0;
+    }
+  }
+
+  &.bottom {
+    margin-top: 1px;
+    .tooltip-arrow {
+      top: 1px;
+      border-width: 1px 0 0 1px;
+    }
+  }
+}
+
+
+.tooltip-arrow {
+  width: 10px;
+  height: 10px;
+  background: @gray-darker;
+  border: 1px solid @ui-4;
+  transform: rotate(45deg);
+}
+
+.tooltip-inner {
+  padding: (@padding-base-horizontal / 2);
+  color: #fff;
+  text-align: left;
+  background-color: @gray-darker;
+  border: 1px solid @ui-4;
+  .box-shadow(@shadow-overlay);
+}
+
+.close {
+  opacity: .5;
+  &:focus,
+  &:hover {
+    opacity: .75;
+  }
+}
+
+@media (max-width: @screen-sm-max) {
+  .form-well {
+    padding: @panel-body-padding;
+    margin: 0 -(@panel-body-padding);
+    background: #fff;
+    border: 0;
+    .box-shadow(none);
+  }
+}
+
+.alert {
+  border-width: 0;
+  border-top-width: 3px;
+  box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+
+.btn-group.open .dropdown-toggle {
+  box-shadow: none;
+}
+
+.has-error {
+  .form-control,
+  .input-group-addon {
+    box-shadow: none;
+  }
+
+  .form-control:focus {
+    border-color: @brand-danger;
+    box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
+  }
+
+  .control-label {
+    color: @brand-danger;
+  }
+}
+
+.nav .open > a,
+.nav .open > a:focus,
+.nav .open > a:hover {
+  background-color: transparent;
+  border: 0;
+}
+
+.label {
+  font-weight: 400; // make the font light
+  border-radius: 0; // labels always have curves
+}
+
+.grid-filter {
+  border: 0;
+
+  .btn-link {
+    margin: 5px 0 0 7px;
+  }
+}
+
+.grid-table {
+  > tbody > tr > td,
+  > tbody > tr > th,
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: 18px 17px 18px 12px;
+    border-width: @table-column-border-width;
+    border-top-width: 1px;
+  }
+
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: 18px 0 18px 12px;
+    vertical-align: middle;
+
+    // Remove padding offset on center
+    &[align="center"] {
+      padding: 18px 6px;
+    }
+  }
+
+  > thead > tr.grid-header-bold > th {
+    padding: 18px 17px 18px 12px;
+  }
+
+  > tbody > tr > td {
+    &.grid-columnreorder {
+      padding-top: 18px;
+    }
+    &.grid-row-header {
+      font-weight: bold;
+      border-right: 1px solid @table-border-color;
+    }
+
+    &.grid-columncommand {
+      width: 30px;
+      min-width: 30px;
+      padding: 0 6px;
+      vertical-align: middle;
+    }
+  }
+
+  > tfoot {
+    border-top: 1px solid @ui-4;
+    > tr > td,
+    > tr > th {
+      color: @text-color;
+      background: @panel-bg;
+      border-top: 1px solid @ui-4;
+    }
+  }
+}
+
+.grid-columncommand {
+  .btn {
+    width: 33px;
+    padding: 5px 7px;
+  }
+}
+
+.badge-circle {
+  width: @line-height-computed;
+  border-radius: 50%;
+}
+
+.grid-select-cell .status-list .badge {
+  width: (@line-height-computed - 4px);
+  height: (@line-height-computed - 4px);
+  border-radius: 50%;
+}
