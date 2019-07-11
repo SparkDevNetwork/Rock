@@ -504,15 +504,7 @@
     <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
     <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
-    <Compile Include="Plugin\HotFixes\076_MigrationRollupsForV9_0_1.cs" />
-    <Compile Include="Plugin\HotFixes\075_MigrationRollupsForV9_0_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
-    <Compile Include="Plugin\HotFixes\082_MigrationRollupsForV9_0_6.cs" />
-    <Compile Include="Plugin\HotFixes\081_EnsureCoreConnectionStatusIsSystem.cs" />
-    <Compile Include="Plugin\HotFixes\080_MigrationRollupsForV9_0_5.cs" />
-    <Compile Include="Plugin\HotFixes\079_MigrationRollupsForV9_0_4.cs" />
-    <Compile Include="Plugin\HotFixes\078_MigrationRollupsForV9_0_3.cs" />
-    <Compile Include="Plugin\HotFixes\077_MigrationRollupsForV9_0_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2430,9 +2422,6 @@
     </Content>
     <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
       <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
-    </Content>
-    <Content Include="Plugin\HotFixes\082_MigrationRollupsForV9_0_6_SegmentedChartUpdate.sql">
-      <DependentUpon>082_MigrationRollupsForV9_0_6.cs</DependentUpon>
     </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />

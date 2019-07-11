@@ -62,7 +62,7 @@ namespace Rock.Utility
                 string keywordExpression = dvWorkflow.GetAttributeValue( "KeywordExpression" );
                 if ( string.IsNullOrWhiteSpace( keywordExpression ) )
                 {
-                    // if there was no keyword expression add wildcard expression
+                    // if there was no keyword expression add wild card expression
                     keywordExpression = ".*";
                 }
 
@@ -119,10 +119,8 @@ namespace Rock.Utility
                 using ( var rockContext = new RockContext() )
                 {
                     fromPerson = GetPerson( fromPhone, rockContext );
+                    LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
                 }
-
-                LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, matchGroups, null, workflowAttributesSettings, out response );
-
                 // once we find one match stop processing
                 break;
             }
