@@ -12,6 +12,10 @@
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 
                     <div class="grid grid-panel">
+                        <Rock:GridFilter ID="gfShortLink" runat="server">
+                            <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                            <Rock:RockTextBox ID="txtToken" runat="server" Label="Token" />
+                        </Rock:GridFilter>
                         <Rock:Grid ID="gShortLinks" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gShortLinks_Edit">
                             <Columns>
                                 <Rock:RockBoundField DataField="ShortLink" HeaderText="Shortened Url" SortExpression="ShortLink" />
