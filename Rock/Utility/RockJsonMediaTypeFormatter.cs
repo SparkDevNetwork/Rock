@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
@@ -103,8 +102,6 @@ namespace Rock.Utility
         /// <param name="effectiveEncoding">The encoding to use when writing.</param>
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
-
             bool isSelectAndExpand = false;
             List<object> selectAndExpandList = null;
             if ( value is IQueryable<object> && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
@@ -143,8 +140,8 @@ namespace Rock.Utility
                 }
                 else if ( isSelectAndExpand && selectAndExpandList != null )
                 {
-                    // 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
-                    // so use reflection to get that and load the attributes for each
+                    //// 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
+                    //// so use reflection to get that and load the attributes for each
 
                     var itemsList = new List<Attribute.IHasAttributes>();
                     foreach ( var selectExpandItem in selectAndExpandList )
@@ -266,9 +263,6 @@ namespace Rock.Utility
                 base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );
                 return;
             }
-
-            stopwatch.Stop();
-            Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
 
             base.WriteToStream( type, value, writeStream, effectiveEncoding );
         }
