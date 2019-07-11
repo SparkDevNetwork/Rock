@@ -1061,6 +1061,10 @@ namespace RockWeb.Blocks.Connection
                             connectionRequests = connectionRequests.OrderBy( a => a.LastActivityDateTime ).ToList();
                         }
                     }
+
+                    // Hide the campus column if the campus filter is not visible.
+                    gRequests.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus" ).Visible = cpCampusFilterForPage.Visible;
+
                     gRequests.DataSource = connectionRequests;
                     gRequests.DataBind();
 

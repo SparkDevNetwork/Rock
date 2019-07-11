@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Child Birthdate", "Require a birth date for each child", "Don't require", "When Family group type, should birth date be required for each child added?", false, "", 10 )]
     [CustomDropdownListField( "Grade", "When Family group type, should Grade be required for each child added?", "True^Require a grade for each child,False^Don't require,None^Grade is not displayed", false, "", "", 11 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 12 )]
-    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 13 )]
+    [BooleanField( "Require Campus", "Determines if a campus is required. The campus will not be displayed if there is only one available campus.", true, "", 13 )]
     [BooleanField( "Show County", "Should County be displayed when editing an address?.", false, "", 14 )]
     [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 15 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 16 )]
@@ -240,17 +240,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( _isFamilyGroupType )
             {
-                bool campusRequired = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
                 divGroupName.Visible = false;
-                var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All().Where( c => c.IsActive == true ).ToList();
-                cpCampus.Campuses = campusi;
-                cpCampus.Visible = campusi.Any();
-                if ( campusi.Count == 1 && campusRequired )
-                {
-                    cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
-                }
-                cpCampus.Required = campusRequired;
 
+                cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean( true );;
+
+                var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All( false ).ToList();
+                cpCampus.Campuses = campusi;
+                
                 dvpMaritalStatus.Visible = true;
                 dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                 var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
