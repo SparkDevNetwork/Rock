@@ -376,11 +376,42 @@ namespace Rock.Rest
 
                 if ( paramExpression != null )
                 {
-                    return Service.Get( paramExpression, whereExpression );
+                    return Service.GetNoTracking( paramExpression, whereExpression );
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines if the entity id is in the data view
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "InDataView" )]
+        [EnableQuery]
+        [HttpGet]
+        public bool InDataView( int dataViewId, int entityId )
+        {
+            var rockContext = new RockContext();
+
+            var dataView = new DataViewService( rockContext ).Get( dataViewId );
+
+            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
+
+            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
+            {
+                var errorMessages = new List<string>();
+                var qryGroupsInDataView = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<T>;
+                qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
+
+                return qryGroupsInDataView.Any();
+            }
+
+            return false;
         }
 
         /// <summary>
