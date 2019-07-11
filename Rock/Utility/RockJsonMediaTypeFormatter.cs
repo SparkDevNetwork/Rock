@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
@@ -37,6 +38,14 @@ namespace Rock.Utility
         ///   <c>true</c> if [load attributes]; otherwise, <c>false</c>.
         /// </value>
         private bool LoadAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the limit to attribute key list.
+        /// </summary>
+        /// <value>
+        /// The limit to attribute key list.
+        /// </value>
+        private string[] LimitToAttributeKeyList { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [serialize in simple mode].
@@ -68,12 +77,14 @@ namespace Rock.Utility
             var qryParams = System.Web.HttpUtility.ParseQueryString( request.RequestUri.Query );
             string loadAttributes = qryParams["LoadAttributes"] ?? string.Empty;
 
+            LimitToAttributeKeyList = qryParams["AttributeKeys"]?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).ToArray();
+
             // if "simple" or True is specified in the LoadAttributes param, tell the formatter to serialize in Simple mode
             SerializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
             LoadAttributes = SerializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
-            
+
             // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
             if ( LoadAttributes && request.Properties.ContainsKey( "Person" ) )
             {
@@ -92,6 +103,8 @@ namespace Rock.Utility
         /// <param name="effectiveEncoding">The encoding to use when writing.</param>
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             bool isSelectAndExpand = false;
             List<object> selectAndExpandList = null;
             if ( value is IQueryable<object> && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
@@ -117,7 +130,7 @@ namespace Rock.Utility
                 if ( value is IEnumerable<Attribute.IHasAttributes> )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    // Also, do a ToList() to fetch the query into a list (instead requerying multiple times)
+                    // Also, do a ToList() to fetch the query into a list (instead re-querying multiple times)
                     items = ( value as IEnumerable<Attribute.IHasAttributes> ).ToList();
 
                     // Assign the items list back to value
@@ -149,12 +162,24 @@ namespace Rock.Utility
                     items = itemsList;
                 }
 
+                List<AttributeCache> limitToAttributes = null;
+                if ( this.LimitToAttributeKeyList?.Any() == true && type.IsGenericType )
+                {
+                    var entityTypeType = type.GenericTypeArguments[0];
+                    if ( entityTypeType != null )
+                    {
+                        var entityType = EntityTypeCache.Get( entityTypeType );
+                        var entityAttributesList = AttributeCache.GetByEntity( entityType.Id )?.SelectMany( a => a.AttributeIds ).ToList().Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
+                        limitToAttributes = entityAttributesList?.Where( a => this.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                    }
+                }
+
                 if ( items != null )
                 {
                     var rockContext = new Rock.Data.RockContext();
                     foreach ( var item in items )
                     {
-                        Rock.Attribute.Helper.LoadAttributes( item, rockContext );
+                        Rock.Attribute.Helper.LoadAttributes( item, rockContext, limitToAttributes );
                     }
 
                     FilterAttributes( rockContext, items, this.Person );
@@ -241,6 +266,9 @@ namespace Rock.Utility
                 base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );
                 return;
             }
+
+            stopwatch.Stop();
+            Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
 
             base.WriteToStream( type, value, writeStream, effectiveEncoding );
         }
