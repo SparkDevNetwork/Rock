@@ -4,7 +4,6 @@
     1. Zone Configuration
     2. Module Configuration
     3. Admin Footer
-    4. Responsive Rules
 */
 
 
@@ -92,7 +91,7 @@
     text-decoration: none;
   }
 
-  a i.fa {
+  a i {
     float: left;
     margin-top: 3px;
     margin-right: 10px;
@@ -106,7 +105,6 @@
   position: absolute;
   left: 24px;
   display: inline-block;
-  float: left;
   margin-right: -999em;
   margin-left: 6px;
   overflow: hidden;
@@ -115,22 +113,21 @@
   div {
     display: inline;
   }
-}
 
-.block-configuration-bar .btn {
-  margin-right: 12px;
-  color: @adminbar-text-color;
-  text-shadow: none;
-}
+  .btn {
+    margin-right: 12px;
+    color: @adminbar-text-color;
+    text-shadow: none;
+  }
 
-.block-configuration-bar span {
-  display: block;
-  float: left;
-  padding-right: 20px;
-  margin-top: 3px;
-  font-size: 10px;
+  span {
+    display: block;
+    float: left;
+    padding-right: 20px;
+    margin-top: 3px;
+    font-size: 10px;
+  }
 }
-
 
 // 3. Admin Footer
 // -------------------------
@@ -175,26 +172,20 @@
     margin-left: 12px;
     text-align: center;
   }
-}
 
+  .button-bar a {
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+  }
 
-#cms-admin-footer .button-bar a {
-  background-color: transparent;
-  background-image: none;
-  border: 0;
-}
+  .btn {
+    color: @adminbar-text-color;
+    text-shadow: none;
+    box-shadow: none;
+  }
 
-#cms-admin-footer .btn {
-  color: @adminbar-text-color;
-  text-shadow: none;
-  box-shadow: none;
-}
-
-
-// 4. Responsive Rules
-// -------------------------
-@media (min-width: @screen-sm-min) {
-  #cms-admin-footer {
+  @media (min-width: @screen-sm-min) {
     opacity: 0;
 
     &:hover {

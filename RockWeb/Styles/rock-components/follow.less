@@ -7,13 +7,12 @@
   padding: 0 0 0 16px;
 }
 
+.rock-fullscreen-toggle,
 .panel-follow-status {
   height: 48px;
-  width: 48px;
+  width: 40px;
   border: 0;
   color: @text-color;
-  margin-left: 8px;
-  //padding: 0 13px;
   font-size: 16px;
   color: inherit;
   display: -webkit-box;
@@ -25,11 +24,17 @@
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  opacity: .4;
-  transition: .5s;
 
   &::before {
+    opacity: .4;
+    transition: .5s;
     font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+  }
+}
+
+.panel-follow-status {
+  &::before {
     content: @fa-var-star-o;
     font-weight: @fa-theme-weight-outline;
   }
@@ -37,11 +42,30 @@
   &.following {
     color: #fff;
     background-color: @panel-following-active-bg;
-    opacity: 1;
 
     &::before {
+      opacity: 1;
       font-weight: 900;
       content: @fa-var-star;
+    }
+  }
+}
+
+// Fullscreen Toggle
+
+.rock-fullscreen-toggle {
+  &:hover::before {
+    transform: scale(1.1) translateZ(0);
+    opacity: .75;
+  }
+
+  &::before {
+    content: @fa-var-expand;
+  }
+
+  .is-fullscreen & {
+    &::before {
+      content: @fa-var-compress;
     }
   }
 }

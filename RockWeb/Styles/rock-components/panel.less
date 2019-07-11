@@ -3,6 +3,8 @@
 //
 // --------------------------------------------------
 
+
+
 // the .panel-parent class allow you to wrap a child panel removing the child's heading.
 .panel-parent {
 
@@ -131,29 +133,48 @@
   }
 }
 
+
+// styles for panel drawers
+@drawer-bg: @panel-heading-bg;
+
+.panel-drawer {
+  width: 100%;
+  background-color: @drawer-bg;
+}
+
+.drawer-content {
+  padding: @panel-body-padding;
+  border-bottom: 1px solid @panel-border;
+}
+
+.panel-drawer.open > .drawer-content {
+  display: block;
+}
+
+.drawer-pull {
+  display: none;
+}
+
 .panel-next .panel-heading {
-  padding: 0 0 0 16px;
+  padding: 0;
 }
 
 .panel-toolbar {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
+  //-webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-}
 
-.panel-toolbar {
   .btn-toolbar-master {
     height: 48px;
-    width: 30px;
+    width: 36px;
     border: 0;
     color: @gray !important;
     //margin-right: -1rem;
     //border-top-right-radius: 3px;
-    margin-left: 8px;
-    padding: 0 13px;
+    padding: 0 12px;
     font-size: 16px;
     color: inherit;
     display: -webkit-box;
@@ -168,6 +189,7 @@
 
     &:active,
     .open& {
+      color: @text-color !important;
       -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.15) inset!important;
       box-shadow: 0 2px 5px rgba(0,0,0,.15) inset!important;
     }
@@ -180,6 +202,200 @@
   left: auto!important;
   margin: 0;
   border-radius: 0;
+}
+
+// Standard Block
+.panel-block {
+  border-top-color: @panel-top-border-color;
+
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+  > .panel-heading {
+    .clearfix();
+
+    .panel-title {
+      float: left;
+
+      i {
+        color: #6a6a6a;
+      }
+    }
+  }
+
+  .list-group-item {
+    background-color: transparent;
+  }
+
+  .panel-body {
+    .grid.grid-panel {
+      margin: -16px;
+
+      .grid-filter {
+        border-radius: 0;
+      }
+
+      .table-bordered {
+        border-width: 1px 0 0 0;
+
+        & > tfoot > tr > td {
+          border: 0;
+        }
+      }
+    }
+  }
+}
+
+.panel-widget {
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+  > .panel-heading {
+    .clearfix();
+    border: 0;
+
+    // Used by install checklist
+    .checkbox {
+      display: inline;
+    }
+
+    .actions {
+      a {
+        margin-left: 4px;
+      }
+    }
+  }
+}
+
+// Panel for Person Attributes
+.panel-persondetails {
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+  .panel-heading {
+    .actions {
+      a {
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .panel-body {
+
+    .form-group.static-control {
+      margin-bottom: 2px;
+      .clearfix();
+
+      label {
+        float: left;
+        width: 40%;
+        padding-right: 12px;
+        text-align: right;
+      }
+
+      .form-control-static {
+        float: left;
+        width: 60%;
+        padding-top: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    h4 {
+      font-size: @font-size-base;
+      font-weight: @font-weight-semibold;
+    }
+
+    hr {
+      margin-top: @padding-base-vertical;
+      margin-bottom: (@padding-base-vertical * 2);
+    }
+
+    // styles for matrix attributes
+    .form-group.static-control.matrix-attribute label {
+      width: 100%;
+      text-align: left;
+    }
+
+    .form-group.static-control.matrix-attribute .form-control-static {
+      width: 100%;
+    }
+
+    i.fa.fa-bars {
+      cursor: pointer;
+    }
+  }
+}
+
+// panel for workflow entry/navigation
+.panel-group {
+  .panel-workflowitem {
+    margin-bottom: 30px;
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+    &:hover {
+      background-color: #fff;
+    }
+
+    .panel-heading {
+      padding: 30px;
+
+      a {
+        display: block;
+
+        .panel-title {
+          width: 100%;
+
+          h3 {
+            margin: 0;
+
+            i {
+              margin-right: 12px;
+              font-size: 35px;
+            }
+          }
+        }
+
+
+        i.panel-navigation {
+          margin-top: 8px;
+
+          &::before {
+            margin-top: 6px;
+            font-family: @fa-font-face;
+            font-size: 20px;
+            font-weight: @fa-theme-weight;
+            content: @fa-var-chevron-up;
+          }
+        }
+
+        &.collapsed {
+          i.panel-navigation::before {
+            content: @fa-var-chevron-down;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+.panel-dashboard {
+  height: 220px;
+  margin: 24px 0 0;
+
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+}
+
+// paneleditor is used to provide a small edit surface in a panel header.
+// example: threshold editor on checkin manager for locations
+
+.paneleditor-label {
+  float: left;
+}
+
+.paneleditor-input {
+  float: left;
+  margin-right: 4px;
+  margin-left: 4px;
 }
 
 .dropdown-menu {
@@ -195,4 +411,59 @@
   opacity: 1;
   visibility: visible;
   transform: scale(1);
+}
+
+.panel-next {
+  .panel-heading {
+    -ms-flex-wrap: wrap!important;
+    flex-wrap: wrap-reverse!important;
+    align-items: flex-end;
+    // -ms-flex-direction: column!important;
+    // flex-direction: column!important;
+    justify-content: flex-end;
+  }
+
+  .panel-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-grow: 1;
+  }
+
+  .panel-toolbar {
+    white-space: nowrap;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+  }
+
+  .panel-labels {
+    padding: 8px 16px;
+  }
+
+  .panel-title {
+    flex-grow: 1;
+    padding: 12px 16px;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.rock-panel-widget {
+  .panel-heading {
+      background: #fff;
+      -webkit-transition: background-color .5s ease;
+      transition: background-color .5s ease;
+
+    &:hover {
+      background: #f7f9fa;
+    }
+  }
+
+  border-color: @input-border;
+
+  + .rock-panel-widget {
+    margin-top: -25px;
+  }
 }

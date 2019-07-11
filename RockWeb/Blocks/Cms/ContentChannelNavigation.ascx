@@ -48,7 +48,7 @@
                         <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
-                    </Rock:GridFilter>               
+                    </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 

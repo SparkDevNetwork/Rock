@@ -10,29 +10,50 @@
 
 .list-as-blocks {
   h3 {
-    margin: 6px 0;
-    margin-top: 0;
+    margin: 6px 0 0;
     font-size: 14px;
   }
 
   ul {
     padding: 0;
-    margin-top: 16px;
+    margin: @listasblocks-margin-top 0 0;
     list-style: none;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -8px;
+    margin-left: -8px;
 
     li {
-      position: relative;
-      float: left;
-      width: 47.5%;
-      margin: 0 1.25% @spacing-md-px;
-      overflow: hidden;
-      overflow: visible;
       text-align: center;
-      border: 1px solid @listasblocks-border-color;
-      border-radius: @border-radius-base;
+      position: relative;
+      width: 100%;
+      padding: 0 8px 16px;
+
+      -ms-flex: 0 0 50%;
+      flex: 0 0 50%;
+      max-width: 50%;
+
+      @media @sm {
+        -ms-flex: 0 0 33.333333%;
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+      }
+
+      @media @md {
+      -ms-flex: 0 0 25%;
+      flex: 0 0 25%;
+      max-width: 25%;
+      }
+
+      @media @lg {
+        -ms-flex: 0 0 20%;
+        flex: 0 0 20%;
+        max-width: 20%;
+        }
 
       a {
-        display: block;
         height: 90px;
         padding: @spacing-md-px;
         color: @listasblocks-color;
@@ -43,9 +64,18 @@
         -ms-transition: background-color 200ms linear;
         -o-transition: background-color 200ms linear;
         transition: background-color 200ms linear;
+        border: 1px solid @listasblocks-border-color;
+        border-radius: @border-radius-base;
+
+        display: -ms-flexbox!important;
+        display: flex!important;
+        -ms-flex-line-pack: center!important;
+        align-content: center!important;
+        -ms-flex-direction: column!important;
+        flex-direction: column!important;
+        justify-content: center;
 
         i {
-          margin-top: 6px;
           font-size: 26px;
           color: lighten(@listasblocks-color, 10%);
         }
@@ -58,10 +88,6 @@
           i {
             color: lighten(@listasblocks-rollover-text-color, 10%);
           }
-        }
-
-        &:focus {
-          text-decoration: none;
         }
 
         div.notification {
@@ -127,74 +153,18 @@
   }
 
   .block-status a {
-    height: 105px;
-    padding: 8px 15px;
+    height: 100%;
+    //padding: 20px 15px;
 
-    .status-list {
-      position: absolute;
-      right: 0;
-      bottom: 5px;
-      left: 0;
-    }
+  //   .status-list {
+  //     position: absolute;
+  //     right: 0;
+  //     bottom: 5px;
+  //     left: 0;
+  //   }
   }
-}
 
-@media @sm-only {
-  // tablet portrait and larger
-  .list-as-blocks {
-    ul {
-      li {
-        width: 32%;
-        margin: 0 1% @spacing-md-px;
-
-        &:nth-child(3n) {
-          margin-right: 0;
-        }
-
-        &:nth-child(3n+1) {
-          margin-left: 0;
-        }
-      }
-    }
-  }
-}
-
-@media @md-only {
-  // desktop and larger
-  .list-as-blocks {
-    ul {
-      li {
-        width: 23.5%;
-        margin: 0 1% @spacing-md-px;
-
-        &:nth-child(4n) {
-          margin-right: 0;
-        }
-
-        &:nth-child(4n+1) {
-          margin-left: 0;
-        }
-      }
-    }
-  }
-}
-
-@media @lg {
-  // desktop and larger
-  .list-as-blocks {
-    ul {
-      li {
-        width: 18.4%;
-        margin: 0 1% @spacing-md-px;
-
-        &:nth-child(5n) {
-          margin-right: 0;
-        }
-
-        &:nth-child(5n+1) {
-          margin-left: 0;
-        }
-      }
-    }
+  .panel-body {
+    padding-bottom: 0;
   }
 }

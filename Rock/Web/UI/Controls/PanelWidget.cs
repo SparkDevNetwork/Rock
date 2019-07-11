@@ -189,7 +189,15 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.rock-panel-widget > header').click(function () {
-    $(this).siblings('.panel-body').slideToggle();
+    var iconClass = $('a.view-state > i', this);
+
+    $(this).siblings('.panel-body').slideToggle(function() {
+        if ($(this).is(':visible')) {
+            iconClass.attr('class','fa fa-minus');
+        } else {
+            iconClass.attr('class','fa fa-plus');
+        }
+    });
 
     if ( $(this).find('.js-header-controls').length ) {
         $(this).find('.js-header-title').slideToggle();
@@ -198,9 +206,6 @@ $('.rock-panel-widget > header').click(function () {
 
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-
-    $('a.view-state > i', this).toggleClass('fa-chevron-down');
-    $('a.view-state > i', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that certain controls will fire its event, but not the parent event
@@ -369,7 +374,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 // Chevron up/down Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-minus" : "fa fa-plus" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

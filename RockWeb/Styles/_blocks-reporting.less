@@ -130,3 +130,41 @@ span.data-view-filter-label {
     float: left;
   }
 }
+
+
+.panel-analytics {
+  .panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    & > .row > [class*="col-"]:first-child {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+
+    .col-md-9 {
+      margin-right: -2px;
+    }
+
+    .grid.grid-panel {
+      margin-bottom: 0;
+    }
+  }
+
+  .analytics-details {
+    > .grid-filter {
+      margin: -15px -15px 15px -15px;
+      padding: 15px;
+    }
+  }
+
+  .filter-options {
+    background-color: @panel-heading-bg;
+  }
+
+  .analysis-types {
+    padding: 15px 0;
+    margin-bottom: 15px;
+    background-color: @panel-heading-bg;
+  }
+}

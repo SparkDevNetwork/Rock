@@ -19,30 +19,30 @@
 
         <div class="panel">
 
-                <div class="treeview js-grouptreeview">
-                    <div class="panel-heading clearfix">
-                        <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
-                            <div class="panel-title pull-left"><span>All Groups</span></div>
+            <div class="treeview js-grouptreeview">
+                <div class="panel-heading clearfix">
+                    <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+                        <div class="panel-title pull-left"><span>All Groups</span></div>
 
-                            <div class="btn-group pull-right margin-l-sm">
-                                <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                                    Add Group <span class="fa fa-caret-down"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu">
-                                    <li>
-                                        <asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                                    <li>
-                                        <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                                </ul>
-                            </div>
+                        <div class="btn-group pull-right margin-l-sm">
+                            <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
+                                Add Group <span class="fa fa-caret-down"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li>
+                                    <asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li>
+                                    <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
+                        </div>
 
-                            <div class="rollover-item pull-right" id="pnlRolloverConfig" runat="server">
-                                <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
-                            </div>
+                        <div class="rollover-item pull-right" id="pnlRolloverConfig" runat="server">
+                            <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
                         </div>
                     </div>
+                </div>
 
-                    <div class="panel-body">
+                <div class="panel-body">
 
                     <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                         <div class="row">

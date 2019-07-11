@@ -7,47 +7,6 @@
 
 */
 
-// Fullscreen Toggle
-
-.rock-fullscreen-toggle {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: inline-flex; /* make element size relative to content */
-  align-items: center; /* vertical alignment of items */
-  justify-content: center;
-  width: 50px;
-  padding: 0 10px; /* horizontal with padding-l/r */
-  line-height: 40px; /* vertically size by height, line-height or padding */
-  color: @text-color;
-  text-align: center;
-  cursor: pointer;
-  border-left: 1px solid @panel-border;
-  opacity: .5;
-  transition: .2s;
-
-  &:hover {
-    font-size: 110%;
-    color: @text-color;
-    opacity: .75;
-  }
-
-  &::before {
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
-    text-align: center;
-    content: @fa-var-expand;
-  }
-
-  .is-fullscreen & {
-    color: @text-color;
-    &::before {
-      content: @fa-var-compress;
-    }
-  }
-}
-
 // Fancy Scrollbars
 
 .styled-scroll {
@@ -71,7 +30,6 @@
 // -------------------------
 .panel-note {
   border-top-color: @panel-top-border-color;
-  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
@@ -647,57 +605,5 @@
 
   .form-action-rows .form-row {
     margin-bottom: 15px;
-  }
-}
-
-// panel for workflow entry/navigation
-.panel-group {
-  .panel-workflowitem {
-    margin-bottom: 30px;
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
-
-    &:hover {
-      background-color: #fff;
-    }
-
-    .panel-heading {
-      padding: 30px;
-
-      a {
-        display: block;
-
-        .panel-title {
-          width: 100%;
-
-          h3 {
-            margin: 0;
-
-            i {
-              margin-right: 12px;
-              font-size: 35px;
-            }
-          }
-        }
-
-
-        i.panel-navigation {
-          margin-top: 8px;
-
-          &::before {
-            margin-top: 6px;
-            font-family: @fa-font-face;
-            font-size: 20px;
-            font-weight: @fa-theme-weight;
-            content: @fa-var-chevron-up;
-          }
-        }
-
-        &.collapsed {
-          i.panel-navigation::before {
-            content: @fa-var-chevron-down;
-          }
-        }
-      }
-    }
   }
 }
