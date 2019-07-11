@@ -654,7 +654,7 @@ namespace Rock.Model
         private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var group = this.Group ?? new GroupService( rockContext ).Queryable().AsNoTracking().Where( g => g.Id == this.GroupId ).FirstOrDefault();
+            var group = this.Group ?? new GroupService( rockContext ).GetNoTracking( this.GroupId );
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
             if ( groupType == null )
@@ -667,8 +667,11 @@ namespace Rock.Model
             var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
             if ( groupRole == null )
             {
+                // This is the only point in the method where we need a person object loaded.
+                this.Person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
+
                 // For some reason we could not get a GroupTypeRole for the GroupRoleId for this GroupMember.
-                errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {this.Group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
+                errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
                 return false;
             }
 
