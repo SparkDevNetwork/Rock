@@ -745,12 +745,29 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ViewMode
+    {
+        Cards = 0x0,
+        Grid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
         Workflow = 0x1,
         Activity = 0x2,
         Action = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerCondition
+    {
+        StatusChanged = 0x0,
+        Manual = 0x1,
+        IsComplete = 0x2,
     }
 
     /// <summary>

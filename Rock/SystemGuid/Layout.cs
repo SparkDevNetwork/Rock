@@ -30,5 +30,10 @@ namespace Rock.SystemGuid
         /// Gets the Full Width layout
         /// </summary>
         public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
+
+        /// <summary>
+        /// Gets the Person Detail layout
+        /// </summary>
+        public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
     }
 }

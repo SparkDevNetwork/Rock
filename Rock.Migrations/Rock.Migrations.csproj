@@ -64,6 +64,10 @@
     <Compile Include="Migrations\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907121243241_Steps.cs" />
+    <Compile Include="Migrations\201907121243241_Steps.Designer.cs">
+      <DependentUpon>201907121243241_Steps.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -672,6 +676,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907121243241_Steps.resx">
+      <DependentUpon>201907121243241_Steps.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

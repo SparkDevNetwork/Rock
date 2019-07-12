@@ -735,6 +735,7 @@ namespace Rock.Client.SystemGuid
     {
         public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+        public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
     }
 
     /// <summary>
