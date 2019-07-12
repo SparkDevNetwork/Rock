@@ -165,6 +165,8 @@ namespace Rock.Apps.CheckScannerUtility
         {
             decimal sum = 0;
             List<DisplayFinancialTransactionDetailModel> displayFinancialTransactionDetailList = new List<DisplayFinancialTransactionDetailModel>();
+
+            // first, make sure all the accounts that are part of the existing transaction are included, even if they aren't included in the configured selected accounts
             if ( financialTransaction.TransactionDetails != null )
             {
                 foreach ( var detail in financialTransaction.TransactionDetails )
@@ -177,23 +179,23 @@ namespace Rock.Apps.CheckScannerUtility
 
             RockConfig rockConfig = RockConfig.Load();
 
-            var filteredAccounts = ScanningPageUtility.Accounts.Where( a => rockConfig.SelectedAccountForAmountsIds.Contains( a.Id ) );
+            List<DisplayAccountValueModel> sortedDisplayedAccountList = ScanningPageUtility.GetVisibleAccountsSortedAndFlattened();
 
-            foreach ( var account in filteredAccounts )
+            // now, add accounts that aren't part of the Transaction in case they want to split to different accounts
+            foreach ( var displayAccount in sortedDisplayedAccountList )
             {
-                // add accounts that aren't part of the Transaction in case they want to split to different accounts
-                if ( !displayFinancialTransactionDetailList.Any( a => a.AccountId == account.Id ) )
+                if ( !displayFinancialTransactionDetailList.Any( a => a.AccountId == displayAccount.AccountId ) )
                 {
                     FinancialTransactionDetail financialTransactionDetail = new FinancialTransactionDetail();
                     financialTransactionDetail.Guid = Guid.NewGuid();
-                    financialTransactionDetail.AccountId = account.Id;
-                    financialTransactionDetail.Account = account;
+                    financialTransactionDetail.AccountId = displayAccount.AccountId;
+                    financialTransactionDetail.Account = displayAccount.Account;
                     displayFinancialTransactionDetailList.Add( new DisplayFinancialTransactionDetailModel( financialTransactionDetail ) );
                 }
             }
 
-
-            displayFinancialTransactionDetailList = displayFinancialTransactionDetailList.OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
+            // show displayed accounts sorted by its position in sortedDisplayedAccountList
+            displayFinancialTransactionDetailList = displayFinancialTransactionDetailList.OrderBy( a => sortedDisplayedAccountList.FirstOrDefault( s => s.AccountId == a.AccountId )?.DisplayIndex ).ToList();
 
             this.lvAccountDetails.ItemsSource = displayFinancialTransactionDetailList;
             this.lblTotals.Content = sum.ToString( "C" );
