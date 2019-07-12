@@ -323,7 +323,7 @@ namespace Rock.CheckIn
             public bool DisplayAlternateIdFieldforChildren => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
 
             /// <summary>
-            /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take then back to search in that case)
+            /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search in that case)
             /// </summary>
             /// <value>
             ///   <c>true</c> if [enable check in after registration]; otherwise, <c>false</c>.
