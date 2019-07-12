@@ -27,11 +27,19 @@ namespace Rock.Apps.CheckScannerUtility.Models
     {
         private FinancialAccount _financialAccount;
 
-        public DisplayAccountModel(FinancialAccount financialAccount, List<FinancialAccount> allFinancialAccounts )
+        public DisplayAccountModel( FinancialAccount financialAccount, List<FinancialAccount> allFinancialAccounts, int[] selectedAccountIds )
         {
             _financialAccount = financialAccount;
-            Children = new ObservableCollection<DisplayAccountModel>( allFinancialAccounts.Where(a => a.ParentAccountId.HasValue && a.ParentAccountId == financialAccount.Id ).Select(a => new DisplayAccountModel(a, allFinancialAccounts)).ToList());
+            _accountIsChecked = selectedAccountIds?.Contains( financialAccount.Id ) == true;
+            var sortedChildAccounts = allFinancialAccounts.Where( a => a.ParentAccountId.HasValue && a.ParentAccountId == financialAccount.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            Children = new ObservableCollection<DisplayAccountModel>( sortedChildAccounts.Select( a => new DisplayAccountModel( a, allFinancialAccounts, selectedAccountIds ) ).ToList() );
+            if ( _financialAccount.ParentAccountId.HasValue )
+            {
+                ParentAccount = allFinancialAccounts.FirstOrDefault( a => a.Id == _financialAccount.ParentAccountId.Value );
+            }
         }
+
+        public FinancialAccount ParentAccount { get; private set; } = null;
 
         private bool _accountIsChecked;
 

@@ -17,13 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using ImageSafeInterop;
 using Rock.Apps.CheckScannerUtility.Models;
@@ -69,7 +66,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             LoadDeviceDropDown();
             LoadBatchCampusDropDown();
-            
+
             GetConfigValues();
 
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
@@ -91,12 +88,7 @@ namespace Rock.Apps.CheckScannerUtility
                 _allAccounts = _allAccounts.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId ).ToList();
             }
 
-            _displayAccounts = new ObservableCollection<DisplayAccountModel>( _allAccounts.Select( a => new DisplayAccountModel( a, _allAccounts ) ).ToList() );
-
-            foreach( var displayAccount in _displayAccounts )
-            {
-                displayAccount.IsAccountChecked = rockConfig.SelectedAccountForAmountsIds?.Contains( displayAccount.Id ) == true;
-            }
+            _displayAccounts = new ObservableCollection<DisplayAccountModel>( _allAccounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Where( a => a.ParentAccountId == null ).Select( a => new DisplayAccountModel( a, _allAccounts, rockConfig.SelectedAccountForAmountsIds ) ).ToList() );
 
             tvAccountsForBatches.ItemsSource = null;
             tvAccountsForBatches.Items.Clear();
@@ -113,7 +105,7 @@ namespace Rock.Apps.CheckScannerUtility
             cboCampusFilter.SelectedValuePath = "Id";
             cboCampusFilter.DisplayMemberPath = "Name";
             cboCampusFilter.Items.Clear();
-            var nullOption = new { Id = (int?)null, Name = (string)null };
+            var nullOption = new { Id = ( int? ) null, Name = ( string ) null };
             cboCampusFilter.Items.Add( nullOption );
             foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
@@ -172,7 +164,7 @@ namespace Rock.Apps.CheckScannerUtility
                 {
 
                     this.Cursor = Cursors.Wait;
-                 
+
                     version = BatchPage.GetImageSafeVersion();
                 }
                 finally
@@ -206,7 +198,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            switch ( ( RangerImageColorTypes ) rockConfig.ImageColorType )
+            switch ( rockConfig.ImageColorType )
             {
                 case RangerImageColorTypes.ImageColorTypeGrayscale:
                     cboImageOption.SelectedValue = "Grayscale";
@@ -266,7 +258,7 @@ namespace Rock.Apps.CheckScannerUtility
                 cboScannerInterfaceType.Items.Add( "MagTek COM" );
             }
 
-            if ( ImageSafeHelper.OpenDevice())
+            if ( ImageSafeHelper.OpenDevice() )
             {
                 cboScannerInterfaceType.Items.Add( "MagTek Image Safe" );
             }
@@ -292,7 +284,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnSave_Click( object sender, RoutedEventArgs e )
         {
             _rockConfig.CaptureAmountOnScan = chkCaptureAmountOnScan.IsChecked == true;
-      
+
             _rockConfig.RequireControlAmount = chkRequireControlAmount.IsChecked == true;
             _rockConfig.RequireControlItemCount = chkRequireControlItemCount.IsChecked == true;
             AddAccountsForAmountsToSave();
@@ -401,7 +393,7 @@ namespace Rock.Apps.CheckScannerUtility
             BatchPage.LoadFinancialBatchesGrid();
             BatchPage.UpdateBatchUI( BatchPage.SelectedFinancialBatch );
 
-            this.NavigationService.Navigate(BatchPage);
+            this.NavigationService.Navigate( BatchPage );
         }
 
         /// <summary>
@@ -518,7 +510,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         private RockRestClient RestClient
-        { 
+        {
             get
             {
                 if ( _Client == null )
@@ -538,7 +530,7 @@ namespace Rock.Apps.CheckScannerUtility
             chkRequireControlItemCount.IsChecked = false;
         }
 
-        private void CbCampusFilter_SelectionChanged( object sender, SelectionChangedEventArgs e)
+        private void CbCampusFilter_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             int? campusId = cboCampusFilter.SelectedValue as int?;
             LoadFinancialAccounts( campusId );

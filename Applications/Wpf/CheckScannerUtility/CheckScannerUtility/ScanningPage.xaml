@@ -436,6 +436,7 @@
                                                         KeyUp="TbAccountDetailAmount_KeyUp"
                                                         Loaded="TbAccountDetailAmount_Loaded"
                                                         LostKeyboardFocus="TbAccountDetailAmount_LostKeyboardFocus"
+                                                        TabIndex="{Binding DisplayTabIndex}"
                                                         Text="{Binding Amount, Delay=500, Mode=TwoWay, TargetNullValue=''}" />
                                                 </StackPanel>
                                             </Border>
@@ -555,7 +556,8 @@
                             HorizontalAlignment="Right"
                             Click="BtnComplete_Click"
                             Content="Complete"
-                            Style="{StaticResource buttonStylePrimary}" />
+                            Style="{StaticResource buttonStylePrimary}"
+                            TabIndex="400" />
                     </StackPanel>
                     <Button
                         x:Name="btnClose"
