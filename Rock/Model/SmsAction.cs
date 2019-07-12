@@ -84,7 +84,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return SequenceCache.Get( Id );
+            return SmsActionCache.Get( Id );
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            SequenceCache.UpdateCachedEntity( Id, entityState );
+            SmsActionCache.UpdateCachedEntity( Id, entityState );
         }
 
         #endregion ICacheable
