@@ -26,6 +26,7 @@ namespace Rock.Attribute
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+        private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
@@ -47,9 +48,76 @@ namespace Rock.Attribute
             base( name, description, required, defaultValue, category, order, key,
                 ( allowMultiple ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName ) )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
-            FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
+            EntityTypeName = entityTypeName;
+            EntityTypeQualifierColumn = entityTypeQualifierColumn;
+            EntityTypeQualifierValue = entityTypeQualifierValue;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether allow multiple is true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if allow multiple; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type
+        /// </summary>
+        public string EntityTypeName
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type qualifier column
+        /// </summary>
+        public string EntityTypeQualifierColumn
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( QUALIFIER_COLUMN_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type qualifier value key
+        /// </summary>
+        public string EntityTypeQualifierValue
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( QUALIFIER_VALUE_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( value ) );
+            }
         }
     }
 }

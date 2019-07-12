@@ -179,6 +179,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Log an exception.
+        /// </summary>
+        /// <param name="message">The exception message.</param>
+        public static void LogException( string message )
+        {
+            LogException( new Exception( message ) );
+        }
+
+        /// <summary>
         /// Recursively logs exception and any children.
         /// </summary>
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>

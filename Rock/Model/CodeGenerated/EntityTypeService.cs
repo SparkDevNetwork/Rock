@@ -294,6 +294,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
             target.AttributesSupportPrePostHtml = source.AttributesSupportPrePostHtml;
+            target.AttributesSupportShowOnBulk = source.AttributesSupportShowOnBulk;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;

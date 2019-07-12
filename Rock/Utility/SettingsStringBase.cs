@@ -106,7 +106,10 @@ namespace Rock.Utility
 
             var parameters = OnGetParameters();
 
-            settings.Add( "version=" + SettingsVersion );
+            if ( SettingsVersion > 1 )
+            {
+                settings.Add( "version=" + SettingsVersion );
+            }
 
             if (parameters != null)
             {

@@ -261,5 +261,10 @@ namespace Rock.SystemGuid
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+
+        /// <summary>
+        /// The guid for the Step entity type
+        /// </summary>
+        public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
     }
 }
