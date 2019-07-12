@@ -80,5 +80,10 @@ namespace Rock.SystemGuid
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
+
+        /// <summary>
+        /// The Job to Rebuild a Sequence.
+        /// </summary>
+        public const string REBUILD_SEQUENCE = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
     }
 }

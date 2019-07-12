@@ -56,7 +56,7 @@ namespace RockWeb
             if ( !context.User.Identity.IsAuthenticated )
             {
                 // If not, see if there's a valid token
-                string authToken = context.Request.Headers["Authorization-Token"];
+                string authToken = context.Request.Headers[Rock.Rest.HeaderTokens.AuthorizationToken];
                 if ( string.IsNullOrWhiteSpace( authToken ) )
                 {
                     authToken = context.Request.Params["apikey"];

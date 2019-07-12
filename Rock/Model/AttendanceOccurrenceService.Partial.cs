@@ -32,17 +32,31 @@ namespace Rock.Model
         /// <summary>
         /// Gets the specified occurrence record.
         /// </summary>
-        /// <param name="occurrenceDate">The occurrence date, the time wil be removed.</param>
+        /// <param name="occurrenceDate">The occurrence date, the time will be removed.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
         public AttendanceOccurrence Get( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
         {
+            return Get( occurrenceDate, groupId, locationId, scheduleId, null );
+        }
+
+        /// <summary>
+        /// Gets the specified occurrence record.
+        /// </summary>
+        /// <param name="occurrenceDate">The occurrence date, the time will be removed.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="includes">Allows including attendance occurrence virtual properties like Attendees.</param>
+        /// <returns></returns>
+        public AttendanceOccurrence Get( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes )
+        {
             // We only want the date. Time need not apply.
             occurrenceDate = occurrenceDate.Date;
 
-            var qry = Queryable().Where( o => o.OccurrenceDate == occurrenceDate );
+            var qry = Queryable( includes ).Where( o => o.OccurrenceDate == occurrenceDate );
 
             qry = groupId.HasValue ?
                 qry.Where( o => o.GroupId.HasValue && o.GroupId.Value == groupId.Value ) :
@@ -66,10 +80,11 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="includes">Allows including attendance occurrence virtual properties like Attendees.</param>
         /// <returns></returns>
-        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
+        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes )
         {
-            var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId );
+            var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId, includes );
 
             if ( occurrence == null )
             {
@@ -78,12 +93,12 @@ namespace Rock.Model
                 using ( var newContext = new RockContext() )
                 {
                     occurrence = new AttendanceOccurrence
-                                 {
-                                     OccurrenceDate = occurrenceDate,
-                                     GroupId = groupId,
-                                     LocationId = locationId,
-                                     ScheduleId = scheduleId,
-                                 };
+                    {
+                        OccurrenceDate = occurrenceDate,
+                        GroupId = groupId,
+                        LocationId = locationId,
+                        ScheduleId = scheduleId,
+                    };
 
                     var newOccurrenceService = new AttendanceOccurrenceService( newContext );
                     newOccurrenceService.Add( occurrence );
@@ -97,6 +112,18 @@ namespace Rock.Model
             return occurrence;
         }
 
+        /// <summary>
+        /// Gets the specified occurrence record, creating it if necessary.
+        /// </summary>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <returns></returns>
+        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
+        {
+            return GetOrAdd( occurrenceDate, groupId, locationId, scheduleId, null );
+        }
 
         /// <summary>
         /// Gets occurrence data for the selected group.

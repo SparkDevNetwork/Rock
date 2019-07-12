@@ -279,6 +279,7 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\SequenceFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelItemFieldAttribute.cs" />
@@ -413,6 +414,8 @@
     <Compile Include="Jobs\RockTriggerListener.cs" />
     <Compile Include="Jobs\GroupLeaderAbsenceNotifications.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
+    <Compile Include="Field\Types\SequenceFieldType.cs" />
+    <Compile Include="Jobs\RebuildSequenceMaps.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
@@ -440,11 +443,17 @@
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
     <Compile Include="Model\AttendanceData.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.cs" />
+    <Compile Include="Model\CodeGenerated\SequenceEnrollmentService.cs" />
+    <Compile Include="Model\CodeGenerated\SequenceOccurrenceExclusionService.cs" />
+    <Compile Include="Model\CodeGenerated\SequenceService.cs" />
     <Compile Include="Model\CodeGenerated\SmsActionService.cs" />
     <Compile Include="Model\CodeGenerated\NoteAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\PersonScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowTriggerService.cs" />
+    <Compile Include="Model\SequenceOccurrenceExclusionService.Partial.cs" />
+    <Compile Include="Model\SequenceEnrollmentService.Partial.cs" />
+    <Compile Include="Model\SequenceService.Partial.cs" />
     <Compile Include="Model\GroupLocationScheduleConfig.cs" />
     <Compile Include="Model\GroupMemberAssignment.cs" />
     <Compile Include="Model\GroupMemberAssignmentService.Partial.cs" />
@@ -459,6 +468,8 @@
     <Compile Include="Model\CommunicationResponseService.partial.cs" />
     <Compile Include="Model\ConflictProfileService.cs" />
     <Compile Include="Model\EQInventoryService.cs" />
+    <Compile Include="Model\Sequence.cs" />
+    <Compile Include="Model\SequenceOccurrenceExclusion.cs" />
     <Compile Include="Model\SmsAction.cs" />
     <Compile Include="Model\SmsActionService.Partial.cs" />
     <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
@@ -496,6 +507,7 @@
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="PersonProfile\Badge\Assessment.cs" />
     <Compile Include="Model\Step.cs" />
+    <Compile Include="Model\SequenceEnrollment.cs" />
     <Compile Include="Model\StepWorkflow.cs" />
     <Compile Include="Model\StepWorkflowTrigger.cs" />
     <Compile Include="Model\StepTypePrerequisite.cs" />
@@ -503,6 +515,7 @@
     <Compile Include="Model\StepStatus.cs" />
     <Compile Include="Model\StepProgram.cs" />
     <Compile Include="Model\StepWorkflowTriggerService.Partial.cs" />
+    <Compile Include="PersonProfile\Badge\SequenceEngagement.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Model\AttributeMatrixService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
@@ -586,6 +599,8 @@
     <Compile Include="Web\Cache\Entities\CampusCache.cs" />
     <Compile Include="Web\Cache\Entities\RegistrationTemplateFormFieldCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
+    <Compile Include="Web\Cache\Entities\SequenceOccurrenceExclusionCache.cs" />
+    <Compile Include="Web\Cache\Entities\SequenceCache.cs" />
     <Compile Include="Web\Cache\Entities\EventCalendarCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractionChannelCache.cs" />
