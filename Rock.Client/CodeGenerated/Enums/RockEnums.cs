@@ -682,6 +682,23 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SequenceOccurenceFrequency
+    {
+        Daily = 0x0,
+        Weekly = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SequenceStructureType
+    {
+        Group = 0x1,
+        GroupType = 0x2,
+        CheckInConfig = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SignatureDocumentAction
     {
         Email = 0x0,

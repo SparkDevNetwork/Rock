@@ -1067,7 +1067,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                rockContext.SaveChanges();
+                rockContext.SaveChanges();                
 
                 if ( occurrence.LocationId.HasValue )
                 {
@@ -1097,7 +1097,11 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+
                 _occurrence.Id = occurrence.Id;
+
+                // Sync attendance changes to the appropriate sequences
+                SequenceService.HandleAttendanceRecordsAsync( occurrence.Id );
             }
 
             return true;
