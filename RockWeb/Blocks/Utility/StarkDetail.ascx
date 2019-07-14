@@ -106,7 +106,7 @@
 	    	    <h4> Meeting Location </h4>
 
 	    	    <a href="/group/111/map">
-	    	    <img class='img-thumbnail' src='//maps.googleapis.com/maps/api/staticmap?style=feature:all|element:all|saturation:-100|gamma:1|&style=feature:all|element:labels.text.stroke|visibility:off|&style=feature:poi|element:all|visibility:off|&style=feature:road|element:geometry|visibility:simplified|&style=feature:water|element:all|visibility:on|color:0xc6dfec|&style=feature:administrative.neighborhood|element:labels.text.fill|visibility:off|&style=feature:road.local|element:labels.text|weight:0.5|color:0x333333|&style=feature:transit.station|element:labels.icon|visibility:off|&markers=color:0xee7624|33.593043,-112.126518&visual_refresh=true&path=fillcolor:0xe71e2255|color:0xe71e2255|&sensor=false&size=450x250&zoom=13&format=png&scale=2&key=AIzaSyB5e4KyzZ8m-Jhr7jIXhC6DLYnF44V1hho'/>
+	    	    
                 </a>
 
 	    	    11624 N 31st Dr
