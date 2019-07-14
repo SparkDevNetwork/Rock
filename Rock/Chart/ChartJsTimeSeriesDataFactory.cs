@@ -166,7 +166,9 @@ namespace Rock.Chart
             var optionsLegend = new { position = "bottom", display = true };
 
             // Create the data structure for Chart.js parameter "options".
-            dynamic optionsData = new { maintainAspectRatio = false, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
+            // Note that parameters "maintainAspectRatio" and "responsive" must be set to true to avoid the chart resizing issue detailed here:
+            // https://github.com/chartjs/Chart.js/issues/1006
+            dynamic optionsData = new { maintainAspectRatio = true, responsive = true, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
 
             // Create the data structure for Chartjs parameter "chart".
             string chartStyle = GetChartJsStyleParameterValue( this.ChartStyle );
