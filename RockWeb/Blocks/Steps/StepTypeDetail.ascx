@@ -60,10 +60,10 @@
                             </div>
                         </div>
                         <%-- Steps Activity Summary Line Chart --%>
-                        <!-- div class="chart-container">
-                            <Rock:NotificationBox ID="nbStepsActivityLineChartMessage" runat="server" NotificationBoxType="Info" Text="No activity to show for this Step" />
-                            <canvas id="barChartCanvas" runat="server" style="height: 280px;" />
-                        </div !-->
+                        <div class="chart-container">
+                            <Rock:NotificationBox ID="nbStepsActivityLineChartMessage" runat="server" NotificationBoxType="Info" Text="No activity to show for this Step" />                            
+                            <canvas id="chartCanvas" runat="server" style="height: 280px;" />
+                        </div>
                     </div>
 
                     <div class="row">

@@ -1542,17 +1542,21 @@ namespace RockWeb.Blocks.Steps
 
             var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
 
-            var chartDataJson = chartFactory.GetJson();
+            if ( chartFactory.HasData )
+            {
+                var chartDataJson = chartFactory.GetJson();
 
-            string script = string.Format( @"
+                string script = string.Format( @"
 var barCtx = $('#{0}')[0].getContext('2d');
 var barChart = new Chart(barCtx, {1});",
-                                            barChartCanvas.ClientID,
-                                            chartDataJson );
+                                                chartCanvas.ClientID,
+                                                chartDataJson );
 
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
+            }
 
-            // If no data, show a notification.
+            // If no data, hide the chart and show a notification.
+            chartCanvas.Visible = chartFactory.HasData;
             nbStepsActivityLineChartMessage.Visible = !chartFactory.HasData;
         }
 
