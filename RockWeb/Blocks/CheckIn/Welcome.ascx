@@ -36,7 +36,7 @@
             });
 
             function PostRefresh() {
-                window.location = "javascript:__doPostBack('<%=lbRefresh.ClientID %>','')";
+                window.location = "javascript:__doPostBack('<%=lbRefresh.UniqueID %>','')";
             }
 
             function GetLabelTypeSelection() {
