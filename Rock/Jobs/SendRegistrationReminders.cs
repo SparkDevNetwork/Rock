@@ -82,23 +82,31 @@ namespace Rock.Jobs
                             r.ConfirmationEmail != null &&
                             r.ConfirmationEmail != string.Empty ) )
                     {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
-                        mergeFields.Add( "Registration", registration );
+                        try
+                        {
+                            var mergeFields = new Dictionary<string, object>();
+                            mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                            mergeFields.Add( "Registration", registration );
 
-                        var emailMessage = new RockEmailMessage();
-                        emailMessage.AdditionalMergeFields = mergeFields;
+                            var emailMessage = new RockEmailMessage();
+                            emailMessage.AdditionalMergeFields = mergeFields;
 
-                        emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
+                            emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
 
-                        emailMessage.FromEmail = template.ReminderFromEmail;
-                        emailMessage.FromName = template.ReminderFromName;
-                        emailMessage.Subject = template.ReminderSubject;
-                        emailMessage.Message = template.ReminderEmailTemplate;
+                            emailMessage.FromEmail = template.ReminderFromEmail;
+                            emailMessage.FromName = template.ReminderFromName;
+                            emailMessage.Subject = template.ReminderSubject;
+                            emailMessage.Message = template.ReminderEmailTemplate;
 
-                        var emailErrors = new List<string>();
-                        emailMessage.Send( out emailErrors );
-                        errors.AddRange( emailErrors );
+                            var emailErrors = new List<string>();
+                            emailMessage.Send( out emailErrors );
+                            errors.AddRange( emailErrors );
+                        }
+                        catch ( Exception exception )
+                        {
+                            ExceptionLogService.LogException( exception );
+                            continue;
+                        }
                     }
 
                     // Even if an error occurs, still mark as completed to prevent _everyone_ being sent the reminder multiple times due to a single failing address
