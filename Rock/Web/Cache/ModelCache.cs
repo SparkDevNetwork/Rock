@@ -39,7 +39,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
-        where TT : Model<TT>, new()
+        where TT : Model<TT>, ICacheable, new()
     {
 
         /// <summary>
