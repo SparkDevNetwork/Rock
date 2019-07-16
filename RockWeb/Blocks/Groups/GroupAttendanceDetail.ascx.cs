@@ -1130,43 +1130,60 @@ namespace RockWeb.Blocks.Groups
                     switch ( notificationOption )
                     {
                         case SendSummaryEmailType.GroupLeaders:
-                            {
-                                var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.Id );
-                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
-                            }
+                            var leaders = new GroupMemberService( _rockContext )
+                                .Queryable( "Person" )
+                                .AsNoTracking()
+                                .Where( m => m.GroupId == _group.Id )
+                                .Where( m => m.IsArchived == false )
+                                .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                                .Where( m => m.GroupRole.IsLeader );
+
+                            recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
                             break;
+
                         case SendSummaryEmailType.AllGroupMembers:
-                            {
-                                var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                .Where( m => m.GroupId == _group.Id );
-                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
-                            }
+                            var allGroupMembers = new GroupMemberService( _rockContext )
+                                .Queryable( "Person" )
+                                .AsNoTracking()
+                                .Where( m => m.GroupId == _group.Id )
+                                .Where( m => m.IsArchived == false )
+                                .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
+
+                            recipients.AddRange( allGroupMembers.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
                             break;
+
                         case SendSummaryEmailType.GroupAdministrator:
+                            if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
                             {
-                                if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
-                                {
-                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
-                                }
+                                recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
                             }
+
                             break;
+
                         case SendSummaryEmailType.ParentGroupLeaders:
-                            {
                                 if ( _group.ParentGroupId.HasValue )
                                 {
-                                    var parentLeaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                        .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.ParentGroupId.Value );
+                                    var parentLeaders = new GroupMemberService( _rockContext )
+                                    .Queryable( "Person" )
+                                    .AsNoTracking()
+                                    .Where( m => m.GroupId == _group.ParentGroupId.Value )
+                                    .Where( m => m.IsArchived == false )
+                                    .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                                    .Where( m => m.GroupRole.IsLeader );
+
                                     recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
                                 }
-                            }
+
                             break;
+
                         case SendSummaryEmailType.IndividualEnteringAttendance:
                             if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
                             {
                                 recipients.Add( this.CurrentPerson.Email );
                             }
+
                             break;
+
                         default:
                             break;
                     }
