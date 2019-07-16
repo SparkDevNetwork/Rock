@@ -1120,6 +1120,9 @@ namespace RockWeb.Blocks.Steps
 
             SetEditMode( true );
 
+            // Hide the Inactive Tag because the Active state is editable.
+            hlInactive.Visible = false;
+
             tbName.Text = stepProgram.Name;
             cbActive.Checked = stepProgram.IsActive;
             tbDescription.Text = stepProgram.Description;
