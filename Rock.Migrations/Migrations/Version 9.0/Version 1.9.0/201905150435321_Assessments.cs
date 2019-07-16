@@ -632,40 +632,52 @@ SELECT  CASE
 
             // Add Request Assessment
             Sql( @"
-                DECLARE @bioWFActionsAttributeValueId INT = 
-                (SELECT v.[Id]
+                DECLARE @bioWFActionsAttributeValueId TABLE 
+			  (
+				Id INT
+			  )
+
+			  INSERT INTO @bioWFActionsAttributeValueId
+                SELECT v.[Id]
                 FROM [dbo].[attribute] a
                 JOIN [AttributeValue] v ON a.id = v.AttributeId
                 WHERE a.[EntityTypeId] = 9
                     AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND a.[Key] = 'WorkflowActions'
-                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Name] = 'person bio')
-                    AND v.[Value] NOT LIKE '%31DDC001-C91A-4418-B375-CAB1475F7A62%')
+                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Guid] = '0F5922BB-CD68-40AC-BF3C-4AAB1B98760C')
+                    AND v.[Value] NOT LIKE '%31DDC001-C91A-4418-B375-CAB1475F7A62%'
 
-                IF (@bioWFActionsAttributeValueId IS NOT NULL)
+                IF EXISTS (SELECT * FROM @bioWFActionsAttributeValueId)
                 BEGIN
-                    UPDATE [dbo].[AttributeValue]
+                    UPDATE AV
                     SET [Value] = [Value] + ',31DDC001-C91A-4418-B375-CAB1475F7A62'
-                    WHERE [Id] = @bioWFActionsAttributeValueId
+                    FROM [dbo].[AttributeValue] av
+						INNER JOIN @bioWFActionsAttributeValueId b on av.Id = b.Id
                 END" );
 
             // Remove legacy DISC Request
             Sql( @"
-                DECLARE @bioWFActionsAttributeValueId INT = 
-                (SELECT v.[Id]
+				DECLARE @bioWFActionsAttributeValueId TABLE 
+				(
+					Id INT
+				)
+
+				INSERT INTO @bioWFActionsAttributeValueId
+                SELECT v.[Id]
                 FROM [dbo].[attribute] a
                 JOIN [AttributeValue] v ON a.id = v.AttributeId
                 WHERE a.[EntityTypeId] = 9
                     AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND a.[Key] = 'WorkflowActions'
-                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Name] = 'person bio')
-                    AND v.[Value] LIKE '%885CBA61-44EA-4B4A-B6E1-289041B6A195%')
+                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Guid] = '0F5922BB-CD68-40AC-BF3C-4AAB1B98760C')
+                    AND v.[Value] LIKE '%885CBA61-44EA-4B4A-B6E1-289041B6A195%'
 
-                IF (@bioWFActionsAttributeValueId IS NOT NULL)
+                IF EXISTS (SELECT * FROM @bioWFActionsAttributeValueId)
                 BEGIN
-                    UPDATE [dbo].[AttributeValue]
+                    UPDATE av
                     SET [Value] = REPLACE([Value], ',885CBA61-44EA-4B4A-B6E1-289041B6A195', '')
-                    WHERE [Id] = @bioWFActionsAttributeValueId
+					FROM [dbo].[AttributeValue] av
+						INNER JOIN @bioWFActionsAttributeValueId b ON av.Id = b.Id
                 END" );
 
             #endregion Edit bio block list of workflow actions
