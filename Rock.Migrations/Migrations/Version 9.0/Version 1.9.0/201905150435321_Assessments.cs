@@ -644,7 +644,7 @@ SELECT  CASE
                 WHERE a.[EntityTypeId] = 9
                     AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND a.[Key] = 'WorkflowActions'
-                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Name] = 'person bio')
+                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Guid] = '0F5922BB-CD68-40AC-BF3C-4AAB1B98760C')
                     AND v.[Value] NOT LIKE '%31DDC001-C91A-4418-B375-CAB1475F7A62%'
 
                 IF EXISTS (SELECT * FROM @bioWFActionsAttributeValueId)
@@ -669,7 +669,7 @@ SELECT  CASE
                 WHERE a.[EntityTypeId] = 9
                     AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND a.[Key] = 'WorkflowActions'
-                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Name] = 'person bio')
+                    AND a.[EntityTypeQualifierValue] = (SELECT [Id] FROM [dbo].[BlockType] WHERE [Guid] = '0F5922BB-CD68-40AC-BF3C-4AAB1B98760C')
                     AND v.[Value] LIKE '%885CBA61-44EA-4B4A-B6E1-289041B6A195%'
 
                 IF EXISTS (SELECT * FROM @bioWFActionsAttributeValueId)
