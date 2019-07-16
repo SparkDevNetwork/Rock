@@ -681,12 +681,6 @@ SELECT  CASE
                 END" );
 
             #endregion Edit bio block list of workflow actions
-
-            // Set old DISC workflow to inactive.
-            Sql( @"
-                UPDATE [dbo].[WorkflowType]
-                SET [IsActive] = 0
-                WHERE [Guid] = '885CBA61-44EA-4B4A-B6E1-289041B6A195'" );
         }
 
         private void UpdateSpirtualGiftsResultsMessageBlockAttribute()
