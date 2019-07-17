@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     [BooleanField( "Show Category Names as Separators",
         Key = AttributeKeys.ShowCategoryNamesasSeparators,
-        Description = "Display the abbreviated name for the attribute if it exists, otherwise the full name is shown.",
+        Description = "If enabled, attributes will be grouped by category and will include the category name as a heading separator.",
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 5 )]
@@ -415,7 +415,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var categories = new CategoryService( new RockContext() ).GetByGuids( categoryGuids ).OrderBy( a => a.Order );
                     foreach ( var category in categories )
                     {
-
                         var attributeList = AttributeCategoriesList.Where( a => a.Value.Contains( category.Id ) ).Select( a => a.Key );
                         if ( attributeList.Any() )
                         {

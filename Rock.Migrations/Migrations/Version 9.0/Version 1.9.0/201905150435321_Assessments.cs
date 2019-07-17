@@ -681,12 +681,6 @@ SELECT  CASE
                 END" );
 
             #endregion Edit bio block list of workflow actions
-
-            // Set old DISC workflow to inactive.
-            Sql( @"
-                UPDATE [dbo].[WorkflowType]
-                SET [IsActive] = 0
-                WHERE [Guid] = '885CBA61-44EA-4B4A-B6E1-289041B6A195'" );
         }
 
         private void UpdateSpirtualGiftsResultsMessageBlockAttribute()
@@ -1459,17 +1453,21 @@ This graph is based on the average composite score for each cluster of Motivator
             RockMigrationHelper.UpdateDefinedValue( "354715FA-564A-420A-8324-0411988AE7AB", "Intellectual", "How your mind operates.", "58FEF15F-561D-420E-8937-6CF51D296F0E", false );
             RockMigrationHelper.UpdateDefinedValue( "354715FA-564A-420A-8324-0411988AE7AB", "Positional", "How you relate to structure.", "84322020-4E27-44EF-88F2-EAFDB7286A01", false );
             RockMigrationHelper.UpdateDefinedValue( "354715FA-564A-420A-8324-0411988AE7AB", "Directional", "How you lead a team or organization.", "112A35BE-3108-48D9-B057-125A788AB531", false );
+
             RockMigrationHelper.AddDefinedValueAttributeValue( "112A35BE-3108-48D9-B057-125A788AB531", "07E85FA1-8F86-4414-8DC3-43D303C55457", @"<p>This theme describes how you lead a team or an organization. The motivators in this theme can be seen in the type of behavior you demonstrate as it relates to the direction or health of the organization or team in which you are engaged. The greater the number of the motivators from this cluster you possess in your top five, the more effective you will be in providing direction within the organization.</p>" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "112A35BE-3108-48D9-B057-125A788AB531", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#0067cb" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "112A35BE-3108-48D9-B057-125A788AB531", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "112A35BE-3108-48D9-B057-125A788AB531", "CE3F126E-B56A-438A-BA45-8EC8437BB961", @"core_MotivatorsDirectionalTheme" );
+
             RockMigrationHelper.AddDefinedValueAttributeValue( "58FEF15F-561D-420E-8937-6CF51D296F0E", "07E85FA1-8F86-4414-8DC3-43D303C55457", @"<p>This theme describes how you focus your mind. These motivators can be seen in the way you think or the kind of mental activities you naturally pursue. The way you view your mental activity will be directly influenced by the motivators in this theme. Your conversations will be greatly influenced by these motivators that are in the top five of your profile.</p>" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "58FEF15F-561D-420E-8937-6CF51D296F0E", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#cb0002" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "58FEF15F-561D-420E-8937-6CF51D296F0E", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "58FEF15F-561D-420E-8937-6CF51D296F0E", "CE3F126E-B56A-438A-BA45-8EC8437BB961", @"core_MotivatorsIntellectualTheme" );
+
             RockMigrationHelper.AddDefinedValueAttributeValue( "840C414E-A261-4243-8302-6117E8949FE4", "07E85FA1-8F86-4414-8DC3-43D303C55457", @"<p>This theme describes how you relate to others. These motivators can best be seen as the reasons you build relationships with the people around you, and influence what you value in relationships. The greater the number of the motivators from this cluster you possess in your top five, the more strongly you will be focused on building healthy relationships.</p>" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "840C414E-A261-4243-8302-6117E8949FE4", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#00cb64" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "840C414E-A261-4243-8302-6117E8949FE4", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "840C414E-A261-4243-8302-6117E8949FE4", "CE3F126E-B56A-438A-BA45-8EC8437BB961", @"core_MotivatorsRelationalTheme" );
+
             RockMigrationHelper.AddDefinedValueAttributeValue( "84322020-4E27-44EF-88F2-EAFDB7286A01", "07E85FA1-8F86-4414-8DC3-43D303C55457", @"<p>This theme describes how you execute your role or position within the team. The motivators in this theme can be seen in the way you approach activity, moment by moment. They dramatically influence what you value and how you spend your time or effort at work. When others look at the way you act, your behavior will be greatly determined by the motivators from this cluster that are found in your top five.</p>" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "84322020-4E27-44EF-88F2-EAFDB7286A01", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#cb6400" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "84322020-4E27-44EF-88F2-EAFDB7286A01", "8B5F72E4-5A49-4224-9437-82B1F23D8896", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "84322020-4E27-44EF-88F2-EAFDB7286A01", "CE3F126E-B56A-438A-BA45-8EC8437BB961", @"core_MotivatorsPositionalTheme" );
         }
 
@@ -1529,37 +1527,37 @@ This graph is based on the average composite score for each cluster of Motivator
 
             RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorThinking" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F17" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#e50002" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"58fef15f-561d-420e-8937-6cf51d296f0e" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You can get lost in your thoughts rather than making a decision and moving forward." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "0D82DC77-334C-44B0-84A6-989910907DD4", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by your insight into what others may be." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorTransforming" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F18" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#005ab2" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may experience the discomfort of leaving people behind who do not want to change, while feeling the need to keep moving ahead with the change." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2393C3CE-8E49-46FE-A75B-D5D624A37B49", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by enabling them to feel comfortable and committed to organizational transformation." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorMaximizing" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F11" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#b25700" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may find it difficult to serve others on the team rather than maximizing your own time and effort." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "3F678404-5844-494F-BDB0-DD9FEEBC98C9", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others through your strategic sense of when and where to invest resources for maximum impact." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorPerceiving" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F14" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#cb0002" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"58fef15f-561d-420e-8937-6cf51d296f0e" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may not know what to do with your insights and may find yourself sharing with others who do not need to know." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4C898A5C-B48E-4BAE-AB89-835F25A451BF", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others through your observations that can be harnessed to help the team be more effective in working together." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorRisking" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F21" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#0081fe" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You will seldom be satisfied with the status quo and will therefore be easily bored." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "4D0A1A6D-3F5A-476E-A633-04EAEF457645", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by stretching them to try something new." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorEngaging" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F05" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#00984b" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"840c414e-a261-4243-8302-6117e8949fe4" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may not always see issues which need addressing in your life because you are so focused on the community." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "5635E95B-3A07-43B7-837A-0F131EF1DA97", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by engaging your community’s needs in real and tangible ways to make a difference." );
@@ -1568,97 +1566,97 @@ This graph is based on the average composite score for each cluster of Motivator
             RockMigrationHelper.AddDefinedValueAttributeValue( "605F3702-6AE7-4545-BEBE-23693E60031C", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#6400cb" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorLeading" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F09" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#004d98" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may not feel comfortable just being “one of the team” when you are not the sole leader." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by your ability to inspire and engage them to accomplish more together than they could have accomplished individually." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorGathering" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F07" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#00b257" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"840c414e-a261-4243-8302-6117e8949fe4" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may enjoy bringing people together more than actually accomplishing something together." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "73087DD2-B892-4367-894F-8922477B2F10", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by bringing them along with you wherever you go." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorLearning" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F10" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#b20002" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"58fef15f-561d-420e-8937-6cf51d296f0e" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may enjoy learning so much that there is little effort to actually apply what you learn." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7EA44A56-58CB-4E40-9779-CC0A79772926", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by sharing what you are learning in one area and helping them apply it in different areas." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorOrganizing" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F12" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#cb6400" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may be resistant to change because it could bring unwanted chaos." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "85459C0F-65A5-48F9-86F3-40B03F9C53E9", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by bringing random fragments together to meet your goals." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorBelieving" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F01" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#7f0001" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"58fef15f-561d-420e-8937-6cf51d296f0e" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"Some may see you as inflexible." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "99F598E0-E0AC-4B4B-BEAF-589D41764EE1", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others through your convictions." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorPacing" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F13" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#e57100" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may resist a temporary imbalance that is required to complete a task with excellence." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by modeling long-term sustainable margins within life and work." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorPersevering" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F20" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#fe7d00" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may not be able to walk away from those situations that are simply not worth the effort." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "A027F6B2-56DD-4724-962D-F865606AEAB8", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others through your resilience and perseverance in difficult times." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorAdapting" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F06" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#7f3e00" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You are so quick to adjust and adapt that you may miss the positive results of perseverance." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by incorporating change so that you are better prepared to handle challenges." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorEmpowering" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F04" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#00407f" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may not always address negative issues in the lives of those you are developing." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "C171D01E-C607-488B-A550-1E341081210B", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by investing in them to do so much more than they could do without your intentional effort." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorUniting" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F19" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#00e571" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"840c414e-a261-4243-8302-6117e8949fe4" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may spend so long unifying the team that it hurts the critical progress or momentum." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7601B56-7495-4D7B-A916-8C48F78675E3", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by creating a sense of belonging for every member of the team." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorRelating" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F15" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#00cb64" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"840c414e-a261-4243-8302-6117e8949fe4" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may form relationships with so many people that you simply cannot maintain integrity and depth in them all." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by building strong ties with those who are socially connected to you." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorServing" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F16" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#0074e5" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You and those around you may undervalue your contribution to the team." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by helping them so they can function within their strengths." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorInnovating" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F08" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#984b00" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f4cf68" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"84322020-4e27-44ef-88f2-eafdb7286a01" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may enjoy creating so much that there is no execution of a plan to bring that innovation to reality." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D84E58E4-87FC-4CEB-B83E-A2C6D186366C", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by energetically tackling something that may never have been done before." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorVisioning" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F22" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#0067cb" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#f26863" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"112a35be-3108-48d9-b057-125a788ab531" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You can tend to live in the future and get frustrated with the realities of the current situation." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "EE1603BA-41AE-4CFA-B220-065768996501", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others by inspiring and encouraging them to see much more than their current reality." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorExpressing" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F03" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#980001" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#709ac7" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"58fef15f-561d-420e-8937-6cf51d296f0e" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may spend more time speaking to people rather than listening to them." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FA70E27D-6642-4162-AF17-530F66B507E7", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others through speaking and sharing your perspective." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "55FDABC3-22AE-4EE4-9883-8234E3298B99", @"core_MotivatorCaring" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "8158A336-8129-4E82-8B61-8C0E883CB91A", @"F02" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#007f3e" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "9227E7D4-5725-49BD-A0B1-43B769E0A529", @"#80bb7c" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "A20E6DB1-B830-4D41-9003-43A184E4C910", @"840c414e-a261-4243-8302-6117e8949fe4" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "5C3A012C-19A2-4EC7-8440-7534FE175591", @"You may become so consumed with meeting immediate needs that you miss long term solutions." );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FFD7EF9C-5D68-40D2-A362-416B2D660D51", "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6", @"You influence others with your care and compassion." );
