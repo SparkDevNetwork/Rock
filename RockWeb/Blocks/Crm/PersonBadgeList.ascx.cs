@@ -31,11 +31,11 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
 {
-    [DisplayName( "Person Badge List" )]
+    [DisplayName( "Badge List" )]
     [Category( "CRM" )]
-    [Description( "Shows a list of all person badges." )]
+    [Description( "Shows a list of all entity badges." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class PersonBadgeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
@@ -47,23 +47,23 @@ namespace RockWeb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-           
-            gPersonBadge.DataKeyNames = new string[] { "Id" };
-            gPersonBadge.Actions.ShowAdd = true;
-            gPersonBadge.Actions.AddClick += gPersonBadge_Add;
-            gPersonBadge.GridReorder += gPersonBadge_GridReorder;
-            gPersonBadge.GridRebind += gPersonBadge_GridRebind;
-            gPersonBadge.RowItemText = "Person Badge";
+
+            gBadge.DataKeyNames = new string[] { "Id" };
+            gBadge.Actions.ShowAdd = true;
+            gBadge.Actions.AddClick += gBadge_Add;
+            gBadge.GridReorder += gBadge_GridReorder;
+            gBadge.GridRebind += gBadge_GridRebind;
+            gBadge.RowItemText = "Badge";
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gPersonBadge.Actions.ShowAdd = canAddEditDelete;
-            gPersonBadge.IsDeleteEnabled = canAddEditDelete;
+            gBadge.Actions.ShowAdd = canAddEditDelete;
+            gBadge.IsDeleteEnabled = canAddEditDelete;
 
-            var securityField = gPersonBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
+            var securityField = gBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.PersonBadge ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.BadgeType ) ).Id;
             }
         }
 
@@ -87,69 +87,69 @@ namespace RockWeb.Blocks.Crm
         #region Grid Events (main grid)
 
         /// <summary>
-        /// Handles the Add event of the gPersonBadge control.
+        /// Handles the Add event of the gBadge control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gPersonBadge_Add( object sender, EventArgs e )
+        protected void gBadge_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PersonBadgeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "BadgeTypeId", 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gPersonBadge control.
+        /// Handles the Edit event of the gBadge control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gPersonBadge_Edit( object sender, RowEventArgs e )
+        protected void gBadge_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PersonBadgeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "BadgeTypeId", e.RowKeyId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gPersonBadge control.
+        /// Handles the Delete event of the gBadge control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gPersonBadge_Delete( object sender, RowEventArgs e )
+        protected void gBadge_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            PersonBadgeService personBadgeService = new PersonBadgeService( rockContext );
-            PersonBadge personBadge = personBadgeService.Get( e.RowKeyId );
+            var badgeTypeService = new BadgeTypeService( rockContext );
+            var personBadge = badgeTypeService.Get( e.RowKeyId );
 
             if ( personBadge != null )
             {
                 string errorMessage;
-                if ( !personBadgeService.CanDelete( personBadge, out errorMessage ) )
+                if ( !badgeTypeService.CanDelete( personBadge, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                personBadgeService.Delete( personBadge );
+                badgeTypeService.Delete( personBadge );
                 rockContext.SaveChanges();
             }
 
             BindGrid();
         }
 
-        void gPersonBadge_GridReorder( object sender, GridReorderEventArgs e )
+        void gBadge_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
-            var service = new PersonBadgeService( rockContext );
+            var service = new BadgeTypeService( rockContext );
             var personBadges = service.Queryable().OrderBy( b => b.Order );
             service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             BindGrid();
         }
-        
+
         /// <summary>
-        /// Handles the GridRebind event of the gPersonBadge control.
+        /// Handles the GridRebind event of the gBadge control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gPersonBadge_GridRebind( object sender, EventArgs e )
+        private void gBadge_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -163,9 +163,9 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
-            gPersonBadge.DataSource = new PersonBadgeService( new RockContext() )
-                .Queryable( "EntityType").OrderBy( b => b.Order ).ToList();
-            gPersonBadge.DataBind();
+            gBadge.DataSource = new BadgeTypeService( new RockContext() )
+                .Queryable( "BadgeComponentEntityType, EntityType" ).OrderBy( b => b.Order ).ToList();
+            gBadge.DataBind();
         }
 
         #endregion

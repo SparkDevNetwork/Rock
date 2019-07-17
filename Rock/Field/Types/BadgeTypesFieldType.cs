@@ -25,7 +25,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Person Badges from a checkbox list. Stored as a comma-delimited list of PersonBadge Guids
     /// </summary>
-    public class PersonBadgesFieldType : SelectFromListFieldType
+    public class BadgeTypesFieldType : SelectFromListFieldType
     {
         /// <summary>
         /// Gets the list source.
@@ -37,7 +37,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new PersonBadgeService( new RockContext() );
+                var service = new BadgeTypeService( new RockContext() );
                 var qry = service.Queryable();
                 return qry.OrderBy( a => a.Order ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }

@@ -1074,9 +1074,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static bool[] GetMostRecentBits( byte[] map, DateTime mapStartDate, SequenceOccurrenceFrequency sequenceOccurrenceFrequency, int unitCount = 24 )
         {
-            if ( unitCount < 1 || map == null || map.Length == 0 )
+            if ( unitCount < 1 )
             {
                 return null;
+            }
+
+            // If there is no data then return as if all unset bits
+            if ( map == null || map.Length == 0 )
+            {
+                return new bool[unitCount];
             }
 
             var isDaily = sequenceOccurrenceFrequency == SequenceOccurrenceFrequency.Daily;

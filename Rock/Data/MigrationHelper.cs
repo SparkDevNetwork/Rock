@@ -135,6 +135,47 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Renames the EntityType by guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="friendlyName">Name of the friendly.</param>
+        /// <param name="assemblyName">Name of the assembly.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        /// <param name="guid">The GUID.</param>
+        public void RenameEntityType( string guid, string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured )
+        {
+            var nameParam = name.Replace( "'", "''" );
+            var friendlyNameParam = friendlyName.Replace( "'", "''" );
+            var assemblyNameParam = assemblyName.Replace( "'", "''" );
+            var isEntityParam = isEntity ? "1" : "0";
+            var isSecuredParam = isSecured ? "1" : "0";
+
+            Migration.Sql( string.Format( $@"
+                DELETE FROM EntityType WHERE Name = '{nameParam}' AND Guid <> '{guid}';
+                DECLARE @Guid uniqueidentifier = (SELECT [Guid] FROM [EntityType] WHERE [Guid] = '{guid}');
+                IF @Guid IS NULL
+                BEGIN
+                    INSERT INTO [EntityType] (
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
+                    VALUES(
+                        '{nameParam}','{friendlyNameParam}','{assemblyNameParam}',{isEntityParam},{isSecuredParam}, 0,'{guid}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [EntityType] SET
+                        [Name] = '{nameParam}',
+                        [FriendlyName] = '{friendlyNameParam}',
+                        [AssemblyName] = '{assemblyNameParam}',
+                        [IsEntity] = {isEntityParam},
+                        [IsSecured] = {isSecuredParam}
+                    WHERE [Guid] = '{guid}'
+
+                END" ) );
+        }
+
+        /// <summary>
         /// Deletes the EntityType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -850,6 +891,24 @@ namespace Rock.Data
                 BEGIN
 	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
                 END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates the page internal name, browser title, and page title
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="newName">The new name.</param>
+        public void RenamePage( string pageGuid, string newName )
+        {
+            string sql = $@"
+UPDATE [Page] 
+SET
+    [InternalName] = '{newName}',
+    [PageTitle] = '{newName}',
+    [BrowserTitle] = '{newName}'
+WHERE [Guid] = '{pageGuid}';";
 
             Migration.Sql( sql );
         }

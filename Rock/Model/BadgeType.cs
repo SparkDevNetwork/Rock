@@ -26,64 +26,89 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a type or category of binary files in Rock, and configures how binary files of this type are stored and accessed.
+    /// Represents a type or category of badge.
     /// </summary>
     [RockDomain( "CRM" )]
-    [Table( "PersonBadge" )]
+    [Table( "BadgeType" )]
     [DataContract]
-    public partial class PersonBadge : Model<PersonBadge>, IOrdered, ICacheable
+    public partial class BadgeType : Model<BadgeType>, IOrdered, ICacheable, IHasActiveFlag
     {
-
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the given Name of the PersonBadge. This value is an alternate key and is required.
+        /// Gets or sets the given Name of the BadgeType. This value is an alternate key and is required.
         /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the given Name of the PersonBadge. 
-        /// </value>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a description of the PersonBadge.
+        /// Gets or sets a description of the BadgeType.
         /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the description of the PersonBadge.
-        /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the badge component
+        /// Gets or sets the Id of the badge component entity type
         /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32" /> representing the Id of the badge component entity type
-        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int BadgeComponentEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this Badge describes.
+        /// </summary>
         [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used narrow the scope of the Badge to a subset or specific instance of an EntityType.
+        /// </summary>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Badge to a subset or specific instance of an EntityType.
+        /// </summary>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityTypeQualifierValue { get; set; }
+
+        #endregion Entity Properties
+
+        #region IHasActiveFlag
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this item is active or not.
+        /// </summary>
+        [DataMember]
+        public bool IsActive { get; set; } = true;
+
+        #endregion IHasActiveFlag
+
+        #region IOrdered
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
         [DataMember]
         public int Order { get; set; }
 
-        #endregion
+        #endregion IOrdered
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the storage mode <see cref="Rock.Model.EntityType"/>.
+        /// Gets or sets the badge component <see cref="Rock.Model.EntityType"/>.
         /// </summary>
-        /// <value>
-        /// The storage mode <see cref="Rock.Model.EntityType"/>.
-        /// </value>
+        [DataMember]
+        public virtual EntityType BadgeComponentEntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject entity <see cref="Rock.Model.EntityType"/>.
+        /// </summary>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
@@ -112,7 +137,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return PersonBadgeCache.Get( this.Id );
+            return BadgeTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -122,11 +147,10 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            PersonBadgeCache.UpdateCachedEntity( this.Id, entityState );
+            BadgeTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -134,17 +158,17 @@ namespace Rock.Model
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class PersonBadgeConfiguration : EntityTypeConfiguration<PersonBadge>
+    public partial class PersonBadgeConfiguration : EntityTypeConfiguration<BadgeType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonBadgeConfiguration"/> class.
         /// </summary>
         public PersonBadgeConfiguration()
         {
-            this.HasRequired( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );
+            HasRequired( b => b.BadgeComponentEntityType ).WithMany().HasForeignKey( b => b.BadgeComponentEntityTypeId ).WillCascadeOnDelete( false );
+            HasRequired( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
 }

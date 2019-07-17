@@ -32,7 +32,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class PersonBadgesController
+    public partial class BadgeTypeController
     {
         /// <summary>
         /// Gets the attendance summary data for the 24 month attendance badge
@@ -42,7 +42,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/InGroupOfType/{personId}/{groupTypeGuid}" )]
         public GroupOfTypeResult GetInGroupOfType( int personId, Guid groupTypeGuid )
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
@@ -101,7 +101,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InGroupWithPurpose/{personId}/{definedValueGuid}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/InGroupWithPurpose/{personId}/{definedValueGuid}" )]
         public GroupWithPurposeResult GetGroupWithPurpose( int personId, Guid definedValueGuid )
         {
             GroupWithPurposeResult result = new GroupWithPurposeResult();
@@ -153,7 +153,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/GeofencingGroups/{personId}/{groupTypeGuid}" )]
         public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
             var rockContext = ( Rock.Data.RockContext ) Service.Context;
@@ -188,7 +188,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/WeeksAttendedInDuration/{personId}/{weekCount}" )]
         public int GetWeeksAttendedInDuration( int personId, int weekCount )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -212,7 +212,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
             int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
@@ -247,7 +247,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/PersonalDevicesNumber/{personId}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/PersonalDevicesNumber/{personId}" )]
         public int GetPersonalDevicesNumber( int personId )
         {
             int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
@@ -267,7 +267,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/FamilyAttendance/{personId}/{monthCount}" )]
         public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance( int personId, int monthCount )
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
@@ -304,7 +304,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InteractionsInRange/{personId}/{interactionChannelId}/{delimitedDateRange}" )]
+        [System.Web.Http.Route( "api/BadgeTypes/InteractionsInRange/{personId}/{interactionChannelId}/{delimitedDateRange}" )]
         public int InteractionsInRange( int personId, int interactionChannelId, string delimitedDateRange )
         {
             var interactionQry = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()

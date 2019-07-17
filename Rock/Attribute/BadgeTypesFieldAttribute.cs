@@ -22,20 +22,20 @@ namespace Rock.Attribute
     /// Field Attribute to select 0 or more Person Badges. Stored as a comma-delimited list of PersonBadge Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class PersonBadgesFieldAttribute : FieldAttribute
+    public class BadgeTypesFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonBadgesFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="BadgeTypesFieldAttributeAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultPersonBadgeGuids">The default person badge guids.</param>
+        /// <param name="defaultBadgeTypeGuids">The default badge type guids.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public PersonBadgesFieldAttribute( string name = "PersonBadges", string description = "", bool required = true, string defaultPersonBadgeGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultPersonBadgeGuids, category, order, key, typeof( Rock.Field.Types.PersonBadgesFieldType ).FullName )
+        public BadgeTypesFieldAttribute( string name = "BadgeTypes", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgeTypesFieldType ).FullName )
         {
         }
     }

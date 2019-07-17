@@ -29,9 +29,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// class for controls used to render a Person Profile Badge
     /// </summary>
-    public class PersonProfileBadgeList : CompositeControl
+    public class BadgeListControl : CompositeControl
     {
-        private List<PersonProfileBadge> _badges = new List<PersonProfileBadge>();
+        private List<BadgeControl> _badges = new List<BadgeControl>();
 
         /// <summary>
         /// Gets or sets the component guids.
@@ -39,19 +39,19 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The component guids.
         /// </value>
-        public List<PersonBadgeCache> PersonBadges 
+        public List<BadgeTypeCache> BadgeTypes 
         { 
             get 
             {
-                return _personBadges;
+                return _badgeTypes;
             }
             set
             {
-                _personBadges = value;
+                _badgeTypes = value;
                 RecreateChildControls();
             }
         }
-        private List<PersonBadgeCache> _personBadges = new List<PersonBadgeCache>();
+        private List<BadgeTypeCache> _badgeTypes = new List<BadgeTypeCache>();
 
         /// <summary>
         /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
@@ -64,7 +64,7 @@ namespace Rock.Web.UI.Controls
             var json = ViewState["PersonBadges"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<PersonBadgeCache> ) ) as List<PersonBadgeCache>;
+                BadgeTypes = JsonConvert.DeserializeObject( json, typeof( List<BadgeTypeCache> ) ) as List<BadgeTypeCache>;
             }
         }
 
@@ -76,9 +76,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            if ( PersonBadges != null )
+            if ( BadgeTypes != null )
             {
-                ViewState["PersonBadges"] = PersonBadges.ToJson();
+                ViewState["PersonBadges"] = BadgeTypes.ToJson();
             }
             
             return base.SaveViewState();
@@ -93,15 +93,15 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _badges.Clear();
-            if ( PersonBadges != null )
+            if ( BadgeTypes != null )
             {
                 var currentPerson =  ((RockPage)Page).CurrentPerson;
-                foreach ( var personBadge in PersonBadges.OrderBy( b => b.Order ) )
+                foreach ( var badgeType in BadgeTypes.OrderBy( b => b.Order ) )
                 {
-                    if ( personBadge.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    if ( badgeType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
-                        var badgeControl = new PersonProfileBadge();
-                        badgeControl.PersonBadge = personBadge;
+                        var badgeControl = new BadgeControl();
+                        badgeControl.BadgeTypeCache = badgeType;
                         _badges.Add( badgeControl );
                         Controls.Add( badgeControl );
                     }

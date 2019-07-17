@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Web.UI;
-
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// abstract class for controls used to render a Person Profile Badge
     /// </summary>
-    public class PersonProfileBadge : Control
+    public class BadgeControl : Control
     {
         /// <summary>
         /// Gets or sets the name of the badge entity type.
@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The name of the badge entity type.
         /// </value>
-        public PersonBadgeCache PersonBadge { get; set; }
+        public BadgeTypeCache BadgeTypeCache { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
             string json = ViewState["PersonBadge"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadge = PersonBadgeCache.FromJson( json );
+                BadgeTypeCache = BadgeTypeCache.FromJson( json );
             }
         }
 
@@ -56,9 +56,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            if (PersonBadge != null)
+            if (BadgeTypeCache != null)
             {
-                ViewState["PersonBadge"] = PersonBadge.ToJson();
+                ViewState["PersonBadge"] = BadgeTypeCache.ToJson();
             }
 
             return base.SaveViewState();
@@ -70,7 +70,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The parent person block.
         /// </value>
-        public PersonBlock ParentPersonBlock
+        public ContextEntityBlock ContextEntityBlock
         {
             get
             {
@@ -78,9 +78,9 @@ namespace Rock.Web.UI.Controls
 
                 while ( parentControl != null )
                 {
-                    if ( parentControl is PersonBlock )
+                    if ( parentControl is ContextEntityBlock )
                     {
-                        return parentControl as PersonBlock;
+                        return parentControl as ContextEntityBlock;
                     }
 
                     parentControl = parentControl.Parent;
@@ -106,20 +106,23 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            var badgeComponent = PersonBadge?.BadgeComponent;
+            var badgeComponent = BadgeTypeCache?.BadgeComponent;
             if ( badgeComponent != null )
             {
-                var personBlock = ParentPersonBlock;
-                if ( personBlock != null )
+                var contextEntityBlock = ContextEntityBlock;
+                if ( contextEntityBlock != null )
                 {
-                    badgeComponent.ParentPersonBlock = personBlock;
-                    badgeComponent.Person = personBlock.Person;
-                    badgeComponent.Render( PersonBadge, writer );
+                    if ( BadgeTypeService.DoesBadgeApplyToEntity( BadgeTypeCache, contextEntityBlock.Entity ) )
+                    {
+                        badgeComponent.ParentContextEntityBlock = contextEntityBlock;
+                        badgeComponent.Entity = contextEntityBlock.Entity;
+                        badgeComponent.Render( BadgeTypeCache, writer );
+
+                        const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
+                        ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
+                    }
                 }
             }
-
-            const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
         }
     }
 }

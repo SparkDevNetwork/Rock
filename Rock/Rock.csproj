@@ -377,7 +377,7 @@
     <Compile Include="Attribute\MergeTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\PersonBadgesAttribute.cs" />
+    <Compile Include="Attribute\BadgeTypesFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
     <Compile Include="Attribute\PhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\RemoteAuthsFieldAttribute.cs" />
@@ -636,7 +636,7 @@
     <Compile Include="Web\Cache\Entities\Obsolete\CachedEntity.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\CachedModel.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\RockMemoryCache.cs" />
-    <Compile Include="Web\Cache\Entities\PersonBadgeCache.cs" />
+    <Compile Include="Web\Cache\Entities\BadgeTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
     <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
     <Compile Include="Web\Cache\Entities\SignalTypeCache.cs" />
@@ -887,7 +887,7 @@
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\PageReferenceFieldType.cs" />
-    <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
+    <Compile Include="Field\Types\BadgeTypesFieldType.cs" />
     <Compile Include="Field\Types\PersonFieldType.cs" />
     <Compile Include="Field\Types\PhoneNumberFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
@@ -1241,7 +1241,7 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
-    <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
+    <Compile Include="Model\CodeGenerated\BadgeTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
@@ -1420,8 +1420,8 @@
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\PersonalDeviceService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
-    <Compile Include="Model\PersonBadge.cs" />
-    <Compile Include="Model\PersonBadgeService.partial.cs" />
+    <Compile Include="Model\BadgeType.cs" />
+    <Compile Include="Model\BadgeTypeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonSearchKey.cs" />
@@ -2165,8 +2165,8 @@
     <Compile Include="Web\UI\Controls\PanelDrawer.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
-    <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
-    <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
+    <Compile Include="Web\UI\Controls\Badges\BadgeControl.cs" />
+    <Compile Include="Web\UI\Controls\Badges\BadgeListControl.cs" />
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AccountPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
@@ -2253,6 +2253,9 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\PersonBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Web\UI\ContextEntityBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Web\UI\RockBlock.cs">
