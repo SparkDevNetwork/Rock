@@ -30,7 +30,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -255,7 +254,7 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableAttributeIds"] = AvailableAttributes == null? null :  AvailableAttributes.Select( a => a.Id ).ToArray();
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
             return base.SaveViewState();
         }
 
@@ -512,7 +511,12 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>( "GroupTypeId", _groupTypeCache.Id.ToString() );
+            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>(
+                new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] {
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupTypeId", _groupTypeCache.Id.ToString() ),
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupId", groupMember.GroupId.ToString() ),
+                } );
+
             e.MergeValues.Add( entityTypeMergeField, groupMember.Id );
         }
 
