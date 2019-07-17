@@ -46,8 +46,7 @@ namespace RockWeb.Blocks.Core
     [NoteTypeField( "Note Type", "Set Note Type to limit this block to a specific note type", allowMultiple: false, required: false, order: 1 )]
 
     // Context Aware will limit the list to watchers that are equal to the Person or Group context
-    [ContextAware( typeof( Rock.Model.Person ) )]
-    [ContextAware( typeof( Rock.Model.Group ) )]
+    [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
     public partial class NoteWatchList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

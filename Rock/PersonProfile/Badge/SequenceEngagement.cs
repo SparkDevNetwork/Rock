@@ -96,8 +96,13 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeTypeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+            
             var sequence = GetSequence( badge );
 
             if ( sequence == null )
@@ -165,7 +170,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge"></param>
         /// <returns></returns>
-        private SequenceCache GetSequence( PersonBadgeCache badge )
+        private SequenceCache GetSequence( BadgeTypeCache badge )
         {
             var sequenceGuid = GetAttributeValue( badge, AttributeKeys.Sequence ).AsGuidOrNull();
 

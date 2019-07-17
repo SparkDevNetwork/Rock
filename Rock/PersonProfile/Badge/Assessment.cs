@@ -39,7 +39,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Assessment Badge" )]
 
     [AssessmentTypesField("Assessments To Show",
-        Description = "Select the assesements that should be displayed in the badge. If none are selected then all assessments will be shown.",
+        Description = "Select the assessments that should be displayed in the badge. If none are selected then all assessments will be shown.",
         Key = AttributeKeys.AssessmentsToShow,
         IncludeInactive = false,
         IsRequired = false,
@@ -54,8 +54,13 @@ namespace Rock.PersonProfile.Badge
 
         private const string UNTAKEN_BADGE_COLOR = "#DBDBDB";
 
-        public override void Render( PersonBadgeCache badge, HtmlTextWriter writer )
+        public override void Render( BadgeTypeCache badge, HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             string[] assessmentTypeGuids = new string[] { };
 
             // Create a list of assessments that should be included in the badge

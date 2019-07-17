@@ -43,9 +43,9 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeTypeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            if ( Person != null )
+            if ( Entity != null )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "badge" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Title, GetToolTipText( Person ) );

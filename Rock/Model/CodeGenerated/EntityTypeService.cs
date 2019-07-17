@@ -214,9 +214,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<PersonBadge>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<BadgeType>( Context ).Queryable().Any( a => a.BadgeComponentEntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersonBadge.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BadgeType.FriendlyTypeName );
                 return false;
             }  
  

@@ -1347,7 +1347,7 @@ namespace Rock.Data
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<PersonBadge> PersonBadges { get; set; }
+        public DbSet<BadgeType> PersonBadges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.

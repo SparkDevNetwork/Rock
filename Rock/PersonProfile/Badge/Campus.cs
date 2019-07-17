@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -39,34 +39,32 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override HighlightLabel GetLabel(Person person)
+        public override HighlightLabel GetLabel( IEntity entity )
         {
-            if ( ParentPersonBlock != null && CampusCache.All( false ).Count > 1 )
+            if ( ParentContextEntityBlock != null && CampusCache.All( false ).Count > 1 )
             {
                 // Campus is associated with the family group(s) person belongs to.
-                var families = ParentPersonBlock.PersonGroups(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY);
-                if (families != null)
+                var families = ParentContextEntityBlock.PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                if ( families != null )
                 {
                     var label = new HighlightLabel();
                     label.LabelType = LabelType.Campus;
 
                     var campusNames = new List<string>();
-                    foreach (int campusId in families
-                        .Where(g => g.CampusId.HasValue)
-                        .Select(g => g.CampusId)
+                    foreach ( int campusId in families
+                        .Where( g => g.CampusId.HasValue )
+                        .Select( g => g.CampusId )
                         .Distinct()
-                        .ToList())
-                        campusNames.Add(CampusCache.Get(campusId).Name);
+                        .ToList() )
+                        campusNames.Add( CampusCache.Get( campusId ).Name );
 
-                    label.Text = campusNames.OrderBy(n => n).ToList().AsDelimited(", ");
+                    label.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
 
                     return label;
                 }
             }
 
             return null;
-
         }
-
     }
 }

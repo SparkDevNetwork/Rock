@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-
+using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -82,25 +82,27 @@ namespace Rock.PersonProfile
         /// <value>
         /// The parent person block.
         /// </value>
-        public PersonBlock ParentPersonBlock
-        {
-            get { return _parentPersonBlock; }
-            set { _parentPersonBlock = value; }
-        }
-        private PersonBlock _parentPersonBlock;
+        public ContextEntityBlock ParentContextEntityBlock { get; set; }
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the entity.
         /// </summary>
         /// <value>
         /// The person.
         /// </value>
-        public virtual Person Person
+        public virtual IEntity Entity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity as a person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        public Person Person
         {
-            get { return _person; }
-            set { _person = value; }
+            get => Entity as Person;
+            set => Entity = value;
         }
-        private Person _person;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
@@ -115,7 +117,7 @@ namespace Rock.PersonProfile
         /// so typically Person Badges do not need to load the attributes
         /// </summary>
         /// <param name="badge">The badge.</param>
-        public void LoadAttributes( PersonBadge badge )
+        public void LoadAttributes( BadgeType badge )
         {
             badge.LoadAttributes();
         }
@@ -138,7 +140,7 @@ namespace Rock.PersonProfile
         /// <param name="badge">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( PersonBadgeCache badge, string key )
+        protected string GetAttributeValue( BadgeTypeCache badge, string key )
         {
             return badge.GetAttributeValue( key );
         }
@@ -148,6 +150,6 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( Web.Cache.PersonBadgeCache badge, HtmlTextWriter writer );
+        public abstract void Render( Web.Cache.BadgeTypeCache badge, HtmlTextWriter writer );
     }
 }

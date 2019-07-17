@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class UpdatePropertyToTag : IMigrationMetadata
+    public sealed partial class BadgeTypes : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdatePropertyToTag));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(BadgeTypes));
         
         string IMigrationMetadata.Id
         {
-            get { return "201906261202517_UpdatePropertyToTag"; }
+            get { return "201907171318306_BadgeTypes"; }
         }
         
         string IMigrationMetadata.Source

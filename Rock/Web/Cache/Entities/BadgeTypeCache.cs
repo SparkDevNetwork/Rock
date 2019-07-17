@@ -29,7 +29,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PersonBadgeCache : ModelCache<PersonBadgeCache, PersonBadge>
+    public class BadgeTypeCache : ModelCache<BadgeTypeCache, BadgeType>
     {
 
         #region Properties
@@ -53,7 +53,34 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
-        /// Gets or sets the entity type id.
+        /// Gets or sets the description
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        [DataMember]
+        public string EntityTypeQualifierColumn { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the description
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        [DataMember]
+        public string EntityTypeQualifierValue { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the badge component entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        [DataMember]
+        public int? BadgeComponentEntityTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the subject entity type id.
         /// </summary>
         /// <value>
         /// The entity type id.
@@ -69,6 +96,22 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public int Order { get; private set; }
+
+        /// <summary>
+        /// Gets the Entity Type.
+        /// </summary>
+        public EntityTypeCache BadgeComponentEntityType
+        {
+            get
+            {
+                if ( BadgeComponentEntityTypeId.HasValue )
+                {
+                    return EntityTypeCache.Get( BadgeComponentEntityTypeId.Value );
+                }
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Gets the Entity Type.
@@ -92,7 +135,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The badge component.
         /// </value>
-        public virtual BadgeComponent BadgeComponent => EntityType != null ? BadgeContainer.GetComponent( EntityType.Name ) : null;
+        public virtual BadgeComponent BadgeComponent => BadgeComponentEntityType != null ? BadgeContainer.GetComponent( BadgeComponentEntityType.Name ) : null;
 
         #endregion
 
@@ -106,13 +149,16 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
-            var personBadge = entity as PersonBadge;
-            if ( personBadge == null ) return;
+            var badgeType = entity as BadgeType;
+            if ( badgeType == null ) return;
 
-            Name = personBadge.Name;
-            Description = personBadge.Description;
-            EntityTypeId = personBadge.EntityTypeId;
-            Order = personBadge.Order;
+            Name = badgeType.Name;
+            Description = badgeType.Description;
+            BadgeComponentEntityTypeId = badgeType.BadgeComponentEntityTypeId;
+            EntityTypeId = badgeType.EntityTypeId;
+            Order = badgeType.Order;
+            EntityTypeQualifierColumn = badgeType.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = badgeType.EntityTypeQualifierValue;
         }
 
         /// <summary>

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -30,7 +31,7 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public virtual HighlightLabel GetLabel( Person person )
+        public virtual HighlightLabel GetLabel( IEntity entity )
         {
             return new HighlightLabel();
         }
@@ -40,11 +41,11 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeTypeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            if ( Person != null )
+            if ( Entity != null )
             {
-                var label = GetLabel( Person );
+                var label = GetLabel( Entity );
                 if ( label != null )
                 {
                     label.RenderControl( writer );

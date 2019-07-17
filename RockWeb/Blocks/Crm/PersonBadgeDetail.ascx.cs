@@ -20,29 +20,29 @@ using System.Collections.Generic;
 using System.Web.UI;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.PersonProfile;
 using Rock.Web.Cache;
+using System.Linq;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
-    [DisplayName( "Person Badge Detail" )]
+    [DisplayName( "Badge Detail" )]
     [Category( "CRM" )]
-    [Description( "Shows the details of a particular person badge." )]
+    [Description( "Shows the details of a particular badge." )]
 
     public partial class PersonBadgeDetail : RockBlock
     {
 
         #region Properties
 
-        public int PersonBadgeId
+        public int BadgeId
         {
-            get { return ViewState["PersonBadgeId"] as int? ?? 0; }
-            set { ViewState["PersonBadgeId"] = value; }
+            get { return ViewState["BadgeId"] as int? ?? 0; }
+            set { ViewState["BadgeId"] = value; }
         }
 
         #endregion
@@ -59,26 +59,28 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                lActionTitle.Text = ActionTitle.Add( PersonBadge.FriendlyTypeName ).FormatAsHtmlTitle();
+                BindEntityTypes();
+                lActionTitle.Text = ActionTitle.Add( BadgeType.FriendlyTypeName ).FormatAsHtmlTitle();
 
-                PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger();
-                if ( PersonBadgeId != 0 )
+                BadgeId = PageParameter( "BadgeTypeId" ).AsInteger();
+                if ( BadgeId != 0 )
                 {
-                    var personBadge = new PersonBadgeService( new RockContext() ).Get( PersonBadgeId );
-                    if ( personBadge != null )
+                    var badgeType = new BadgeTypeService( new RockContext() ).Get( BadgeId );
+                    if ( badgeType != null )
                     {
-                        lActionTitle.Text = ActionTitle.Edit( personBadge.Name ).FormatAsHtmlTitle();
+                        lActionTitle.Text = ActionTitle.Edit( badgeType.Name ).FormatAsHtmlTitle();
 
-                        tbName.Text = personBadge.Name;
-                        tbDescription.Text = personBadge.Description;
-                        if ( personBadge.EntityTypeId.HasValue )
-                        {
-                            var badgeType = EntityTypeCache.Get( personBadge.EntityTypeId.Value );
-                            compBadgeType.SelectedValue = badgeType.Guid.ToString().ToUpper();
-                        }
+                        tbName.Text = badgeType.Name;
+                        tbDescription.Text = badgeType.Description;
+                        rtbQualifierValue.Text = badgeType.EntityTypeQualifierValue;
+                        rtbQualifierColumn.Text = badgeType.EntityTypeQualifierColumn;
+                        etpEntityType.SelectedEntityTypeId = badgeType.EntityTypeId;
 
-                        BuildEditControls( personBadge, true );
-                        pdAuditDetails.SetEntity( personBadge, ResolveRockUrl( "~" ) );
+                        var badgeComponentType = EntityTypeCache.Get( badgeType.BadgeComponentEntityTypeId );
+                        compBadgeType.SelectedValue = badgeComponentType.Guid.ToString().ToUpper();
+
+                        BuildEditControls( badgeType, true );
+                        pdAuditDetails.SetEntity( badgeType, ResolveRockUrl( "~" ) );
                     }
                 }
                 else
@@ -94,8 +96,8 @@ namespace RockWeb.Blocks.Crm
                     var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                     if ( badgeType != null )
                     {
-                        var personBadge = new PersonBadge { EntityTypeId = badgeType.Id };
-                        BuildEditControls( personBadge, false );
+                        var badge = new BadgeType { BadgeComponentEntityTypeId = badgeType.Id };
+                        BuildEditControls( badge, false );
                     }
                 }
             }
@@ -114,11 +116,11 @@ namespace RockWeb.Blocks.Crm
         {
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {
-                var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
-                if ( badgeType != null )
+                var badgeComponentType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
+                if ( badgeComponentType != null )
                 {
-                    var personBadge = new PersonBadge { EntityTypeId = badgeType.Id };
-                    BuildEditControls( personBadge, true );
+                    var badge = new BadgeType { BadgeComponentEntityTypeId = badgeComponentType.Id };
+                    BuildEditControls( badge, true );
                 }
             }
         }
@@ -130,42 +132,45 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            PersonBadge personBadge = null;
+            BadgeType badge = null;
             var rockContext = new RockContext();
-            PersonBadgeService personBadgeService = new PersonBadgeService( rockContext );
+            var badgeTypeService = new BadgeTypeService( rockContext );
 
-            if ( PersonBadgeId != 0 )
+            if ( BadgeId != 0 )
             {
-                personBadge = personBadgeService.Get( PersonBadgeId );
+                badge = badgeTypeService.Get( BadgeId );
             }
 
-            if ( personBadge == null )
+            if ( badge == null )
             {
-                personBadge = new PersonBadge();
-                personBadgeService.Add( personBadge );
+                badge = new BadgeType();
+                badgeTypeService.Add( badge );
             }
 
-            personBadge.Name = tbName.Text;
-            personBadge.Description = tbDescription.Text;
+            badge.Name = tbName.Text;
+            badge.Description = tbDescription.Text;
+            badge.EntityTypeQualifierColumn = rtbQualifierColumn.Text;
+            badge.EntityTypeQualifierValue = rtbQualifierValue.Text;
+            badge.EntityTypeId = etpEntityType.SelectedEntityTypeId;
 
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {
                 var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                 if ( badgeType != null )
                 {
-                    personBadge.EntityTypeId = badgeType.Id;
+                    badge.BadgeComponentEntityTypeId = badgeType.Id;
                 }
             }
 
-            personBadge.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, personBadge );
+            badge.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, badge );
 
             if ( !Page.IsValid )
             {
                 return;
             }
 
-            if ( !personBadge.IsValid )
+            if ( !badge.IsValid )
             {
                 return;
             }
@@ -173,7 +178,7 @@ namespace RockWeb.Blocks.Crm
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
-                personBadge.SaveAttributeValues( rockContext );
+                badge.SaveAttributeValues( rockContext );
             } );
 
             NavigateToParentPage();
@@ -193,11 +198,27 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        private void BuildEditControls(PersonBadge personBadge, bool setValues)
+        private void BuildEditControls( BadgeType badgeType, bool setValues )
         {
-            personBadge.LoadAttributes();
+            badgeType.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( personBadge, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( badgeType, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
+        }
+
+        /// <summary>
+        /// Provide the options for the entity type picker
+        /// </summary>
+        private void BindEntityTypes()
+        {
+            var rockContext = new RockContext();
+            var entityTypes = new EntityTypeService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( e => e.IsEntity )
+                .OrderBy( t => t.FriendlyName )
+                .ToList();
+
+            etpEntityType.EntityTypes = entityTypes;
         }
 
         #endregion

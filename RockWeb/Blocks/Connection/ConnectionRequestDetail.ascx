@@ -37,7 +37,7 @@
                         </div>
                         <div class="col-md-8">
                             <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
-                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                                <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
                             
                             <div class="row">

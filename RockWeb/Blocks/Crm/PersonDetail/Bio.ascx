@@ -51,7 +51,7 @@
 
                     <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
                 
-                    <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                    <Rock:BadgeListControl ID="blStatus" runat="server" />
 
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 
