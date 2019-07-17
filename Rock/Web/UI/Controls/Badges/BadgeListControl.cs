@@ -60,11 +60,12 @@ namespace Rock.Web.UI.Controls
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+            var delimitedIds = ViewState["BadgeTypeIds"] as string;
 
-            var json = ViewState["PersonBadges"] as string;
-            if ( !string.IsNullOrWhiteSpace( json ) )
+            if ( !string.IsNullOrWhiteSpace( delimitedIds ) )
             {
-                BadgeTypes = JsonConvert.DeserializeObject( json, typeof( List<BadgeTypeCache> ) ) as List<BadgeTypeCache>;
+                var badgeTypeIds = delimitedIds.Split(',').Select( s => s.AsIntegerOrNull() ).Where( i => i.HasValue );
+                BadgeTypes = badgeTypeIds.Select( id => BadgeTypeCache.Get( id.Value ) ).ToList();
             }
         }
 
@@ -76,9 +77,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            if ( BadgeTypes != null )
+            if ( BadgeTypes != null && BadgeTypes.Any() )
             {
-                ViewState["PersonBadges"] = BadgeTypes.ToJson();
+                ViewState["BadgeTypeIds"] = BadgeTypes.Select( bt => bt.Id.ToString() ).JoinStrings( "," );
             }
             
             return base.SaveViewState();
