@@ -33,10 +33,11 @@ namespace Rock.Migrations
             AddAllowLabelReprintingUp();
             AddAttachmentBinaryFileTypeAttribute();
             FixCurrencyFormatInContributionStatement();
-            UpdateAttributeValueValueAsNumericUp();
             AddAttributesForSmartyStreets();
             FixGoogleShortCode();
             CodeGenMigrationsUp();
+
+            UpdateAttributeValueValueAsNumericCalculation();
         }
 
         /// <summary>
@@ -45,7 +46,6 @@ namespace Rock.Migrations
         public override void Down()
         {
             CodeGenMigrationsDown();
-            UpdateAttributeValueValueAsNumericDown();
             AddAllowLabelRepringintDown();
         }
 
@@ -257,69 +257,38 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// MP: Fix AttributeValue.ValueAsNumeric to work with negative numbers
+        /// MP: Fixup AttributeValue.ValueAsNumeric to work with negative numbers
         /// </summary>
-        private void UpdateAttributeValueValueAsNumericUp()
+        private void UpdateAttributeValueValueAsNumericCalculation()
         {
-            Sql( @"
-                IF EXISTS (
-                        SELECT *
-                        FROM sys.indexes
-                        WHERE name = 'IX_ValueAsNumeric'
-                            AND object_id = OBJECT_ID('AttributeValue')
-                        )
-                BEGIN
-                    DROP INDEX [IX_ValueAsNumeric] ON [AttributeValue]
-                END
-
-                ALTER TABLE [AttributeValue] DROP COLUMN [ValueAsNumeric]" );
-
-            Sql( @"
-                ALTER TABLE [AttributeValue] ADD [ValueAsNumeric] AS (
-                    CASE 
-                        WHEN len([value]) < (100)
-                            THEN CASE 
-                                    WHEN isnumeric([value]) = (1)
-                                        AND NOT [value] LIKE '%[^-0-9.]%'
-                                        THEN TRY_CAST([value] AS [decimal](29, 4))
-                                    END
-                        END
-                    ) PERSISTED;
-
-                CREATE NONCLUSTERED INDEX [IX_ValueAsNumeric] ON [dbo].[AttributeValue] ([ValueAsNumeric] ASC)" );
-        }
-
-        /// <summary>
-        /// DOWN for MP: Fixes AttributeValue.ValueAsNumeric to work with negative numbers
-        /// </summary>
-        private void UpdateAttributeValueValueAsNumericDown()
-        {
-            Sql( @"
-                IF EXISTS (
-                        SELECT *
-                        FROM sys.indexes
-                        WHERE name = 'IX_ValueAsNumeric'
-                            AND object_id = OBJECT_ID('AttributeValue')
-                        )
-                BEGIN
-                    DROP INDEX [IX_ValueAsNumeric] ON [AttributeValue]
-                END
-
-                ALTER TABLE [AttributeValue] DROP COLUMN [ValueAsNumeric]" );
-
-            Sql( @"
-                ALTER TABLE [AttributeValue] ADD [ValueAsNumeric] AS (
-                    CASE 
-                        WHEN len([value]) < (100)
-                            THEN CASE 
-                                    WHEN isnumeric([value]) = (1)
-                                        AND NOT [value] LIKE '%[^0-9.]%'
-                                        THEN TRY_CAST([value] AS [decimal](29, 4))
-                                    END
-                        END
-                    ) PERSISTED;
-
-                CREATE NONCLUSTERED INDEX [IX_ValueAsNumeric] ON [dbo].[AttributeValue] ([ValueAsNumeric] ASC)" );
+            Sql( @"IF NOT EXISTS (
+  SELECT[Id]
+  FROM[ServiceJob]
+  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrationsValueAsNumeric'
+   AND[Guid] = '5144FA96-A139-44C6-9464-76C35719E568'
+  )
+BEGIN
+ INSERT INTO[ServiceJob](
+  [IsSystem]
+  ,[IsActive]
+  ,[Name]
+  ,[Description]
+  ,[Class]
+  ,[CronExpression]
+  ,[NotificationStatus]
+  ,[Guid]
+  )
+ VALUES(
+  0
+  ,1
+  ,'Rock Update Helper v9.0 - AttributeValue.ValueAsNumeric'
+  ,'Runs data updates to AttributeValue.ValueAsNumeric that need to occur after updating to v9.0.'
+  ,'Rock.Jobs.PostV90DataMigrationsValueAsNumeric'
+  ,'0 0 21 1/1 * ? *'
+  ,1
+  ,'5144FA96-A139-44C6-9464-76C35719E568'
+  );
+        END" );
         }
 
         /// <summary>

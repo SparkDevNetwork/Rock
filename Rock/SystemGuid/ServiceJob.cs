@@ -57,6 +57,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_90_DISC = "A839DFEC-B1A3-499C-9BB3-03241E8E5305";
 
         /// <summary>
+        /// The Job to run Post v9 Data Migrations for AttributeValue.ValueAsNumeric
+        /// </summary>
+        public const string DATA_MIGRATIONS_90_ATTRIBUTEVALUE_VALUEASNUMERIC = "5144FA96-A139-44C6-9464-76C35719E568";
+
+        /// <summary>
         /// The Job to run Post v9 Data Migrations
         /// </summary>
         public const string DATA_MIGRATIONS_90 = "3F279016-C7D1-490F-835D-8FFE6D943A32";

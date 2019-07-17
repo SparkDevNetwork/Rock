@@ -402,6 +402,7 @@
     <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
     <Compile Include="Field\Types\ConditionalScaleFieldType.cs" />
     <Compile Include="Jobs\GroupLeaderAbsenceNotifications.cs" />
+    <Compile Include="Jobs\PostV90DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
