@@ -270,7 +270,7 @@ namespace Rock.Services.NuGet
             {
                 var blockType = block.BlockType;
 
-                if ( !blockTypes.ContainsKey( blockType.Guid ) )
+                if ( !blockTypes.ContainsKey( blockType.Guid ) && !string.IsNullOrWhiteSpace( blockType.Path ) )
                 {
                     blockTypes.Add( blockType.Guid, blockType );
 
@@ -494,7 +494,7 @@ namespace Rock.Services.NuGet
             // Remove export.json file from the list of files to be unzipped
             var filesToUnzip = packageFiles.Where( f => !f.Path.Contains( "export.json" ) ).ToList();
             var blockTypeService = new BlockTypeService( new RockContext() );
-            var installedBlockTypes = blockTypeService.Queryable();
+            var installedBlockTypes = blockTypeService.Queryable().Where( b => !string.IsNullOrEmpty( b.Path ) );
             var webRoot = HttpContext.Current.Server.MapPath( "~" );
 
             // Compare the packages files with currently installed block types, removing anything that already exists

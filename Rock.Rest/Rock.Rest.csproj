@@ -58,6 +58,9 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Mobile.Common, Version=0.1.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.1.9\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
@@ -145,6 +148,7 @@
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\SequencesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
+    <Compile Include="Controllers\MobileController.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
