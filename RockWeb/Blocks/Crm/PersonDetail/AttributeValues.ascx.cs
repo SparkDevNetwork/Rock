@@ -63,16 +63,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Order = 2
         )]
 
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
+    [TextField( "Block Title",
+        Key = AttributeKeys.BlockTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "",
         Order = 3 )]
 
-    [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
-        Description = "The CSS class name to use for the heading icon.",
+    [TextField( "Block Icon",
+        Key = AttributeKeys.BlockIcon,
+        Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "",
         Order = 4 )]
@@ -91,8 +91,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string Category = "Category";
             public const string AttributeOrder = "AttributeOrder";
             public const string UseAbbreviatedName = "UseAbbreviatedName";
-            public const string SetPageTitle = "SetPageTitle";
-            public const string SetPageIcon = "SetPageIcon";
+            public const string BlockTitle = "BlockTitle";
+            public const string BlockIcon = "BlockIcon";
             public const string ShowCategoryNamesasSeparators = "ShowCategoryNamesasSeparators";
         }
 
@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 category = CategoryCache.Get( categories.First() );
             }
 
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            string panelTitle = this.GetAttributeValue( AttributeKeys.BlockTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 lTitle.Text = "Attribute Values";
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            string panelIcon = this.GetAttributeValue( AttributeKeys.BlockIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
