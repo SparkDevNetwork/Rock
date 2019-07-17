@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -155,8 +154,7 @@ namespace Rock.Rest.Controllers
                             // Get the root type
                             int pathPointer = 0;
                             EntityTypeCache entityType = null;
-                            string entityTypeQualifierColumn = null;
-                            string entityTypeQualifierValue = null;
+                            MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] entityTypeQualifiers = null;
                             while ( entityType == null && pathPointer < idParts.Count() )
                             {
                                 string item = idParts[pathPointer];
@@ -164,8 +162,7 @@ namespace Rock.Rest.Controllers
                                 string entityTypeMergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
                                 MergeFieldPicker.EntityTypeInfo entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( entityTypeMergeFieldId );
                                 entityType = entityTypeInfo?.EntityType;
-                                entityTypeQualifierColumn = entityTypeInfo?.EntityTypeQualifierColumn;
-                                entityTypeQualifierValue = entityTypeInfo?.EntityTypeQualifierValue;
+                                entityTypeQualifiers = entityTypeInfo?.EntityTypeQualifiers;
                                 pathPointer++;
                             }
 
@@ -237,11 +234,19 @@ namespace Rock.Rest.Controllers
                                 if ( entityType.IsEntity )
                                 {
                                     var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
-                                    if ( entityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
+                                    if ( entityTypeQualifiers?.Any() == true )
                                     {
-                                        attributeList = attributeList.Where( a =>
-                                            a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn, StringComparison.OrdinalIgnoreCase )
-                                            && a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue, StringComparison.OrdinalIgnoreCase ) ).ToList();
+                                        var qualifiedAttributeList = new List<AttributeCache>();
+                                        foreach ( var entityTypeQualifier in entityTypeQualifiers )
+                                        {
+                                            var qualifierAttributes = attributeList.Where( a =>
+                                                 a.EntityTypeQualifierColumn.Equals( entityTypeQualifier.Column, StringComparison.OrdinalIgnoreCase )
+                                                 && a.EntityTypeQualifierValue.Equals( entityTypeQualifier.Value, StringComparison.OrdinalIgnoreCase ) ).ToList();
+
+                                            qualifiedAttributeList.AddRange( qualifierAttributes );
+                                        }
+
+                                        attributeList = qualifiedAttributeList;
                                     }
                                     else
                                     {
