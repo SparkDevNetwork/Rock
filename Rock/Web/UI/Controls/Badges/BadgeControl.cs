@@ -41,10 +41,10 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["PersonBadge"] as string;
-            if ( !string.IsNullOrWhiteSpace( json ) )
+            var badgeTypeId = ViewState["BadgeTypeId"] as int?;
+            if ( badgeTypeId.HasValue )
             {
-                BadgeTypeCache = BadgeTypeCache.FromJson( json );
+                BadgeTypeCache = BadgeTypeCache.Get( badgeTypeId.Value );
             }
         }
 
@@ -56,9 +56,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            if (BadgeTypeCache != null)
+            if ( BadgeTypeCache != null )
             {
-                ViewState["PersonBadge"] = BadgeTypeCache.ToJson();
+                ViewState["BadgeTypeId"] = BadgeTypeCache.Id.ToString();
             }
 
             return base.SaveViewState();
