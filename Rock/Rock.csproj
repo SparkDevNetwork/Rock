@@ -194,6 +194,9 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Mobile.Common, Version=0.1.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.1.9\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
     </Reference>
@@ -392,6 +395,27 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Blocks\BlockActionAttribute.cs" />
+    <Compile Include="Attribute\IconCssClassAttribute.cs" />
+    <Compile Include="Mobile\AdditionalSettings.cs" />
+    <Compile Include="Mobile\TabLocation.cs" />
+    <Compile Include="Net\ClientInformation.cs" />
+    <Compile Include="Web\RockCustomSettingsProvider.cs" />
+    <Compile Include="Web\IRockCustomSettingsUserControl.cs" />
+    <Compile Include="Blocks\IRockMobileBlockType.cs" />
+    <Compile Include="Blocks\RockBlockType.cs" />
+    <Compile Include="Blocks\BlockActionResult.cs" />
+    <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
+    <Compile Include="Net\RockRequestContext.cs" />
+    <Compile Include="Attribute\TargetTypeAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileContent.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileDynamicContent.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileImage.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileLogin.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileProfileDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileRegister.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileWorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -417,6 +441,7 @@
     <Compile Include="Field\Types\SequenceFieldType.cs" />
     <Compile Include="Jobs\RebuildSequenceMaps.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
+    <Compile Include="Lava\Blocks\JsonProperty.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
     <Compile Include="Field\EntitySingleSelectionListFieldTypeBase.cs" />
@@ -585,6 +610,7 @@
     <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
+    <Compile Include="Mobile\MobileHelper.cs" />
     <Compile Include="Utility\JsonInterfaceContractResolver.cs" />
     <Compile Include="Utility\DynamicPropertyMapContractResolver.cs" />
     <Compile Include="Utility\RockObsolete.cs" />
@@ -1800,6 +1826,7 @@
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
     <Compile Include="Web\HttpModules\HttpModuleComponent.cs" />
     <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
+    <Compile Include="Blocks\IRockBlockType.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
@@ -1854,6 +1881,9 @@
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\UI\IPickerBlock.cs" />
     <Compile Include="Web\UI\IIdleRedirectBlock.cs" />
+    <Compile Include="Web\UI\RockBlockTypeWrapper.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />

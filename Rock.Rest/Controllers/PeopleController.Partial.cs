@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -498,6 +499,72 @@ namespace Rock.Rest.Controllers
             // Success
             rockContext.SaveChanges();
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
+        }
+
+        /// <summary>
+        /// Updates the profile photo of the logged in person.
+        /// </summary>
+        /// <param name="photoBytes">The photo bytes.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/UpdateProfilePhoto" )]
+        [HttpPost]
+        public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
+        {
+            var personId = GetPerson()?.Id;
+
+            if ( !personId.HasValue )
+            {
+                return NotFound();
+            }
+
+            if ( photoBytes.Length == 0 || string.IsNullOrWhiteSpace( filename ) )
+            {
+                return BadRequest();
+            }
+
+            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+            if ( filename.IndexOfAny( illegalCharacters ) >= 0 )
+            {
+                return BadRequest( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ")." );
+            }
+
+            using ( var rockContext = new Data.RockContext() )
+            {
+                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+                // always create a new BinaryFile record of IsTemporary when a file is uploaded
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFile = new BinaryFile();
+                binaryFileService.Add( binaryFile );
+
+                binaryFile.IsTemporary = false;
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.MimeType = "octet/stream";
+                binaryFile.FileSize = photoBytes.Length;
+                binaryFile.FileName = filename;
+                binaryFile.ContentStream = new MemoryStream( photoBytes );
+
+                rockContext.SaveChanges();
+
+                var person = new Model.PersonService( rockContext ).Get( personId.Value );
+                int? oldPhotoId = person.PhotoId;
+                person.PhotoId = binaryFile.Id;
+
+                rockContext.SaveChanges();
+
+                if ( oldPhotoId.HasValue )
+                {
+                    binaryFile = binaryFileService.Get( oldPhotoId.Value );
+                    binaryFile.IsTemporary = true;
+
+                    rockContext.SaveChanges();
+                }
+
+                return Ok( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}{person.PhotoUrl}" );
+            }
         }
 
         #endregion

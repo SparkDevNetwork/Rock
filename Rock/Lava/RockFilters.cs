@@ -4841,6 +4841,50 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Determines whether a person is following an entity.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input entity to use for follow testing.</param>
+        /// <param name="personObject">An optional Person object to use when determining followed status.</param>
+        /// <returns></returns>
+        public static bool IsFollowed( DotLiquid.Context context, object input, object personObject = null )
+        {
+            //
+            // Ensure the input is an entity object.
+            //
+            if ( !( input is IEntity entity ) )
+            {
+                return false;
+            }
+
+            //
+            // If the person was not specified in the parameters then use
+            // the current person. If still not found then return not-followed
+            // status.
+            //
+            if ( !( personObject is Person person ) )
+            {
+                person = GetCurrentPerson( context );
+
+                if ( person == null )
+                {
+                    return false;
+                }
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                int followingEntityTypeId = entity.TypeId;
+                var followed = new FollowingService( rockContext ).Queryable()
+                    .Where( f => f.EntityTypeId == followingEntityTypeId && f.EntityId == entity.Id )
+                    .Where( f => f.PersonAlias.PersonId == person.Id )
+                    .Any();
+
+                return followed;
+            }
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <param name="context">The context.</param>
