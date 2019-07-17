@@ -58,6 +58,7 @@
             e.preventDefault();
             e.stopPropagation();
             var html = '<div class="form-group rollover-container js-slug-row">' +
+                '<label class="js-input-slug-warning text-danger hidden">Invalid Characters Entered</label>' +
                 '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                 '<div class="input-group js-input-slug-group input-group-edit">' +
                 '<input class="form-control js-slug-input" />' +
@@ -73,6 +74,10 @@
             subscribeToEvents();
         });
 
+        $(_selectors.inputSlug).unbind('keyup').keyup(function (e) {
+            this.value = this.value.toLowerCase();
+        });
+
         $(_selectors.btnSlugSave).unbind('click');
         $(_selectors.btnSlugSave).click(function (e) {
             e.preventDefault();
@@ -80,6 +85,16 @@
             var row = $(this).closest(_selectors.slugRow);
             var inputSlug = row.find(_selectors.inputSlug).val();
             var slugId = row.find(_selectors.slugId).val();
+
+            // make sure inputSlug has only valid characters
+            var regex = new RegExp("[^a-zA-Z0-9-]");
+            if (regex.test(inputSlug) === true) {
+                $('.js-input-slug-warning').removeClass('hidden');
+                return;
+            }
+
+            $('.js-input-slug-warning').addClass('hidden');
+
             if (inputSlug !== '') {
                 if ($(contentChannelItemSelector).val() === "0") {
                     uniqueSlug(inputSlug, row);
