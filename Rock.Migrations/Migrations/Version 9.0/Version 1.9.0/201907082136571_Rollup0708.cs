@@ -36,6 +36,7 @@ namespace Rock.Migrations
             AddFinancialTransactionNoCashAssetTypeValueIdUp();
             FixDefinedTypeCategoryPersonalityAssessments();
             AddEventWizardPageUp();
+            FixChartJS();
         }
         
         /// <summary>
@@ -220,5 +221,15 @@ namespace Rock.Migrations
             RockMigrationHelper.DeletePage( "7F889C16-0656-4015-8A90-B43D3BD2467E" ); //  Page: Event Wizard, Layout: Full Width, Site: Rock RMS
         }
 
+        /// <summary>
+        /// GJ: ChartJS Fix Migration
+        /// </summary>
+        private void FixChartJS()
+        {
+            Sql( @"
+                UPDATE [LavaShortcode]
+                SET [Parameters]=N'fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|yaxislabels^#777|fontfamily^sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverradius^3|xaxistype^linear|yaxislabels^|yaxismin^|yaxismax^|yaxisstepsize^'
+                WHERE [Guid] = '43819A34-4819-4507-8FEA-2E406B5474EA'" );
+        }
     }
 }
