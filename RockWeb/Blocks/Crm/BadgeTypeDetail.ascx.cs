@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows the details of a particular badge." )]
 
-    public partial class PersonBadgeDetail : RockBlock
+    public partial class BadgeTypeDetail : RockBlock
     {
 
         #region Properties

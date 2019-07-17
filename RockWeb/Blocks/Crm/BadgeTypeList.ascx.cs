@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Crm
     [Description( "Shows a list of all entity badges." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class PersonBadgeList : RockBlock, ICustomGridColumns
+    public partial class BadgeTypeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
 
