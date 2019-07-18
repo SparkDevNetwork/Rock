@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
@@ -38,6 +41,7 @@ namespace Rock
         /// The call ms total
         /// </summary>
         public static double _callMSTotal = 0.00;
+        public static double _materializedMSTotal = 0.00;
 
         private class DebugHelperUserState
         {
@@ -227,9 +231,42 @@ namespace Rock
 
                     System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
                     _callMSTotal += debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds;
+
+                    materializedStopwatch = Stopwatch.StartNew();
+                    currentCallNumber = debugHelperUserState.CallNumber;
+
+                    foreach ( var dbContext in interceptionContext.DbContexts )
+                    {
+                        if ( !objectIntializedContexts.Contains( dbContext ) )
+                        {
+                            objectIntializedContexts.Add( dbContext );
+                            ( dbContext as IObjectContextAdapter ).ObjectContext.ObjectMaterialized += ObjectContext_ObjectMaterialized;
+                        }
+                    }
                 }
             }
+
+
+            private void ObjectContext_ObjectMaterialized( object sender, System.Data.Entity.Core.Objects.ObjectMaterializedEventArgs e )
+            {
+                materializedStopwatch.Stop();
+                var elapsed = materializedStopwatch.Elapsed.TotalMilliseconds;
+                _materializedMSTotal += elapsed;
+                if ( elapsed >= 0.1 )
+                {
+                    System.Diagnostics.Debug.Write( $"\n/* Call# {currentCallNumber}: {e.Entity} ( {e.Entity.GetType()}) ObjectMaterialized ElapsedTime [{elapsed}ms] \n" );
+                }
+                materializedStopwatch.Restart();
+            }
         }
+
+        [ThreadStatic]
+        private static Stopwatch materializedStopwatch;
+
+        [ThreadStatic]
+        private static int currentCallNumber;
+
+        public static HashSet<System.Data.Entity.DbContext> objectIntializedContexts = new HashSet<System.Data.Entity.DbContext>();
 
         /// <summary>
         /// The _debug logging database command interceptor
@@ -261,6 +298,7 @@ namespace Rock
         {
             _callCounts = 0;
             _callMSTotal = 0.00;
+            _materializedMSTotal = 0.00;
             SQLLoggingStop();
             _debugLoggingDbCommandInterceptor.DbContext = dbContext;
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
@@ -273,7 +311,7 @@ namespace Rock
         {
             if ( _callCounts != 0 )
             {
-                Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
+                Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _materializedMSTotal:{_materializedMSTotal},  _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
             }
 
             DbInterception.Remove( _debugLoggingDbCommandInterceptor );

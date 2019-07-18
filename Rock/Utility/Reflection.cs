@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -232,6 +233,40 @@ namespace Rock
             Type service = serviceType.MakeGenericType( new Type[] { entityType } );
             Rock.Data.IService serviceInstance = Activator.CreateInstance( service, dbContext ) as Rock.Data.IService;
             return serviceInstance;
+        }
+
+        /// <summary>
+        /// Determines whether the specified property of an IEntity is mapped to a real database field
+        /// </summary>
+        /// <param name="propertyInfo">The property information.</param>
+        /// <returns>
+        ///   <c>true</c> if [is mapped database property] [the specified property information]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsMappedDatabaseProperty( PropertyInfo propertyInfo )
+        {
+            // if marked as NotMapped, it isn't a database property
+            var notMapped = propertyInfo.GetCustomAttribute<NotMappedAttribute>() != null;
+
+            if ( notMapped )
+            {
+                return false;
+            }
+
+            // if the property is marked virtual (unless it is 'virtual final'), don't include it since it isn't a real database field
+            var getter = propertyInfo.GetGetMethod();
+            var isVirtual = getter?.IsVirtual == true;
+            if ( isVirtual )
+            {
+                // NOTE: Properties that implement interface members (for example Rock.Data.IOrder) will also be marked as 'virtual final' by the compiler, so check IsFinal to determine if it was the compiler that did it.
+                // See https://docs.microsoft.com/en-us/dotnet/api/system.reflection.methodbase.isfinal?redirectedfrom=MSDN&view=netframework-4.7.2#System_Reflection_MethodBase_IsFinal
+                bool isVirtualDueToInterface = getter?.IsFinal == true;
+                if ( !isVirtualDueToInterface )
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Data.Entity.Validation;
 using System.Linq;
 
 using Rock.Data;
@@ -41,37 +40,19 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            if ( Audits != null && Audits.Count > 0 )
+            if ( Audits?.Any() == true )
             {
-                try {
-                    var auditsToAdd = Audits.Where( a => a.Details.Any() );
-                    if ( auditsToAdd.Any() )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var auditService = new AuditService( rockContext );
-
-                            auditService.AddRange( auditsToAdd );
-
-                            rockContext.SaveChanges( true );
-                        }
-                    }
-                }
-                catch ( DbEntityValidationException devx )
+                var auditsToAdd = Audits.Where( a => a.Details.Any() );
+                if ( auditsToAdd.Any() )
                 {
-                    string errorMessage = string.Empty;
-
-                    foreach (var eve in devx.EntityValidationErrors )
+                    using ( var rockContext = new RockContext() )
                     {
-                        errorMessage += string.Format("Entity of type \"{0}\" in state \"{1}\" has the following validation errors: {", eve.Entry.Entity.GetType().Name, eve.Entry.State );
-                        foreach ( var ve in eve.ValidationErrors )
-                        {
-                            errorMessage += string.Format( "Property: \"{0}\", Error: \"{1}\"",ve.PropertyName, ve.ErrorMessage );
-                        }
-                        errorMessage += "}";
-                    }
+                        var auditService = new AuditService( rockContext );
 
-                    throw new System.Exception( errorMessage, devx );
+                        auditService.AddRange( auditsToAdd );
+
+                        rockContext.SaveChanges( true );
+                    }
                 }
             }
         }
