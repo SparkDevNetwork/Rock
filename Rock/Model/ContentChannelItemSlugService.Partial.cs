@@ -64,6 +64,12 @@ namespace Rock.Model
 
             slug = MakeSlugValid( slug );
 
+            // If MakeSlugValid removes all the characters then just return null.
+            if( slug.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             int intialSlugLength = slug.Length;
             int paddedNumber = 0;
             do
@@ -116,6 +122,11 @@ namespace Rock.Model
         public ContentChannelItemSlug SaveSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId )
         {
             var uniqueSlug = this.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
+
+            if ( uniqueSlug.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
 
             var rockContext = ( RockContext ) this.Context;
 
