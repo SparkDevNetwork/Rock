@@ -65,7 +65,7 @@
                             <Rock:LocationPicker ID="rlpLocation" runat="server" AllowedPickerModes="Named" SourceTypeName="Rock.Model.SequenceEnrollment, Rock" PropertyName="LocationId" Label="Location" />
                         </div>
                         <div class="col-sm-6 col-md-4">
-                            <Rock:DatePicker ID="rdpEnrollmentDate" Visible="false" runat="server" SourceTypeName="Rock.Model.SequenceEnrollment, Rock" PropertyName="EnrollmentDate" Label="Enrollment Date" />
+                            <Rock:DatePicker ID="rdpEnrollmentDate" runat="server" SourceTypeName="Rock.Model.SequenceEnrollment, Rock" PropertyName="EnrollmentDate" Label="Enrollment Date" />
                         </div>
                     </div>
 
