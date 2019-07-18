@@ -173,7 +173,7 @@ namespace Rock.Jobs
 
                     if ( absentPersons.Count > 0 )
                     {
-                        var recipients = new List<RecipientData>();
+                        var recipients = new List<RockEmailMessageRecipient>();
                         foreach ( var leader in groupLeaders )
                         {
                             // create merge object
@@ -181,7 +181,7 @@ namespace Rock.Jobs
                             mergeFields.Add( "AbsentMembers", absentPersons );
                             mergeFields.Add( "Group", group );
                             mergeFields.Add( "Person", leader.Person );
-                            recipients.Add( new RecipientData( leader.Person.Email, mergeFields ) );
+                            recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
                         }
 
                         var errorMessages = new List<string>();
