@@ -1,0 +1,153 @@
+
+.navbar-quicklinks {
+    list-style-type: none;
+    display: flex;
+    padding: 0;
+    margin: 0;
+    font-family: "din-2014-narrow",sans-serif;
+    font-weight: 600;
+    font-style: normal;
+}
+
+.navbar-quicklink-item {
+    flex-grow: 1;
+}
+
+.navbar-quicklink-link {
+    display: inline-flex;
+    height: 100%;
+    padding: 1em 1em;
+    color: inherit;
+
+    &:hover, &:active, &:focus {
+        text-decoration: none;
+    }
+}
+
+.navbar-quicklink-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    line-height: 1em;
+}
+
+.navbar-quicklink-label-text {
+    transition: padding ease-in-out 300ms, width ease-in-out 300ms;
+    width: 0;
+    overflow: hidden;
+}
+
+.navbar-quicklink-icon {
+    transition: padding ease-in-out 300ms, width ease-in-out 300ms;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+}
+
+// Mobile view
+@media (max-width: @screen-sm-max) {
+
+    .navbar-quicklinks {
+        width: 100%;
+    }
+
+    .navbar-quicklink-link {
+        align-items: center;
+    }
+
+    .navbar-quicklink-icon {
+        font-size: 1.25em;
+    }
+}
+
+// Small Desktop view
+@media (min-width: @screen-md-min) {
+
+    .navbar-quicklinks {
+        font-size: 0.916666667rem;
+        width: auto;
+    }
+
+    .navbar-quicklink-link {
+        flex-direction: column;
+        align-items: flex-start;
+
+        &:hover, &:active, &:focus {
+            color: inherit;
+        }
+
+        &::after {
+            content: "";
+            display: block;
+            height: 2px;
+            width: 0;
+            margin-top: 1px;
+            background-color: #8bc540;
+            transition: all 0.6s cubic-bezier(0.85,0,0.14,1.01);
+        }
+
+        &:hover::after {
+            width: 100%;
+        }
+    }
+
+    .navbar-quicklink-icon {
+        font-size: 1.3em;
+    }
+
+    .opaque {
+        .navbar-quicklink-link {
+            color: @brand-primary;
+            flex-direction: row;
+            align-items: center;
+
+            &:hover, &:active, &:focus {
+                color: @brand-primary;
+            }
+
+
+            &::after {
+                display: none;
+            }
+        }
+
+        .navbar-quicklink-label-text {
+            width: 0;
+            margin: 0;
+        }
+
+        .navbar-quicklink-icon {
+            margin-top: 0;
+        }
+    }
+
+    .noheader .navbar-quicklink-link {
+        color: @brand-primary;
+        flex-direction: row;
+        align-items: center;
+
+        &:hover, &:active, &:focus {
+            color: @brand-primary;
+        }
+
+        &::after {
+            display: none;
+        }
+    }
+}
+
+
+
+
+// Medium Desktop view
+@media (min-width: @screen-lg-min) {
+
+    .navbar-quicklink-label-text {
+        width: auto;
+        margin-left: 0.1em;
+        margin-right: 0.1em;
+    }
+
+    .navbar-quicklink-icon {
+        margin-top: -3px;
+    }
+}

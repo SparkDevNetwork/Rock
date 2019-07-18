@@ -2,7 +2,7 @@
 
 {%- for campus in SortedCampuses -%}
     {%- assign serviceDay = "" -%}
-    <div class="location">
+    <div class="location" id="{{ campus.ShortCode }}">
         <div class="locPhoto paroller" data-paroller-factor="0.2" data-paroller-factor-sm="0" data-paroller-factor-md="0" data-paroller-factor-lg="0.1" data-paroller-type="foreground" data-paroller-direction="vertical">
             
             <img src="{{ campus | Attribute:'CampusPhoto','Url' }}" alt="{{campus.Name}}" />

@@ -1,0 +1,107 @@
+/*
+//  Navbar Nav
+//  This is for the navigation menu inside the header's navbar
+*/
+
+.navbar-nav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    & > li > a {
+        line-height: 1em;
+        padding: 0.5em;
+    }
+}
+
+.nav-link {
+    display: block;
+    font-size: 1.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-family: "din-2014-narrow",sans-serif;
+
+    &:hover, &:focus, &:active {
+        text-decoration: none;
+        color: white;
+    }
+}
+
+.nav-logo {
+    display: none;
+}
+
+.nav-item {
+    margin: 0.5em 0;
+}
+
+@media (min-width: @screen-md-min) {
+
+    .navbar-nav {
+        list-style-type: none;
+        display: flex;
+        align-items: stretch;
+        flex-grow: 1;
+        margin: 0 -23px;
+
+        & > li > a {
+            padding: 0;
+        }
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: stretch;
+        margin: 0 1.4rem;
+        position: relative;
+        font-weight: bold;
+        font-style: normal;
+        font-family: "din-2014-narrow",sans-serif;
+        line-height: 1rem;
+    }
+
+    .nav-link {
+        font-size: 1.16666em;
+        display: flex;
+        align-items: center;
+        color: inherit;
+        text-transform: uppercase;
+        transition: color ease-in-out 300ms;
+
+        &:hover, &:active, &:focus {
+            color: inherit;
+            text-decoration: none;
+        }
+    }
+
+    .opaque .nav-link,
+    .noheader .nav-link {
+        &:hover, &:active, &:focus {
+            color: @brand-primary;
+        }
+    }
+
+    .nav-logo {
+        color: @white;
+        display: block;
+        font-size: 2.35em;
+        margin: 3px 0;
+    }
+
+    .opaque .nav-logo,
+    .noheader .nav-logo {
+        color: @brand-primary;
+    }
+
+    .nav-home-text {
+        display: none;
+    }
+
+}
+
+@media (min-width: @screen-xl-min) {
+
+    .navbar-nav {
+        margin: 0 -34px;
+    }
+}

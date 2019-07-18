@@ -6,8 +6,8 @@
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 
-@import "_colors.less";
 @import "_fishhook-mixins.less";
+@import "_colors.less";
 
 @import "_variables.less";
 @import "_variable-overrides.less";
@@ -29,7 +29,7 @@
 html,
 body,
 body > form {
-    height: 100%;
+    min-height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
@@ -63,14 +63,101 @@ body {
     line-height: 1.5;
 }
 
-// 2. Bootstrap Overides
+// 2. Bootstrap Overrides
 // -------------------------
 
 // 3. Theme Styling
-// -------------------------
 
 @import "partials/_app-banner.less";
 @import "partials/_social-icons.less";
+
+
+// z-index Overrides
+// -------------------------
+
+/*
+
+    // The following styles are set directly on elements by Rock's js, so we
+    // can't really override them. I'm including them here for reference.
+    
+    // On model open:
+
+    .modal-scrollable {
+        z-index: 1060;
+    }
+
+    .modal-backdrop {
+        z-index: 1050;
+    }
+    
+    // On hover:
+
+    .block-configuration {
+        z-index: 1000;
+    }
+    
+    // After hover:
+
+    .block-configuration {
+        z-index: 9001;
+    }
+
+*/
+
+// zone-configuration should match block-configuration
+.zone-configuration {
+    z-index: 1000;
+
+    &:hover {
+        z-index: 9001;
+    }
+}
+
+// The admin footer should be above most things, but below the nav menu and modal dialogs
+#cms-admin-footer {
+    z-index: 1040;
+}
+
+
+// Navigation
+// -------------------------
+#zone-navigation {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    line-height: 0; // IE needs this. Not sure why.
+    // The nav menu should be above everything except modal dialogs
+    z-index: 1045;
+}
+
+.noheader #zone-navigation {
+    position: relative;
+    position: sticky;
+}
+
+.block-highlight #zone-navigation,
+.zone-highlight #zone-navigation {
+    position: relative;
+}
+
+.fullscreen-scrollable() {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow: auto;
+}
+
+@import "partials/_notificationbar.less";
+@import "partials/_navbar.less";
+@import "partials/_navbar-nav.less";
+@import "partials/_navbar-quicklinks.less";
+@import "partials/_nav-dropdown.less";
+@import "partials/_nav-pagelist.less";
+@import "partials/_nav-sectionlist.less";
+
+
 
 // 4. Responsive Overrides
 // -------------------------

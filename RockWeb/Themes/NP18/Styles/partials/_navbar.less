@@ -1,0 +1,118 @@
+
+.navbar {
+    display: flex;
+    margin: 0;
+    position: relative;
+    border: none;
+    float: none;
+    transition:
+        padding ease-in-out 300ms,
+        box-shadow ease-in-out 300ms,
+        background-color ease-in-out 300ms,
+        margin-bottom ease-in-out 300ms;
+    z-index: 100;
+}
+
+.navbar-collapse {
+    flex-grow: 1;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.75em 1em;
+    font-size: 1.25em;
+    line-height: 1em;
+    color: @brand-primary;
+    background-color: transparent;
+    z-index: 100;
+}
+
+.navbar-toggle-content {
+    width: 100%;
+}
+
+.navbar.open {
+    .navbar-toggler {
+        position: fixed;
+        right: 0;
+        top: 0;
+        font-size: 2em;
+
+        .np-menu::before {
+            content: "\e90b";
+            color: #efefef;
+        }
+    }
+}
+
+// Mobile view
+@media (max-width: @screen-sm-max) {
+    .navbar {
+        padding: 0 2em;
+        color: gray;
+        background-color: white;
+    }
+    .navbar-toggle-content {
+        display: none;
+        background-color: #282828;
+        padding: 6.75em 2.75em;
+    }
+
+    .navbar.open {
+        .navbar-toggle-content {
+            display: block;
+            .fullscreen-scrollable
+        }
+    }
+}
+
+// Small Desktop view
+@media (min-width: @screen-md-min) {
+
+    .navbar {
+        padding: 25px 45px;
+        color: @white;
+        background-color: transparent;
+    }
+
+    .noheader .navbar {
+        padding: 20px 45px;
+        color: gray;
+        background-color: @truewhite;
+    }
+
+    .opaque .navbar {
+        padding: 10px 45px;
+        margin-bottom: 15px; // Needed so the 
+        color: gray;
+        background-color: @truewhite;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    }
+
+    .navbar-toggler {
+        display: none;
+    }
+
+    .block-highlight .navbar-toggle-content,
+    .zone-highlight .navbar-toggle-content {
+        position: relative;
+    }
+}
+
+// Large Desktop view
+@media (min-width: @screen-xl-min) {
+
+    .navbar {
+        padding: 35px 70px;
+    }
+
+    .noheader .navbar {
+        padding: 20px 70px;
+    }
+
+    .opaque .navbar {
+        padding: 10px 70px;
+    }
+
+
+}

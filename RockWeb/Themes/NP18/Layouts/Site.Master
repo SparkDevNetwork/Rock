@@ -14,6 +14,14 @@
     protected override void OnInit(EventArgs e)
     {
         base.OnInit(e);
+
+        // Check if we have a header image defined and set the body class appropriately
+        var page = (Page as Rock.Web.UI.RockPage);
+        if(page != null && string.IsNullOrWhiteSpace(page.GetAttributeValue("PageHeaderImage")))
+        {
+            body.Attributes.Add("class", "noheader");
+        }
+
     }
 
 </script>
@@ -50,7 +58,10 @@
     <link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" integrity="sha384-3Oksn1rfcunmyufe4U77X7mx3tf2WwJYDR9pMmX7iOZBO53RWIGodHaZtFkFBVZB" crossorigin="anonymous">
 
     <!-- NewPointe 2018 Theme scripts -->
-    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.min.js", true ) %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Scripts/scripts.js", true ) %>"></script>
+
+    <!-- position: sticky polyfill -->
+    <script src="<%# ResolveRockUrl("~~/Scripts/stickyfill.min.js", true ) %>"></script>
 
     <!-- animate.js (Used for scroll-triggered animations) -->
     <script src="https://cdn.jsdelivr.net/npm/animate.js@1.4.1/assets/js/dist/animate.min.js" integrity="sha384-v878xwitWndgO2EepfRrgOy+ygmGIouBrMa0JoEE2iB850hugcMfv8Piilf9BPB8" crossorigin="anonymous"></script>
@@ -63,48 +74,13 @@
 
     <form id="form1" runat="server">
 
-        <!-- Page Header -->
-        <header>
-            <nav class="primary">
-                <Rock:Zone Name="Navigation" runat="server" />
-                <div class="navbar-subheader">
-                    <ul class="list-inline navbar-subnav">
-                        <li>
-                            <a class="church-menu-opener" href="/locations" aria-expanded="false">
-                                <span class="sr-only">Toggle locations menu</span>
-                                <span class="np-location"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="events-opener" href="/events">
-                                <span class="sr-only">Events</span>
-                                <span class="np-calendar"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="give-opener" href="/give">
-                                <span class="sr-only">Give</span>
-                                <span class="np-give"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="search-opener" href="#search">
-                                <span class="sr-only">Toggle search menu</span>
-                                <span class="np-search"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="menu-opener" href="#menu" aria-expanded="false">
-                                <span class="sr-only">Toggle navigation</span>
-                                <span class="np-menu"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            <Rock:Zone Name="Header" runat="server" />
-        </header>
-
+        <!-- Page Nav -->
+        <Rock:Zone Name="Navigation" runat="server" />
+        
+        <!-- Header -->
+        <Rock:Zone Name="Header" runat="server" />
+        
+        <!-- Main Content -->
         <main>
 
             <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
@@ -112,18 +88,20 @@
             <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
         </main>
-
+        
+        <!-- Subfooter -->
         <div class="subfooter">
             <Rock:Zone Name="SubFooter" runat="server" />
         </div>
-
+        
+        <!-- Footer -->
         <footer>
             <div class="container">
                 <div class="row">
                     <div class="col-sm-3">
                         <Rock:Zone Name="Footer Column 1" runat="server" />
                     </div>
-                    <div class="col-sm-3  col-sm-offset-1 col-sm-push-4">
+                    <div class="col-sm-3 col-sm-offset-1 col-sm-push-4">
                         <Rock:Zone Name="Footer Column 3" runat="server" />
                         <Rock:Zone Name="Login" runat="server" />
                     </div>
@@ -136,6 +114,7 @@
                         <Rock:Zone Name="Footer" runat="server" />
                     </div>
                 </div>
+            </div>
         </footer>
 
         <%-- controls for scriptmanager and update panel --%>
@@ -163,6 +142,7 @@
         });
         animate.init();
         $('.paroller').paroller();
+        Stickyfill.add(document.querySelectorAll('#zone-navigation'));
     </script>
 
 </body>

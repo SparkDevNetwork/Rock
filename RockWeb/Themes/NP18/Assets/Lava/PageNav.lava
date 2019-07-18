@@ -1,53 +1,107 @@
-<div id="navbar-main">
-{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
-	<a class="closer" href="#close">Close</a>
-  <ul id="quick-links">
-    {% for includePage in IncludePageList %}
-			{% assign parts = includePage | PropertyToKeyValue %}
-			<li id="ipl_{{ parts.Key | ToCssClass }}">
-				<a href="{{ parts.Value }}">{{ parts.Key }}</a>
-      </li>
-    {% endfor %}
-  </ul>
-  <ul id="main-menu">
-  	<li id="home"><a href="/"><i class="np-logomark"></i> Home</a></li>
-		{% for childPage in Page.Pages %}
-			{% assign hasGrandchildren = "" %}
-			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
-				{% for grandChildPage in childPage.Pages %}
-						{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %}
-							{% assign hasGrandchildren = "has-grandchildren" %}
-						{% endif %}
-				{% endfor %}
-			{% endif %}
-      <li id="menu_{{ childPage.Title | ToCssClass }}" class="{% if childPage.Current == 'true' %}active{% endif%}{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %} has-children{% endif%} {{hasGrandchildren}}">
-			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
-				<a href="#" class="dropdown-trigger" role="button" aria-haspopup="true" aria-expanded="false">{{ childPage.Title }} <span class="caret"></span></a>
-			{% else %}
-				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
-			{% endif %}
-			{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
-		    <ul class="child-menu">
-				{% for grandChildPage in childPage.Pages %}
-          <li class="{% if grandChildPage.Current == 'true' %}active{% endif%}{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %} has-children{% endif%}" id="menu_{{ childPage.Title | ToCssClass }}_{{ grandChildPage.Title | ToCssClass }}">
-						{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages != empty %}
-							<a href="#">{{ grandChildPage.Title }}</a>
-					    <ul class="grandchild-menu">
-							{% for greatGrandChildPage in grandChildPage.Pages %}
-			          <li{% if greatGrandChildPage.Current == 'true' %} class="active"{% endif%} id="menu_{{ grandChildPage.Title | ToCssClass }}_{{ greatGrandChildPage.Title | ToCssClass }}">
-									<a href="{{ greatGrandChildPage.Url }}">{{ greatGrandChildPage.Title }}</a>
-			          </li>
-			        {% endfor %}
-					    </ul>
-					  {% else %}
-  						<a href="{{ grandChildPage.Url }}">{{ grandChildPage.Title }}</a>
-						{% endif %}
-          </li>
+{% assign PageHeaderImage_Url = CurrentPage | Attribute:'PageHeaderImage','Url' %}
+
+<nav class="navbar {% unless PageHeaderImage_Url != "" %}noheader{% endunless %}" aria-label="Navigation">
+    
+    <div class="navbar-toggle-content" id="navbar-toggle-content">
+        <ul class="navbar-nav" aria-label="Main Navigation">
+
+            <li class="nav-item" role="none">
+                <a class="nav-link" href="/" aria-label="Home">
+                    <span class="nav-home-text">Home</span>
+                    <i class="nav-home-icon nav-logo np-logomark" aria-hidden="true" ></i>
+                </a>
+            </li>
+
+            {% for navItem in Page.Pages %}
+                {% if navItem.Pages and navItem.Pages.size > 0 %}
+
+                    <li class="nav-item nav-dropdown">
+
+                        <a class="nav-link nav-dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ navItem.Title | Encode }} <span class="nav-caret" aria-hidden="true"></span></a>
+
+                        <div class="nav-dropdown-content">
+
+                            {% comment %} We need to check if any of the sub-pages have children so we know if they're actual pages or just nav sections {% endcomment %}
+
+                            {% assign childrenHaveChildren = false %}
+                            {% for subpage in navItem.Pages %}
+                                {% if subpage.Pages and subpage.Pages.size > 0 %}
+                                    {% assign childrenHaveChildren = true %}
+                                    {% break %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if childrenHaveChildren %}
+
+                                <ul class="nav-sectionlist">
+                                    {% for Page in navItem.Pages %}
+                                        <li class="nav-sectionlist-item nav-section">
+                                            {% if Page.Pages and Page.Pages.size > 0 %}
+
+                                                <div class="nav-section-header">{{ Page.Title | Encode }}</div>
+
+                                                <ul class="nav-section-content nav-pagelist">
+                                                    {% for Page in Page.Pages %}
+                                                        <li class="nav-pagelist-item">
+                                                            <a class="nav-pagelist-link" href="{{ Page.Url | Encode }}">{{ Page.Title | Encode }}</a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                            {% else %}
+
+                                                <a class="nav-section-header" href="{{ Page.Url | Encode }}">{{ Page.Title | Encode }}</a>
+
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+
+
+                            {% else %}
+
+                                <ul class="nav-pagelist">
+                                    {% for Page in navItem.Pages %}
+                                        <li class="nav-pagelist-item">
+                                            <a class="nav-pagelist-link" href="{{ Page.Url | Encode }}">{{ Page.Title | Encode }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+
+                            {% endif %}
+
+
+                        </div>
+
+                    </li>
+
+                {% else %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ navItem.Url | Encode }}">{{ navItem.Title | Encode }}</a>
+                    </li>
+
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <ul class="navbar-quicklinks" aria-label="Quick Links">
+        {% for includePage in IncludePageList %}
+            {% assign parts = includePage | PropertyToKeyValue %}
+            <li class="navbar-quicklink-item">
+                <a class="navbar-quicklink-link" href="{{ parts.Value | Encode }}">
+                    <div class="navbar-quicklink-label">
+                        <span class="navbar-quicklink-label-text">{{ parts.Key | Encode }}</span>
+                        <i class="navbar-quicklink-icon np-{{ parts.Key | ToCssClass | Replace:'events','calendar' }}"></i>
+                    </div>
+                </a>
+            </li>
         {% endfor %}
-		    </ul>
-			{% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-{% endif %}
-</div>
+    </ul>
+
+    <button class="navbar-toggler" type="button" data-toggle="navbar-content" aria-controls="navbar-toggle-content" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="np-menu"></span>
+    </button>
+
+</nav>
