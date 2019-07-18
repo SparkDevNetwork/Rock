@@ -55,7 +55,7 @@ namespace Rock.PersonProfile
             base.Refresh();
 
             // Create any attributes that need to be created
-            int badgeEntityTypeId = EntityTypeCache.Get( typeof( BadgeType ) ).Id;
+            int badgeEntityTypeId = EntityTypeCache.Get( typeof( Model.Badge ) ).Id;
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var badge in this.Components )

@@ -117,7 +117,7 @@ namespace Rock.PersonProfile
         /// so typically Person Badges do not need to load the attributes
         /// </summary>
         /// <param name="badge">The badge.</param>
-        public void LoadAttributes( BadgeType badge )
+        public void LoadAttributes( Model.Badge badge )
         {
             badge.LoadAttributes();
         }
@@ -140,7 +140,7 @@ namespace Rock.PersonProfile
         /// <param name="badge">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( BadgeTypeCache badge, string key )
+        protected string GetAttributeValue( BadgeCache badge, string key )
         {
             return badge.GetAttributeValue( key );
         }
@@ -150,6 +150,6 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( Web.Cache.BadgeTypeCache badge, HtmlTextWriter writer );
+        public abstract void Render( Web.Cache.BadgeCache badge, HtmlTextWriter writer );
     }
 }

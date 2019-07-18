@@ -37,7 +37,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new BadgeTypeService( new RockContext() );
+                var service = new BadgeService( new RockContext() );
                 var qry = service.Queryable();
                 return qry.OrderBy( a => a.Order ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }

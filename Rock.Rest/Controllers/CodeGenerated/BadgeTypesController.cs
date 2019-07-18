@@ -28,11 +28,11 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PersonBadges REST API
     /// </summary>
-    public partial class BadgeTypeController : Rock.Rest.ApiController<Rock.Model.BadgeType>
+    public partial class BadgeTypeController : Rock.Rest.ApiController<Rock.Model.Badge>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeTypeController"/> class.
         /// </summary>
-        public BadgeTypeController() : base( new Rock.Model.BadgeTypeService( new Rock.Data.RockContext() ) ) { } 
+        public BadgeTypeController() : base( new Rock.Model.BadgeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

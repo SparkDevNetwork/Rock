@@ -26,17 +26,17 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a type or category of badge.
+    /// Represents a badge.
     /// </summary>
     [RockDomain( "CRM" )]
-    [Table( "BadgeType" )]
+    [Table( "Badge" )]
     [DataContract]
-    public partial class BadgeType : Model<BadgeType>, IOrdered, ICacheable, IHasActiveFlag
+    public partial class Badge : Model<Badge>, IOrdered, ICacheable, IHasActiveFlag
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the given Name of the BadgeType. This value is an alternate key and is required.
+        /// Gets or sets the given Name of the badge. This value is an alternate key and is required.
         /// </summary>
         [Required]
         [MaxLength( 100 )]
@@ -44,7 +44,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a description of the BadgeType.
+        /// Gets or sets a description of the badge.
         /// </summary>
         [DataMember]
         public string Description { get; set; }
@@ -137,7 +137,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return BadgeTypeCache.Get( this.Id );
+            return BadgeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            BadgeTypeCache.UpdateCachedEntity( this.Id, entityState );
+            BadgeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion
@@ -158,12 +158,12 @@ namespace Rock.Model
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class PersonBadgeConfiguration : EntityTypeConfiguration<BadgeType>
+    public partial class BadgeConfiguration : EntityTypeConfiguration<Badge>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonBadgeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BadgeConfiguration"/> class.
         /// </summary>
-        public PersonBadgeConfiguration()
+        public BadgeConfiguration()
         {
             HasRequired( b => b.BadgeComponentEntityType ).WithMany().HasForeignKey( b => b.BadgeComponentEntityTypeId ).WillCascadeOnDelete( false );
             HasRequired( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );

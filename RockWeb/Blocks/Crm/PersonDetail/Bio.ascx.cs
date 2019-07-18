@@ -124,10 +124,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var badgeType = BadgeTypeCache.Get( guid );
-                            if ( badgeType != null )
+                            var badge = BadgeCache.Get( guid );
+                            if ( badge != null )
                             {
-                                blStatus.BadgeTypes.Add( badgeType );
+                                blStatus.BadgeTypes.Add( badge );
                             }
                         }
                     }

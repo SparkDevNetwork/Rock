@@ -24,12 +24,12 @@ using Rock.PersonProfile;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a personBadge that is required by the rendering engine.
+    /// Information about a badge that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     [DataContract]
-    public class BadgeTypeCache : ModelCache<BadgeTypeCache, BadgeType>
+    public class BadgeCache : ModelCache<BadgeCache, Badge>
     {
 
         #region Properties
@@ -149,16 +149,16 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
-            var badgeType = entity as BadgeType;
-            if ( badgeType == null ) return;
+            var badge = entity as Badge;
+            if ( badge == null ) return;
 
-            Name = badgeType.Name;
-            Description = badgeType.Description;
-            BadgeComponentEntityTypeId = badgeType.BadgeComponentEntityTypeId;
-            EntityTypeId = badgeType.EntityTypeId;
-            Order = badgeType.Order;
-            EntityTypeQualifierColumn = badgeType.EntityTypeQualifierColumn;
-            EntityTypeQualifierValue = badgeType.EntityTypeQualifierValue;
+            Name = badge.Name;
+            Description = badge.Description;
+            BadgeComponentEntityTypeId = badge.BadgeComponentEntityTypeId;
+            EntityTypeId = badge.EntityTypeId;
+            Order = badge.Order;
+            EntityTypeQualifierColumn = badge.EntityTypeQualifierColumn;
+            EntityTypeQualifierValue = badge.EntityTypeQualifierValue;
         }
 
         /// <summary>

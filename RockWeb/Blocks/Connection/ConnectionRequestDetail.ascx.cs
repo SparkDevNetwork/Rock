@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var badgeTypes = BadgeTypeCache.Get( guid );
+                        var badgeTypes = BadgeCache.Get( guid );
                         if ( badgeTypes != null )
                         {
                             blStatus.BadgeTypes.Add( badgeTypes );

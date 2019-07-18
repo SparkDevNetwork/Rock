@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BadgeTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.BadgeTypeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BadgeDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.BadgeDetail" %>
 
 <asp:UpdatePanel ID="upBadge" runat="server">
     <ContentTemplate>
@@ -16,13 +16,13 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BadgeType, Rock" PropertyName="Name" Required="true" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Badge, Rock" PropertyName="Name" Required="true" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-12">
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BadgeType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Badge, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                     </div>
                 </div>
 

@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The component guids.
         /// </value>
-        public List<BadgeTypeCache> PersonBadges
+        public List<BadgeCache> PersonBadges
         {
             get
             {
@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
                 RecreateChildControls();
             }
         }
-        private List<BadgeTypeCache> _personBadges = new List<BadgeTypeCache>();
+        private List<BadgeCache> _personBadges = new List<BadgeCache>();
 
         /// <summary>
         /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
             var json = ViewState["PersonBadges"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<BadgeTypeCache> ) ) as List<BadgeTypeCache>;
+                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<BadgeCache> ) ) as List<BadgeCache>;
             }
         }
 

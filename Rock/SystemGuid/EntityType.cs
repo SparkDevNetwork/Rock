@@ -37,9 +37,9 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
 
         /// <summary>
-        /// The guid for the Rock.Model.BadgeType entity
+        /// The guid for the Rock.Model.Badge entity
         /// </summary>
-        public const string BADGE_TYPE = "99300129-6F4C-45B2-B486-71123F046289";
+        public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
 
         /// <summary>
         /// The benevolence request
