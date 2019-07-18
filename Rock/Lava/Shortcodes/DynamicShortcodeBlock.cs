@@ -361,7 +361,8 @@ namespace Rock.Lava.Shortcodes
                 var shortcodeParmKV = shortcodeParm.Split( '^' );
                 if ( shortcodeParmKV.Length == 2 )
                 {
-                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
+                    // Add shortcode confirmation to the parameters, decode %2C back to a comma
+                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1].Replace( "%2C", "," )  );
                 }
             }
 
