@@ -130,11 +130,11 @@ namespace RockWeb.Blocks.Sequences
         #region Events
 
         /// <summary>
-        /// When the date range is changed
+        /// When the date range is changed and the user clicks refresh to see those changes
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void sdrpDateRange_SelectedDateRangeChanged( object sender, EventArgs e )
+        protected void btnRefresh_Click( object sender, EventArgs e )
         {
             SaveMapState();
             RenderCheckboxes();

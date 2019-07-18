@@ -258,8 +258,6 @@ namespace Rock.Web.UI.Controls
             _nbNumber.NumberType = ValidationDataType.Integer;
             _nbNumber.ID = "nbNumber_" + this.ID;
             _nbNumber.Text = "1";
-            _nbNumber.TextChanged += nb_ValueChanged;
-            _nbNumber.AutoPostBack = true;
 
             _ddlTimeUnitTypeSingular = new DropDownList();
             _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular slidingdaterange-timeunits-singular";
@@ -296,17 +294,6 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            SelectedDateRangeChanged?.Invoke( this, e );
-            ValueChanged?.Invoke( this, e );
-        }
-
-        /// <summary>
-        /// When the number field value changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void nb_ValueChanged( object sender, EventArgs e )
-        {
             SelectedDateRangeChanged?.Invoke( this, e );
             ValueChanged?.Invoke( this, e );
         }

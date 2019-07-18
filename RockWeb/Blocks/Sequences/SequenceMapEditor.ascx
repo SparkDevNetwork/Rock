@@ -12,8 +12,9 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="margin-all-md well form-inline">
-                    <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" OnSelectedDateRangeChanged="sdrpDateRange_SelectedDateRangeChanged" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                <div class="margin-all-md well">
+                    <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                    <asp:LinkButton ID="btnRefresh" runat="server" CssClass="btn btn-primary" ToolTip="Refresh" OnClick="btnRefresh_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                 </div>
 
                 <Rock:RockCheckBoxList ID="cblCheckboxes" runat="server" RepeatDirection="Vertical" />
