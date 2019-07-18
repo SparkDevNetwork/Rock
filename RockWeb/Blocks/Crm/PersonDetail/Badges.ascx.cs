@@ -51,10 +51,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var badgeTypes = BadgeTypeCache.Get( guid );
-                            if ( badgeTypes != null )
+                            var badge = BadgeCache.Get( guid );
+                            if ( badge != null )
                             {
-                                blBadges.BadgeTypes.Add( badgeTypes );
+                                blBadges.BadgeTypes.Add( badge );
                             }
                         }
                     }

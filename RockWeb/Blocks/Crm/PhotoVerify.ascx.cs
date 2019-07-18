@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     Literal lStatus = e.Row.FindControl( "lStatus" ) as Literal;
-                    var bStatus = e.Row.FindControl( "bStatus" ) as Badge;
+                    var bStatus = e.Row.FindControl( "bStatus" ) as Rock.Web.UI.Controls.Badge;
 
                     switch ( groupMember.GroupMemberStatus )
                     {

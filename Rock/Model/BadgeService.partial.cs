@@ -21,16 +21,16 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class BadgeTypeService
+    public partial class BadgeService
     {
         /// <summary>
-        /// Gets the Guid for the RestAction that has the specified Id
+        /// Gets the Guid for the Badge that has the specified Id
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         public override Guid? GetGuid( int id )
         {
-            var cacheItem = BadgeTypeCache.Get( id );
+            var cacheItem = BadgeCache.Get( id );
             if ( cacheItem != null )
             {
                 return cacheItem.Guid;
@@ -40,18 +40,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines if the badge type applies to the entity
+        /// Determines if the badge applies to the entity
         /// </summary>
         /// <param name="entity"></param>
-        /// <param name="badgeType"></param>
-        public static bool DoesBadgeApplyToEntity( BadgeTypeCache badgeType, IEntity entity )
+        /// <param name="badge"></param>
+        public static bool DoesBadgeApplyToEntity( BadgeCache badge, IEntity entity )
         {
-            if ( entity == null || badgeType == null )
+            if ( entity == null || badge == null )
             {
                 return false;
             }
 
-            if ( !badgeType.EntityTypeId.HasValue )
+            if ( !badge.EntityTypeId.HasValue )
             {
                 // This is a global badge type for any entity
                 return true;
@@ -68,19 +68,19 @@ namespace Rock.Model
             var entityTypeCache = EntityTypeCache.Get( typeOfEntity );
 
             // Check that the type matches
-            if ( entityTypeCache == null || entityTypeCache.Id != badgeType.EntityTypeId )
+            if ( entityTypeCache == null || entityTypeCache.Id != badge.EntityTypeId )
             {
                 return false;
             }
 
-            if ( badgeType.EntityTypeQualifierColumn.IsNullOrWhiteSpace() || badgeType.EntityTypeQualifierValue.IsNullOrWhiteSpace() )
+            if ( badge.EntityTypeQualifierColumn.IsNullOrWhiteSpace() || badge.EntityTypeQualifierValue.IsNullOrWhiteSpace() )
             {
                 // If the qualifier column or value are omitted, then the badge is not filtered
                 return true;
             }
 
             // Get the property to which the qualifier column refers
-            var qualifierProperty = typeOfEntity.GetProperties().FirstOrDefault( p => p.Name == badgeType.EntityTypeQualifierColumn );
+            var qualifierProperty = typeOfEntity.GetProperties().FirstOrDefault( p => p.Name == badge.EntityTypeQualifierColumn );
 
             if ( qualifierProperty == null )
             {
@@ -90,7 +90,7 @@ namespace Rock.Model
             // Make sure the qualifier value matches the badge type specifications
             var qualifierValue = qualifierProperty.GetValue( entity );
 
-            if ( qualifierValue == null || qualifierValue.ToString() != badgeType.EntityTypeQualifierValue )
+            if ( qualifierValue == null || qualifierValue.ToString() != badge.EntityTypeQualifierValue )
             {
                 return false;
             }

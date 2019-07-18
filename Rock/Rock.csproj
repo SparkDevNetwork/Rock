@@ -1242,7 +1242,7 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
-    <Compile Include="Model\CodeGenerated\BadgeTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\BadgeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PersonPreviousNameService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
@@ -1421,8 +1421,8 @@
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\PersonalDeviceService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
-    <Compile Include="Model\BadgeType.cs" />
-    <Compile Include="Model\BadgeTypeService.partial.cs" />
+    <Compile Include="Model\Badge.cs" />
+    <Compile Include="Model\BadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonSearchKey.cs" />

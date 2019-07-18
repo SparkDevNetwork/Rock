@@ -1342,12 +1342,12 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
-        /// Gets or sets the person badge types.
+        /// Gets or sets the badges.
         /// </summary>
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<BadgeType> PersonBadges { get; set; }
+        public DbSet<Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.

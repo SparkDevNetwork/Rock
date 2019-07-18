@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows the details of a particular badge." )]
 
-    public partial class BadgeTypeDetail : RockBlock
+    public partial class BadgeDetail : RockBlock
     {
 
         #region Properties
@@ -60,12 +60,12 @@ namespace RockWeb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 BindEntityTypes();
-                lActionTitle.Text = ActionTitle.Add( BadgeType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( Badge.FriendlyTypeName ).FormatAsHtmlTitle();
 
                 BadgeId = PageParameter( "BadgeTypeId" ).AsInteger();
                 if ( BadgeId != 0 )
                 {
-                    var badgeType = new BadgeTypeService( new RockContext() ).Get( BadgeId );
+                    var badgeType = new BadgeService( new RockContext() ).Get( BadgeId );
                     if ( badgeType != null )
                     {
                         lActionTitle.Text = ActionTitle.Edit( badgeType.Name ).FormatAsHtmlTitle();
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Crm
                     var badgeType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                     if ( badgeType != null )
                     {
-                        var badge = new BadgeType { BadgeComponentEntityTypeId = badgeType.Id };
+                        var badge = new Badge { BadgeComponentEntityTypeId = badgeType.Id };
                         BuildEditControls( badge, false );
                     }
                 }
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm
                 var badgeComponentType = EntityTypeCache.Get( compBadgeType.SelectedValue.AsGuid() );
                 if ( badgeComponentType != null )
                 {
-                    var badge = new BadgeType { BadgeComponentEntityTypeId = badgeComponentType.Id };
+                    var badge = new Badge { BadgeComponentEntityTypeId = badgeComponentType.Id };
                     BuildEditControls( badge, true );
                 }
             }
@@ -132,9 +132,9 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            BadgeType badge = null;
+            Badge badge = null;
             var rockContext = new RockContext();
-            var badgeTypeService = new BadgeTypeService( rockContext );
+            var badgeTypeService = new BadgeService( rockContext );
 
             if ( BadgeId != 0 )
             {
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( badge == null )
             {
-                badge = new BadgeType();
+                badge = new Badge();
                 badgeTypeService.Add( badge );
             }
 
@@ -198,11 +198,11 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        private void BuildEditControls( BadgeType badgeType, bool setValues )
+        private void BuildEditControls( Badge badge, bool setValues )
         {
-            badgeType.LoadAttributes();
+            badge.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( badgeType, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( badge, phAttributes, setValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
         }
 
         /// <summary>

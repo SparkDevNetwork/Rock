@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The name of the badge entity type.
         /// </value>
-        public BadgeTypeCache BadgeTypeCache { get; set; }
+        public BadgeCache BadgeTypeCache { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
             var badgeTypeId = ViewState["BadgeTypeId"] as int?;
             if ( badgeTypeId.HasValue )
             {
-                BadgeTypeCache = BadgeTypeCache.Get( badgeTypeId.Value );
+                BadgeTypeCache = BadgeCache.Get( badgeTypeId.Value );
             }
         }
 
@@ -112,7 +112,7 @@ namespace Rock.Web.UI.Controls
                 var contextEntityBlock = ContextEntityBlock;
                 if ( contextEntityBlock != null )
                 {
-                    if ( BadgeTypeService.DoesBadgeApplyToEntity( BadgeTypeCache, contextEntityBlock.Entity ) )
+                    if ( BadgeService.DoesBadgeApplyToEntity( BadgeTypeCache, contextEntityBlock.Entity ) )
                     {
                         badgeComponent.ParentContextEntityBlock = contextEntityBlock;
                         badgeComponent.Entity = contextEntityBlock.Entity;

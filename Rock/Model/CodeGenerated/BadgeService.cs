@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// BadgeType Service class
+    /// Badge Service class
     /// </summary>
-    public partial class BadgeTypeService : Service<BadgeType>
+    public partial class BadgeService : Service<Badge>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BadgeTypeService"/> class
+        /// Initializes a new instance of the <see cref="BadgeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public BadgeTypeService(RockContext context) : base(context)
+        public BadgeService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( BadgeType item, out string errorMessage )
+        public bool CanDelete( Badge item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -66,15 +66,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static BadgeType Clone( this BadgeType source, bool deepCopy )
+        public static Badge Clone( this Badge source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as BadgeType;
+                return source.Clone() as Badge;
             }
             else
             {
-                var target = new BadgeType();
+                var target = new Badge();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
@@ -85,7 +85,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this BadgeType target, BadgeType source )
+        public static void CopyPropertiesFrom( this Badge target, Badge source )
         {
             target.Id = source.Id;
             target.Description = source.Description;

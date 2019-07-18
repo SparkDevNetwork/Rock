@@ -54,7 +54,7 @@ namespace Rock.PersonProfile.Badge
 
         private const string UNTAKEN_BADGE_COLOR = "#DBDBDB";
 
-        public override void Render( BadgeTypeCache badge, HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, HtmlTextWriter writer )
         {
             if ( Person == null )
             {

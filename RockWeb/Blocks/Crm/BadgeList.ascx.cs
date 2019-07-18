@@ -33,10 +33,10 @@ namespace RockWeb.Blocks.Crm
 {
     [DisplayName( "Badge List" )]
     [Category( "CRM" )]
-    [Description( "Shows a list of all entity badges." )]
+    [Description( "Shows a list of all badges." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class BadgeTypeList : RockBlock, ICustomGridColumns
+    public partial class BadgeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
 
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm
             var securityField = gBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.BadgeType ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Badge ) ).Id;
             }
         }
 
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Crm
         protected void gBadge_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var badgeTypeService = new BadgeTypeService( rockContext );
+            var badgeTypeService = new BadgeService( rockContext );
             var personBadge = badgeTypeService.Get( e.RowKeyId );
 
             if ( personBadge != null )
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Crm
         void gBadge_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
-            var service = new BadgeTypeService( rockContext );
+            var service = new BadgeService( rockContext );
             var personBadges = service.Queryable().OrderBy( b => b.Order );
             service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
-            gBadge.DataSource = new BadgeTypeService( new RockContext() )
+            gBadge.DataSource = new BadgeService( new RockContext() )
                 .Queryable( "BadgeComponentEntityType, EntityType" ).OrderBy( b => b.Order ).ToList();
             gBadge.DataBind();
         }

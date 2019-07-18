@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class RenameBadgeBlocks : IMigrationMetadata
+    public sealed partial class Badges : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(RenameBadgeBlocks));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Badges));
         
         string IMigrationMetadata.Id
         {
-            get { return "201907171456417_RenameBadgeBlocks"; }
+            get { return "201907182111279_Badges"; }
         }
         
         string IMigrationMetadata.Source
