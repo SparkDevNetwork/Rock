@@ -379,7 +379,6 @@ namespace RockWeb.Blocks.Sequences
             }
             else
             {
-                enrollment.PersonAliasId = personAliasId.Value;
                 enrollment.LocationId = locationId;
             }
 
@@ -476,7 +475,11 @@ namespace RockWeb.Blocks.Sequences
             lReadOnlyTitle.Text = ActionTitle.Edit( SequenceEnrollment.FriendlyTypeName ).FormatAsHtmlTitle();
 
             rppPerson.SetValue( enrollment.PersonAlias.Person );
-            rdpEnrollmentDate.Visible = false;
+            rppPerson.Enabled = false;
+
+            rdpEnrollmentDate.SelectedDate = enrollment.EnrollmentDate;
+            rdpEnrollmentDate.Enabled = false;
+
             rlpLocation.Location = enrollment.Location;
         }
 
@@ -498,7 +501,6 @@ namespace RockWeb.Blocks.Sequences
             lReadOnlyTitle.Text = ActionTitle.Add( SequenceEnrollment.FriendlyTypeName ).FormatAsHtmlTitle();
 
             rdpEnrollmentDate.SelectedDate = RockDateTime.Today;
-            rdpEnrollmentDate.Visible = true;
 
             var presetPersonId = PageParameter( PageParameterKeys.PersonId ).AsIntegerOrNull();
 
