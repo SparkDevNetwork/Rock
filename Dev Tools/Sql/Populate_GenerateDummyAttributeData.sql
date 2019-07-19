@@ -71,9 +71,6 @@ end
 
 
 
-
-
-
 /* This will double (up to 500000 rows at a time) the amount of Attribute Values in the system. Run this multiple times until you have as much Attribute value data as you want */
 /* NOTE: You may occasionally get an index violation since the EntityIds are just random numbers, because AttributeId+EntityId must be unique. 
   If you do get the index error, just try again */
@@ -108,6 +105,5 @@ SELECT TOP (100000) av.IsSystem,
 	av.ForeignGuid,
 	av.ForeignId
 FROM AttributeValue av
-where av.AttributeId > 10000
 set @currentAttributeValueCount = (select count(*) from AttributeValue)
 end
