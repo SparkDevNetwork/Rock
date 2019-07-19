@@ -27,6 +27,16 @@ namespace Rock.Attribute
         private const string VALUES = "values";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CustomCheckboxListFieldAttribute( string name )
+            : this( name, string.Empty, string.Empty )
+        {
+
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -38,9 +48,28 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public CustomCheckboxListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            ListSource = listSource;
+        }
+
+        /// <summary>
+        /// The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        public string ListSource
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( VALUES );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( value ) );
+            }
         }
     }
 }
