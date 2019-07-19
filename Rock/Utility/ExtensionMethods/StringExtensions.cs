@@ -172,6 +172,18 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the number of words in the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static int WordCount( this string str )
+        {
+            // Attribution (aka future blame): https://stackoverflow.com/questions/8784517/counting-number-of-words-in-c-sharp
+            char[] delimiters = new char[] { ' ', '\r', '\n' };
+            return str.Split( delimiters, StringSplitOptions.RemoveEmptyEntries ).Length;
+        }
+
+        /// <summary>
         /// Determines whether the string is valid mac address.
         /// Works with colons, dashes, or no seperators
         /// </summary>

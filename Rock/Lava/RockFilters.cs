@@ -163,6 +163,66 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Reads the time.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="wordPerMinute">The word per minute.</param>
+        /// <param name="secondsPerImage">The seconds per image.</param>
+        /// <returns></returns>
+        public static string ReadTime( object input, int wordPerMinute = 275, int secondsPerImage = 12 )
+        {
+
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            var inputString = input.ToString();
+
+            var wordsPerSecond = wordPerMinute / 60;
+            var wordsInString = inputString.WordCount();
+
+            var readTimeInSeconds = wordsInString / wordsPerSecond;
+
+            // Get number of image tags in string
+            if ( secondsPerImage > 0 )
+            {
+                var numOfImages = Regex.Matches( inputString, "<img" ).Count;
+
+                readTimeInSeconds = readTimeInSeconds + ( numOfImages * secondsPerImage );
+            }
+
+            // Format the results
+            // 1 hr 23 mins
+            // 23 mins
+            // 30 secs
+            TimeSpan readTime = TimeSpan.FromSeconds( readTimeInSeconds );
+
+            if ( readTimeInSeconds > 3600 )
+            {
+                // Display in hrs
+                if ( readTime.Minutes == 0 )
+                {
+                    return $"{"hr".ToQuantity( readTime.Hours )}";
+                }
+                else
+                {
+                    return $"{"hr".ToQuantity( readTime.Hours )} {"min".ToQuantity( readTime.Minutes )}";
+                }
+            }
+            else if ( readTimeInSeconds > 60 )
+            {
+                // Display in mins
+                return $"{"min".ToQuantity( readTime.Minutes )}";
+            }
+            else
+            {
+                // Display in seconds
+                return $"{"sec".ToQuantity(readTime.Seconds)}";
+            }
+        }
+
+        /// <summary>
         /// obfuscate a given email
         /// </summary>
         /// <param name="input"></param>
