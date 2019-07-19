@@ -269,7 +269,7 @@
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after successfully completing a registration of this type." />
-                                <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" ResizeMaxWidth="720" Height="300" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" ResizeMaxWidth="720" Height="300" Help="These instructions will appear at the beginning of the registration process." Toolbar="Light" />
                                 <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Registration Confirmation Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300"
                                     Help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
