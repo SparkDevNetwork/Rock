@@ -26,13 +26,13 @@ namespace RockWeb.Blocks.Mobile
 
 
         #region Properties
-        private List<FieldSetting> FieldSettings
+        private List<ContentChannelItemList.FieldSetting> FieldSettings
         {
             get
             {
                 if ( _fieldSettings == null )
                 {
-                    return new List<FieldSetting>();
+                    return new List<ContentChannelItemList.FieldSetting>();
                 }
 
                 return _fieldSettings;
@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Mobile
                 _fieldSettings = value;
             }
         }
-        private List<FieldSetting> _fieldSettings = new List<FieldSetting>();
+        private List<ContentChannelItemList.FieldSetting> _fieldSettings = new List<ContentChannelItemList.FieldSetting>();
         #endregion
 
 
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( fieldSettingJson.IsNotNullOrWhiteSpace() )
             {
-                _fieldSettings = JsonConvert.DeserializeObject<List<FieldSetting>>( fieldSettingJson );
+                _fieldSettings = JsonConvert.DeserializeObject<List<ContentChannelItemList.FieldSetting>>( fieldSettingJson );
             }
 
 
@@ -106,9 +106,9 @@ namespace RockWeb.Blocks.Mobile
 
         private void LoadForm()
         {
-            rblFieldSource.BindToEnum<FieldSource>();
-            rblAttributeFormatType.BindToEnum<AttributeFormat>();
-            rblFieldFormat.BindToEnum<FieldFormat>();
+            rblFieldSource.BindToEnum<ContentChannelItemList.FieldSource>();
+            rblAttributeFormatType.BindToEnum<ContentChannelItemList.AttributeFormat>();
+            rblFieldFormat.BindToEnum<ContentChannelItemList.FieldFormat>();
 
             var rockContext = new RockContext();
 
@@ -157,12 +157,12 @@ namespace RockWeb.Blocks.Mobile
             gIncludedAttributes.Visible = false;
 
             // Clear fields
-            rblFieldSource.SetValue( FieldSource.Property.ConvertToInt().ToString() );
-            rblAttributeFormatType.SetValue( AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
+            rblFieldSource.SetValue( ContentChannelItemList.FieldSource.Property.ConvertToInt().ToString() );
+            rblAttributeFormatType.SetValue( ContentChannelItemList.AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
             tbKey.Text = string.Empty;
             hfOriginalKey.Value = "new_key";
-            rblAttributeFormatType.SetValue( AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
-            rblFieldFormat.SetValue( FieldFormat.String.ConvertToInt().ToString() );
+            rblAttributeFormatType.SetValue( ContentChannelItemList.AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
+            rblFieldFormat.SetValue( ContentChannelItemList.FieldFormat.String.ConvertToInt().ToString() );
             ceLavaExpression.Text = "{{ item | Attribute:'AttributeKey' }}";
 
             SetPropertyTypePanels();
@@ -189,11 +189,11 @@ namespace RockWeb.Blocks.Mobile
             ceLavaExpression.Text = setting.Value;
 
 
-            if ( setting.FieldSource == FieldSource.Property )
+            if ( setting.FieldSource == ContentChannelItemList.FieldSource.Property )
             {
                 ddlContentChannelProperties.SelectedValue = setting.FieldName;
             }
-            else if (setting.FieldSource == FieldSource.Attribute )
+            else if (setting.FieldSource == ContentChannelItemList.FieldSource.Attribute )
             {
                 rblAttributeFormatType.SetValue( setting.AttributeFormat.ConvertToInt().ToString() );
             }
@@ -230,14 +230,14 @@ namespace RockWeb.Blocks.Mobile
 
             if ( setting == null )
             {
-                setting = new FieldSetting();
+                setting = new ContentChannelItemList.FieldSetting();
                 settings.Add( setting );
             }
 
             setting.Key = tbKey.Text;
-            setting.FieldSource = rblFieldSource.SelectedValueAsEnum<FieldSource>();
+            setting.FieldSource = rblFieldSource.SelectedValueAsEnum<ContentChannelItemList.FieldSource>();
 
-            if ( setting.FieldSource == FieldSource.Property )
+            if ( setting.FieldSource == ContentChannelItemList.FieldSource.Property )
             {
                 var propertyName = ddlContentChannelProperties.SelectedValue;
 
@@ -249,25 +249,25 @@ namespace RockWeb.Blocks.Mobile
 
                 if ( property.Type.Contains( ".Int") )
                 {
-                    setting.FieldFormat = FieldFormat.Number;
+                    setting.FieldFormat = ContentChannelItemList.FieldFormat.Number;
                 }
                 else if (property.Type.Contains( "DateTime" ) )
                 {
-                    setting.FieldFormat = FieldFormat.Date;
+                    setting.FieldFormat = ContentChannelItemList.FieldFormat.Date;
                 }
                 else
                 {
-                    setting.FieldFormat = FieldFormat.String;
+                    setting.FieldFormat = ContentChannelItemList.FieldFormat.String;
                 }
             }
-            else if ( setting.FieldSource == FieldSource.Attribute )
+            else if ( setting.FieldSource == ContentChannelItemList.FieldSource.Attribute )
             {
                 var attributeKey = ddlContentChannelAttributes.SelectedValue;
-                var attributeFormatType = rblAttributeFormatType.SelectedValueAsEnum<AttributeFormat>();
+                var attributeFormatType = rblAttributeFormatType.SelectedValueAsEnum<ContentChannelItemList.AttributeFormat>();
 
                 setting.Key = attributeKey;
 
-                if ( attributeFormatType == AttributeFormat.FriendlyValue )
+                if ( attributeFormatType == ContentChannelItemList.AttributeFormat.FriendlyValue )
                 {
                     setting.Value = string.Format( "{{{{ item | Attribute:'{0}' }}}}", attributeKey );
                 }
@@ -276,13 +276,13 @@ namespace RockWeb.Blocks.Mobile
                     setting.Value = string.Format( "{{{{ item | Attribute:'{0}','RawValue' }}}}", attributeKey );
                 }
 
-                setting.FieldFormat = FieldFormat.String;
+                setting.FieldFormat = ContentChannelItemList.FieldFormat.String;
                 setting.FieldName = attributeKey;
                 setting.AttributeFormat = attributeFormatType;
             }
             else
             {
-                setting.FieldFormat = rblFieldFormat.SelectedValueAsEnum<FieldFormat>();
+                setting.FieldFormat = rblFieldFormat.SelectedValueAsEnum<ContentChannelItemList.FieldFormat>();
                 setting.FieldName = string.Empty;
                 setting.Value = ceLavaExpression.Text;
             }
@@ -335,17 +335,17 @@ namespace RockWeb.Blocks.Mobile
 
         private void SetPropertyTypePanels()
         {
-            var selectedItem = rblFieldSource.SelectedValueAsEnum<FieldSource>();
+            var selectedItem = rblFieldSource.SelectedValueAsEnum<ContentChannelItemList.FieldSource>();
 
             pnlAttributes.Visible = false;
             pnlProperties.Visible = false;
             pnlLavaExpression.Visible = false;
 
-            if ( selectedItem == FieldSource.Property )
+            if ( selectedItem == ContentChannelItemList.FieldSource.Property )
             {
                 pnlProperties.Visible = true;
             }
-            else if ( selectedItem == FieldSource.Attribute )
+            else if ( selectedItem == ContentChannelItemList.FieldSource.Attribute )
             {
                 pnlAttributes.Visible = true;
             }
@@ -365,7 +365,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( fieldSettings.IsNotNullOrWhiteSpace() )
             {
-                this.FieldSettings = JsonConvert.DeserializeObject<List<FieldSetting>>( fieldSettings );
+                this.FieldSettings = JsonConvert.DeserializeObject<List<ContentChannelItemList.FieldSetting>>( fieldSettings );
             }
 
             _contentChannelId = attributeEntity.GetAttributeValue( Rock.Blocks.Types.Mobile.ContentChannelItemList.AttributeKeys.ContentChannel ).AsInteger();

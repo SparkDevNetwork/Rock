@@ -5,43 +5,61 @@ using Rock.Attribute;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Displays XAML content that can respond to user interaction.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Mobile Dynamic Content" )]
     [Category( "Mobile" )]
-    [Description( "Demo Mobile Block" )]
+    [Description( "Displays XAML content that can respond to user interaction." )]
     [IconCssClass( "fa fa-magic" )]
 
     #region Block Attributes
 
     [CodeEditorField( "Content",
-        description: "The XAML to use when rendering the block. <span class='tip tip-lava'></span>",
-        mode: Web.UI.Controls.CodeEditorMode.Xml,
-        key: AttributeKeys.Content,
-        order: 0 )]
+        Description = "The XAML to use when rendering the block. <span class='tip tip-lava'></span>",
+        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        Key = AttributeKeys.Content,
+        Order = 0 )]
 
     [LavaCommandsField( "Enabled Lava Commands",
-        description: "The Lava commands that should be enabled for this block.",
-        required: false,
-        key: AttributeKeys.EnabledLavaCommands,
-        order: 1 )]
+        Description = "The Lava commands that should be enabled for this block.",
+        IsRequired = false,
+        Key = AttributeKeys.EnabledLavaCommands,
+        Order = 1 )]
 
     [CustomDropdownListField( "Initial Content",
         description: "If the initial content should be static or dynamic.",
         listSource: "Static,Dynamic",
-        required: true,
-        defaultValue: "Static",
-        key: AttributeKeys.InitialContent,
-        order: 2 )]
+        IsRequired = true,
+        DefaultValue = "Static",
+        Key = AttributeKeys.InitialContent,
+        Order = 2 )]
 
     #endregion
 
     public class MobileDynamicContent : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// Defines the block setting attribute keys for the MobileDynamicContent block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The content key
+            /// </summary>
             public const string Content = "Content";
 
+            /// <summary>
+            /// The enabled lava commands key
+            /// </summary>
             public const string EnabledLavaCommands = "EnabledLavaCommands";
 
+            /// <summary>
+            /// The initial content key
+            /// </summary>
             public const string InitialContent = "InitialContent";
         }
 

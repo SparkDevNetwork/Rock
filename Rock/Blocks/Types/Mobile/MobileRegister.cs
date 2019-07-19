@@ -9,9 +9,15 @@ using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Allows the user to register a new account on a mobile application.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Mobile Register" )]
     [Category( "Mobile" )]
-    [Description( "Allows user to register a new account on mobile application." )]
+    [Description( "Allows the user to register a new account on a mobile application." )]
     [IconCssClass( "fa fa-user-plus" )]
 
     #region Block Attributes
@@ -112,18 +118,59 @@ namespace Rock.Blocks.Types.Mobile
 
     public class MobileRegister : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// The block setting attribute keys for the MobileRegister block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The connection status key
+            /// </summary>
             public const string ConnectionStatus = "ConnectionStatus";
+
+            /// <summary>
+            /// The record status key
+            /// </summary>
             public const string RecordStatus = "RecordStatus";
 
+            /// <summary>
+            /// The birth date show key
+            /// </summary>
             public const string BirthDateShow = "BirthDateShow";
+
+            /// <summary>
+            /// The birth date required key
+            /// </summary>
             public const string BirthDateRequired = "BirthDateRequired";
+
+            /// <summary>
+            /// The campus show key
+            /// </summary>
             public const string CampusShow = "CampusShow";
+
+            /// <summary>
+            /// The campus required key
+            /// </summary>
             public const string CampusRequired = "CampusRequired";
+
+            /// <summary>
+            /// The email show key
+            /// </summary>
             public const string EmailShow = "EmailShow";
+
+            /// <summary>
+            /// The email required key
+            /// </summary>
             public const string EmailRequired = "EmailRequired";
+
+            /// <summary>
+            /// The mobile phone show key
+            /// </summary>
             public const string MobilePhoneShow = "MobilePhoneShow";
+
+            /// <summary>
+            /// The mobile phone required key
+            /// </summary>
             public const string MobilePhoneRequired = "MobilePhoneRequired";
         }
 

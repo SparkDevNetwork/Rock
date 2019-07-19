@@ -6,12 +6,37 @@ using UAParser;
 
 namespace Rock.Net
 {
+    /// <summary>
+    /// Provides information on a remote client that is making a request to the server.
+    /// </summary>
     public class ClientInformation
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the ip address.
+        /// </summary>
+        /// <value>
+        /// The ip address.
+        /// </value>
         public string IpAddress { get; }
 
+        /// <summary>
+        /// Gets the browser object that identifies what we know about the browser.
+        /// </summary>
+        /// <value>
+        /// The browser object that identifies what we know about the browser.
+        /// </value>
         public ClientInfo Browser { get; }
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientInformation"/> class.
+        /// </summary>
+        /// <param name="request">The request to initalize from.</param>
         internal ClientInformation( HttpRequest request )
         {
             //
@@ -45,6 +70,10 @@ namespace Rock.Net
             Browser = uaParser.Parse( request.UserAgent );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientInformation"/> class.
+        /// </summary>
+        /// <param name="request">The request to initalize from.</param>
         internal ClientInformation( HttpRequestMessage request )
         {
             //
@@ -71,5 +100,7 @@ namespace Rock.Net
             Parser uaParser = Parser.GetDefault();
             Browser = uaParser.Parse( request.Headers.UserAgent.ToString() );
         }
+
+        #endregion
     }
 }

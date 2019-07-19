@@ -400,6 +400,7 @@
     <Compile Include="Mobile\AdditionalSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Net\ClientInformation.cs" />
+    <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
     <Compile Include="Web\IRockCustomSettingsUserControl.cs" />
     <Compile Include="Blocks\IRockMobileBlockType.cs" />

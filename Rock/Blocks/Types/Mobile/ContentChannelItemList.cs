@@ -16,6 +16,13 @@ using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Lists content channel items for a given channel and allow the user to
+    /// format how they are displayed with XAML.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Content Channel Item List" )]
     [Category( "Mobile" )]
     [Description( "Lists content channel items for a given channel." )]
@@ -79,29 +86,56 @@ namespace Rock.Blocks.Types.Mobile
 
     public class ContentChannelItemList : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// The key names of all block attributes used by the ContentChannelItemList block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The lava template key
+            /// </summary>
             public const string LavaTemplate = "LavaTemplate";
 
+            /// <summary>
+            /// The content channel key
+            /// </summary>
             public const string ContentChannel = "ContentChannel";
 
+            /// <summary>
+            /// The field settings key
+            /// </summary>
             public const string FieldSettings = "FieldSettings";
 
+            /// <summary>
+            /// The page size key
+            /// </summary>
             public const string PageSize = "PageSize";
 
+            /// <summary>
+            /// The include following key
+            /// </summary>
             public const string IncludeFollowing = "IncludeFollowing";
 
+            /// <summary>
+            /// The list data template key
+            /// </summary>
             public const string ListDataTemplate = "ListDataTemplate";
 
+            /// <summary>
+            /// The cache duration key
+            /// </summary>
             public const string CacheDuration = "CacheDuration";
 
+            /// <summary>
+            /// The detail page key
+            /// </summary>
             public const string DetailPage = "DetailPage";
         }
 
         #region Constants
 
         private const string defaultDataTemplate = @"<StackLayout HeightRequest=""50"" WidthRequest=""200"" Orientation=""Horizontal"" Padding=""0,5,0,5"">
-    <Label Text=""{Binding Content}"" />
+    <Label Text=""{Binding [Content]}"" />
 </StackLayout>";
 
         #endregion
@@ -144,6 +178,11 @@ namespace Rock.Blocks.Types.Mobile
 
         #region Actions
 
+        /// <summary>
+        /// Gets the items that should be displayed on the given page.
+        /// </summary>
+        /// <param name="pageNumber">The page number whose items are returned, the first page being 0.</param>
+        /// <returns>A JSON string that defines the items to be displayed.</returns>
         [BlockAction]
         public object GetItems( int pageNumber = 0 )
         {
@@ -191,7 +230,7 @@ namespace Rock.Blocks.Types.Mobile
                 GetLegacyGlobalMergeFields = false
             };
 
-            var mergeFields = RequestContext.GetCommonMergeFields( commonMergeFields );
+            var mergeFields = RequestContext.GetCommonMergeFields( null, commonMergeFields );
             mergeFields.Add( "Items", results );
             mergeFields.Add( "FollowedItemIds", followedItemIds );
 
@@ -242,117 +281,168 @@ namespace Rock.Blocks.Types.Mobile
 
         #endregion
 
-
         #region Custom Settings
 
+        /// <summary>
+        /// Defines the control that will provide the Basic Settings tab content
+        /// for the ContentChannelItemList block.
+        /// </summary>
+        /// <seealso cref="Rock.Web.RockCustomSettingsUserControlProvider" />
         [TargetType( typeof( ContentChannelItemList ) )]
-        public class MobileContentCustomSettingsProvider : RockCustomSettingsUserControlProvider
+        public class ContentChannelItemListCustomSettingsProvider : RockCustomSettingsUserControlProvider
         {
+            /// <summary>
+            /// Gets the path to the user control file.
+            /// </summary>
+            /// <value>
+            /// The path to the user control file.
+            /// </value>
             protected override string UserControlPath => "~/Blocks/Mobile/ContentChannelListSettings.ascx";
 
+            /// <summary>
+            /// Gets the custom settings title. Used when displaying tabs or links to these settings.
+            /// </summary>
+            /// <value>
+            /// The custom settings title.
+            /// </value>
             public override string CustomSettingsTitle => "Basic Settings";
         }
 
         #endregion
-    }
 
-    #region POCOs
-    /// <summary>
-    /// POCO to store the settings for the fields
-    /// </summary>
-    public class FieldSetting
-    {
+        #region POCOs
+
         /// <summary>
-        /// Creates an identifier based off the key. This is used for grid operations.
+        /// POCO to store the settings for the fields
         /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public int Id
+        public class FieldSetting
         {
-            get
+            /// <summary>
+            /// Creates an identifier based off the key. This is used for grid operations.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id
             {
-                return this.Key.GetHashCode();
+                get
+                {
+                    return this.Key.GetHashCode();
+                }
             }
+
+            /// <summary>
+            /// Gets or sets the field key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the property.
+            /// </summary>
+            /// <value>
+            /// The name of the property.
+            /// </value>
+            public string FieldName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field source.
+            /// </summary>
+            /// <value>
+            /// The field source.
+            /// </value>
+            public FieldSource FieldSource { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attribute format.
+            /// </summary>
+            /// <value>
+            /// The attribute format.
+            /// </value>
+            public AttributeFormat AttributeFormat { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field format.
+            /// </summary>
+            /// <value>
+            /// The field format.
+            /// </value>
+            public FieldFormat FieldFormat { get; set; }
         }
 
         /// <summary>
-        /// Gets or sets the field key.
+        /// The source of the data for the field. The two types are properties on the item model and an attribute expression.
         /// </summary>
-        /// <value>
-        /// The key.
-        /// </value>
-        public string Key { get; set; }
+        public enum FieldSource
+        {
+            /// <summary>
+            /// The source comes from a model property.
+            /// </summary>
+            Property = 0,
+
+            /// <summary>
+            /// The source comes from an attribute defined on the model.
+            /// </summary>
+            Attribute = 1,
+
+            /// <summary>
+            /// The source comes from a custom lava expression.
+            /// </summary>
+            LavaExpression = 2
+        }
 
         /// <summary>
-        /// Gets or sets the field value.
+        /// The format to use for the attribute.
         /// </summary>
-        /// <value>
-        /// The value.
-        /// </value>
-        public string Value { get; set; }
+        public enum AttributeFormat
+        {
+            /// <summary>
+            /// The attribute's friendly value should be used.
+            /// </summary>
+            FriendlyValue = 0,
+
+            /// <summary>
+            /// The attribute's raw value should be used.
+            /// </summary>
+            RawValue = 1
+        }
 
         /// <summary>
-        /// Gets or sets the name of the property.
+        /// Determines the field's format. This will be used to properly format the Json sent to the client.
         /// </summary>
-        /// <value>
-        /// The name of the property.
-        /// </value>
-        public string FieldName { get; set; }
+        public enum FieldFormat
+        {
+            /// <summary>
+            /// The value will be formatted as a string.
+            /// </summary>
+            String = 0,
 
-        /// <summary>
-        /// Gets or sets the field source.
-        /// </summary>
-        /// <value>
-        /// The field source.
-        /// </value>
-        public FieldSource FieldSource { get; set; }
+            /// <summary>
+            /// The value will be formatted as a number.
+            /// </summary>
+            Number = 1,
 
-        /// <summary>
-        /// Gets or sets the attribute format.
-        /// </summary>
-        /// <value>
-        /// The attribute format.
-        /// </value>
-        public AttributeFormat AttributeFormat { get; set; }
+            /// <summary>
+            /// The value will be formatted as a datetime.
+            /// </summary>
+            Date = 2,
 
-        /// <summary>
-        /// Gets or sets the field format.
-        /// </summary>
-        /// <value>
-        /// The field format.
-        /// </value>
-        public FieldFormat FieldFormat { get; set; }
+            /// <summary>
+            /// The value will be formatted as a boolean.
+            /// </summary>
+            Boolean = 3
+        }
+
+        #endregion
     }
-
-    /// <summary>
-    /// The source of the data for the field. The two types are properties on the item model and an attribute expression.
-    /// </summary>
-    public enum FieldSource
-    {
-        Property = 0,
-        Attribute = 1,
-        LavaExpression = 2
-    }
-
-    /// <summary>
-    /// The format to use for the attribute.
-    /// </summary>
-    public enum AttributeFormat
-    {
-        FriendlyValue = 0,
-        RawValue = 1
-    }
-
-    /// <summary>
-    /// Determines the field's format. This will be used to properly format the Json sent to the client.
-    /// </summary>
-    public enum FieldFormat
-    {
-        String = 0,
-        Number = 1,
-        Date = 2,
-        Boolean = 3
-    }
-    #endregion
 }

@@ -4,6 +4,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Blocks
 {
+    /// <summary>
+    /// The most basic block type that all other blocks should inherit from. Provides
+    /// default implementations of the <seealso cref="IRockBlockType"/> interface as
+    /// well as a number of helper methods and properties to subclasses.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.IRockBlockType" />
     public abstract class RockBlockType : IRockBlockType
     {
         #region Properties

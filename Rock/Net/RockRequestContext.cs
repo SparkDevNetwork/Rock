@@ -4,39 +4,93 @@ using System.Linq;
 using System.Net.Http;
 using System.Web;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Net
 {
+    /// <summary>
+    /// Provides an abstraction from user-code and the incoming request. The user code (such as
+    /// a block, page or API callback) does not need to interact directly with any low-level
+    /// request objects. This allos for easier testing as well as adding new request types.
+    /// </summary>
     public class RockRequestContext
     {
         #region Properties
 
+        /// <summary>
+        /// Gets the current user.
+        /// </summary>
+        /// <value>
+        /// The current user.
+        /// </value>
         public virtual UserLogin CurrentUser { get; protected set; }
 
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <value>
+        /// The current person.
+        /// </value>
         public virtual Person CurrentPerson => CurrentUser?.Person;
 
+        /// <summary>
+        /// Gets or sets the root URL path of this request, e.g. https://www.rocksolidchurchdemo.com/
+        /// </summary>
+        /// <remarks>
+        /// May be empty if the request came from a non-web source.
+        /// </remarks>
+        /// <value>
+        /// The root URL path.
+        /// </value>
         public virtual string RootUrlPath { get; protected set; }
 
+        /// <summary>
+        /// Gets the client information related to the client sending the request.
+        /// </summary>
+        /// <value>
+        /// The client information related to the client sending the request.
+        /// </value>
         public virtual ClientInformation ClientInformation { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the page parameters.
+        /// </summary>
+        /// <value>
+        /// The page parameters.
+        /// </value>
         internal protected virtual IDictionary<string, string> PageParameters { get; set; }
 
+        /// <summary>
+        /// Gets or sets the context entities.
+        /// </summary>
+        /// <value>
+        /// The context entities.
+        /// </value>
         internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
         #endregion
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes an empty instance of the <see cref="RockRequestContext"/> class.
+        /// </summary>
         internal RockRequestContext()
         {
             PageParameters = new Dictionary<string, string>();
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            RootUrlPath = string.Empty;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
+        /// </summary>
+        /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         internal RockRequestContext( HttpRequest request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( false );
@@ -60,12 +114,16 @@ namespace Rock.Net
             }
 
             //
-            // Todo: Setup the ContextEntities somehow.
+            // Todo: Setup the ContextEntities somehow. Probably from an additional paramter of the page cache object.
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders( request.Headers.AllKeys.Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) ) );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
+        /// </summary>
+        /// <param name="request">The request from an API call that we will initialize from.</param>
         internal RockRequestContext( HttpRequestMessage request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( false );
@@ -86,7 +144,7 @@ namespace Rock.Net
             }
 
             //
-            // Todo: Setup the ContextEntities somehow.
+            // Initialize any context entities found.
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders( request.Headers );
@@ -96,40 +154,69 @@ namespace Rock.Net
 
         #region Methods
 
+        /// <summary>
+        /// Adds the context entities from headers.
+        /// </summary>
+        /// <param name="headers">The headers to search through.</param>
         protected virtual void AddContextEntitiesFromHeaders( IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers )
         {
             foreach ( var kvp in headers )
             {
-                if ( kvp.Key.StartsWith( "X-ENTITYCONTEXT-", StringComparison.InvariantCultureIgnoreCase ) )
+                //
+                // Skip any header that isn't an entity context header.
+                //
+                if ( !kvp.Key.StartsWith( "X-ENTITYCONTEXT-", StringComparison.InvariantCultureIgnoreCase ) )
                 {
-                    string entityKey = kvp.Value.First();
-                    var entityName = kvp.Key.Substring( 16 );
-                    var type = EntityTypeCache.All().FirstOrDefault( a => a.Name == entityName )?.GetEntityType();
+                    continue;
+                }
 
-                    if ( type != null && entityKey.IsNotNullOrWhiteSpace() )
+                //
+                // Determine the the entity type in question.
+                //
+                var entityName = kvp.Key.Substring( 16 );
+                var type = EntityTypeCache.All().FirstOrDefault( a => a.Name == entityName )?.GetEntityType();
+                string entityKey = kvp.Value.First();
+
+                //
+                // If we got an unknown type or no Id/Guid then skip.
+                //
+                if ( type == null || entityKey.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                //
+                // Lazy load the entity so we don't actually load if it is never
+                // accessed.
+                //
+                ContextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
+                {
+                    IEntity entity = null;
+
+                    if ( int.TryParse( entityKey, out int entityId ) )
                     {
-                        ContextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
-                        {
-                            int? entityId = entityKey.AsIntegerOrNull();
-                            if ( entityId.HasValue )
-                            {
-                                return Reflection.GetIEntityForEntityType( type, entityId.Value );
-                            }
-
-                            Guid? entityGuid = entityKey.AsGuidOrNull();
-                            if ( entityGuid.HasValue )
-                            {
-                                return Reflection.GetIEntityForEntityType( type, entityGuid.Value );
-                            }
-
-                            return null;
-                        } ) );
+                        entity = Reflection.GetIEntityForEntityType( type, entityId );
+                    }
+                    else if ( Guid.TryParse( entityKey, out Guid entityGuid ) )
+                    {
+                        entity = Reflection.GetIEntityForEntityType( type, entityGuid );
                     }
 
-                }
+                    if ( entity != null && entity is IHasAttributes attributedEntity )
+                    {
+                        Helper.LoadAttributes( attributedEntity );
+                    }
+
+                    return entity;
+                } ) );
             }
         }
 
+        /// <summary>
+        /// Gets the page parameter value given it's name.
+        /// </summary>
+        /// <param name="name">The name of the page parameter to retrieve.</param>
+        /// <returns>The text string representation of the page parameter or an empty string if no matching parameter was found.</returns>
         public virtual string GetPageParameter( string name )
         {
             if ( PageParameters.ContainsKey( name ) )
@@ -140,6 +227,11 @@ namespace Rock.Net
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the entity object given it's type.
+        /// </summary>
+        /// <typeparam name="T">The IEntity type to retrieve.</typeparam>
+        /// <returns>A reference to the IEntity object or null if none was found.</returns>
         public virtual T GetContextEntity<T>() where T : IEntity
         {
             if ( ContextEntities.ContainsKey( typeof(T) ) )
@@ -147,10 +239,16 @@ namespace Rock.Net
                 return ( T ) ContextEntities[typeof( T )].Value;
             }
 
-            return default( T );
+            return default;
         }
 
-        public Dictionary<string, object> GetCommonMergeFields( CommonMergeFieldsOptions options = null, Person currentPersonOverride = null )
+        /// <summary>
+        /// Gets the common merge fields to be used with a Lava merge process.
+        /// </summary>
+        /// <param name="currentPersonOverride">The current person override.</param>
+        /// <param name="options">The options to use when initializing the merge fields.</param>
+        /// <returns>A new dictionary of merge fields.</returns>
+        public Dictionary<string, object> GetCommonMergeFields( Person currentPersonOverride = null, CommonMergeFieldsOptions options = null )
         {
             var mergeFields = new Dictionary<string, object>();
 
@@ -158,11 +256,11 @@ namespace Rock.Net
 
             if ( options.GetPageContext )
             {
-                var contextObjects = new Dictionary<string, object>();
+                var contextObjects = new LazyDictionary<string, object>();
 
                 foreach ( var ctx in ContextEntities )
                 {
-                    contextObjects.Add( ctx.Key.Name, ctx.Value.Value );
+                    contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
                 }
 
                 if ( contextObjects.Any() )

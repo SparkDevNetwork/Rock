@@ -5,60 +5,87 @@ using Rock.Attribute;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Displays custom XAML content on the page.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Mobile Content" )]
     [Category( "Mobile" )]
-    [Description( "Demo Mobile Block" )]
+    [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "fa fa-align-center" )]
 
     #region Block Attributes
 
     [CodeEditorField( "Content",
-        description: "The XAML to use when rendering the block. <span class='tip tip-lava'></span>",
-        mode: Web.UI.Controls.CodeEditorMode.Xml,
-        key: AttributeKeys.Content,
-        order: 0 )]
+        Description = "The XAML to use when rendering the block. <span class='tip tip-lava'></span>",
+        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        Key = AttributeKeys.Content,
+        Order = 0 )]
 
     [LavaCommandsField( "Enabled Lava Commands",
-        description: "The Lava commands that should be enabled for this block, only affects Lava rendered on the server.",
-        required: false,
-        key: AttributeKeys.EnabledLavaCommands,
-        order: 1 )]
+        Description = "The Lava commands that should be enabled for this block, only affects Lava rendered on the server.",
+        IsRequired = false,
+        Key = AttributeKeys.EnabledLavaCommands,
+        Order = 1 )]
     
     [BooleanField( "Dynamic Content",
-        "If enabled then the client will download fresh content from the server every period of Cache Duration, otherwise the content will remain static.",
-        true,
-        category: "custommobile",
-        order: 0 )]
+        Description = "If enabled then the client will download fresh content from the server every period of Cache Duration, otherwise the content will remain static.",
+        IsRequired = true,
+        Category = "custommobile",
+        Key = AttributeKeys.DynamicContent,
+        Order = 0 )]
 
     [IntegerField( "Cache Duration",
-        "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
-        false,
-        86400,
-        category: "custommobile",
-        order: 1 )]
+        Description = "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
+        IsRequired = false,
+        DefaultIntegerValue = 86400,
+        Category = "custommobile",
+        Key = AttributeKeys.CacheDuration,
+        Order = 1 )]
 
     [CustomDropdownListField( "Lava Render Location",
         "Specifies where to render the Lava",
         "On Server, On Device, Both",
-        true,
-        "On Server",
-        category: "custommobile",
-        order: 2 )]
+        IsRequired = true,
+        DefaultValue = "On Server",
+        Category = "custommobile",
+        Key = AttributeKeys.LavaRenderLocation,
+        Order = 2 )]
 
     #endregion
 
     public class MobileContent : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// The block setting attribute keys for the MobileContent block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The cache duration key
+            /// </summary>
             public const string CacheDuration = "CacheDuration";
 
+            /// <summary>
+            /// The content key
+            /// </summary>
             public const string Content = "Content";
 
+            /// <summary>
+            /// The dynamic content key
+            /// </summary>
             public const string DynamicContent = "DynamicContent";
 
+            /// <summary>
+            /// The enabled lava commands key
+            /// </summary>
             public const string EnabledLavaCommands = "EnabledLavaCommands";
 
+            /// <summary>
+            /// The lava render location key
+            /// </summary>
             public const string LavaRenderLocation = "LavaRenderLocation";
         }
 
