@@ -3020,26 +3020,29 @@ namespace RockWeb.Blocks.Event
                     familyGroup,
                     true,
                     false );
-
-                if ( existingLocation == null )
+                
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                if ( homeLocationType != null && familyGroup != null )
                 {
-                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                    if ( homeLocationType != null )
+                    if ( existingLocation != null )
                     {
-                        if ( familyGroup != null )
-                        {
-                            GroupService.AddNewGroupAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1,
-                                location.Street2,
-                                location.City,
-                                location.State,
-                                location.PostalCode,
-                                location.Country,
-                                true );
-                        }
+                        // A location exists but is not associated with this family group
+                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                    }
+                    else
+                    {
+                        // Create a new location and save it to the family group
+                        GroupService.AddNewGroupAddress(
+                            rockContext,
+                            familyGroup,
+                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                            location.Street1,
+                            location.Street2,
+                            location.City,
+                            location.State,
+                            location.PostalCode,
+                            location.Country,
+                            true );
                     }
                 }
             }
