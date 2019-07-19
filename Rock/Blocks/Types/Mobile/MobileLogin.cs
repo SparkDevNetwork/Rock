@@ -1,39 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 using Rock.Attribute;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Allows the user to login on a mobile application.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Mobile Login" )]
     [Category( "Mobile" )]
-    [Description( "Allows user to login on mobile applicatoin." )]
+    [Description( "Allows the user to login on amobile application." )]
     [IconCssClass( "fa fa-user-lock" )]
 
     #region Block Attributes
 
     [LinkedPage( "Registration Page",
-        "The page that will be used to register the user.",
-        true,
-        order: 0 )]
+        Description = "The page that will be used to register the user.",
+        IsRequired = true,
+        Key = AttributeKeys.RegistrationPage,
+        Order = 0 )]
 
     [UrlLinkField( "Forgot Password Url",
-        "The URL to link the user to when they have forgotton their password.",
-        true,
-        order: 1 )]
+        Description = "The URL to link the user to when they have forgotton their password.",
+        IsRequired = true,
+        Key = AttributeKeys.ForgotPasswordUrl,
+        Order = 1 )]
 
     #endregion
 
     public class MobileLogin : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// The block setting attribute keys for the MobileLogin block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The registration page key
+            /// </summary>
             public const string RegistrationPage = "RegistrationPage";
 
+            /// <summary>
+            /// The forgot password URL key
+            /// </summary>
             public const string ForgotPasswordUrl = "ForgotPasswordUrl";
         }
 
@@ -69,10 +81,6 @@ namespace Rock.Blocks.Types.Mobile
                 ForgotPasswordUrl = GetAttributeValue( AttributeKeys.ForgotPasswordUrl )
             };
         }
-
-        #endregion
-
-        #region Action Methods
 
         #endregion
     }

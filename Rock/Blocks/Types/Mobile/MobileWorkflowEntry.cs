@@ -13,6 +13,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile
 {
+    /// <summary>
+    /// Allows for filling out workflows from a mobile application.
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+
     [DisplayName( "Mobile Workflow Entry" )]
     [Category( "Mobile" )]
     [Description( "Allows for filling out workflows from a mobile application." )]
@@ -21,49 +27,71 @@ namespace Rock.Blocks.Types.Mobile
     #region Block Attributes
 
     [WorkflowTypeField( "Workflow Type",
-        description: "The type of workflow to launch when viewing this.",
-        required: true,
-        order: 0 )]
+        Description = "The type of workflow to launch when viewing this.",
+        IsRequired = true,
+        Key = AttributeKeys.WorkflowType,
+        Order = 0 )]
 
     [CustomDropdownListField( "Completion Action",
         description: "What action to perform when there is nothing left for the user to do.",
         listSource: "0^Show Message from Workflow,1^Show Completion Xaml,2^Redirect to Page",
-        required: true,
-        defaultValue: "0",
-        order: 1 )]
+        IsRequired = true,
+        DefaultValue = "0",
+        Key = AttributeKeys.CompletionAction,
+        Order = 1 )]
 
     [CodeEditorField( "Completion Xaml",
-        description: "The XAML markup that will be used if the Completion Action is set to Show Completion Xaml. <span class='tip tip-lava'></span>",
-        required: false,
-        defaultValue: "",
-        order: 2 )]
+        Description = "The XAML markup that will be used if the Completion Action is set to Show Completion Xaml. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "",
+        Key = AttributeKeys.CompletionXaml,
+        Order = 2 )]
 
     [LavaCommandsField( "Enabled Lava Commands",
-        description: "The Lava commands that should be enabled for this block.",
-        required: false,
-        key: AttributeKeys.EnabledLavaCommands,
-        order: 3 )]
+        Description = "The Lava commands that should be enabled for this block.",
+        IsRequired = false,
+        Key = AttributeKeys.EnabledLavaCommands,
+        Order = 3 )]
 
     [LinkedPage( "Redirect To Page",
-        description: "The page the user will be redirected to if the Completion Action is set to Redirect to Page.",
-        required: false,
-        defaultValue: "",
-        order: 4 )]
+        Description = "The page the user will be redirected to if the Completion Action is set to Redirect to Page.",
+        IsRequired = false,
+        DefaultValue = "",
+        Key = AttributeKeys.RedirectToPage,
+        Order = 4 )]
 
     #endregion
 
     public class MobileWorkflowEntry : RockBlockType, IRockMobileBlockType
     {
+        /// <summary>
+        /// The block setting attribute keys for the MobileWorkflowEntry block.
+        /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The completion action key
+            /// </summary>
             public const string CompletionAction = "CompletionAction";
 
+            /// <summary>
+            /// The completion xaml key
+            /// </summary>
             public const string CompletionXaml = "CompletionXaml";
 
+            /// <summary>
+            /// The enabled lava commands key
+            /// </summary>
             public const string EnabledLavaCommands = "EnabledLavaCommands";
 
+            /// <summary>
+            /// The redirect to page key
+            /// </summary>
             public const string RedirectToPage = "RedirectToPage";
 
+            /// <summary>
+            /// The workflow type key
+            /// </summary>
             public const string WorkflowType = "WorkflowType";
         }
 
@@ -223,7 +251,7 @@ namespace Rock.Blocks.Types.Mobile
             var activity = action.Activity;
             var workflow = activity.Workflow;
 
-            var mergeFields = RequestContext.GetCommonMergeFields( null, currentPerson );
+            var mergeFields = RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Action", action );
             mergeFields.Add( "Activity", activity );
             mergeFields.Add( "Workflow", workflow );
@@ -382,6 +410,7 @@ namespace Rock.Blocks.Types.Mobile
                 };
             }
         }
+
         #endregion
 
         #region Action Methods
