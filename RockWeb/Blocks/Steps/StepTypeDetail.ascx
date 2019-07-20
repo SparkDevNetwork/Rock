@@ -37,26 +37,24 @@
                     <div id="pnlGraph" runat="server">
                         <div class="row">
                             <div class="col-sm-6">
-                                <h3>Steps Activity Summary</h3>
-                                <p class="small">Shows steps started or completed within the activity period.</p>
+                                <h5>Steps Activity Summary</h5>
                             </div>
                             <div class="col-sm-6">
-                                <div class="panel panel-body">
-                                    <div class="row">
-                                        <div class="col-sm-8">
-                                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
-                                                runat="server"
-                                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                                EnabledSlidingDateRangeUnits="Week, Month, Year"
-                                                SlidingDateRangeMode="Current"
-                                                TimeUnit="Year"
-                                                CssClass="pull-right" />
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <span class="pull-right">
-                                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-primary" Style="vertical-align: bottom" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
-                                            </span>
-                                        </div>
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                                            runat="server"
+                                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                            EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                            SlidingDateRangeMode="Current"
+                                            TimeUnit="Year"
+                                            Label=""
+                                            CssClass="pull-right" />
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <span class="pull-right">
+                                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-primary" Style="vertical-align: bottom" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -139,7 +137,6 @@
                                 Label="Prerequisite Steps"
                                 Help="The steps that must be completed prior to this step."
                                 RepeatDirection="Vertical"
-                                EmptyListMessage="(No selection available)"
                                 DataValueField="Id"
                                 DataTextField="Name" />
                         </div>

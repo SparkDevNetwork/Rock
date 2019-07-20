@@ -1194,8 +1194,9 @@ namespace RockWeb.Blocks.Steps
                 .ToList();
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
-
             cblPrerequsities.DataBind();
+
+            cblPrerequsities.Visible = prerequisiteStepTypes.Count > 0;
         }
 
         /// <summary>

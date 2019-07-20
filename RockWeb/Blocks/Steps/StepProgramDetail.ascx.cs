@@ -1320,9 +1320,6 @@ namespace RockWeb.Blocks.Steps
 
             var chartFactory = this.GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
 
-            // If no data, show a notification.
-            nbStepsActivityLineChartMessage.Visible = !chartFactory.HasData;
-
             if ( !chartFactory.HasData )
             {
                 return;
