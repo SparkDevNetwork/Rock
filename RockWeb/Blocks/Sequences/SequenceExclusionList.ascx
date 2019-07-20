@@ -13,7 +13,7 @@
 
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-exclamation-triangle"></i>
+                            <i class="fa fa-calendar-times"></i>
                             <asp:Literal ID="lHeading" runat="server" Text="Exclusions" />
                         </h1>
                     </div>
