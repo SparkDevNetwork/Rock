@@ -230,7 +230,17 @@ namespace Rock.Lava
             else if ( readTimeInSeconds > 60 )
             {
                 // Display in mins
-                return $"{"min".ToQuantity( readTime.Minutes )}";
+
+                var remainderSeconds = readTimeInSeconds - ( readTime.Minutes * 60 );
+
+                if ( remainderSeconds > 30 )
+                {
+                    return $"{"min".ToQuantity( readTime.Minutes + 1 )}";
+                }
+                else
+                {
+                    return $"{"min".ToQuantity( readTime.Minutes )}";
+                }
             }
             else
             {
