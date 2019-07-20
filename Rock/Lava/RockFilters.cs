@@ -1123,6 +1123,23 @@ namespace Rock.Lava
             return Liquid.UseRubyDateFormat ? inputDateTime.Value.ToStrFTime( format ).Trim() : inputDateTime.Value.ToString( format ).Trim();
         }
 
+
+        /// <summary>
+        /// Current datetime.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static DateTime? Date( string input )
+        {
+            if (input != "Now" )
+            {
+                return null;
+            }
+
+            return RockDateTime.Now;
+        }
+
+
         /// <summary>
         /// Sundays the date.
         /// </summary>
