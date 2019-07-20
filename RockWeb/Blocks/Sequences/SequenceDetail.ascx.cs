@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Sequences
 
             var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id, jobData );
             System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-            ShowBlockSuccess( nbEditModeMessage, "The sequence rebuild has been started! Check the Rock Jobs page for the status." );
+            ShowBlockSuccess( nbEditModeMessage, "The sequence rebuild has been started. Check the Rock Jobs page for the status." );
         }
 
         /// <summary>

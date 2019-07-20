@@ -25,8 +25,8 @@
                             <asp:Literal ID="lSequenceDescription" runat="server" />
                         </div>
                         <div class="col-md-6">
-                            <asp:LinkButton ID="btnMapEditor" runat="server" Text="Map Editor" CssClass="btn btn-default" OnClick="btnMapEditor_Click" CausesValidation="false" />
-                            <asp:LinkButton ID="btnExclusions" runat="server" Text="Exclusions" CssClass="btn btn-default" OnClick="btnExclusions_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnMapEditor" runat="server" CssClass="btn btn-default" OnClick="btnMapEditor_Click" CausesValidation="false"><i class="fa fa-calendar-check"></i> Map Editor</asp:LinkButton>
+                            <asp:LinkButton ID="btnExclusions" runat="server" CssClass="btn btn-default" OnClick="btnExclusions_Click" CausesValidation="false"><i class="fa fa-calendar-times"></i> Exclusions</asp:LinkButton>
                         </div>
                     </div>
 

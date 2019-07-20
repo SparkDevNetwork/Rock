@@ -15,7 +15,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-list-ol"></i>
+                    <i class="fa fa-clipboard-check"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
             </div>
