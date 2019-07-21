@@ -486,6 +486,16 @@ namespace Rock.Model
         public int? PrimaryFamilyId { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus id for the primary family.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
+        /// </summary>
+        /// <value>
+        /// The campus id of the primary family.
+        /// </value>
+        [DataMember]
+        public int? PrimaryCampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if the Person is locked as child.
         /// </summary>
         /// <value>
@@ -1014,6 +1024,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Group PrimaryFamily { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's primary campus.
+        /// </summary>
+        /// <value>
+        /// The primary campus.
+        /// </value>
+        [LavaInclude]
+        public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
         /// Gets or sets the person's default financial account gift designation.
@@ -2152,8 +2171,17 @@ namespace Rock.Model
         /// <returns></returns>
         public Campus GetCampus()
         {
-            var firstFamily = this.GetFamily();
-            return firstFamily != null ? firstFamily.Campus : null;
+            // If PrimaryCampus has been calculated, use that. Otherwise, retrieve the campus of the primary family.
+            if ( this.PrimaryCampus != null )
+            {
+                return this.PrimaryCampus;
+            }
+            else
+            {
+                var primaryFamily = this.GetFamily();
+
+                return primaryFamily != null ? primaryFamily.Campus : null;
+            }
         }
 
         /// <summary>
@@ -3025,6 +3053,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
         }
     }

@@ -3479,7 +3479,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static bool UpdatePrimaryFamily( int personId, RockContext rockContext )
         {
-            int recordsUpdated = UpdatePersonsPrimaryFamily( personId, rockContext );
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, personId: personId );
             return recordsUpdated != 0;
         }
 
@@ -3490,33 +3490,58 @@ namespace Rock.Model
         /// <returns></returns>
         public static int UpdatePrimaryFamilyAll( RockContext rockContext )
         {
-            return UpdatePersonsPrimaryFamily( null, rockContext );
+            return UpdatePersonsPrimaryFamily( rockContext );
         }
 
         /// <summary>
-        /// Updates the person primary family for the specified person, or for all persons in the database if personId is null
+        /// Ensures the PrimaryFamily and PrimaryCampus are correct for the people in the specified group.
+        /// </summary>
+        /// <param name="groupId">The group identifier, usually a reference to a Family.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdatePrimaryFamilyByGroup( int groupId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, groupId: groupId );
+
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Updates the primary family and campus for the specified person or group members, or for all persons in the database if no parameters are specified.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static int UpdatePersonsPrimaryFamily( int? personId, RockContext rockContext )
+        private static int UpdatePersonsPrimaryFamily( RockContext rockContext, int? personId = null, int? groupId = null )
         {
+            // Verify only one of the optional parameters is specified.
+            if ( personId.HasValue
+                 && groupId.HasValue )
+            {
+                throw new ArgumentException( "Specified parameters are ambiguous." );
+            }
+
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family on each Person record matches the Calculated Primary Family
+            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family and Campus on each Person record matches the Calculated Primary Family and Campus.
             var sqlUpdateBuilder = new StringBuilder();
             sqlUpdateBuilder.Append( $@"
 UPDATE x
 SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+    ,x.PrimaryCampusId = x.CalculatedPrimaryCampusId
 FROM (
     SELECT p.Id
         ,p.NickName
         ,p.LastName
         ,p.PrimaryFamilyId
+        ,p.PrimaryCampusId
         ,pf.CalculatedPrimaryFamilyId
+        ,pf.CalculatedPrimaryCampusId
     FROM Person p
     OUTER APPLY (
-        SELECT TOP 1 g.Id [CalculatedPrimaryFamilyId]
+        SELECT TOP 1
+            g.Id [CalculatedPrimaryFamilyId]
+            ,g.CampusId [CalculatedPrimaryCampusId]
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
@@ -3526,12 +3551,18 @@ FROM (
         ) pf
     WHERE (
             p.PrimaryFamilyId IS NULL
+            OR p.PrimaryCampusId IS NULL
             OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
+            OR (p.PrimaryCampusId != pf.CalculatedPrimaryCampusId)
             )" );
 
             if ( personId.HasValue )
             {
                 sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+            else if ( groupId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id IN ( SELECT p1.Id FROM Person p1 INNER JOIN GroupMember gm2 ON p1.Id = gm2.PersonId WHERE gm2.GroupId = @groupId ) ) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );
@@ -3539,6 +3570,10 @@ FROM (
             if ( personId.HasValue )
             {
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else if ( groupId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@groupId", groupId.Value ) );
             }
             else
             {
