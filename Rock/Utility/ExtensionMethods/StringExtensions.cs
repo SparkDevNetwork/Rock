@@ -845,7 +845,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to decimal.  Returns null if unsuccessful.
+        /// Attempts to convert string to decimal. Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -853,8 +853,8 @@ namespace Rock
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.-]", string.Empty );
+                // strip off non numeric and characters at the beginning of the line (currency symbols)
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
             }
 
             decimal value;
