@@ -454,6 +454,26 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns an array that contains substrings of the target string that are separated by the specified delimiter.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="delimiter">The delimiter string.</param>
+        /// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str, string delimiter )
+        {
+            if ( str == null )
+            {
+                return new string[0];
+            }
+
+            // Replace the custom delimiter with an unprintable character that will not appear in the target string, then split the string.
+            var newDelimiter = new char[] { '\x0001' };
+
+            return str.Replace( delimiter, newDelimiter.ToString() )
+                      .Split( newDelimiter, StringSplitOptions.RemoveEmptyEntries );
+        }
+
+        /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
         /// (from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace)
         /// </summary>

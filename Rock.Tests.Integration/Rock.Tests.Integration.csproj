@@ -88,6 +88,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>test.runsettings</DependentUpon>
     </Compile>
+    <Compile Include="Rock\Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Utility\ArrayExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -95,6 +97,9 @@
     <None Include="test.runsettings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="app.ConnectionStrings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
