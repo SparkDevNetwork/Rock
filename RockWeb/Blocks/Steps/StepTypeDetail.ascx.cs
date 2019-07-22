@@ -444,9 +444,6 @@ namespace RockWeb.Blocks.Steps
             stepType.AutoCompleteDataViewId = dvpAutocomplete.SelectedValueAsId();
             stepType.AudienceDataViewId = dvpAudience.SelectedValueAsId();
 
-            stepType.MergeTemplateId = mtpMergeTemplate.SelectedValueAsId();
-            stepType.MergeTemplateDescriptor = tbMergeDescriptor.Text;
-
             stepType.AllowManualEditing = cbAllowEdit.Checked;
 
             stepType.CardLavaTemplate = ceCardTemplate.Text;
@@ -1312,9 +1309,6 @@ namespace RockWeb.Blocks.Steps
             // Advanced Settings
             dvpAutocomplete.SetValue( stepType.AutoCompleteDataViewId );
             dvpAudience.SetValue( stepType.AudienceDataViewId );
-
-            mtpMergeTemplate.SetValue( stepType.MergeTemplateId );
-            tbMergeDescriptor.Text = stepType.MergeTemplateDescriptor;
 
             cbAllowEdit.Checked = stepType.AllowManualEditing;
 
