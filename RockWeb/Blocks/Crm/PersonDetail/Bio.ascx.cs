@@ -98,6 +98,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person != null )
             {
+                // If this is the empty person, check for an old Alias record and if found, redirect permanent to it instead.
+                if ( Person.Id == 0 )
+                {
+                    //referring to aliasPersonId as person might be merged
+                    var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+
+                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
+                    if ( personAlias != null )
+                    {
+                        var pageReference = RockPage.PageReference;
+                        pageReference.Parameters.AddOrReplace( "PersonId", personAlias.PersonId.ToString() );
+                        Response.RedirectPermanent( pageReference.BuildUrl(), false );
+                    }
+                }
+
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.

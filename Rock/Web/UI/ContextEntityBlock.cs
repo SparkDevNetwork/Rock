@@ -73,16 +73,6 @@ namespace Rock.Web.UI
                 if ( personId.HasValue )
                 {
                     Person = new PersonService( new RockContext() ).Get( personId.Value );
-
-                    if ( Person == null )
-                    {
-                        //referring to aliasPersonId as person might be merged
-                        var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
-                        if ( personAlias != null )
-                        {
-                            Person = personAlias.Person;
-                        }
-                    }
                     Person.LoadAttributes();
                 }
 
