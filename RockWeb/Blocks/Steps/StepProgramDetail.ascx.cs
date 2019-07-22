@@ -1318,13 +1318,31 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // Get chart data and add client script to construct the chart.
+            // If the Program does not have any Step activity, hide the Activity Summary.
+            var stepProgramId = GetActiveStepProgramId();
+
+            var dataContext = GetDataContext();
+
+            var hasStepData = GetStepsCompletedQuery( stepProgramId, dataContext ).Any();
+
+            pnlActivitySummary.Visible = hasStepData;
+
+            if ( !hasStepData )
+            {
+                return;
+            }
+
+            // Get chart data and set visibility of related elements.
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
 
             var chartFactory = this.GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
 
+            pnlActivityChart.Visible = chartFactory.HasData;
+            nbActivityChartMessage.Visible = !chartFactory.HasData;
+
             if ( !chartFactory.HasData )
             {
+                nbActivityChartMessage.Text = "There are no completed Steps matching the current filter.";
                 return;
             }
 
@@ -1337,7 +1355,7 @@ namespace RockWeb.Blocks.Steps
             string script = string.Format( @"
             var barCtx = $('#{0}')[0].getContext('2d');
             var barChart = new Chart(barCtx, {1});",
-                                    barChartCanvas.ClientID,
+                                    chartCanvas.ClientID,
                                     chartDataJson );
 
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityBarChartScript", script, true );
@@ -1347,17 +1365,14 @@ namespace RockWeb.Blocks.Steps
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
         {
             var dataContext = new RockContext();
 
-            var stepService = new StepService( dataContext );
-
             var programId = GetActiveStepProgramId();
 
-            // Get all of the active Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = stepService.Queryable()
-                .Where( x => x.StepType.StepProgramId == programId && x.StepType.IsActive && x.CompletedDateTime != null );
+            // Get all of the completed Steps associated with the current program, grouped by Step Type.
+            var stepsCompletedQuery = GetStepsCompletedQuery( programId, dataContext );
 
             if ( startDate != null )
             {
@@ -1411,6 +1426,27 @@ namespace RockWeb.Blocks.Steps
             }
 
             return factory;
+        }
+
+        /// <summary>
+        /// Returns a Step query filtered for active steps completed for the specified Program.
+        /// </summary>
+        /// <param name="stepProgramId"></param>
+        /// <param name="dataContext"></param>
+        /// <returns></returns>
+        private IQueryable<Step> GetStepsCompletedQuery( int stepProgramId, RockContext dataContext )
+        {
+            var stepService = new StepService( dataContext );
+
+            var programId = GetActiveStepProgramId();
+
+            // Get all of the completed Steps associated with the current program, grouped by Step Type.
+            var stepsCompletedQuery = stepService.Queryable()
+                .Where( x => x.StepType.StepProgramId == programId
+                                && x.StepType.IsActive
+                                && x.CompletedDateTime != null );
+
+            return stepsCompletedQuery;
         }
 
         #endregion

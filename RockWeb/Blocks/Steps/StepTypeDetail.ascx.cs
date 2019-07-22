@@ -1531,13 +1531,34 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // Get chart data and add client script to construct the chart.
+            // If the Step Type does not have any activity, hide the Activity Summary.
+            var dataContext = GetDataContext();
+
+            var stepService = new StepService( dataContext );
+
+            var stepsQuery = stepService.Queryable()
+                                .Where( x => x.StepTypeId == _stepTypeId );
+
+            var hasStepData = stepsQuery.Any();
+
+            pnlActivitySummary.Visible = hasStepData;
+
+            if ( !hasStepData )
+            {
+                return;
+            }
+
+            // Get chart data and set visibility of related elements.
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
 
             var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
 
+            chartCanvas.Visible = chartFactory.HasData;
+            nbActivityChartMessage.Visible = !chartFactory.HasData;
+
             if ( chartFactory.HasData )
             {
+                // Add client script to construct the chart.
                 var chartDataJson = chartFactory.GetJson();
 
                 string script = string.Format( @"
@@ -1548,10 +1569,11 @@ var barChart = new Chart(barCtx, {1});",
 
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
             }
-
-            // If no data, hide the chart and show a notification.
-            chartCanvas.Visible = chartFactory.HasData;
-            nbStepsActivityLineChartMessage.Visible = !chartFactory.HasData;
+            else
+            {
+                // If no data, show a notification.
+                nbActivityChartMessage.Text = "There are no Steps matching the current filter.";
+            }
         }
 
         /// <summary>

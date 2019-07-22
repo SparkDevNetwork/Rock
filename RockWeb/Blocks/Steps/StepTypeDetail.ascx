@@ -34,7 +34,8 @@
                             <asp:Literal ID="lStepTypeDescription" runat="server"></asp:Literal>
                         </div>
                     </div>
-                    <div id="pnlGraph" runat="server">
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
                         <div class="row">
                             <div class="col-sm-6">
                                 <h5>Steps Activity Summary</h5>
@@ -59,10 +60,12 @@
                                 </div>
                             </div>
                         </div>
-                        <%-- Steps Activity Summary Line Chart --%>
-                        <div class="chart-container">
-                            <Rock:NotificationBox ID="nbStepsActivityLineChartMessage" runat="server" NotificationBoxType="Info" Text="No activity to show for this Step" />                            
-                            <canvas id="chartCanvas" runat="server" style="height: 280px;" />
+                        <%-- Steps Activity Chart --%>
+                        <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
+                        <div id="pnlActivityChart" runat="server">
+                            <div class="chart-container">
+                                <canvas id="chartCanvas" runat="server" style="height: 180px;" />
+                            </div>
                         </div>
                     </div>
 
