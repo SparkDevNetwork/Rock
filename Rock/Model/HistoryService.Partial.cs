@@ -781,8 +781,11 @@ namespace Rock.Model
                         history.CreatedByPersonAliasId = modifiedByPersonAliasId;
                     }
 
-                    // Manually set creation date on these history items so that they will be grouped together
-                    history.CreatedDateTime = creationDate;
+                    // If not specified, manually set the creation date on these history items so that they will be grouped together.
+                    if ( historyChange.ChangedDateTime == null )
+                    {
+                        history.CreatedDateTime = creationDate;
+                    }
 
                     historyRecordsToInsert.Add( history );
 

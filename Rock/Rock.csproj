@@ -431,6 +431,10 @@
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
     <Compile Include="Communication\SmsActions\SmsActionOutcome.cs" />
     <Compile Include="Communication\SmsActions\SmsMessage.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReport\ConnectionStatusChangeReportBuilder.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReport\ConnectionStatusChangeReportData.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReport\ConnectionStatusChangeReportSettings.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReport\ConnectionStatusChangeEventInfo.cs" />
     <Compile Include="Field\FieldVisibilityRules.cs" />
     <Compile Include="Field\Types\AssetFieldType.cs" />
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
@@ -589,6 +593,7 @@
     <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
     <Compile Include="Transactions\SaveHistoryTransaction.cs" />
     <Compile Include="Transactions\StepChangeTransaction.cs" />
+    <Compile Include="Utility\TimePeriod.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
