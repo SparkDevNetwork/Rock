@@ -124,7 +124,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             File.WriteAllText( Server.MapPath( _fileRelativePath ), ceFilerEditor.Text );
-            NavigateToParentPage();
         }
 
         /// <summary>
