@@ -196,22 +196,6 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
-                                <Rock:MergeTemplatePicker ID="mtpMergeTemplate"
-                                    runat="server"
-                                    Label="Merge Template"
-                                    Help="An optional merge template for a certificate, notification letter or other document associated with this step."
-                                    DataField="WorkflowType" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbMergeDescriptor"
-                                    runat="server"
-                                    SourceTypeName="Rock.Model.StepType, Rock"
-                                    PropertyName="MergeTemplateDescriptor"
-                                    Help="The name used to describe the merge template associated with this step, such as a certificate or notification letter." />
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-12">
                                 <Rock:CodeEditor ID="ceCardTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Card Content Lava Template"
                                     Help="The template to use when formatting the summary card for this step." />
