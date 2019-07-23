@@ -27,12 +27,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            AddNewAbsenceGroupMemberNotificationEmailTemplate();
-            FixGooglestaticmapShortcode();
-            FixGoogleMapTypeo();
-            FixAccordianTypeo();
-            FixWordCloudTypeo();
-            FixParallaxTypeo();
+            //AddNewAbsenceGroupMemberNotificationEmailTemplate();
+            //FixGooglestaticmapShortcode();
+            //FixGoogleMapTypeo();
+            //FixAccordianTypeo();
+            //FixWordCloudTypeo();
+            //FixParallaxTypeo();
         }
 
         /// <summary>
