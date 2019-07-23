@@ -1,4 +1,4 @@
--- This will create a migration for Attribute and AttributeQualifier for every attribute where the ModifiedDate is greater than 1 day ago 
+-- This will create a migration for Attribute and AttributeQualifier for every Person attribute where the ModifiedDate is greater than 1 day ago 
 
 DECLARE @crlf varchar(2) = char(13) + char(10)
 
