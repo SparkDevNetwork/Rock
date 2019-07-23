@@ -42,20 +42,20 @@ namespace RockWeb.Blocks.Steps
         description: "The Step Program to display. This value can also be a page parameter: StepProgramId. Leave this attribute blank to use the page parameter.",
         required: false,
         order: 1,
-        key: AttributeKeys.StepProgram )]
+        key: AttributeKey.StepProgram )]
 
     [LinkedPage(
         name: "Step Entry Page",
         description: "The page where step records can be edited or added",
         order: 2,
-        key: AttributeKeys.StepPage )]
+        key: AttributeKey.StepPage )]
 
     [IntegerField(
         name: "Steps Per Row",
         description: "The number of step cards that should be shown on a row",
         order: 3,
         required: true,
-        key: AttributeKeys.StepsPerRow,
+        key: AttributeKey.StepsPerRow,
         defaultValue: 6 )]
 
     [IntegerField(
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Steps
         description: "The number of step cards that should be shown on a row on a mobile screen size",
         order: 4,
         required: true,
-        key: AttributeKeys.StepsPerRowMobile,
+        key: AttributeKey.StepsPerRowMobile,
         defaultValue: 2 )]
 
     #endregion Attributes
@@ -75,36 +75,64 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Attribute keys
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The step program attribute key
+            /// </summary>
             public const string StepProgram = "StepProgram";
+
+            /// <summary>
+            /// The step page attribute key
+            /// </summary>
             public const string StepPage = "StepPage";
+
+            /// <summary>
+            /// The steps per row attribute key
+            /// </summary>
             public const string StepsPerRow = "StepsPerRow";
+
+            /// <summary>
+            /// The steps per row on mobile attribute key
+            /// </summary>
             public const string StepsPerRowMobile = "StepsPerRowMobile";
         }
 
         /// <summary>
         /// Filter keys
         /// </summary>
-        private static class FilterKeys
+        protected static class FilterKey
         {
+            /// <summary>
+            /// The step type name filter key
+            /// </summary>
             public const string StepTypeName = "StepTypeName";
+
+            /// <summary>
+            /// The step status name filter key
+            /// </summary>
             public const string StepStatusName = "StepStatusName";
         }
 
         /// <summary>
         /// Query string or other page parameter keys
         /// </summary>
-        private static class PageParameters
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The step program id page parameter
+            /// </summary>
             public const string StepProgramId = "StepProgramId";
         }
 
         /// <summary>
         /// User preference keys
         /// </summary>
-        private static class PreferenceKeys
+        protected static class PreferenceKey
         {
+            /// <summary>
+            /// The is card view user preference key
+            /// </summary>
             public const string IsCardView = "PersonProgramStepList.IsCardView";
         }
 
@@ -133,7 +161,7 @@ namespace RockWeb.Blocks.Steps
             {
                 SetProgramDetailsOnBlock();
 
-                var isCardViewPref = GetUserPreference( PreferenceKeys.IsCardView ).AsBooleanOrNull();
+                var isCardViewPref = GetUserPreference( PreferenceKey.IsCardView ).AsBooleanOrNull();
 
                 if ( isCardViewPref.HasValue )
                 {
@@ -209,7 +237,7 @@ namespace RockWeb.Blocks.Steps
             pnlCardView.Visible = isCardView;
             pnlGridView.Visible = !isCardView;
 
-            SetUserPreference( PreferenceKeys.IsCardView, isCardView.ToString(), true );
+            SetUserPreference( PreferenceKey.IsCardView, isCardView.ToString(), true );
         }
 
         /// <summary>
@@ -431,8 +459,8 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfGridFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfGridFilter.SaveUserPreference( FilterKeys.StepTypeName, tbStepTypeName.Text );
-            gfGridFilter.SaveUserPreference( FilterKeys.StepStatusName, tbStepStatus.Text );
+            gfGridFilter.SaveUserPreference( FilterKey.StepTypeName, tbStepTypeName.Text );
+            gfGridFilter.SaveUserPreference( FilterKey.StepStatusName, tbStepStatus.Text );
             RenderGridView();
         }
 
@@ -452,10 +480,10 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BindFilter()
         {
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepTypeName );
+            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
             tbStepTypeName.Text = !string.IsNullOrWhiteSpace( stepTypeNameFilter ) ? stepTypeNameFilter : string.Empty;
 
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepStatusName );
+            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
             tbStepStatus.Text = !string.IsNullOrWhiteSpace( stepStatusNameFilter ) ? stepStatusNameFilter : string.Empty;
         }
 
@@ -474,8 +502,8 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _stepProgram == null )
             {
-                var programGuid = GetAttributeValue( AttributeKeys.StepProgram ).AsGuidOrNull();
-                var programId = PageParameter( PageParameters.StepProgramId ).AsIntegerOrNull();
+                var programGuid = GetAttributeValue( AttributeKey.StepProgram ).AsGuidOrNull();
+                var programId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
                 var rockContext = GetRockContext();
                 var service = new StepProgramService( rockContext );
 
@@ -784,8 +812,8 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RenderStepsPerRow()
         {
-            var stepsPerRow = GetAttributeValue( AttributeKeys.StepsPerRow ).AsIntegerOrNull() ?? 4;
-            var stepsPerRowMobile = GetAttributeValue( AttributeKeys.StepsPerRowMobile ).AsIntegerOrNull() ?? 1;
+            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? 4;
+            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? 1;
 
             lStepsPerRowCss.Text =
 @"<style>
@@ -946,8 +974,8 @@ namespace RockWeb.Blocks.Steps
             var stepTypes = GetStepTypes();
 
             // Get filter values
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepTypeName );
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepStatusName );
+            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
+            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
 
             // Apply step type filters
             if ( !string.IsNullOrEmpty( stepTypeNameFilter ) )
@@ -1049,7 +1077,7 @@ namespace RockWeb.Blocks.Steps
             {
                 ShowError( string.Format(
                     "The step program was not found. Please set the block attribute or ensure a query parameter `{0}` is set.",
-                    PageParameters.StepProgramId ) );
+                    PageParameterKey.StepProgramId ) );
                 return false;
             }
 
@@ -1083,7 +1111,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( person != null )
             {
-                NavigateToLinkedPage( AttributeKeys.StepPage, new Dictionary<string, string> {
+                NavigateToLinkedPage( AttributeKey.StepPage, new Dictionary<string, string> {
                     { "personId", person.Id.ToString() },
                     { "stepTypeId", stepTypeId.ToString() },
                     { "stepId", (stepId ?? 0).ToString() }

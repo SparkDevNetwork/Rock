@@ -52,26 +52,43 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys for user preferences
         /// </summary>
-        private static class UserPreferenceKeys
+        protected static class UserPreferenceKey
         {
+            /// <summary>
+            /// The date range user preference key
+            /// </summary>
             public const string DateRange = "SequenceMapEditorDateRange";
         }
 
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKeys
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The sequence id page parameter key
+            /// </summary>
             public const string SequenceId = "SequenceId";
+
+            /// <summary>
+            /// The sequence enrollment id page parameter key
+            /// </summary>
             public const string SequenceEnrollmentId = "SequenceEnrollmentId";
+
+            /// <summary>
+            /// The sequence occurrence exclusion id page parameter key
+            /// </summary>
             public const string SequenceOccurrenceExclusionId = "SequenceOccurrenceExclusionId";
         }
 
         /// <summary>
         /// Keys to use for View State
         /// </summary>
-        private static class ViewStateKeys
+        protected static class ViewStateKey
         {
+            /// <summary>
+            /// The map view state key
+            /// </summary>
             public const string Map = "Map";
         }
 
@@ -141,7 +158,7 @@ namespace RockWeb.Blocks.Sequences
 
             if ( sdrpDateRange.SlidingDateRangeMode != SlidingDateRangePicker.SlidingDateRangeType.All )
             {
-                SetUserPreference( UserPreferenceKeys.DateRange, sdrpDateRange.DelimitedValues );
+                SetUserPreference( UserPreferenceKey.DateRange, sdrpDateRange.DelimitedValues );
             }
         }
 
@@ -255,7 +272,7 @@ namespace RockWeb.Blocks.Sequences
         private void InitializeDatePicker()
         {
             // Try to set to the user's saved preference
-            var userPreference = GetUserPreference( UserPreferenceKeys.DateRange );
+            var userPreference = GetUserPreference( UserPreferenceKey.DateRange );
 
             if ( !userPreference.IsNullOrWhiteSpace() && !userPreference.StartsWith( SlidingDateRangePicker.SlidingDateRangeType.All.ToString() ) )
             {
@@ -397,7 +414,7 @@ namespace RockWeb.Blocks.Sequences
                 }
                 else
                 {
-                    var sequenceId = PageParameter( PageParameterKeys.SequenceId ).AsIntegerOrNull();
+                    var sequenceId = PageParameter( PageParameterKey.SequenceId ).AsIntegerOrNull();
 
                     if ( sequenceId.HasValue && sequenceId.Value > 0 )
                     {
@@ -487,7 +504,7 @@ namespace RockWeb.Blocks.Sequences
         /// <returns></returns>
         private byte[] GetTargetMap()
         {
-            var savedMapState = ViewState[ViewStateKeys.Map].ToStringSafe();
+            var savedMapState = ViewState[ViewStateKey.Map].ToStringSafe();
 
             if ( !savedMapState.IsNullOrWhiteSpace() )
             {
@@ -556,7 +573,7 @@ namespace RockWeb.Blocks.Sequences
                 }
             }
 
-            ViewState[ViewStateKeys.Map] = SequenceService.GetHexDigitStringFromMap( map );
+            ViewState[ViewStateKey.Map] = SequenceService.GetHexDigitStringFromMap( map );
         }
 
         /// <summary>
@@ -613,7 +630,7 @@ namespace RockWeb.Blocks.Sequences
         {
             if ( _sequenceEnrollment == null )
             {
-                var sequenceEnrollmentId = PageParameter( PageParameterKeys.SequenceEnrollmentId ).AsIntegerOrNull();
+                var sequenceEnrollmentId = PageParameter( PageParameterKey.SequenceEnrollmentId ).AsIntegerOrNull();
 
                 if ( sequenceEnrollmentId.HasValue && sequenceEnrollmentId.Value > 0 )
                 {
@@ -634,7 +651,7 @@ namespace RockWeb.Blocks.Sequences
         {
             if ( _sequenceOccurrenceExclusion == null )
             {
-                var id = PageParameter( PageParameterKeys.SequenceOccurrenceExclusionId ).AsIntegerOrNull();
+                var id = PageParameter( PageParameterKey.SequenceOccurrenceExclusionId ).AsIntegerOrNull();
 
                 if ( id.HasValue && id.Value > 0 )
                 {

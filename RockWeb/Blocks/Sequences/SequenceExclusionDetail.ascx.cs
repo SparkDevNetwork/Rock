@@ -44,9 +44,16 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKeys
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The sequence id page parameter key
+            /// </summary>
             public const string SequenceId = "SequenceId";
+
+            /// <summary>
+            /// The sequence exclusion id page parameter key
+            /// </summary>
             public const string SequenceExclusionId = "SequenceOccurrenceExclusionId";
         }
 
@@ -200,7 +207,7 @@ namespace RockWeb.Blocks.Sequences
         private bool NavigateToParentPage()
         {
             return NavigateToParentPage( new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, GetSequence().Id.ToString() }
+                { PageParameterKey.SequenceId, GetSequence().Id.ToString() }
             } );
         }
 
@@ -357,8 +364,8 @@ namespace RockWeb.Blocks.Sequences
 
             // If the save was successful, reload the page using the new record Id.
             NavigateToPage( RockPage.Guid, new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, sequence.Id.ToString() },
-                { PageParameterKeys.SequenceExclusionId, exclusion.Id.ToString() }
+                { PageParameterKey.SequenceId, sequence.Id.ToString() },
+                { PageParameterKey.SequenceExclusionId, exclusion.Id.ToString() }
             } );
         }
 
@@ -541,7 +548,7 @@ namespace RockWeb.Blocks.Sequences
                 }
                 else
                 {
-                    var sequenceId = PageParameter( PageParameterKeys.SequenceId ).AsIntegerOrNull();
+                    var sequenceId = PageParameter( PageParameterKey.SequenceId ).AsIntegerOrNull();
 
                     if ( sequenceId.HasValue && sequenceId.Value > 0 )
                     {
@@ -563,7 +570,7 @@ namespace RockWeb.Blocks.Sequences
         {
             if ( _sequenceOccurrenceExclusion == null )
             {
-                var id = PageParameter( PageParameterKeys.SequenceExclusionId ).AsIntegerOrNull();
+                var id = PageParameter( PageParameterKey.SequenceExclusionId ).AsIntegerOrNull();
 
                 if ( id.HasValue && id.Value > 0 )
                 {

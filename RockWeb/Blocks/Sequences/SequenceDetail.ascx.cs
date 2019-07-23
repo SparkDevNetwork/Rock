@@ -41,14 +41,14 @@ namespace RockWeb.Blocks.Sequences
     [LinkedPage(
         "Map Editor Page",
         Description = "Page used for editing the sequence map.",
-        Key = AttributeKeys.MapEditorPage,
+        Key = AttributeKey.MapEditorPage,
         IsRequired = false,
         Order = 1 )]
 
     [LinkedPage(
         "Exclusions Page",
         Description = "Page used for viewing a list of sequence exclusions.",
-        Key = AttributeKeys.ExclusionsPage,
+        Key = AttributeKey.ExclusionsPage,
         IsRequired = false,
         Order = 2 )]
 
@@ -59,18 +59,32 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys to use for Attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// Key for the Map Editor Page
+            /// </summary>
             public const string MapEditorPage = "MapEditorPage";
+
+            /// <summary>
+            /// Key for the Exclusions Page
+            /// </summary>
             public const string ExclusionsPage = "ExclusionsPage";
         }
 
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKeys
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// Key for the Sequence Id
+            /// </summary>
             public const string SequenceId = "SequenceId";
+
+            /// <summary>
+            /// Key for the sequence enrollment id
+            /// </summary>
             public const string SequenceEnrollmentId = "SequenceEnrollmentId";
         }
 
@@ -154,7 +168,7 @@ namespace RockWeb.Blocks.Sequences
         /// <param name="e"></param>
         protected void btnMapEditor_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.MapEditorPage );
+            NavigateToLinkedPage( AttributeKey.MapEditorPage );
         }
 
         /// <summary>
@@ -164,7 +178,7 @@ namespace RockWeb.Blocks.Sequences
         /// <param name="e"></param>
         protected void btnExclusions_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.ExclusionsPage );
+            NavigateToLinkedPage( AttributeKey.ExclusionsPage );
         }
 
         /// <summary>
@@ -182,7 +196,7 @@ namespace RockWeb.Blocks.Sequences
             }
 
             NavigateToLinkedPage( attributeKey, new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, sequence.Id.ToString() }
+                { PageParameterKey.SequenceId, sequence.Id.ToString() }
             } );
         }
 
@@ -436,7 +450,7 @@ namespace RockWeb.Blocks.Sequences
 
             // If the save was successful, reload the page using the new record Id.
             NavigateToPage( RockPage.Guid, new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, sequence.Id.ToString() }
+                { PageParameterKey.SequenceId, sequence.Id.ToString() }
             } );
         }
 
@@ -588,8 +602,8 @@ namespace RockWeb.Blocks.Sequences
                 btnSecurity.EntityId = sequence.Id;
             }
 
-            SetLinkVisibility( btnExclusions, AttributeKeys.ExclusionsPage );
-            SetLinkVisibility( btnMapEditor, AttributeKeys.MapEditorPage );
+            SetLinkVisibility( btnExclusions, AttributeKey.ExclusionsPage );
+            SetLinkVisibility( btnMapEditor, AttributeKey.MapEditorPage );
         }
 
         /// <summary>
@@ -850,7 +864,7 @@ namespace RockWeb.Blocks.Sequences
                 }
                 else
                 {
-                    var sequenceId = PageParameter( PageParameterKeys.SequenceId ).AsIntegerOrNull();
+                    var sequenceId = PageParameter( PageParameterKey.SequenceId ).AsIntegerOrNull();
 
                     if ( sequenceId.HasValue && sequenceId.Value > 0 )
                     {
@@ -872,7 +886,7 @@ namespace RockWeb.Blocks.Sequences
         {
             if ( _sequenceEnrollment == null )
             {
-                var sequenceEnrollmentId = PageParameter( PageParameterKeys.SequenceEnrollmentId ).AsIntegerOrNull();
+                var sequenceEnrollmentId = PageParameter( PageParameterKey.SequenceEnrollmentId ).AsIntegerOrNull();
 
                 if ( sequenceEnrollmentId.HasValue && sequenceEnrollmentId.Value > 0 )
                 {
