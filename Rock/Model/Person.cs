@@ -1044,16 +1044,17 @@ namespace Rock.Model
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
-        /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
+        /// Gets the Person's birth date. Note: Use <see cref="SetBirthDate(DateTime?)"/> set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? BirthDate
+        public DateTime? BirthDate 
         {
-            get {
+            get
+            {
                 _birthDate = CalculateBirthDate();
                 return _birthDate;
             }
