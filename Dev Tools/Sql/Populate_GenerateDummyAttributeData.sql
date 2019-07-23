@@ -4,7 +4,12 @@
 
 
 declare @maxAttributeValueRowsPerRun int = 500000;
+declare @totalAttributeValueCount int = 0;
 
+while (@totalAttributeValueCount < 9500500)
+begin
+
+declare @attributeId int = (select top 1 Id from Attribute order by NEWID())
 
 /* This will double (up to 500000 rows at a time) the amount of Attribute Values in the system. Run this multiple times until you have as much Attribute value data as you want */
 /* NOTE: You may occasionally get an index violation since the EntityIds are just random numbers, because AttributeId+EntityId must be unique. 
@@ -14,27 +19,21 @@ INSERT INTO [dbo].[AttributeValue] (
 	[AttributeId],
 	[EntityId],
 	[Value],
-	[Guid],
-	[CreatedDateTime],
-	[ModifiedDateTime],
-	[CreatedByPersonAliasId],
-	[ModifiedByPersonAliasId],
-	[ForeignKey],
-	[ValueAsDateTime],
-	[ForeignGuid],
-	[ForeignId]
+	[Guid]
 	)
-SELECT TOP (@maxAttributeValueRowsPerRun) av.IsSystem,
-	av.AttributeId,
-	abs(Cast(checksum(newid()) AS INT)) EntityId,
-	av.[Value],
-	newid(),
-	getdate(),
-	getdate(),
-	av.CreatedByPersonAliasId,
-	av.ModifiedByPersonAliasId,
-	av.ForeignKey,
-	ValueAsDateTime,
-	av.ForeignGuid,
-	av.ForeignId
-FROM AttributeValue av
+SELECT TOP (@maxAttributeValueRowsPerRun) 
+    0,
+	@attributeId,
+	p.Id EntityId,
+	'456.456',
+	newid()
+FROM Person p
+where p.Id not in (select EntityId from AttributeValue where AttributeId = @attributeId)
+    set @totalAttributeValueCount = (select count(*) from AttributeValue)
+end
+
+
+
+
+
+
