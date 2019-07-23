@@ -28,21 +28,25 @@
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
 
-                    <asp:Panel ID="pnlRecipientSelectionList" runat="server">
+                    <div class="row">
+                        <asp:Panel ID="pnlRecipientSelectionList" runat="server" CssClass="col-lg-6">
+                            <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true" OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
+                            <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
+                                <label>Segments</label>
+                                <p>Optionally, further refine your recipients by filtering by segment.</p>
+                                <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
 
-                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
-                        <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
-                            <label>Segments</label>
-                            <p>Optionally, further refine your recipients by filtering by segment.</p>
-                            <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
+                                <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
 
-                            <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
-
-                            <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
-                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
+                                    <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                </asp:Panel>
                             </asp:Panel>
                         </asp:Panel>
-                    </asp:Panel>
+                        <div class="col-lg-6">
+                            <Rock:RockCheckBox ID="cbDuplicatePreventionOption" runat="server" Label="Prevent Duplicate Email/SMS Addresses" Text="Yes" Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.  This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                        </div>
+                    </div>
 
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
