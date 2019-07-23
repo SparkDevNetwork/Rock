@@ -42,9 +42,6 @@ namespace Rock.Field.Types
   {% capture imageTypeUrl %}/Assets/Icons/FileTypes/{{ imageType }}.png{% endcapture %}
 {% endif %}
 
-{% assign fileName = '' %}
-{% assign escFileName = '' %}
-
 {% assign iconPath = SelectedValue | FromJSON | Property:'IconPath' %}
 {% assign fileName = SelectedValue | FromJSON | Property:'Name' %}
 {% if iconPath != '' and fileName != '' %}
