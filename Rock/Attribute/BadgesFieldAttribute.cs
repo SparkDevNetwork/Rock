@@ -19,10 +19,10 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more Person Badges. Stored as a comma-delimited list of PersonBadge Guids
+    /// Field Attribute to select 0 or more Badges. Stored as a comma-delimited list of Badge Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class BadgeTypesFieldAttribute : FieldAttribute
+    public class BadgesFieldAttribute : FieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeTypesFieldAttributeAttribute" /> class.
@@ -34,8 +34,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public BadgeTypesFieldAttribute( string name = "BadgeTypes", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgeTypesFieldType ).FullName )
+        public BadgesFieldAttribute( string name = "Badges", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgesFieldType ).FullName )
         {
         }
     }

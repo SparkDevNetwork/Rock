@@ -150,7 +150,10 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var badge = entity as Badge;
-            if ( badge == null ) return;
+            if ( badge == null )
+            {
+                return;
+            }
 
             Name = badge.Name;
             Description = badge.Description;

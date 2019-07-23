@@ -77,12 +77,19 @@ namespace Rock.PersonProfile
 
 
         /// <summary>
+        /// Gets or sets the parent context block.
+        /// </summary>
+        public ContextEntityBlock ParentContextEntityBlock { get; set; }
+
+        /// <summary>
         /// Gets or sets the parent person block.
         /// </summary>
-        /// <value>
-        /// The parent person block.
-        /// </value>
-        public ContextEntityBlock ParentContextEntityBlock { get; set; }
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the ParentContextEntityBlock instead.", false )]
+        public PersonBlock ParentPersonBlock
+        {
+            get => ParentContextEntityBlock as PersonBlock;
+        }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -123,7 +130,7 @@ namespace Rock.PersonProfile
         }
 
         /// <summary>
-        /// Use GetAttributeValue( PersonBadge badge, string key) instead.  Person Badge attribute values are 
+        /// Use GetAttributeValue( BadgeCache badge, string key) instead.  Person Badge attribute values are 
         /// specific to the badge instance (rather than global).  This method will throw an exception
         /// </summary>
         /// <param name="key">The key.</param>
@@ -131,7 +138,7 @@ namespace Rock.PersonProfile
         /// <exception cref="System.Exception">Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the GetAttributeValue( PersonBadge badge, string key ) method instead.</exception>
         public override string GetAttributeValue( string key )
         {
-            throw new Exception( "Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the GetAttributeValue( PersonBadge badge, string key ) method instead." );
+            throw new Exception( "Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the GetAttributeValue( BadgeCache badge, string key ) method instead." );
         }
 
         /// <summary>
@@ -144,12 +151,35 @@ namespace Rock.PersonProfile
         {
             return badge.GetAttributeValue( key );
         }
-        
+
+        /// <summary>
+        /// Gets the attribute value for the badge
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the BadgeCache param instead.", false )]
+        protected string GetAttributeValue( PersonBadgeCache personBadgeCache, string key )
+        {
+            var badgeCache = BadgeCache.Get( personBadgeCache.Id );
+            return GetAttributeValue( badgeCache, key );
+        }
+
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( Web.Cache.BadgeCache badge, HtmlTextWriter writer );
+        public virtual void Render( BadgeCache badge, HtmlTextWriter writer ) { }
+
+        /// <summary>
+        /// Renders the specified writer.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the BadgeCache param instead.", false )]
+        public virtual void Render( PersonBadgeCache personBadgeCache, HtmlTextWriter writer ) { }
     }
 }

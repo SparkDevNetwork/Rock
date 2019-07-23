@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for an entity." )]
 
-    [BadgeTypesField( "Badges" )]
+    [BadgesField( "Badges" )]
     public partial class Badges : ContextEntityBlock
     {
         /// <summary>

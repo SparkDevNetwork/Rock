@@ -62,25 +62,25 @@ namespace RockWeb.Blocks.Crm
                 BindEntityTypes();
                 lActionTitle.Text = ActionTitle.Add( Badge.FriendlyTypeName ).FormatAsHtmlTitle();
 
-                BadgeId = PageParameter( "BadgeTypeId" ).AsInteger();
+                BadgeId = PageParameter( "BadgeId" ).AsInteger();
                 if ( BadgeId != 0 )
                 {
-                    var badgeType = new BadgeService( new RockContext() ).Get( BadgeId );
-                    if ( badgeType != null )
+                    var badge = new BadgeService( new RockContext() ).Get( BadgeId );
+                    if ( badge != null )
                     {
-                        lActionTitle.Text = ActionTitle.Edit( badgeType.Name ).FormatAsHtmlTitle();
+                        lActionTitle.Text = ActionTitle.Edit( badge.Name ).FormatAsHtmlTitle();
 
-                        tbName.Text = badgeType.Name;
-                        tbDescription.Text = badgeType.Description;
-                        rtbQualifierValue.Text = badgeType.EntityTypeQualifierValue;
-                        rtbQualifierColumn.Text = badgeType.EntityTypeQualifierColumn;
-                        etpEntityType.SelectedEntityTypeId = badgeType.EntityTypeId;
+                        tbName.Text = badge.Name;
+                        tbDescription.Text = badge.Description;
+                        rtbQualifierValue.Text = badge.EntityTypeQualifierValue;
+                        rtbQualifierColumn.Text = badge.EntityTypeQualifierColumn;
+                        etpEntityType.SelectedEntityTypeId = badge.EntityTypeId;
 
-                        var badgeComponentType = EntityTypeCache.Get( badgeType.BadgeComponentEntityTypeId );
+                        var badgeComponentType = EntityTypeCache.Get( badge.BadgeComponentEntityTypeId );
                         compBadgeType.SelectedValue = badgeComponentType.Guid.ToString().ToUpper();
 
-                        BuildEditControls( badgeType, true );
-                        pdAuditDetails.SetEntity( badgeType, ResolveRockUrl( "~" ) );
+                        BuildEditControls( badge, true );
+                        pdAuditDetails.SetEntity( badge, ResolveRockUrl( "~" ) );
                     }
                 }
                 else
@@ -134,17 +134,17 @@ namespace RockWeb.Blocks.Crm
         {
             Badge badge = null;
             var rockContext = new RockContext();
-            var badgeTypeService = new BadgeService( rockContext );
+            var badgeService = new BadgeService( rockContext );
 
             if ( BadgeId != 0 )
             {
-                badge = badgeTypeService.Get( BadgeId );
+                badge = badgeService.Get( BadgeId );
             }
 
             if ( badge == null )
             {
                 badge = new Badge();
-                badgeTypeService.Add( badge );
+                badgeService.Add( badge );
             }
 
             badge.Name = tbName.Text;
