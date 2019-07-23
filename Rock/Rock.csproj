@@ -500,6 +500,7 @@
     <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
     <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
+    <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
