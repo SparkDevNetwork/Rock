@@ -41,10 +41,13 @@ namespace Rock.Jobs
     public class PostV100DataMigrationsValueAsNumeric : IJob
     {
         /// <summary>
-        /// 
+        /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The command timeout key
+            /// </summary>
             public const string CommandTimeout = "CommandTimeout";
         }
 

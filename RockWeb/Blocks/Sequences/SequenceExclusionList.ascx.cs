@@ -54,17 +54,27 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        private static class AttributeKey
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The detail page attribute key
+            /// </summary>
             public const string DetailPage = "DetailPage";
         }
 
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKey
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The sequence id page parameter key
+            /// </summary>
             public const string SequenceId = "SequenceId";
+
+            /// <summary>
+            /// The sequence exclusion id page parameter key
+            /// </summary>
             public const string SequenceExclusionId = "SequenceOccurrenceExclusionId";
         }
 

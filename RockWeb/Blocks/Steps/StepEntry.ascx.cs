@@ -42,21 +42,21 @@ namespace RockWeb.Blocks.Steps
         description: "The step type to use to add a new step. Leave blank to use the query string: StepTypeId. The type of the step, if step id is specified, overrides this setting.",
         required: false,
         order: 1,
-        key: AttributeKeys.StepType )]
+        key: AttributeKey.StepType )]
 
     [LinkedPage(
         name: "Success Page",
         description: "The page to navigate to once the add or edit has completed. Leave blank to navigate to the parent page.",
         required: false,
         order: 2,
-        key: AttributeKeys.SuccessPage )]
+        key: AttributeKey.SuccessPage )]
 
     [LinkedPage(
         name: "Workflow Entry Page",
         description: "Page used to launch a new workflow of the selected type.",
         required: false,
         order: 3,
-        key: AttributeKeys.WorkflowEntryPage )]
+        key: AttributeKey.WorkflowEntryPage )]
 
     #endregion Block Attributes
 
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for block attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
             public const string StepType = "StepType";
             public const string SuccessPage = "SuccessPage";
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for the page parameters
         /// </summary>
-        private static class ParameterKeys
+        protected static class ParameterKey
         {
             public const string StepTypeId = "StepTypeId";
             public const string StepId = "StepId";
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Steps
                         qryParam.Add( "WorkflowId", workflow.Id.ToString() );
                     }
 
-                    var entryPage = this.GetAttributeValue( AttributeKeys.WorkflowEntryPage );
+                    var entryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
 
                     if ( string.IsNullOrWhiteSpace( entryPage ) )
                     {
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Steps
                         return false;
                     }
 
-                    NavigateToLinkedPage( AttributeKeys.WorkflowEntryPage, qryParam );
+                    NavigateToLinkedPage( AttributeKey.WorkflowEntryPage, qryParam );
                     return false;
                 }
                 else if ( workflow.Id != 0 )
@@ -488,7 +488,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void GoToSuccessPage( int? newStepId )
         {
-            var page = GetAttributeValue( AttributeKeys.SuccessPage );
+            var page = GetAttributeValue( AttributeKey.SuccessPage );
             var parameters = new Dictionary<string, string>();
             var person = GetPerson();
             var step = GetStep();
@@ -496,21 +496,21 @@ namespace RockWeb.Blocks.Steps
 
             if ( person != null )
             {
-                parameters.Add( ParameterKeys.PersonId, person.Id.ToString() );
+                parameters.Add( ParameterKey.PersonId, person.Id.ToString() );
             }
 
             if ( newStepId.HasValue && newStepId > 0 )
             {
-                parameters.Add( ParameterKeys.StepId, newStepId.Value.ToString() );
+                parameters.Add( ParameterKey.StepId, newStepId.Value.ToString() );
             }
             else if ( step != null )
             {
-                parameters.Add( ParameterKeys.StepId, step.Id.ToString() );
+                parameters.Add( ParameterKey.StepId, step.Id.ToString() );
             }
 
             if ( stepType != null )
             {
-                parameters.Add( ParameterKeys.StepTypeId, stepType.Id.ToString() );
+                parameters.Add( ParameterKey.StepTypeId, stepType.Id.ToString() );
             }
 
             if ( page.IsNullOrWhiteSpace() )
@@ -519,7 +519,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                NavigateToLinkedPage( AttributeKeys.SuccessPage, parameters );
+                NavigateToLinkedPage( AttributeKey.SuccessPage, parameters );
             }
         }
 
@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _step == null )
             {
-                var stepId = PageParameter( ParameterKeys.StepId ).AsIntegerOrNull();
+                var stepId = PageParameter( ParameterKey.StepId ).AsIntegerOrNull();
 
                 if ( stepId.HasValue )
                 {
@@ -570,8 +570,8 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var stepTypeId = GetAttributeValue( AttributeKeys.StepType ).AsIntegerOrNull() ??
-                        PageParameter( ParameterKeys.StepTypeId ).AsIntegerOrNull();
+                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull() ??
+                        PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
 
                     if ( stepTypeId.HasValue )
                     {
@@ -605,7 +605,7 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var personId = PageParameter( ParameterKeys.PersonId ).AsIntegerOrNull();
+                    var personId = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
 
                     if ( personId.HasValue )
                     {

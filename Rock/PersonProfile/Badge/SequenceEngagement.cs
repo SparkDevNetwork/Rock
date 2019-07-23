@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
@@ -35,33 +34,33 @@ namespace Rock.PersonProfile.Badge
         name: "Sequence Id",
         description: "The sequence to display enrollment data for the given person about",
         required: true,
-        key: AttributeKeys.Sequence )]
+        key: AttributeKey.Sequence )]
 
     [IntegerField(
         name: "Units To Display",
         description: "The number of days or months to show on the chart (default 24.)",
         required: false,
-        defaultValue: AttributeDefaults.BarCount,
-        key: AttributeKeys.BarCount )]
+        defaultValue: AttributeDefault.BarCount,
+        key: AttributeKey.BarCount )]
 
     [IntegerField(
         name: "Minimum Bar Height",
         description: "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)",
         required: false,
-        defaultValue: AttributeDefaults.MinBarHeight,
-        key: AttributeKeys.MinBarHeight )]
+        defaultValue: AttributeDefault.MinBarHeight,
+        key: AttributeKey.MinBarHeight )]
 
     [BooleanField(
         name: "Animate Bars",
         description: "Determine whether bars should animate when displayed.",
-        defaultValue: AttributeDefaults.AnimateBars,
-        key: AttributeKeys.AnimateBars )]
+        defaultValue: AttributeDefault.AnimateBars,
+        key: AttributeKey.AnimateBars )]
 
     [LinkedPage(
         name: "Enrollment Detail Page",
         description: "If set, clicking this badge will navigate to the given page.",
         required: false,
-        key: AttributeKeys.EnrollmentDetailPage )]
+        key: AttributeKey.EnrollmentDetailPage )]
 
     public class SequenceEngagement : BadgeComponent
     {
@@ -70,22 +69,52 @@ namespace Rock.PersonProfile.Badge
         /// <summary>
         /// Keys to use for the attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The sequence attribute key
+            /// </summary>
             public const string Sequence = "Sequence";
+
+            /// <summary>
+            /// The bar count attribute key
+            /// </summary>
             public const string BarCount = "BarCount";
+
+            /// <summary>
+            /// The min bar height attribute key
+            /// </summary>
             public const string MinBarHeight = "MinBarHeight";
+
+            /// <summary>
+            /// The animate bars attribute key
+            /// </summary>
             public const string AnimateBars = "AnimateBars";
+
+            /// <summary>
+            /// The enrollment detail page attribute key
+            /// </summary>
             public const string EnrollmentDetailPage = "EnrollmentDetailPage";
         }
 
         /// <summary>
         /// Default values for the attributes
         /// </summary>
-        private static class AttributeDefaults
+        protected static class AttributeDefault
         {
+            /// <summary>
+            /// The bar count attribute default
+            /// </summary>
             public const int BarCount = 24;
+
+            /// <summary>
+            /// The min bar height attribute default
+            /// </summary>
             public const int MinBarHeight = 2;
+
+            /// <summary>
+            /// The animate bars attribute default
+            /// </summary>
             public const bool AnimateBars = true;
         }
 
@@ -114,9 +143,9 @@ namespace Rock.PersonProfile.Badge
             var timeUnit = isDaily ? "day" : "week";
             var timeUnits = isDaily ? "days" : "weeks";
 
-            var minBarHeight = GetAttributeValue( badge, AttributeKeys.MinBarHeight ).AsIntegerOrNull() ?? AttributeDefaults.MinBarHeight;
-            var unitsToDisplay = GetAttributeValue( badge, AttributeKeys.BarCount ).AsIntegerOrNull() ?? AttributeDefaults.BarCount;
-            var doAnimateBars = GetAttributeValue( badge, AttributeKeys.AnimateBars ).AsBooleanOrNull() ?? AttributeDefaults.AnimateBars;
+            var minBarHeight = GetAttributeValue( badge, AttributeKey.MinBarHeight ).AsIntegerOrNull() ?? AttributeDefault.MinBarHeight;
+            var unitsToDisplay = GetAttributeValue( badge, AttributeKey.BarCount ).AsIntegerOrNull() ?? AttributeDefault.BarCount;
+            var doAnimateBars = GetAttributeValue( badge, AttributeKey.AnimateBars ).AsBooleanOrNull() ?? AttributeDefault.AnimateBars;
 
             var animateClass = doAnimateBars ? " animate" : string.Empty;
 
@@ -151,7 +180,7 @@ namespace Rock.PersonProfile.Badge
     }});
 </script>";
 
-            var linkedPageGuid = GetAttributeValue( badge, AttributeKeys.EnrollmentDetailPage ).AsGuidOrNull();
+            var linkedPageGuid = GetAttributeValue( badge, AttributeKey.EnrollmentDetailPage ).AsGuidOrNull();
             var linkedPageId = linkedPageGuid.HasValue ? PageCache.GetId( linkedPageGuid.Value ) : null;
 
             if ( !linkedPageId.HasValue )
@@ -172,7 +201,7 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         private SequenceCache GetSequence( BadgeCache badge )
         {
-            var sequenceGuid = GetAttributeValue( badge, AttributeKeys.Sequence ).AsGuidOrNull();
+            var sequenceGuid = GetAttributeValue( badge, AttributeKey.Sequence ).AsGuidOrNull();
 
             if ( !sequenceGuid.HasValue )
             {

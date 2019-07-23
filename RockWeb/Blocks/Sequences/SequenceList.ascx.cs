@@ -38,8 +38,8 @@ namespace RockWeb.Blocks.Sequences
 
     [LinkedPage(
         "Detail Page",
-        Key = AttributeKeys.DetailPage,
-        Category = AttributeCategories.LinkedPages,
+        Key = AttributeKey.DetailPage,
+        Category = AttributeCategory.LinkedPages,
         Order = 1 )]
 
     #endregion Block Attributes
@@ -51,32 +51,44 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// Key for the detail page
+            /// </summary>
             public const string DetailPage = "DetailPage";
         }
 
         /// <summary>
         /// Keys to use for Block Attribute Categories
         /// </summary>
-        private static class AttributeCategories
+        protected static class AttributeCategory
         {
+            /// <summary>
+            /// Category for the linked pages
+            /// </summary>
             public const string LinkedPages = "Linked Pages";
         }
 
         /// <summary>
         /// Keys to use for User Preferences
         /// </summary>
-        private static class UserPreferenceKeys
+        protected static class UserPreferenceKey
         {
+            /// <summary>
+            /// Key for the active user preference
+            /// </summary>
             public const string Active = "Active";
         }
 
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKeys
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// Key for the sequence id
+            /// </summary>
             public const string SequenceId = "SequenceId";
         }
 
@@ -165,7 +177,7 @@ namespace RockWeb.Blocks.Sequences
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( UserPreferenceKeys.Active, ddlActiveFilter.SelectedValue );
+            rFilter.SaveUserPreference( UserPreferenceKey.Active, ddlActiveFilter.SelectedValue );
             BindGrid();
         }
 
@@ -189,7 +201,7 @@ namespace RockWeb.Blocks.Sequences
         {
             switch ( e.Key )
             {
-                case UserPreferenceKeys.Active:
+                case UserPreferenceKey.Active:
                     e.Value = ddlActiveFilter.SelectedValue;
                     break;
                 default:
@@ -209,7 +221,7 @@ namespace RockWeb.Blocks.Sequences
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSequence_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.DetailPage, PageParameterKeys.SequenceId, 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.SequenceId, 0 );
         }
 
         /// <summary>
@@ -219,7 +231,7 @@ namespace RockWeb.Blocks.Sequences
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSequence_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.DetailPage, PageParameterKeys.SequenceId, e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.SequenceId, e.RowKeyId );
         }
 
         /// <summary>
@@ -271,7 +283,7 @@ namespace RockWeb.Blocks.Sequences
         /// </summary>
         private void BindFilter()
         {
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKeys.Active ) );
+            ddlActiveFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKey.Active ) );
         }
 
         /// <summary>
@@ -284,7 +296,7 @@ namespace RockWeb.Blocks.Sequences
             var sequenceQuery = GetSequenceService().Queryable().AsNoTracking();
 
             // Filter by: Active
-            var activeFilter = rFilter.GetUserPreference( UserPreferenceKeys.Active ).ToLower();
+            var activeFilter = rFilter.GetUserPreference( UserPreferenceKey.Active ).ToLower();
 
             switch ( activeFilter )
             {

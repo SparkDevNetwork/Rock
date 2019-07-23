@@ -45,10 +45,21 @@ namespace RockWeb.Blocks.Sequences
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        private static class PageParameterKeys
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The sequence id page parameter key
+            /// </summary>
             public const string SequenceId = "SequenceId";
+
+            /// <summary>
+            /// The sequence enrollment id page parameter key
+            /// </summary>
             public const string SequenceEnrollmentId = "SequenceEnrollmentId";
+
+            /// <summary>
+            /// The person id page parameter key
+            /// </summary>
             public const string PersonId = "PersonId";
         }
 
@@ -145,7 +156,7 @@ namespace RockWeb.Blocks.Sequences
             if ( enrollmentId.HasValue )
             {
                 NavigateToCurrentPage( new Dictionary<string, string> {
-                    { PageParameterKeys.SequenceEnrollmentId, enrollmentId.Value.ToString() }
+                    { PageParameterKey.SequenceEnrollmentId, enrollmentId.Value.ToString() }
                 } );
             }
         }
@@ -216,7 +227,7 @@ namespace RockWeb.Blocks.Sequences
         private bool NavigateToParentPage()
         {
             return NavigateToParentPage( new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, GetSequence().Id.ToString() }
+                { PageParameterKey.SequenceId, GetSequence().Id.ToString() }
             } );
         }
 
@@ -417,8 +428,8 @@ namespace RockWeb.Blocks.Sequences
 
             // If the save was successful, reload the page using the new record Id.
             NavigateToPage( RockPage.Guid, new Dictionary<string, string> {
-                { PageParameterKeys.SequenceId, sequence.Id.ToString() },
-                { PageParameterKeys.SequenceEnrollmentId, enrollment.Id.ToString() }
+                { PageParameterKey.SequenceId, sequence.Id.ToString() },
+                { PageParameterKey.SequenceEnrollmentId, enrollment.Id.ToString() }
             } );
         }
 
@@ -502,7 +513,7 @@ namespace RockWeb.Blocks.Sequences
 
             rdpEnrollmentDate.SelectedDate = RockDateTime.Today;
 
-            var presetPersonId = PageParameter( PageParameterKeys.PersonId ).AsIntegerOrNull();
+            var presetPersonId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
 
             if ( presetPersonId.HasValue )
             {
@@ -513,7 +524,7 @@ namespace RockWeb.Blocks.Sequences
                 if ( enrollments.Any() )
                 {
                     NavigateToCurrentPage( new Dictionary<string, string> {
-                        { PageParameterKeys.SequenceEnrollmentId, enrollments.First().Id.ToString() }
+                        { PageParameterKey.SequenceEnrollmentId, enrollments.First().Id.ToString() }
                     } );
                 }
                 else
@@ -722,7 +733,7 @@ namespace RockWeb.Blocks.Sequences
                 }
                 else
                 {
-                    var sequenceId = PageParameter( PageParameterKeys.SequenceId ).AsIntegerOrNull();
+                    var sequenceId = PageParameter( PageParameterKey.SequenceId ).AsIntegerOrNull();
 
                     if ( sequenceId.HasValue && sequenceId.Value > 0 )
                     {
@@ -744,7 +755,7 @@ namespace RockWeb.Blocks.Sequences
         {
             if ( _sequenceEnrollment == null )
             {
-                var sequenceEnrollmentId = PageParameter( PageParameterKeys.SequenceEnrollmentId ).AsIntegerOrNull();
+                var sequenceEnrollmentId = PageParameter( PageParameterKey.SequenceEnrollmentId ).AsIntegerOrNull();
 
                 if ( sequenceEnrollmentId.HasValue && sequenceEnrollmentId.Value > 0 )
                 {
