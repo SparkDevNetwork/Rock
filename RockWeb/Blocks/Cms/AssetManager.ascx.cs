@@ -62,7 +62,9 @@ namespace RockWeb.Blocks.Cms
                     if ( cbEvent.Checked == true )
                     {
                         var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
-                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\" }}", hfAssetStorageId.Value, keyControl.Text );
+                        var imageControl = repeaterItem.FindControl( "imgIconPath" ) as System.Web.UI.HtmlControls.HtmlImage;
+                        var nameControl = repeaterItem.FindControl( "lbName" ) as Label;
+                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\", \"IconPath\": \"{2}\", \"Name\": \"{3}\" }}", hfAssetStorageId.Value, keyControl.Text, imageControl.Attributes["src"], nameControl.Text );
                     }
                 }
 

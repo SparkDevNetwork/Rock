@@ -36,8 +36,6 @@ namespace Rock.Migrations
             AddAttributesForSmartyStreets();
             FixGoogleShortCode();
             CodeGenMigrationsUp();
-
-            UpdateAttributeValueValueAsNumericCalculation();
         }
 
         /// <summary>
@@ -254,41 +252,6 @@ namespace Rock.Migrations
             UPDATE [AttributeValue] 
             SET [Value]=REPLACE([Value],'{{ ''Global'' | Attribute:''CurrencySymbol'' }}{{ pledge.AmountRemaining }}','{{ pledge.AmountRemaining | FormatAsCurrency }}')
             WHERE [AttributeId]=@AttributeId" );
-        }
-
-        /// <summary>
-        /// MP: Fixup AttributeValue.ValueAsNumeric to work with negative numbers
-        /// </summary>
-        private void UpdateAttributeValueValueAsNumericCalculation()
-        {
-            Sql( @"IF NOT EXISTS (
-  SELECT[Id]
-  FROM[ServiceJob]
-  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrationsValueAsNumeric'
-   AND[Guid] = '5144FA96-A139-44C6-9464-76C35719E568'
-  )
-BEGIN
- INSERT INTO[ServiceJob](
-  [IsSystem]
-  ,[IsActive]
-  ,[Name]
-  ,[Description]
-  ,[Class]
-  ,[CronExpression]
-  ,[NotificationStatus]
-  ,[Guid]
-  )
- VALUES(
-  0
-  ,1
-  ,'Rock Update Helper v9.0 - AttributeValue.ValueAsNumeric'
-  ,'Runs data updates to AttributeValue.ValueAsNumeric that need to occur after updating to v9.0.'
-  ,'Rock.Jobs.PostV90DataMigrationsValueAsNumeric'
-  ,'0 0 21 1/1 * ? *'
-  ,1
-  ,'5144FA96-A139-44C6-9464-76C35719E568'
-  );
-        END" );
         }
 
         /// <summary>
