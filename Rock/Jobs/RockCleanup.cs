@@ -241,6 +241,16 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
             }
 
+            try
+            {
+                // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
+                AttributeValueCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in AttributeValueCleanup", ex ) );
+            }
+
             // ***********************
             //  Final count and report
             // ***********************
@@ -1173,6 +1183,49 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
             }
 
             return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void AttributeValueCleanup( JobDataMap dataMap )
+        {
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
+
+            AttributeValueCleanup( commandTimeout );
+        }
+
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        internal static void AttributeValueCleanup( int commandTimeout )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                // Ensure AttributeValue.ValueAsNumeric is in sync with AttributeValue.Value, just in case Value got updated without also updating ValueAsNumeric
+                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AttributeValue
+SET ValueAsNumeric = CASE 
+		WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END
+where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END), 0)
+" );
+            }
         }
 
         /// <summary>

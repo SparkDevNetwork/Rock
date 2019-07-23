@@ -397,6 +397,7 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
+    <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Net\ClientInformation.cs" />
