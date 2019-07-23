@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             {
                 groupType.Name = tbName.Text;
                 groupType.Description = tbDescription.Text;
-
+                groupType.IconCssClass = tbIconCssClass.Text;
                 groupType.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributeEdits, groupType );
 
@@ -465,7 +465,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 tbName.Text = groupType.Name;
                 tbDescription.Text = groupType.Description;
-
+                tbIconCssClass.Text = groupType.IconCssClass;
                 var rockContext = new RockContext();
 
                 groupType.LoadAttributes( rockContext );
