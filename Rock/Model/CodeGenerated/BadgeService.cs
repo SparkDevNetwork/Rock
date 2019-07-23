@@ -58,10 +58,10 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PersonBadgeExtensionMethods
+    public static partial class BadgeExtensionMethods
     {
         /// <summary>
-        /// Clones this PersonBadge object to a new PersonBadge object
+        /// Clones this Badge object to a new Badge object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -81,7 +81,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another PersonBadge object to this PersonBadge object
+        /// Copies the properties from another Badge object to this Badge object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>

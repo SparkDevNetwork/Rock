@@ -26,13 +26,13 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// PersonBadges REST API
+    /// Badges REST API
     /// </summary>
-    public partial class BadgeTypeController : Rock.Rest.ApiController<Rock.Model.Badge>
+    public partial class BadgesController : Rock.Rest.ApiController<Rock.Model.Badge>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BadgeTypeController"/> class.
+        /// Initializes a new instance of the <see cref="BadgesController"/> class.
         /// </summary>
-        public BadgeTypeController() : base( new Rock.Model.BadgeService( new Rock.Data.RockContext() ) ) { } 
+        public BadgesController() : base( new Rock.Model.BadgeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBadge_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BadgeTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "BadgeId", 0 );
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBadge_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BadgeTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "BadgeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -114,19 +114,19 @@ namespace RockWeb.Blocks.Crm
         protected void gBadge_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var badgeTypeService = new BadgeService( rockContext );
-            var personBadge = badgeTypeService.Get( e.RowKeyId );
+            var badgeService = new BadgeService( rockContext );
+            var badge = badgeService.Get( e.RowKeyId );
 
-            if ( personBadge != null )
+            if ( badge != null )
             {
                 string errorMessage;
-                if ( !badgeTypeService.CanDelete( personBadge, out errorMessage ) )
+                if ( !badgeService.CanDelete( badge, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                badgeTypeService.Delete( personBadge );
+                badgeService.Delete( badge );
                 rockContext.SaveChanges();
             }
 
@@ -137,8 +137,8 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
             var service = new BadgeService( rockContext );
-            var personBadges = service.Queryable().OrderBy( b => b.Order );
-            service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
+            var badges = service.Queryable().OrderBy( b => b.Order );
+            service.Reorder( badges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             BindGrid();
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Crm
         private void BindGrid()
         {
             gBadge.DataSource = new BadgeService( new RockContext() )
-                .Queryable( "BadgeComponentEntityType, EntityType" ).OrderBy( b => b.Order ).ToList();
+                .Queryable().OrderBy( b => b.Order ).ToList();
             gBadge.DataBind();
         }
 

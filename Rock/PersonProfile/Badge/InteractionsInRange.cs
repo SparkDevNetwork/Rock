@@ -81,7 +81,7 @@ namespace Rock.PersonProfile.Badge
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/BadgeTypes/InteractionsInRange/{Person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode(dateRange)}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/InteractionsInRange/{Person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode(dateRange)}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                     

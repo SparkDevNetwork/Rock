@@ -303,7 +303,7 @@
     <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BadgeTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BadgesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
@@ -359,7 +359,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
-    <Compile Include="Controllers\BadgeTypesController.cs" />
+    <Compile Include="Controllers\BadgesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />

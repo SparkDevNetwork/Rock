@@ -26,12 +26,9 @@ namespace Rock.Web.UI.Controls
     public class BadgeControl : Control
     {
         /// <summary>
-        /// Gets or sets the name of the badge entity type.
+        /// Gets or sets the badge cache.
         /// </summary>
-        /// <value>
-        /// The name of the badge entity type.
-        /// </value>
-        public BadgeCache BadgeTypeCache { get; set; }
+        public BadgeCache BadgeCache { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
@@ -41,10 +38,10 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            var badgeTypeId = ViewState["BadgeTypeId"] as int?;
-            if ( badgeTypeId.HasValue )
+            var badgeId = ViewState["BadgeId"] as int?;
+            if ( badgeId.HasValue )
             {
-                BadgeTypeCache = BadgeCache.Get( badgeTypeId.Value );
+                BadgeCache = BadgeCache.Get( badgeId.Value );
             }
         }
 
@@ -56,9 +53,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            if ( BadgeTypeCache != null )
+            if ( BadgeCache != null )
             {
-                ViewState["BadgeTypeId"] = BadgeTypeCache.Id.ToString();
+                ViewState["BadgeId"] = BadgeCache.Id.ToString();
             }
 
             return base.SaveViewState();
@@ -106,17 +103,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            var badgeComponent = BadgeTypeCache?.BadgeComponent;
+            var personBadgeCache = new PersonBadgeCache( BadgeCache );
+            var badgeComponent = BadgeCache?.BadgeComponent;
             if ( badgeComponent != null )
             {
                 var contextEntityBlock = ContextEntityBlock;
                 if ( contextEntityBlock != null )
                 {
-                    if ( BadgeService.DoesBadgeApplyToEntity( BadgeTypeCache, contextEntityBlock.Entity ) )
+                    if ( BadgeService.DoesBadgeApplyToEntity( BadgeCache, contextEntityBlock.Entity ) )
                     {
                         badgeComponent.ParentContextEntityBlock = contextEntityBlock;
                         badgeComponent.Entity = contextEntityBlock.Entity;
-                        badgeComponent.Render( BadgeTypeCache, writer );
+                        badgeComponent.Render( BadgeCache, writer );
+                        badgeComponent.Render( personBadgeCache, writer );
 
                         const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );

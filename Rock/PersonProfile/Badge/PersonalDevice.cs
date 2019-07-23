@@ -59,7 +59,7 @@ namespace Rock.PersonProfile.Badge
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/BadgeTypes/PersonalDevicesNumber/{Person.Id}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{Person.Id}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                         var badgeHtml = '';

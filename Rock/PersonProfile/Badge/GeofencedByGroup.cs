@@ -62,7 +62,7 @@ Sys.Application.add_load(function () {{
                                                 
     $.ajax({{
             type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/BadgeTypes/GeofencingGroups/{0}/{1}' ,
+            url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
             statusCode: {{
                 200: function (data, status, xhr) {{
                     var $badge = $('.badge-geofencing-group.badge-id-{2}');

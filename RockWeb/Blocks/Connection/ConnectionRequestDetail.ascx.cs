@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Connection
         defaultValue: Rock.SystemGuid.Page.NEW_COMMUNICATION,
         order: 4 )]
 
-    [BadgeTypesFieldAttribute( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
+    [BadgesField( "Badges", "The badges to display in this block.", false, "", "", 0 )]
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
     {
         /// <summary>

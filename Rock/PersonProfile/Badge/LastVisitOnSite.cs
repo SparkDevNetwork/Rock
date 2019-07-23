@@ -71,7 +71,7 @@ namespace Rock.PersonProfile.Badge
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/BadgeTypes/LastVisitOnSite/{Person.Id}/{siteId}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                         var badgeHtml = '';

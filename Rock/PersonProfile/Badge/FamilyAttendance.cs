@@ -83,7 +83,7 @@ namespace Rock.PersonProfile.Badge
 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/BadgeTypes/FamilyAttendance/{0}/{1}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{0}/{1}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                             var chartHtml = '<ul class=\'attendance-chart list-unstyled\'>';

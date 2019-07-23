@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,11 +30,23 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Gets the badge label
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="entity">The person.</param>
         /// <returns></returns>
         public virtual HighlightLabel GetLabel( IEntity entity )
         {
-            return new HighlightLabel();
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the badge label
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the IEntity param instead.", false )]
+        public virtual HighlightLabel GetLabel( Person person )
+        {
+            return null;
         }
 
         /// <summary>
@@ -46,9 +59,19 @@ namespace Rock.PersonProfile
             if ( Entity != null )
             {
                 var label = GetLabel( Entity );
+                
                 if ( label != null )
                 {
                     label.RenderControl( writer );
+                }
+                else
+                {
+                    label = GetLabel( Person );
+
+                    if ( label != null )
+                    {
+                        label.RenderControl( writer );
+                    }
                 }
             }
         }
