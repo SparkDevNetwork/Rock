@@ -584,8 +584,10 @@
     <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicateEmailFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasDuplicatePhoneFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepsTakenFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
     <Compile Include="SystemGuid\AssessmentType.cs" />
@@ -1852,6 +1854,7 @@
     <Compile Include="Web\UI\Controls\FieldVisibilityRulesEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
     <Compile Include="Web\UI\Controls\ScreenKeyboard.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SingleEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\RegistryEntry.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
