@@ -461,16 +461,30 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, string delimiter )
         {
+            return SplitDelimitedValues( str, delimiter, StringSplitOptions.None );
+        }
+
+        /// <summary>
+        /// Returns an array that contains substrings of the target string that are separated by the specified delimiter.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="delimiter">The delimiter string.</param>
+        /// <param name="options">The split options.</param>
+        /// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str, string delimiter, StringSplitOptions options )
+        {
             if ( str == null )
             {
                 return new string[0];
             }
 
-            // Replace the custom delimiter with an unprintable character that will not appear in the target string, then split the string.
+            // Replace the custom delimiter string with a single unprintable character that will not appear in the target string, then use the default string split function.
             var newDelimiter = new char[] { '\x0001' };
 
-            return str.Replace( delimiter, newDelimiter.ToString() )
-                      .Split( newDelimiter, StringSplitOptions.RemoveEmptyEntries );
+            var replaceString = str.Replace( delimiter, new string( newDelimiter) )
+                                   .Split( newDelimiter, options );
+
+            return replaceString;
         }
 
         /// <summary>

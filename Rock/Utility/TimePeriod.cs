@@ -19,21 +19,57 @@ using System;
 namespace Rock
 {
     /// <summary>
-    /// Represents a period of time that can be expressed as either having fixed start and end dates, or as relative to the current date and time.
+    /// Represents a period of time that can be expressed as either having a fixed start and end date, or as relative to the current date and time.
     /// </summary>
     public class TimePeriod
     {
         private DateTime? _DateStart;
         private DateTime? _DateEnd;
+        private int? _NumberOfTimeUnits = null;
+        private TimePeriodRangeSpecifier _Range = TimePeriodRangeSpecifier.All;
+        private TimePeriodUnitSpecifier? _TimeUnit = null;
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TimePeriod"/> class.
         /// </summary>
         public TimePeriod()
-                : base()
         {
             this.SetToUnboundedDateRange();
         }
+
+        public TimePeriod( string delimitedSettingsString )
+        {
+            this.FromDelimitedString( delimitedSettingsString );
+        }
+
+        public TimePeriod( string delimitedSettingsString, string delimiter )
+        {
+            this.FromDelimitedString( delimitedSettingsString, delimiter );
+        }
+
+        public TimePeriod( DateTime? startDate, DateTime? endDate )
+        {
+            this.SetToSpecificDateRange( startDate, endDate );
+        }
+
+        public TimePeriod( DateRange dateRange )
+        {
+            this.SetSpecificDateRange( dateRange );
+        }
+
+        public TimePeriod( TimePeriodRangeSpecifier range, TimePeriodUnitSpecifier unit, int numberOfTimeUnits )
+        {
+            this.SetToRelativePeriod( range, unit, numberOfTimeUnits );
+        }
+
+        public TimePeriod( TimePeriodUnitSpecifier unit )
+        {
+            this.SetToCurrentPeriod( unit );
+        }
+
+        #endregion
 
         /// <summary>
         /// Set an unbounded range that includes all possible values.
@@ -55,7 +91,7 @@ namespace Rock
         public void SetToSpecificDateRange( DateTime? startDate, DateTime? endDate )
         {
             _Range = TimePeriodRangeSpecifier.DateRange;
-            _TimeUnit = TimePeriodUnitSpecifier.Day;
+            _TimeUnit = null;
             _NumberOfTimeUnits = null;
             _DateStart = startDate;
             _DateEnd = endDate;
@@ -98,8 +134,6 @@ namespace Rock
             _DateEnd = null;
         }
 
-        private TimePeriodRangeSpecifier _Range = TimePeriodRangeSpecifier.All;
-
         /// <summary>
         /// Gets the type of date range specified for this time period.
         /// </summary>
@@ -114,8 +148,6 @@ namespace Rock
             }
         }
 
-        private int? _NumberOfTimeUnits = null;
-
         /// <summary>
         /// Gets the number of time units (x Hours, x Days, etc) depending on TimeUnit selection
         /// </summary>
@@ -126,8 +158,6 @@ namespace Rock
         {
             get { return _NumberOfTimeUnits; }
         }
-
-        private TimePeriodUnitSpecifier? _TimeUnit = null;
 
         /// <summary>
         /// Gets the time unit (Hour, Day, Year, etc)
@@ -163,7 +193,7 @@ namespace Rock
 
             if ( splitValues.Length > 1 )
             {
-                _NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                _NumberOfTimeUnits = splitValues[1].AsIntegerOrNull();
             }
             else
             {
@@ -174,7 +204,7 @@ namespace Rock
             {
                 var timeUnit = splitValues[2].ConvertToEnumOrNull<TimePeriodUnitSpecifier>();
 
-                _TimeUnit = timeUnit ?? TimePeriodUnitSpecifier.Day;
+                _TimeUnit = timeUnit;
             }
             else
             {
@@ -222,45 +252,11 @@ namespace Rock
         }
 
         /// <summary>
-        /// Formats the delimited values as a phrase such as "Last 14 Days".
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public string ToFormattedString()
-        {
-            if ( _Range == TimePeriodRangeSpecifier.DateRange )
-            {
-                var dateRange = this.GetDateRange();
-
-                return dateRange.ToStringAutomatic();
-            }
-            else if ( _Range == TimePeriodRangeSpecifier.All )
-            {
-                return "Any Date";
-            }
-            else
-            {
-                string timeUnitText = this.TimeUnit.ConvertToString().PluralizeIf( this.NumberOfTimeUnits != 1 );
-
-                if ( this.Range == TimePeriodRangeSpecifier.Current )
-                {
-                    return string.Format( "{0} {1}", this.Range.ConvertToString(), timeUnitText );
-                }
-                else
-                {
-                    return string.Format( "{0} {1} {2}", this.Range.ConvertToString(), this.NumberOfTimeUnits, timeUnitText );
-                }
-            }
-        }
-
-        /// <summary>
         /// Returns a DateRange object that represents the start and end dates of the time period.
-        /// NOTE: The End Date is one day before the actual end date. 
-        /// So, if your date range is displayed as 1/3/2015 to 1/4/2015, this will return 1/5/2015 12:00 AM as the End Date
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public DateRange GetDateRange()
+        public DateRange GetDateRange( TimePeriodDateRangeBoundarySpecifier boundary = TimePeriodDateRangeBoundarySpecifier.Inclusive )
         {
             DateRange result = new DateRange();
 
@@ -306,7 +302,7 @@ namespace Rock
             else if ( ( TimePeriodRangeSpecifier.Last | TimePeriodRangeSpecifier.Previous ).HasFlag( this.Range ) )
             {
                 // Last X Days/Hours. NOTE: addCount is the number of X that it go back (it'll actually subtract)
-                int addCount = _NumberOfTimeUnits.GetValueOrDefault(0);
+                int addCount = _NumberOfTimeUnits.GetValueOrDefault( 0 );
 
                 // if we are getting "Last" round up to include the current day/week/month/year
                 int roundUpCount = this.Range == TimePeriodRangeSpecifier.Last ? 1 : 0;
@@ -356,7 +352,7 @@ namespace Rock
             else if ( ( TimePeriodRangeSpecifier.Next | TimePeriodRangeSpecifier.Upcoming ).HasFlag( this.Range ) )
             {
                 // Next X Days,Hours,etc
-                int addCount = _NumberOfTimeUnits.GetValueOrDefault(0);
+                int addCount = _NumberOfTimeUnits.GetValueOrDefault( 0 );
 
                 // if we are getting "Upcoming", round up to exclude the current day/week/month/year
                 int roundUpCount = this.Range == TimePeriodRangeSpecifier.Upcoming ? 1 : 0;
@@ -405,12 +401,13 @@ namespace Rock
             else if ( this.Range == TimePeriodRangeSpecifier.DateRange )
             {
                 result.Start = _DateStart;
+
                 DateTime? endDateTime = _DateEnd;
 
                 if ( endDateTime.HasValue )
                 {
-                    // add a day to the end since the compare will be "< EndDateTime"
-                    result.End = endDateTime.Value.AddDays( 1 );
+                    // Return the last millisecond of the day.
+                    result.End = endDateTime.Value.Date.AddDays( 1 ).AddMilliseconds( -1 );
                 }
                 else
                 {
@@ -424,11 +421,219 @@ namespace Rock
                 result.End = result.End.Value.AddSeconds( -1 );
             }
 
+            // Boundary dates are calculated to be inclusive; they represent the earliest or latest datetime that is considered to be within the specified time period,
+            // to an accuracy of 1ms. If exclusive dates have been requested, adjust them now.
+            if ( boundary == TimePeriodDateRangeBoundarySpecifier.Exclusive )
+            {
+                if ( result.Start != null )
+                {
+                    result.Start = result.Start.Value.AddMilliseconds( -1 );
+                }
+
+                if ( result.End != null )
+                {
+                    result.End = result.End.Value.AddMilliseconds( 1 );
+                }
+            }
+
             return result;
         }
+
+        /// <summary>
+        /// Get a friendly description of the time period.
+        /// For example: "Last 14 Days"
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public string GetDescription()
+        {
+            var numberOfTimeUnits = _NumberOfTimeUnits.GetValueOrDefault( 1 );
+
+            string timeUnitText = ( _TimeUnit != null ) ? _TimeUnit.ConvertToString().PluralizeIf( numberOfTimeUnits != 1 ) : null;
+
+            if ( _Range == TimePeriodRangeSpecifier.Current )
+            {
+                return string.Format( "{0} {1}", _Range.ConvertToString(), timeUnitText );
+            }
+            if ( _Range == TimePeriodRangeSpecifier.All )
+            {
+                return "All";
+            }
+            else if ( _Range == TimePeriodRangeSpecifier.DateRange )
+            {
+                // Get the DateRange description, but only show the time component if Range is less than a full day.
+                var dateRange = GetDateRange();
+
+                string dateTimeFormat;
+
+                if ( _TimeUnit == TimePeriodUnitSpecifier.Hour )
+                {
+                    dateTimeFormat = "g";
+                }
+                else
+                {
+                    dateTimeFormat = "d";
+                }
+
+                return dateRange.ToStringAutomatic( "d", dateTimeFormat );
+            }
+            else
+            {
+                // Relative period
+                return string.Format( "{0} {1} {2}", _Range.ConvertToString(), numberOfTimeUnits, timeUnitText );
+            }
+        }
+
+
+        #region Equality Implementation
+
+        public override bool Equals( object other )
+        {
+            var otherPeriod = other as TimePeriod;
+
+            if ( otherPeriod == null )
+            {
+                return false;
+            }
+
+            // For unbounded range, ignore other settings.
+            if ( _Range == TimePeriodRangeSpecifier.All
+                 && otherPeriod.Range == TimePeriodRangeSpecifier.All )
+            {
+                return true;
+            }
+
+            // For specific date range, test the start and end dates to the required degree of granularity.
+            if ( _Range == TimePeriodRangeSpecifier.DateRange )
+            {
+                var thisRange = this.GetDateRange();
+                var otherRange = otherPeriod.GetDateRange();
+
+                if ( !DateTimeIsEqual( thisRange.Start, otherRange.Start, _TimeUnit ?? TimePeriodUnitSpecifier.Hour ) )
+                {
+                    return false;
+                }
+
+                if ( !DateTimeIsEqual( thisRange.End, otherRange.End, _TimeUnit ?? TimePeriodUnitSpecifier.Hour ) )
+                {
+                    return false;
+                }
+            }
+            // For relative ranges, test the relevant properties.
+            else if ( _Range != otherPeriod.Range
+                 || _TimeUnit != otherPeriod.TimeUnit
+                 || _NumberOfTimeUnits != otherPeriod.NumberOfTimeUnits )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if a DateTime is equal to a specified degree of accuracy.
+        /// </summary>
+        /// <param name="firstDate"></param>
+        /// <param name="secondDate"></param>
+        /// <param name="unitOfAccuracy"></param>
+        /// <returns></returns>
+        private bool DateTimeIsEqual( DateTime? firstDate, DateTime? secondDate, TimePeriodUnitSpecifier unitOfAccuracy )
+        {
+            if ( firstDate == null
+                 && secondDate == null )
+            {
+                return true;
+            }
+
+            if ( firstDate == null
+                 || secondDate == null )
+            {
+                return false;
+            }
+
+            var first = firstDate.Value;
+            var second = secondDate.Value;
+
+            if ( first.Year != second.Year )
+            {
+                return false;
+            }
+
+            if ( unitOfAccuracy == TimePeriodUnitSpecifier.Year )
+            {
+                return true;
+            }
+
+            if ( first.Month != second.Month )
+            {
+                return false;
+            }
+
+            if ( unitOfAccuracy == TimePeriodUnitSpecifier.Month )
+            {
+                return true;
+            }
+
+            if ( first.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek ) != second.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek ) )
+            {
+                return false;
+            }
+
+            if ( unitOfAccuracy == TimePeriodUnitSpecifier.Week )
+            {
+                return true;
+            }
+
+            if ( first.Day != second.Day )
+            {
+                return false;
+            }
+
+            if ( unitOfAccuracy == TimePeriodUnitSpecifier.Day )
+            {
+                return true;
+            }
+
+            if ( first.Hour != second.Hour )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 27;
+            hash = ( 13 * hash ) + _Range.GetHashCode();
+            hash = ( 13 * hash ) + _TimeUnit.GetHashCode();
+            hash = ( 13 * hash ) + _NumberOfTimeUnits.GetHashCode();
+            hash = ( 13 * hash ) + _DateStart.GetValueOrDefault().GetHashCode();
+            hash = ( 13 * hash ) + _DateEnd.GetValueOrDefault().GetHashCode();
+
+            return hash;
+        }
+
+        #endregion
     }
 
     #region Enums
+
+    /// <summary>
+    /// Specifies how the start and end dates of the time period are calculated.
+    /// </summary>
+    public enum TimePeriodDateRangeBoundarySpecifier
+    {
+        /// <summary>
+        /// The boundary dates represent the earliest and latest datetime values that can be included in the specified date range, to an accuracy of 1ms.
+        /// </summary>
+        Inclusive = 0,
+
+        /// <summary>
+        /// The boundary dates represent the earliest and latest datetime values that are excluded by the specified date range, to an accuracy of 1ms.
+        /// </summary>
+        Exclusive = 1
+    }
 
     /// <summary>
     /// Specifies how the start and end dates of the time period are determined.
