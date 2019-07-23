@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -56,6 +72,8 @@ namespace RockWeb.Blocks.Mobile
             base.OnInit( e );
 
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
+
+            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
         }
 
         /// <summary>
@@ -468,11 +486,14 @@ namespace RockWeb.Blocks.Mobile
             {
                 pnlBlocks.Visible = false;
                 lbEdit.Visible = false;
+                btnSecurity.Visible = false;
 
                 return;
             }
 
             lbEdit.Visible = true;
+            btnSecurity.Title = "Secure " + page.InternalName;
+            btnSecurity.EntityId = page.Id;
 
             //
             // Setup the category drop down list for filtering blocks.
