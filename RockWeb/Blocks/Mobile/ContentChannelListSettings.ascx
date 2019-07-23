@@ -15,6 +15,19 @@
     <div class="col-md-6"><Rock:RockCheckBox ID="cbIncludeFollowing" runat="server" Label="Include Following Data" Help="Determines if following data should be appended to the dataset. This will determine if the current person is following each content channel item. This does decrease performance a bit to query and append this data." /></div>
 </div>
 
+<h5>Filter</h5>
+<asp:HiddenField ID="hfDataFilterId" runat="server" />
+<asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
+
+<div class="row">
+    <div class="col-md-6">
+        <Rock:RockCheckBox ID="cbQueryParamFiltering" runat="server" Label="Enable Query/Route Parameter Filtering" Text="Yes" Help="Enabling this option will allow results to be filtered further by any query string our route parameters that are included. This includes item properties or attributes." />
+    </div>
+    <div class="col-md-6">
+        <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By" KeyPrompt="Field" ValuePrompt="Direction" Help="The field value and direction that items should be ordered by." />
+    </div>
+</div>
+
 <h5>Fields</h5>
 <p>
     Configure the fields you would like to display in the list control. Each field you define here will be available via the key you provide.

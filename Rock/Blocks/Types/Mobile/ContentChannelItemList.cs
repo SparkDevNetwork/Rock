@@ -1,18 +1,38 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Text;
-
+using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Types.Mobile
 {
@@ -66,6 +86,29 @@ namespace Rock.Blocks.Types.Mobile
         Order = 5,
         Category = "CustomSetting" )]
 
+    [IntegerField( "Filter Id",
+        Description = "The data filter that is used to filter items",
+        Key = AttributeKeys.FilterId,
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 6,
+        Category = "CustomSetting" )]
+
+    [BooleanField( "Query Parameter Filtering",
+        Description = "Determines if block should evaluate the query string parameters for additional filter criteria.",
+        Key = AttributeKeys.QueryParameterFiltering,
+        IsRequired = false,
+        Order = 7,
+        Category = "CustomSetting" )]
+
+    [TextField( "Order",
+        Description = "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.",
+        Key = AttributeKeys.Order,
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 8,
+        Category = "CustomSetting" )]
+
     [CodeEditorField(
         "List Data Template",
         Description = "The XAML for the lists data template.",
@@ -76,11 +119,11 @@ namespace Rock.Blocks.Types.Mobile
         Category = "custommobile")]
 
     [IntegerField( "Cache Duration",
-        "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
-        false,
-        86400,
-        category: "custommobile",
-        order: 1 )]
+        Description = "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
+        IsRequired = false,
+        DefaultIntegerValue = 86400,
+        Category = "custommobile",
+        Order = 1 )]
 
     #endregion
 
@@ -120,6 +163,21 @@ namespace Rock.Blocks.Types.Mobile
             /// The list data template key
             /// </summary>
             public const string ListDataTemplate = "ListDataTemplate";
+
+            /// <summary>
+            /// The filter identifier key
+            /// </summary>
+            public const string FilterId = "FilterId";
+
+            /// <summary>
+            /// The query parameter filtering key
+            /// </summary>
+            public const string QueryParameterFiltering = "QueryParameterFiltering";
+
+            /// <summary>
+            /// The order key
+            /// </summary>
+            public const string Order = "Order";
 
             /// <summary>
             /// The cache duration key
@@ -188,40 +246,44 @@ namespace Rock.Blocks.Types.Mobile
         {
             var contentChannelId = GetAttributeValue( AttributeKeys.ContentChannel ).AsInteger();
             var pageSize = GetAttributeValue( AttributeKeys.PageSize ).AsInteger();
-            var includeFollowing = GetAttributeValue( AttributeKeys.IncludeFollowing ).AsBoolean();
-
             var skipNumber = pageNumber * pageSize;
 
             var rockContext = new RockContext();
+            var service = new ContentChannelItemService( rockContext );
+            var qry = service.Queryable().AsNoTracking().Where( i => i.ContentChannelId == contentChannelId );
 
-            var results = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
-                            .Where( i => i.ContentChannelId == contentChannelId )
-                            .OrderBy( i => i.Id )  // TODO make this a setting
-                            .Skip( skipNumber )
-                            .Take( pageSize )
-                            .ToList();
+            //
+            // Apply custom filtering.
+            //
+            qry = FilterResults( rockContext, service, qry );
 
-            List<int> followedItemIds = new List<int>();
-
-            // Get the ids of items that are followed by the current person
-            if ( includeFollowing )
+            //
+            // Now run query, check security and load attributes.
+            //
+            var results = new List<ContentChannelItem>();
+            foreach ( var item in qry.ToList() )
             {
-                var currentPerson = GetCurrentPerson();
-
-                if ( currentPerson != null )
+                if ( item.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 {
-                    var resultIds = results.Select( r => r.Id ).ToList();
-                    var contentChannelItemEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
-
-                    followedItemIds = new FollowingService( rockContext ).Queryable().AsNoTracking()
-                                        .Where( f =>
-                                            f.EntityTypeId == contentChannelItemEntityTypeId &&
-                                            resultIds.Contains( f.EntityId ) &&
-                                            f.PersonAlias.PersonId == currentPerson.Id )
-                                        .Select( f => f.EntityId )
-                                        .ToList();
+                    item.LoadAttributes( rockContext );
+                    results.Add( item );
                 }
             }
+
+            //
+            // Apply custom sorting to the results.
+            //
+            results = SortResults( results );
+
+            //
+            // Take the final number of items requested.
+            //
+            results = results
+                .Skip( skipNumber )
+                .Take( pageSize )
+                .ToList();
+
+            var followedItemIds = GetFollowedItemIds( rockContext, results );
 
             var lavaTemplate = CreateLavaTemplate( followedItemIds );
 
@@ -237,6 +299,229 @@ namespace Rock.Blocks.Types.Mobile
             var output = lavaTemplate.ResolveMergeFields( mergeFields );
 
             return ActionOk( new StringContent( output, Encoding.UTF8, "application/json" ) );
+        }
+
+        /// <summary>
+        /// Filters the results.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="itemQry">The item qry.</param>
+        /// <returns></returns>
+        private IQueryable<ContentChannelItem> FilterResults( RockContext rockContext, ContentChannelItemService service, IQueryable<ContentChannelItem> itemQry )
+        {
+            var contentChannelId = GetAttributeValue( AttributeKeys.ContentChannel ).AsInteger();
+            var itemType = typeof( Rock.Model.ContentChannelItem );
+            var paramExpression = service.ParameterExpression;
+
+            //
+            // Apply Data Filter.
+            //
+            int? dataFilterId = GetAttributeValue( AttributeKeys.FilterId ).AsIntegerOrNull();
+            if ( dataFilterId.HasValue )
+            {
+                var dataFilterService = new DataViewFilterService( rockContext );
+                var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                var errorMessages = new List<string>();
+                Expression whereExpression = dataFilter?.GetExpression( itemType, service, paramExpression, errorMessages );
+
+                itemQry = itemQry.Where( paramExpression, whereExpression, null );
+            }
+
+            //
+            // Apply page parameter filtering.
+            //
+            var pageParameters = RequestContext.GetPageParameters();
+            if ( GetAttributeValue( AttributeKeys.QueryParameterFiltering ).AsBoolean() && pageParameters.Count > 0 )
+            {
+                var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
+
+                foreach ( var kvp in pageParameters )
+                {
+                    var selection = new List<string>();
+
+                    // Since there could be many matches by the key name for an attribute we have to construct the unique name used by EntityHelper.FindFromFilterSelection and use that
+                    var attributeService = new AttributeService( rockContext );
+                    var attributeGuid = attributeService
+                        .Queryable()
+                        .Where( a => a.EntityTypeQualifierColumn == "ContentChannelId" )
+                        .Where( a => a.EntityTypeQualifierValue == contentChannelId.ToString() )
+                        .Where( a => a.Key == kvp.Key )
+                        .Select( a => a.Guid )
+                        .FirstOrDefault();
+
+                    string uniqueName = kvp.Key;
+                    if ( attributeGuid != null )
+                    {
+                        uniqueName = string.Format( "Attribute_{0}_{1}", kvp.Key, attributeGuid.ToString().Replace( "-", string.Empty ) );
+                    }
+
+                    // Keep using uniquename for attributes since common keys (e.g. "category")will return mutliple values
+                    selection.Add( uniqueName );
+
+                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( itemType, uniqueName, false, false );
+                    if ( entityField != null )
+                    {
+                        string value = kvp.Value;
+                        switch ( entityField.FieldType.Guid.ToString().ToUpper() )
+                        {
+                            case Rock.SystemGuid.FieldType.DAY_OF_WEEK:
+                            case Rock.SystemGuid.FieldType.SINGLE_SELECT:
+                                {
+                                    selection.Add( value );
+                                }
+                                break;
+                            case Rock.SystemGuid.FieldType.MULTI_SELECT:
+                                {
+                                    selection.Add( ComparisonType.Contains.ConvertToInt().ToString() );
+                                    selection.Add( value );
+                                }
+                                break;
+                            default:
+                                {
+                                    selection.Add( ComparisonType.EqualTo.ConvertToInt().ToString() );
+                                    selection.Add( value );
+                                }
+                                break;
+                        }
+
+                        itemQry = itemQry.Where( paramExpression, propertyFilter.GetExpression( itemType, service, paramExpression, selection.ToJson() ) );
+                    }
+                }
+            }
+
+            return itemQry;
+        }
+
+        /// <summary>
+        /// Gets the followed item ids.
+        /// </summary>
+        /// <param name="includeFollowing">if set to <c>true</c> [include following].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="results">The results.</param>
+        /// <returns></returns>
+        private List<int> GetFollowedItemIds( RockContext rockContext, List<ContentChannelItem> results )
+        {
+            List<int> followedItemIds = new List<int>();
+
+            //
+            // Get the ids of items that are followed by the current person
+            //
+            if ( GetAttributeValue( AttributeKeys.IncludeFollowing ).AsBoolean() && RequestContext.CurrentPerson != null )
+            {
+                var resultIds = results.Select( r => r.Id ).ToList();
+                var contentChannelItemEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
+
+                followedItemIds = new FollowingService( rockContext ).Queryable().AsNoTracking()
+                    .Where( f =>
+                        f.EntityTypeId == contentChannelItemEntityTypeId &&
+                        resultIds.Contains( f.EntityId ) &&
+                        f.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                    .Select( f => f.EntityId )
+                    .ToList();
+            }
+
+            return followedItemIds;
+        }
+
+        /// <summary>
+        /// Sorts the results.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        private List<ContentChannelItem> SortResults( List<ContentChannelItem> items )
+        {
+            SortProperty sortProperty = null;
+
+            string orderBy = GetAttributeValue( "Order" );
+            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+            {
+                var fieldDirection = new List<string>();
+                var orderByPairs = orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
+                    .Select( a => a.Split( '^' ) );
+
+                foreach ( var itemPair in orderByPairs )
+                {
+                    if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
+                    {
+                        var sortDirection = SortDirection.Ascending;
+                        if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
+                        {
+                            sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                        }
+                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                    }
+                }
+
+                sortProperty = new SortProperty
+                {
+                    Direction = SortDirection.Ascending,
+                    Property = fieldDirection.AsDelimited( "," )
+                };
+
+                string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                var itemQry = items.AsQueryable();
+                IOrderedQueryable<ContentChannelItem> orderedQry = null;
+
+                for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                {
+                    string column = columns[columnIndex].Trim();
+
+                    var direction = sortProperty.Direction;
+                    if ( column.ToLower().EndsWith( " desc" ) )
+                    {
+                        column = column.Left( column.Length - 5 );
+                        direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                    }
+
+                    try
+                    {
+                        if ( column.StartsWith( "Attribute:" ) )
+                        {
+                            string attributeKey = column.Substring( 10 );
+
+                            if ( direction == SortDirection.Ascending )
+                            {
+                                orderedQry = ( columnIndex == 0 ) ?
+                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                            }
+                            else
+                            {
+                                orderedQry = ( columnIndex == 0 ) ?
+                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                            }
+                        }
+                        else
+                        {
+                            if ( direction == SortDirection.Ascending )
+                            {
+                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                            }
+                            else
+                            {
+                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                            }
+                        }
+                    }
+                    catch { }
+
+                }
+
+                try
+                {
+                    if ( orderedQry != null )
+                    {
+                        return orderedQry.ToList();
+                    }
+                }
+                catch { }
+
+            }
+
+            return items;
         }
 
         #endregion

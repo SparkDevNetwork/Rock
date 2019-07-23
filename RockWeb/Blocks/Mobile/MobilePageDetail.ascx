@@ -22,6 +22,10 @@
                 <div class="actions margin-t-md">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                     <asp:LinkButton ID="lbBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="lbBack_Click" CausesValidation="false" />
+
+                    <div class="pull-right">
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
+                    </div>
                 </div>
             </div>
         </asp:Panel>
