@@ -193,8 +193,12 @@ namespace Rock.Lava.Shortcodes
                 // merge the block markup in
                 if ( blockMarkup.IsNotNullOrWhiteSpace() )
                 {
-                    Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
-                    lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
+                    // JME (7/23/2019) Commented out the two lines below and substituted the line after to allow for better
+                    // processing of the block content. Testing was done on all existing shortcodes but leaving
+                    // this code in place in case a future edge case is found. Could/should remove this in the future.
+                    // Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
+                    // lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
+                    parms.AddOrReplace( "blockContent", blockMarkup );
 
                     parms.AddOrReplace( "blockContentExists", true );
                 }
