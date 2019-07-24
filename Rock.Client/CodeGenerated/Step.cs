@@ -136,6 +136,9 @@ namespace Rock.Client
         public Campus Campus { get; set; }
 
         /// <summary />
+        public bool IsComplete { get; set; }
+
+        /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
         /// <summary />

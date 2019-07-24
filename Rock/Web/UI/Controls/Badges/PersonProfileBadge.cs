@@ -4,12 +4,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
-    [RockObsolete( "1.11" )]
-    [Obsolete( "Use BadgeControl instead." )]
-
+    
     /// <summary>
     /// abstract class for controls used to render a Person Profile Badge
     /// </summary>
+    [RockObsolete( "1.11" )]
+    [Obsolete( "Use BadgeControl instead." )]
     public class PersonProfileBadge : Control
     {
         /// <summary>

@@ -126,7 +126,6 @@ namespace RockWeb.Blocks.Sequences
         private RockLiteralField _fullNameField = null;
         private RockLiteralField _nameWithHtmlField = null;
         private RockLiteralField _lBiStateGraph = null;
-        private RockBoundField _enrollmentDateField = null;
 
         #endregion
 

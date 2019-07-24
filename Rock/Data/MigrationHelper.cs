@@ -1790,6 +1790,7 @@ WHERE [Guid] = '{pageGuid}';";
         /// </summary>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="name">The name the group member attribute. The attribute key will become the name with the whitespace removed.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>

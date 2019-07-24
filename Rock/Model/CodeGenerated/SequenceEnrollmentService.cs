@@ -88,11 +88,17 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this SequenceEnrollment target, SequenceEnrollment source )
         {
             target.Id = source.Id;
+            target.CurrentStreakCount = source.CurrentStreakCount;
+            target.CurrentStreakStartDate = source.CurrentStreakStartDate;
+            target.EngagementCount = source.EngagementCount;
+            target.EngagementMap = source.EngagementMap;
             target.EnrollmentDate = source.EnrollmentDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.LocationId = source.LocationId;
-            target.EngagementMap = source.EngagementMap;
+            target.LongestStreakCount = source.LongestStreakCount;
+            target.LongestStreakEndDate = source.LongestStreakEndDate;
+            target.LongestStreakStartDate = source.LongestStreakStartDate;
             target.PersonAliasId = source.PersonAliasId;
             target.SequenceId = source.SequenceId;
             target.CreatedDateTime = source.CreatedDateTime;

@@ -9,12 +9,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
-    [RockObsolete( "1.11" )]
-    [Obsolete( "Use BadgeListControl instead." )]
-
+    
     /// <summary>
     /// class for controls used to render a Person Profile Badge
     /// </summary>
+    [RockObsolete( "1.11" )]
+    [Obsolete( "Use BadgeListControl instead." )]
     public class PersonProfileBadgeList : CompositeControl
     {
         private List<PersonProfileBadge> _badges = new List<PersonProfileBadge>();

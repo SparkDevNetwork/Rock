@@ -41,6 +41,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public int? EntityTypeId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -98,6 +101,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Category = source.Category;
             this.Description = source.Description;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsCommon = source.IsCommon;

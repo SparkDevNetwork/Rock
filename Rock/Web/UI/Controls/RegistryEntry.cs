@@ -20,6 +20,11 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
+    /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />
     public class RegistryEntry : CompositeControl, IRockControl
     {
         private TextBox tbVolume;
@@ -71,6 +76,12 @@ namespace Rock.Web.UI.Controls
 
         #region IRockControl Implementation
 
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>
+        /// The label text
+        /// </value>
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -88,6 +99,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
