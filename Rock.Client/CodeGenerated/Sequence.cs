@@ -58,10 +58,10 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.SequenceOccurenceFrequency OccurenceFrequency { get; set; }
+        public Rock.Client.Enums.SequenceOccurrenceFrequency OccurrenceFrequency { get; set; }
 
         /// <summary />
-        public Byte[] OccurenceMap { get; set; }
+        public Byte[] OccurrenceMap { get; set; }
 
         /// <summary />
         public bool RequiresEnrollment { get; set; }
@@ -115,8 +115,8 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.OccurenceFrequency = source.OccurenceFrequency;
-            this.OccurenceMap = source.OccurenceMap;
+            this.OccurrenceFrequency = source.OccurrenceFrequency;
+            this.OccurrenceMap = source.OccurrenceMap;
             this.RequiresEnrollment = source.RequiresEnrollment;
             this.StartDate = source.StartDate;
             this.StructureEntityId = source.StructureEntityId;

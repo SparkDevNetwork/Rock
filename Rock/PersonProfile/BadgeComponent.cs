@@ -155,7 +155,7 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Gets the attribute value for the badge
         /// </summary>
-        /// <param name="badge">The badge.</param>
+        /// <param name="personBadgeCache">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
@@ -176,7 +176,7 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
-        /// <param name="badge">The badge.</param>
+        /// <param name="personBadgeCache">The badge.</param>
         /// <param name="writer">The writer.</param>
         [RockObsolete( "1.10" )]
         [Obsolete( "Use the BadgeCache param instead.", false )]

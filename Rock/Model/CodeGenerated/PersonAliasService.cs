@@ -226,6 +226,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Badge>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Badge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Badge>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Badge.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.CaseWorkerPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
@@ -1786,18 +1798,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Badge>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Badge.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Badge>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Badge.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<PersonDuplicate>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonDuplicate.FriendlyTypeName );
@@ -2161,6 +2161,42 @@ namespace Rock.Model
             if ( new Service<ScheduleCategoryExclusion>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ScheduleCategoryExclusion.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Sequence>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Sequence.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Sequence>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Sequence.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SequenceEnrollment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SequenceEnrollment.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SequenceEnrollment>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SequenceEnrollment.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SequenceOccurrenceExclusion>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SequenceOccurrenceExclusion.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SequenceOccurrenceExclusion>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SequenceOccurrenceExclusion.FriendlyTypeName );
                 return false;
             }  
  

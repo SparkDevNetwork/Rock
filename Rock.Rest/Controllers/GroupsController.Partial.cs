@@ -1286,6 +1286,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         public class CheckinConfig
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
 
             /// <summary>
@@ -1318,6 +1324,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         public class CheckinConfigLocation
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
 
             /// <summary>

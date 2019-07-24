@@ -123,6 +123,7 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PhotoId = source.PhotoId;
+            target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

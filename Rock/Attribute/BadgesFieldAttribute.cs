@@ -24,8 +24,9 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class BadgesFieldAttribute : FieldAttribute
     {
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BadgeTypesFieldAttributeAttribute" /> class.
+        /// Initializes a new instance of the <see cref="BadgesFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

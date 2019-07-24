@@ -682,7 +682,7 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum SequenceOccurenceFrequency
+    public enum SequenceOccurrenceFrequency
     {
         Daily = 0x0,
         Weekly = 0x1,
@@ -694,7 +694,8 @@ namespace Rock.Client.Enums
     {
         Group = 0x1,
         GroupType = 0x2,
-        CheckInConfig = 0x3,
+        GroupTypePurpose = 0x3,
+        CheckInConfig = 0x4,
     }
 
     /// <summary>

@@ -94,6 +94,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryCampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Step>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Step.FriendlyTypeName );
@@ -136,6 +142,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Campus target, Campus source )
         {
             target.Id = source.Id;
+            target.CampusStatusValueId = source.CampusStatusValueId;
+            target.CampusTypeValueId = source.CampusTypeValueId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

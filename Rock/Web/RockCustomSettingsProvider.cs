@@ -9,7 +9,7 @@ namespace Rock.Web
 {
     /// <summary>
     /// Defines a UI provider for custom settings. Subclasses of this should also tag their implementation
-    /// with the <see cref="Rock.Blocks.TargetTypeAttribute"/> to specify the class that will which we
+    /// with the <see cref="Rock.Attribute.TargetTypeAttribute"/> to specify the class that will which we
     /// are defining a custom UI for.
     /// </summary>
     public abstract class RockCustomSettingsProvider

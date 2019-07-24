@@ -35,6 +35,18 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int CurrentStreakCount { get; set; }
+
+        /// <summary />
+        public DateTime? CurrentStreakStartDate { get; set; }
+
+        /// <summary />
+        public int EngagementCount { get; set; }
+
+        /// <summary />
+        public Byte[] EngagementMap { get; set; }
+
+        /// <summary />
         public DateTime EnrollmentDate { get; set; }
 
         /// <summary />
@@ -46,13 +58,19 @@ namespace Rock.Client
         /// <summary />
         public int? LocationId { get; set; }
 
+        /// <summary />
+        public int LongestStreakCount { get; set; }
+
+        /// <summary />
+        public DateTime? LongestStreakEndDate { get; set; }
+
+        /// <summary />
+        public DateTime? LongestStreakStartDate { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
-        /// <summary />
-        public Byte[] OccurenceMap { get; set; }
 
         /// <summary />
         public int PersonAliasId { get; set; }
@@ -93,12 +111,18 @@ namespace Rock.Client
         public void CopyPropertiesFrom( SequenceEnrollment source )
         {
             this.Id = source.Id;
+            this.CurrentStreakCount = source.CurrentStreakCount;
+            this.CurrentStreakStartDate = source.CurrentStreakStartDate;
+            this.EngagementCount = source.EngagementCount;
+            this.EngagementMap = source.EngagementMap;
             this.EnrollmentDate = source.EnrollmentDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.LocationId = source.LocationId;
+            this.LongestStreakCount = source.LongestStreakCount;
+            this.LongestStreakEndDate = source.LongestStreakEndDate;
+            this.LongestStreakStartDate = source.LongestStreakStartDate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.OccurenceMap = source.OccurenceMap;
             this.PersonAliasId = source.PersonAliasId;
             this.SequenceId = source.SequenceId;
             this.CreatedDateTime = source.CreatedDateTime;

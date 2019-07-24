@@ -2,8 +2,9 @@
 
 namespace Rock.Attribute
 {
+
     /// <summary>
-    /// Defines the target type for the <see cref="Rock.Blocks.RockCustomSettingsProvider"/> implementation.
+    /// 
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Class )]
