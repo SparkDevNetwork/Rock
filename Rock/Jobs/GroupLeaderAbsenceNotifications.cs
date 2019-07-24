@@ -156,7 +156,7 @@ namespace Rock.Jobs
                 // Get all the occurrences for this group
                 var occurrences = new AttendanceOccurrenceService( rockContext )
                     .Queryable( "Attendees.PersonAlias.Person" )
-                    .Where( a => a.DidNotOccur.HasValue && !a.DidNotOccur.Value )
+                    .Where( a => a.DidNotOccur.HasValue && !a.DidNotOccur.Value && a.GroupId == group.Id )
                     .OrderByDescending( a => a.OccurrenceDate )
                     .Take( minimumAbsences )
                     .ToList();
