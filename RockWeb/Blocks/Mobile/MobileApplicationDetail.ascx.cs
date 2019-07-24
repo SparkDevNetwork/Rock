@@ -715,6 +715,7 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
+                site.AdditionalSettings = additionalSettings.ToJson();
                 rockContext.SaveChanges();
             }
 

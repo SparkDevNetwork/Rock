@@ -618,6 +618,7 @@ namespace RockWeb.Blocks.Mobile
                     .Select( p => p.Order )
                     .FirstOrDefault();
                 page.Order = order + 1;
+                page.ParentPageId = parentPageId;
             }
 
             page.InternalName = tbName.Text;
@@ -626,7 +627,6 @@ namespace RockWeb.Blocks.Mobile
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
-            page.ParentPageId = parentPageId;
 
             rockContext.SaveChanges();
 
