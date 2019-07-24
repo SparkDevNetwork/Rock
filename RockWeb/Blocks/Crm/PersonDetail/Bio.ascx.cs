@@ -51,18 +51,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
     [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, "", "", 4)]
-    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
+    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is requested.", false, "", "", 5 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
     [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7)]
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 8, "CustomContent" )]
     [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 9)]
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
-    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
+    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed?", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
     [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false,
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
-    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
+    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
     [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
     public partial class Bio : PersonBlock
