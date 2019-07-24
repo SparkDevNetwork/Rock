@@ -134,6 +134,9 @@ namespace Rock.Blocks.Types.Mobile
             {
                 { "Xaml", Xaml },
                 { "Url", GetAttributeValue( "ImageUrl" ).ResolveMergeFields( mergeFields, null ) },
+                { "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() },
+                { "ProcessLava", false },
+                { "CacheDuration", GetAttributeValue( AttributeKeys.CacheDuration ).AsInteger() }
             };
         }
 

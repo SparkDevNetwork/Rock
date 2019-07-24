@@ -150,7 +150,7 @@ namespace Rock.Blocks.Types.Mobile
         [BlockAction]
         public object GetCurrentConfig()
         {
-            var content = GetAttributeValue( "Content" );
+            var content = GetAttributeValue( AttributeKeys.Content );
             var config = new Dictionary<string, object>();
 
             //
@@ -164,6 +164,9 @@ namespace Rock.Blocks.Types.Mobile
             }
 
             config.Add( "Xaml", content );
+            config.Add( "ProcessLava", GetAttributeValue( AttributeKeys.LavaRenderLocation ) != "On Server" );
+            config.Add( "CacheDuration", GetAttributeValue( AttributeKeys.CacheDuration ).AsInteger() );
+            config.Add( "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() );
 
             return config;
         }
