@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Migrations.Design;
-using Rock.Data;
+using System.Data.Entity.Migrations.Infrastructure;
+using System.Data.Entity.Migrations.Model;
+using System.Linq;
 
 namespace Rock.Migrations
 {
@@ -36,6 +38,33 @@ namespace Rock.Migrations
         ///   <c>true</c> if this instance is frozen; otherwise, <c>false</c>.
         /// </value>
         public bool IsFrozen => false;
+
+        /// <summary>
+        /// </summary>
+        /// <param name="migrationId"></param>
+        /// <param name="operations"></param>
+        /// <param name="sourceModel"></param>
+        /// <param name="targetModel"></param>
+        /// <param name="namespace"></param>
+        /// <param name="className"></param>
+        /// <returns></returns>
+        /// <inheritdoc />
+        public override ScaffoldedMigration Generate( string migrationId, IEnumerable<MigrationOperation> operations, string sourceModel, string targetModel, string @namespace, string className )
+        {
+            var result = base.Generate( migrationId, operations, sourceModel, targetModel, @namespace, className );
+
+            var migrationTypes = Rock.Reflection.SearchAssembly( this.GetType().Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
+            var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
+            var lastMigrationWithSameTarget = migrationTypeInstances.Where( a => a.Id != migrationId && a.Target == targetModel ).OrderBy( a => a.Id ).FirstOrDefault();
+
+            if ( lastMigrationWithSameTarget != null )
+            {
+                result.Resources.Clear();
+                result.DesignerCode = result.DesignerCode.Replace( $"new ResourceManager(typeof({className}));", $"new ResourceManager(typeof({lastMigrationWithSameTarget.GetType().Name}));" );
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Generates the primary code file that the user can view and edit.
@@ -83,7 +112,7 @@ namespace Rock.Migrations
 
             return result;
         }
-        
+
         #endregion
     }
 }
