@@ -398,6 +398,7 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\MobileContentChannelItemView.cs" />
+    <Compile Include="Blocks\Types\Mobile\MobileLavaItemList.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />

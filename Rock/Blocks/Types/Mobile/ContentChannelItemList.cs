@@ -135,11 +135,6 @@ namespace Rock.Blocks.Types.Mobile
         public static class AttributeKeys
         {
             /// <summary>
-            /// The lava template key
-            /// </summary>
-            public const string LavaTemplate = "LavaTemplate";
-
-            /// <summary>
             /// The content channel key
             /// </summary>
             public const string ContentChannel = "ContentChannel";
@@ -193,7 +188,7 @@ namespace Rock.Blocks.Types.Mobile
         #region Constants
 
         private const string defaultDataTemplate = @"<StackLayout HeightRequest=""50"" WidthRequest=""200"" Orientation=""Horizontal"" Padding=""0,5,0,5"">
-    <Label Text=""{Binding [Content]}"" />
+    <Label Text=""{Binding Content}"" />
 </StackLayout>";
 
         #endregion
