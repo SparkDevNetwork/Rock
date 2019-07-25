@@ -256,6 +256,19 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the specified parameter expression with no tracking.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            return this.Queryable().AsNoTracking().Where( parameterExpression, whereExpression, sortProperty, fetchTop );
+        }
+
+        /// <summary>
         /// Gets the specified parameter expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
