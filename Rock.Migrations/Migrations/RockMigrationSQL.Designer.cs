@@ -1423,31 +1423,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- Scheduled Transactions didn&apos;t write to history until v7.4, so convert those into History notes
-        ///
-        ///DECLARE @historyCategoryId INT = (
-        ///		SELECT TOP 1 Id
-        ///		FROM Category
-        ///		WHERE Guid = &apos;477EE3BE-C68F-48BD-B218-FAFC99AF56B3&apos;
-        ///		)
-        ///	,@entityTypeIdScheduledTransaction INT = (
-        ///		SELECT TOP 1 Id
-        ///		FROM EntityType
-        ///		WHERE [Guid] = &apos;76824E8A-CCC4-4085-84D9-8AF8C0807E20&apos;
-        ///		)
-        ///	,@noteTypeIdScheduledTransaction INT = (
-        ///		SELECT TOP 1 Id
-        ///		FROM NoteType
-        ///		WHERE [Guid] = &apos;360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588&apos; [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory {
-            get {
-                return ResourceManager.GetString("_201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHi" +
-                        "story", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to IF NOT EXISTS (
         ///		SELECT [Id]
         ///		FROM [ServiceJob]
@@ -1509,6 +1484,22 @@ namespace Rock.Migrations.Migrations {
         public static string _201905082317243_Rollup_0508_FixLavaChartShortcode {
             get {
                 return ResourceManager.GetString("_201905082317243_Rollup_0508_FixLavaChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode]
+        ///	SET [Documentation] = 
+        ///  &apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201907082136571_Rollup0708_SegmentedChartUpdate {
+            get {
+                return ResourceManager.GetString("_201907082136571_Rollup0708_SegmentedChartUpdate", resourceCulture);
             }
         }
     }

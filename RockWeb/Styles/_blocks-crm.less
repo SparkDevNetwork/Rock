@@ -379,27 +379,95 @@
   }
 }
 
-.badge-attendance {
-  ul.badge-attendance-chart {
-    //http://codepen.io/Victa/pen/xDqbf
-    display: table;
+.attendance-chart {
+  //http://codepen.io/Victa/pen/xDqbf
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: nowrap;
+
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &-sm {
+    height: 20px;
+  }
+
+  &-block {
+    height: 18px;
+
+    li span {
+      width: ~"calc(100% - 3px)";
+      background: @brand-info !important;
+    }
+  }
+
+  .badge-attendance & {
     width: 220px;
     height: 40px;
-    margin: 0 auto;
-    table-layout: fixed;
+  }
 
-    li {
-      position: relative;
-      display: table-cell;
-      width: 10px;
-      height: 40px;
-      vertical-align: bottom;
+  li {
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+
+    span {
+      display: block;
+      width: 8px;
+      width: ~"calc(100% - 2px)";
+      min-width: 2px;
+      min-height: 1px;
+      background: @persondetails-badge-color;
+
+      &:hover {
+        opacity: .85;
+      }
+
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        // needed for chrome but kills ie
+        position: absolute;
+        bottom: 0;
+      }
+
+      .animate & {
+        -webkit-animation: bar-grow 1s ease-in-out;
+        -moz-animation: bar-grow 1s ease-in-out;
+        -o-animation: bar-grow 1s ease-in-out;
+        animation: bar-grow 1s ease-in-out;
+      }
+    }
+  }
+}
+
+.streak-chart {
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  list-style: none;
+
+  li {
+    float: right;
+    width: 9px;
+    height: 100%;
+    margin-right: 2px;
+    position: relative;
+    display: table-cell;
+    vertical-align: bottom;
 
       span {
         display: block;
-        width: 8px;
+        width: 100%;
         min-height: 1px;
-        background: @persondetails-badge-color;
+        background: @brand-info;
 
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
@@ -407,18 +475,9 @@
           bottom: 0;
         }
       }
-    }
-  }
-
-  &.animate {
-    ul.badge-attendance-chart li span {
-      -webkit-animation: bar-grow 1s ease-in-out;
-      -moz-animation: bar-grow 1s ease-in-out;
-      -o-animation: bar-grow 1s ease-in-out;
-      animation: bar-grow 1s ease-in-out;
-    }
   }
 }
+
 
 .badge-disc {
   position: relative;
@@ -1506,4 +1565,177 @@ tr.inactive {
 
 .eventitem.selected .eventitem-select::after {
   content: @fa-var-check-square;
+}
+
+// STEPS
+
+.add-step-buttons {
+  margin: -16px -16px 0 -16px;
+  padding: 8px 0;
+  background: #f7f7f7;
+  border-bottom: 1px solid @panel-border;
+
+  + .row {
+    margin-top: 16px;
+  }
+
+  .add-step-label {
+    font-size: @font-size-small;
+    padding: (@padding-small-vertical + 1) 0;
+    margin: 0 6px 0 0;
+    float: left;
+  }
+}
+
+.col-steps {
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+  float: left;
+  width: 25%;
+  width: ~"calc(100% / var(--stepsPerRowMobile))";
+
+  @media (min-width: @screen-lg-min) {
+    width: 100%;
+    width: ~"calc(100% / var(--stepsPerRow))";
+  }
+}
+
+.step-card {
+  border: 1px solid #d4d4d4;
+  height: 260px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 15px;
+  text-align: center;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  .card-info {
+    position: relative;
+    margin-top: 36px;
+    transition-duration: 0.25s;
+    will-change: transform;
+
+    h3 {
+      margin: 0 0 12px;
+    }
+
+    p.step-status {
+      margin-top: 12px;
+    }
+  }
+
+  &.no-steps .card-info {
+    opacity: .75;
+  }
+
+  p:blank {
+    display: none;
+  }
+
+  .badge {
+    background-color: #23a5c5;
+  }
+
+  > .step-card-hover {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transition-duration: 0.25s;
+    position: absolute;
+    //background-color: #fff;
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+    will-change: opacity,transform;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  &:hover > .step-card-hover {
+    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
+    opacity: 1;
+  }
+
+  .btn-actions {
+    color: inherit;
+    height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    &:hover {
+      background-color: #d4d4d4;
+      color: #fff;
+    }
+  }
+
+  .btn-delete:hover {
+    background-color: #d4442e;
+  }
+}
+
+.step-records-table-container {
+  position: absolute;
+  bottom: 0;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.step-records-table {
+  width: 100%;
+
+  tr {
+    height: 50px;
+  }
+
+  td {
+    border: 1px solid #d4d4d4;
+    vertical-align: middle;
+    width: 50px;
+
+    &.steps-status {
+      border-left: none;
+      width: auto;
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.step-records-table td:last-of-type {
+  border-right: none;
+}
+
+.prereq-list-info {
+  padding: 20px 20px 0 20px;
+}
+
+.card-add-step-button {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  //position: relative;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  font-size: 28px;
+  height: 100%;
+  background: #fff;
+  > span {
+    display: block;
+    position: relative;
+      top: 50%;
+  transform: perspective(1px) translateY(-50%);
+  }
 }

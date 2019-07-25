@@ -38,8 +38,13 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             int duration = GetAttributeValue(badge, "Duration").AsIntegerOrNull() ?? 16;
             
             writer.Write(string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration));
@@ -52,7 +57,7 @@ namespace Rock.PersonProfile.Badge
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/WeeksAttendedInDuration/{1}/{0}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/WeeksAttendedInDuration/{1}/{0}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                             var badgeHtml = '<div class=\'weeks-metric\'>';

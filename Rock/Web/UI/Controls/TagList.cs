@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:TagList runat=server></{0}:TagList>" )]
     public class TagList : TextBox
@@ -155,7 +155,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets a value indicating whether tags should not be created immediately.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if true, tags will not be created as they are entered by user.  
+        ///   <c>true</c> if true, tags will not be created as they are entered by user.
         ///   Instead the SaveTagValues() method will need to be called to save the tags
         /// </value>
         public bool DelaySave
@@ -271,10 +271,20 @@ Rock.controls.tagList.initialize({{
                     if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
                         if ( sb.Length > 0 )
+                        {
                             sb.Append( ',' );
+                        }
+
+                        sb.Append( item.IconCssClass );
+                        sb.Append( "^" );
+                        sb.Append( item.BackgroundColor );
+                        sb.Append( "^" );
                         sb.Append( item.Name );
+
                         if ( currentPersonId.HasValue && item?.OwnerPersonAlias?.PersonId == currentPersonId.Value )
+                        {
                             sb.Append( "^personal" );
+                        }
                     }
                 }
             }

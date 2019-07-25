@@ -66,6 +66,9 @@ namespace Rock.Client
         /// <summary />
         public int? ScheduleId { get; set; }
 
+        /// <summary />
+        public int? StepTypeId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
+            this.StepTypeId = source.StepTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -126,6 +130,9 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<Attendance> Attendees { get; set; }
+
+        /// <summary />
+        public StepType StepType { get; set; }
 
         /// <summary />
         public DateTime SundayDate { get; set; }

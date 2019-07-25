@@ -509,6 +509,10 @@
 
     <!--  Button Style  -->
     <Style x:Key="buttonStyle" TargetType="{x:Type ButtonBase}">
+        <Style.Resources>
+            <SolidColorBrush x:Key="focusBackgroundColor" Color="{TemplateBinding Button.Background}" />
+            <SolidColorBrush x:Key="focusBorderBrush" Color="{TemplateBinding Button.BorderBrush}" />
+        </Style.Resources>
         <Setter Property="Width" Value="Auto" />
         <Setter Property="Height" Value="36" />
         <Setter Property="Foreground" Value="#000" />
@@ -544,6 +548,10 @@
                             <Setter Property="Background" Value="#ee7624" />
                             <Setter Property="Foreground" Value="#fefefe" />
                         </Trigger>
+                        <Trigger Property="IsFocused" Value="true">
+                            <Setter TargetName="buttonBorder" Property="BorderBrush" Value="{DynamicResource focusBorderBrush}" />
+                            <Setter TargetName="buttonBorder" Property="Background" Value="{DynamicResource focusBackgroundColor}" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -575,10 +583,13 @@
         x:Key="buttonStylePrimary"
         BasedOn="{StaticResource buttonStyle}"
         TargetType="{x:Type Button}">
+        <Style.Resources>
+            <SolidColorBrush x:Key="focusBackgroundColor" Color="#d05e10" />
+            <SolidColorBrush x:Key="focusBorderBrush" Color="#893e0b" />
+        </Style.Resources>
         <Setter Property="Foreground" Value="#fefefe" />
         <Setter Property="Background" Value="#ee7624" />
         <Setter Property="BorderBrush" Value="#c4c4c4" />
-
     </Style>
     <Style
         x:Key="buttonStyleAlternate"

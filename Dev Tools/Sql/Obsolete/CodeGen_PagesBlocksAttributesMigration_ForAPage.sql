@@ -108,33 +108,31 @@ create table #codeTable (
     insert into #codeTable
     SELECT @crlf
 
-    insert into #codeTable
+    INSERT INTO #codeTable
     SELECT 
-        '            // Attrib for BlockType: ' + bt.Name + ':'+ a.Name+
-        @crlf +
-		'            RockMigrationHelper.UpdateBlockTypeAttribute("'+ 
-        CONVERT(nvarchar(50), bt.Guid)+ '","'+   
-        CONVERT(nvarchar(50), ft.Guid)+ '","'+     
-        a.Name+ '","'+  
-        a.[Key]+ '","'+ 
-        ''+ '","'+ 
-        --ISNULL(a.Category,'')+ '","'+ 
-        ISNULL(a.Description,'')+ '",'+ 
-        CONVERT(varchar, a.[Order])+ ',@"'+ 
-        ISNULL(a.DefaultValue,'')+ '","'+
-        CONVERT(nvarchar(50), a.Guid)+ '");' +
-        @crlf
-    from [Attribute] [a]
-    left outer join [FieldType] [ft] on [ft].[Id] = [a].[FieldTypeId]
-    left outer join [BlockType] [bt] on [bt].[Id] = cast([a].[EntityTypeQualifierValue] as int)
-    where EntityTypeQualifierColumn = 'BlockTypeId'
-    and bt.[Id] in (
-		SELECT bt.[Id]
-		FROM [block] b
-		INNER JOIN [blocktype] bt on bt.[Id] = b.[BlockTypeId]
-		WHERE b.[PageId] = @PageId
+          '            // Attrib for BlockType: ' + [bt].[Name] + ':' + [a].[Name] + @crlf
+        + '            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( '
+        + '"' + CONVERT(NVARCHAR(50), [bt].[Guid])+ '", '					-- BlockType.Guid
+        + '"' + CONVERT(NVARCHAR(50), [ft].[Guid])+ '", '					-- FieldType.Guid
+        + '"' + [a].[Name] + '", '											-- Attribute.Name
+        + '"' + [a].[Key]+ '", '											-- Attribute.Key
+        + '"' + ISNULL([a].[AbbreviatedName], '') + '", '					-- Attribute.AbbreviatedName
+		+ '@"'+ ISNULL(REPLACE([a].[Description], '"', '""'),'') + '", '	-- Attribute.Description
+        + CONVERT(VARCHAR, [a].[Order])+ ', '								-- Attribute.Order
+		+ '@"'+ ISNULL(REPLACE([a].[DefaultValue], '"', '""'),'') + '", '	-- Attribute.DefaultValue
+        + '"' + CONVERT(NVARCHAR(50), [a].[Guid])+ '" );'					-- Attribute.Guid
+        + @crlf
+    FROM [Attribute] [a]
+    LEFT OUTER JOIN [FieldType] [ft] ON [ft].[Id] = [a].[FieldTypeId]
+    LEFT OUTER JOIN [BlockType] [bt] ON [bt].[Id] = CAST([a].[EntityTypeQualifierValue] AS INT)
+    WHERE EntityTypeQualifierColumn = 'BlockTypeId'
+    AND [bt].[Id] IN (
+		SELECT [bt].[Id]
+		FROM [block] [b]
+		INNER JOIN [blocktype] [bt] ON [bt].[Id] = [b].[BlockTypeId]
+		WHERE [b].[PageId] = @PageId
 	)
-	order by a.[Order]
+	ORDER BY [a].[Order]
 
     insert into #codeTable
     SELECT @crlf

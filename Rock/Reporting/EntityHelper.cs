@@ -157,7 +157,7 @@ namespace Rock.Reporting
             {
                 entityFields = new List<EntityField>();
             }
-            
+
             List<PropertyInfo> entityProperties = entityType.GetProperties().ToList();
 
             // filter the properties to narrow down the ones that we want to include in EntityFields
@@ -172,33 +172,22 @@ namespace Rock.Reporting
                         return true;
                     }
 
-                    // if marked as NotMapped, don't include it since it won't work in a LinqToEntity expression
-                    var notMapped = p.GetCustomAttribute<NotMappedAttribute>() != null;
-
                     bool hideFromReporting = false;
                     if ( includeOnlyReportingFields )
                     {
                         hideFromReporting = p.GetCustomAttribute<HideFromReportingAttribute>() != null;
                     }
 
-                    // if the property has NotMappedAttribute or should be hidden from reporting, don't show it
-                    if ( notMapped || hideFromReporting )
+                    // if the property should be hidden from reporting, don't show it
+                    if ( hideFromReporting )
                     {
                         return false;
                     }
 
-                    // if the property is marked virtual (unless it is 'virtual final'), don't include it since it isn't a real database field
-                    var getter = p.GetGetMethod();
-                    var isVirtual = getter?.IsVirtual == true;
-                    if ( isVirtual )
+                    bool isMappedDatabaseField = Reflection.IsMappedDatabaseProperty( p );
+                    if ( !isMappedDatabaseField )
                     {
-                        // NOTE: Properties that implement interface members (for example Rock.Data.IOrder) will also be marked as 'virtual final' by the compiler, so check IsFinal to determine if it was the compiler that did it.
-                        // See https://docs.microsoft.com/en-us/dotnet/api/system.reflection.methodbase.isfinal?redirectedfrom=MSDN&view=netframework-4.7.2#System_Reflection_MethodBase_IsFinal
-                        bool isVirtualDueToInterface = getter?.IsFinal == true;
-                        if ( !isVirtualDueToInterface )
-                        {
-                            return false;
-                        }
+                        return false;
                     }
 
                     return true;
@@ -274,7 +263,7 @@ namespace Rock.Reporting
                     if ( definedValueAttribute != null )
                     {
                         // Defined Value Properties
-                        Guid? definedTypeGuid = ( ( Rock.Data.DefinedValueAttribute ) definedValueAttribute ).DefinedTypeGuid;
+                        Guid? definedTypeGuid = definedValueAttribute.DefinedTypeGuid;
                         if ( definedTypeGuid.HasValue )
                         {
                             var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
@@ -300,7 +289,7 @@ namespace Rock.Reporting
             {
                 int entityTypeId = entityTypeCache.Id;
                 List<AttributeCache> cacheAttributeList;
-                if ( entity != null  )
+                if ( entity != null )
                 {
                     // if a specific entity is set, we only need to get the Attributes that the Entity has
                     if ( entity is IHasAttributes )

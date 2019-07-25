@@ -42,8 +42,13 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             if (!String.IsNullOrEmpty(GetAttributeValue(badge, "GroupTypePurpose")))
             {
                 string badgeColor = "#0ab4dd";
@@ -66,7 +71,7 @@ namespace Rock.PersonProfile.Badge
                                                 
         $.ajax({{
                 type: 'GET',
-                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/InGroupWithPurpose/{0}/{1}' ,
+                url: Rock.settings.get('baseUrl') + 'api/Badges/InGroupWithPurpose/{0}/{1}' ,
                 statusCode: {{
                     200: function (data, status, xhr) {{
                         var badgeHtml = '';

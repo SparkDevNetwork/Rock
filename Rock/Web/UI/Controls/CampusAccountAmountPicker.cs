@@ -598,6 +598,12 @@ namespace Rock.Web.UI.Controls
                 _ddlSingleAccountCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
                 _ddlMultiAccountCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
             }
+
+            if ( CampusCache.All().Count == 1 )
+            {
+                _ddlSingleAccountCampus.Visible = false;
+                _ddlMultiAccountCampus.Visible = false;
+            }
         }
 
         /// <summary>

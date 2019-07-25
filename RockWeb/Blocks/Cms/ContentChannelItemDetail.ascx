@@ -62,9 +62,9 @@
 
                     <div class="row">
                         <div class="col-md-7">
-                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." />
+                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." Required="true" />
                             <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
-                            <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post.">
+                            <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post. Only lowercase alpha-numeric characters and dashes are allowed.">
                                 <div class="js-slugs">
                                     <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
                                         <ItemTemplate>

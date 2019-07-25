@@ -103,9 +103,35 @@ namespace Rock.Model
                     int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
                     int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
         {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId, searchValue,
+                searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId, true );
+        }
+
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="checkinDateTime">The check-in date time.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="searchTypeValueId">The search type value identifier.</param>
+        /// <param name="searchValue">The search value.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <param name="attendanceCodeId">The attendance code identifier.</param>
+        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
+        /// <param name="syncMatchingSequences">Should matching <see cref="Sequence"/> models be synchronized.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
+                bool syncMatchingSequences )
+        {
             // Check to see if an occurrence exists already
             var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
-            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId );
+            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees" );
 
             // If we still don't have an occurrence record (i.e. validation failed) return null 
             if ( occurrence == null )
@@ -150,6 +176,12 @@ namespace Rock.Model
                 attendance.AttendanceCodeId = attendanceCodeId;
             attendance.StartDateTime = checkinDateTime;
             attendance.DidAttend = true;
+
+            // Sync this attendance to any matching sequences and sequence enrollments
+            if ( syncMatchingSequences )
+            {
+                SequenceService.HandleAttendanceRecordAsync( attendance );
+            }
 
             return attendance;
         }

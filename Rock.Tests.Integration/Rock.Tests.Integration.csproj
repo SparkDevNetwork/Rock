@@ -37,6 +37,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
@@ -72,14 +73,19 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\Constants.cs" />
     <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
+    <Compile Include="Rock\Crm\StepsTests.cs" />
     <Compile Include="Rock\DatabaseTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock\Model\GroupTests.cs" />
     <Compile Include="Rock\Model\PersonTests.cs" />
+    <Compile Include="Rock\Reporting\DataFilter\DataFilterTestBase.cs" />
+    <Compile Include="Rock\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
+    <Compile Include="Rock\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
     <Compile Include="Rock\TestInitializer.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
@@ -88,6 +94,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>test.runsettings</DependentUpon>
     </Compile>
+    <Compile Include="Rock\Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Utility\ArrayExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -140,4 +148,7 @@
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets'))" />
   </Target>
   <Import Project="..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -59,6 +60,50 @@
   <ItemGroup>
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
+    <Compile Include="Migrations\201907112025023_CampusStatus.cs" />
+    <Compile Include="Migrations\201907112025023_CampusStatus.Designer.cs">
+      <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907121243241_Steps.cs" />
+    <Compile Include="Migrations\201907121243241_Steps.Designer.cs">
+      <DependentUpon>201907121243241_Steps.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907121351110_Sequences.cs" />
+    <Compile Include="Migrations\201907121351110_Sequences.Designer.cs">
+      <DependentUpon>201907121351110_Sequences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907170045527_AddMobileAppPagesAndBlocks.cs" />
+    <Compile Include="Migrations\201907170045527_AddMobileAppPagesAndBlocks.Designer.cs">
+      <DependentUpon>201907170045527_AddMobileAppPagesAndBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907182111279_Badges.cs" />
+    <Compile Include="Migrations\201907182111279_Badges.Designer.cs">
+      <DependentUpon>201907182111279_Badges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907182149578_ExcludeDuplicateRecipientAddress.cs" />
+    <Compile Include="Migrations\201907182149578_ExcludeDuplicateRecipientAddress.Designer.cs">
+      <DependentUpon>201907182149578_ExcludeDuplicateRecipientAddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907210126170_AddPrimaryCampusToPerson.cs" />
+    <Compile Include="Migrations\201907210126170_AddPrimaryCampusToPerson.Designer.cs">
+      <DependentUpon>201907210126170_AddPrimaryCampusToPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907221916037_ValueAsNumeric.cs" />
+    <Compile Include="Migrations\201907221916037_ValueAsNumeric.Designer.cs">
+      <DependentUpon>201907221916037_ValueAsNumeric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907231834153_BadgeContext.cs" />
+    <Compile Include="Migrations\201907231834153_BadgeContext.Designer.cs">
+      <DependentUpon>201907231834153_BadgeContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907241959453_Rollup_0724.cs" />
+    <Compile Include="Migrations\201907241959453_Rollup_0724.Designer.cs">
+      <DependentUpon>201907241959453_Rollup_0724.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
+    <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
+      <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -662,6 +707,39 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201907112025023_CampusStatus.resx">
+      <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907121243241_Steps.resx">
+      <DependentUpon>201907121243241_Steps.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907121351110_Sequences.resx">
+      <DependentUpon>201907121351110_Sequences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907170045527_AddMobileAppPagesAndBlocks.resx">
+      <DependentUpon>201907170045527_AddMobileAppPagesAndBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907182111279_Badges.resx">
+      <DependentUpon>201907182111279_Badges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907182149578_ExcludeDuplicateRecipientAddress.resx">
+      <DependentUpon>201907182149578_ExcludeDuplicateRecipientAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907210126170_AddPrimaryCampusToPerson.resx">
+      <DependentUpon>201907210126170_AddPrimaryCampusToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907221916037_ValueAsNumeric.resx">
+      <DependentUpon>201907221916037_ValueAsNumeric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907231834153_BadgeContext.resx">
+      <DependentUpon>201907231834153_BadgeContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907241959453_Rollup_0724.resx">
+      <DependentUpon>201907241959453_Rollup_0724.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
+      <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201807250211476_AddNoteAttachments.resx">
       <DependentUpon>201807250211476_AddNoteAttachments.cs</DependentUpon>
     </EmbeddedResource>
@@ -1162,9 +1240,6 @@
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201812111901295_Rollup_1211_FixChartShortcode.sql">
       <DependentUpon>201812111901295_Rollup_1211.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\Version 9.0\Version 1.9.0\201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory.sql">
-      <DependentUpon>201903202308416_ScheduledTransactionHistory.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob.sql">
       <DependentUpon>201904231856504_Rollup_0423.cs</DependentUpon>
     </Content>
@@ -1188,6 +1263,9 @@
     </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_PersonicxGroup.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708_SegmentedChartUpdate.sql">
+      <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 9.0\Version 1.9.0\201809142151587_ContentComponents_AdUnit.Lava">

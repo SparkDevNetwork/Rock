@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    this.SelectedDefinedValuesId = null;
+                    this.SelectedDefinedValuesId = new int[0];
                 }
             }
         }

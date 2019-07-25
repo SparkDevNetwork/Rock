@@ -598,6 +598,12 @@ namespace Rock.SystemGuid
         public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
 
         /// <summary>
+        /// Gets the Registration Instance page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
         /// Gets the Exception Detail page guid
         /// ParentPage: Exception List
         /// </summary>
@@ -1106,16 +1112,16 @@ namespace Rock.SystemGuid
         public const string PERSON_PROFILE_PERSON_PAGES = "08DBD8A5-2C35-4146-B4A8-0F7652348B25";
 
         /// <summary>
-        /// Gets the Person Profile Badge Detail page guid
+        /// Gets the Badge Detail page guid
         /// ParentPage: Person Profile Badges
         /// </summary>
-        public const string PERSON_PROFILE_BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
+        public const string BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
 
         /// <summary>
-        /// Gets the Person Profile Badges page guid
+        /// Gets the Badges page guid
         /// ParentPage: General Settings
         /// </summary>
-        public const string PERSON_PROFILE_BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
+        public const string BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
 
         /// <summary>
         /// Gets the Person Search page guid
