@@ -161,22 +161,20 @@ namespace Rockweb.Blocks.Crm
    growth propensity score, along with a complete listing of all 22 motivators and your results
    for each.
 </p>
-
 <h2>Growth Propensity</h2>
 <p>
     Growth Propensity measures your perceived mindset on a continuum between a growth mindset and
     fixed mindset. These are two ends of a spectrum about how we view our own capacity and potential.
 </p>
-
-{[ chart type:'gauge' backgroundcolor:'#f13c1f,#f0e3ba,#0e9445,#3f56a1' gaugelimits:'0,2,17,85,100']}
+<div style=""margin: 0;max-width:280px"">
+{[ chart type:'gauge' backgroundcolor:'#f13c1f,#f0e3ba,#0e9445,#3f56a1' gaugelimits:'0,2,17,85,100' chartheight:'150px']}
     [[ dataitem value:'{{ GrowthScore }}' fillcolor:'#484848' ]] [[ enddataitem ]]
 {[ endchart ]}
-
+</div>
 <h2>Individual Motivators</h2>
 <p>
     There are 22 possible motivators in this assessment. While your Top 5 Motivators may be most helpful in understanding your results in a snapshot, you may also find it helpful to see your scores on each for a complete picture.
 </p>
-
 <!--  Theme Chart -->
 <div class=""panel panel-default"">
     <div class=""panel-heading"">
@@ -191,11 +189,9 @@ namespace Rockweb.Blocks.Crm
     {[endchart]}
     </div>
 </div>
-
 <p>
     This graph is based on the average composite score for each Motivator Theme.
 </p>
-
 {% for motivatorThemeScore in MotivatorThemeScores %}
     <p>
         <b>{{ motivatorThemeScore.DefinedValue.Value }}</b>
@@ -205,17 +201,14 @@ namespace Rockweb.Blocks.Crm
         {{ motivatorThemeScore.DefinedValue | Attribute:'Summary' }}
     </p>
 {% endfor %}
-
 <p>
    The following graph shows your motivators ranked from top to bottom.
 </p>
-
   <div class=""panel panel-default"">
     <div class=""panel-heading"">
       <h2 class=""panel-title""><b>Ranked Motivators</b></h2>
     </div>
     <div class=""panel-body"">
-
       {[ chart type:'horizontalBar' ]}
         {% for motivatorScore in MotivatorScores %}
         {% assign theme = motivatorScore.DefinedValue | Attribute:'Theme' %}
