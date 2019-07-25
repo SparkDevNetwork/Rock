@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -51,6 +52,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SEARCH_KEYS )]
+        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 1 )]
         public int SearchTypeValueId { get; set; }
 
         /// <summary>
@@ -59,7 +61,9 @@ namespace Rock.Model
         /// <value>
         /// The search value.
         /// </value>
+        [MaxLength( 255 )]
         [DataMember]
+        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 2 )]
         public string SearchValue { get; set; }
 
         #endregion
