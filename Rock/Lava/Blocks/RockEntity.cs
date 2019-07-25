@@ -120,15 +120,15 @@ namespace Rock.Lava.Blocks
                 if ( entityType != null )
                 {
                     // Get the database context
-                    var dbContext = Reflection.GetDbContextForEntityType( entityType );
+                    var dbContext = Reflection.GetDbContextForEntityType( entityType );  // TODO why not use RockContext here?
 
-                    // create an instance of the entity's service
-                    Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+                    // Create an instance of the entity's service
+                    IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
-                    // parse markup
+                    // Parse markup
                     var parms = ParseMarkup( _markup, context );
 
                     if ( parms.Any( p => p.Key == "id" ) )
@@ -207,8 +207,8 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    // make the query from the expression
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+                    // Make the query from the expression
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
                         // get a listing of ids and build it into the query expression
@@ -342,22 +342,25 @@ namespace Rock.Lava.Blocks
                         }
                         else
                         {
-                            // run security check on each result
-                            var items = queryResult.ToList();
-                            var itemsSecured = new List<IEntity>();
-
-                            Person person = GetCurrentPerson( context );
-
-                            foreach ( IEntity item in items )
+                            // Run security check on each result if enabled and entity is not a person (we do not check security on people)
+                            if ( parms["securityenabled"].AsBoolean() && _entityName != "person" )
                             {
-                                ISecured itemSecured = item as ISecured;
-                                if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
-                                {
-                                    itemsSecured.Add( item );
-                                }
-                            }
+                                var items = queryResult.ToList();
+                                var itemsSecured = new List<IEntity>();
 
-                            queryResult = itemsSecured.AsQueryable();
+                                Person person = GetCurrentPerson( context );
+
+                                foreach ( IEntity item in items )
+                                {
+                                    ISecured itemSecured = item as ISecured;
+                                    if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
+                                    {
+                                        itemsSecured.Add( item );
+                                    }
+                                }
+
+                                queryResult = itemsSecured.AsQueryable();
+                            }
 
                             // offset
                             if ( parms.Any( p => p.Key == "offset" ) )
@@ -570,6 +573,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
+            parms.Add( "securityenabled", "true" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
@@ -617,6 +621,7 @@ namespace Rock.Lava.Blocks
                             case "iterator":
                             case "checksecurity":
                             case "includedeceased":
+                            case "securityenabled":
                                 {
                                     parms.AddOrReplace( dynamicParm, dynamicParmValue );
                                     break;
