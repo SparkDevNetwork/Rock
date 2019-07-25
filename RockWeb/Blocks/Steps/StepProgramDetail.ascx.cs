@@ -1318,12 +1318,17 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // If the Program does not have any Step activity, hide the Activity Summary.
-            var stepProgramId = GetActiveStepProgramId();
+            var stepProgram = GetStepProgram();
 
+            if ( stepProgram == null )
+            {
+                return;
+            }
+
+            // If the Program does not have any Step activity, hide the Activity Summary.
             var dataContext = GetDataContext();
 
-            var hasStepData = GetStepsCompletedQuery( stepProgramId, dataContext ).Any();
+            var hasStepData = GetStepsCompletedQuery( stepProgram.Id, dataContext ).Any();
 
             pnlActivitySummary.Visible = hasStepData;
 
@@ -1335,7 +1340,7 @@ namespace RockWeb.Blocks.Steps
             // Get chart data and set visibility of related elements.
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
 
-            var chartFactory = this.GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
+            var chartFactory = this.GetChartJsFactory( stepProgram, chartDateRange.Start, chartDateRange.End );
 
             pnlActivityChart.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
@@ -1365,7 +1370,7 @@ namespace RockWeb.Blocks.Steps
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( StepProgram program, DateTime? startDate = null, DateTime? endDate = null )
         {
             var dataContext = new RockContext();
 
@@ -1378,7 +1383,7 @@ namespace RockWeb.Blocks.Steps
             {
                 startDate = startDate.Value.Date;
 
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.StartDateTime >= startDate );
+                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime >= startDate );
             }
 
             if ( endDate != null )
@@ -1407,12 +1412,22 @@ namespace RockWeb.Blocks.Steps
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
+            factory.StartDateTime = startDate;
+            factory.EndDateTime = endDate;
             factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartHeight = 280;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
             foreach ( var stepTypeDataset in stepTypeDatasets )
             {
                 var dataset = new ChartJsTimeSeriesDataset();
+
+                // Set Line Color to Step Type Highlight Color.
+                var step = program.StepTypes.FirstOrDefault( x => x.Name == stepTypeDataset );
+
+                if ( step != null )
+                {
+                    dataset.BorderColor = step.HighlightColor;
+                }
 
                 dataset.Name = stepTypeDataset;
 

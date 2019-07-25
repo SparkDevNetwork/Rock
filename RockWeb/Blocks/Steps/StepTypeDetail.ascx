@@ -59,8 +59,8 @@
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
                         <div id="pnlActivityChart" runat="server">
-                            <div class="chart-container">
-                                <canvas id="chartCanvas" runat="server" style="height: 180px;" />
+                            <div class="chart-container" align="center">
+                                <canvas id="chartCanvas" runat="server" height="350" width="700" />
                             </div>
                         </div>
                     </div>
