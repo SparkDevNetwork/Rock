@@ -89,8 +89,6 @@ namespace RockWeb.Blocks.Core
             {
                 upNotes.Visible = true;
 
-                string noteTypeName = GetAttributeValue( "NoteType" );
-
                 using ( var rockContext = new RockContext() )
                 {
                     var noteTypes = NoteTypeCache.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);

@@ -42,7 +42,8 @@ namespace RockWeb
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
-        public bool IsReusable {
+        public bool IsReusable
+        {
             get { return false; }
         }
 
@@ -56,7 +57,7 @@ namespace RockWeb
             if ( !context.User.Identity.IsAuthenticated )
             {
                 // If not, see if there's a valid token
-                string authToken = context.Request.Headers["Authorization-Token"];
+                string authToken = context.Request.Headers[Rock.Rest.HeaderTokens.AuthorizationToken];
                 if ( string.IsNullOrWhiteSpace( authToken ) )
                 {
                     authToken = context.Request.Params["apikey"];
@@ -130,6 +131,16 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Processes the asset storage provider asset.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <exception cref="Rock.Web.FileUploadException">
+        /// Insufficient info to upload a file of this type.
+        /// or
+        /// Unable to upload file
+        /// </exception>
         private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
         {
             int? assetStorageId = context.Request.Form["StorageId"].AsIntegerOrNull();
@@ -141,7 +152,7 @@ namespace RockWeb
             }
 
             var assetStorageService = new AssetStorageProviderService( new RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageService.Get( (int)assetStorageId );
+            AssetStorageProvider assetStorageProvider = assetStorageService.Get( ( int ) assetStorageId );
             assetStorageProvider.LoadAttributes();
             var component = assetStorageProvider.GetAssetStorageComponent();
 
@@ -170,18 +181,16 @@ namespace RockWeb
             // validate file type (child FileUploader classes, like ImageUploader, can do additional validation);
             this.ValidateFileType( context, uploadedFile );
 
-
             // NEVER TRUST THE CLIENT!!!!
             string untrustedFileName = uploadedFile.FileName;
             string untrustedFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
             string encryptedRootFolder = context.Request.QueryString["rootFolder"];
 
-        
             /* Scrub the file name */
 
             string scrubedFileName = ScrubFileName( untrustedFileName );
 
-            if( string.IsNullOrWhiteSpace( scrubedFileName ) )
+            if ( string.IsNullOrWhiteSpace( scrubedFileName ) )
             {
                 throw new Rock.Web.FileUploadException( "Invalid File Name", System.Net.HttpStatusCode.BadRequest );
             }
@@ -193,7 +202,7 @@ namespace RockWeb
 
             string trustedRootFolder = string.Empty;
 
-            // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to filesystem).
+            // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to file system).
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
                 trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
@@ -204,7 +213,6 @@ namespace RockWeb
             {
                 trustedRootFolder = "~/Content";
             }
-
 
             /* Combine the root and folder paths to get the real physical location */
 
@@ -277,7 +285,7 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Dictionary of deprecated or incorrect mimetypes and what they should be mapped to instead
+        /// Dictionary of deprecated or incorrect mime types and what they should be mapped to instead
         /// </summary>
         private Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
         {
@@ -313,7 +321,7 @@ namespace RockWeb
 
             char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
 
-            if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 )
+            if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 || uploadedFile.FileName.EndsWith( "." ) )
             {
                 throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
             }
@@ -364,7 +372,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
-        /// <exception cref="WebFaultException{System.String}">Filetype not allowed</exception>
+        /// <exception cref="WebFaultException{System.String}">File type not allowed</exception>
         public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
         {
             // validate file type (applies to all uploaded files)
@@ -381,14 +389,14 @@ namespace RockWeb
             // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
             string fileExtension = Path.GetExtension( filename ).ToLower().TrimStart( new char[] { '.' } ).Trim();
 
-            if ( contentFileTypeBlackList.Contains( fileExtension ) )
+            if ( contentFileTypeBlackList.Contains( fileExtension ) || filename.EndsWith( "." ) )
             {
-                throw new Rock.Web.FileUploadException( "Filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
+                throw new Rock.Web.FileUploadException( "File not allowed", System.Net.HttpStatusCode.NotAcceptable );
             }
 
             if ( contentFileTypeWhiteList.Any() && !contentFileTypeWhiteList.Contains( fileExtension ) )
             {
-                throw new Rock.Web.FileUploadException( "Filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
+                throw new Rock.Web.FileUploadException( "File not allowed", System.Net.HttpStatusCode.NotAcceptable );
             }
         }
 
@@ -396,8 +404,8 @@ namespace RockWeb
         /// Scrubs a filename to make sure it doesn't have any directories or invalid characters
         /// </summary>
         /// <param name="untrustedFileName">The filename.</param>
-        /// <returns>A scrubed filename.</returns>
-        public string ScrubFileName(string untrustedFileName )
+        /// <returns>A scrubbed filename.</returns>
+        public string ScrubFileName( string untrustedFileName )
         {
             // Scrub invalid path characters
             untrustedFileName = ScrubFilePath( untrustedFileName );
@@ -419,6 +427,5 @@ namespace RockWeb
             // Scrub invalid path characters
             return Regex.Replace( untrustedFilePath, "[" + Regex.Escape( Path.GetInvalidPathChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
-
     }
 }

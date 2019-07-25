@@ -274,6 +274,8 @@ namespace RockWeb.Blocks.Communication
                 templateCopy.CreatedByPersonAliasId = null;
                 templateCopy.ModifiedByPersonAlias = null;
                 templateCopy.ModifiedByPersonAliasId = null;
+                templateCopy.LogoBinaryFileId = null;
+                templateCopy.ImageFileId = null;
                 templateCopy.CreatedDateTime = RockDateTime.Now;
                 templateCopy.ModifiedDateTime = RockDateTime.Now;
                 service.Add( templateCopy );

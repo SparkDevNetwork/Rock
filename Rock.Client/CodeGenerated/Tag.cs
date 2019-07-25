@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string BackgroundColor { get; set; } = @"#e0e0e0";
+
+        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
@@ -54,6 +57,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; } = true;
@@ -108,6 +114,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Tag source )
         {
             this.Id = source.Id;
+            this.BackgroundColor = source.BackgroundColor;
             this.CategoryId = source.CategoryId;
             this.Description = source.Description;
             this.EntityTypeId = source.EntityTypeId;
@@ -115,6 +122,7 @@ namespace Rock.Client
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

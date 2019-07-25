@@ -36,8 +36,14 @@ namespace Rock.Field.Types
     {
         #region ConfigurationKeys
 
-        private static class ConfigurationKey
+        /// <summary>
+        /// The keys for configuration
+        /// </summary>
+        protected static class ConfigurationKey
         {
+            /// <summary>
+            /// The configuration JSON key
+            /// </summary>
             public const string ConfigurationJSON = "ConfigurationJSON";
         }
 

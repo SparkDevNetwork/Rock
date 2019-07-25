@@ -47,7 +47,7 @@
     position: relative;
     max-height: 240px;
     padding: 0 0 0 4px;
-    margin: 0 4px 4px 0;
+    margin: 4px 4px 4px 0;
     overflow-x: hidden;
     overflow-y: auto;
     color: @gray;
@@ -103,7 +103,7 @@
 
     .no-results {
       display: list-item;
-      padding: 4px 0 16px 1.065rem;
+      padding: 8px;
       color: @gray-lighter;
     }
   }
@@ -299,7 +299,7 @@
     .search-choice {
       position: relative;
       padding: 4px 24px 4px 4px;
-      margin: .35rem 0 0 8px;
+      margin: (((@chosen-multi-height - @font-size-small - 8) / 2) - 1) 0 0 8px;
       font-size: @font-size-small;
       line-height: 1;
       color: @chosen-gray-dark;
@@ -311,20 +311,22 @@
       .border-bottom-radius(@chosen-border-radius);
 
       .search-choice-close {
-        position: absolute;
-        top: .2rem;
-        right: .125rem;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        font-family: @fa-font-face;
-        font-size: @font-size-base;
-        font-weight: @fa-theme-weight;
-        color: @chosen-svg-close-color;
-        cursor: pointer;
-        content: @fa-var-times;
+        &:after {
+          position: absolute;
+          top: 3px;
+          right: 1px;
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          font-family: @fa-font-face;
+          font-size: @font-size-base;
+          font-weight: @fa-theme-weight;
+          color: @chosen-svg-close-color;
+          cursor: pointer;
+          content: @fa-var-times;
+        }
 
-        &:hover {
+        &:hover::after {
           color: @chosen-svg-close-color-hover;
         }
       }
@@ -475,6 +477,5 @@ input[type="text"].chosen-focus-input {
   .chosen-container {
     position: relative;
     flex: 1 1 auto;
-    width: 1% !important;
   }
 }

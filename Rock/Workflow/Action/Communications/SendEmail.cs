@@ -130,7 +130,7 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.TextFieldType":
                             case "Rock.Field.Types.EmailFieldType":
                                 {
-                                    Send( toValue, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, attachments );
+                                    Send( toValue, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, attachments, out errorMessages );
                                     break;
                                 }
 
@@ -164,7 +164,7 @@ namespace Rock.Workflow.Action
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
                                             var recipients = new RockEmailMessageRecipient[1] { new RockEmailMessageRecipient( person, personDict ) }.ToList();
-                                            Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, attachments );
+                                            Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, attachments, out errorMessages );
                                         }
                                     }
 
@@ -187,7 +187,7 @@ namespace Rock.Workflow.Action
                                     {
                                         qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
                                     }
-                                    else if ( groupGuid.HasValue ) 
+                                    else if ( groupGuid.HasValue )
                                     {
                                         // Handle situations where the attribute value stored is the Guid
                                         qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
@@ -215,7 +215,7 @@ namespace Rock.Workflow.Action
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
                                                 var recipients = new RockEmailMessageRecipient[1] { new RockEmailMessageRecipient( person, personDict ) }.ToList();
-                                                Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, attachments );
+                                                Send( recipients, fromEmailAddress, fromName, subject, body, createCommunicationRecord, attachments, out errorMessages );
                                             }
                                         }
                                     }
@@ -228,9 +228,10 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, attachments );
+                Send( to.ResolveMergeFields( mergeFields ), fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, attachments, out errorMessages );
             }
 
+            errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
             return true;
         }
 
@@ -260,10 +261,11 @@ namespace Rock.Workflow.Action
         /// <param name="mergeFields">The merge fields.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
         /// <param name="attachments">The attachments.</param>
-        private void Send( string recipientEmails, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments )
+        /// <param name="errorMessages">The error messages.</param>
+        private void Send( string recipientEmails, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
-            Send( recipients, fromEmail, fromName, subject, body, createCommunicationRecord, attachments );
+            Send( recipients, fromEmail, fromName, subject, body, createCommunicationRecord, attachments, out errorMessages );
         }
 
         /// <summary>
@@ -276,7 +278,8 @@ namespace Rock.Workflow.Action
         /// <param name="body">The body.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
         /// <param name="attachments">The attachments.</param>
-        private void Send( List<RockEmailMessageRecipient> recipients, string fromEmail, string fromName, string subject, string body, bool createCommunicationRecord, BinaryFile[] attachments )
+        /// <param name="errorMessages">The error messages.</param>
+        private void Send( List<RockEmailMessageRecipient> recipients, string fromEmail, string fromName, string subject, string body, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var emailMessage = new RockEmailMessage();
             emailMessage.SetRecipients( recipients );
@@ -292,11 +295,11 @@ namespace Rock.Workflow.Action
                     emailMessage.Attachments.Add( b );
                 }
             }
-            
+
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
             emailMessage.AppRoot = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
 
-            emailMessage.Send();
+            emailMessage.Send(out errorMessages);
         }
     }
 }

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -40,13 +41,18 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             string displayText = GetAttributeValue( badge, "DisplayText" );
-            if ( Person != null )
+            if ( Entity != null )
             {
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                mergeValues.Add( "Entity", Entity );
+
+                // Continue to provide the person merge field since this was originally a person badge and the lava would need to be
+                // updated to not break
                 mergeValues.Add( "Person", Person );
+
                 displayText = displayText.ResolveMergeFields( mergeValues );
 
                 if ( GetAttributeValue( badge, "EnableDebug" ).AsBoolean() )

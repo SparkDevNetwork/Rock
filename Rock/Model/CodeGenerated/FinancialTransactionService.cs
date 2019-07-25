@@ -107,6 +107,7 @@ namespace Rock.Model
             target.IsReconciled = source.IsReconciled;
             target.IsSettled = source.IsSettled;
             target.MICRStatus = source.MICRStatus;
+            target.NonCashAssetTypeValueId = source.NonCashAssetTypeValueId;
             target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             target.ProcessedDateTime = source.ProcessedDateTime;
             target.ScheduledTransactionId = source.ScheduledTransactionId;

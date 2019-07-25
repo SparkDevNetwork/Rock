@@ -55,14 +55,14 @@ namespace Rock.PersonProfile
             base.Refresh();
 
             // Create any attributes that need to be created
-            int personBadgeEntityTypeId = EntityTypeCache.Get( typeof( PersonBadge ) ).Id;
+            int badgeEntityTypeId = EntityTypeCache.Get( typeof( Model.Badge ) ).Id;
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var badge in this.Components )
                 {
                     Type badgeType = badge.Value.Value.GetType();
                     int badgeComponentEntityTypeId = EntityTypeCache.Get( badgeType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
+                    Rock.Attribute.Helper.UpdateAttributes( badgeType, badgeEntityTypeId, "BadgeComponentEntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
                 }
             }
         }

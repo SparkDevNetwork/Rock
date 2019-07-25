@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Tag target, Tag source )
         {
             target.Id = source.Id;
+            target.BackgroundColor = source.BackgroundColor;
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
@@ -95,6 +96,7 @@ namespace Rock.Model
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

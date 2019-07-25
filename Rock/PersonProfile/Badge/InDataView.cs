@@ -33,7 +33,7 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Displays a badge if person is in a chosen DataView." )]
+    [Description( "Displays a badge if the entity is in a chosen DataView." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Data View" )]
 
@@ -47,7 +47,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             RockContext rockContext = new RockContext();
             var dataViewAttributeGuid = GetAttributeValue( badge, "DataView" ).AsGuid();
@@ -59,10 +59,11 @@ namespace Rock.PersonProfile.Badge
                 {
                     var errors = new List<string>();
                     var qry = dataView.GetQuery( null, 30, out errors );
-                    if ( qry != null && qry.Where( e => e.Id == Person.Id ).Any() )
+                    if ( qry != null && qry.Where( e => e.Id == Entity.Id ).Any() )
                     {
                         Dictionary<string, object> mergeValues = new Dictionary<string, object>();
                         mergeValues.Add( "Person", Person );
+                        mergeValues.Add( "Entity", Entity );
                         writer.Write( GetAttributeValue( badge, "BadgeContent" ).ResolveMergeFields( mergeValues ) );
                     }
                 }

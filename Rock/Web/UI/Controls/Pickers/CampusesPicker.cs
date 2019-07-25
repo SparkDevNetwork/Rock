@@ -40,6 +40,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// By default the campuses picker is not visible if there is only one campus.
+        /// Set this to true if it should be displayed regardless of the number of active campuses.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceVisible { get; set; } = false;
+
+        /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
@@ -172,22 +181,32 @@ namespace Rock.Web.UI.Controls
         /// <param name="selectedValues">The selected values.</param>
         private void LoadItems( List<int> selectedValues )
         {
+            // If we don't have a list of IDs then create it.
+            var campusIds = this.CampusIds ?? CampusCache.All().Select( a => a.Id ).ToList();
+
+            // Get all the campi
+            var campuses = CampusCache.All()
+                .Where( c =>
+                    ( campusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
+                    ( selectedValues != null && selectedValues.Contains( c.Id ) ) )
+                .OrderBy( c => c.Order )
+                .ToList();
+
             var selectedItems = Items.Cast<ListItem>()
                 .Where( i => i.Selected )
                 .Select( i => i.Value ).AsIntegerList();
 
+            // If there is more than one campus then show the picker, otherwise hide it
+            if ( campuses.Count == 1 )
+            {
+                this.Visible = ForceVisible;
+            }
+            else
+            {
+                this.Visible = true;
+            }
+            
             Items.Clear();
-
-            var allCampuses = CampusCache.All();
-
-            var campusIds = this.CampusIds ?? allCampuses.Select( a => a.Id ).ToList();
-
-            var campuses = allCampuses
-                .Where( c =>
-                    ( campusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
-                    ( selectedValues != null && selectedValues.Contains( c.Id ) ) )
-                .OrderBy( c => c.Name )
-                .ToList();
 
             foreach ( CampusCache campus in campuses )
             {

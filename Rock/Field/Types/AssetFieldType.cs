@@ -42,8 +42,18 @@ namespace Rock.Field.Types
   {% capture imageTypeUrl %}/Assets/Icons/FileTypes/{{ imageType }}.png{% endcapture %}
 {% endif %}
 
+{% assign iconPath = SelectedValue | FromJSON | Property:'IconPath' %}
+{% assign fileName = SelectedValue | FromJSON | Property:'Name' %}
+{% if iconPath != '' and fileName != '' %}
+    {% assign escFileName = fileName | UrlEncode %}
+    {% assign imageTypeUrl = iconPath | Replace: fileName, escFileName %}
+{% endif %}
+
+<div>
+</div>
+
 <div class='imageupload-thumbnail-image' style='height:100px; width:100px; background-image:url({{ imageTypeUrl }}); background-size:40%; background-position:50%; background-repeat: no-repeat;'>
-    <span class='file-link'><p style='width: 95px; overflow: hidden' title='{{ selectedFileName }}'>{{ selectedFileName }}</p></span>
+    <span class='file-link'><p style='width: 95px; overflow: hidden' title='{{ selectedFileName }}'>{{ fileName }}</p></span>
 </div>
 <div class='imageupload-dropzone'>
     <span>

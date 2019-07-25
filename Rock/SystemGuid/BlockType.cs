@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public class BlockType
     {
         /// <summary>
+        /// Gets the Badges display block guid
+        /// </summary>
+        public const string BADGES = "FC8AF928-C4AF-40C7-A667-4B24390F03A1";
+
+        /// <summary>
         /// Gets the Plugin Manager guid
         /// </summary>
         public const string PLUGIN_MANAGER  = "F80268E6-2625-4565-AA2E-790C5E40A119";

@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
 
-    [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
+    [BooleanField( "Show Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true, "", 0 )]
     [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
     [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "", 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The Family attributes that should be displayed", false, true, "", "", 3 )]
@@ -797,8 +797,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             if ( GetAttributeValue( "ShowCampus" ).AsBoolean() )
             {
                 cpCampus.Campuses = CampusCache.All( false );
-                pnlCampus.Visible = true;
-                cpCampus.Required = GetAttributeValue("RequireCampus").AsBoolean();
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    pnlCampus.Visible = true;
+                    cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+                }
+                else
+                {
+                    pnlCampus.Visible = false;
+                }
             }
             else
             {

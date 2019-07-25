@@ -390,7 +390,7 @@
                                     Help="The term to use for members in groups of this group type." />
                                 <Rock:DataTextBox ID="tbAdministratorTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="AdministratorTerm" Required="true"
                                     Help="This setting allows you to customize the term used for the administrator of the group." />
-                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"
                                     Help="The Font Awesome icon class to use when displaying groups of this group type." />
                                 <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color"
                                     Help="The color used to visually distinguish groups on lists." />

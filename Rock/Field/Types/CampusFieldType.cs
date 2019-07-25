@@ -113,7 +113,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <summary>
-        /// Returns the field's current value(s)
+        /// Returns the formatted selected campus. If there is only one campus then nothing is returned.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
@@ -122,9 +122,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
+            bool isSingleCampus = CampusCache.All( includeInactive ).Count() == 1;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            // Don't return a formatted value if this is a single campus.
+            if ( isSingleCampus )
+            {
+                return string.Empty;
+            }
+
+            string formattedValue = value;
+            
+            // Change the formatted value from GUID to Campus.Name
+            if ( value.IsNotNullOrWhiteSpace() )
             {
                 var campus = CampusCache.Get( value.AsGuid() );
                 if ( campus != null )

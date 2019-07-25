@@ -119,6 +119,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.PostHtml = source.PostHtml;
             target.PreHtml = source.PreHtml;
+            target.ShowOnBulk = source.ShowOnBulk;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

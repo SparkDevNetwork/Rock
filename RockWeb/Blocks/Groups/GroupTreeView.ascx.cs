@@ -160,10 +160,10 @@ namespace RockWeb.Blocks.Groups
                 ddlCampuses.SetValue( "" );
             }
 
-            var includeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             if ( pnlConfigPanel.Visible )
             {
-                tglIncludeNoCampus.Checked = includeNoCampus;
+                tglIncludeNoCampus.Visible = ddlCampuses.Visible;
+                tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             }
 
         }
