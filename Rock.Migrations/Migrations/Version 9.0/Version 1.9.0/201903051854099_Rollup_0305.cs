@@ -30,9 +30,9 @@ namespace Rock.Migrations
         public override void Up()
         {
             ReleaseNotification();
-            InsertCateogryForExistingChildAttributes( "4ABF0BF2-49BA-4363-9D85-AC48A0F7E92A", "672715D8-F632-4CC7-B7DA-C65758438835" );
-            InsertCateogryForExistingChildAttributes( "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31", "672715D8-F632-4CC7-B7DA-C65758438835" );
-            InsertCateogryForExistingChildAttributes( "F832AB6F-B684-4EEA-8DB4-C54B895C79ED", "672715D8-F632-4CC7-B7DA-C65758438835" );
+            InsertCategoryForExistingChildAttributes( "4ABF0BF2-49BA-4363-9D85-AC48A0F7E92A", "672715D8-F632-4CC7-B7DA-C65758438835" );
+            InsertCategoryForExistingChildAttributes( "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31", "672715D8-F632-4CC7-B7DA-C65758438835" );
+            InsertCategoryForExistingChildAttributes( "F832AB6F-B684-4EEA-8DB4-C54B895C79ED", "672715D8-F632-4CC7-B7DA-C65758438835" );
         }
 
         /// <summary>
@@ -56,27 +56,32 @@ WHERE [Guid] = 'C8E30F2B-7476-4B02-86D4-3E5057F03FD5'");
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
-        private void InsertCateogryForExistingChildAttributes( string attributeId, string categoryId )
+        private void InsertCategoryForExistingChildAttributes( string attributeGuid, string categoryGuid )
         {
             Sql( string.Format( @"
+                    DECLARE @AttributeId int
+                    SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+                    DECLARE @CategoryId int
+                    SET @CategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{1}')
 
-                DECLARE @CategoryId int
-                SET @CategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{1}')
-
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [AttributeCategory]
-                    WHERE [AttributeId] = @AttributeId
-                    AND [CategoryId] = @CategoryId )
-                BEGIN
-                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
-                    VALUES( @AttributeId, @CategoryId )
-                END",
-                            attributeId,
-                            categoryId ) );
+                    IF (
+		                    @AttributeId IS NOT NULL
+		                    AND @CategoryId IS NOT NULL
+		                    )
+                    BEGIN
+	                    IF NOT EXISTS (
+		                    SELECT *
+		                    FROM [AttributeCategory]
+		                    WHERE [AttributeId] = @AttributeId
+		                    AND [CategoryId] = @CategoryId )
+	                    BEGIN
+		                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+		                    VALUES( @AttributeId, @CategoryId )
+	                    END
+                    END",
+                            attributeGuid,
+                            categoryGuid ) );
         }
     }
 }
