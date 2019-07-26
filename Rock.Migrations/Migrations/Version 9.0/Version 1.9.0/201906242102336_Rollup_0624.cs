@@ -51,8 +51,13 @@ namespace Rock.Migrations
                 WHERE [Title] = 'DISC'
 
                 UPDATE [dbo].[AssessmentType]
-                SET [BadgeSummaryLava] = '{% assign gifts = Person | Attribute:''core_DominantGifts'',''Object'' %}
-                {{ gifts | Map:''Value'' | Join:'', '' | ReplaceLast:'','','' and'' }}'
+                SET [BadgeSummaryLava] = '{% assign gifts = Person | Attribute:''core_DominantGifts'' %}
+                {% if gifts contains '','' %}
+                  {% assign gifts = Person | Attribute:''core_DominantGifts'',''Object'' %}
+                  {{ gifts | Map:''Value'' | Join:'', '' | ReplaceLast:'','','' and'' }}
+                {% else %}
+                  {{ gifts }}
+                {% endif %}'
                 WHERE [Title] = 'Spiritual Gifts'
 
                 UPDATE [dbo].[AssessmentType]
