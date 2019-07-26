@@ -105,6 +105,10 @@
     <Compile Include="Migrations\201907251802371_PersonSearchKeyIndex.Designer.cs">
       <DependentUpon>201907251802371_PersonSearchKeyIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.cs" />
+    <Compile Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.Designer.cs">
+      <DependentUpon>201907261619498_FixSpiritualGiftsAssessmentBadge.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -743,6 +747,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907251802371_PersonSearchKeyIndex.resx">
       <DependentUpon>201907251802371_PersonSearchKeyIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.resx">
+      <DependentUpon>201907261619498_FixSpiritualGiftsAssessmentBadge.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
