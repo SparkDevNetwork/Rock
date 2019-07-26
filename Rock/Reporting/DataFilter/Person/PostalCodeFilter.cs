@@ -217,7 +217,6 @@ function() {
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // row
-                RegisterFilterCompareChangeScript( filterControl );
 
                 ( controls[2] as RockDropDownList ).RenderControl( writer );
             }
