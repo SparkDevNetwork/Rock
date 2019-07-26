@@ -51,10 +51,15 @@ namespace Rock.Reporting
         /// <value>
         /// The section name.
         /// </value>
-        public virtual string Section
-        {
-            get { return "Additional Filters"; }
-        }
+        public virtual string Section => "Additional Filters";
+
+        /// <summary>
+        /// Set this to show descriptive text that can help explain how complex filters work or offer assistance on possibly other filters that have better performance.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public virtual string Description => string.Empty;
 
         /// <summary>
         /// Gets the default settings for all Attributes associated with this filter.
@@ -78,7 +83,7 @@ namespace Rock.Reporting
         /// <value>
         /// A set of key-value pairs representing the option names and values.
         /// </value>
-        public virtual Dictionary<string, object> Options {get; set;}
+        public virtual Dictionary<string, object> Options { get; set; }
 
         #endregion
 
@@ -212,8 +217,8 @@ namespace Rock.Reporting
         /// <returns>A formatted string representing the filter settings.</returns>
         public virtual string GetSelection( Type entityType, Control[] controls )
         {
-            string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
-            string value = ( (TextBox)controls[1] ).Text;
+            string comparisonType = ( ( DropDownList ) controls[0] ).SelectedValue;
+            string value = ( ( TextBox ) controls[1] ).Text;
             return string.Format( "{0}|{1}", comparisonType, value );
         }
 
@@ -242,8 +247,8 @@ namespace Rock.Reporting
             string[] options = selection.Split( '|' );
             if ( options.Length >= 2 )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = options[0];
-                ( (TextBox)controls[1] ).Text = options[1];
+                ( ( DropDownList ) controls[0] ).SelectedValue = options[0];
+                ( ( TextBox ) controls[1] ).Text = options[1];
             }
         }
 
@@ -270,9 +275,11 @@ namespace Rock.Reporting
         /// see RockWeb\Scripts\Rock\reportingInclude.js
         /// </summary>
         /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No Longer Needed" )]
         public void RegisterFilterCompareChangeScript( FilterField filterControl )
         {
-            ReportingHelper.RegisterJavascriptInclude( filterControl );
+            // no longer needed since the required javascript is now bundled
         }
 
         #endregion
