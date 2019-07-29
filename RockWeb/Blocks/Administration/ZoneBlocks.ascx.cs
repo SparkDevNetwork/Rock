@@ -635,38 +635,45 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Load the block types
-            using ( var rockContext = new RockContext() )
+            // Get a list of BlockTypes that does not include Mobile block types.
+            var allExceptMobileBlockTypes = new System.Collections.Generic.List<BlockTypeCache>();
+            foreach( var cachedBlockType in BlockTypeCache.All() )
             {
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
-                var blockTypes = blockTypeService.Queryable().AsNoTracking()
-                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
-                    .ToList();
-
-                ddlBlockType.Items.Clear();
-
-                // Add the categorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category != "" )
-                    .OrderBy( b => b.Category )
-                    .ThenBy( b => b.Name ) )
+                try
                 {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
-                    li.Attributes.Add( "optiongroup", blockType.Category );
-                    li.Attributes.Add( "title", blockType.Description );
-                    ddlBlockType.Items.Add( li );
-                }
+                    var blockCompiledType = cachedBlockType.GetCompiledType();
 
-                // Add the uncategorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category == null || b.Category == "" )
-                    .OrderBy( b => b.Name ) )
-                {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
-                    li.Attributes.Add( "optiongroup", "Other (not categorized)" );
-                    li.Attributes.Add( "title", blockType.Description );
-                    ddlBlockType.Items.Add( li );
+                    if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        allExceptMobileBlockTypes.Add( cachedBlockType );
+                    }
                 }
+                catch ( Exception )
+                {
+                    // Intentionally ignored
+                }
+            }
+
+            var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
+
+            ddlBlockType.Items.Clear();
+
+            // Add the categorized block types
+            foreach ( var blockType in blockTypes.Where( b => b.Category != "" ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
+            {
+                var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                li.Attributes.Add( "optiongroup", blockType.Category );
+                li.Attributes.Add( "title", blockType.Description );
+                ddlBlockType.Items.Add( li );
+            }
+
+            // Add the uncategorized block types
+            foreach ( var blockType in blockTypes.Where( b => b.Category == null || b.Category == "" ).OrderBy( b => b.Name ) )
+            {
+                var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                li.Attributes.Add( "optiongroup", "Other (not categorized)" );
+                li.Attributes.Add( "title", blockType.Description );
+                ddlBlockType.Items.Add( li );
             }
         }
 
