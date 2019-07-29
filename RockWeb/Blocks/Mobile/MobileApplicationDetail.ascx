@@ -162,11 +162,11 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image to use in the top title bar header of the application." />
+                        <div class="col-md-4">
+                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
                         </div>
                     </div>
