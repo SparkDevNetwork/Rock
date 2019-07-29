@@ -94,15 +94,15 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<SequenceEnrollment>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            if ( new Service<Streak>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, SequenceEnrollment.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Streak.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<SequenceOccurrenceExclusion>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            if ( new Service<StreakTypeExclusion>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, SequenceOccurrenceExclusion.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, StreakTypeExclusion.FriendlyTypeName );
                 return false;
             }  
             return true;

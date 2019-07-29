@@ -80,7 +80,7 @@ namespace Rock.Model
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the default view mode for the program (<see cref="Rock.Model.DefaultListView"/>). This value is required.
+        /// Gets or sets the default view mode for the program. This value is required.
         /// </summary>
         [DataMember]
         public ViewMode DefaultListView { get; set; } = ViewMode.Cards;

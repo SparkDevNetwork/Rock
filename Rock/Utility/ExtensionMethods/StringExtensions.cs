@@ -101,7 +101,7 @@ namespace Rock
         /// Converts string to HMAC_SHA1 string using key
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="key">The key.</param>
+        /// <param name="keyString">The key.</param>
         /// <returns></returns>
         public static string HmacSha1Hash( this string str, string keyString )
         {
