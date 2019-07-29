@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Steps
 {
-    [DisplayName( "Steps" )]
+    [DisplayName( "Personal Step List" )]
     [Category( "Steps" )]
     [Description( "Displays step records for a person in a step program." )]
     [ContextAware( typeof( Person ) )]
