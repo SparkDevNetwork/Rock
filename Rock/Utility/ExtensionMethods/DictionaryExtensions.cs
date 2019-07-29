@@ -222,7 +222,7 @@ namespace Rock
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
-        /// <param name="key">The default value returned if the key does not exist.</param>
+        /// <param name="defaultValue">The default value returned if the key does not exist.</param>
         /// <returns></returns>
         public static TValue GetValueOrDefault<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
         {

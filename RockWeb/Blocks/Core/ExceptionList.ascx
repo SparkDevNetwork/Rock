@@ -61,7 +61,7 @@
                             <Columns>
                                 <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
                                 <Rock:RockBoundField DataField="ExceptionTypeName" HeaderText="Type" SortExpression="ExceptionTypeName" TruncateLength="255" HtmlEncode="false" />
-                                <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" TruncateLength="255" HtmlEncode="false" />
+                                <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" TruncateLength="255" HtmlEncode="false" ItemStyle-CssClass="wrap-contents" />
                                 <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='fa fa-file-alt'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />

@@ -233,6 +233,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets a list of items that match the specified expression with EF tracking disabled.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression, null, null ).AsNoTracking();
+        }
+
+        /// <summary>
         /// Gets a list of items that match the specified expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>

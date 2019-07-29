@@ -128,6 +128,12 @@ namespace Rock.Model
         [DataMember]
         public int? AnonymousAttendanceCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurence is associated.
+        /// </summary>
+        [DataMember]
+        public int? StepTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -219,6 +225,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the Step Type.
+        /// </summary>
+        [DataMember]
+        public virtual StepType StepType { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -296,6 +308,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.StepType ).WithMany().HasForeignKey( p => p.StepTypeId ).WillCascadeOnDelete( true );
         }
     }
 

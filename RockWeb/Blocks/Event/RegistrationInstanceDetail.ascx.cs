@@ -1290,7 +1290,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if (_homeAddresses.Any() )
+                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     // break up addresses if exporting
@@ -2325,12 +2325,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
-                if ( lAddress != null && _homeAddresses.Count() > 0 )
+                if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
-
 
                 var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
                 if ( mobileField != null )
@@ -5612,6 +5611,7 @@ namespace RockWeb.Blocks.Event
                     {
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
+
                     SetPhoneDictionary( rockContext, personIds );
 
                     bool preloadCampusValues = false;

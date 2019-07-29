@@ -275,6 +275,12 @@ namespace Rock.Model
         /// </value>
         public string LinkUrlLavaTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support displaying on bulk entry forms.
+        /// </summary>
+        [DataMember]
+        public bool AttributesSupportShowOnBulk { get; set; }
+
         #endregion
 
         #region virtual Properties

@@ -40,8 +40,13 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             Guid? groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
             string badgeColor = GetAttributeValue( badge, "BadgeColor" );
 
@@ -57,7 +62,7 @@ Sys.Application.add_load(function () {{
                                                 
     $.ajax({{
             type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/PersonBadges/GeofencingGroups/{0}/{1}' ,
+            url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
             statusCode: {{
                 200: function (data, status, xhr) {{
                     var $badge = $('.badge-geofencing-group.badge-id-{2}');

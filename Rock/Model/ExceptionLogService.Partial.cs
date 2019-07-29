@@ -109,7 +109,8 @@ namespace Rock.Model
         /// <summary>
         /// Filter a query for exceptions having a description matching the specified prefix.
         /// </summary>
-        /// <param name="descriptionPrefix"></param>
+        /// <param name="query">The query.</param>
+        /// <param name="descriptionPrefix">The description prefix.</param>
         /// <returns></returns>
         public IQueryable<ExceptionLog> FilterByDescriptionPrefix( IQueryable<ExceptionLog> query, string descriptionPrefix )
         {
@@ -175,6 +176,15 @@ namespace Rock.Model
             // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
             // recursively writing to the database.
             Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+        }
+
+        /// <summary>
+        /// Log an exception.
+        /// </summary>
+        /// <param name="message">The exception message.</param>
+        public static void LogException( string message )
+        {
+            LogException( new Exception( message ) );
         }
 
         /// <summary>

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Visual Studio Spell Checker configuration file - [https://github.com/EWSoftware/VSSpellChecker]
+     Do not edit the XML.  Use the configuration file editor in Visual Studio to modify the settings. -->
+<SpellCheckerConfiguration Format="2018.8.16.0">
+  <InheritAdditionalDictionaryFolders>True</InheritAdditionalDictionaryFolders>
+  <SelectedLanguages>
+    <LanguageName></LanguageName>
+  </SelectedLanguages>
+  <InheritIgnoredClassifications>True</InheritIgnoredClassifications>
+  <IgnoredClassifications />
+  <InheritIgnoredWords>True</InheritIgnoredWords>
+  <InheritExclusionExpressions>True</InheritExclusionExpressions>
+  <InheritIgnoredFilePatterns>True</InheritIgnoredFilePatterns>
+  <InheritXmlSettings>True</InheritXmlSettings>
+  <IgnoredWords>
+    <Ignore>Admin</Ignore>
+    <Ignore>api</Ignore>
+    <Ignore>auth</Ignore>
+    <Ignore>Queryable</Ignore>
+    <Ignore>workflow</Ignore>
+  </IgnoredWords>
+  <IgnoredFilePatterns>
+    <FilePattern>*\CodeGenerated\*.cs</FilePattern>
+    <FilePattern>*.Designer.cs</FilePattern>
+  </IgnoredFilePatterns>
+</SpellCheckerConfiguration>

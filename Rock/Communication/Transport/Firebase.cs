@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
                     mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
                 }
 
-                var recipients = rockMessage.GetRecipientData();
+                var recipients = rockMessage.GetRecipients();
 
                 if ( pushMessage.SendSeperatelyToEachRecipient )
                 {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 
 using Rock.Model;
@@ -117,7 +118,7 @@ namespace Rock.Lava
                 // intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available)
             }
 
-            if ( options.GetPageParameters && rockPage != null && request != null)
+            if ( options.GetPageParameters && rockPage != null && request != null )
             {
                 mergeFields.Add( "PageParameter", rockPage.PageParameters() );
             }
@@ -162,7 +163,7 @@ namespace Rock.Lava
         /// <param name="rockPage">The rock page.</param>
         /// <returns></returns>
         [RockObsolete( "1.7" )]
-        [Obsolete("Just use the PageCache of the CurrentPage instead", true )]
+        [Obsolete( "Just use the PageCache of the CurrentPage instead", true )]
         public static Dictionary<string, object> GetPagePropertiesMergeObject( RockPage rockPage )
         {
             Dictionary<string, object> pageProperties = new Dictionary<string, object>();
@@ -198,6 +199,47 @@ namespace Rock.Lava
             catch { }
 
             return lavaCommands;
+        }
+
+        /// <summary>
+        /// Determines whether the property is available to Lava
+        /// </summary>
+        /// <param name="propInfo">The property information.</param>
+        /// <returns>
+        ///   <c>true</c> if [is lava property] [the specified property information]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsLavaProperty( PropertyInfo propInfo )
+        {
+            // If property has a [LavaIgnore] attribute return false
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() > 0 )
+            {
+                return false;
+            }
+
+            // If property has a [DataMember] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // If property has a [LavaInclude] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // otherwise return false
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the list of properties that are available to Lava
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static List<PropertyInfo> GetLavaProperties( Type type )
+        {
+            return type.GetProperties().Where( p => IsLavaProperty( p ) ).ToList();
         }
     }
 }

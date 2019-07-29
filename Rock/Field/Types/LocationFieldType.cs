@@ -36,6 +36,10 @@ namespace Rock.Field.Types
         private const string ALLOWED_PICKER_MODES = "allowedPickerModes";
         private const string CURRENT_PICKER_MODE = "currentPickerMode";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
@@ -45,6 +49,10 @@ namespace Rock.Field.Types
             return configKeys;
         }
 
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
             var controls = base.ConfigurationControls();
@@ -89,6 +97,11 @@ namespace Rock.Field.Types
             return controls;
         }
 
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
@@ -111,6 +124,11 @@ namespace Rock.Field.Types
             return configurationValues;
         }
 
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 2)

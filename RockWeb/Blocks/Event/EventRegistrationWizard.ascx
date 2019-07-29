@@ -243,7 +243,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:PanelWidget ID="pwRegistrationCustomization" runat="server" Title="Registration Customization">
-                                        <Rock:HtmlEditor ID="htmlRegistrationInstructions" runat="server" Label="Registration Instructions" Height="100" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                        <Rock:HtmlEditor ID="htmlRegistrationInstructions" runat="server" Label="Registration Instructions" Height="100" Help="These instructions will appear at the beginning of the registration process." Toolbar="Light" />
                                         <Rock:HtmlEditor ID="htmlReminderDetails" runat="server" Label="Reminder Details" Height="100" Help="These reminder details will be included in the reminder notification." Toolbar="Light" />
                                         <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="100" Help="These confirmation details will be appended to those from the registration template when displayed at the end of the registration process." Toolbar="Light" />
                                     </Rock:PanelWidget>
@@ -311,7 +311,7 @@
                             <asp:Panel ID="pnlExistingEvent" runat="server">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:EventItemPicker ID="eipSelectedEvent" runat="server"  Label="Event" Required="true" />
+                                        <Rock:EventItemPicker ID="eipSelectedEvent" runat="server" Label="Event" Required="true" />
                                     </div>
                                 </div>
                             </asp:Panel>
@@ -428,6 +428,7 @@
                                 <li id="liRegistrationLink" runat="server"><asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
                                 <li id="liGroupLink" runat="server"><asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
                                 <li id="liEventLink" runat="server"><asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
+                                <li id="liExternalEventLink" runat="server"><asp:HyperLink ID="hlExternalEventDetails" runat="server" Text="View External Event Details" /></li>
                                 <li id="liEventOccurrenceLink" runat="server"><asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
                             </ul>
                         </div>

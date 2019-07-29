@@ -292,8 +292,13 @@ namespace Rock.Model
                 _abbreviatedName = value;
             }
         }
-
         private string _abbreviatedName;
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; set; }
 
         #endregion
 

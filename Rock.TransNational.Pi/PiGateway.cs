@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -62,8 +78,19 @@ namespace Rock.TransNational.Pi
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The private API key
+            /// </summary>
             public const string PrivateApiKey = "PrivateApiKey";
+
+            /// <summary>
+            /// The public API key
+            /// </summary>
             public const string PublicApiKey = "PublicApiKey";
+
+            /// <summary>
+            /// The mode
+            /// </summary>
             public const string Mode = "Mode";
         }
 
@@ -126,6 +153,7 @@ namespace Rock.TransNational.Pi
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
+        /// <param name="metadata">Optional. Additional key value pairs to send to the gateway</param>
         /// <returns></returns>
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
@@ -192,8 +220,8 @@ namespace Rock.TransNational.Pi
         /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="enableACH">if set to <c>true</c> [enable ach]. (Credit Card is always enabled)</param>
         /// <param name="controlId">The control identifier.</param>
+        /// <param name="options">The options.</param>
         /// <returns></returns>
         public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
         {
@@ -223,7 +251,8 @@ namespace Rock.TransNational.Pi
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
-        /// <returns></returns>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
             errorMessage = null;
@@ -280,7 +309,6 @@ namespace Rock.TransNational.Pi
         /// and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentToken">The payment token.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
@@ -357,7 +385,6 @@ namespace Rock.TransNational.Pi
         /// </summary>
         /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
-        /// <param name="tokenizerToken">The tokenizer token.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
         private CustomerResponse CreateCustomer( string gatewayUrl, string apiKey, ReferencePaymentInfo paymentInfo )
@@ -568,8 +595,10 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Posts the refund.
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="amount">The amount.</param>
         /// <returns></returns>
         private TransactionVoidRefundResponse PostRefund( string gatewayUrl, string apiKey, string transactionId, decimal amount )
         {
@@ -683,6 +712,7 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Deletes the plan.
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="planId">The plan identifier.</param>
         /// <returns></returns>
@@ -700,6 +730,7 @@ namespace Rock.TransNational.Pi
         /// Gets the plans.
         /// https://sandbox.gotnpgateway.com/docs/api/#get-all-plans
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <returns></returns>
         private GetPlansResult GetPlans( string gatewayUrl, string apiKey )
@@ -720,6 +751,7 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Returns a list of Transactions that meet the queryTransactionStatusRequest parameters
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="queryTransactionStatusRequest">The query transaction status request.</param>
         /// <returns></returns>
@@ -744,6 +776,7 @@ namespace Rock.TransNational.Pi
         /// Creates the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="subscriptionParameters">The subscription parameters.</param>
         /// <returns></returns>
@@ -763,6 +796,7 @@ namespace Rock.TransNational.Pi
         /// Updates the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#update-a-subscription
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="subscriptionId">The subscription identifier.</param>
         /// <param name="subscriptionParameters">The subscription parameters.</param>
@@ -786,9 +820,9 @@ namespace Rock.TransNational.Pi
         /// Deletes the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#delete-a-subscription
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="subscriptionId">The subscription identifier.</param>
-        /// <param name="subscriptionParameters">The subscription parameters.</param>
         /// <returns></returns>
         private SubscriptionResponse DeleteSubscription( string gatewayUrl, string apiKey, string subscriptionId )
         {
@@ -805,6 +839,7 @@ namespace Rock.TransNational.Pi
         /// Gets the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#get-a-subscription
         /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
         /// <param name="subscriptionId">The subscription identifier.</param>
         /// <returns></returns>
@@ -823,9 +858,8 @@ namespace Rock.TransNational.Pi
         /// Searches the subscriptions.
         /// (undocumented as of 4/15/2019) /recurring/subscription/search
         /// </summary>
-        /// <param name="gatewayUrl">The gateway URL.</param>
-        /// <param name="apiKey">The API key.</param>
-        /// <param name="querySubscriptionsRequest">The query subscriptions request.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="customerId">The customer identifier.</param>
         /// <returns></returns>
         public SubscriptionsSearchResult SearchCustomerSubscriptions( FinancialGateway financialGateway, string customerId )
         {
@@ -857,6 +891,9 @@ namespace Rock.TransNational.Pi
         /// <seealso cref="System.Exception" />
         public class ReferencePaymentInfoRequired : Exception
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ReferencePaymentInfoRequired"/> class.
+            /// </summary>
             public ReferencePaymentInfoRequired()
                 : base( "PiGateway requires a token or customer reference" )
             {
@@ -1215,7 +1252,7 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Reactivates the scheduled payment.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )

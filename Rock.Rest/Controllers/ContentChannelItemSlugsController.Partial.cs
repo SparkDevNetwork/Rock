@@ -88,15 +88,16 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
         public string GetUniqueContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
-            string uniquieSlug = string.Empty;
+            string uniqueSlug = string.Empty;
 
             using ( var rockContext = new RockContext() )
             {
                 var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
 
-                uniquieSlug = contentChannelItemSlugService.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
+                uniqueSlug = contentChannelItemSlugService.GetUniqueContentSlug( slug, contentChannelItemSlugId, contentChannelItemId );
             }
-            return uniquieSlug;
+
+            return uniqueSlug ?? string.Empty;
         }
 
         /// <summary>

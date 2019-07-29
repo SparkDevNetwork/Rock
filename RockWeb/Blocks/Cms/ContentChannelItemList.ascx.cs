@@ -138,12 +138,6 @@ namespace RockWeb.Blocks.Cms
 
                     priorityColumn.Visible = !contentChannel.ContentChannelType.DisablePriority && GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
 
-                    var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
-                    if ( securityColumn != null )
-                    {
-                        securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
-                    }
-
                     lContentChannel.Text = contentChannel.Name;
                     _typeId = contentChannel.ContentChannelTypeId;
 
@@ -186,7 +180,13 @@ namespace RockWeb.Blocks.Cms
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
                 securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
-                
+
+                var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
+                if ( securityColumn != null )
+                {
+                    securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
+                }
+
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
                 deleteField.Click += gItems_Delete;
@@ -316,7 +316,6 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
-                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );

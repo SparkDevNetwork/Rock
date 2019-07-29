@@ -35,10 +35,21 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Keys for the viewstate
         /// </summary>
-        private static class ViewStateKeys
+        protected static class ViewStateKey
         {
+            /// <summary>
+            /// The comparable fields JSON key
+            /// </summary>
             public static string ComparableFieldsJSON = "ComparableFieldsJSON";
+
+            /// <summary>
+            /// The rules state JSON key
+            /// </summary>
             public static string FieldVisibilityRulesStateJSON = "_fieldVisibilityRulesStateJSON";
+
+            /// <summary>
+            /// The validation group key
+            /// </summary>
             public static string ValidationGroup = "ValidationGroup";
         }
 
@@ -77,8 +88,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState[ViewStateKeys.ValidationGroup] as string ?? this.RockBlock()?.BlockValidationGroup;
-            set => ViewState[ViewStateKeys.ValidationGroup] = value;
+            get => ViewState[ViewStateKey.ValidationGroup] as string ?? this.RockBlock()?.BlockValidationGroup;
+            set => ViewState[ViewStateKey.ValidationGroup] = value;
         }
 
         /// <summary>
@@ -217,8 +228,8 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            this._fieldVisibilityRulesState = ( ViewState[ViewStateKeys.FieldVisibilityRulesStateJSON] as string ).FromJsonOrNull<FieldVisibilityRules>();
-            this.ComparableFields = ( ViewState[ViewStateKeys.ComparableFieldsJSON] as string ).FromJsonOrNull<Dictionary<Guid, RegistrationTemplateFormField>>();
+            this._fieldVisibilityRulesState = ( ViewState[ViewStateKey.FieldVisibilityRulesStateJSON] as string ).FromJsonOrNull<FieldVisibilityRules>();
+            this.ComparableFields = ( ViewState[ViewStateKey.ComparableFieldsJSON] as string ).FromJsonOrNull<Dictionary<Guid, RegistrationTemplateFormField>>();
 
             EnsureChildControls();
             _phFilterFieldRuleControls.Controls.Clear();
@@ -240,8 +251,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ViewStateKeys.FieldVisibilityRulesStateJSON] = this._fieldVisibilityRulesState.ToJson();
-            ViewState[ViewStateKeys.ComparableFieldsJSON] = this.ComparableFields.ToJson();
+            ViewState[ViewStateKey.FieldVisibilityRulesStateJSON] = this._fieldVisibilityRulesState.ToJson();
+            ViewState[ViewStateKey.ComparableFieldsJSON] = this.ComparableFields.ToJson();
 
             return base.SaveViewState();
         }

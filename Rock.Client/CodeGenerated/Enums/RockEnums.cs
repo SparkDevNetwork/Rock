@@ -682,6 +682,24 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SequenceOccurrenceFrequency
+    {
+        Daily = 0x0,
+        Weekly = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SequenceStructureType
+    {
+        Group = 0x1,
+        GroupType = 0x2,
+        GroupTypePurpose = 0x3,
+        CheckInConfig = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SignatureDocumentAction
     {
         Email = 0x0,
@@ -745,12 +763,29 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ViewMode
+    {
+        Cards = 0x0,
+        Grid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
         Workflow = 0x1,
         Activity = 0x2,
         Action = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerCondition
+    {
+        StatusChanged = 0x0,
+        Manual = 0x1,
+        IsComplete = 0x2,
     }
 
     /// <summary>

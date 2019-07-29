@@ -381,8 +381,16 @@ namespace RockWeb.Blocks.Communication
 
             BindConversationRepeater( responses );
 
-            DataRow row = responses.Tables[0].AsEnumerable().Last();
-            return row["SMSMessage"].ToString();
+            var list = responses.Tables[0].AsEnumerable();
+            if ( list != null && list.Count() > 0 )
+            {
+                DataRow row = list.Last();
+                return row["SMSMessage"].ToString();
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>

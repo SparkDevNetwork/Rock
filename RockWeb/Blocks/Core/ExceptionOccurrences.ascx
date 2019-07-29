@@ -38,7 +38,7 @@
                                 <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date/Time" SortExpression="CreatedDateTime" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:RockBoundField DataField="PageName" HeaderText="Page/URL" SortExpression="PageName" />
                                 <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
-                                <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" HtmlEncode="false" />
+                                <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" HtmlEncode="false" ItemStyle-CssClass="wrap-contents" />
                                 <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='fa fa-file-alt'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
