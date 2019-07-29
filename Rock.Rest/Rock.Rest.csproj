@@ -137,9 +137,9 @@
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SequenceEnrollmentsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SequenceOccurrenceExclusionsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SequencesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignalTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />
@@ -149,7 +149,7 @@
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
-    <Compile Include="Controllers\SequencesController.Partial.cs" />
+    <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />

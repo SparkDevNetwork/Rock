@@ -556,6 +556,12 @@ namespace Rock.SystemGuid
         public const string EMPLOYEE_DETAILS = "DA8E33F3-2EEF-4C4B-87F3-715C3F107CAF";
 
         /// <summary>
+        /// Gets the Engagement page guid
+        /// ParentPage: People > Manage
+        /// </summary>
+        public const string ENGAGEMENT = "48242949-944A-4651-B6CC-60194EDE08A0";
+
+        /// <summary>
         /// Gets the Entity Administration page guid
         /// ParentPage: Security
         /// </summary>
@@ -1429,6 +1435,36 @@ namespace Rock.SystemGuid
         /// ParentPage: Power Tools
         /// </summary>
         public const string SQL_COMMAND = "03C49950-9C4C-4668-9C65-9A0DF43D1B33";
+
+        /// <summary>
+        /// Gets the Step Programs page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STEP_PROGRAMS = "F5E8A369-4856-42E5-B187-276DFCEB1F3F";
+
+        /// <summary>
+        /// Gets the Streak page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK = "488BE67C-EDA0-489E-8D80-8CC67F5854D4";
+
+        /// <summary>
+        /// Gets the Streak Types page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STREAK_TYPES = "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Types
+        /// </summary>
+        public const string STREAK_TYPE_DETAIL = "CA566B33-0265-45C5-B1B2-6FFA6D4743F4";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK_TYPE_EXCLUSION_DETAIL = "68EF459F-5D23-4930-8EA8-80CDF986BB94";
 
         /// <summary>
         /// Gets the Success page guid

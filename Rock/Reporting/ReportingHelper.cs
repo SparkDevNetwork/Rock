@@ -754,6 +754,7 @@ namespace Rock.Reporting
             /// <value>
             /// From other data view.
             /// </value>
+            [RockObsolete( "1.10" )]
             [Obsolete( "Use FromOtherDataViewName instead" )]
             public string FromOtherDataView
             {

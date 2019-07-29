@@ -104,12 +104,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     //referring to aliasPersonId as person might be merged
                     var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
 
-                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
-                    if ( personAlias != null )
+                    if ( personId.HasValue )
                     {
-                        var pageReference = RockPage.PageReference;
-                        pageReference.Parameters.AddOrReplace( "PersonId", personAlias.PersonId.ToString() );
-                        Response.RedirectPermanent( pageReference.BuildUrl(), false );
+                        var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
+                        if ( personAlias != null )
+                        {
+                            var pageReference = RockPage.PageReference;
+                            pageReference.Parameters.AddOrReplace( "PersonId", personAlias.PersonId.ToString() );
+                            Response.RedirectPermanent( pageReference.BuildUrl(), false );
+                        }
                     }
                 }
 

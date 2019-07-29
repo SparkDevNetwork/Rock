@@ -251,6 +251,16 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in AttributeValueCleanup", ex ) );
             }
 
+            try
+            {
+                var rowsDeleted = MergeStreaks();
+                databaseRowsCleanedUp.Add( "Duplicate Streak Enrollments", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in MergeStreaks", ex ) );
+            }
+
             // ***********************
             //  Final count and report
             // ***********************
@@ -1335,6 +1345,44 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        /// <summary>
+        /// Merges the streaks.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private int MergeStreaks()
+        {
+            var recordsDeleted = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var streakService = new StreakService( rockContext );
+                var duplicateGroups = streakService.Queryable().GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } ).Where( g => g.Count() > 1 );
+
+                foreach ( var duplicateGroup in duplicateGroups )
+                {
+                    var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
+                    recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
+                    recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
+
+                    var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
+                    recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
+
+                    var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
+                    recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
+
+                    var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
+                    streakService.DeleteRange( recordsToDelete );
+
+                    rockContext.SaveChanges();
+
+                    recordsDeleted += recordsToDelete.Count();
+                }
+            }
+
+            return recordsDeleted;
         }
     }
 }

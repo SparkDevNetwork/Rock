@@ -58,6 +58,7 @@ namespace Rock.PersonProfile
         {
             if ( Entity != null )
             {
+                // Code using the old Person interface will return null here. The else block handles rendering for those obsolete badges
                 var label = GetLabel( Entity );
                 
                 if ( label != null )
@@ -66,7 +67,9 @@ namespace Rock.PersonProfile
                 }
                 else
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     label = GetLabel( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     if ( label != null )
                     {

@@ -240,12 +240,17 @@ namespace RockWeb
                         foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                         {
                             const string errorLoadingStatus = "Error Loading Job";
+
                             try  
                             {
                                 IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                                 ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                                sched.ScheduleJob( jobDetail, jobTrigger );
+                                // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
+                                if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
+                                {
+                                    sched.ScheduleJob( jobDetail, jobTrigger );
+                                }
 
                                 //// if the last status was an error, but we now loaded successful, clear the error
                                 // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted

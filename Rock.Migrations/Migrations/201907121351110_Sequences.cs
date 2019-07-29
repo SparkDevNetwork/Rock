@@ -74,19 +74,19 @@ namespace Rock.Migrations
                 ) VALUES (
                     1, -- IsSystem
                     1, -- IsActive
-                    'Rebuild Sequence Data', -- Name
-                    'Rebuild sequence occurrence and enrollment engagement maps. This runs on demand and has the cron expression set to the distant future since it does not run on a schedule.', -- Description
-                    'Rock.Jobs.RebuildSequenceMaps', -- Class
-                    '{Rock.SystemGuid.ServiceJob.REBUILD_SEQUENCE}', -- Guid
+                    'Rebuild Streak Data', -- Name
+                    'Rebuild streak maps. This runs on demand and has the cron expression set to the distant future since it does not run on a schedule.', -- Description
+                    'Rock.Jobs.RebuildStreakMaps', -- Class
+                    '{Rock.SystemGuid.ServiceJob.REBUILD_STREAK}', -- Guid
                     GETDATE(), -- Created
                     1, -- All notifications
-                    '0 0 0 1 1 ? 2200' -- In the year 2200, so basically never run this scheduled since it runs on demand
+                    '{Rock.Model.ServiceJob.NeverScheduledCronExpression}' -- In the year 2200, so basically never run this scheduled since it runs on demand
                 );" );
         }
 
         private void JobDown()
         {
-            Sql( $"DELETE FROM ServiceJob WHERE Guid = '{Rock.SystemGuid.ServiceJob.REBUILD_SEQUENCE}';" );
+            Sql( $"DELETE FROM ServiceJob WHERE Guid = '{Rock.SystemGuid.ServiceJob.REBUILD_STREAK}';" );
         }
 
         private void PagesAndBlocksUp()

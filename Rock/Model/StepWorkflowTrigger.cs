@@ -199,19 +199,45 @@ namespace Rock.Model
         /// </summary>
         public class StatusChangeTriggerSettings : SettingsStringBase
         {
+            /// <summary>
+            /// Gets or sets the "from" status identifier.
+            /// </summary>
+            /// <value>
+            /// From status identifier.
+            /// </value>
             public int? FromStatusId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the "to" status identifier.
+            /// </summary>
+            /// <value>
+            /// To status identifier.
+            /// </value>
             public int? ToStatusId { get; set; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="StatusChangeTriggerSettings"/> class.
+            /// </summary>
             public StatusChangeTriggerSettings()
             {
-                //
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="StatusChangeTriggerSettings"/> class.
+            /// </summary>
+            /// <param name="settingsString">The settings string.</param>
             public StatusChangeTriggerSettings( string settingsString )
             {
                 FromSelectionString( settingsString );
             }
 
+            /// <summary>
+            /// Gets an ordered set of property values that can be used to construct the
+            /// settings string.
+            /// </summary>
+            /// <returns>
+            /// An ordered collection of strings representing the parameter values.
+            /// </returns>
             protected override IEnumerable<string> OnGetParameters()
             {
                 var parameters = new List<string> { FromStatusId.ToStringSafe(), ToStatusId.ToStringSafe() };
@@ -219,6 +245,11 @@ namespace Rock.Model
                 return parameters;
             }
 
+            /// <summary>
+            /// Set the property values parsed from a settings string.
+            /// </summary>
+            /// <param name="version">The version number of the parameter set.</param>
+            /// <param name="parameters">An ordered collection of strings representing the parameter values.</param>
             protected override void OnSetParameters( int version, IReadOnlyList<string> parameters )
             {
                 if ( parameters.Count > 0 )
