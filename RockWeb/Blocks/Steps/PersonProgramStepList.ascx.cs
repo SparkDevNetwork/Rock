@@ -1025,6 +1025,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusColor = s.StepStatus == null ? string.Empty : s.StepStatus.StatusColor,
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
+                StepTypeOrder = s.StepType.Order,
                 Summary = string.Empty // TODO
             } );
 
@@ -1035,7 +1036,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                viewModels = viewModels.OrderBy( vm => vm.StepTypeName );
+                viewModels = viewModels.OrderBy( vm => vm.StepTypeOrder ).ThenBy( vm => vm.StepTypeName );
             }
 
             // Bind the grid for the steps
@@ -1132,54 +1133,184 @@ namespace RockWeb.Blocks.Steps
 
         #endregion Control Helpers
 
-        #region Helper Classes
+        #region View Models
 
         /// <summary>
         /// View model for data for a grid row
         /// </summary>
-        public class StepGridRowViewModel
+        private class StepGridRowViewModel
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step type.
+            /// </summary>
+            /// <value>
+            /// The name of the step type.
+            /// </value>
             public string StepTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the completed date time.
+            /// </summary>
+            /// <value>
+            /// The completed date time.
+            /// </value>
             public DateTime? CompletedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the color of the step status.
+            /// </summary>
+            /// <value>
+            /// The color of the step status.
+            /// </value>
             public string StepStatusColor { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step status.
+            /// </summary>
+            /// <value>
+            /// The name of the step status.
+            /// </value>
             public string StepStatusName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step type icon CSS class.
+            /// </summary>
+            /// <value>
+            /// The step type icon CSS class.
+            /// </value>
             public string StepTypeIconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the summary.
+            /// </summary>
+            /// <value>
+            /// The summary.
+            /// </value>
             public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets the step type order.
+            /// </summary>
+            /// <value>
+            /// The step type order.
+            /// </value>
+            public int StepTypeOrder { get; internal set; }
         }
 
         /// <summary>
         /// View model for the add step buttons above the grid
         /// </summary>
-        public class AddStepButtonViewModel
+        private class AddStepButtonViewModel
         {
+            /// <summary>
+            /// Gets or sets the step type identifier.
+            /// </summary>
+            /// <value>
+            /// The step type identifier.
+            /// </value>
             public int StepTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is enabled.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+            /// </value>
             public bool IsEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the button contents.
+            /// </summary>
+            /// <value>
+            /// The button contents.
+            /// </value>
             public string ButtonContents { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
         }
 
         /// <summary>
         /// View model for the data show on a card
         /// </summary>
-        public class CardViewModel
+        private class CardViewModel
         {
+            /// <summary>
+            /// Gets or sets the type of the step.
+            /// </summary>
+            /// <value>
+            /// The type of the step.
+            /// </value>
             public StepType StepType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rendered lava.
+            /// </summary>
+            /// <value>
+            /// The rendered lava.
+            /// </value>
             public string RenderedLava { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
+
+            /// <summary>
+            /// Gets or sets the card CSS class.
+            /// </summary>
+            /// <value>
+            /// The card CSS class.
+            /// </value>
             public string CardCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can add step.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
+            /// </value>
             public bool CanAddStep { get; set; }
         }
 
         /// <summary>
         /// View model for a single step shown on the hover state of the card
         /// </summary>
-        public class CardStepViewModel
+        private class CardStepViewModel
         {
+            /// <summary>
+            /// Gets or sets the step identifier.
+            /// </summary>
+            /// <value>
+            /// The step identifier.
+            /// </value>
             public int StepId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status HTML.
+            /// </summary>
+            /// <value>
+            /// The status HTML.
+            /// </value>
             public string StatusHtml { get; set; }
         }
 
-        #endregion Helper Classes
+        #endregion View Models
     }
 }

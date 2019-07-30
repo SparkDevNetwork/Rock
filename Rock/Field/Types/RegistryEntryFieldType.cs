@@ -22,6 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+    /// <summary>
+    /// Field Type used for Volume / Page / Entry that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
+    /// </summary>
+    /// <seealso cref="Rock.Field.FieldType" />
     public class RegistryEntryFieldType : FieldType
     {
         /// <summary>
