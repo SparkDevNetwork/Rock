@@ -67,6 +67,12 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                             <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
                             <div class="margin-b-md">
@@ -137,7 +143,13 @@
                             <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -275,7 +287,8 @@
                                         </div>
                                         <div class="col-md-8">
                                             <%# Eval("Description") %>
-                                            </br>                                                
+
+                                            <br />
                                             <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default btn-sm" />
                                         </div>
                                     </div>

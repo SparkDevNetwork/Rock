@@ -54,12 +54,21 @@ namespace Rock.Web.UI
 
             if ( Person == null )
             {
+                var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
                 // check the query string and attempt to load the person from it
-                if ( Request["PersonId"] != null )
+                if ( personId.HasValue )
                 {
-                    int personId = Request["PersonId"].AsInteger();
+                    Person = new PersonService( new RockContext() ).Get( personId.Value );
 
-                    Person = new PersonService( new RockContext() ).Get( personId );
+                    if ( Person == null )
+                    {
+                        //referring to aliasPersonId as person might be merged
+                        var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
+                        if ( personAlias != null )
+                        {
+                            Person = personAlias.Person;
+                        }
+                    }
                     Person.LoadAttributes();
                 }
 

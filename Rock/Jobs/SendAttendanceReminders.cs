@@ -207,8 +207,8 @@ namespace Rock.Jobs
                         mergeObjects.Add( "Group", leader.Group );
                         mergeObjects.Add( "Occurrence", group.Value.Max() );
 
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( leader.Person.Email, mergeObjects ) );
+                        var recipients = new List<RockEmailMessageRecipient>();
+                        recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeObjects ) );
 
                         var emailMessage = new RockEmailMessage( dataMap.GetString( "SystemEmail" ).AsGuid() );
                         emailMessage.SetRecipients( recipients );

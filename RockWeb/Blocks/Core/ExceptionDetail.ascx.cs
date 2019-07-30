@@ -15,22 +15,17 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -38,11 +33,80 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given exception." )]
 
-    [LinkedPage("Detail Page")] 
     public partial class ExceptionDetail : RockBlock, IDetailBlock
     {
+        #region Page Parameter Keys
 
-        #region Control Methods
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        protected static class PageParameterKey
+        {
+            public const string EntityId = "ExceptionId";
+            public const string EntityGuid = "ExceptionGuid";
+        }
+
+        #endregion
+
+        #region Configuration Properties
+
+        private Type _entitySystemType = typeof( Rock.Model.ExceptionLog );
+
+        #endregion
+
+        #region Common Code (EntityDetail)
+
+        private EntityTypeCache _entityType = null;
+
+        /// <summary>
+        /// Get the Rock Entity Type information for the entity type displayed by this block.
+        /// </summary>
+        /// <returns></returns>
+        private bool InitializeEntityType()
+        {
+            _entityType = EntityTypeCache.Get( _entitySystemType );
+
+            return ( _entityType != null );
+        }
+
+        private RockContext _dataContext = null;
+
+        /// <summary>
+        /// Retrieve a singleton data context for data operations in this block.
+        /// </summary>
+        /// <returns></returns>
+        private RockContext GetDataContext()
+        {
+            if ( _dataContext == null )
+            {
+                _dataContext = new RockContext();
+            }
+
+            return _dataContext;
+        }
+
+        /// <summary>
+        /// Get a unique friendly description for the current entity.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private string GetEntityDescription( IEntity entity )
+        {
+            var targetEntity = entity as AssessmentType;
+
+            if ( targetEntity == null )
+            {
+                return "(None)";
+            }
+
+            return targetEntity.Title;
+        }
+
+
+        #endregion
+
+        #region Custom Methods (ExceptionDetail)
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -53,40 +117,27 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                //show the detail
-                int? exceptionId = PageParameter( "ExceptionId" ).AsIntegerOrNull();
-                if (!exceptionId.HasValue)
-                {
-                    Guid? exceptionGuid = PageParameter( "ExceptionGuid" ).AsGuidOrNull();
-                    if (exceptionGuid.HasValue)
-                    {
-                        exceptionId = new ExceptionLogService( new RockContext() ).Queryable().Where( a => a.Guid == exceptionGuid.Value ).Select( a => a.Id ).FirstOrDefault();
-                    }
-                }
-
-                ShowDetail( exceptionId ?? 0 );
+                ShowContent();
             }
         }
-        #endregion
 
-        #region Internal Methods
         /// <summary>
-        /// Dissect the query string value and build unordered list
+        /// Parse the query string value and build a list of values.
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns>unordered list of query string values</returns>
         private string BuildQueryStringList( string queryString )
         {
-            string[] queryStringVariables = queryString.TrimStart('?').Split( '&' );
+            string[] queryStringVariables = queryString.TrimStart( '?' ).Split( '&' );
 
             StringBuilder qsList = new StringBuilder();
-            qsList.Append("<ul type=\"disc\">");
+            qsList.Append( "<ul type=\"disc\">" );
 
             foreach ( string query in queryStringVariables )
             {
                 string[] queryStringValue = query.Split( "=".ToCharArray() );
 
-                if (queryStringValue.Length > 1)
+                if ( queryStringValue.Length > 1 )
                 {
                     qsList.AppendFormat( "<li>{0}: {1}</li>", queryStringValue[0].EncodeHtml(), queryStringValue[1].EncodeHtml() );
                 }
@@ -102,93 +153,166 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Get the root-level exception of the specified exception.
+        /// </summary>
+        /// <param name="exceptionId">The id of an existing exception.</param>
+        private ExceptionLog GetOutermostException( int exceptionId )
+        {
+            var dataContext = GetDataContext();
+
+            var exceptionService = new ExceptionLogService( dataContext );
+
+            var exception = exceptionService.GetNoTracking( exceptionId );
+
+            return GetOutermostException( exception );
+        }
+
+        /// <summary>
+        /// Get the root-level exception of the specified exception.
+        /// </summary>
+        /// <param name="exception">An existing exception.</param>
+        private ExceptionLog GetOutermostException( ExceptionLog exception )
+        {
+            if ( exception == null )
+            {
+                return null;
+            }
+
+            if ( exception.ParentId == null )
+            {
+                return exception;
+            }
+
+            var dataContext = GetDataContext();
+
+            var exceptionService = new ExceptionLogService( dataContext );
+
+            ExceptionLog parentException;
+
+            while ( exception != null )
+            {
+                parentException = exceptionService.Get( ( int ) exception.ParentId );
+
+                // If the parent exception cannot be found, this is the base exception.
+                if ( parentException == null )
+                {
+                    return exception;
+                }
+
+                if ( parentException.ParentId == null )
+                {
+                    return parentException;
+                }
+
+                exception = parentException;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the related exception logs
         /// </summary>
-        /// <param name="baseException">The base exception.</param>
+        /// <param name="exception">The top-level exception.</param>
         /// <returns>List of Exception Detail Summary objects</returns>
-        private List<ExceptionLog> GetExceptionLogs( ExceptionLog baseException )
+        private List<ExceptionLog> GetExceptionLogs( ExceptionLog exception )
         {
-            List<ExceptionLog> exceptionList = new List<ExceptionLog>();
-            ExceptionLogService svc = new ExceptionLogService( new RockContext() );
+            var exceptionList = new List<ExceptionLog>();
+
+            var dataContext = GetDataContext();
+
+            var exceptionService = new ExceptionLogService( dataContext );
 
             //load the base exception 
-            exceptionList.Add( baseException );
-            
+            exceptionList.Add( exception );
+
             //get the parentID
-            int? parentId = baseException.ParentId;
+            int? parentId = exception.ParentId;
 
             //loop through exception hierarchy (parent, grandparent, etc)
             while ( parentId != null && parentId > 0 )
             {
-                var exception = svc.Get( (int)parentId );
+                var parentException = exceptionService.Get( ( int ) parentId );
 
-                if ( exception != null )
+                if ( parentException != null )
                 {
-                    exceptionList.Add( exception );
+                    exceptionList.Add( parentException );
                 }
 
-                parentId = exception.ParentId;
+                parentId = parentException.ParentId;
             }
 
             //get inner exceptions
-            if ( baseException.HasInnerException != null &&  (bool)baseException.HasInnerException )
+            if ( exception.HasInnerException != null && ( bool ) exception.HasInnerException )
             {
-                exceptionList.AddRange( svc.GetByParentId( baseException.Id ) );
+                exceptionList.AddRange( exceptionService.GetByParentId( exception.Id ) );
             }
 
             return exceptionList;
         }
 
-        protected string GetExceptionDetailUrl( int exceptionId )
+        /// <summary>
+        /// Show the block content.
+        /// </summary>
+        private void ShowContent()
         {
-            return string.Format( "/page/{0}?ExceptionId={1}", RockPage.PageId, exceptionId );
+            //show the detail
+            int? exceptionId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+
+            if ( !exceptionId.HasValue )
+            {
+                var exceptionGuid = PageParameter( PageParameterKey.EntityGuid ).AsGuidOrNull();
+
+                if ( exceptionGuid.HasValue )
+                {
+                    var dataContext = GetDataContext();
+
+                    exceptionId = new ExceptionLogService( dataContext ).Queryable().Where( a => a.Guid == exceptionGuid.Value ).Select( a => a.Id ).FirstOrDefault();
+                }
+            }
+
+            ShowReadonlyDetail( exceptionId ?? 0 );
         }
 
         /// <summary>
         /// Shows the detail of the exception
         /// </summary>
         /// <param name="exceptionId">The exception identifier.</param>
-        public void ShowDetail( int exceptionId )
+        public void ShowReadonlyDetail( int exceptionId )
         {
-            ExceptionLog baseException = null;
+            // Get the base-level exception.
+            var baseException = GetOutermostException( exceptionId );
 
-            if ( exceptionId != 0 )
-            {
-                baseException = new ExceptionLogService( new RockContext() ).Get( exceptionId );
-            }
-
-            //set fields
             if ( baseException == null )
             {
                 pnlSummary.Visible = false;
                 return;
             }
 
-            // set page title
-            lPageTitle.Text = String.Format("Exception Overview").FormatAsHtmlTitle();
+            var description = baseException.Description.Truncate( 100 );
 
-            DescriptionList dl = new DescriptionList();
+            lPageTitle.Text = string.Format( "({0:g}) {1}", baseException.CreatedDateTime, description ).FormatAsHtmlTitle();
 
-            dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            if ( baseException.Page != null || !string.IsNullOrWhiteSpace(baseException.PageUrl) )
+            var dl = new DescriptionList();
+
+            dl.Add( "Exception Date", baseException.CreatedDateTime.HasValue ? string.Format( "{0:g}", baseException.CreatedDateTime.Value ) : string.Empty );
+            dl.Add( "Description", baseException.Description );
+            dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : string.Empty );
+
+            if ( baseException.Page != null || !string.IsNullOrWhiteSpace( baseException.PageUrl ) )
             {
-                dl.Add( "Page", string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl.EncodeHtml(), baseException.PageUrl.EncodeHtml() ) );
+                dl.Add( "Page", string.Format( "<a href=\"{1}\" target=\"_blank\">{0}</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl.EncodeHtml(), baseException.PageUrl.EncodeHtml() ) );
             }
 
-            //If query string is not empty build query string list
+            // If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
             {
                 dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
 
-            if (baseException.CreatedByPersonAlias != null &&  baseException.CreatedByPersonAlias.Person != null)
+            if ( baseException.CreatedByPersonAlias != null && baseException.CreatedByPersonAlias.Person != null )
             {
                 dl.Add( "User", baseException.CreatedByPersonAlias.Person.FullName );
-            }
-
-            if ( baseException.CreatedDateTime.HasValue )
-            {
-                dl.Add( "Exception Date", string.Format( "{0:g}", baseException.CreatedDateTime.Value ) );
             }
 
             lExceptionSummary.Text = dl.Html;
@@ -196,16 +320,28 @@ namespace RockWeb.Blocks.Core
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
             lFormData.Text = baseException.Form;
+
             btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
             btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
             btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
-            rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
-            rptExcpetionDetails.DataBind();
+            // Make sure we have a root-level exception so we can show the entire hierarchy.
+            var rootException = GetOutermostException( baseException );
+
+            var logs = GetExceptionLogs( rootException );
+
+            rptExceptionDetails.DataSource = logs.OrderBy( e => e.Id );
+
+            rptExceptionDetails.DataBind();
 
             pnlSummary.Visible = true;
         }
 
+        /// <summary>
+        /// Encode a field value as HTML.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         protected string EncodeHtml( object obj )
         {
             if ( obj != null )
@@ -218,7 +354,19 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        #region IDetailBlock implementation
+
+        /// <summary>
+        /// Show the block detail content.
+        /// </summary>
+        /// <param name="exceptionId"></param>
+        public void ShowDetail( int exceptionId )
+        {
+            ShowReadonlyDetail( exceptionId );
+        }
+
+        #endregion
+
         #endregion
     }
-
 }

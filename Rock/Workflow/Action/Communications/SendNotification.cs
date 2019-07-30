@@ -57,7 +57,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var mergeFields = GetMergeFields( action );
-            var recipients = new List<RecipientData>();
+            var recipients = new List<RockPushMessageRecipient>();
 
             string toValue = GetAttributeValue( action, "To" );
             Guid guid = toValue.AsGuid();
@@ -91,10 +91,9 @@ namespace Rock.Workflow.Action
                                         else
                                         {
 
-                                            var recipient = new RecipientData( deviceIds );
-                                            recipients.Add( recipient );
-
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
+                                            var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
+                                            recipients.Add( recipient );
                                             if ( person != null )
                                             {
                                                 recipient.MergeFields.Add( "Person", person );
@@ -142,7 +141,7 @@ namespace Rock.Workflow.Action
                                                
                                             if ( deviceIds.AsBoolean() )
                                             {
-                                                var recipient = new RecipientData( deviceIds );
+                                                var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( "Person", person );
                                             }
@@ -158,7 +157,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ) ) );
+                    recipients.Add( RockPushMessageRecipient.CreateAnonymous ( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
                 }
             }
 

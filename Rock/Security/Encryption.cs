@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Rock.Security
 {
@@ -61,6 +62,15 @@ namespace Rock.Security
                     return false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get a Symmetric Security Key
+        /// </summary>
+        /// <returns></returns>
+        public static SymmetricSecurityKey GetSymmetricSecurityKey()
+        {
+            return new SymmetricSecurityKey( Encoding.Default.GetBytes( GetDataEncryptionKey() ) );
         }
 
         /// <summary>

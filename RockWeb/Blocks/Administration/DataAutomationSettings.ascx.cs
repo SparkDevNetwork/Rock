@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -258,9 +258,17 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void SetPanels()
         {
+            if ( CampusCache.All().Count == 1 )
+            {
+                pwUpdateCampus.Visible = false;
+            }
+            else
+            {
+                SetPanel( pwUpdateCampus, pnlCampusUpdate, "Update Family Campus", cbCampusUpdate.Checked );
+            }
+            
             SetPanel( pwReactivatePeople, pnlReactivatePeople, "Reactivate People", cbReactivatePeople.Checked );
             SetPanel( pwInactivatePeople, pnlInactivatePeople, "Inactivate People", cbInactivatePeople.Checked );
-            SetPanel( pwUpdateCampus, pnlCampusUpdate, "Update Family Campus", cbCampusUpdate.Checked );
             SetPanel( pwAdultChildren, pnlAdultChildren, "Move Adult Children", cbAdultChildren.Checked );
             SetPanel( pwUpdatePersonConnectionStatus, pnlUpdatePersonConnectionStatus, "Update Connection Status", cbUpdatePersonConnectionStatus.Checked );
             SetPanel( pwUpdateFamilyStatus, pnlUpdateFamilyStatus, "Update Family Status", cbUpdateFamilyStatus.Checked );

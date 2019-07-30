@@ -190,10 +190,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
             }
-            else
-            {
-                hfGroupMemberAttributeValues.Value = GetGroupMemberAttributeValues();
-            }
         }
 
         /// <summary>
@@ -369,9 +365,10 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
-                        if ( ddlCampus.SelectedValueAsId().HasValue )
+
+                        if ( cpCampus.SelectedCampusId.HasValue )
                         {
-                            SetUserPreference( CAMPUS_SETTING, ddlCampus.SelectedValueAsId().Value.ToString() );
+                            SetUserPreference( CAMPUS_SETTING, cpCampus.SelectedCampusId.Value.ToString() );
                         }
                     }
                     else
@@ -391,10 +388,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
 
-                    if ( ddlCampus.SelectedValueAsId().HasValue )
-                    {
-                        connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
-                    }
+                    connectionRequest.CampusId = cpCampus.SelectedCampusId;
 
                     connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
                     connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
@@ -425,7 +419,11 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestService.Add( connectionRequest );
                     }
 
+                    connectionRequest.LoadAttributes( rockContext );
+                    avcAttributes.GetEditValues( connectionRequest );
+
                     rockContext.SaveChanges();
+                    connectionRequest.SaveAttributeValues( rockContext );
 
                     if ( newConnectorPersonAliasId.HasValue && !newConnectorPersonAliasId.Equals( oldConnectorPersonAliasId ) )
                     {
@@ -736,7 +734,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1661,6 +1659,8 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
+                avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
+
                 BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
                 BindConnectionRequestWorkflowsGrid();
             }
@@ -1732,16 +1732,11 @@ namespace RockWeb.Blocks.Connection
             rblStatus.SelectedValue = connectionRequest.ConnectionStatusId.ToString();
 
             // Campus
-            ddlCampus.Items.Clear();
-            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CampusCache.All() )
-            {
-                var listItem = new ListItem( campus.Name, campus.Id.ToString() );
-                listItem.Selected = connectionRequest.CampusId.HasValue && campus.Id == connectionRequest.CampusId.Value;
-                ddlCampus.Items.Add( listItem );
-            }
+            cpCampus.SelectedCampusId = connectionRequest.CampusId;
 
             hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
+
+            avcAttributes.AddEditControls( connectionRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
             // Connectors, Groups, Member Roles, Member Status & Group Member Attributes
             RebindGroupsAndConnectors( connectionRequest, rockContext );
@@ -1768,7 +1763,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionRequest != null )
             {
-                int? campusId = ddlCampus.SelectedValueAsInt();
+                int? campusId = cpCampus.SelectedCampusId;
 
                 // Set Group
                 if ( !currentGroupId.HasValue && connectionRequest.AssignedGroupId.HasValue )

@@ -208,9 +208,9 @@ namespace RockWeb.Blocks.Security
         Order = 19 )]
 
     [BooleanField(
-        "Show Campus Selector",
+        "Show Campus",
         Key = AttributeKeys.ShowCampusSelector,
-        Description = "Allows selection of primary campus.",
+        Description = "Allows selection of primary a campus. If there is only one active campus then the campus field will not show.",
         DefaultBooleanValue = false,
         Order = 20 )]
 
@@ -314,13 +314,15 @@ namespace RockWeb.Blocks.Security
                 acAddress.Required = GetAttributeValue( AttributeKeys.AddressRequired ).AsBoolean();
 
                 // show/hide campus selector
-                bool showCampus = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
-                cpCampus.Visible = showCampus;
-                if ( showCampus )
+                if ( CampusCache.All( false ).Count() > 1 )
                 {
-                    cpCampus.Campuses = CampusCache.All( false );
+                    cpCampus.Visible = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
+                    if ( cpCampus.Visible )
+                    {
+                        cpCampus.Campuses = CampusCache.All( false );
+                    }
                 }
-
+                
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( AttributeKeys.MinimumAge ).AsInteger() > 0 )
                 {
@@ -361,6 +363,7 @@ namespace RockWeb.Blocks.Security
                         rPhoneNumbers.DataSource = phoneNumbers;
                         rPhoneNumbers.DataBind();
                     }
+
                     SetCurrentPersonDetails();
                 }
             }
@@ -684,8 +687,8 @@ namespace RockWeb.Blocks.Security
                 cbIsUnlisted.Checked = phoneNumber.IsUnlisted;
             }
 
-            bool showCampus = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
-            if ( showCampus )
+            //bool showCampus = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
+            if ( cpCampus.Visible )
             {
                 cpCampus.SetValue( CurrentPerson.GetCampus() );
             }
@@ -757,7 +760,7 @@ namespace RockWeb.Blocks.Security
                 mergeObjects.Add( "Results", results.ToArray() );
 
                 var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKeys.ForgotUsernameTemplate ).AsGuid() );
-                emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = false;
@@ -796,7 +799,7 @@ namespace RockWeb.Blocks.Security
                 mergeObjects.Add( "User", user );
 
                 var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKeys.ConfirmAccountTemplate ).AsGuid() );
-                emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = false;
@@ -840,7 +843,7 @@ namespace RockWeb.Blocks.Security
                         mergeObjects.Add( "User", user );
 
                         var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKeys.AccountCreatedTemplate ).AsGuid() );
-                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                         emailMessage.CreateCommunicationRecord = false;
@@ -972,12 +975,13 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            bool showCampus = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
+            //bool showCampus = GetAttributeValue( AttributeKeys.ShowCampusSelector ).AsBoolean();
             int? campusId = null;
-            if ( showCampus )
+            if ( cpCampus.Visible )
             {
                 campusId = cpCampus.SelectedCampusId;
             }
+
             PersonService.SaveNewPerson( person, rockContext, campusId, false );
 
             // save address

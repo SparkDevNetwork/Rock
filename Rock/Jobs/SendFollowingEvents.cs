@@ -330,7 +330,7 @@ namespace Rock.Jobs
                                         mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
 
                                         var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                         var errors = new List<string>(); 
                                         emailMessage.Send(out errors);
                                         exceptionMsgs.AddRange( errors );

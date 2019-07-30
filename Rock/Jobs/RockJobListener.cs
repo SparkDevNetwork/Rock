@@ -248,7 +248,7 @@ namespace Rock.Jobs
                 // NOTE: the EmailTemplate may also have TO: defined, so even if there are no notificationEmailAddress defined for this specific job, we still should send the mail
                 foreach ( var notificationEmailAddress in notificationEmailAddresses )
                 {
-                    emailMessage.AddRecipient( new RecipientData( notificationEmailAddress ) );
+                    emailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( notificationEmailAddress, null ) );
                 }
 
                 emailMessage.Send();

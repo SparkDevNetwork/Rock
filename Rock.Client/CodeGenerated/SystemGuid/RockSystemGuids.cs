@@ -459,6 +459,7 @@ namespace Rock.Client.SystemGuid
     {
         public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
+        public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
         public const string CHECKR_PROVIDER = "8D9DE88A-C649-47B2-BA5C-92A24F60AE61";
@@ -734,6 +735,7 @@ namespace Rock.Client.SystemGuid
     {
         public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+        public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
     }
 
     /// <summary>

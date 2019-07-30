@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Prayer
 {% endif %}
 
 " )]
-    [BooleanField( "Display Campus", "Display the campus filter", true,category: "Filtering", order: 6 )]
+    [BooleanField( "Display Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true,category: "Filtering", order: 6 )]
     [BooleanField( "Public Only", "If selected, all non-public prayer request will be excluded.", false, "", 7 )]
     public partial class PrayerSession : RockBlock
     {
@@ -532,7 +532,11 @@ namespace RockWeb.Blocks.Prayer
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
 
-            hlblCampus.Text = prayerRequest.CampusId.HasValue ? prayerRequest.Campus.Name : string.Empty;
+            if ( CampusCache.All( false ).Count() > 1 )
+            {
+                hlblCampus.Text = prayerRequest.CampusId.HasValue ? prayerRequest.Campus.Name : string.Empty;
+            }
+
             hlblCategory.Text = prayerRequest.Category.Name;
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
 
