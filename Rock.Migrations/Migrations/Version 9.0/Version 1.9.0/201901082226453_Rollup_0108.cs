@@ -186,13 +186,14 @@ namespace Rock.Migrations
         /// <param name="categoryId">The category identifier.</param>
         private void InsertCateogryForExistingChildAttributes( string attributeId, string categoryId )
         {
-            Sql( string.Format( @"
+            Sql( $@"
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeId}')
+                DECLARE @CategoryId int = (SELECT [Id] FROM [Category] WHERE [Guid] = '{categoryId}')
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
-
-                DECLARE @CategoryId int
-                SET @CategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{1}')
+                IF (@AttributeId IS NULL OR @CategoryId IS NULL)
+                BEGIN
+                    RETURN
+                END
 
                 IF NOT EXISTS (
                     SELECT *
@@ -202,9 +203,7 @@ namespace Rock.Migrations
                 BEGIN
                     INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
                     VALUES( @AttributeId, @CategoryId )
-                END",
-                            attributeId,
-                            categoryId ) );
+                END" );
         }
 
     }

@@ -1818,6 +1818,7 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationTemplate != null )
             {
+                // NOTE, we only want to require VIEW auth for a person to be able to enter a value for an attribute since they are just entering a value for themselves (not for other people)
                 RegistrationAttributesState = new AttributeService( rockContext ).GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
@@ -1825,7 +1826,7 @@ namespace RockWeb.Blocks.Event
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToAttributeCacheList()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                 .ToList();
 
                 // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
