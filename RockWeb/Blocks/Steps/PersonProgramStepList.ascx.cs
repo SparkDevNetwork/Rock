@@ -106,12 +106,12 @@ namespace RockWeb.Blocks.Steps
             /// <summary>
             /// The steps per row attribute default value
             /// </summary>
-            public const int StepsPerRow = 6;
+            public const int StepsPerRow = 5;
 
             /// <summary>
             /// The steps per row on mobile attribute default value
             /// </summary>
-            public const int StepsPerRowMobile = 2;
+            public const int StepsPerRowMobile = 1;
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !stepGridRow.StepStatusColor.IsNullOrWhiteSpace() )
             {
-                classAttribute = string.Format( @" class=""label"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
+                classAttribute = string.Format( @" class=""label label-default"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
             }
 
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",
@@ -945,7 +945,7 @@ namespace RockWeb.Blocks.Steps
                 {
                     cardCssClasses.Add( "is-complete" );
                 }
-                
+
                 if ( personStepsOfType.Any() )
                 {
                     cardCssClasses.Add( "has-steps" );
