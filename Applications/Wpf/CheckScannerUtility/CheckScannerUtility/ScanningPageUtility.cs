@@ -22,7 +22,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Shapes;
 using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Client;
 using Rock.Client.Enums;
@@ -58,7 +57,54 @@ namespace Rock.Apps.CheckScannerUtility
 
         public static List<FinancialAccount> Accounts { get; set; }
 
-       
+        /// <summary>
+        /// Gets the visible accounts in a flat list sorted by parent order then child order recursively 
+        /// </summary>
+        /// <param name="visibleAccountIds">The visible account ids.</param>
+        /// <param name="accountValueList">The account value list.</param>
+        /// <returns></returns>
+        public static List<DisplayAccountValueModel> GetVisibleAccountsSortedAndFlattened()
+        {
+            var visibleAccountIds = RockConfig.Load().SelectedAccountForAmountsIds;
+
+            var allAccounts = ScanningPageUtility.Accounts.ToList();
+            List<DisplayAccountValueModel> accountValueList = allAccounts.Select( a => new DisplayAccountValueModel( a, allAccounts ) ).ToList();
+
+            var sortedRootAccounts = accountValueList.Where( a => a.ParentAccountId == null ).OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
+
+            List<DisplayAccountValueModel> sortedDisplayedAccountList = new List<DisplayAccountValueModel>();
+
+            foreach ( var rootAccount in sortedRootAccounts )
+            {
+                AddAccountRecursive( sortedDisplayedAccountList, rootAccount, visibleAccountIds );
+            }
+
+            int index = 0;
+            foreach ( var displayedAccount in sortedDisplayedAccountList )
+            {
+                displayedAccount.DisplayIndex = index++;
+            }
+
+            return sortedDisplayedAccountList;
+        }
+
+        /// <summary>
+        /// Adds the account and children accounts recursively 
+        /// </summary>
+        /// <param name="sortedDisplayedAccountList">The sorted displayed account list.</param>
+        /// <param name="account">The root account.</param>
+        private static void AddAccountRecursive( List<DisplayAccountValueModel> sortedDisplayedAccountList, DisplayAccountValueModel account, int[] visibleAccountIds )
+        {
+            if ( visibleAccountIds?.Contains( account.AccountId ) == true )
+            {
+                sortedDisplayedAccountList.Add( account );
+            }
+
+            foreach ( var childAccount in account.ChildAccounts )
+            {
+                AddAccountRecursive( sortedDisplayedAccountList, childAccount, visibleAccountIds );
+            }
+        }
 
         /// <summary>
         /// Writes to debug log.

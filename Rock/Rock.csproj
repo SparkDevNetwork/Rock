@@ -401,6 +401,7 @@
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
     <Compile Include="Field\Types\ConditionalScaleFieldType.cs" />
+    <Compile Include="Jobs\GroupLeaderAbsenceNotifications.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
@@ -518,6 +519,7 @@
     <Compile Include="SystemGuid\Layout.cs" />
     <Compile Include="SystemGuid\PageRoute.cs" />
     <Compile Include="Transactions\GroupScheduleCancellationTransaction.cs" />
+    <Compile Include="Transactions\SaveHistoryTransaction.cs" />
     <Compile Include="Utility\EntityCoding\CodingHelper.cs" />
     <Compile Include="Utility\EntityCoding\EncodedEntity.cs" />
     <Compile Include="Utility\EntityCoding\EntityCoder.cs" />
