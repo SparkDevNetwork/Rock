@@ -1511,5 +1511,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201905082317243_Rollup_0508_FixLavaChartShortcode", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode]
+        ///	SET [Documentation] = 
+        ///  &apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201907082136571_Rollup0708_SegmentedChartUpdate {
+            get {
+                return ResourceManager.GetString("_201907082136571_Rollup0708_SegmentedChartUpdate", resourceCulture);
+            }
+        }
     }
 }

@@ -196,7 +196,4 @@
   <data name="_060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>060_migrationrollupsforv8_6_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_082_MigrationRollupsForV9_0_6_SegmentedChartUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>082_migrationrollupsforv9_0_6_segmentedchartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
 </root>

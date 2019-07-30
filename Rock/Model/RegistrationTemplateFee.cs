@@ -189,14 +189,14 @@ namespace Rock.Model
             cb.Required = fee.IsRequired;
             cb.Label = controlLabel;
 
-            var currentValue = feeValues.FirstOrDefault()?.Quantity ?? 0;
+            var currentValue = feeValues?.FirstOrDefault()?.Quantity ?? 0;
 
             if ( fee.IsRequired )
             {
                 cb.Checked = true;
                 cb.Enabled = false;
             }
-            else 
+            else
             {
                 if ( usageCountRemaining <= 0 )
                 {
@@ -235,7 +235,7 @@ namespace Rock.Model
             numUpDown.Required = fee.IsRequired;
             numUpDown.Label = controlLabel;
 
-            var currentValue = feeValues.FirstOrDefault()?.Quantity ?? 0;
+            var currentValue = feeValues?.FirstOrDefault()?.Quantity ?? 0;
 
             if ( usageCountRemaining.HasValue )
             {
@@ -289,7 +289,7 @@ namespace Rock.Model
             ddl.Items.Add( new ListItem() );
             foreach ( var feeItem in fee.FeeItems )
             {
-                var feeInfo = feeValues.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
+                var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
                 int currentValue = feeInfo?.Quantity ?? 0;
 
                 int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
@@ -345,7 +345,7 @@ namespace Rock.Model
 
             foreach ( var feeItem in fee.FeeItems )
             {
-                var feeInfo = feeValues.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
+                var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
                 int currentValue = feeInfo?.Quantity ?? 0;
 
                 var numUpDown = new NumberUpDown
@@ -398,8 +398,8 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that has otherRegistrants instead.")]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use the override that has otherRegistrants instead." )]
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
         {
             AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );
