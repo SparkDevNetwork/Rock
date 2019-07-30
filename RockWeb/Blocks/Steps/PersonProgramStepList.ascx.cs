@@ -910,6 +910,7 @@ namespace RockWeb.Blocks.Steps
                 var latestStepStatus = latestStep == null ? null : latestStep.StepStatus;
                 var isComplete = personStepsOfType.Any( s => s.IsComplete );
                 var canAddStep = CanAddStep( stepType );
+                var hasMetPrerequisites = HasMetPrerequisites( stepType.Id );
 
                 var rendered = stepType.CardLavaTemplate.ResolveMergeFields( new Dictionary<string, object> {
                     { "StepType", stepType },
@@ -941,6 +942,11 @@ namespace RockWeb.Blocks.Steps
                 if ( canAddStep )
                 {
                     cardCssClasses.Add( "has-add" );
+                }
+
+                if ( !hasMetPrerequisites )
+                {
+                    cardCssClasses.Add( "has-prerequisite" );
                 }
 
                 cardsData.Add( new CardViewModel
