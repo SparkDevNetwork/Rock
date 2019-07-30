@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Steps
         order: 3,
         required: true,
         key: AttributeKey.StepsPerRow,
-        defaultValue: 6 )]
+        defaultValue: AttributeDefault.StepsPerRow )]
 
     [IntegerField(
         name: "Steps Per Row Mobile",
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Steps
         order: 4,
         required: true,
         key: AttributeKey.StepsPerRowMobile,
-        defaultValue: 2 )]
+        defaultValue: AttributeDefault.StepsPerRowMobile )]
 
     #endregion Attributes
 
@@ -96,6 +96,22 @@ namespace RockWeb.Blocks.Steps
             /// The steps per row on mobile attribute key
             /// </summary>
             public const string StepsPerRowMobile = "StepsPerRowMobile";
+        }
+
+        /// <summary>
+        /// Attribute Default Values
+        /// </summary>
+        protected static class AttributeDefault
+        {
+            /// <summary>
+            /// The steps per row attribute default value
+            /// </summary>
+            public const int StepsPerRow = 6;
+
+            /// <summary>
+            /// The steps per row on mobile attribute default value
+            /// </summary>
+            public const int StepsPerRowMobile = 2;
         }
 
         /// <summary>
@@ -823,12 +839,12 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RenderStepsPerRow()
         {
-            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? 4;
-            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? 1;
+            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
+            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
 
             lStepsPerRowCss.Text =
 @"<style>
-    :root {
+    #" + upContent.ClientID + @" {
         --stepsPerRow: " + stepsPerRow + @";
         --stepsPerRowMobile: " + stepsPerRowMobile + @";
         }
