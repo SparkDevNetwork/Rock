@@ -29,7 +29,8 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-
+using System.Web.UI.HtmlControls;
+using System.Linq.Dynamic;
 
 namespace RockWeb.Blocks.Event
 {
@@ -93,11 +94,11 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                // load campuses
-                cpCampus.DataSource = CampusCache.All();
-                cpCampus.DataValueField = "Id";
-                cpCampus.DataTextField = "Name";
-                cpCampus.DataBind();
+                //// load campuses
+                //cpCampus.DataSource = CampusCache.All();
+                //cpCampus.DataValueField = "Id";
+                //cpCampus.DataTextField = "Name";
+                //cpCampus.DataBind();
 
                 LoadContent();
             }
@@ -371,7 +372,20 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-}
+
+        protected void rptEvents_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var eventSummary = e.Item.DataItem;
+            if ( eventSummary == null )
+            {
+                return;
+            }
+
+            var campusDiv = ( HtmlGenericControl ) e.Item.FindControl( "campusLabel" );
+            campusDiv.Visible = cpCampus.Visible;
+
+        }
+    }
 
     public class EventSummary
     {

@@ -80,7 +80,7 @@ namespace Rock.Attribute
                 int properties = 0;
                 foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                 {
-                    var contextAttribute = (ContextAwareAttribute)customAttribute;
+                    var contextAttribute = ( ContextAwareAttribute ) customAttribute;
                     if ( contextAttribute != null && contextAttribute.EntityType == null )
                     {
                         if ( contextAttribute.IsConfigurable )
@@ -96,7 +96,7 @@ namespace Rock.Attribute
                 // Add any property attributes that were defined for the entity
                 foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
                 {
-                    entityProperties.Add( (FieldAttribute)customAttribute );
+                    entityProperties.Add( ( FieldAttribute ) customAttribute );
                 }
 
                 rockContext = rockContext ?? new RockContext();
@@ -339,11 +339,35 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="limitToAttributes">The limit to attributes.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, List<AttributeCache> limitToAttributes )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                LoadAttributes( entity, rockContext, limitToAttributes );
+            }
+        }
+
+        /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
         /// <param name="rockContext">The rock context.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext )
+        {
+            LoadAttributes( entity, rockContext, null );
+        }
+
+        /// <summary>
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="limitToAttributes">The limit to attributes.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext, List<AttributeCache> limitToAttributes )
         {
             if ( entity == null )
             {
@@ -428,6 +452,11 @@ namespace Rock.Attribute
             foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
             {
                 allAttributes.Add( attribute );
+            }
+
+            if ( limitToAttributes?.Any() == true )
+            {
+                allAttributes = allAttributes.Where( a => limitToAttributes.Any( l => l.Id == a.Id ) ).ToList();
             }
 
             var attributeValues = new Dictionary<string, AttributeValueCache>();

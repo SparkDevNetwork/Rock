@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Groups
                                         mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
                                         var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid );
-                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                         emailMessage.Send();

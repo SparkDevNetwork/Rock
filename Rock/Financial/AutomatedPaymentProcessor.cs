@@ -18,7 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Security.Cryptography;
+using System.Text;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,11 +40,28 @@ namespace Rock.Financial
     /// </summary>
     public class AutomatedPaymentProcessor
     {
+        #region Keys
         /// <summary>
-        /// Use this key to set metadata that will be used as the description of the transaction
-        /// in some gateways
+        /// Use this key to set metadata that will be used as the description of the transaction in some gateways
         /// </summary>
+        [Obsolete("Use the 'metadatakeys' static class constants instead.")]
+        [RockObsolete("1.10")]
         public const string DescriptionMetadataKey = "description";
+
+        /// <summary>
+        /// Commonly used keys within the transaction metadata
+        /// </summary>
+        public static class MetadataKeys
+        {
+            public const string Description = "description";
+            public const string IdempotencyKey = "idempotency_key";
+            public const string GivingSystem = "giving_system";
+            public const string TransactionGuid = "transaction_guid";
+        }
+
+        #endregion Keys
+
+        #region Instance Properties
 
         // Constructor params
         private RockContext _rockContext;
@@ -77,14 +95,20 @@ namespace Rock.Financial
         // Results
         private Payment _payment;
 
+        #endregion Instance Properties
+
+        #region Constructors
+
         /// <summary>
         /// Create a new payment processor to handle a single automated payment.
         /// </summary>
         /// <param name="currentPersonAliasId">The current user's person alias ID. Possibly the REST user.</param>
-        /// <param name="automatedPaymentArgs">The arguments describing how toi charge the payment and store the resulting transaction</param>
+        /// <param name="automatedPaymentArgs">The arguments describing how to charge the payment and store the resulting transaction</param>
         /// <param name="rockContext">The context to use for loading and saving entities</param>
-        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person
+        /// within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if
+        /// the schedule has already been processed according to it's frequency.</param>
         public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool enableDuplicateChecking = true, bool enableScheduleAdherenceProtection = true )
         {
             _rockContext = rockContext;
@@ -135,6 +159,10 @@ namespace Rock.Financial
             CopyFutureTransactionToArgs();
         }
 
+        #endregion Constructors
+
+        #region Public Methods
+
         /// <summary>
         /// Allow access to the automated gateway's most recent exception property.
         /// </summary>
@@ -158,7 +186,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Validates that the args do not seem to be a repeat charge on the same person in a short timeframe.
-        /// Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge does not seem repeated. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge is a repeat. False otherwise.</returns>
@@ -322,7 +350,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existance and a valid state.
+        /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if arguments are valid. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the arguments are valid. False otherwise.</returns>
@@ -495,18 +523,31 @@ namespace Rock.Financial
                 return SaveTransaction( transactionGuid );
             }
 
+            // Generate metadata which supporting gateways can utilize to provide context information about the transaction
             var metadata = new Dictionary<string, string>
             {
-                ["giving_system"] = "RockRMS",
-                ["transaction_guid"] = transactionGuid.ToString()
+                [MetadataKeys.GivingSystem] = "RockRMS",
+                [MetadataKeys.TransactionGuid] = transactionGuid.ToString()
             };
 
             var description = GetDescription();
             if ( !description.IsNullOrWhiteSpace() )
             {
-                metadata[DescriptionMetadataKey] = description;
+                metadata[MetadataKeys.Description] = description;
             }
 
+            // The Idempotency Key may be provided in the args, if not generate one
+            if ( _automatedPaymentArgs.IdempotencyKey.IsNullOrWhiteSpace() )
+            {
+                var idempotencyKey = GenerateIdempotencyKey();
+                metadata[MetadataKeys.IdempotencyKey] = idempotencyKey;
+            }
+            else
+            {
+                metadata[MetadataKeys.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
+            }
+
+            // 
             var automatedGatewayComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
             _payment = automatedGatewayComponent.AutomatedCharge( _financialGateway, _referencePaymentInfo, out errorMessage, metadata );
 
@@ -524,6 +565,10 @@ namespace Rock.Financial
 
             return SaveTransaction( transactionGuid );
         }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         /// <summary>
         /// Safely load entities that have not yet been assigned a non-null value based on the arguments.
@@ -728,18 +773,20 @@ namespace Rock.Financial
 
             if ( _futureTransaction == null )
             {
-                // Add the new transaction amount into the batch control amount
-                var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                // use the financialTransactionService to add the transaction instead of batch.Transactions
+                // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
-                _financialTransactionService.Add( financialTransaction );
+                _financialTransactionService.Add( financialTransaction );                             
             }
 
             _rockContext.SaveChanges();
+
+            if ( _futureTransaction == null )
+            {
+                // Update the batch control amount
+                _financialBatchService.IncrementControlAmount( batch.Id, financialTransaction.TotalAmount, batchChanges );
+                _rockContext.SaveChanges();
+            }
 
             // Save the changes history for the batch
             HistoryService.SaveChanges(
@@ -754,7 +801,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// If this payment porocessor is handling charging a future transaction, this method copies that future transaction into the appropriate args
+        /// If this payment processor is handling charging a future transaction, this method copies that future transaction into the appropriate args
         /// </summary>
         private void CopyFutureTransactionToArgs()
         {
@@ -797,5 +844,33 @@ namespace Rock.Financial
 
             return $"{sourceName}: {firstAccountName}";
         }
+
+        /// <summary>
+        /// Generate a hash of several properties of the transaction which aim to ensure uniqueness and prevent duplicate charges
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateIdempotencyKey()
+        {
+            if ( _automatedPaymentArgs == null )
+            {
+                return null;
+            }
+
+            using ( var sha256Hash = SHA256.Create() )
+            {
+                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHH" )}_{_automatedPaymentArgs.ToJson()}";
+                var bytes = sha256Hash.ComputeHash( Encoding.UTF8.GetBytes( inputString ) );
+                var builder = new StringBuilder();
+
+                for ( int i = 0; i < bytes.Length; i++ )
+                {
+                    builder.Append( bytes[i].ToString( "x2" ) );
+                }
+
+                return builder.ToString();
+            }
+        }
+
+        #endregion Private Methods
     }
 }

@@ -62,6 +62,14 @@ namespace Rock.Rest
                     action = "DataView"
                 } );
 
+            config.Routes.MapHttpRoute(
+                name: "InDataViewApi",
+                routeTemplate: "api/{controller}/InDataView/{dataViewId}/{entityId}",
+                defaults: new
+                {
+                    action = "InDataView"
+                } );
+
             // Add API route for Launching a Workflow
             config.Routes.MapHttpRoute(
                 name: "LaunchWorkflowApi",

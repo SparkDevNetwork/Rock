@@ -2861,7 +2861,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to group.
+        /// Adds the person to group and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>

@@ -71,7 +71,7 @@ namespace Rock.Jobs
                         !i.ReminderSent &&
                         i.SendReminderDateTime.HasValue &&
                         i.SendReminderDateTime <= now &&
-                        i.SendReminderDateTime >= expireDate)
+                        i.SendReminderDateTime >= expireDate )
                     .ToList() )
                 {
                     var template = instance.RegistrationTemplate;
@@ -88,14 +88,16 @@ namespace Rock.Jobs
 
                         var emailMessage = new RockEmailMessage();
                         emailMessage.AdditionalMergeFields = mergeFields;
-                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
+
+                        emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
+
                         emailMessage.FromEmail = template.ReminderFromEmail;
                         emailMessage.FromName = template.ReminderFromName;
                         emailMessage.Subject = template.ReminderSubject;
                         emailMessage.Message = template.ReminderEmailTemplate;
 
                         var emailErrors = new List<string>();
-                        emailMessage.Send(out emailErrors);
+                        emailMessage.Send( out emailErrors );
                         errors.AddRange( emailErrors );
                     }
 

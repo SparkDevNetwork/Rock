@@ -298,7 +298,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
@@ -317,7 +317,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {

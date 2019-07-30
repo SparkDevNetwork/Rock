@@ -1067,7 +1067,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                rockContext.SaveChanges();
+                rockContext.SaveChanges();                
 
                 if ( occurrence.LocationId.HasValue )
                 {
@@ -1097,7 +1097,11 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+
                 _occurrence.Id = occurrence.Id;
+
+                // Sync attendance changes to the appropriate sequences
+                SequenceService.HandleAttendanceRecordsAsync( occurrence.Id );
             }
 
             return true;
@@ -1117,7 +1121,7 @@ namespace RockWeb.Blocks.Groups
                 mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
-                List<string> recipients = new List<string>();
+                List<Person> recipients = new List<Person>();
 
                 var notificationOptions = GetAttributeValue( "SendSummaryEmailTo" ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SendSummaryEmailType>() ).ToList();
                 foreach ( var notificationOption in notificationOptions )
@@ -1133,21 +1137,21 @@ namespace RockWeb.Blocks.Groups
                             {
                                 var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                 .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.Id );
-                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                             }
                             break;
                         case SendSummaryEmailType.AllGroupMembers:
                             {
                                 var leaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                 .Where( m => m.GroupId == _group.Id );
-                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                recipients.AddRange( leaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                             }
                             break;
                         case SendSummaryEmailType.GroupAdministrator:
                             {
                                 if ( _group.GroupType.ShowAdministrator && _group.GroupAdministratorPersonAliasId.HasValue && _group.GroupAdministratorPersonAlias.Person.Email.IsNotNullOrWhiteSpace() )
                                 {
-                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person.Email );
+                                    recipients.Add( _group.GroupAdministratorPersonAlias.Person );
                                 }
                             }
                             break;
@@ -1157,14 +1161,14 @@ namespace RockWeb.Blocks.Groups
                                 {
                                     var parentLeaders = new GroupMemberService( _rockContext ).Queryable( "Person" ).AsNoTracking()
                                                         .Where( m => m.GroupRole.IsLeader && m.GroupId == _group.ParentGroupId.Value );
-                                    recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person.Email ) );
+                                    recipients.AddRange( parentLeaders.Where( a => !string.IsNullOrEmpty( a.Person.Email ) ).Select( a => a.Person ) );
                                 }
                             }
                             break;
                         case SendSummaryEmailType.IndividualEnteringAttendance:
                             if ( !string.IsNullOrEmpty( this.CurrentPerson.Email ) )
                             {
-                                recipients.Add( this.CurrentPerson.Email );
+                                recipients.Add( this.CurrentPerson );
                             }
                             break;
                         default:
@@ -1172,10 +1176,10 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                foreach ( var recipient in recipients.Distinct( StringComparer.CurrentCultureIgnoreCase ) )
+                foreach ( var recipient in recipients )
                 {
                     var emailMessage = new RockEmailMessage( GetAttributeValue( "AttendanceEmailTemplate" ).AsGuid() );
-                    emailMessage.AddRecipient( new RecipientData( recipient, mergeObjects ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeObjects ) );
                     emailMessage.CreateCommunicationRecord = false;
                     emailMessage.Send();
                 }

@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     var errorMessages = new List<string>();
                     var message = new RockEmailMessage( receiptEmail );
-                    foreach ( var recipient in message.GetRecipientData() )
+                    foreach ( var recipient in message.GetRecipients() )
                     {
                         recipient.MergeFields = mergeFields;
                     }

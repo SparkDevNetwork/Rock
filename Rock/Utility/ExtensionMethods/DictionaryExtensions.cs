@@ -215,6 +215,27 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Gets the value associated with the specified key or a default value if the key is not found.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The default value returned if the key does not exist.</param>
+        /// <returns></returns>
+        public static TValue GetValueOrDefault<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
+        {
+            if ( dictionary.ContainsKey( key ) )
+            {
+                return dictionary[key];
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
         #endregion Dictionary<TKey, TValue> extension methods
     }
 }

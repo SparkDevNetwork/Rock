@@ -286,6 +286,24 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
+        /// Adds the edit controls (and set the edit values) while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddEditControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddEditControls( item, true );
+        }
+
+        /// <summary>
         /// Adds the edit controls (and set the edit values)
         /// </summary>
         /// <param name="item">The item.</param>
@@ -447,6 +465,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Adds the display controls while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddDisplayControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddDisplayControls( item );
+        }
+
+        /// <summary>
         /// Adds the display controls.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -479,7 +515,8 @@ namespace Rock.Web.UI.Controls
             // only show heading labels if ShowCategoryLabel and there is at least attribute to show
             bool showHeadingLabels = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
 
-            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, null, showHeadingLabels );
+            var exclude = ( ExcludedAttributes != null ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
+            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, exclude, showHeadingLabels );
         }
 
         #endregion Methods

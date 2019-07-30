@@ -400,6 +400,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use GetCalendarEvent() instead " )]
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
@@ -1209,6 +1210,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
         {

@@ -39,6 +39,14 @@ namespace Rock.Utility
         private bool LoadAttributes { get; set; }
 
         /// <summary>
+        /// Gets or sets the limit to attribute key list.
+        /// </summary>
+        /// <value>
+        /// The limit to attribute key list.
+        /// </value>
+        private string[] LimitToAttributeKeyList { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [serialize in simple mode].
         /// </summary>
         /// <value>
@@ -68,12 +76,14 @@ namespace Rock.Utility
             var qryParams = System.Web.HttpUtility.ParseQueryString( request.RequestUri.Query );
             string loadAttributes = qryParams["LoadAttributes"] ?? string.Empty;
 
+            LimitToAttributeKeyList = qryParams["AttributeKeys"]?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).ToArray();
+
             // if "simple" or True is specified in the LoadAttributes param, tell the formatter to serialize in Simple mode
             SerializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
             LoadAttributes = SerializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
-            
+
             // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
             if ( LoadAttributes && request.Properties.ContainsKey( "Person" ) )
             {
@@ -117,7 +127,7 @@ namespace Rock.Utility
                 if ( value is IEnumerable<Attribute.IHasAttributes> )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    // Also, do a ToList() to fetch the query into a list (instead requerying multiple times)
+                    // Also, do a ToList() to fetch the query into a list (instead re-querying multiple times)
                     items = ( value as IEnumerable<Attribute.IHasAttributes> ).ToList();
 
                     // Assign the items list back to value
@@ -130,8 +140,8 @@ namespace Rock.Utility
                 }
                 else if ( isSelectAndExpand && selectAndExpandList != null )
                 {
-                    // 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
-                    // so use reflection to get that and load the attributes for each
+                    //// 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
+                    //// so use reflection to get that and load the attributes for each
 
                     var itemsList = new List<Attribute.IHasAttributes>();
                     foreach ( var selectExpandItem in selectAndExpandList )
@@ -149,12 +159,24 @@ namespace Rock.Utility
                     items = itemsList;
                 }
 
+                List<AttributeCache> limitToAttributes = null;
+                if ( this.LimitToAttributeKeyList?.Any() == true && type.IsGenericType )
+                {
+                    var entityTypeType = type.GenericTypeArguments[0];
+                    if ( entityTypeType != null )
+                    {
+                        var entityType = EntityTypeCache.Get( entityTypeType );
+                        var entityAttributesList = AttributeCache.GetByEntity( entityType.Id )?.SelectMany( a => a.AttributeIds ).ToList().Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
+                        limitToAttributes = entityAttributesList?.Where( a => this.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                    }
+                }
+
                 if ( items != null )
                 {
                     var rockContext = new Rock.Data.RockContext();
                     foreach ( var item in items )
                     {
-                        Rock.Attribute.Helper.LoadAttributes( item, rockContext );
+                        Rock.Attribute.Helper.LoadAttributes( item, rockContext, limitToAttributes );
                     }
 
                     FilterAttributes( rockContext, items, this.Person );

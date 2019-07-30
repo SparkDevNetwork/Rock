@@ -78,12 +78,13 @@ namespace Rock.Web.UI.Controls
                     {
                         writer.Write( this.PreHtml );
                         writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Ul );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Ol );
 
                         foreach ( var crumb in crumbs )
                         {
                             if ( !crumb.Active )
                             {
+                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb-item" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.AddAttribute( HtmlTextWriterAttribute.Href, crumb.Url );
                                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -93,6 +94,7 @@ namespace Rock.Web.UI.Controls
                             }
                             else
                             {
+                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb-item" );
                                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "active" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.Write( crumb.Name );

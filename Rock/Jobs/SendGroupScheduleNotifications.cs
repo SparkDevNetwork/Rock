@@ -110,7 +110,7 @@ namespace Rock.Jobs
                 {
                     var parentGroup = groupService.Get( rootGroupGuid.Value );
                     groupIds.Add( parentGroup.Id );
-                    var groupChildrenIds = groupService.GetAllDescendents( parentGroup.Id ).Select( g => g.Id ).ToArray();
+                    var groupChildrenIds = groupService.GetAllDescendentGroupIds( parentGroup.Id, false );
                     groupIds.AddRange( groupChildrenIds );
                     sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }
@@ -159,7 +159,7 @@ namespace Rock.Jobs
                 {
                     var parentGroup = groupService.Get( rootGroupGuid.Value );
                     groupIds.Add( parentGroup.Id );
-                    var groupChildrenIds = groupService.GetAllDescendents( parentGroup.Id ).Select( g => g.Id ).ToArray();
+                    var groupChildrenIds = groupService.GetAllDescendentGroupIds( parentGroup.Id, false );
                     groupIds.AddRange( groupChildrenIds );
                     sendReminderAttendancesQuery = sendReminderAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }

@@ -258,6 +258,8 @@ namespace Rock.Web.UI.Controls
             _nbNumber.NumberType = ValidationDataType.Integer;
             _nbNumber.ID = "nbNumber_" + this.ID;
             _nbNumber.Text = "1";
+            _nbNumber.TextChanged += nb_ValueChanged;
+            _nbNumber.AutoPostBack = true;
 
             _ddlTimeUnitTypeSingular = new DropDownList();
             _ddlTimeUnitTypeSingular.CssClass = "form-control input-width-md js-time-units-singular slidingdaterange-timeunits-singular";
@@ -294,6 +296,17 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
+            SelectedDateRangeChanged?.Invoke( this, e );
+            ValueChanged?.Invoke( this, e );
+        }
+
+        /// <summary>
+        /// When the number field value changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void nb_ValueChanged( object sender, EventArgs e )
+        {
             SelectedDateRangeChanged?.Invoke( this, e );
             ValueChanged?.Invoke( this, e );
         }
@@ -626,6 +639,12 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+
+                if ( !EnabledSlidingDateRangeUnits.Contains( value ) )
+                {
+                    throw new Exception( "Specified TimeUnitType is invalid for this SlidingDateRangePicker control." );
+                }
+
                 _ddlTimeUnitTypePlural.SelectedValue = value.ConvertToInt().ToString();
                 _ddlTimeUnitTypeSingular.SelectedValue = value.ConvertToInt().ToString();
             }
@@ -735,7 +754,7 @@ namespace Rock.Web.UI.Controls
                 {
                     this.SlidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
                     this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
-                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? TimeUnitType.Day;
+                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? this.EnabledSlidingDateRangeUnits.First();
                     this.DateRangeModeStart = splitValues[3].AsDateTime();
                     this.DateRangeModeEnd = splitValues[4].AsDateTime();
                 }

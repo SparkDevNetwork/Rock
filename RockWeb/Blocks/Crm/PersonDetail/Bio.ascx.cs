@@ -246,7 +246,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.PhoneNumbers != null )
                     {
-                        rptPhones.DataSource = Person.PhoneNumbers.ToList();
+                        var phoneNumbers = Person.PhoneNumbers.AsEnumerable();
+                        var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                        if ( phoneNumberTypes.DefinedValues.Any() )
+                        {
+                            var phoneNumberTypeIds = phoneNumberTypes.DefinedValues.Select( a => a.Id ).ToList();
+                            phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
+                        }
+
+                        rptPhones.DataSource = phoneNumbers;
                         rptPhones.DataBind();
                     }
                     

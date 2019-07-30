@@ -953,11 +953,13 @@ namespace RockWeb.Blocks.Finance
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
             cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
-
+            
             cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
-
+            
             mdAccountsPersonalFilter.Show();
+
+            cbFilterAccountsByBatchsCampus.Visible = cpAccounts.Visible;
         }
 
         /// <summary>
@@ -1341,8 +1343,11 @@ namespace RockWeb.Blocks.Finance
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 
-                var campus = person.GetCampus();
-                lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    var campus = person.GetCampus();
+                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                }
 
                 var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
                 var addresses = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
