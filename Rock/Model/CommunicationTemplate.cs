@@ -574,7 +574,8 @@ namespace Rock.Model
                 return false;
             }
 
-            templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
+            // NewPointe - 7/26/2019 - Disable merging lava here because it's too slow
+            // templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
 
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( templateHtml );
