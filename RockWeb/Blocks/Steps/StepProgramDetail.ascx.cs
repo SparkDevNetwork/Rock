@@ -71,23 +71,6 @@ namespace RockWeb.Blocks.Steps
 
         #endregion
 
-        #region Attribute Default Values
-
-        private const string DescriptionTemplateDefaultValue = @"
-<h2>Steps Activity</h2>
-<p>
-    Growth Propensity measures your perceived mindset on a continuum between a growth mindset and
-    fixed mindset. These are two ends of a spectrum about how we view our own capacity and potential.
-</p>
-    {[chart type:'horizontalBar' chartheight:'200px' ]}
-    {% for motivatorThemeScore in MotivatorThemeScores %}
-        [[dataitem label:'{{ motivatorThemeScore.DefinedValue.Value }}' value:'{{ motivatorThemeScore.Value }}' fillcolor:'{{ motivatorThemeScore.DefinedValue | Attribute:'Color' }}' ]]
-        [[enddataitem]]
-    {% endfor %}
-    {[endchart]}
-";
-        #endregion
-
         #region Page Parameter Keys
 
         /// <summary>
