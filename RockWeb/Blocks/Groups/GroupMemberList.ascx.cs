@@ -505,28 +505,15 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
         protected void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
         {
-            GroupMember groupMemberRow = e.DataItem as GroupMember;
+            GroupMember groupMember = e.DataItem as GroupMember;
 
-            if ( groupMemberRow == null )
+            if ( groupMember == null )
             {
                 return;
             }
 
-            var groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberRow.Id );
-            groupMember.LoadAttributes();
-
-            var mergefields = e.MergeValues;
-            e.MergeValues.Add( "GroupRole", groupMemberRow.GroupRole );
-            e.MergeValues.Add( "GroupMemberStatus", groupMemberRow.GroupMemberStatus.ConvertToString() );
-            e.MergeValues.Add( "GroupName", groupMember.Group.Name );
-
-            dynamic dynamicAttributeCarrier = new RockDynamic();
-            foreach ( var attributeKeyValue in groupMember.AttributeValues )
-            {
-                dynamicAttributeCarrier[attributeKeyValue.Key] = attributeKeyValue.Value.Value;
-            }
-
-            e.MergeValues.Add( "GroupMemberAttributes", dynamicAttributeCarrier );
+            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>( "GroupTypeId", _groupTypeCache.Id.ToString() );
+            e.MergeValues.Add( entityTypeMergeField, groupMember.Id );
         }
 
         /// <summary>
