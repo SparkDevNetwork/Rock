@@ -1459,7 +1459,6 @@ namespace RockWeb.Blocks.Communication
                             {
                                 if ( smsPhoneNumber.Number != tbTestSMSNumber.Text )
                                 {
-
                                     smsPhoneNumber.Number = tbTestSMSNumber.Text;
                                     smsPhoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( smsPhoneNumber.CountryCode, smsPhoneNumber.Number );
                                 }
@@ -2513,6 +2512,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         #endregion
+
 
 
 
