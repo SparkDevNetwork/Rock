@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,12 +29,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.GroupType", "EnableRsvp", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Attribute", "IsPublic", c => c.Boolean(nullable: false));
-            AddColumn("dbo.AttendanceOccurrence", "AcceptConfirmationMessage", c => c.String());
-            AddColumn("dbo.AttendanceOccurrence", "DeclineConfirmationMessage", c => c.String());
-            AddColumn("dbo.AttendanceOccurrence", "ShowDeclineMessage", c => c.Boolean(nullable: false));
-            AddColumn("dbo.AttendanceOccurrence", "DeclineReasons", c => c.String(maxLength: 100));
+            AddColumn( "dbo.GroupType", "EnableRsvp", c => c.Boolean( nullable: true ) );
+            AddColumn( "dbo.Attribute", "IsPublic", c => c.Boolean( nullable: true ) );
+            AddColumn( "dbo.AttendanceOccurrence", "AcceptConfirmationMessage", c => c.String() );
+            AddColumn( "dbo.AttendanceOccurrence", "DeclineConfirmationMessage", c => c.String() );
+            AddColumn( "dbo.AttendanceOccurrence", "ShowDeclineReasons", c => c.Boolean( nullable: true ) );
+            AddColumn( "dbo.AttendanceOccurrence", "DeclineReasons", c => c.String( maxLength: 100 ) );
         }
         
         /// <summary>
@@ -42,12 +42,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.AttendanceOccurrence", "DeclineReasons");
-            DropColumn("dbo.AttendanceOccurrence", "ShowDeclineMessage");
-            DropColumn("dbo.AttendanceOccurrence", "DeclineConfirmationMessage");
-            DropColumn("dbo.AttendanceOccurrence", "AcceptConfirmationMessage");
-            DropColumn("dbo.Attribute", "IsPublic");
-            DropColumn("dbo.GroupType", "EnableRsvp");
+            DropColumn( "dbo.AttendanceOccurrence", "DeclineReasons" );
+            DropColumn( "dbo.AttendanceOccurrence", "ShowDeclineReasons" );
+            DropColumn( "dbo.AttendanceOccurrence", "DeclineConfirmationMessage" );
+            DropColumn( "dbo.AttendanceOccurrence", "AcceptConfirmationMessage" );
+            DropColumn( "dbo.Attribute", "IsPublic" );
+            DropColumn( "dbo.GroupType", "EnableRsvp" );
         }
     }
 }

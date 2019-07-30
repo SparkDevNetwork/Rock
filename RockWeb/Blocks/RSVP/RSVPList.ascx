@@ -1,48 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RSVPList.ascx.cs" Inherits="RockWeb.Blocks.RSVP.RSVPList" %>
 
-<script type="text/javascript">
-    var borderColor = '#E0E0E0';
-    var bgColor_Accepted = '#16C98D';
-    var bgColor_Declined = '#D4442E';
-    var bgColor_NoResponse = '#FFC870';
-    function drawBarChart(canvasId, accepted, declined, noResponse) {
-        var barCtx = $('#' + canvasId)[0].getContext('2d');
-
-        var barChart = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Accepted', 'Declined', 'No Response'],
-                datasets: [
-                    {
-                        label: 'Accepted',
-                        backgroundColor: bgColor_Accepted,
-                        borderColor: borderColor,
-                        data: [ accepted ],
-                    },
-                    {
-                        label: 'Declined',
-                        backgroundColor: bgColor_Declined,
-                        borderColor: borderColor,
-                        data: [ declined ]
-                    },
-                    {
-                        label: 'No Response',
-                        backgroundColor: bgColor_NoResponse,
-                        borderColor: borderColor,
-                        data: [ noResponse ]
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    xAxes: [{ stacked: true }],
-                    yAxes: [{ stacked: true }]
-                }
-            }
-        });
-    }
-</script>
-
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
@@ -60,6 +17,13 @@
                     </div>
 
                     <div class="panel-body">
+                        <!-- ToDo: move CSS definitions to appropriate file. -->
+                        <style scoped="scoped">
+                            .progress.rsvp-progress {width: 145px; border: 1px solid #AEAEAE}
+                            .progress.rsvp-progress .accepted {background-color: #16c98d;}
+                            .progress.rsvp-progress .declined {background-color: #d4442e;}
+                            .progress.rsvp-progress .unknown {background-color: #ffffff;}
+                        </style>
                         <div class="grid grid-panel">
                             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnApplyFilterClick="rFilter_ApplyFilterClick">
                                 <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
@@ -73,11 +37,24 @@
                                     <Rock:DateField DataField="OccurrenceDate" HeaderText="Date" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" SortExpression="OccurrenceDate" />
                                     <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" />
                                     <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
+                                    <Rock:RockTemplateField>
+                                        <ItemTemplate>
+                                            <asp:HiddenField ID="hfOccurrenceDate" runat="server" Value='<%# Eval("OccurrenceDate") %>' />
+                                            <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("GroupId") %>' />
+                                            <asp:HiddenField ID="hfScheduleId" runat="server" Value='<%# Eval("ScheduleId") %>' />
+                                            <asp:HiddenField ID="hfLocationId" runat="server" Value='<%# Eval("LocationId") %>' />
+                                            <div class="progress rsvp-progress">
+                                                <div class="progress-bar accepted" style="width: <%# Eval("AcceptedPercentage") %>%"></div>
+                                                <div class="progress-bar declined" style="width: <%# Eval("DeclinedPercentage") %>%"></div>
+                                                <div class="progress-bar unknown" style="width: <%# Eval("UnknownPercentage") %>%"></div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="InvitedCount" HeaderText="Invited" SortExpression="InvitedCount" />
                                     <Rock:RockBoundField DataField="AcceptedCount" HeaderText="Accepted" SortExpression="AcceptedCount" />
                                     <Rock:RockBoundField DataField="DeclinedCount" HeaderText="Declined" SortExpression="DeclinedCount" />
                                     <Rock:RockBoundField DataField="NoResponseCount" HeaderText="No Response" SortExpression="NoResponseCount" />
-                                    <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnDetails" Text="<i class='fa fa-user-check' title='Detauls'></i>" OnClick="btnDetails_Click" />
+                                    <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnDetails" Text="<i class='fa fa-user-check' title='Details'></i>" OnClick="btnDetails_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

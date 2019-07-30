@@ -31,9 +31,13 @@
                         </div>
                         <div class="col-sm-6">
                             <!-- chart -->
+                            <canvas id="doughnutChartCanvas" runat="server"></canvas>
                         </div>
                     </div>
 
+                    <div class="actions">
+                        <asp:LinkButton ID="lbEditOccurrence" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="lbEditOccurrence_Click" CausesValidation="false" />
+                    </div>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlEdit" runat="server">
@@ -60,8 +64,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="LinkButton1" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
-                        <asp:LinkButton ID="LinkButton2" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false"></asp:LinkButton>
+                        <asp:LinkButton ID="lbSaveOccurrence" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSaveOccurrence_Click" />
+                        <asp:LinkButton ID="lbCancelOccurrence" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancelOccurrence_Click" CausesValidation="false" />
                     </div>
 
                 </asp:Panel>
@@ -70,21 +74,18 @@
 
         </div>
 
-                <asp:Panel ID="pnlAttendees" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlAttendees" runat="server" CssClass="panel panel-block">
             <div class="panel-body">
 
-                    
                     <Rock:Grid ID="gAttendees" runat="server" DisplayType="Light" ExportSource="ColumnOutput" OnRowDataBound="gAttendees_RowDataBound" DataKeyNames="PersonId">
                         <Columns>
                             <Rock:RockBoundField DataField="FullName" HeaderText="Invitees" />
-                            <Rock:RockTemplateField HeaderText="Accept" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
+                            <Rock:RockTemplateField HeaderText="Status" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
                                 <ItemTemplate>
-                                    <Rock:RockCheckBox ID="rcbAccept" runat="server" Checked='<%# Eval("Accept") %>' />
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField HeaderText="Decline" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
-                                <ItemTemplate>
-                                    <Rock:RockCheckBox ID="rcbDecline" runat="server" Checked='<%# Eval("Decline") %>' />
+                                    <Rock:RockRadioButtonList ID="rrblRSVPStatus" runat="server" RepeatDirection="Horizontal">
+                                        <asp:ListItem Text="Accept" Value="Accept" />
+                                        <asp:ListItem Text="Decline" Value="Decline" />
+                                    </Rock:RockRadioButtonList>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockTemplateField HeaderText="Decline Reason" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
@@ -108,6 +109,6 @@
                     </div>
 
             </div>
-                </asp:Panel>
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

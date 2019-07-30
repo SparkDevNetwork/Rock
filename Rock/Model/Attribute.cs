@@ -302,7 +302,7 @@ namespace Rock.Model
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool IsPublic { get; set; }
+        public bool? IsPublic { get; set; }
 
         #endregion
 

@@ -879,7 +879,7 @@ namespace RockWeb.Blocks.Groups
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
             // RSVP
-            cbGroupRSVPEnabled.Checked = groupType.EnableRsvp;
+            cbGroupRSVPEnabled.Checked = ( groupType.EnableRsvp == true );
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;

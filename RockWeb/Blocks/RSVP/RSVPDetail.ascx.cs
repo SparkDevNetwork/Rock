@@ -19,21 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
 {
@@ -44,16 +38,17 @@ namespace RockWeb.Blocks.Event
     [Category( "RSVP" )]
     [Description( "Shows detailed RSVP information for a specific occurrence datetime and allows editing RSVP details." )]
 
+    //ToDo:  This should be the GUID of the Decline Reasons type which should probably be created in a migration.
     [DefinedTypeField(
         "DeclineReasonsType",
         Key = AttributeKey.DeclineReasonsType,
-        DefaultValue = "F9FBD423-2832-48AA-8C33-95DFA6878BEC" )] //BUG - This should be the GUID of the Decline Reasons type.
+        DefaultValue = "F9FBD423-2832-48AA-8C33-95DFA6878BEC" )]
 
+    //ToDo:  Should this default value Guid be moved into Rock.SystemGuid?
     [DefinedValueField(
         "GroupMeetingLocationType",
         Key = AttributeKey.GroupMeetingLocationType,
         DefaultValue = "96D540F5-071D-4BBD-9906-28F0A64D39C4" )]
-
 
     public partial class RSVPDetail : RockBlock
     {
@@ -86,21 +81,155 @@ namespace RockWeb.Blocks.Event
 
         }
 
+        /// <summary>
+        /// What to do if the block settings are changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            this.NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( !Page.IsPostBack )
+            {
+                if ( groupId == null )
+                {
+                    NavigateToParentPage();
+                }
+                else
+                {
+                    var rockContext = new RockContext();
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    lHeading.Text = "RSVP Detail " + group.Name;
+
+                    int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+                    if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
+                    {
+                        NavigateToParentPage();
+                    }
+                    else
+                    {
+                        // Display Occurrence
+                        ShowDetails( rockContext, occurrenceId.Value, group );
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( groupId != null )
+            {
+                if ( SaveRSVPData() )
+                {
+                    var qryParams = new Dictionary<string, string> { { PageParameterKey.GroupId, groupId.Value.ToString() } };
+                    NavigateToParentPage( qryParams );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( groupId != null )
+            {
+                queryParams.Add( PageParameterKey.GroupId, groupId.Value.ToString() );
+                NavigateToParentPage( queryParams );
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gAttendees grid.
+        /// </summary>
+        protected void gAttendees_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                // Bind Decline Reason dropdown values.
+                RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
+                rddlDeclineReason.DataSource = _declineReasons;
+                rddlDeclineReason.DataBind();
+
+                // Select the appropriate radio button option.
+                RockRadioButtonList rrblRSVPStatus = e.Row.FindControl( "rrblRSVPStatus" ) as RockRadioButtonList;
+                var rsvpData = ( RSVPAttendee ) e.Row.DataItem;
+                if ( rsvpData.Accept )
+                {
+                    rrblRSVPStatus.SelectedValue = "Accept";
+                }
+                else if ( rsvpData.Decline )
+                {
+                    rrblRSVPStatus.SelectedValue = "Decline";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancelOccurrence control.
+        /// </summary>
+        protected void lbCancelOccurrence_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlEdit.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbEditOccurrence control.
+        /// </summary>
+        protected void lbEditOccurrence_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlEdit.Visible = true;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Stores Decline Reasons for use in the grid drop down menus so they can be reused for binding multiple controls.
+        /// </summary>
         private List<DefinedValue> _declineReasons;
 
+        /// <summary>
+        /// Gets the Decline Reasons for use in the grid drop down menus.
+        /// </summary>
+        /// <returns></returns>
         protected List<DefinedValue> GetDeclineReasons()
         {
-
             List<DefinedValue> values = new List<DefinedValue>();
 
-            var declineReasonsDefinedType = DefinedTypeCache.Get(GetAttributeValue(AttributeKey.DeclineReasonsType));
-            if (declineReasonsDefinedType != null)
+            var declineReasonsDefinedType = DefinedTypeCache.Get( GetAttributeValue( AttributeKey.DeclineReasonsType ) );
+            if ( declineReasonsDefinedType != null )
             {
-                using (var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    var def = new DefinedValueService(rockContext);
-                    values = def.Queryable()
-                        .Where(v => v.DefinedTypeId == declineReasonsDefinedType.Id)
+                    values = new DefinedValueService( rockContext ).Queryable()
+                        .Where( v => v.DefinedTypeId == declineReasonsDefinedType.Id )
                         .AsNoTracking().ToList();
                 }
             }
@@ -173,9 +302,12 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            BindAttendeeGrid();
+            BindAttendeeGridAndChart();
         }
 
+        /// <summary>
+        /// Shows the edit panel for the occurrence.
+        /// </summary>
         private void ShowEdit()
         {
             pnlEdit.Visible = true;
@@ -183,15 +315,28 @@ namespace RockWeb.Blocks.Event
             pnlAttendees.Visible = false;
         }
 
-        private void BindAttendeeGrid()
+        /// <summary>
+        /// Binds the grid and chart with attendee data.
+        /// </summary>
+        private void BindAttendeeGridAndChart()
         {
             using ( var rockContext = new RockContext() )
             {
-                gAttendees.DataSource = GetAttendees( rockContext );
+                var attendees = GetAttendees( rockContext );
+                int acceptCount = attendees.Where( a => a.Accept ).Count();
+                int declineCount = attendees.Where( a => a.Decline ).Count();
+                int noResponseCount = attendees.Count() - acceptCount - declineCount;
+                RegisterDoughnutChartScript( acceptCount, declineCount, noResponseCount );
+                gAttendees.DataSource = attendees;
                 gAttendees.DataBind();
             }
         }
 
+        /// <summary>
+        /// Gets the attendee data (for use in the grid and chart).
+        /// </summary>
+        /// <param name="rockContext">The RockContext</param>
+        /// <returns>A list of <see cref="RSVPAttendee"/> objects representing the attendees of an occurrence.</returns>
         private List<RSVPAttendee> GetAttendees( RockContext rockContext )
         {
             List<RSVPAttendee> attendees = new List<RSVPAttendee>();
@@ -209,8 +354,8 @@ namespace RockWeb.Blocks.Event
                     rsvp.PersonId = attendee.PersonAlias.PersonId;
                     rsvp.NickName = attendee.PersonAlias.Person.NickName;
                     rsvp.LastName = attendee.PersonAlias.Person.LastName;
-                    rsvp.Accept = ( ( attendee.RSVPDateTime.HasValue ) && ( !attendee.DeclineReasonValueId.HasValue ) );
-                    rsvp.Decline = ( attendee.DeclineReasonValueId.HasValue );
+                    rsvp.Accept = ( attendee.RSVP == Rock.Model.RSVP.Yes );
+                    rsvp.Decline = ( attendee.RSVP == Rock.Model.RSVP.No );
                     rsvp.DeclineReason = attendee.DeclineReasonValueId;
                     rsvp.DeclineNote = attendee.Note;
                     attendees.Add( rsvp );
@@ -247,85 +392,54 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Registers the doughnut chart Chart.js script.
         /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        private void RegisterDoughnutChartScript( int AcceptCount, int DeclineCount, int NoResponseCount )
         {
-            base.OnLoad( e );
+            string colors = "['#16C98D','#D4442E','#F3F3F3']";
+            string rsvpData = "['"
+                + AcceptCount.ToString() + "', '"
+                + DeclineCount.ToString() + "', '"
+                + NoResponseCount.ToString() + "']";
 
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-            if ( !Page.IsPostBack )
-            {
-                if ( groupId == null )
-                {
-                    NavigateToParentPage();
-                }
-                else
-                {
-                    var rockContext = new RockContext();
-                    var group = new GroupService( rockContext ).Get( groupId.Value );
-                    lHeading.Text = "RSVP Detail " + group.Name;
+            string script = string.Format(
+@"
+var dnutCtx = $('#{0}')[0].getContext('2d');
 
-                    int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
-                    if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
-                    {
-                        // New Occurrence
-                        ShowEdit();
-                    }
-                    else
-                    {
-                        // Display Occurrence
-                        ShowDetails( rockContext, occurrenceId.Value, group );
-                    }
-                }
-            }
-        }
+var dnutChart = new Chart(dnutCtx, {{
+    type: 'doughnut',
+    data: {{
+        labels: ['Accept', 'Decline', 'No Response'],
+        datasets: [{{
+            type: 'doughnut',
+            data: {1},
+            backgroundColor: {2}
+        }}]
+    }},
+    options: {{
+        responsive: true,
+        legend: {{
+            position: 'right',
+            fullWidth: true
+        }},
+        cutoutPercentage: 75,
+        animation: {{
+			animateScale: true,
+			animateRotate: true
+		}}
+    }}
+}});",
+                doughnutChartCanvas.ClientID,
+                rsvpData,
+                colors );
 
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Handles the Click event of the lbSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSave_Click( object sender, EventArgs e )
-        {
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-            if ( groupId != null )
-            {
-                if ( SaveRSVPData() )
-                {
-                    var qryParams = new Dictionary<string, string> { { PageParameterKey.GroupId, groupId.Value.ToString() } };
-                    NavigateToParentPage( qryParams );
-                }
-            }
+            RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "groupSchedulerDoughnutChartScript", script, true );
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-            if ( groupId != null )
-            {
-                queryParams.Add( PageParameterKey.GroupId, groupId.Value.ToString() );
-                NavigateToParentPage( queryParams );
-            }
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Method to save attendance for use in two separate areas.
+        /// Save RSVP response data from grid.
         /// </summary>
         protected bool SaveRSVPData()
         {
@@ -335,12 +449,11 @@ namespace RockWeb.Blocks.Event
             {
                 if ( row.RowType == DataControlRowType.DataRow )
                 {
-                    RockCheckBox rcbAccept = row.FindControl( "rcbAccept" ) as RockCheckBox;
-                    RockCheckBox rcbDecline = row.FindControl( "rcbDecline" ) as RockCheckBox;
+                    RockRadioButtonList rrblRSVPStatus = row.FindControl( "rrblRSVPStatus" ) as RockRadioButtonList;
                     DataDropDownList rddlDeclineReason = row.FindControl( "rddlDeclineReason" ) as DataDropDownList;
                     RockTextBox tbDeclineNote = row.FindControl( "tbDeclineNote" ) as RockTextBox;
-                    bool accepted = rcbAccept.Checked;
-                    bool declined = rcbDecline.Checked;
+                    bool accepted = ( rrblRSVPStatus.SelectedValue == "Accept" );
+                    bool declined = ( rrblRSVPStatus.SelectedValue == "Decline" );
                     int declineReason = int.Parse( rddlDeclineReason.SelectedValue );
                     string declineNote = tbDeclineNote.Text;
 
@@ -435,26 +548,28 @@ namespace RockWeb.Blocks.Event
                         if ( attendee.Accept )
                         {
                             attendance.RSVPDateTime = DateTime.Now;
-                            attendance.RSVP = RSVP.Yes;
+                            attendance.RSVP = Rock.Model.RSVP.Yes;
                         }
                         else if ( attendee.Decline )
                         {
                             attendance.RSVPDateTime = DateTime.Now;
-                            attendance.DeclineReasonValueId = attendee.DeclineReason;
+                            if ( attendee.DeclineReason != 0 )
+                            {
+                                attendance.DeclineReasonValueId = attendee.DeclineReason;
+                            }
                             attendance.Note = attendee.DeclineNote;
-                            attendance.RSVP = RSVP.No;
+                            attendance.RSVP = Rock.Model.RSVP.No;
                         }
                         else
                         {
                             attendance.RSVPDateTime = null;
-                            attendance.RSVP = RSVP.Unknown;
+                            attendance.RSVP = Rock.Model.RSVP.Unknown;
                         }
                     }
                 }
 
                 rockContext.SaveChanges();
 
-                // What does this do?
                 if ( occurrence.LocationId.HasValue )
                 {
                     Rock.CheckIn.KioskLocationAttendance.Remove( occurrence.LocationId.Value );
@@ -466,7 +581,7 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Helper Classes
+        #region Helper Class
 
         [Serializable]
         public class RSVPAttendee
@@ -530,14 +645,10 @@ namespace RockWeb.Blocks.Event
         #endregion
 
 
-        protected void gAttendees_RowDataBound(object sender, GridViewRowEventArgs e)
+        protected void lbSaveOccurrence_Click( object sender, EventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
-                rddlDeclineReason.DataSource = _declineReasons;
-                rddlDeclineReason.DataBind();
-            }
+            // BUG - save occurrence data.
         }
+
     }
 }

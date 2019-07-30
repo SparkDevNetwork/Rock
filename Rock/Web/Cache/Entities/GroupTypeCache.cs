@@ -382,7 +382,7 @@ namespace Rock.Web.Cache
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool EnableRsvp { get; private set; }
+        public bool? EnableRsvp { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type

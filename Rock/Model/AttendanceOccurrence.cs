@@ -150,7 +150,7 @@ namespace Rock.Model
         /// Indicates whether or not to show the Decline Confirmation Message.
         /// </summary>
         [DataMember]
-        public bool ShowDeclineMessage { get; set; }
+        public bool? ShowDeclineReasons { get; set; }
 
         /// <summary>
         /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
@@ -158,7 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The integer IDs.
         /// </value>
-        [MaxLength( 100 )]
+        [MaxLength( 250 )]
         [DataMember]
         public string DeclineReasons { get; set; }
 
