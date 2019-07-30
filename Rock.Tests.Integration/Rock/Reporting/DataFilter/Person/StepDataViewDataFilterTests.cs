@@ -1,0 +1,121 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Data;
+using Rock.Model;
+using Rock.Reporting.DataFilter.Person;
+using Rock.Tests.Integration.Crm.Steps;
+
+namespace Rock.Tests.Integration.Reporting.DataFilter
+{
+    /// <summary>
+    /// Test DataFilter: Person/Related Data View/Step Data View.
+    /// </summary>
+    [TestClass]
+    public class StepDataViewDataFilterTests : DataFilterTestBase
+    {
+        private const string _TestCategory = "Rock.Crm.Steps.Reporting.StepDataView.Tests";
+
+        /// <summary>
+        /// Verify that the settings can be correctly serialized to a string and deserialized from the same string.
+        /// </summary>
+        [TestMethod]
+        [TestCategory( _TestCategory )]
+        [TestProperty( "Feature", TestFeatures.Steps )]
+        public void StepsRelatedDataViewFilterSettingsSerializationCanRoundTrip()
+        {
+            var startPeriod = new TimePeriod( new DateTime( 2019, 2, 1 ), new DateTime( 2019, 3, 1 ) );
+            var endPeriod = new TimePeriod( new DateTime( 2019, 4, 1 ), new DateTime( 2019, 5, 1 ) );
+
+            var settingsSource = new StepDataViewFilter.FilterSettings();
+
+            settingsSource.DataViewGuid = StepsTests.Constants.ProgramSacramentsGuid;
+
+            var settingsString = settingsSource.ToSelectionString();
+
+            var settingsTarget = new StepDataViewFilter.FilterSettings( settingsString );
+
+            Assert.AreEqual( StepsTests.Constants.ProgramSacramentsGuid, settingsTarget.DataViewGuid );
+        }
+
+        /// <summary>
+        /// Verify that filtering by a Step Data View correctly returns a Person having a Step referenced in that Data View.
+        /// </summary>
+        [TestMethod]
+        [TestCategory( _TestCategory )]
+        [TestProperty( "Feature", TestFeatures.Steps )]
+        public void StepsRelatedDataViewFilterShouldReturnPersonWithRelatedSteps()
+        {
+            var settings = new StepDataViewFilter.FilterSettings();
+
+            // Filter for DataView="Steps Completed in 2001";
+            settings.DataViewGuid = StepsTests.Constants.DataViewStepsCompleted2001Guid;
+
+            var personQuery = GetPersonQueryWithStepDataViewFilter( settings );
+
+            var results = personQuery.ToList();
+
+            // Verify Ted Decker found - Baptised in 2001.
+            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+        }
+
+        /// <summary>
+        /// Verify that filtering by a Step Data View does not return a Person who does not have a matching Step.
+        /// </summary>
+        [TestMethod]
+        [TestCategory( _TestCategory )]
+        [TestProperty( "Feature", TestFeatures.Steps )]
+        public void StepsRelatedDataViewFilterShouldNotReturnPersonWithNoRelatedSteps()
+        {
+            var settings = new StepDataViewFilter.FilterSettings();
+
+            // Filter for DataView="Steps Completed in 2001";
+            settings.DataViewGuid = StepsTests.Constants.DataViewStepsCompleted2001Guid;
+
+            var personQuery = GetPersonQueryWithStepDataViewFilter( settings );
+
+            var results = personQuery.ToList();
+
+            // Verify Ben Jones not found - Alpha Attendee in 2015.
+            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.BenJonesPersonGuid ) );
+        }
+
+        /// <summary>
+        /// Create a Person Query using the StepDataViewFilter with the specified settings.
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        private IQueryable<IEntity> GetPersonQueryWithStepDataViewFilter( StepDataViewFilter.FilterSettings settings )
+        {
+            var settingsFilter = new StepDataViewFilter();
+
+            var dataContext = new RockContext();
+
+            var personService = new PersonService( dataContext );
+
+            var parameterExpression = personService.ParameterExpression;
+
+            var predicate = settingsFilter.GetExpression( typeof( global::Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
+
+            var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
+
+            return personQuery;
+        }
+    }
+}

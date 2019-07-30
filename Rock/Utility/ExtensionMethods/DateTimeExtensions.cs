@@ -172,6 +172,23 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the value for <see cref="DateTime.ToShortDateString"/> or empty string if the date is null
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToShortDateString( this DateTime? dateTime )
+        {
+            if ( dateTime.HasValue )
+            {
+                return dateTime.Value.ToShortDateString();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Returns the dateTime in ISO-8601 ( https://en.wikipedia.org/wiki/ISO_8601 ) format. Use this when serializing a date/time as an AttributeValue, UserPreference, etc
         /// </summary>
         /// <param name="dateTime">The date time.</param>

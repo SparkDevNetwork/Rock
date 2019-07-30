@@ -46,7 +46,7 @@
     <!-- Sentry -->
     <script src="https://cdn.ravenjs.com/3.5.1/raven.min.js"></script>
     <script type="text/javascript">
-        Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicSentryDSN" ) %>").install();
+        Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "PublicSentryDSN" ) %>").install();
     </script>
 
     <!-- jQuery -->

@@ -154,7 +154,6 @@
                 }
 
                 $folderTreeView.off('rockTree:selected').on('rockTree:selected', function (e, data) {
-                    debugger
                     var assetFolderIdParts = unescape(data).split(",");
                     var storageId = assetFolderIdParts[0] || "";
                     var folder = assetFolderIdParts[1] || "";

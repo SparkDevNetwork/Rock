@@ -68,13 +68,14 @@ namespace Rock.Workflow.Action.CheckIn
                 var attendanceService = new AttendanceService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var attendanceRecords = new List<Attendance>();
 
                 checkInState.Messages.Clear();
 
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
-                    var currentOccurences = new List<OccurenceRecord>();
+                    var currentOccurrences = new List<OccurrenceRecord>();
                     foreach ( var person in family.GetPeople( true ) )
                     {
                         if ( reuseCodeForFamily && attendanceCode != null )
@@ -119,7 +120,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                 thresHold = location.Location.FirmRoomThreshold.Value;
                                             }
 
-                                            var currentOccurence = GetCurrentOccurence( currentOccurences, location, schedule, startDateTime.Date );
+                                            var currentOccurrence = GetCurrentOccurrence( currentOccurrences, location, schedule, startDateTime.Date );
 
                                             // The totalAttended is the number of people still checked in (not people who have been checked-out)
                                             // not counting the current person who may already be checked in,
@@ -131,7 +132,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             // Only process if the current person is NOT already checked-in to this location and schedule
                                             if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
                                             {
-                                                var totalAttended = attendanceQry.Count() + ( currentOccurence == null ? 0 : currentOccurence.Count );
+                                                var totalAttended = attendanceQry.Count() + ( currentOccurrence == null ? 0 : currentOccurrence.Count );
 
                                                 // If over capacity, remove the schedule and add a warning message.
                                                 if ( totalAttended >= thresHold )
@@ -158,18 +159,18 @@ namespace Rock.Workflow.Action.CheckIn
                                                 else
                                                 {
                                                     // Keep track of anyone who was checked in so far.
-                                                    if ( currentOccurence == null )
+                                                    if ( currentOccurrence == null )
                                                     {
-                                                        currentOccurence = new OccurenceRecord()
+                                                        currentOccurrence = new OccurrenceRecord()
                                                         {
                                                             Date = startDateTime.Date,
                                                             LocationId = location.Location.Id,
                                                             ScheduleId = schedule.Schedule.Id
                                                         };
-                                                        currentOccurences.Add( currentOccurence );
+                                                        currentOccurrences.Add( currentOccurrence );
                                                     }
 
-                                                    currentOccurence.Count += 1;
+                                                    currentOccurrence.Count += 1;
                                                 }
                                             }
                                         }
@@ -203,6 +204,9 @@ namespace Rock.Workflow.Action.CheckIn
 
                                         KioskLocationAttendance.AddAttendance( attendance );
                                         isCheckedIntoLocation = true;
+
+                                        // Keep track of attendance (Ids) for use by other actions later in the workflow pipeline
+                                        attendanceRecords.Add( attendance );
                                     }
 
                                     // If the person was NOT checked into the location for any schedule then remove the location
@@ -217,6 +221,11 @@ namespace Rock.Workflow.Action.CheckIn
                 }
 
                 rockContext.SaveChanges();
+
+                // Now that the records are persisted, take the Ids and save them to the temp CheckInFamliy object
+                family.AttendanceIds = attendanceRecords.Select( a => a.Id ).ToList();
+                attendanceRecords = null;
+
                 return true;
             }
 
@@ -226,14 +235,14 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary>
         /// Gets the current occurrence from the given list for the matching location, schedule and startDateTime.
         /// </summary>
-        /// <param name="currentOccurences">The current occurrences.</param>
+        /// <param name="currentOccurrences">The current occurrences.</param>
         /// <param name="location">The location.</param>
         /// <param name="schedule">The schedule.</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <returns></returns>
-        private OccurenceRecord GetCurrentOccurence( List<OccurenceRecord> currentOccurences, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
+        private OccurrenceRecord GetCurrentOccurrence( List<OccurrenceRecord> currentOccurrences, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
         {
-            return currentOccurences
+            return currentOccurrences
                     .Where( a =>
                         a.Date == startDateTime.Date
                         && a.LocationId == location.Location.Id
@@ -242,7 +251,7 @@ namespace Rock.Workflow.Action.CheckIn
         }
     }
 
-    class OccurenceRecord
+    class OccurrenceRecord
     {
         public int ScheduleId { get; set; }
         public int LocationId { get; set; }

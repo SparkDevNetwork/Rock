@@ -723,6 +723,29 @@ namespace Rock.Model
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
+            List<History> historyRecordsToInsert = GetChanges( modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
+
+            var historyService = new HistoryService( rockContext );
+            historyService.AddRange( historyRecordsToInsert );
+        }
+
+        /// <summary>
+        /// Gets the changes.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="changes">The changes.</param>
+        /// <param name="caption">The caption.</param>
+        /// <param name="relatedModelType">Type of the related model.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        /// <param name="sourceOfChange">The source of change.</param>
+        /// <returns></returns>
+        internal static List<History> GetChanges( Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId, string sourceOfChange = null )
+        {
+            changes.ForEach( a => a.SourceOfChange = sourceOfChange );
+
             var entityType = EntityTypeCache.Get( modelType );
             var category = CategoryCache.Get( categoryGuid );
             var creationDate = RockDateTime.Now;
@@ -737,10 +760,10 @@ namespace Rock.Model
                 }
             }
 
+            List<History> historyRecordsToInsert = new List<History>();
+
             if ( entityType != null && category != null )
             {
-                var historyService = new HistoryService( rockContext );
-
                 foreach ( var historyChange in changes.Where( m => m != null ) )
                 {
                     var history = new History();
@@ -758,12 +781,18 @@ namespace Rock.Model
                         history.CreatedByPersonAliasId = modifiedByPersonAliasId;
                     }
 
-                    // Manually set creation date on these history items so that they will be grouped together
-                    history.CreatedDateTime = creationDate;
+                    // If not specified, manually set the creation date on these history items so that they will be grouped together.
+                    if ( historyChange.ChangedDateTime == null )
+                    {
+                        history.CreatedDateTime = creationDate;
+                    }
 
-                    historyService.Add( history );
+                    historyRecordsToInsert.Add( history );
+
                 }
             }
+
+            return historyRecordsToInsert;
         }
 
         /// <summary>

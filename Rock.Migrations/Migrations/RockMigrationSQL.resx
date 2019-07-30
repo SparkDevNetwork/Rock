@@ -256,67 +256,67 @@
   <data name="_201707311527250_PersonicxGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_personicxgroup.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201808062254493_rollup_0806_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201808062254493_rollup_0806_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201808062254493_rollup_0806_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>createdatabase\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 9.0\version 1.9.0\201808062254493_rollup_0806_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201808062254493_Rollup_0806_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 9.0\version 1.9.0\201808062254493_rollup_0806_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 9.0\version 1.9.0\201808062254493_rollup_0806_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="_201809142151587_ContentComponents_AdUnit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809142151587_contentcomponents_adunit.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 9.0\version 1.9.0\201809142151587_contentcomponents_adunit.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201809142151587_ContentComponents_Card" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809142151587_contentcomponents_card.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 9.0\version 1.9.0\201809142151587_contentcomponents_card.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201809142151587_ContentComponents_CreateContentComponentChannelType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809142151587_contentcomponents_createcontentcomponentchanneltype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201809142151587_contentcomponents_createcontentcomponentchanneltype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201809142151587_ContentComponents_Hero" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809142151587_contentcomponents_hero.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 9.0\version 1.9.0\201809142151587_contentcomponents_hero.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201809142151587_ContentComponents_SideBySide" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809142151587_contentcomponents_sidebyside.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 9.0\version 1.9.0\201809142151587_contentcomponents_sidebyside.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201809252117562_Rollup_0925_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201809252117562_rollup_0925_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201809252117562_rollup_0925_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201810021839212_Rollup_1002_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201810021839212_rollup_1002_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201810021839212_rollup_1002_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201810161814574_rollup_1016_addcheck-inlabeltoinstalliconfont.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201810161814574_rollup_1016_addcheck-inlabeltoinstalliconfont.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201810161814574_Rollup_1016_spCrm_FamilyAnalyticsFirstVisitsAttributeUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201810161814574_rollup_1016_spcrm_familyanalyticsfirstvisitsattributeupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201810161814574_rollup_1016_spcrm_familyanalyticsfirstvisitsattributeupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201810301818354_rollup_1030_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201810301818354_rollup_1030_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_down.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201811271852316_rollup_1127_spfinance_pledgeanalyticsquery_up.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201812111901295_Rollup_1211_FixChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201812111901295_rollup_1211_fixchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201903202308416_scheduledtransactionhistory_migratescheduledtransactionnotestohistory.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201812111901295_rollup_1211_fixchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201904231856504_rollup_0423_createpost90datamigrationservicejob.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 9.0\version 1.9.0\201904231856504_rollup_0423_createpost90datamigrationservicejob.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201905081957016_GroupScheduling_PopulateScheduleTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201905081957016_groupscheduling_populatescheduletemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201905081957016_groupscheduling_populatescheduletemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201905082317243_Rollup_0508_FixLavaChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201905082317243_rollup_0508_fixlavachartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 9.0\version 1.9.0\201905082317243_rollup_0508_fixlavachartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201907082136571_Rollup0708_SegmentedChartUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 9.0\version 1.9.0\201907082136571_rollup0708_segmentedchartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

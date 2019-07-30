@@ -182,13 +182,13 @@ namespace Rock.Communication.Transport
 
                 using ( var smtpClient = GetSmtpClient() )
                 {
-                    foreach( var recipientData in rockMessage.GetRecipientData() )
+                    foreach( var messageRecipient in rockMessage.GetRecipients() )
                     {
                         try
                         { 
                             foreach( var mergeField in mergeFields )
                             {
-                                recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                                messageRecipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                             }
 
                             message.To.Clear();
@@ -199,15 +199,15 @@ namespace Rock.Communication.Transport
                             // Set From/To and check safe sender
                             message.From = new MailAddress( fromAddress, fromName );
                             message.To.Add( new MailAddress( 
-                                recipientData.To.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
-                                recipientData.Name.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
+                                messageRecipient.To.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
+                                messageRecipient.Name.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
                             CheckSafeSender( message, globalAttributes );
 
                             // cc
                             foreach ( string cc in emailMessage.CCEmails.Where( e => e != "" ) )
                             {
                                 // Resolve any possible merge fields in the cc address
-                                string ccRecipient = cc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                                string ccRecipient = cc.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
                                 message.CC.Add( new MailAddress( ccRecipient ) );
                             }
 
@@ -215,18 +215,18 @@ namespace Rock.Communication.Transport
                             foreach ( string bcc in emailMessage.BCCEmails.Where( e => e != "" ) )
                             {
                                 // Resolve any possible merge fields in the cc address
-                                string bccRecipient = bcc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                                string bccRecipient = bcc.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
                                 message.Bcc.Add( new MailAddress( bccRecipient ) );
                             }
 
                             // Subject
-                            string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                            string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
 
                             // Body
-                            string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                            string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
-                            message.Subject = subject;
+                            message.Subject = subject.Left(998);
                             message.Body = body;
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
@@ -263,7 +263,7 @@ namespace Rock.Communication.Transport
 
                             if ( emailMessage.CreateCommunicationRecord )
                             {
-                                var transaction = new SaveCommunicationTransaction( recipientData.To, emailMessage.FromName, emailMessage.FromName, subject, body );
+                                var transaction = new SaveCommunicationTransaction( messageRecipient, emailMessage.FromName, emailMessage.FromName, subject, body );
                                 transaction.RecipientGuid = recipientGuid;
                                 RockQueue.TransactionQueue.Enqueue( transaction );
                             }
@@ -552,6 +552,12 @@ namespace Rock.Communication.Transport
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( !person.IsEmailActive )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Recipient Email Address is not active";
                         valid = false;
                     }
                     else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )

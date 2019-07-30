@@ -272,6 +272,7 @@ namespace Rock.Field
             if ( editControl is TextBox textBox )
             {
                 textBox.AutoPostBack = true;
+                textBox.AddCssClass( "js-prevent-double-postback" );
                 textBox.TextChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
@@ -280,6 +281,7 @@ namespace Rock.Field
             else if ( editControl is ListControl listControl )
             {
                 listControl.AutoPostBack = true;
+                listControl.AddCssClass( "js-prevent-double-postback" );
                 listControl.SelectedIndexChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();

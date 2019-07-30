@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
-
+ 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -99,22 +99,22 @@ namespace Rock.Jobs
             /// <summary>
             /// The batch name prefix
             /// </summary>
-            public const string BatchNamePrefix = "Batch Name Prefix";
+            public const string BatchNamePrefix = "BatchNamePrefix";
 
             /// <summary>
             /// The receipt email
             /// </summary>
-            public const string ReceiptEmail = "Receipt Email";
+            public const string ReceiptEmail = "ReceiptEmail";
 
             /// <summary>
             /// The failed payment email
             /// </summary>
-            public const string FailedPaymentEmail = "Failed Payment Email";
+            public const string FailedPaymentEmail = "FailedPaymentEmail";
 
             /// <summary>
             /// The failed payment workflow
             /// </summary>
-            public const string FailedPaymentWorkflow = "Failed Payment Workflow";
+            public const string FailedPaymentWorkflow = "FailedPaymentWorkflow";
 
             /// <summary>
             /// The target gateway

@@ -1290,7 +1290,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if (_homeAddresses.Any() )
+                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     // break up addresses if exporting
@@ -2325,12 +2325,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
-                if ( lAddress != null && _homeAddresses.Count() > 0 )
+                if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
-
 
                 var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
                 if ( mobileField != null )
@@ -2790,8 +2789,10 @@ namespace RockWeb.Blocks.Event
             lAccount.Visible = registrationInstance.Account != null;
             lAccount.Text = registrationInstance.Account != null ? registrationInstance.Account.Name : string.Empty;
 
-            lMaxAttendees.Visible = registrationInstance.MaxAttendees > 0;
-            lMaxAttendees.Text = registrationInstance.MaxAttendees.ToString( "N0" );
+            lMaxAttendees.Visible = registrationInstance.MaxAttendees >= 0;
+            lMaxAttendees.Text = registrationInstance.MaxAttendees >= 0 ?
+                    registrationInstance.MaxAttendees.Value.ToString( "N0" ) :
+                    string.Empty;
             lWorkflowType.Text = registrationInstance.RegistrationWorkflowType != null ?
                 registrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
@@ -5560,9 +5561,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( parentGroupId.HasValue )
                     {
-                        var validGroupIds = new GroupService( rockContext ).GetAllDescendents( parentGroupId.Value )
-                            .Select( g => g.Id )
-                            .ToList();
+                        var validGroupIds = new GroupService( rockContext ).GetAllDescendentGroupIds( parentGroupId.Value, false );
 
                         var existingPeopleInGroups = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
@@ -5612,6 +5611,7 @@ namespace RockWeb.Blocks.Event
                     {
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
+
                     SetPhoneDictionary( rockContext, personIds );
 
                     bool preloadCampusValues = false;

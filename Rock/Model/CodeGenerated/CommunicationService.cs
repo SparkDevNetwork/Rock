@@ -100,6 +100,7 @@ namespace Rock.Model
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
+            target.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FromEmail = source.FromEmail;

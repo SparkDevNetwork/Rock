@@ -226,6 +226,7 @@
 //// Badge Bar
 @persondetails-badge-bg:                @theme-5;
 @persondetails-badge-color:             @theme-5-text;
+@badge-grid-width:                      86px;
 
 //// Family Bar
 @persondetails-familybar-bg:            @theme-6;
@@ -281,7 +282,6 @@
 @tag-bg:                      #c2b8a7;
 @tag-text-color:              #231f20;
 @tag-border-radius:           @border-radius-base;
-@tag-dot-color:               #dbd5cb;
 @tag-bg-alt:                  #d0c6b4;
 
 // Autocomplete Styles
@@ -301,7 +301,7 @@
 @smartsearch-text-color:                 @header-text-color;
 
 @control-label-weight: @font-weight-bold;
-@input-focus-rgba:            rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
+@input-focus-rgba:            fade(@input-border-focus, 60%);
 @input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
@@ -332,6 +332,10 @@
 @tree-selected-color:         #fff; // Text color of selected items in the treeview.
 
 // Buttons
+@enable-btn-focus-outline:    false;
+@btn-focus-width:             0.2rem;
+@btn-transition:              ~"color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out";
+
 @btn-action-color:            @theme-8-text;
 @btn-action-bg:               @theme-8;
 @btn-action-border:           darken(@btn-action-bg, 5%);
@@ -390,8 +394,14 @@
 @checkbox-columns-gap: 8px;
 @checkbox-columns-width: 130px;
 
+// DISC Assessment Margin
+@disc-question-spacing: 48px;
+
 // Helper Variables
 // -------------------------
+
+// Max size before likert moves to columns
+@likert-screen-column: @screen-md-max;
 
 // Bootstrap 4 Variables
 // Used when @enable-flexbox: true;

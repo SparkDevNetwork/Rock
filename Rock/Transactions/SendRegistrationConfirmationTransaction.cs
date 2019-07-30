@@ -85,7 +85,7 @@ namespace Rock.Transactions
                         mergeFields.Add( "Registration", registration );
 
                         var emailMessage = new RockEmailMessage();
-                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
+                        emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
                         emailMessage.AdditionalMergeFields = mergeFields;
                         emailMessage.FromEmail = template.ConfirmationFromEmail;
                         emailMessage.FromName = template.ConfirmationFromName;

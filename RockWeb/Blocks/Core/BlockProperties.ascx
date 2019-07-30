@@ -27,6 +27,11 @@
                     <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                         <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" />
                         <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+                        <asp:PlaceHolder ID="phCustomBasicSettings" runat="server" />
+                    </asp:Panel>
+
+                    <asp:Panel ID="pnlMobileSettings" runat="server" Visible="false">
+                        <Rock:AttributeValuesContainer ID="avcMobileAttributes" runat="server" ShowCategoryLabel="false" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
@@ -35,6 +40,7 @@
                         <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
                         <Rock:RockTextBox ID="tbCacheDuration" runat="server"  Label="Output Cache Duration (seconds)" Help="Number of seconds to cache the output of this block.  If a value is entered here, this block will only process data when the cache expires." />
                         <Rock:AttributeValuesContainer ID="avcAdvancedAttributes" runat="server" />
+                        <asp:PlaceHolder ID="phCustomAdvancedSettings" runat="server" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlCustomGridTab" runat="server" Visible="false">
@@ -75,6 +81,8 @@
                             </asp:Repeater>
                         </Rock:RockControlWrapper>
                     </asp:Panel>
+
+                    <asp:Placeholder ID="phCustomSettings" runat="server" />
 
                 </div>
 

@@ -680,7 +680,7 @@ namespace Rock.Model
         /// The schedule reminder email offset days.
         /// </value>
         [DataMember]
-        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
 
         /// <summary>
         /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.

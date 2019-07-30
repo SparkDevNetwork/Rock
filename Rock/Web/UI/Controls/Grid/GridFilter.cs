@@ -26,6 +26,29 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
+    /// Options for the layout of controls in the Grid Filter  Enum that defines when a column should be included in an Excel export ( when in ColumnOutput ExportSource )
+    /// </summary>
+    public enum GridFilterLayoutSpecifier
+    {
+        /// <summary>
+        /// The default
+        /// </summary>
+        Default = 0,
+        /// <summary>
+        /// Layout the filter field controls as defined in the control markup.
+        /// </summary>
+        Custom = 1,
+        /// <summary>
+        /// Layout the filter field controls using a 2-column bootstrap layout.
+        /// </summary>
+        TwoColumnLayout = 2,
+        /// <summary>
+        /// Layout the filter field controls using a 3-column bootstrap layout.
+        /// </summary>
+        ThreeColumnLayout = 3
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     [ToolboxData( "<{0}:GridFilter runat=server></{0}:GridFilter>" )]
@@ -115,6 +138,24 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["UserPreferenceKeyPrefix"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the layout format for the filter fields displayed by the control.
+        /// </summary>
+        public GridFilterLayoutSpecifier FieldLayout
+        {
+            get
+            {
+                var stateValue = ViewState["FieldLayout"];
+
+                return ( stateValue == null ) ? GridFilterLayoutSpecifier.Default : ( GridFilterLayoutSpecifier ) stateValue;
+            }
+
+            set
+            {
+                ViewState["FieldLayout"] = value;
             }
         }
 
@@ -280,9 +321,13 @@ namespace Rock.Web.UI.Controls
                     writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
                     writer.WriteLine( "<h4>Enabled Filters</h4>" );
                     writer.WriteLine( "<div class='row'>" );
-                    foreach( var filterNameValue in filterDisplay.OrderBy( f => f.Key ) )
+
+                    // Calculate the filter column size by dividing the Bootstrap 12-column layout into equal widths.
+                    int columnSize = ( this.FieldLayout == GridFilterLayoutSpecifier.TwoColumnLayout ) ? 6 : 4;
+
+                    foreach ( var filterNameValue in filterDisplay.OrderBy( f => f.Key ) )
                     {
-                        writer.WriteLine( "<div class='col-md-3'>" );
+                        writer.WriteLine( "<div class='col-md-{0}'>", columnSize );
                         writer.WriteLine( string.Format( "<label>{0}:</label> {1}", filterNameValue.Key, filterNameValue.Value ) );
                         writer.WriteLine( "</div>" );
                     }
@@ -336,14 +381,36 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the rendered content.</param>
         protected override void RenderChildren( HtmlTextWriter writer )
         {
-            if ( this.Controls != null )
+            if ( this.Controls == null )
+            {
+                return;
+            }
+
+            if ( this.FieldLayout == GridFilterLayoutSpecifier.Custom )
+            {
+                // If custom layout specified, do not reformat the child controls.
+                foreach ( Control child in this.Controls )
+                {
+                    if ( child == _lbFilter || child == _lbClearFilter || child == _hfVisible )
+                    {
+                        continue;
+                    }
+
+                    child.RenderControl( writer );
+                }
+            }
+            else
             {
                 // wrap filter items in bootstrap responsive grid
                 int cellCount = 0;
-                const int cellsPerRow = 3;
+
+                // Calculate the Bootstrap column size by dividing the 12-column layout into equal partitions.
+                int cellsPerRow = ( this.FieldLayout == GridFilterLayoutSpecifier.TwoColumnLayout ) ? 2 : 3;
+
+                int bootstrapColumnSize = 12 / cellsPerRow;
 
                 // write first row
-                writer.AddAttribute("class", "row");
+                writer.AddAttribute( "class", "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 var filterControls = new List<Control>();
@@ -375,7 +442,7 @@ namespace Rock.Web.UI.Controls
                         // add column
                         if ( child.Visible )
                         {
-                            writer.AddAttribute( "class", "col-lg-4" );
+                            writer.AddAttribute( "class", string.Format( "col-lg-{0}", bootstrapColumnSize ) );
                             writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         }
 

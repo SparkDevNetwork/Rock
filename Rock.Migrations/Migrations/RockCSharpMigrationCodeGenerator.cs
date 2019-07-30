@@ -30,6 +30,14 @@ namespace Rock.Migrations
         #region overridden methods
 
         /// <summary>
+        /// Set this to true if migrations are frozen in this branch.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is frozen; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFrozen => false;
+
+        /// <summary>
         /// Generates the primary code file that the user can view and edit.
         /// </summary>
         /// <param name="operations">Operations to be performed by the migration.</param>
@@ -40,6 +48,11 @@ namespace Rock.Migrations
         /// </returns>
         protected override string Generate( IEnumerable<System.Data.Entity.Migrations.Model.MigrationOperation> operations, string @namespace, string className )
         {
+            if ( IsFrozen )
+            {
+                throw new System.Exception( "Cannot add migration. Migrations are frozen in this branch." );
+            }
+
             string result = string.Empty;
 
             result += @"// <copyright>

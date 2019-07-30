@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -40,7 +41,7 @@ namespace Rock.Model
             {"Pays attention to details","Gives direction","Is entertaining","Consistent with others","CDIS","CDIS"},
             {"Very exact","Conquers challenges","Encourages others","Follows others","CDIS","CDIS"},
             {"Plays down abilities","Driven by goals","Is an optimist","Concerned for others","CDIS","CDIS"},
-            {"Concerned for correctness","Is self sufficient","Persuades others","Concerned for other","CDIS","CDIS"},
+            {"Concerned for correctness","Is self sufficient","Persuades others","Concerned for others","CDIS","CDIS"},
             {"Avoids danger","Pursues goals","Are enjoyed by People","Empathizes with others","CDIS","CDIS"},
             {"Prefers precision","Starts things","Enjoys life fully","Follows others","CDIS","CDIS"},
             {"Thinks things through","Perseveres obstacles","Liked by others","Sticks with the traditional way","CDIS","CDIS"},
@@ -53,7 +54,7 @@ namespace Rock.Model
             {"Evaluates objectively","Assumes control","Acts without thinking","Like things the way they are","CDIS","CDIS"},
             {"Systematically thinks through issues","Displays confidence","Spends time with others","Gives grace to others","CDIS","CDIS"},
             {"Follows instructions precisely","Resistant to opposition","Seeks out others","Comfortable with the status quo","CDIS","CDIS"},
-            {"Thinks through problems","Pushes others","Upbeat about life","Collaborates with other","CDIS","CDIS"},
+            {"Thinks through problems","Pushes others","Upbeat about life","Collaborates with others","CDIS","CDIS"},
             {"Conforms exactly to a standard","Freely expresses opinions","Enjoys having fun with others","Is consistent","CDIS","CDIS"},
             {"Carefully assesses risks","Forcefully pursues goals","Welcomes others","Considerate of others","CDIS","CDIS"},
             {"Critical of others","Drives to complete the goal","Optimistic toward others","Concerned for others","CDIS","CDIS"},
@@ -163,6 +164,7 @@ namespace Rock.Model
             public int NaturalBehaviorI;
             public int NaturalBehaviorD;
             public string PersonalityType;
+            public DefinedValueCache DISCProfile { get; set; }
             public DateTime LastSaveDate;
         }
 
@@ -195,6 +197,7 @@ namespace Rock.Model
             public const string NaturalC = "NaturalC";
             public const string PersonalityType = "PersonalityType";
             public const string LastSaveDate = "LastSaveDate";
+            public const string DISCProfile = "core_DISCDISCProfile";
         }
 
 #pragma warning restore 1591
@@ -266,6 +269,7 @@ namespace Rock.Model
 
             // Determine the Natural personality type
             testResults.PersonalityType = DetermineNaturalPersonalityType( testResults );
+            testResults.DISCProfile = LookupPersonalityTypeProfile( testResults.PersonalityType );
 
             return testResults;
         }
@@ -337,6 +341,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the defined value for the given personality type profile 
+        /// </summary>
+        /// <param name="profileType">Type of the profile.</param>
+        /// <returns></returns>
+        public static DefinedValueCache LookupPersonalityTypeProfile( string profileType )
+        {
+            DefinedTypeCache discResultsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() );
+            DefinedValueCache discResultsDefinedValue = discResultsDefinedType.DefinedValues.FirstOrDefault( a => a.Value == profileType );
+
+            return discResultsDefinedValue;
+        }
+
+        /// <summary>
         /// Fetches DISC scores.
         /// </summary>
         /// <param name="person"></param>
@@ -360,7 +377,7 @@ namespace Rock.Model
 
             person.LoadAttributes();
 
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == new Guid( "0B187C81-2106-4875-82B6-FBF1277AE23B" ) ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
 
             foreach ( string attrib in discAttributes )
             {
@@ -398,6 +415,9 @@ namespace Rock.Model
                         bool bCatch = DateTime.TryParse( person.AttributeValues[attrib].Value, out lastAssessmentDate );
                         savedScores.LastSaveDate = lastAssessmentDate;
                         break;
+                    case AttributeKeys.DISCProfile:
+                        savedScores.DISCProfile = DefinedValueCache.Get( person.AttributeValues[attrib].Value );
+                        break;
                 }
             }
             return savedScores;
@@ -420,7 +440,7 @@ namespace Rock.Model
         {
             person.LoadAttributes();
 
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == new Guid( "0B187C81-2106-4875-82B6-FBF1277AE23B" ) ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
 
             foreach ( string attrib in discAttributes )
             {
@@ -455,6 +475,10 @@ namespace Rock.Model
                         break;
                     case AttributeKeys.LastSaveDate:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString( "o" ) );
+                        break;
+                    case AttributeKeys.DISCProfile:
+                        var definedValueCache = LookupPersonalityTypeProfile( personalityType );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], definedValueCache.Guid.ToStringSafe() );
                         break;
                 }
             }

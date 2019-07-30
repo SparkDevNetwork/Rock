@@ -501,17 +501,16 @@
   width: 33.33333%;
 }
 
-.text-center {
-  text-align: center;
+.unselectable {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.text-left {
-  text-align: left;
-}
-
-.text-right {
-  text-align: right;
-}
+.text-left           { text-align: left !important; }
+.text-right          { text-align: right !important;  }
+.text-center         { text-align: center !important; }
 
 // BS4 Alignment Utilities
 .align-baseline    { vertical-align: baseline !important; } // Browser default

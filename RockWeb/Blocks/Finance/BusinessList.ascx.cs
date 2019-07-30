@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Finance
 
             // Business Name Filter
             tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
-            
+
             // Set the Active Status
             var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfBusinessFilter.GetUserPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Finance
                 queryable = queryable.Where( a => a.LastName.Contains( businessName ) );
             }
 
-            if ( ! viaSearch )
+            if ( !viaSearch )
             {
                 var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
@@ -236,8 +236,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            var workLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-
+            var workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() ).Id;
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
             var businessList = queryable.Select( b => new
@@ -247,16 +246,15 @@ namespace RockWeb.Blocks.Finance
                 BusinessName = b.LastName,
                 PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
                 Email = b.Email,
-                Address = b.Members
-                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
-                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workLocationTypeGuid ) )
+                Address = b.GivingGroup.GroupLocations
+                                .Where( gl => gl.GroupLocationTypeValueId == workLocationTypeId )
                                 .FirstOrDefault()
                                 .Location,
                 Contacts = b.Members
                                 .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS )
-                                .SelectMany( m => m.Group.Members)
-                                .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id)
-                                .Select( p => p.Person.LastName + ", " + p.Person.NickName)
+                                .SelectMany( m => m.Group.Members )
+                                .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id )
+                                .Select( p => p.Person.LastName + ", " + p.Person.NickName )
             } );
 
             if ( viaSearch && businessList.ToList().Count == 1 )
@@ -266,7 +264,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 gBusinessList.EntityTypeId = EntityTypeCache.Get<Person>().Id;
-                gBusinessList.DataSource = businessList.ToList();
+                gBusinessList.SetLinqDataSource( businessList );
                 gBusinessList.DataBind();
             }
         }

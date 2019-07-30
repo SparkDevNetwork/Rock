@@ -163,6 +163,145 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Reads the time.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="wordPerMinute">The word per minute.</param>
+        /// <param name="secondsPerImage">The seconds per image.</param>
+        /// <returns></returns>
+        public static string ReadTime( object input, int wordPerMinute = 275, int secondsPerImage = 12 )
+        {
+
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            var numOfImages = 0;
+            var inputString = input.ToString();
+
+            // Count images before we strip HTML
+            if ( secondsPerImage > 0 )
+            {
+                numOfImages = Regex.Matches( inputString, "<img" ).Count;
+            }
+
+            inputString = inputString.StripHtml();
+
+            var wordsPerSecond = wordPerMinute / 60;
+            var wordsInString = inputString.WordCount();
+
+            var readTimeInSeconds = wordsInString / wordsPerSecond;
+
+            // Adjust the read time for images. We will start with the provided seconds per image (default 12) and subject a second for each additional image until we reach 10 then every image is 3 seconds.
+            // https://blog.medium.com/read-time-and-you-bc2048ab620c
+            var adjustedSecondsPerImage = secondsPerImage;
+
+            for ( int i = 0; i < numOfImages; i++ )
+            {
+                if ( i < ( secondsPerImage -2 ) && ( secondsPerImage - 2 ) > 0 )
+                {
+                    readTimeInSeconds = readTimeInSeconds + ( secondsPerImage - i);
+                }
+                else
+                {
+                    readTimeInSeconds = readTimeInSeconds + 3;
+                }
+            }
+
+            // Format the results
+            // 1 hr 23 mins
+            // 23 mins
+            // 30 secs
+            TimeSpan readTime = TimeSpan.FromSeconds( readTimeInSeconds );
+
+            if ( readTimeInSeconds > 3600 )
+            {
+                // Display in hrs
+                if ( readTime.Minutes == 0 )
+                {
+                    return $"{"hr".ToQuantity( readTime.Hours )}";
+                }
+                else
+                {
+                    return $"{"hr".ToQuantity( readTime.Hours )} {"min".ToQuantity( readTime.Minutes )}";
+                }
+            }
+            else if ( readTimeInSeconds > 60 )
+            {
+                // Display in mins
+
+                var remainderSeconds = readTimeInSeconds - ( readTime.Minutes * 60 );
+
+                if ( remainderSeconds > 30 )
+                {
+                    return $"{"min".ToQuantity( readTime.Minutes + 1 )}";
+                }
+                else
+                {
+                    return $"{"min".ToQuantity( readTime.Minutes )}";
+                }
+            }
+            else
+            {
+                // Display in seconds
+                return $"{"sec".ToQuantity(readTime.Seconds)}";
+            }
+        }
+
+        /// <summary>
+        /// Returns a MD5 hash of the string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Md5( string input )
+        {
+            return input.Md5Hash();
+        }
+
+        /// <summary>
+        /// Returns a SHA1 hash of the string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Sha1( string input )
+        {
+            return input.Sha1Hash();
+        }
+
+        /// <summary>
+        /// Returns a SHA254 hash of the string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Sha256( string input )
+        {
+            return input.Sha256Hash();
+        }
+
+        /// <summary>
+        /// Returns a hash message authentication code using SHA1
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string HmacSha1( string input, string key )
+        {
+            return input.HmacSha1Hash( key );
+        }
+
+        /// <summary>
+        /// Returns a hash message authentication code using SHA256
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string HmacSha256( string input, string key )
+        {
+            return input.HmacSha256Hash( key );
+        }
+
+        /// <summary>
         /// obfuscate a given email
         /// </summary>
         /// <param name="input"></param>
@@ -983,6 +1122,23 @@ namespace Rock.Lava
 
             return Liquid.UseRubyDateFormat ? inputDateTime.Value.ToStrFTime( format ).Trim() : inputDateTime.Value.ToString( format ).Trim();
         }
+
+
+        /// <summary>
+        /// Current datetime.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static DateTime? Date( string input )
+        {
+            if (input != "Now" )
+            {
+                return null;
+            }
+
+            return RockDateTime.Now;
+        }
+
 
         /// <summary>
         /// Sundays the date.
@@ -1873,6 +2029,72 @@ namespace Rock.Lava
             else
             {
                 return "Could not convert input to number to round";
+            }
+        }
+
+        /// <summary>
+        /// Limits a number to a maximum value.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object AtMost( object input, object operand )
+        {
+            if ( input == null || operand == null )
+            {
+                return input;
+            }
+
+            int intInput = -1;
+            int intOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput > intOperand ? intOperand : input;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput > iOperand ? iOperand : iInput;
+            }
+            else
+            {
+                return "Could not convert input to number";
+            }
+        }
+
+        /// <summary>
+        /// Limits a number to a minimum value.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object AtLeast( object input, object operand )
+        {
+            if ( input == null || operand == null )
+            {
+                return input;
+            }
+
+            int intInput = -1;
+            int intOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput < intOperand ? intOperand : input;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput < iOperand ? iOperand : iInput;
+            }
+            else
+            {
+                return "Could not convert input to number";
             }
         }
 
@@ -3833,17 +4055,28 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Set the page and browser title
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            return SetPageTitle( input, "All" );
+        }
+
+        /// <summary>
         /// adds a link tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="titleLocation">The title location. "BrowserTitle", "PageTitle" or "All"</param>
         /// <returns></returns>
-        public static string SetPageTitle( string input, string titleLocation = "All" )
+        public static string SetPageTitle( string input, string titleLocation )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
             if ( page != null )
             {
-                
+
 
                 if ( titleLocation.Equals("BrowserTitle", StringComparison.InvariantCultureIgnoreCase) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
                 {
@@ -4008,6 +4241,11 @@ namespace Rock.Lava
                 switch ( parm )
                 {
                     case "Title":
+                        {
+                            return page.PageTitle;
+                        }
+
+                    case "BrowserTitle":
                         {
                             return page.BrowserTitle;
                         }
@@ -4759,6 +4997,50 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Determines whether a person is following an entity.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input entity to use for follow testing.</param>
+        /// <param name="personObject">An optional Person object to use when determining followed status.</param>
+        /// <returns></returns>
+        public static bool IsFollowed( DotLiquid.Context context, object input, object personObject = null )
+        {
+            //
+            // Ensure the input is an entity object.
+            //
+            if ( !( input is IEntity entity ) )
+            {
+                return false;
+            }
+
+            //
+            // If the person was not specified in the parameters then use
+            // the current person. If still not found then return not-followed
+            // status.
+            //
+            if ( !( personObject is Person person ) )
+            {
+                person = GetCurrentPerson( context );
+
+                if ( person == null )
+                {
+                    return false;
+                }
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                int followingEntityTypeId = entity.TypeId;
+                var followed = new FollowingService( rockContext ).Queryable()
+                    .Where( f => f.EntityTypeId == followingEntityTypeId && f.EntityId == entity.Id )
+                    .Where( f => f.PersonAlias.PersonId == person.Id )
+                    .Any();
+
+                return followed;
+            }
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -4969,7 +5251,7 @@ namespace Rock.Lava
 
             // They didn't provide a valid amount so give back the original color
             return input;
-            
+
         }
 
         /// <summary>

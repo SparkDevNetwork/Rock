@@ -22,7 +22,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Content Channel" Help="Limits content channel items to a specific channel and enables Social Media Settings to be configurable, or leave blank to leave unrestricted." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Required="true" Label="Content Channel" Help="Limits content channel items to a specific channel and enables Social Media Settings to be configurable." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
                             <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" Help="Include items with the following status." />
                             <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" />
                         </div>
@@ -97,6 +97,8 @@ Guid - ContentChannelItem Guid" />
                         <Rock:NumberBox ID="nbItemCacheDuration" runat="server" Label="Item Cache Duration" MinimumValue="0" CssClass="input-width-sm" Help="Number of seconds to cache the content item specified by the parameter." />
                         <Rock:RockCheckBoxList ID="cblCacheTags" runat="server" Label="Cache Tags" Help="Cached tags are used to link cached content so that it can be expired as a group" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Help="Determines if the block should set the page title with the channel name or content item." />
+                        <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
+                                        Help="Enabling this option will result in the content data and attribute values to be merged using the lava template engine." />
                     </Rock:PanelWidget>
                 </Content>
 

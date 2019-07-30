@@ -1,21 +1,12 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: We no longer use Github for Idea collection.  Please use https://community.rockrms.com/ideas
 
 ---
 
-<!-- Please search existing issues to avoid creating duplicates. -->
+🚨 We've Moved 🚨
 
-# Feature Request
+Hi there!  We've recently moved 'feature requests' over to our own "Ideas" system on our Community site over at:
+http://community.rockrms.com/ideas
 
-**Describe the Feature Request**
-<!-- A clear and concise description of what the feature request is. Please include if your feature request is related to a problem. -->
-
-**Describe Preferred Solution**
-<!-- A clear and concise description of what you want to happen. -->
-
-**Describe Alternatives**
-<!-- A clear and concise description of any alternative solutions or features you've considered. -->
-
-**Providing Code**
-I will provide code if feature request is approved: [Yes/No]
+Please use that site from this point forward for requesting features or voting on ideas.

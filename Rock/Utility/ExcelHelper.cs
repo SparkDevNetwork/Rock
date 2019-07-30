@@ -162,12 +162,6 @@ namespace Rock.Utility
             // align text to the top of the cell
             range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
 
-            // use conditionalFormatting to create the alternate row style
-            var conditionalFormatting = range.ConditionalFormatting.AddExpression();
-            conditionalFormatting.Formula = "MOD(ROW()+1,2)=0";
-            conditionalFormatting.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
-
             // Remove paces and line breaks. Replace worksheet title unallowed characters with '_'.
             var tableTitle = title
                 .Replace( " ", "" )
@@ -203,7 +197,7 @@ namespace Rock.Utility
 
             table.ShowHeader = true;
             table.ShowFilter = true;
-            table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
+            table.TableStyle = OfficeOpenXml.Table.TableStyles.Medium4;
 
             // Format header range
             using ( ExcelRange r = worksheet.Cells[headerRows, 1, headerRows, columns] )

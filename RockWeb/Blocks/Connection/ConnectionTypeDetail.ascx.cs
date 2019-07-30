@@ -761,7 +761,10 @@ namespace RockWeb.Blocks.Connection
             {
                 connectionActivityType = new ConnectionActivityType();
             }
+
             connectionActivityType.Name = tbConnectionActivityTypeName.Text;
+            connectionActivityType.IsActive = cbActivityTypeIsActive.Checked;
+
             if ( !connectionActivityType.IsValid )
             {
                 return;
@@ -818,10 +821,12 @@ namespace RockWeb.Blocks.Connection
             if ( connectionActivityType != null )
             {
                 tbConnectionActivityTypeName.Text = connectionActivityType.Name;
+                cbActivityTypeIsActive.Checked = connectionActivityType.IsActive;
             }
             else
             {
                 tbConnectionActivityTypeName.Text = string.Empty;
+                cbActivityTypeIsActive.Checked = true;
             }
             hfConnectionTypeAddConnectionActivityTypeGuid.Value = connectionActivityTypeGuid.ToString();
             ShowDialog( "ConnectionActivityTypes", true );
@@ -897,7 +902,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            connectionStatus.IsActive = cbIsActive.Checked;
+            connectionStatus.IsActive = cbConnectionStatusIsActive.Checked;
             connectionStatus.IsDefault = cbIsDefault.Checked;
             connectionStatus.IsCritical = cbIsCritical.Checked;
             if ( !connectionStatus.IsValid )
@@ -957,7 +962,7 @@ namespace RockWeb.Blocks.Connection
             {
                 tbConnectionStatusName.Text = connectionStatus.Name;
                 tbConnectionStatusDescription.Text = connectionStatus.Description;
-                cbIsActive.Checked = connectionStatus.IsActive;
+                cbConnectionStatusIsActive.Checked = connectionStatus.IsActive;
                 cbIsDefault.Checked = connectionStatus.IsDefault;
                 cbIsCritical.Checked = connectionStatus.IsCritical;
             }
@@ -967,7 +972,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     tbConnectionStatusName.Text = string.Empty;
                     tbConnectionStatusDescription.Text = string.Empty;
-                    cbIsActive.Checked = true;
+                    cbConnectionStatusIsActive.Checked = true;
                     cbIsDefault.Checked = false;
                     cbIsCritical.Checked = false;
                 }

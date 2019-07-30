@@ -201,7 +201,8 @@ namespace RockWeb.Blocks.Core
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
                 tag.IsActive = cbIsActive.Checked;
-
+                tag.IconCssClass = tbIconCssClass.Text;
+                tag.BackgroundColor = cpBackground.Value;
                 if ( _canConfigure )
                 {
                     tag.CategoryId = cpCategory.SelectedValueAsInt();
@@ -257,6 +258,10 @@ namespace RockWeb.Blocks.Core
                 ppOwner.Visible = false;
             }
 
+            if ( hfId.ValueAsInt() == 0 )
+            {
+                SetDefaultColor( ppOwner.PersonAliasId );
+            }
         }
         #endregion
 
@@ -400,6 +405,15 @@ namespace RockWeb.Blocks.Core
             }
 
             cbIsActive.Checked = tag.IsActive;
+            tbIconCssClass.Text = tag.IconCssClass;
+            if ( tag.BackgroundColor.IsNotNullOrWhiteSpace() )
+            {
+                cpBackground.Value = tag.BackgroundColor;
+            }
+            else
+            {
+                SetDefaultColor( tag.OwnerPersonAliasId );
+            }
 
             ddlEntityType.Items.Clear();
             ddlEntityType.Items.Add( new System.Web.UI.WebControls.ListItem() );
@@ -409,6 +423,21 @@ namespace RockWeb.Blocks.Core
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
+        }
+
+        /// <summary>
+        /// Sets the default color.
+        /// </summary>
+        private void SetDefaultColor( int? ownerPersonAliasId )
+        {
+            if ( ownerPersonAliasId.HasValue )
+            {
+                cpBackground.Value = "#e0e0e0";
+            }
+            else
+            {
+                cpBackground.Value = "#bababa";
+            }
         }
 
         /// <summary>

@@ -46,7 +46,7 @@
 
 // Text *show in editor*
 @text-selection-background:   #bcd9ea;                      // Text selection background color (used when people select text with the mouse). #color
-@text-selection-color:        inherit;                        // Text selection text color (used when people select text with the mouse). #color
+@text-selection-color:        inherit;                        // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif:      -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; // The base font to use for text. Be sure when defining this font that the various weights are configured.
 @font-size-base:              16px;                           // The default text size.
 @font-size-small:             14px;
@@ -56,6 +56,9 @@
 @required-field-color:        #d4442e;                      // Color of the small dot that denotes required fields. #color
 
 @link-hover-decoration:       none;
+
+// Theme Configuration *show in editor*
+@badge-grid-width:            86px; // Width of the assessment grid icon badges.
 
 // Text Conversion
 @help-color:                  fade(@help-color-hex, 80%);
@@ -439,9 +442,8 @@
 
 // Tags { Styles for the tag control used on the person profile. }
 @tag-bg:                                #bababa;
-@tag-text-color:                        #231f20;
+@tag-text-color:                        #FFFFFF;
 @tag-border-radius:                     @border-radius-base;
-@tag-dot-color:                         #fff;
 @tag-bg-alt:                            lighten(@tag-bg, 15%);
 
 // Autocomplete Styles
@@ -484,6 +486,7 @@
 @tree-selected-color:         #fff;                           // Text color of selected items in the treeview.
 
 // Buttons
+@enable-btn-focus-outline:    true;
 @btn-font-weight:             normal;
 //--
 @btn-default-color:           @gray-dark;
@@ -560,3 +563,16 @@
 @dropdown-header-color:          @gray-light;
 //--
 @dropdown-caret-color:           @link-color;
+
+// Add Button focus shadow
+.btn-outline-mixin(true) {
+  .button-variant(@color; @background; @border) {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      outline: 0;
+      box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
+    }
+  }
+}
+.btn-outline-mixin(false) { }
+.btn-outline-mixin(@enable-btn-focus-outline);

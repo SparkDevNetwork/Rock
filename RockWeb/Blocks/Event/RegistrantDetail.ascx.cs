@@ -376,6 +376,8 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
 
                     registrant.LoadAttributes();
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     foreach ( var field in TemplateState.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
@@ -782,6 +784,8 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                     {
                         if ( field.AttributeId.HasValue )
@@ -801,7 +805,7 @@ namespace RockWeb.Blocks.Event
                             FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                             {
                                 ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                                AttributeId = attribute.Id,
+                                RegistrationTemplateFormFieldId = field.Id,
                                 FieldVisibilityRules = field.FieldVisibilityRules
                             };
 
@@ -812,7 +816,7 @@ namespace RockWeb.Blocks.Event
                             var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
                             fieldVisibilityWrapper.EditControl = editControl;
 
-                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
+                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
 
                             if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                             {
@@ -909,6 +913,8 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
+                            // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                            // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                             if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             {
                                 object value = null;

@@ -200,13 +200,8 @@ namespace RockWeb.Blocks.Fundraising
                 mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages );
 
                 // populate merge fields for Registration Counts
-                var maxRegistrantCount = 0;
+                int? maxRegistrantCount = registrationInstance.MaxAttendees;
                 var currentRegistrationCount = 0;
-
-                if ( registrationInstance.MaxAttendees != 0 )
-                {
-                    maxRegistrantCount = registrationInstance.MaxAttendees;
-                }
                
                 currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
                                                 .Where( r =>
@@ -215,7 +210,7 @@ namespace RockWeb.Blocks.Fundraising
                                                 .Count();
 
                 mergeFields.Add( "CurrentRegistrationCount", currentRegistrationCount );
-                if ( maxRegistrantCount != 0 )
+                if ( maxRegistrantCount.HasValue )
                 {
                     mergeFields.Add( "MaxRegistrantCount", maxRegistrantCount );
                     mergeFields.Add( "RegistrationSpotsAvailable", maxRegistrantCount - currentRegistrationCount );

@@ -1049,11 +1049,9 @@ namespace RockWeb.Blocks.Finance
             {
                 var campusi = CampusCache.All();
                 campCampusBatch.Campuses = campusi;
-                campCampusBatch.Visible = campusi.Any();
                 campCampusBatch.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
 
                 campCampusAccount.Campuses = campusi;
-                campCampusAccount.Visible = campusi.Any();
                 campCampusAccount.SetValue( gfTransactions.GetUserPreference( "CampusAccount" ) );
             }
             else

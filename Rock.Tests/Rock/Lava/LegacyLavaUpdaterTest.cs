@@ -9,9 +9,7 @@ namespace Rock.Tests.Rock.Lava
 {
     public class LegacyLavaUpdaterTest
     {
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void UpdateLegacyLava()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -38,9 +36,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Confirms that the _url string is replaced if it is in a lava tag
         /// </summary>
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void ReplaceUrlOnLavaString()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -56,9 +52,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Confirms that the URL replacer will loop through the entire string.
         /// </summary>
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void ReplaceMultipleUrlOnLavaString()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -71,18 +65,14 @@ namespace Rock.Tests.Rock.Lava
             Assert.Equal( expectedText, afterText );
         }
 
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void CheckSystemEmail()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
             legacyLavaUpdater.CheckSystemEmail();
         }
 
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void CheckDotNotation()
         {
             bool isUpdated = false;
@@ -93,9 +83,7 @@ namespace Rock.Tests.Rock.Lava
             Assert.Equal( expectedText, afterText );
         }
 
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void UpdateLegacyLavaFiles()
         {
             LegacyLavaUpdater legacyLavaUpdater = new LegacyLavaUpdater();
@@ -106,9 +94,7 @@ namespace Rock.Tests.Rock.Lava
         /// <summary>
         /// Make sure we don't match the Report attribute and output Attribute:'Report'edBy
         /// </summary>
-
         [Fact( Skip = "need way of mocking RockContext" )]
-
         public void CheckDotNotationPartialMatches()
         {
             bool isUpdated = false;
