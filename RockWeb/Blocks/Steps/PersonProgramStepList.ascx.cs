@@ -783,9 +783,7 @@ namespace RockWeb.Blocks.Steps
 
             service.Delete( step );
             rockContext.SaveChanges();
-
-            RenderGridView();
-            RenderCardView();
+            ClearBlockCache();
         }
 
         /// <summary>
@@ -802,6 +800,19 @@ namespace RockWeb.Blocks.Steps
             return _rockContext;
         }
         private RockContext _rockContext;
+
+        /// <summary>
+        /// Clears the block cache.
+        /// </summary>
+        private void ClearBlockCache()
+        {
+            _rockContext = null;
+            _personStepsMap = null;
+            _person = null;
+            _stepProgram = null;
+            _stepTerm = null;
+            _stepTypes = null;
+        }
 
         #endregion Model Helpers
 
@@ -1101,7 +1112,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Navigate to the step page. StepTypeId is required. StepId can be ommitted for add, or set for edit.
+        /// Navigate to the step page. StepTypeId is required. StepId can be omitted for add, or set for edit.
         /// </summary>
         /// <param name="stepTypeId"></param>
         /// <param name="stepId"></param>

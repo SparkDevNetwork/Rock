@@ -69,9 +69,24 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The detail page
+            /// </summary>
             public const string DetailPage = "DetailPage";
+
+            /// <summary>
+            /// The profile page
+            /// </summary>
             public const string ProfilePage = "PersonProfilePage";
+
+            /// <summary>
+            /// The show note column
+            /// </summary>
             public const string ShowNoteColumn = "ShowNoteColumn";
+
+            /// <summary>
+            /// The step type
+            /// </summary>
             public const string StepType = "StepType";
         }
 
@@ -84,7 +99,15 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class PageParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step identifier
+            /// </summary>
+            public const string StepId = "StepId";
         }
 
         #endregion Page Parameter Keys
@@ -385,7 +408,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSteps_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "StepId", 0, "StepTypeId", _stepType.Id );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.StepId, 0, PageParameterKey.StepTypeId, _stepType.Id );
         }
 
         /// <summary>
@@ -395,7 +418,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSteps_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "StepId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.StepId, e.RowKeyId, PageParameterKey.StepTypeId, _stepType.Id );
         }
 
         /// <summary>
