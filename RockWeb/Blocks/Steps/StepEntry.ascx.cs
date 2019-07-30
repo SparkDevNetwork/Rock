@@ -69,8 +69,19 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The step type
+            /// </summary>
             public const string StepType = "StepType";
+
+            /// <summary>
+            /// The success page
+            /// </summary>
             public const string SuccessPage = "SuccessPage";
+
+            /// <summary>
+            /// The workflow entry page
+            /// </summary>
             public const string WorkflowEntryPage = "WorkflowEntryPage";
         }
 
@@ -79,8 +90,19 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class ParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step identifier
+            /// </summary>
             public const string StepId = "StepId";
+
+            /// <summary>
+            /// The person identifier
+            /// </summary>
             public const string PersonId = "PersonId";
         }
 
@@ -517,27 +539,16 @@ namespace RockWeb.Blocks.Steps
         {
             var page = GetAttributeValue( AttributeKey.SuccessPage );
             var parameters = new Dictionary<string, string>();
-            var person = GetPerson();
-            var step = GetStep();
-            var stepType = GetStepType();
+            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+            var personIdParam = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
 
-            if ( person != null )
+            if ( personIdParam.HasValue )
             {
-                parameters.Add( ParameterKey.PersonId, person.Id.ToString() );
+                parameters.Add( ParameterKey.PersonId, personIdParam.Value.ToString() );
             }
-
-            if ( newStepId.HasValue && newStepId > 0 )
+            else if ( stepTypeIdParam.HasValue )
             {
-                parameters.Add( ParameterKey.StepId, newStepId.Value.ToString() );
-            }
-            else if ( step != null )
-            {
-                parameters.Add( ParameterKey.StepId, step.Id.ToString() );
-            }
-
-            if ( stepType != null )
-            {
-                parameters.Add( ParameterKey.StepTypeId, stepType.Id.ToString() );
+                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam.Value.ToString() );
             }
 
             if ( page.IsNullOrWhiteSpace() )
