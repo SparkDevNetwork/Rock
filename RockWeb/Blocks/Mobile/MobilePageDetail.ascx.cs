@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( page == null )
             {
-                nbError.Text = "That page does not exist in the system.";
+                nbError.Text = "This page does not exist in the system.";
 
                 pnlDetails.Visible = false;
                 pnlBlocks.Visible = false;
@@ -466,7 +466,8 @@ namespace RockWeb.Blocks.Mobile
             // Setup the Details panel information.
             //
             hfPageId.Value = page.Id.ToString();
-            ltPageName.Text = page.InternalName.EncodeHtml();
+            lPageName.Text = page.InternalName;
+            lPageGuid.Text = "Page Guid: " + page.Guid.ToString();
 
             var fields = new List<KeyValuePair<string, string>>();
 

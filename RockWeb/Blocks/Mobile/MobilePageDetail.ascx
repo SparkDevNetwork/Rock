@@ -9,11 +9,14 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title">Page</h3>
+                <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
+
+                <div class="panel-labels">
+                    <span class="label label-default"><asp:Literal ID="lPageGuid" runat="server" /></span>
+                </div>
             </div>
 
             <div class="panel-body">
-                <h4><asp:Literal ID="ltPageName" runat="server" /></h4>
 
                 <div class="row">
                     <asp:Literal ID="ltDetails" runat="server" />
