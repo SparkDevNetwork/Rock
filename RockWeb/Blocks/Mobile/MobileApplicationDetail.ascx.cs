@@ -32,6 +32,7 @@ using Rock.Web.UI;
 using Rock.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Mobile
 {
@@ -123,6 +124,41 @@ namespace RockWeb.Blocks.Mobile
                     ShowEdit( siteId );
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? siteId = PageParameter( pageReference, "siteId" ).AsIntegerOrNull();
+            if ( siteId != null )
+            {
+                var site = new SiteService( new RockContext() ).Get( siteId.Value );
+
+                if ( site != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( site.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Application", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
         }
 
         #endregion
