@@ -21,6 +21,7 @@ using System.Data.Entity.Spatial;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.OData;
 
@@ -79,7 +80,9 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic );
+            var qry = groupService
+                .GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus, limitToPublic )
+                .AsNoTracking();
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -101,7 +104,7 @@ namespace Rock.Rest.Controllers
                         }
                         else
                         {
-                            bool hasChildScheduledEnabledGroups = groupService.GetAllDescendents( group.Id ).Any( a => a.GroupType.IsSchedulingEnabled == true );
+                            bool hasChildScheduledEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.IsSchedulingEnabled == true );
                             if ( hasChildScheduledEnabledGroups )
                             {
                                 includeGroup = true;
@@ -177,6 +180,97 @@ namespace Rock.Rest.Controllers
         public IQueryable<Group> GetFamilies( int personId )
         {
             return new PersonService( (RockContext)Service.Context ).GetFamilies( personId );
+        }
+
+
+        /// <summary>
+        /// Returns a simplified data structure of the check-in parameters. This is used by FrontPorch but is generalized.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GroupTypeCheckinConfiguration/{groupTypeGuid}" )]
+        public HttpResponseMessage GroupTypeCheckinConfiguration( Guid groupTypeGuid )
+        {
+            var groups = new GroupService( new RockContext() ).Queryable().AsNoTracking()
+                            .Where( g => g.GroupType.Guid == groupTypeGuid )
+                            .Select( g => new CheckinConfig
+                            {
+                                Id = g.Id,
+                                Name = g.Name,
+                                Guid = g.Guid,
+                                Locations = g.GroupLocations.Select( l => new CheckinConfigLocation
+                                {
+                                    Id = l.Location.Id,
+                                    Name = l.Location.Name,
+                                    Guid = l.Location.Guid,
+                                    GeoFence = l.Location.GeoFence,
+                                    Latitude = l.Location.GeoPoint.Latitude,
+                                    Longitude = l.Location.GeoPoint.Longitude,
+                                    Street1 = l.Location.Street1,
+                                    City = l.Location.City,
+                                    State = l.Location.State,
+                                    PostalCode = l.Location.PostalCode,
+                                    Country = l.Location.Country,
+                                    IsActive = l.Location.IsActive,
+                                    LocationType = l.Location.LocationTypeValue.Value,
+                                    LocationTypeId = l.Location.LocationTypeValue.Id,
+                                    Schedules = l.Schedules.Select( s => new CheckinConfigLocationSchedule
+                                    {
+                                        Id = s.Id,
+                                        Name = s.Name,
+                                        Guid = s.Guid,
+                                        IcalContent = s.iCalendarContent,
+                                        Category = s.Category.Name,
+                                        IsActive = s.IsActive
+                                    } )
+                                } )
+                            } )
+                            .ToList();
+
+            // The returned type is great but lets add some schedule details from the ical string
+
+            foreach (var groupCheckinInfo in groups)
+            {
+                if ( groupCheckinInfo.Locations.IsNull() )
+                {
+                    return this.Request.CreateResponse( groupCheckinInfo );
+                }
+
+                foreach ( var location in groupCheckinInfo.Locations )
+                {
+                    if ( location.Schedules.IsNull() )
+                    {
+                        continue;
+                    }
+
+                    foreach ( var schedule in location.Schedules )
+                    {
+                        var scheduleDetails = ScheduleICalHelper.GetCalendarEvent( schedule.IcalContent );
+
+                        if ( scheduleDetails.RecurrenceRules.Count == 0 )
+                        {
+                            continue;
+                        }
+
+                        schedule.DayOfWeek = scheduleDetails.RecurrenceRules[0].ByDay.FirstOrDefault()?.DayOfWeek;
+
+                        schedule.StartTime = scheduleDetails.DTStart.Value.TimeOfDay;
+
+                        var duration = scheduleDetails.Duration;
+
+                        if ( duration == null )
+                        {
+                            continue;
+                        }
+
+                        schedule.EndTime = schedule.StartTime.Add( duration );
+                    }
+                }
+            }
+
+            return this.Request.CreateResponse( groups ); 
         }
 
         /// <summary>
@@ -622,15 +716,15 @@ namespace Rock.Rest.Controllers
 
             var groupService = (GroupService)Service;
             var groupLocationService = new GroupLocationService( groupService.Context as RockContext );
-            IEnumerable<Group> childGroups;
+            List<Group> childGroups;
 
             if ( !includeDescendants )
             {
-                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId );
+                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId ).AsNoTracking().ToList();
             }
             else
             {
-                childGroups = groupService.GetAllDescendents( groupId );
+                childGroups = groupService.GetAllDescendentGroups( groupId, false ).ToList();
             }
 
             if ( !string.IsNullOrWhiteSpace( groupTypeIds ) ) 
@@ -638,14 +732,14 @@ namespace Rock.Rest.Controllers
                 var groupTypeIdList = groupTypeIds.Split( ',' ).AsIntegerList();
                 if ( groupTypeIdList.Any() )
                 {
-                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) );
+                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) ).ToList();
                 }
             }
 
             var childGroupIds = childGroups.Select( a => a.Id ).ToList();
 
             // fetch all the groupLocations for all the groups we are going to show (to reduce SQL traffic)
-            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).Select( a => new
+            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).AsNoTracking().Select( a => new
             {
                 a.GroupId,
                 a.Location
@@ -1185,6 +1279,249 @@ namespace Rock.Rest.Controllers
             /// The template.
             /// </value>
             public string Template { get; set; }
+        }
+
+        /// <summary>
+        /// POCO for sending checkin configuration information
+        /// </summary>
+        public class CheckinConfig
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the locations.
+            /// </summary>
+            /// <value>
+            /// The locations.
+            /// </value>
+            public IEnumerable<CheckinConfigLocation> Locations { get; set; }
+        }
+
+        /// <summary>
+        /// POCO for the checkin location information
+        /// </summary>
+        public class CheckinConfigLocation
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the geofence.
+            /// </summary>
+            /// <value>
+            /// The geofence.
+            /// </value>
+            public DbGeography GeoFence { get; set; }
+
+
+            /// <summary>
+            /// Gets or sets the latitude.
+            /// </summary>
+            /// <value>
+            /// The latitude.
+            /// </value>
+            public double? Latitude { get; set; }
+
+            /// <summary>
+            /// Gets or sets the longitude.
+            /// </summary>
+            /// <value>
+            /// The longitude.
+            /// </value>
+            public double? Longitude { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street1.
+            /// </summary>
+            /// <value>
+            /// The street1.
+            /// </value>
+            public string Street1 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the city.
+            /// </summary>
+            /// <value>
+            /// The city.
+            /// </value>
+            public string City { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
+            public string State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the postal code.
+            /// </summary>
+            /// <value>
+            /// The postal code.
+            /// </value>
+            public string PostalCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the country.
+            /// </summary>
+            /// <value>
+            /// The country.
+            /// </value>
+            public string Country { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is active.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsActive { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the location.
+            /// </summary>
+            /// <value>
+            /// The type of the location.
+            /// </value>
+            public string LocationType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the location type identifier.
+            /// </summary>
+            /// <value>
+            /// The location type identifier.
+            /// </value>
+            public int LocationTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the schedules.
+            /// </summary>
+            /// <value>
+            /// The schedules.
+            /// </value>
+            public IEnumerable<CheckinConfigLocationSchedule> Schedules { get; set; }
+        }
+
+        /// <summary>
+        /// POCO for holding location schedule information
+        /// </summary>
+        public class CheckinConfigLocationSchedule
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the content of the ical.
+            /// </summary>
+            /// <value>
+            /// The content of the ical.
+            /// </value>
+            public string IcalContent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the category.
+            /// </summary>
+            /// <value>
+            /// The name of the category.
+            /// </value>
+            public string Category { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is active.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsActive { get; set; }
+
+            /// <summary>
+            /// Gets or sets the day of week.
+            /// </summary>
+            /// <value>
+            /// The day of week.
+            /// </value>
+            public DayOfWeek? DayOfWeek { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start time.
+            /// </summary>
+            /// <value>
+            /// The start time.
+            /// </value>
+            public TimeSpan StartTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end time.
+            /// </summary>
+            /// <value>
+            /// The end time.
+            /// </value>
+            public TimeSpan EndTime { get; set; }
         }
 
         /// <summary>

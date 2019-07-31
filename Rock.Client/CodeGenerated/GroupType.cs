@@ -327,7 +327,7 @@ namespace Rock.Client
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
         /// <summary />
-        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
 
         /// <summary />
         public int? ScheduleReminderSystemEmailId { get; set; }

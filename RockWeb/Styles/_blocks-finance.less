@@ -108,8 +108,36 @@
 
 .transaction-matching {
   .progress {
+    flex: 0 0 30%;
     float: left;
     width: 30%;
     margin-bottom: 0;
+  }
+
+  .transaction-matching-details {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-height: 610px;
+    max-height: ~"calc(100vh - 210px)";
+    overflow-y: auto;
+
+    .header {
+      -ms-flex: 1 1 auto;
+      flex: 1 1 auto;
+    }
+
+    .body {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -ms-flex: 1 1 auto;
+      flex: 1 1 auto;
+      min-height: 303px;
+    }
+
+    .picker .picker-menu {
+      margin-top: -149px;
+    }
   }
 }

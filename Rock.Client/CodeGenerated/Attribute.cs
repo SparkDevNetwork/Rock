@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AbbreviatedName { get; set; }
+
+        /// <summary />
         public bool AllowSearch { get; set; }
 
         /// <summary />
@@ -111,6 +114,9 @@ namespace Rock.Client
         /// <summary />
         public string PreHtml { get; set; }
 
+        /// <summary />
+        public bool ShowOnBulk { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -144,6 +150,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Attribute source )
         {
             this.Id = source.Id;
+            this.AbbreviatedName = source.AbbreviatedName;
             this.AllowSearch = source.AllowSearch;
             this.DefaultValue = source.DefaultValue;
             this.Description = source.Description;
@@ -169,6 +176,7 @@ namespace Rock.Client
             this.Order = source.Order;
             this.PostHtml = source.PostHtml;
             this.PreHtml = source.PreHtml;
+            this.ShowOnBulk = source.ShowOnBulk;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

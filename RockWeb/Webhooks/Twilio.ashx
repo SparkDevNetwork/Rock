@@ -1,4 +1,4 @@
-<%@ WebHandler Language="C#" Class="TwilioAsync" %>
+﻿<%@ WebHandler Language="C#" Class="TwilioAsync" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //

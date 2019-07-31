@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -38,6 +39,9 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        /// <summary>
+        /// Is there a transaction in progress?
+        /// </summary>
         private bool _transactionInProgress = false;
 
         /// <summary>
@@ -218,7 +222,7 @@ namespace Rock.Data
                 if ( entry.Entity is IModel )
                 {
                     var model = entry.Entity as IModel;
-                    model.PreSaveChanges( this, entry, entry.State ); 
+                    model.PreSaveChanges( this, entry, entry.State );
 
                     if ( !preSavedEntities.Contains( model.Guid ) )
                     {
@@ -311,6 +315,8 @@ namespace Rock.Data
                     }
                     catch ( SystemException ex )
                     {
+                        contextItem.Audit = null;
+                        System.Diagnostics.Debug.WriteLine( $"Exception when getting Audit details for {contextItem?.GetType().Name} - {ex}" );
                         ExceptionLogService.LogException( ex, null );
                     }
                 }
@@ -333,11 +339,11 @@ namespace Rock.Data
             {
                 try
                 {
-                    var audits = updatedItems.Select( i => i.Audit ).ToList();
+                    var audits = updatedItems.Where( a => a.Audit != null ).Select( i => i.Audit ).ToList();
                     if ( audits.Any( a => a.Details.Any() ) )
                     {
                         var transaction = new Rock.Transactions.AuditTransaction();
-                        transaction.Audits = audits;
+                        transaction.Audits = audits.Where( a => a.Details.Any() == true ).ToList();
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
@@ -433,7 +439,7 @@ namespace Rock.Data
                 {
                     model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
                     model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
-                    
+
                     if ( currentPersonAliasId.HasValue )
                     {
                         model.CreatedByPersonAliasId = model.CreatedByPersonAliasId ?? currentPersonAliasId;
@@ -665,6 +671,12 @@ namespace Rock.Data
             return match;
         }
 
+        /// <summary>
+        /// Gets the audit details.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
         private static void GetAuditDetails( DbContext dbContext, ContextItem item, int? personAliasId )
         {
             // Get the base class (not the proxy class)
@@ -674,8 +686,7 @@ namespace Rock.Data
                 rockEntityType = rockEntityType.BaseType;
             }
 
-            // Check to make sure class does not have [NotAudited] attribute
-            if ( AuditClass( rockEntityType ) )
+            if ( IsAuditableClass( rockEntityType ) )
             {
                 var dbEntity = item.DbEntityEntry;
                 var audit = item.Audit;
@@ -684,8 +695,7 @@ namespace Rock.Data
 
                 foreach ( PropertyInfo propInfo in properties )
                 {
-                    // Check to make sure property does not have the [NotAudited] attribute
-                    if ( AuditProperty( propInfo ) )
+                    if ( IsAuditableProperty( propInfo ) )
                     {
                         // If entire entity was added or deleted or this property was modified
                         var dbPropertyEntry = dbEntity.Property( propInfo.Name );
@@ -739,24 +749,36 @@ namespace Rock.Data
             }
         }
 
-        private static bool AuditClass( Type baseType )
+        /// <summary>
+        /// Determines whether [is auditable class] [the specified base type].
+        /// </summary>
+        /// <param name="baseType">Type of the base.</param>
+        /// <returns>
+        ///   <c>true</c> if [is auditable class] [the specified base type]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsAuditableClass( Type baseType )
         {
             var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
             return ( attribute == null );
         }
 
-        private static bool AuditProperty( PropertyInfo propertyInfo )
+        /// <summary>
+        /// Determines whether [is auditable property] [the specified property information].
+        /// </summary>
+        /// <param name="propertyInfo">The property information.</param>
+        /// <returns>
+        ///   <c>true</c> if [is auditable property] [the specified property information]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsAuditableProperty( PropertyInfo propertyInfo )
         {
-            if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( ( propertyInfo.GetGetMethod() != null && !propertyInfo.GetGetMethod().IsVirtual ) ||
-                propertyInfo.Name == "Id" ||
-                propertyInfo.Name == "Guid" ||
-                propertyInfo.Name == "Order" ||
-                propertyInfo.Name == "IsActive" ) )
+            // if it is specifically marked as NotAudited, don't include it
+            if ( propertyInfo.GetCustomAttribute<NotAuditedAttribute>() != null )
             {
-                return true;
+                return false;
             }
-            return false;
+
+            // Otherwise, make sure it is a real database field
+            return Reflection.IsMappedDatabaseProperty( propertyInfo );
         }
 
         /// <summary>

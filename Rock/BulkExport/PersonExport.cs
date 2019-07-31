@@ -314,6 +314,15 @@ namespace Rock.BulkExport
         public int? PrimaryFamilyId => _person.PrimaryFamilyId;
 
         /// <summary>
+        /// Gets the primary campus identifier.
+        /// </summary>
+        /// <value>
+        /// The primary campus identifier.
+        /// </value>
+        [DataMember]
+        public int? PrimaryCampusId => _person.PrimaryCampusId;
+
+        /// <summary>
         /// Gets the deceased date.
         /// </summary>
         /// <value>

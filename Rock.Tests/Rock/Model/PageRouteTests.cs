@@ -31,7 +31,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Shoulds serialize a PageRoute into a JSON string.
         /// </summary>
-        [Fact( Skip = "Need a mock for Global Attributes" )]
+        [Fact]
         public void ExportJson()
         {
             var guid = Guid.NewGuid();

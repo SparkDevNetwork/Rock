@@ -37,7 +37,7 @@
                         </div>
                         <div class="col-md-8">
                             <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
-                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                                <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
                             
                             <div class="row">
@@ -62,6 +62,12 @@
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:RockLiteral ID="lComments" runat="server" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
                         </div>
                     </div>
 
@@ -137,7 +143,13 @@
                             <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -275,7 +287,8 @@
                                         </div>
                                         <div class="col-md-8">
                                             <%# Eval("Description") %>
-                                            </br>                                                
+
+                                            <br />
                                             <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default btn-sm" />
                                         </div>
                                     </div>

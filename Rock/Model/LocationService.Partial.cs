@@ -51,6 +51,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
         /// Note: if <paramref name="street1"/> is blank, null will be returned.
+        /// Note: The location search IS NOT constrained by the provided group. Providing the group will cause this method to search that groups locations first, giving a faster result.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -58,7 +59,7 @@ namespace Rock.Model
         /// <param name="state">A <see cref="string" /> representing the State to search by.</param>
         /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
         /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
-        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first</param>
+        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first. This is NOT a search constraint.</param>
         /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <param name="createNewLocation">if set to <c>true</c> a new location will be created if it does not exists.</param>
         /// <returns>
@@ -279,7 +280,7 @@ namespace Rock.Model
             bool anyActiveStandardizationService = false;
             bool anyActiveGeocodingService = false;
 
-            // Save current values for situation when first service may successfully standardize or geocode, but not both
+            // Save current values for situation when first service may successfully standardize or geocode, but not both 
             // In this scenario the first service's values should be preserved
             string street1 = location.Street1;
             string street2 = location.Street2;
@@ -395,10 +396,11 @@ namespace Rock.Model
                     {
                         break;
                     }
+
                 }
             }
 
-            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime
+            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime 
             // needs to be updated so that the verification job will continue to process additional locations vs just getting
             // stuck on the first batch and doing them over and over again because the other service type's attempted date is
             // never updated.
@@ -499,7 +501,7 @@ namespace Rock.Model
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT * FROM CTE
-                WHERE [Name] IS NOT NULL
+                WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
                 ", locationId ) );
         }
@@ -521,7 +523,7 @@ namespace Rock.Model
                 )
                 SELECT [Id]
                 FROM CTE
-                WHERE [Name] IS NOT NULL
+                WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
                 ", locationId ) );
         }

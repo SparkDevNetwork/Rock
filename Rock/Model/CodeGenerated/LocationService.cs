@@ -93,6 +93,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
+ 
+            if ( new Service<SequenceEnrollment>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, SequenceEnrollment.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SequenceOccurrenceExclusion>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, SequenceOccurrenceExclusion.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

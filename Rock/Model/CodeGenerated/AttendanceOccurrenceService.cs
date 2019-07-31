@@ -99,6 +99,7 @@ namespace Rock.Model
             target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
             target.ScheduleId = source.ScheduleId;
+            target.StepTypeId = source.StepTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -69,8 +69,8 @@ textarea,
 .form-control {
   &:focus {
     border: 1px solid @input-border-focus;
-    box-shadow: @input-focus-box-shadow;
     outline: none;
+    box-shadow: @input-focus-box-shadow;
   }
 }
 
@@ -93,13 +93,17 @@ textarea,
 // -------------------------
 
 .well {
-  .box-shadow(none)
+  .box-shadow(none);
 }
 
 .toggle-container {
   .btn-group {
     vertical-align: top;
   }
+}
+
+.btn {
+  transition: @btn-transition;
 }
 
 .btn-square {
@@ -259,7 +263,7 @@ textarea,
 
 .has-error .form-control:focus {
   border-color: @brand-danger;
-  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
+  box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
 }
 
 .has-error .control-label {
@@ -380,7 +384,7 @@ textarea,
 }
 
 .modal {
-  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
+  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, .1));
   border-radius: 0;
 }
 
@@ -445,7 +449,68 @@ textarea,
 
 
 .panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
   > .panel-heading {
+    border-bottom: 1px solid @panel-border;
+  }
+
+  > .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+    .row {
+      width: 100%;
+    }
+
+    > .panel-title {
+      margin-right: auto;
+    }
+
+    .filter-toggle {
+      margin-top: 0;
+    }
+
+    > .panel-labels,
+    > .pull-right {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    > .description {
+      display: block;
+    }
+  }
+
+  > .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: #fff;
+
+    .panel-block {
+      height: auto !important;
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+  }
+
+  .wizard {
+    padding: 16px 0;
+    margin: 0;
+    background: @ui-2;
     border-bottom: 1px solid @panel-border;
   }
 }
@@ -505,11 +570,11 @@ body.nav-open {
 }
 
 // Fixed Navbar #target fix
-:target:before {
-  content: "";
+:target::before {
   display: block;
   height: @navbar-top-height;
   margin-top: -@navbar-top-height;
+  content: "";
 }
 
 .page-wrapper {
@@ -1035,9 +1100,11 @@ body.nav-open {
 
 
         /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
-          @media not all and (min-resolution:.001dpcm) and (min-width: @screen-sm-min) { @supports (-webkit-appearance:none) {
+        @media not all and (min-resolution: .001dpcm) and (min-width: @screen-sm-min) {
+          @supports (-webkit-appearance:none) {
             top: @navbar-top-height;
-          }}
+          }
+        }
 
 
 
@@ -1364,47 +1431,6 @@ body.navbar-side-open {
 /*#region
 // 6. Components          */
 // -------------------------
-
-.panel-block {
-  position: relative;
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  min-width: 0;
-
-  .is-fullscreen & {
-    height: 100vh !important;
-    margin: 0;
-    overflow: auto;
-    background-color: #fff;
-  }
-
-  .panel-heading {
-    display: -ms-flexbox;
-    display: flex;
-    align-content: center;
-    align-items: center;
-
-    .panel-title {
-      margin-right: auto;
-    }
-
-    .filter-toggle {
-      margin-top: 0;
-    }
-
-    .pull-right {
-      margin-left: auto;
-    }
-  }
-
-  .panel-body {
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
-  }
-}
-
 
 .note-editor.note-frame {
   margin: 0;

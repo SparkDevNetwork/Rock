@@ -59,12 +59,32 @@
                                 <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule"/>
                                 <asp:Literal ID="lScheduleText" runat="server" />
                             </Rock:RockControlWrapper>
-                            <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
-                            <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
-                            <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
-                            <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
-                            <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
 
+                            <table>
+                            <asp:Repeater ID="rptRegistrations" runat="server" OnItemDataBound="rptRegistrations_ItemDataBound">
+                                <HeaderTemplate>
+                                    <label class="margin-b-none">Linkages (Registration Instance - Group)</label>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <tr>
+                                        <td>
+                                            <asp:HiddenField ID="hfGroupMapId" runat="server" Value='<%# Eval("GroupMapId") %>' />
+                                            <span class="margin-b-none margin-r-md"><%# Eval("OccurrenceRegistration") %></span>
+                                        </td>
+                                        <td>
+                                            <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs" OnCommand="lbEditRegistration_Command" CommandArgument='<%# Eval("GroupMapId") %>' ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
+                                            <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs" OnCommand="lbDeleteRegistration_Command" CommandArgument='<%# Eval("GroupMapId") %>' ><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                                        </td>
+                                    </tr>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                    <tr><td colspan="2">
+                                    <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
+                                    <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-t-sm margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
+                                        </td></tr>
+                                </FooterTemplate>
+                            </asp:Repeater>
+                            </table>
                         </div>
 
                         <div class="col-md-6">
@@ -112,6 +132,7 @@
 
         <Rock:ModalDialog ID="dlgEditLinkage" runat="server" Title="Edit Registration Instance" SaveButtonText="OK" OnSaveClick="dlgEditLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="EditLinkage">
             <Content>
+                <asp:HiddenField ID="hfEditLinkageGroupMapId" runat="server" />
                 <asp:ValidationSummary ID="vsEditLinkage" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="EditLinkage" />
                 <div class="row">
                     <div class="col-md-6">
@@ -141,8 +162,7 @@
                         <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage"
                             AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false"
                             Required="true" EnhanceForLongLists="true" />
-                        <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage"
-                            Required="true" EnhanceForLongLists="true" />
+                        <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage" Required="true" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpExistingLinkageGroup" runat="server" Label="Group" ValidationGroup="ExistingLinkage" />

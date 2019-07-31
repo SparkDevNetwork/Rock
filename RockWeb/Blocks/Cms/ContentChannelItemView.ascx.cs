@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Cms
 
     [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
-    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel.", required: true, defaultValue: "", category: "CustomSetting" )]
     [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 
@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Item Cache Duration", description: "Number of seconds to cache the content item specified by the parameter.", required: false, defaultValue: 3600, category: "CustomSetting", order: 0, key: "ItemCacheDuration" )]
     [CustomCheckboxListField( "Cache Tags", description: "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
 
+    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", description: "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
     [LinkedPage( "Detail Page", description: "Page used to view a content item.", order: 1, category: "CustomSetting", key: "DetailPage" )]
 
@@ -245,6 +246,7 @@ Guid - ContentChannelItem Guid
             }
 
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
 
             if ( this.GetAttributeValue( "LogInteractions" ).AsBoolean() )
             {
@@ -308,6 +310,7 @@ Guid - ContentChannelItem Guid
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
             this.SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
@@ -422,6 +425,7 @@ Guid - ContentChannelItem Guid
                 pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
             }
 
+            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
             bool setPageTitle = GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             if ( outputContents == null )
@@ -468,7 +472,26 @@ Guid - ContentChannelItem Guid
                     }
                 }
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+
+                // Merge content and attribute fields if block is configured to do so.
+                if ( isMergeContentEnabled )
+                {
+                    var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
+
+                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    
+                    itemMergeFields.AddOrReplace( "Item", contentChannelItem );
+                    contentChannelItem.Content = contentChannelItem.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    contentChannelItem.LoadAttributes();
+                    foreach ( var attributeValue in contentChannelItem.AttributeValues )
+                    {
+                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    }
+                }
+
+                var mergeFields = new Dictionary<string, object>( commonMergeFields );
+
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
                 int detailPage = 0;
@@ -629,6 +652,12 @@ Guid - ContentChannelItem Guid
             else
             {
                 var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
+
+                // First, look for the item key via the route/slug so that something like this
+                // continues to work when an external system (such as Facebook) tacks a parameter
+                // onto the URL like this:
+                // https://community.rockrms.com/connect/a-dedicated-new-home-for-the-rock-community?fbclid=IwAR2VRUjhh...-9biFY
+
                 // if this is the standard "page/{PageId}" route, don't grab the Item from the route since it would just be the pageId
                 if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
                 {

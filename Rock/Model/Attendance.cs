@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -60,7 +61,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to. 
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that was checked in to.
@@ -125,7 +126,7 @@ namespace Rock.Model
         public int? AttendanceCodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value id.  Qualifier can be used to 
+        /// Gets or sets the qualifier value id.  Qualifier can be used to
         /// "qualify" attendance records.  There are not any system values
         /// for this particular defined type
         /// </summary>
@@ -298,7 +299,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Device"/> that was used to check in 
+        /// The <see cref="Rock.Model.Device"/> that was used to check in
         /// </value>
         [DataMember]
         public virtual Device Device { get; set; }
@@ -317,7 +318,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
-        /// </value>        
+        /// </value>
         [LavaInclude]
         public virtual Group SearchResultGroup { get; set; }
 
@@ -457,7 +458,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
+        /// Gets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
@@ -649,20 +650,58 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Pres the save changes.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var transaction = new Rock.Transactions.GroupAttendedTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            bool previousDidAttendValue;
+
+            bool previouslyDeclined;
+
+            if ( entry.State == EntityState.Added )
+            {
+                previousDidAttendValue = false;
+                previouslyDeclined = false;
+            }
+            else
+            {
+                previousDidAttendValue = entry.Property( "DidAttend" )?.OriginalValue as bool? ?? false;
+
+                // get original value of RSVP so we can detect whether the value changed
+                previouslyDeclined = ( entry.Property( "RSVP" )?.OriginalValue as RSVP? ) == RSVP.No;
+            }
+
+            // if the record was changed to Declined, queue a GroupScheduleCancellationTransaction in PostSaveChanges
+            _declinedScheduledAttendance = ( previouslyDeclined == false ) && this.IsScheduledPersonDeclined();
+
+            if ( previousDidAttendValue == false && this.DidAttend == true )
+            {
+                new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
+            }
 
 #pragma warning disable 612, 618
             ProcessObsoleteOccurrenceFields( entry );
 #pragma warning restore 612, 618
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        private bool _declinedScheduledAttendance = false;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( _declinedScheduledAttendance )
+            {
+                new GroupScheduleCancellationTransaction( this ).Enqueue();
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>
@@ -675,7 +714,7 @@ namespace Rock.Model
         {
             if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
             {
-                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurenceDate in that situation
+                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurrenceDate in that situation
                 if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
                 {
                     if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
@@ -685,7 +724,7 @@ namespace Rock.Model
                         {
                             var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
 
-                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurence since it is really a completely different Occurrence if Group,Location or Schedule changes
+                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurrence since it is really a completely different Occurrence if Group,Location or Schedule changes
                             var occurrenceDate = this.StartDateTime.Date;
 
                             var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();
@@ -764,7 +803,7 @@ namespace Rock.Model
                 {
                     verb = "has been requested to attend";
                 }
-                else if (this.DeclineReasonValueId.HasValue )
+                else if ( this.DeclineReasonValueId.HasValue )
                 {
                     verb = "has declined to attend";
                 }

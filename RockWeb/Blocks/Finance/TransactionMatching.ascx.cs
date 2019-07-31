@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Transaction Matching" )]
     [Category( "Finance" )]
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 4 )]
 
-    [BooleanField( 
+    [BooleanField(
         "Expand Person Search Options",
         Key = AttributeKey.ExpandPersonSearchOptions,
         Description = "When selecting a person, expand the additional search options by default.",
@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum Direction
         {
@@ -756,7 +756,7 @@ namespace RockWeb.Blocks.Finance
                             .OrderBy( i => i.Order )
                             .FirstOrDefault();
 
-                        lImage.Text = string.Format( "<a href='{0}'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId ) ) );
+                        lImage.Text = string.Format( "<a href='{0}' target='_blank'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId ) ) );
                         lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
@@ -953,11 +953,13 @@ namespace RockWeb.Blocks.Finance
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
             cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
-
+            
             cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
-
+            
             mdAccountsPersonalFilter.Show();
+
+            cbFilterAccountsByBatchsCampus.Visible = cpAccounts.Visible;
         }
 
         /// <summary>
@@ -1341,11 +1343,33 @@ namespace RockWeb.Blocks.Finance
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 
-                var campus = person.GetCampus();
-                lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    var campus = person.GetCampus();
+                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                }
 
-                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
-                rptrAddresses.DataBind();
+                var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
+                var addresses = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
+                if ( addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).Count() > 1 )
+                {
+                    var primaryAddresses = addresses.Where( a => a.GroupLocationTypeValueId != previousDefinedValue.Id ).ToList();
+                    var previousAddress = addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).ToList();
+                    primaryAddresses.Add( previousAddress.First() );
+
+                    rptrAddresses.DataSource = primaryAddresses;
+                    rptrAddresses.DataBind();
+                    rptPrevAddresses.DataSource = previousAddress.Skip( 1 );
+                    rptPrevAddresses.DataBind();
+                    btnMoreAddress.Visible = true;
+                }
+                else
+                {
+                    rptrAddresses.DataSource = addresses;
+                    rptrAddresses.DataBind();
+                    btnMoreAddress.Visible = false;
+                }
+                
             }
         }
 

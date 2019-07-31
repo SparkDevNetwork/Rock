@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// Sets an attribute's value to the selected person 
     /// </summary>
     [ActionCategory( "People" )]
-    [Description( "Sets an attribute to a person that matches based on any given name, email, mobile number, and birth date. If match is not found a new person will be created. Note: If a match is found, it does NOT update the person record with any of the supplied values except the email address (the others are only used to find a match)." )]
+    [Description( "Sets an attribute to a person that matches based on any given name, email, mobile number, and birth date. If match is not found a new person will be created. Note: If a match is found, it does NOT update the person record with any of the supplied values except the email address if enabled by the action setting (the others are only used to find a match)." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Attribute From Fields" )]
 
@@ -61,7 +61,15 @@ namespace Rock.Workflow.Action
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
         Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 9 )]
     [WorkflowAttribute( "Default Campus", "The attribute value to use as the default campus when creating a new person.",
-        true, "", "", 10, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
+        false, "", "", 10, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
+
+    // Update settings
+    [BooleanField(
+        name: "Update Email?",
+        description: "If a person is found matching the various attributes, but the primary email is different, should the person's primary email be updated?",
+        key: UPDATE_PRIMARY_EMAIL,
+        defaultValue: true, // "true" to preserve functionality before this setting was added
+        order: 11 )]
 
     public class GetPersonFromFields : ActionComponent
     {
@@ -76,6 +84,7 @@ namespace Rock.Workflow.Action
         private const string BIRTH_MONTH_KEY = "BirthMonth";
         private const string BIRTH_DAY_KEY = "BirthDay";
         private const string BIRTH_YEAR_KEY = "BirthYear";
+        private const string UPDATE_PRIMARY_EMAIL = "UpdatePrimaryEmail";
 
         /// <summary>
         /// Executes the specified workflow.
@@ -102,7 +111,6 @@ namespace Rock.Workflow.Action
                 int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
                 int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
 
-
                 if ( string.IsNullOrWhiteSpace( firstName ) ||
                     string.IsNullOrWhiteSpace( lastName ) ||
                     ( string.IsNullOrWhiteSpace( email ) && string.IsNullOrWhiteSpace( mobileNumber ) ) )
@@ -116,7 +124,8 @@ namespace Rock.Workflow.Action
                     var personService = new PersonService( rockContext );
 
                     var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobileNumber, null, birthMonth, birthDay, birthYear );
-                    person = personService.FindPerson( personQuery, true );
+                    var updatePrimaryEmail = GetAttributeValue( action, UPDATE_PRIMARY_EMAIL ).AsBooleanOrNull() ?? true; // Default "true" to preserve functionality before this setting was added
+                    person = personService.FindPerson( personQuery, updatePrimaryEmail );
 
                     if ( person.IsNotNull() )
                     {
@@ -150,16 +159,17 @@ namespace Rock.Workflow.Action
                             person.RecordStatusValueId = defaultRecordStatus.Id;
                         }
 
-                        var defaultCampus = CampusCache.Get( GetAttributeValue( action, DEFAULT_CAMPUS_KEY, true ).AsGuid() );
-                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : ( int? ) null ), false );
+                        var defaultCampusGuid = GetAttributeValue( action, DEFAULT_CAMPUS_KEY, true ).AsGuidOrNull();
+                        var defaultCampus = defaultCampusGuid.HasValue ? CampusCache.Get( defaultCampusGuid.Value ) : null;
+                        var defaultCampusId = defaultCampus?.Id;
+
+                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, defaultCampusId, false );
                         if ( familyGroup != null && familyGroup.Members.Any() )
                         {
                             person = familyGroup.Members.Select( m => m.Person ).First();
                             personAlias = person.PrimaryAlias;
                         }
                     }
-
-
 
                     if ( person != null && personAlias != null )
                     {
@@ -187,7 +197,7 @@ namespace Rock.Workflow.Action
             return true;
         }
 
-        void UpdatePhoneNumber(Person person, string mobileNumber)
+        void UpdatePhoneNumber( Person person, string mobileNumber )
         {
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( mobileNumber ) ) )
             {
@@ -213,6 +223,5 @@ namespace Rock.Workflow.Action
                 phoneNumber.Number = PhoneNumber.CleanNumber( mobileNumber );
             }
         }
-
     }
 }

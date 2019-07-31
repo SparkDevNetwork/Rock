@@ -106,7 +106,7 @@
                             <ItemTemplate>
                                 <tr>
                                     <td><Rock:RockCheckBox ID="cbSelected" runat="server" CssClass="js-checkbox" /></td>
-                                    <td><img src='<%# Eval("IconPath") %>' style='max-width:60px;'></td>
+                                    <td><img id="imgIconPath" src='<%# Eval("IconPath") %>' style='max-width:60px;' runat="server"></td>
                                     <td>
                                         <asp:Label ID="lbName" runat="server" Text='<%# Eval("Name") %>' CssClass="align-middle js-assetManager-name"></asp:Label>
                                         <asp:Label ID="lbUrl" runat="server" Text='<%# Eval("Uri") %>' style="display: none" CssClass="js-assetManager-uri" ></asp:Label>

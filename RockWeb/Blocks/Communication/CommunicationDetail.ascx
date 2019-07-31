@@ -190,7 +190,7 @@
         <Rock:ModalDialog ID="mdCreateTemplate" runat="server" Title="New Personal Template" OnCancelScript="clearActiveDialog();">
             <Content>
                 <asp:ValidationSummary ID="valCreateTemplate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                <Rock:NotificationBox id="nbTemplate" runat="server" NotificationBoxType="Info" Text="This will create a new personal communication template based of the current communication." Dismissable="True"></Rock:NotificationBox>
+                <Rock:NotificationBox id="nbTemplate" runat="server" NotificationBoxType="Info" Text="This will create a new personal communication template based off the current communication." Dismissable="True"></Rock:NotificationBox>
                 <div class="row">
                     <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbTemplateName" runat="server" Label="Template Name" />

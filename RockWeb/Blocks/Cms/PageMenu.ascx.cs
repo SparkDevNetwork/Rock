@@ -158,12 +158,6 @@ namespace RockWeb.Blocks.Cms
 
                 string content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
 
-                // check for errors
-                if ( content.Contains( "error" ) )
-                {
-                    content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
-                }
-
                 phContent.Controls.Clear();
                 phContent.Controls.Add( new LiteralControl( content ) );
 

@@ -23,7 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
 
@@ -112,9 +112,8 @@ namespace Rock.Model
         /// <value>
         /// The maximum attendees.
         /// </value>
-        [Required]
         [DataMember]
-        public int MaxAttendees { get; set; }
+        public int? MaxAttendees { get; set; }
 
         /// <summary>
         /// Gets or sets the account identifier.
@@ -313,6 +312,27 @@ namespace Rock.Model
             get
             {
                 return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the contact recipient as either an email to the person that registered, or as an anonymous email to the specified contact email if it is different than the person's email.
+        /// </summary>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public RockMessageRecipient GetContactRecipient( Dictionary<string, object> mergeObjects )
+        {
+            var person = this.ContactPersonAlias?.Person;
+            string personEmail = person?.Email;
+
+            var contactEmail = this.ContactEmail;
+            if ( personEmail == contactEmail )
+            {
+                return new RockEmailMessageRecipient( person, mergeObjects );
+            }
+            else
+            {
+                return RockEmailMessageRecipient.CreateAnonymous( contactEmail, mergeObjects );
             }
         }
 

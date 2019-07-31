@@ -30,7 +30,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -255,7 +254,7 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableAttributeIds"] = AvailableAttributes == null? null :  AvailableAttributes.Select( a => a.Id ).ToArray();
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
             return base.SaveViewState();
         }
 
@@ -505,28 +504,20 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
         protected void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
         {
-            GroupMember groupMemberRow = e.DataItem as GroupMember;
+            GroupMember groupMember = e.DataItem as GroupMember;
 
-            if ( groupMemberRow == null )
+            if ( groupMember == null )
             {
                 return;
             }
 
-            var groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberRow.Id );
-            groupMember.LoadAttributes();
+            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>(
+                new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] {
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupTypeId", _groupTypeCache.Id.ToString() ),
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupId", groupMember.GroupId.ToString() ),
+                } );
 
-            var mergefields = e.MergeValues;
-            e.MergeValues.Add( "GroupRole", groupMemberRow.GroupRole );
-            e.MergeValues.Add( "GroupMemberStatus", groupMemberRow.GroupMemberStatus.ConvertToString() );
-            e.MergeValues.Add( "GroupName", groupMember.Group.Name );
-
-            dynamic dynamicAttributeCarrier = new RockDynamic();
-            foreach ( var attributeKeyValue in groupMember.AttributeValues )
-            {
-                dynamicAttributeCarrier[attributeKeyValue.Key] = attributeKeyValue.Value.Value;
-            }
-
-            e.MergeValues.Add( "GroupMemberAttributes", dynamicAttributeCarrier );
+            e.MergeValues.Add( entityTypeMergeField, groupMember.Id );
         }
 
         /// <summary>

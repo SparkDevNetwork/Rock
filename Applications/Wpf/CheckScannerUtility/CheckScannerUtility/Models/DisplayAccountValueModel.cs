@@ -14,37 +14,53 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility.Models
 {
+    [System.Diagnostics.DebuggerDisplay( "{Id}:{AccountDisplayName}|{IsAccountChecked}" )]
     public class DisplayAccountValueModel : INotifyPropertyChanged
     {
-        private FinancialAccount _financialAccount;
         private decimal? _amount;
 
-        public DisplayAccountValueModel( FinancialAccount financialAccount)
+        public DisplayAccountValueModel( FinancialAccount financialAccount, List<FinancialAccount> allFinancialAccounts )
         {
-            _financialAccount = financialAccount;
+            Account = financialAccount;
+            ChildAccounts = allFinancialAccounts
+                .Where( a => a.ParentAccountId.HasValue && a.ParentAccountId == financialAccount.Id ).OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new DisplayAccountValueModel( a, allFinancialAccounts ) )
+                .ToList();
+
+
+            if ( financialAccount.ParentAccountId.HasValue )
+            {
+                ParentAccount = allFinancialAccounts.FirstOrDefault( a => a.Id == financialAccount.ParentAccountId.Value );
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int Index { get; set; }
-        
-        public string AccountDisplayName => _financialAccount.PublicName.IsNotNullOrWhiteSpace() == true ? _financialAccount.PublicName : _financialAccount.Name;
+        public int DisplayIndex { get; set; }
 
-        public int AccountOrder => _financialAccount.Order;
+        // the 'Next' key has a tab index of 300, and the 'Complete' key has a tab index of 400, so set the AccountDisplayTabIndex so they can tab from the last Account box to the 'Next' or 'Complete' button (depending on what is visible)
+        public int DisplayTabIndex => DisplayIndex + 200;
+
+        public string AccountDisplayName => Account.PublicName.IsNotNullOrWhiteSpace() == true ? Account.PublicName : Account.Name;
+
+        public int AccountOrder => Account.Order;
 
         public decimal? Amount
         {
             get { return _amount; }
             set
             {
-                    _amount = value;
-                        PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( "Amount" ) );
+                _amount = value;
+                PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( "Amount" ) );
             }
         }
 
@@ -52,7 +68,13 @@ namespace Rock.Apps.CheckScannerUtility.Models
 
         public Visibility DisplayVisibility => ( Amount.HasValue && Amount.Value != 0.00M ) ? Visibility.Visible : Visibility.Collapsed;
 
-        public FinancialAccount Account => _financialAccount;
+        public int? ParentAccountId => Account?.ParentAccountId;
+
+        public FinancialAccount ParentAccount { get; private set; } = null;
+
+        public FinancialAccount Account { get; }
+
+        public List<DisplayAccountValueModel> ChildAccounts { get; }
 
         public int AccountId => Account.Id;
     }

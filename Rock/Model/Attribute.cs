@@ -267,6 +267,39 @@ namespace Rock.Model
         [DataMember]
         public string PostHtml { get; set; }
 
+        /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string  AbbreviatedName
+        {
+            get
+            {
+                if ( _abbreviatedName.IsNullOrWhiteSpace() )
+                {
+                    return Name;
+                }
+
+                return _abbreviatedName;
+            }
+            set
+            {
+                _abbreviatedName = value;
+            }
+        }
+        private string _abbreviatedName;
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; set; }
+
         #endregion
 
         #region Virtual Properties

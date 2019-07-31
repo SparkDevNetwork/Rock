@@ -876,6 +876,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             registrationTemplate.IsActive = cbIsActive.Checked;
             registrationTemplate.Name = tbName.Text;
+            registrationTemplate.Description = tbDescription.Text;
             registrationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
             registrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
@@ -892,7 +893,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
             registrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
             registrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
-            registrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
+            registrationTemplate.MaxRegistrants = cbMultipleRegistrants.Checked ? nbMaxRegistrants.Text.AsIntegerOrNull() : null;
             registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             registrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
@@ -985,7 +986,7 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            if ( registrationTemplate.WaitListEnabled && registrationTemplate.MaxRegistrants == 0 )
+            if ( registrationTemplate.WaitListEnabled && !registrationTemplate.MaxRegistrants.HasValue )
             {
                 validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
             }
@@ -1229,10 +1230,13 @@ The logged-in person's information will be used to complete the registrar inform
                     foreach ( var feeItem in fee.FeeItems )
                     {
                         var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
-                        feeItem.Order = feeItemUI.Order;
-                        feeItem.Name = feeItemUI.Name;
-                        feeItem.Cost = feeItemUI.Cost;
-                        feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                        if ( feeItemUI != null )
+                        {
+                            feeItem.Order = feeItemUI.Order;
+                            feeItem.Name = feeItemUI.Name;
+                            feeItem.Cost = feeItemUI.Cost;
+                            feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                        }
                     }
 
                     fee.DiscountApplies = feeUI.DiscountApplies;
@@ -1241,6 +1245,9 @@ The logged-in person's information will be used to complete the registrar inform
                     fee.IsActive = feeUI.IsActive;
                     fee.IsRequired = feeUI.IsRequired;
                 }
+
+                registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                registrationTemplate.ModifiedDateTime = RockDateTime.Now;
 
                 rockContext.SaveChanges();
 
@@ -2020,11 +2027,13 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 var hfFeeItemGuid = item.FindControl( "hfFeeItemGuid" ) as HiddenField;
+                var hfFeeItemId = item.FindControl( "hfFeeItemId" ) as HiddenField;
                 var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
                 registrationTemplateFeeItem.Guid = hfFeeItemGuid.Value.AsGuid();
+                registrationTemplateFeeItem.Id = hfFeeItemId.Value.AsInteger();
                 registrationTemplateFeeItem.Order = feeItemOrder++;
                 registrationTemplateFeeItem.Name = tbFeeItemName.Text;
                 registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
@@ -2302,6 +2311,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbIsActive.Checked = registrationTemplate.IsActive;
             tbName.Text = registrationTemplate.Name;
+            tbDescription.Text = registrationTemplate.Description;
             cpCategory.SetValue( registrationTemplate.CategoryId );
 
             gtpGroupType.SelectedGroupTypeId = registrationTemplate.GroupTypeId;
@@ -2326,7 +2336,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbAllowGroupPlacement.Checked = registrationTemplate.AllowGroupPlacement;
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
-            nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants == 0 ? string.Empty : registrationTemplate.MaxRegistrants.ToString();
+            nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( registrationTemplate.RegistrantsSameFamily.ConvertToInt() );
             cbShowCurrentFamilyMembers.Checked = registrationTemplate.ShowCurrentFamilyMembers;
             tglSetCostOnTemplate.Checked = !registrationTemplate.SetCostOnInstance.HasValue || !registrationTemplate.SetCostOnInstance.Value;
@@ -2407,6 +2417,7 @@ The logged-in person's information will be used to complete the registrar inform
             hlType.Visible = registrationTemplate.Category != null;
             hlType.Text = registrationTemplate.Category != null ? registrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = registrationTemplate.GroupType != null ? registrationTemplate.GroupType.Name : string.Empty;
+            lDescription.Text = registrationTemplate.Description;
             lRequiredSignedDocument.Text = registrationTemplate.RequiredSignatureDocumentTemplate != null ? registrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
             lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
@@ -2695,11 +2706,11 @@ The logged-in person's information will be used to complete the registrar inform
                 hfFormGuidFilter.Value = formGuid.ToString();
                 hfFormFieldGuidFilter.Value = formFieldGuid.ToString();
                 var formField = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid == formFieldGuid );
-                var otherFormFields = FormFieldsState[formGuid].Where( a => a != formField && a.Attribute != null ).ToList();
+                var otherFormFields = FormFieldsState[formGuid].Where( a => a != formField ).ToList();
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableAttributes = otherFormFields.Select( a => a.Attribute ).ToDictionary( k => k.Guid, v => v );
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => rtff );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 
@@ -2864,7 +2875,9 @@ The logged-in person's information will be used to complete the registrar inform
                 fieldSource == RegistrationFieldSource.PersonAttribute ||
                 fieldSource == RegistrationFieldSource.PersonField;
 
-            cbShowOnGrid.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
+            // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
+            // Also, if this is a GroupMemberAttribute, we'll hide the ShowOnGrid and they'll have to go the GroupMemberList block to see those
+            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute && fieldSource != RegistrationFieldSource.GroupMemberAttribute );
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;
@@ -3273,10 +3286,45 @@ The logged-in person's information will be used to complete the registrar inform
         {
             rcwFeeItemsSingle.Visible = ( registrationFeeType == RegistrationFeeType.Single );
             rcwFeeItemsMultiple.Visible = ( registrationFeeType == RegistrationFeeType.Multiple );
+            nbFeeItemsConfigurationWarning.Visible = false;
 
             if ( registrationFeeType == RegistrationFeeType.Single )
             {
-                var singleFeeItem = feeItems.FirstOrDefault();
+                RegistrationTemplateFeeItem singleFeeItem;
+
+                // If switching to Single fee type and there are more than 1 fees currently configured, we'll have to figure which one to use for the Single fee type
+                // and it is possible that more than one of the fee items have already been used for a registrant. So we have to figure that out...
+                singleFeeItem = feeItems.FirstOrDefault();
+                if ( feeItems.Count > 1 )
+                {
+                    bool canUseSingleFeeType = true;
+                    var rockContext = new RockContext();
+                    var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+                    var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                    var configuredFeeItemIds = feeItems.Select( a => a.Id ).ToList();
+                    var usedFeeQuery = registrationRegistrantFeeService.Queryable()
+                        .Where( a => a.RegistrationTemplateFeeItemId.HasValue && configuredFeeItemIds.Contains( a.RegistrationTemplateFeeItemId.Value ) );
+                    var usedFeeItemList = registrationTemplateFeeItemService.Queryable().Where( a => usedFeeQuery.Any( x => x.RegistrationTemplateFeeItemId == a.Id ) ).ToList();
+
+                    if ( usedFeeItemList.Count() > 1 )
+                    {
+                        canUseSingleFeeType = false;
+                    }
+                    else if ( usedFeeItemList.Count == 1 )
+                    {
+                        // only one FeeItem has been used, so have that bee the single fee item
+                        singleFeeItem = usedFeeItemList.First();
+                    }
+
+                    if ( canUseSingleFeeType == false )
+                    {
+                        nbFeeItemsConfigurationWarning.Text = "Unable to use single fee type. More than one of these fees have already been used.";
+                        nbFeeItemsConfigurationWarning.Visible = true;
+                        rblFeeType.SetValue( RegistrationFeeType.Multiple.ConvertToInt() );
+                        return;
+                    }
+                }
+                     
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();
@@ -3303,11 +3351,13 @@ The logged-in person's information will be used to complete the registrar inform
             RegistrationTemplateFeeItem registrationTemplateFeeItem = e.Item.DataItem as RegistrationTemplateFeeItem;
             if ( registrationTemplateFeeItem != null )
             {
+                var hfFeeItemId = e.Item.FindControl( "hfFeeItemId" ) as HiddenField;
                 var hfFeeItemGuid = e.Item.FindControl( "hfFeeItemGuid" ) as HiddenField;
                 var tbFeeItemName = e.Item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = e.Item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = e.Item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
+                hfFeeItemId.Value = registrationTemplateFeeItem.Id.ToString();
                 hfFeeItemGuid.Value = registrationTemplateFeeItem.Guid.ToString();
                 tbFeeItemName.Text = registrationTemplateFeeItem.Name;
 
@@ -3339,7 +3389,17 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
             if ( feeItem != null )
             {
-                feeItems.Remove( feeItem );
+                string errorMessage;
+                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out errorMessage ) )
+                {
+                    nbFeeItemsConfigurationWarning.Text = errorMessage;
+                    nbFeeItemsConfigurationWarning.Visible = true;
+                    return;
+                }
+                else
+                {
+                    feeItems.Remove( feeItem );
+                }
             }
 
             BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );

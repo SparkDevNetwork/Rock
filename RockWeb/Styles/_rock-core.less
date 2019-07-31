@@ -77,6 +77,11 @@ iframe {
     padding-right: 5px;
     padding-left: 5px;
   }
+
+  .form-control-group & {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .clickable {
@@ -507,6 +512,16 @@ th[align="right"] {
         text-overflow: ellipsis;
       }
     }
+
+    h4 {
+      font-size: @font-size-base;
+      font-weight: @font-weight-semibold;
+    }
+
+    hr {
+      margin-top: @padding-base-vertical;
+      margin-bottom: (@padding-base-vertical * 2);
+    }
     // styles for matrix attributes
     .form-group.static-control.matrix-attribute label {
       width: 100%;
@@ -579,6 +594,13 @@ th[align="right"] {
 
     .grid.grid-panel {
       margin-bottom: 0;
+    }
+  }
+
+  .analytics-details {
+    > .grid-filter {
+      margin: -15px -15px 15px -15px;
+      padding: 15px;
     }
   }
 

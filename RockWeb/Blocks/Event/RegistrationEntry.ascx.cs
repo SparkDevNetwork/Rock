@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
@@ -37,6 +39,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Helper = Rock.Attribute.Helper;
 
 namespace RockWeb.Blocks.Event
 {
@@ -88,7 +91,7 @@ namespace RockWeb.Blocks.Event
 
         private enum PanelIndex
         {
-            PanelHowMany = 0,
+            PanelStart = 0,
             PanelRegistrationAttributesStart = 1,
             PanelRegistrant = 2,
             PanelRegistrationAttributesEnd = 3,
@@ -400,12 +403,12 @@ namespace RockWeb.Blocks.Event
                 // Otherwise if template allows multiple, set the max amount
                 if ( RegistrationTemplate != null && RegistrationTemplate.AllowMultipleRegistrants )
                 {
-                    if ( RegistrationTemplate.MaxRegistrants <= 0 )
+                    if ( !RegistrationTemplate.MaxRegistrants.HasValue )
                     {
                         return int.MaxValue;
                     }
 
-                    return RegistrationTemplate.MaxRegistrants;
+                    return RegistrationTemplate.MaxRegistrants.Value;
                 }
 
                 // Default is a maximum of one
@@ -545,7 +548,7 @@ namespace RockWeb.Blocks.Event
 
             GroupId = ViewState[GROUP_ID_KEY] as int?;
             CampusId = ViewState[CAMPUS_ID_KEY] as int?;
-            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelHowMany;
+            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
@@ -644,8 +647,8 @@ namespace RockWeb.Blocks.Event
                                     }
                                     else
                                     {
-                                        // show the panel for asking how many registrants ( it may be skipped )
-                                        ShowHowMany();
+                                        // show the panel with the instructions and/or asking how many registrants ( it may be skipped if there are neither )
+                                        ShowStart();
                                     }
                                 }
                             }
@@ -773,13 +776,13 @@ namespace RockWeb.Blocks.Event
             {
                 string[] commands = state.Split( ',' );
 
-                PanelIndex panelIndex = PanelIndex.PanelHowMany;
+                PanelIndex panelIndex = PanelIndex.PanelStart;
                 int registrantId = 0;
                 int formId = 0;
 
                 if ( commands.Count() == 3 )
                 {
-                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelHowMany;
+                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelStart;
                     registrantId = int.Parse( commands[1] );
                     formId = int.Parse( commands[2] );
                 }
@@ -820,7 +823,7 @@ namespace RockWeb.Blocks.Event
 
                     default:
                         {
-                            ShowHowMany();
+                            ShowStart();
                             break;
                         }
                 }
@@ -836,7 +839,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
         }
 
@@ -970,7 +973,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRegistrationAttributesStartPrev_Click( object sender, EventArgs e )
         {
-            ShowHowMany();
+            ShowStart();
             hfTriggerScroll.Value = "true";
         }
 
@@ -1044,7 +1047,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1065,7 +1068,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1126,7 +1129,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1157,7 +1160,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1218,7 +1221,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1239,7 +1242,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1282,7 +1285,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1515,7 +1518,7 @@ namespace RockWeb.Blocks.Event
                                 mergeFields.Add( "User", user );
 
                                 var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
-                                emailMessage.AddRecipient( new RecipientData( authorizedPersonAlias.Person.Email, mergeFields ) );
+                                emailMessage.AddRecipient( new RockEmailMessageRecipient( authorizedPersonAlias.Person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = false;
@@ -1783,7 +1786,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState != null )
             {
                 // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
-                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees != 0 )
+                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
                     var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
@@ -1816,6 +1819,7 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationTemplate != null )
             {
+                // NOTE, we only want to require VIEW auth for a person to be able to enter a value for an attribute since they are just entering a value for themselves (not for other people)
                 RegistrationAttributesState = new AttributeService( rockContext ).GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
@@ -1823,7 +1827,7 @@ namespace RockWeb.Blocks.Event
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToAttributeCacheList()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                 .ToList();
 
                 // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
@@ -1937,7 +1941,7 @@ namespace RockWeb.Blocks.Event
                 // Reset the order after removing any registrants
                 RegistrationState.Registrants.Reverse();
             }
-            
+
         }
 
         #endregion
@@ -3017,26 +3021,29 @@ namespace RockWeb.Blocks.Event
                     familyGroup,
                     true,
                     false );
-
-                if ( existingLocation == null )
+                
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                if ( homeLocationType != null && familyGroup != null )
                 {
-                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                    if ( homeLocationType != null )
+                    if ( existingLocation != null )
                     {
-                        if ( familyGroup != null )
-                        {
-                            GroupService.AddNewGroupAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1,
-                                location.Street2,
-                                location.City,
-                                location.State,
-                                location.PostalCode,
-                                location.Country,
-                                true );
-                        }
+                        // A location exists but is not associated with this family group
+                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                    }
+                    else
+                    {
+                        // Create a new location and save it to the family group
+                        GroupService.AddNewGroupAddress(
+                            rockContext,
+                            familyGroup,
+                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                            location.Street1,
+                            location.Street2,
+                            location.City,
+                            location.State,
+                            location.PostalCode,
+                            location.Country,
+                            true );
                     }
                 }
             }
@@ -3367,10 +3374,6 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
                     }
 
-                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                    batch.ControlAmount = newControlAmount;
-
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
                     // If this is a new Batch, SaveChanges so that we can get the Batch.Id
@@ -3378,12 +3381,14 @@ namespace RockWeb.Blocks.Event
                     {
                         rockContext.SaveChanges();
                     }
-
+              
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
                     financialTransactionService.Add( transaction );
+                    rockContext.SaveChanges();
 
+                    batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
                     rockContext.SaveChanges();
                 } );
 
@@ -3554,20 +3559,25 @@ namespace RockWeb.Blocks.Event
 
         #region Display Methods
 
-        /// <summary>
-        /// Shows the how many panel
-        /// </summary>
-        private void ShowHowMany()
+        private bool ShowInstructions()
         {
             string instructions = string.IsNullOrEmpty( RegistrationInstanceState.RegistrationInstructions ) ?
-                                    RegistrationTemplate.RegistrationInstructions :
-                                    RegistrationInstanceState.RegistrationInstructions;
+                RegistrationTemplate.RegistrationInstructions :
+                RegistrationInstanceState.RegistrationInstructions;
 
             if ( !string.IsNullOrEmpty( instructions ) )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
             }
 
+            return instructions.IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
+        /// Shows the how many panel
+        /// </summary>
+        private void ShowStart()
+        {
             lRegistrantTerm.Text = RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
@@ -3585,12 +3595,15 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                bool hasInstructions = ShowInstructions();
+                SetPanel( PanelIndex.PanelStart );
+
                 int max = MaxRegistrants;
                 if ( !RegistrationTemplate.WaitListEnabled && RegistrationState.SlotsAvailable.HasValue && RegistrationState.SlotsAvailable.Value < max )
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-
+                
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -3600,17 +3613,24 @@ namespace RockWeb.Blocks.Event
 
                     ShowWaitingListNotice();
 
-                    SetPanel( PanelIndex.PanelHowMany );
+                    pnlHowMany.Visible = true;
                 }
                 else
                 {
-                    // ... else skip to the registrant panel
                     CurrentRegistrantIndex = 0;
                     CurrentFormIndex = 0;
 
                     SetRegistrantState( MinRegistrants );
                     numHowMany.Value = MinRegistrants;
-                    ShowRegistrationAttributesStart( true );
+
+                    // Hide the number selection panel
+                    pnlHowMany.Visible = false;
+
+                    if ( !hasInstructions )
+                    {
+                        // If there are no instructions to display then skip to the registrant panel
+                        ShowRegistrationAttributesStart( true );
+                    }
                 }
             }
         }
@@ -4050,7 +4070,7 @@ namespace RockWeb.Blocks.Event
 
             CreateDynamicControls( true );
 
-            pnlHowMany.Visible = CurrentPanel <= 0;
+            pnlStart.Visible = CurrentPanel <= 0;
             pnlRegistrationAttributesStart.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesStart;
             pnlRegistrant.Visible = CurrentPanel == PanelIndex.PanelRegistrant;
             pnlRegistrationAttributesEnd.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesEnd;
@@ -4477,13 +4497,15 @@ namespace RockWeb.Blocks.Event
                         value = firstRegistrant.FieldValues[field.Id].FieldValue;
                     }
 
+                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
+
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        CreatePersonField( field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
+                        CreatePersonField( hasDependantVisibilityRule, field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
                     }
                     else
                     {
-                        CreateAttributeField( form, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
                     }
                 }
 
@@ -4516,22 +4538,50 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
+        private static void CreatePersonField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
         {
             Control personFieldControl = field.GetPersonControl( setValue, fieldValue, familyMemberSelected, validationGroup );
 
             if ( personFieldControl != null )
             {
+                var fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
+                    RegistrationTemplateFormFieldId = field.Id,
+                    FieldVisibilityRules = field.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                };
+
+                parentControl.Controls.Add( fieldVisibilityWrapper );
+
                 if ( !string.IsNullOrWhiteSpace( field.PreText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PreText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PreText ) );
                 }
 
-                parentControl.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.EditControl = personFieldControl;
 
                 if ( !string.IsNullOrWhiteSpace( field.PostText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PostText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
+                }
+
+                if ( hasDependantVisibilityRule && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType ).Field;
+
+                    if ( fieldType.HasChangeHandler( personFieldControl ) )
+                    {
+                        fieldType.AddChangeHandler( personFieldControl, () =>
+                        {
+                            fieldVisibilityWrapper.TriggerEditValueUpdated( personFieldControl, new FieldVisibilityWrapper.FieldEventArgs( null, personFieldControl ) );
+                        } );
+                    }
                 }
             }
         }
@@ -4543,7 +4593,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4561,7 +4611,7 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                    AttributeId = attribute.Id,
+                    RegistrationTemplateFormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
@@ -4584,8 +4634,6 @@ namespace RockWeb.Blocks.Event
                 {
                     fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
                 }
-
-                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
 
                 if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                 {
@@ -5429,8 +5477,6 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
-
                 var discounts = RegistrationTemplate.Discounts
                         .Where( d => d.AutoApplyDiscount )
                         .OrderBy( d => d.Order )
@@ -5438,6 +5484,7 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var discount in discounts )
                 {
+                    RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
                     bool validDiscount = true;
 
                     if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )

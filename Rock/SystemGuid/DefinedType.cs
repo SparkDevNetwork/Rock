@@ -44,6 +44,16 @@ namespace Rock.SystemGuid
         public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
 
         /// <summary>
+        /// GUID for the Campus Status
+        /// </summary>
+        public const string CAMPUS_STATUS = "840CDA6D-6E81-4EB7-B325-BE708990CCE9";
+
+        /// <summary>
+        /// GUID for the Campus Type
+        /// </summary>
+        public const string CAMPUS_TYPE = "8C2260A8-6130-414A-BD32-22743FEAB256";
+
+        /// <summary>
         /// The types of static color swatches supported
         /// </summary>
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
@@ -88,6 +98,11 @@ namespace Rock.SystemGuid
         /// Guid for the DISC Results of personalities.
         /// </summary>
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
+
+        /// <summary>
+        /// Guid for the Conflict Profile assessment.
+        /// </summary>
+        public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
 
         /// <summary>
         /// Guid for the Domains Sharing Logins
@@ -193,7 +208,17 @@ namespace Rock.SystemGuid
         /// Metric Source Type
         /// </summary>
         public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
-        
+
+        /// <summary>
+        /// Motivator Type
+        /// </summary>
+        public const string MOTIVATOR_TYPE = "1DFF1804-0055-491E-9559-54EA3F8F89D1";
+
+        /// <summary>
+        /// Motivator Theme Type
+        /// </summary>
+        public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
+
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>

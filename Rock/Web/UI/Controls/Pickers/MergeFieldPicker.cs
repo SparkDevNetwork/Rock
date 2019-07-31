@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -35,12 +36,12 @@ namespace Rock.Web.UI.Controls
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
- 	         base.OnInit(e);
-             base.DefaultText = "Add Merge Field";
+            base.OnInit( e );
+            base.DefaultText = "Add Merge Field";
 
-             this.CssClass += " picker-mergefield picker-novalue";
+            this.CssClass += " picker-mergefield picker-novalue";
         }
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace Rock.Web.UI.Controls
                 //this.CssClass += " picker-mergefield picker-novalue";
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the merge fields.
         /// </summary>
@@ -75,7 +76,7 @@ namespace Rock.Web.UI.Controls
                 return mergeFields;
             }
 
-            set 
+            set
             {
                 ViewState["MergeFields"] = value;
             }
@@ -105,7 +106,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="nodePath">The node path.</param>
         public void SetValue( string nodePath )
         {
-            if ( ! string.IsNullOrWhiteSpace(nodePath))
+            if ( !string.IsNullOrWhiteSpace( nodePath ) )
             {
                 // Get any prefixes that were defined with the mergefield
                 var prefixedMergeFieldIds = GetPrefixedMergeFieldIds();
@@ -127,12 +128,12 @@ namespace Rock.Web.UI.Controls
 
                 workingPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList()
                     .ForEach( n => nodes.Add( n ) );
-                
+
                 if ( nodes.Count > 0 )
                 {
                     ItemId = nodePath;
-                    ItemName = nodes[nodes.Count -1];
-                    
+                    ItemName = nodes[nodes.Count - 1];
+
                     if ( nodes.Count > 1 )
                     {
                         InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
@@ -267,11 +268,127 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the entity type information from the merge field identifier.
+        /// </summary>
+        /// <param name="mergeFieldId">The merge field identifier.</param>
+        /// <returns></returns>
+        public static EntityTypeInfo GetEntityTypeInfoFromMergeFieldId( string mergeFieldId )
+        {
+            var entityTypeInfo = new EntityTypeInfo();
+            var entityTypeParts = mergeFieldId.Split( new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries );
+            var entityTypeName = entityTypeParts[0];
+            var entityType = EntityTypeCache.Get( entityTypeName, false );
+            if ( entityType?.IsEntity == true )
+            {
+                entityTypeInfo.EntityType = entityType;
+            }
+            else
+            {
+                return null;
+            }
+
+            if ( entityTypeParts.Length > 1 )
+            {
+                var entityTypeQualifiersParts = entityTypeParts.Skip( 1 ).ToArray();
+                var qualifiers = new List<EntityTypeInfo.EntityTypeQualifier>();
+
+                foreach ( var entityTypeQualifiersPart in entityTypeQualifiersParts )
+                {
+                    var qualifierParts = entityTypeQualifiersPart.Split( new char[] { '+', ' ' } ).ToArray();
+
+                    if ( qualifierParts.Length == 2 )
+                    {
+                        qualifiers.Add( new EntityTypeInfo.EntityTypeQualifier( qualifierParts[0], qualifierParts[1] ) );
+                    }
+                }
+
+                entityTypeInfo.EntityTypeQualifiers = qualifiers.ToArray();
+            }
+
+            return entityTypeInfo;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class EntityTypeInfo
+        {
+            /// <summary>
+            /// Gets or sets the type of the entity.
+            /// </summary>
+            /// <value>
+            /// The type of the entity.
+            /// </value>
+            public EntityTypeCache EntityType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity type qualifiers.
+            /// </summary>
+            /// <value>
+            /// The entity type qualifiers.
+            /// </value>
+            public EntityTypeQualifier[] EntityTypeQualifiers { get; set; }
+
+            /// <summary>
+            /// Gets the merge field identifier which includes the information to add an entity as a merge field. For example "GroupMember, groupMember"
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="entityTypeQualifiers">The entity type qualifiers.</param>
+            /// <returns></returns>
+            public static string GetMergeFieldId<T>( EntityTypeQualifier[] entityTypeQualifiers )
+            {
+                StringBuilder entityTypeMergeFieldIdBuilder = new StringBuilder( $"{EntityTypeCache.Get<T>().Name}" );
+                if ( entityTypeQualifiers?.Any() == true )
+                {
+                    foreach ( var entityTypeQualifier in entityTypeQualifiers )
+                    {
+                        entityTypeMergeFieldIdBuilder.Append( $"~{entityTypeQualifier.Column}+{entityTypeQualifier.Value}" );
+                    }
+                }
+
+                return entityTypeMergeFieldIdBuilder.ToString();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public class EntityTypeQualifier
+            {
+                /// <summary>
+                /// Initializes a new instance of the <see cref="EntityTypeQualifier"/> class.
+                /// </summary>
+                /// <param name="column">The column.</param>
+                /// <param name="value">The value.</param>
+                public EntityTypeQualifier( string column, string value )
+                {
+                    this.Column = column;
+                    this.Value = value;
+                }
+
+                /// <summary>
+                /// Gets or sets the column.
+                /// </summary>
+                /// <value>
+                /// The column.
+                /// </value>
+                public string Column { get; set; }
+
+                /// <summary>
+                /// Gets or sets the value.
+                /// </summary>
+                /// <value>
+                /// The value.
+                /// </value>
+                public string Value { get; set; }
+            }
+        }
+
+        /// <summary>
         /// Formats the selected value (node path) into a liquid merge field.
         /// </summary>
         /// <param name="selectedValue">The selected value.</param>
         /// <returns></returns>
-        public static string FormatSelectedValue(string selectedValue)
+        public static string FormatSelectedValue( string selectedValue )
         {
             var idParts = selectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( idParts.Count > 0 )
@@ -281,7 +398,7 @@ namespace Rock.Web.UI.Controls
                     return string.Format( "{{{{ 'Global' | Attribute:'{0}' }}}}", idParts[1] );
                 }
 
-                if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) ) 
+                if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) )
                 {
                     string mFields = idParts[0].Replace( "AdditionalMergeField_", "" ).Replace( "AdditionalMergeFields_", "" );
                     if ( mFields.IsNotNullOrWhiteSpace() )
@@ -350,16 +467,17 @@ namespace Rock.Web.UI.Controls
                     string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
                     string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
-                    string itemType = itemParts.Length > 1 ? itemParts[1] : item;
+                    string mergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
 
-                    entityType = EntityTypeCache.Get( itemType, false );
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                    entityType = entityTypeInfo?.EntityType;
 
-                    workingParts.Add( entityType != null ? 
-                        ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :
+                    workingParts.Add( entityType != null ?
+                        ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty ) ) :
                         idParts[pathPointer] );
                     pathPointer++;
                 }
-                
+
                 if ( entityType != null )
                 {
                     Type type = entityType.GetEntityType();
@@ -425,10 +543,10 @@ namespace Rock.Web.UI.Controls
                             }
                             else
                             {
-                                
+
                                 itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, partItem );
                             }
-                            
+
                         }
 
                     }
@@ -450,7 +568,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            ItemRestUrlExtraParams = "?additionalFields=" + HttpUtility.UrlPathEncode(MergeFields.AsDelimited( "," ));
+            ItemRestUrlExtraParams = "?additionalFields=" + HttpUtility.UrlPathEncode( MergeFields.AsDelimited( "," ) );
             base.RenderControl( writer );
         }
     }

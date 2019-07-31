@@ -67,12 +67,12 @@ namespace Rock.Model
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class AttendanceLabelDataConfiguration : EntityTypeConfiguration<AttendanceData>
+    public partial class AttendanceDataConfiguration : EntityTypeConfiguration<AttendanceData>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceLabelDataConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="AttendanceDataConfiguration"/> class.
         /// </summary>
-        public AttendanceLabelDataConfiguration()
+        public AttendanceDataConfiguration()
         {
         }
     }

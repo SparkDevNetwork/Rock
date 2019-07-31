@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -209,10 +209,9 @@ namespace Rock.Web.UI
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
-                        var contextAttribute = (ContextAwareAttribute)attribute;
-                        var entityType = contextAttribute.EntityType;
+                        var contextAttribute = ( ContextAwareAttribute ) attribute;
 
-                        if ( contextAttribute.EntityType == null )
+                        if ( !contextAttribute.Contexts.Any() )
                         {
                             // If the entity type was not specified in the attribute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
@@ -221,20 +220,19 @@ namespace Rock.Web.UI
                             Guid guid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                entityType = EntityTypeCache.Get( guid );
+                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
                             }
-                        }
-
-                        if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
-                        {
-                            _contextTypesRequired.Add( entityType );
                         }
                         else
                         {
-                            if ( !contextAttribute.IsConfigurable )
+                            foreach ( var context in contextAttribute.Contexts )
                             {
-                                // block support any ContextType of any entityType, and it isn't configurable in BlockPropties, so load all the ones that RockPage knows about
-                                _contextTypesRequired = RockPage.GetContextEntityTypes();
+                                var entityType = context.EntityType;
+
+                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
+                                {
+                                    _contextTypesRequired.Add( entityType );
+                                }
                             }
                         }
                     }
@@ -833,6 +831,29 @@ namespace Rock.Web.UI
                     pageReference.QueryString[qryParam.Key] = qryParam.Value;
                 }
             }
+
+            return NavigateToPage( pageReference );
+        }
+
+        /// <summary>
+        /// Navigates to current page reference including current page and query parameters not included in the removeQueryParameterKeys parameter.
+        /// </summary>
+        /// <param name="removeQueryParameterKeys">The remove query parameter keys.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReferenceWithRemove( List<string> removeQueryParameterKeys )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            var currentQueryStrings = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+
+            if ( removeQueryParameterKeys != null )
+            {
+                foreach ( var key in removeQueryParameterKeys )
+                {
+                    currentQueryStrings.Remove( key );
+                }
+            }
+
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( currentQueryStrings );
 
             return NavigateToPage( pageReference );
         }

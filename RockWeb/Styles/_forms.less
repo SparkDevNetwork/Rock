@@ -173,6 +173,33 @@ a.aspNetDisabled {
       }
     }
   }
+
+  &.label-auto {
+    .form-group {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      margin-right: -15px;
+      margin-left: -15px;
+      -ms-flex-pack: end!important;
+      justify-content: flex-end!important;
+
+      label {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+        min-width: 180px;
+      }
+      .control-wrapper {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+  }
 }
 
 
@@ -186,7 +213,7 @@ a.aspNetDisabled {
 
 // highlight required fields
 .form-group.required {
-  .control-label::after {
+  > .control-label::after {
     margin-left: 4px;
     font-family: @fa-font-face;
     font-size: 6px;
