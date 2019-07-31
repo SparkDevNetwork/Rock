@@ -113,6 +113,10 @@
     <Compile Include="Migrations\201907291225564_Streaks.Designer.cs">
       <DependentUpon>201907291225564_Streaks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.cs" />
+    <Compile Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.Designer.cs">
+      <DependentUpon>201907311659067_RemoveDefaultLegacySupportLevelOption.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -757,6 +761,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907291225564_Streaks.resx">
       <DependentUpon>201907291225564_Streaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.resx">
+      <DependentUpon>201907311659067_RemoveDefaultLegacySupportLevelOption.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
