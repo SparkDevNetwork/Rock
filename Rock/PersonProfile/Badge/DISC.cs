@@ -46,8 +46,13 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             // Grab the DISC Scores
             bool isValidDiscScore = true;
             int discStrength = 0;

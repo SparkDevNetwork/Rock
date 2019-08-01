@@ -28,6 +28,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+/// <summary>
+/// This the Twilio Webwook that updates the communication recipient record to indicate the message status, and runs any Workflow configured with the SMS Phone Number that the message was from.
+/// </summary>
 public class TwilioAsync : IHttpAsyncHandler
 {
     public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)

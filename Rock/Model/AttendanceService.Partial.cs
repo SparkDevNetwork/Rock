@@ -122,12 +122,12 @@ namespace Rock.Model
         /// <param name="searchResultGroupId">The search result group identifier.</param>
         /// <param name="attendanceCodeId">The attendance code identifier.</param>
         /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
-        /// <param name="syncMatchingSequences">Should matching <see cref="Sequence"/> models be synchronized.</param>
+        /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
         /// <returns></returns>
         public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
                 int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
                 int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
-                bool syncMatchingSequences )
+                bool syncMatchingStreaks )
         {
             // Check to see if an occurrence exists already
             var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
@@ -177,10 +177,10 @@ namespace Rock.Model
             attendance.StartDateTime = checkinDateTime;
             attendance.DidAttend = true;
 
-            // Sync this attendance to any matching sequences and sequence enrollments
-            if ( syncMatchingSequences )
+            // Sync this attendance to any matching streaks
+            if ( syncMatchingStreaks )
             {
-                SequenceService.HandleAttendanceRecordAsync( attendance );
+                StreakTypeService.HandleAttendanceRecordAsync( attendance );
             }
 
             return attendance;

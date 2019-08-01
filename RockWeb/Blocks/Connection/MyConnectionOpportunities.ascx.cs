@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Connection
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             gRequests.DataKeyNames = new string[] { "Id" };
+            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
             gRequests.Actions.AddClick += gRequests_Add;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;

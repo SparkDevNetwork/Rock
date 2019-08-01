@@ -135,6 +135,47 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Renames the EntityType by guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="friendlyName">Name of the friendly.</param>
+        /// <param name="assemblyName">Name of the assembly.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        /// <param name="guid">The GUID.</param>
+        public void RenameEntityType( string guid, string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured )
+        {
+            var nameParam = name.Replace( "'", "''" );
+            var friendlyNameParam = friendlyName.Replace( "'", "''" );
+            var assemblyNameParam = assemblyName.Replace( "'", "''" );
+            var isEntityParam = isEntity ? "1" : "0";
+            var isSecuredParam = isSecured ? "1" : "0";
+
+            Migration.Sql( string.Format( $@"
+                DELETE FROM EntityType WHERE Name = '{nameParam}' AND Guid <> '{guid}';
+                DECLARE @Guid uniqueidentifier = (SELECT [Guid] FROM [EntityType] WHERE [Guid] = '{guid}');
+                IF @Guid IS NULL
+                BEGIN
+                    INSERT INTO [EntityType] (
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
+                    VALUES(
+                        '{nameParam}','{friendlyNameParam}','{assemblyNameParam}',{isEntityParam},{isSecuredParam}, 0,'{guid}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [EntityType] SET
+                        [Name] = '{nameParam}',
+                        [FriendlyName] = '{friendlyNameParam}',
+                        [AssemblyName] = '{assemblyNameParam}',
+                        [IsEntity] = {isEntityParam},
+                        [IsSecured] = {isSecuredParam}
+                    WHERE [Guid] = '{guid}'
+
+                END" ) );
+        }
+
+        /// <summary>
         /// Deletes the EntityType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -850,6 +891,46 @@ namespace Rock.Data
                 BEGIN
 	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
                 END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates the page icon.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="iconCssClass">The layout unique identifier.</param>
+        public void UpdatePageIcon( string pageGuid, string iconCssClass )
+        {
+            var sql = $"UPDATE [dbo].[Page] SET [IconCssClass] = '{iconCssClass}' WHERE [Guid] = '{pageGuid}'";
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates if the page's title shows in the breadcrumbs.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="breadCrumbDisplayName">if set to <c>true</c> [bread crumb display name].</param>
+        public void UpdatePageBreadcrumb( string pageGuid, bool breadCrumbDisplayName )
+        {
+            var sql = $"UPDATE [dbo].[Page] SET [BreadCrumbDisplayName] = {(breadCrumbDisplayName ? 1 : 0)} WHERE [Guid] = '{pageGuid}'";
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates the page internal name, browser title, and page title
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="newName">The new name.</param>
+        public void RenamePage( string pageGuid, string newName )
+        {
+            string sql = $@"
+UPDATE [Page] 
+SET
+    [InternalName] = '{newName}',
+    [PageTitle] = '{newName}',
+    [BrowserTitle] = '{newName}'
+WHERE [Guid] = '{pageGuid}';";
 
             Migration.Sql( sql );
         }
@@ -1731,6 +1812,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="name">The name the group member attribute. The attribute key will become the name with the whitespace removed.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
@@ -4440,12 +4522,45 @@ END
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string abbreviatedName )
+        {
+            AddGroupTypeGroupAttribute( groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, guid, false, abbreviatedName );
+        }
+
+        /// <summary>
+        /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
         /// <param name="defaultValue">a string, empty string, or NULL</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, bool isRequired )
         {
             AddGroupTypeAttribute( "Rock.Model.Group", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, isRequired, guid );
+        }
+
+        /// <summary>
+        /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, bool isRequired, string abbreviatedName )
+        {
+            AddGroupTypeAttribute( "Rock.Model.Group", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, isRequired, guid, abbreviatedName );
         }
 
         /// <summary>
@@ -4465,6 +4580,24 @@ END
         }
 
         /// <summary>
+        /// Adds (or Updates) a new GroupType "Member Attribute" for the given GroupType using the given values.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        public void AddGroupTypeGroupMemberAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, bool isRequired, string abbreviatedName )
+        {
+            AddGroupTypeAttribute( "Rock.Model.GroupMember", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, isRequired, guid, abbreviatedName );
+        }
+
+
+        /// <summary>
         /// Adds (or Updates) the group type attribute
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
@@ -4477,6 +4610,92 @@ END
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         /// <param name="guid">The unique identifier.</param>
         private void AddGroupTypeAttribute( string entityTypeName, string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, bool isRequired, string guid )
+        {
+            string defaultValueDbParam = ( defaultValue == null ) ? "NULL" : "'" + defaultValue + "'";
+            string attributeKey = name.RemoveSpaces();
+
+            Migration.Sql( $@"
+
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
+
+                DECLARE @GroupTypeId int
+                SET @GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{groupTypeGuid}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'GroupTypeId'
+                    AND [EntityTypeQualifierValue] = @GroupTypeId
+                    AND [Key] = '{attributeKey}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
+                        [Name] = '{name}',
+                        [Description] = '{description.Replace( "'", "''" )}',
+                        [Order] = {order},
+                        [DefaultValue] = {defaultValueDbParam},
+                        [IsRequired]= {isRequired.Bit()},
+                        [Guid] = '{guid}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'GroupTypeId'
+                    AND [EntityTypeQualifierValue] = @GroupTypeId
+                    AND [Key] = '{attributeKey}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute]
+                        ([IsSystem]
+                        ,[FieldTypeId]
+                        ,[EntityTypeId]
+                        ,[EntityTypeQualifierColumn]
+                        ,[EntityTypeQualifierValue]
+                        ,[Key]
+                        ,[Name]
+                        ,[Description]
+                        ,[Order]
+                        ,[IsGridColumn]
+                        ,[DefaultValue]
+                        ,[IsMultiValue]
+                        ,[IsRequired]
+                        ,[Guid])
+                    VALUES
+                        (1
+                        ,@FieldTypeId
+                        ,@EntityTypeId
+                        ,'GroupTypeId'
+                        ,@GroupTypeId
+                        ,'{attributeKey}'
+                        ,'{name}'
+                        ,'{description.Replace( "'", "''" )}'
+                        ,{order}
+                        ,0
+                        ,{defaultValueDbParam}
+                        ,0
+                        ,{isRequired.Bit()}
+                        ,'{guid}')
+                END
+                ");
+        }
+
+        /// <summary>
+        /// Adds the group type attribute.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        private void AddGroupTypeAttribute( string entityTypeName, string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, bool isRequired, string guid, string abbreviatedName )
         {
             string defaultValueDbParam = ( defaultValue == null ) ? "NULL" : "'" + defaultValue + "'";
             string attributeKey = name.RemoveSpaces();

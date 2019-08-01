@@ -100,7 +100,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockDropDownList ddlPhoneNumberType = new RockDropDownList();
             ddlPhoneNumberType.CssClass = "js-phonetype";
             ddlPhoneNumberType.ID = $"{filterControl.ID}_ddlPhoneNumberType";
-            ddlPhoneNumberType.Items.Add( new ListItem("Any Phone", string.Empty) );
+            ddlPhoneNumberType.Items.Add( new ListItem( "Any Phone", string.Empty ) );
             foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
                 ddlPhoneNumberType.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
@@ -139,7 +139,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             // Row 1
             writer.AddAttribute( "class", "row form-row field-criteria" );
-            writer.RenderBeginTag(HtmlTextWriterTag.Div );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -155,25 +155,23 @@ namespace Rock.Reporting.DataFilter.Person
 
             // Row 2
             writer.AddAttribute( "class", "row form-row field-criteria margin-t-sm" );
-            writer.RenderBeginTag(HtmlTextWriterTag.Div );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-2" );
-            writer.RenderBeginTag(HtmlTextWriterTag.Div );
-            ddlHasSMS.RenderControl(writer );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            ddlHasSMS.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+        }
 
-            RegisterFilterCompareChangeScript( filterControl );
-    }
-
-    /// <summary>
-    /// Retruns a pipe delimited string of values PhoneType|HasSMS
-    /// </summary>
-    /// <param name="entityType"></param>
-    /// <param name="controls"></param>
-    /// <returns></returns>
-    public override string GetSelection( Type entityType, Control[] controls )
+        /// <summary>
+        /// Retruns a pipe delimited string of values PhoneType|HasSMS
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <param name="controls"></param>
+        /// <returns></returns>
+        public override string GetSelection( Type entityType, Control[] controls )
         {
             string hasPhoneOfType = ( controls[0] as RockDropDownList ).SelectedValue;
             string phoneType = ( controls[1] as RockDropDownList ).SelectedValue;

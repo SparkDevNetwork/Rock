@@ -250,8 +250,22 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            gThemes.DataSource = themes.ToList();
+            if ( themes.Any( f => f.Name == "RockOriginal" ) )
+            {
+                DeleteRockOriginalTheme( themes );
+            }
+
+            gThemes.DataSource = themes.Where( f => f.Name != "RockOriginal" ).ToList();
             gThemes.DataBind();
+        }
+
+        private void DeleteRockOriginalTheme( List<RockTheme> themes )
+        {
+            var theme = themes.Where( f => f.Name == "RockOriginal" ).FirstOrDefault();
+            if ( theme != null )
+            {
+                Directory.Delete( theme.AbsolutePath, true );
+            }
         }
 
         #endregion

@@ -50,18 +50,21 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage(
         name:"SMS Link Page",
         description: "Page that will be linked for SMS enabled phones.",
-        key: AttributeKeys.SmsLinkPage,
+        key: AttributeKey.SmsLinkPage,
         defaultValue: Rock.SystemGuid.Page.NEW_COMMUNICATION,
         order: 4 )]
 
-    [PersonBadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
+    [BadgesField( "Badges", "The badges to display in this block.", false, "", "", 0 )]
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
     {
         /// <summary>
         /// Keys for the block attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// Key for the SMS Link Page
+            /// </summary>
             public const string SmsLinkPage = "SmsLinkPage";
         }
 
@@ -150,10 +153,10 @@ namespace RockWeb.Blocks.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = PersonBadgeCache.Get( guid );
-                        if ( personBadge != null )
+                        var badgeTypes = BadgeCache.Get( guid );
+                        if ( badgeTypes != null )
                         {
-                            blStatus.PersonBadges.Add( personBadge );
+                            blStatus.BadgeTypes.Add( badgeTypes );
                         }
                     }
                 }
@@ -1381,6 +1384,14 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionOpportunity != null && connectionRequest != null )
             {
+
+                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
+                {
+                    this.BreadCrumbs.Clear();
+                    upDetail.Visible = false;
+                    nbSecurityWarning.Visible = true;
+                }
+
                 hfConnectionOpportunityId.Value = connectionRequest.ConnectionOpportunityId.ToString();
                 hfConnectionRequestId.Value = connectionRequest.Id.ToString();
                 lConnectionOpportunityIconHtml.Text = string.Format( "<i class='{0}' ></i>", connectionOpportunity.IconCssClass );
@@ -1493,7 +1504,7 @@ namespace RockWeb.Blocks.Connection
             if ( person != null && ( person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) ) )
             {
                 List<String> contactList = new List<string>();
-                var hasSmsLink = GetAttributeValue( AttributeKeys.SmsLinkPage ).IsNotNullOrWhiteSpace();
+                var hasSmsLink = GetAttributeValue( AttributeKey.SmsLinkPage ).IsNotNullOrWhiteSpace();
                 
                 foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
                 {
@@ -1501,7 +1512,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( hasSmsLink && phoneNumber.IsMessagingEnabled )
                     {
-                        var smsLink = LinkedPageUrl( AttributeKeys.SmsLinkPage, new Dictionary<string, string> {
+                        var smsLink = LinkedPageUrl( AttributeKey.SmsLinkPage, new Dictionary<string, string> {
                             { "Person", person.Id.ToString() } } );
                         smsAnchor = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
                     }

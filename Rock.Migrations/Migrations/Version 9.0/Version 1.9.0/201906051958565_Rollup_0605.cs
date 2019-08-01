@@ -33,7 +33,6 @@ namespace Rock.Migrations
             AddAllowLabelReprintingUp();
             AddAttachmentBinaryFileTypeAttribute();
             FixCurrencyFormatInContributionStatement();
-            UpdateAttributeValueValueAsNumericUp();
             AddAttributesForSmartyStreets();
             FixGoogleShortCode();
             CodeGenMigrationsUp();
@@ -45,7 +44,6 @@ namespace Rock.Migrations
         public override void Down()
         {
             CodeGenMigrationsDown();
-            UpdateAttributeValueValueAsNumericDown();
             AddAllowLabelRepringintDown();
         }
 
@@ -254,72 +252,6 @@ namespace Rock.Migrations
             UPDATE [AttributeValue] 
             SET [Value]=REPLACE([Value],'{{ ''Global'' | Attribute:''CurrencySymbol'' }}{{ pledge.AmountRemaining }}','{{ pledge.AmountRemaining | FormatAsCurrency }}')
             WHERE [AttributeId]=@AttributeId" );
-        }
-
-        /// <summary>
-        /// MP: Fix AttributeValue.ValueAsNumeric to work with negative numbers
-        /// </summary>
-        private void UpdateAttributeValueValueAsNumericUp()
-        {
-            Sql( @"
-                IF EXISTS (
-                        SELECT *
-                        FROM sys.indexes
-                        WHERE name = 'IX_ValueAsNumeric'
-                            AND object_id = OBJECT_ID('AttributeValue')
-                        )
-                BEGIN
-                    DROP INDEX [IX_ValueAsNumeric] ON [AttributeValue]
-                END
-
-                ALTER TABLE [AttributeValue] DROP COLUMN [ValueAsNumeric]" );
-
-            Sql( @"
-                ALTER TABLE [AttributeValue] ADD [ValueAsNumeric] AS (
-                    CASE 
-                        WHEN len([value]) < (100)
-                            THEN CASE 
-                                    WHEN isnumeric([value]) = (1)
-                                        AND NOT [value] LIKE '%[^-0-9.]%'
-                                        THEN TRY_CAST([value] AS [decimal](29, 4))
-                                    END
-                        END
-                    ) PERSISTED;
-
-                CREATE NONCLUSTERED INDEX [IX_ValueAsNumeric] ON [dbo].[AttributeValue] ([ValueAsNumeric] ASC)" );
-        }
-
-        /// <summary>
-        /// DOWN for MP: Fixes AttributeValue.ValueAsNumeric to work with negative numbers
-        /// </summary>
-        private void UpdateAttributeValueValueAsNumericDown()
-        {
-            Sql( @"
-                IF EXISTS (
-                        SELECT *
-                        FROM sys.indexes
-                        WHERE name = 'IX_ValueAsNumeric'
-                            AND object_id = OBJECT_ID('AttributeValue')
-                        )
-                BEGIN
-                    DROP INDEX [IX_ValueAsNumeric] ON [AttributeValue]
-                END
-
-                ALTER TABLE [AttributeValue] DROP COLUMN [ValueAsNumeric]" );
-
-            Sql( @"
-                ALTER TABLE [AttributeValue] ADD [ValueAsNumeric] AS (
-                    CASE 
-                        WHEN len([value]) < (100)
-                            THEN CASE 
-                                    WHEN isnumeric([value]) = (1)
-                                        AND NOT [value] LIKE '%[^0-9.]%'
-                                        THEN TRY_CAST([value] AS [decimal](29, 4))
-                                    END
-                        END
-                    ) PERSISTED;
-
-                CREATE NONCLUSTERED INDEX [IX_ValueAsNumeric] ON [dbo].[AttributeValue] ([ValueAsNumeric] ASC)" );
         }
 
         /// <summary>

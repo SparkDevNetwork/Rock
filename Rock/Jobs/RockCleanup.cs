@@ -241,6 +241,26 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
             }
 
+            try
+            {
+                // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
+                AttributeValueCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in AttributeValueCleanup", ex ) );
+            }
+
+            try
+            {
+                var rowsDeleted = MergeStreaks();
+                databaseRowsCleanedUp.Add( "Duplicate Streak Enrollments", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in MergeStreaks", ex ) );
+            }
+
             // ***********************
             //  Final count and report
             // ***********************
@@ -1176,6 +1196,49 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
         }
 
         /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void AttributeValueCleanup( JobDataMap dataMap )
+        {
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
+
+            AttributeValueCleanup( commandTimeout );
+        }
+
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        internal static void AttributeValueCleanup( int commandTimeout )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                // Ensure AttributeValue.ValueAsNumeric is in sync with AttributeValue.Value, just in case Value got updated without also updating ValueAsNumeric
+                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AttributeValue
+SET ValueAsNumeric = CASE 
+		WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END
+where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END), 0)
+" );
+            }
+        }
+
+        /// <summary>
         /// Does cleanup of Locations
         /// </summary>
         /// <param name="dataMap">The data map.</param>
@@ -1282,6 +1345,44 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        /// <summary>
+        /// Merges the streaks.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private int MergeStreaks()
+        {
+            var recordsDeleted = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var streakService = new StreakService( rockContext );
+                var duplicateGroups = streakService.Queryable().GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } ).Where( g => g.Count() > 1 );
+
+                foreach ( var duplicateGroup in duplicateGroups )
+                {
+                    var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
+                    recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
+                    recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
+
+                    var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
+                    recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
+
+                    var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
+                    recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
+
+                    var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
+                    streakService.DeleteRange( recordsToDelete );
+
+                    rockContext.SaveChanges();
+
+                    recordsDeleted += recordsToDelete.Count();
+                }
+            }
+
+            return recordsDeleted;
         }
     }
 }

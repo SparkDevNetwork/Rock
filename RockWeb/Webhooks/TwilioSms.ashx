@@ -29,6 +29,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+/// <summary>
+/// This the Twilio Webwook that processes incoming SMS messages thru the SMS Pipeline. See https://community.rockrms.com/Rock/BookContent/8#smstwilio
+/// </summary>
 public class TwilioSmsAsync : IHttpAsyncHandler
 {
     public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)

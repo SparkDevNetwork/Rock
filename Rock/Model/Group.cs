@@ -683,6 +683,8 @@ namespace Rock.Model
             return result;
         }
 
+        private bool _FamilyCampusIsChanged = false;
+
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
@@ -693,6 +695,8 @@ namespace Rock.Model
             var rockContext = ( RockContext ) dbContext;
 
             HistoryChangeList = new History.HistoryChangeList();
+
+            _FamilyCampusIsChanged = false;
 
             switch ( entry.State )
             {
@@ -774,6 +778,14 @@ namespace Rock.Model
 
                             UpdateGroupMembersArchivedValueFromGroupArchivedValue( rockContext, originalIsArchived, originalArchivedDateTime, this.IsArchived, newArchivedDateTime );
                         }
+
+                        // If Campus is modified for an existing Family Group, set a flag to trigger updates for calculated field Person.PrimaryCampusId.
+                        var group = entry.Entity as Group;
+
+                        var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+                        _FamilyCampusIsChanged = ( group.GroupTypeId == familyGroupTypeId
+                                                   && group.CampusId.GetValueOrDefault( 0 ) != entry.OriginalValues["CampusId"].ToStringSafe().AsInteger() );
 
                         break;
                     }
@@ -898,9 +910,16 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
+            var dataContext = (RockContext)dbContext;
+
             if ( HistoryChangeList != null && HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChangeList, this.Name, null, null, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                HistoryService.SaveChanges( dataContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), this.Id, HistoryChangeList, this.Name, null, null, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+            }
+
+            if ( _FamilyCampusIsChanged )
+            {
+                PersonService.UpdatePrimaryFamilyByGroup( this.Id, dataContext );
             }
 
             base.PostSaveChanges( dbContext );

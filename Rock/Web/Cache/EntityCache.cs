@@ -186,6 +186,44 @@ namespace Rock.Web.Cache
             return value;
         }
 
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="id"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, int id, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( id, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Id=\"{ id }\"]." );
+            }
+        }
+
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="guid"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, Guid guid, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( guid, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Guid=\"{ guid }\"]." );
+            }
+        }
+
         #region Obsolete Methods
 
         /// <summary>

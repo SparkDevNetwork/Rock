@@ -191,9 +191,9 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the entity identified by the specified Guid.
+        /// Gets the entity by unique identifier.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private TEntity GetEntityByGuid( Guid? guid, RockContext rockContext )
@@ -213,9 +213,9 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the entity identified by the specified Guid.
+        /// Gets the entity by identifier.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="id">The identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private TEntity GetEntityById( int? id, RockContext rockContext )

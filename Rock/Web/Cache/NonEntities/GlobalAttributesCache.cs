@@ -661,7 +661,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
-        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.Legacy;
+        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled

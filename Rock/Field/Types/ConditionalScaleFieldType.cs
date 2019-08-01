@@ -36,8 +36,14 @@ namespace Rock.Field.Types
     {
         #region ConfigurationKeys
 
-        private static class ConfigurationKey
+        /// <summary>
+        /// The keys for configuration
+        /// </summary>
+        protected static class ConfigurationKey
         {
+            /// <summary>
+            /// The configuration JSON key
+            /// </summary>
             public const string ConfigurationJSON = "ConfigurationJSON";
         }
 
@@ -194,15 +200,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            var configurationValue = new ConfigurationValue( "Configuration JSON", "The JSON data used for the conditional formatting rules", string.Empty );
-            var pnlRulesEditor = controls[0];
-            var conditionalScaleRulesControlsRepeater = pnlRulesEditor.FindControl( "conditionalScaleRulesControlsRepeater" ) as Repeater;
-
-            var rules = GetRangeRulesListFromRepeaterControls( conditionalScaleRulesControlsRepeater );
-
-            configurationValue.Value = rules.ToJson();
-
             var values = base.ConfigurationValues( controls );
+
+            var configurationValue = new ConfigurationValue( "Configuration JSON", "The JSON data used for the conditional formatting rules", string.Empty );
+            if ( controls?.Any() == true )
+            {
+                var pnlRulesEditor = controls[0];
+                var conditionalScaleRulesControlsRepeater = pnlRulesEditor.FindControl( "conditionalScaleRulesControlsRepeater" ) as Repeater;
+
+                var rules = GetRangeRulesListFromRepeaterControls( conditionalScaleRulesControlsRepeater );
+
+                configurationValue.Value = rules.ToJson();
+            }
+
             values.Add( ConfigurationKey.ConfigurationJSON, configurationValue );
 
             return values;

@@ -42,21 +42,21 @@ namespace RockWeb.Blocks.Steps
         description: "The step type to use to add a new step. Leave blank to use the query string: StepTypeId. The type of the step, if step id is specified, overrides this setting.",
         required: false,
         order: 1,
-        key: AttributeKeys.StepType )]
+        key: AttributeKey.StepType )]
 
     [LinkedPage(
         name: "Success Page",
         description: "The page to navigate to once the add or edit has completed. Leave blank to navigate to the parent page.",
         required: false,
         order: 2,
-        key: AttributeKeys.SuccessPage )]
+        key: AttributeKey.SuccessPage )]
 
     [LinkedPage(
         name: "Workflow Entry Page",
         description: "Page used to launch a new workflow of the selected type.",
         required: false,
         order: 3,
-        key: AttributeKeys.WorkflowEntryPage )]
+        key: AttributeKey.WorkflowEntryPage )]
 
     #endregion Block Attributes
 
@@ -67,20 +67,42 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for block attributes
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The step type
+            /// </summary>
             public const string StepType = "StepType";
+
+            /// <summary>
+            /// The success page
+            /// </summary>
             public const string SuccessPage = "SuccessPage";
+
+            /// <summary>
+            /// The workflow entry page
+            /// </summary>
             public const string WorkflowEntryPage = "WorkflowEntryPage";
         }
 
         /// <summary>
         /// Keys for the page parameters
         /// </summary>
-        private static class ParameterKeys
+        protected static class ParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step identifier
+            /// </summary>
             public const string StepId = "StepId";
+
+            /// <summary>
+            /// The person identifier
+            /// </summary>
             public const string PersonId = "PersonId";
         }
 
@@ -262,7 +284,7 @@ namespace RockWeb.Blocks.Steps
                         qryParam.Add( "WorkflowId", workflow.Id.ToString() );
                     }
 
-                    var entryPage = this.GetAttributeValue( AttributeKeys.WorkflowEntryPage );
+                    var entryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
 
                     if ( string.IsNullOrWhiteSpace( entryPage ) )
                     {
@@ -270,7 +292,7 @@ namespace RockWeb.Blocks.Steps
                         return false;
                     }
 
-                    NavigateToLinkedPage( AttributeKeys.WorkflowEntryPage, qryParam );
+                    NavigateToLinkedPage( AttributeKey.WorkflowEntryPage, qryParam );
                     return false;
                 }
                 else if ( workflow.Id != 0 )
@@ -327,14 +349,15 @@ namespace RockWeb.Blocks.Steps
             }
 
             // If the step is null, then the aim is to create a new step
-            if ( step == null )
+            var isAdd = step == null;
+
+            if ( isAdd )
             {
                 step = new Step
                 {
                     StepTypeId = stepType.Id,
                     PersonAliasId = person.PrimaryAliasId.Value
                 };
-                service.Add( step );
             }
 
             // Update the step properties. Person cannot be changed (only set when the step is added)
@@ -360,6 +383,32 @@ namespace RockWeb.Blocks.Steps
                 {
                     step.CompletedDateTime = step.EndDateTime ?? step.StartDateTime;
                 }
+            }
+
+            if ( !step.IsValid )
+            {
+                ShowError( step.ValidationResults.Select( vr => vr.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
+                return;
+            }
+
+            if ( isAdd )
+            {
+                var errorMessage = string.Empty;
+                var canAdd = service.CanAdd( step, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    ShowError( errorMessage );
+                    return;
+                }
+
+                if ( !canAdd )
+                {
+                    ShowError( "The step cannot be added for an unspecified reason" );
+                    return;
+                }
+
+                service.Add( step );
             }
 
             // Save the step record
@@ -488,29 +537,18 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void GoToSuccessPage( int? newStepId )
         {
-            var page = GetAttributeValue( AttributeKeys.SuccessPage );
+            var page = GetAttributeValue( AttributeKey.SuccessPage );
             var parameters = new Dictionary<string, string>();
-            var person = GetPerson();
-            var step = GetStep();
-            var stepType = GetStepType();
+            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+            var personIdParam = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
 
-            if ( person != null )
+            if ( personIdParam.HasValue )
             {
-                parameters.Add( ParameterKeys.PersonId, person.Id.ToString() );
+                parameters.Add( ParameterKey.PersonId, personIdParam.Value.ToString() );
             }
-
-            if ( newStepId.HasValue && newStepId > 0 )
+            else if ( stepTypeIdParam.HasValue )
             {
-                parameters.Add( ParameterKeys.StepId, newStepId.Value.ToString() );
-            }
-            else if ( step != null )
-            {
-                parameters.Add( ParameterKeys.StepId, step.Id.ToString() );
-            }
-
-            if ( stepType != null )
-            {
-                parameters.Add( ParameterKeys.StepTypeId, stepType.Id.ToString() );
+                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam.Value.ToString() );
             }
 
             if ( page.IsNullOrWhiteSpace() )
@@ -519,7 +557,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                NavigateToLinkedPage( AttributeKeys.SuccessPage, parameters );
+                NavigateToLinkedPage( AttributeKey.SuccessPage, parameters );
             }
         }
 
@@ -535,7 +573,7 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _step == null )
             {
-                var stepId = PageParameter( ParameterKeys.StepId ).AsIntegerOrNull();
+                var stepId = PageParameter( ParameterKey.StepId ).AsIntegerOrNull();
 
                 if ( stepId.HasValue )
                 {
@@ -570,8 +608,8 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var stepTypeId = GetAttributeValue( AttributeKeys.StepType ).AsIntegerOrNull() ??
-                        PageParameter( ParameterKeys.StepTypeId ).AsIntegerOrNull();
+                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull() ??
+                        PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
 
                     if ( stepTypeId.HasValue )
                     {
@@ -605,7 +643,7 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var personId = PageParameter( ParameterKeys.PersonId ).AsIntegerOrNull();
+                    var personId = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
 
                     if ( personId.HasValue )
                     {
@@ -649,8 +687,11 @@ namespace RockWeb.Blocks.Steps
         private void InitializePersonPicker()
         {
             var isSelectable = IsPersonSelectable();
-            ppPerson.Visible = isSelectable;
+            ppPerson.Enabled = isSelectable;
             ppPerson.Required = isSelectable;
+
+            var person = GetPerson();
+            ppPerson.SetValue( person );
         }
 
         /// <summary>

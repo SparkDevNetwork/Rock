@@ -815,7 +815,7 @@ namespace Rock.Web.UI.Controls
                 _htmlRegistrationInstructions.ID = this.ID + "_htmlRegistrationInstructions";
                 _htmlRegistrationInstructions.Toolbar = HtmlEditor.ToolbarConfig.Light;
                 _htmlRegistrationInstructions.Label = "Registration Instructions";
-                _htmlRegistrationInstructions.Help = "These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration. These instructions can be provided on the registration template also. Any instructions here will override the instructions on the template.";
+                _htmlRegistrationInstructions.Help = "These instructions will appear at the beginning of the registration process. Instructions can be provided on the registration template also. Any instructions here will override the instructions on the template.";
                 _htmlRegistrationInstructions.Height = 200;
                 Controls.Add(_htmlRegistrationInstructions);
 

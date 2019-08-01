@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -443,9 +444,6 @@ namespace RockWeb.Blocks.Steps
             // Update Advanced Settings
             stepType.AutoCompleteDataViewId = dvpAutocomplete.SelectedValueAsId();
             stepType.AudienceDataViewId = dvpAudience.SelectedValueAsId();
-
-            stepType.MergeTemplateId = mtpMergeTemplate.SelectedValueAsId();
-            stepType.MergeTemplateDescriptor = tbMergeDescriptor.Text;
 
             stepType.AllowManualEditing = cbAllowEdit.Checked;
 
@@ -1194,8 +1192,9 @@ namespace RockWeb.Blocks.Steps
                 .ToList();
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
-
             cblPrerequsities.DataBind();
+
+            cblPrerequsities.Visible = prerequisiteStepTypes.Count > 0;
         }
 
         /// <summary>
@@ -1311,9 +1310,6 @@ namespace RockWeb.Blocks.Steps
             // Advanced Settings
             dvpAutocomplete.SetValue( stepType.AutoCompleteDataViewId );
             dvpAudience.SetValue( stepType.AudienceDataViewId );
-
-            mtpMergeTemplate.SetValue( stepType.MergeTemplateId );
-            tbMergeDescriptor.Text = stepType.MergeTemplateDescriptor;
 
             cbAllowEdit.Checked = stepType.AllowManualEditing;
 
@@ -1536,23 +1532,49 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RefreshChart()
         {
-            // Get chart data and add client script to construct the chart.
+            // If the Step Type does not have any activity, hide the Activity Summary.
+            var dataContext = GetDataContext();
+
+            var stepService = new StepService( dataContext );
+
+            var stepsQuery = stepService.Queryable()
+                                .Where( x => x.StepTypeId == _stepTypeId );
+
+            var hasStepData = stepsQuery.Any();
+
+            pnlActivitySummary.Visible = hasStepData;
+
+            if ( !hasStepData )
+            {
+                return;
+            }
+
+            // Get chart data and set visibility of related elements.
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
 
             var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
 
-            var chartDataJson = chartFactory.GetJson();
+            chartCanvas.Visible = chartFactory.HasData;
+            nbActivityChartMessage.Visible = !chartFactory.HasData;
 
-            string script = string.Format( @"
+            if ( chartFactory.HasData )
+            {
+                // Add client script to construct the chart.
+                var chartDataJson = chartFactory.GetJson( autoResize: false );
+
+                string script = string.Format( @"
 var barCtx = $('#{0}')[0].getContext('2d');
 var barChart = new Chart(barCtx, {1});",
-                                            barChartCanvas.ClientID,
-                                            chartDataJson );
+                                                chartCanvas.ClientID,
+                                                chartDataJson );
 
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
-
-            // If no data, show a notification.
-            nbStepsActivityLineChartMessage.Visible = !chartFactory.HasData;
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
+            }
+            else
+            {
+                // If no data, show a notification.
+                nbActivityChartMessage.Text = "There are no Steps matching the current filter.";
+            }
         }
 
         /// <summary>
@@ -1567,7 +1589,7 @@ var barChart = new Chart(barCtx, {1});",
 
             // Get the Steps associated with the current Step Type.
             var stepsStartedQuery = stepService.Queryable()
-                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null && x.CompletedDateTime == null );
+                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
 
             var stepsCompletedQuery = stepService.Queryable()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
@@ -1590,7 +1612,7 @@ var barChart = new Chart(barCtx, {1});",
 
             var startedSeriesDataPoints = stepsStartedQuery.ToList()
                 .GroupBy( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Started",
                     DateTime = x.Key,
@@ -1600,7 +1622,7 @@ var barChart = new Chart(barCtx, {1});",
 
             var completedSeriesDataPoints = stepsCompletedQuery.ToList()
                 .GroupBy( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Completed",
                     DateTime = x.Key,
@@ -1614,25 +1636,44 @@ var barChart = new Chart(barCtx, {1});",
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
+            factory.StartDateTime = startDate;
+            factory.EndDateTime = endDate;
             factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartHeight = 280;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
-            foreach ( var datasetName in dataSetNames )
-            {
-                var dataset = new ChartJsTimeSeriesDataset();
+            // Add Dataset for Steps Started.
+            var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
 
-                dataset.Name = datasetName;
+            var startedDataset = this.CreateDataSet( allDataPoints, "Started", colorStarted.ToHex() );
 
-                dataset.DataPoints = allDataPoints
-                                        .Where( x => x.DatasetName == datasetName )
-                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                        .Cast<IChartJsTimeSeriesDataPoint>()
-                                        .ToList();
+            factory.Datasets.Add( startedDataset );
 
-                factory.Datasets.Add( dataset );
-            }
+            // Add Dataset for Steps Completed.
+            var colorCompleted = new RockColor( ChartJsConstants.Colors.Green );
+
+            var completedDataset = this.CreateDataSet( allDataPoints, "Completed", colorCompleted.ToHex() );
+
+            factory.Datasets.Add( completedDataset );
 
             return factory;
+        }
+
+        private ChartJsTimeSeriesDataset CreateDataSet( IOrderedEnumerable<ChartDatasetInfo> allDataPoints, string datasetName, string colorString )
+        {
+            var dataset = new ChartJsTimeSeriesDataset();
+
+            dataset.Name = datasetName;
+
+
+            dataset.DataPoints = allDataPoints
+                                    .Where( x => x.DatasetName == datasetName )
+                                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                    .Cast<IChartJsTimeSeriesDataPoint>()
+                                    .ToList();
+
+            dataset.BorderColor = colorString;
+
+            return dataset;
         }
 
         #endregion
@@ -1673,6 +1714,17 @@ var barChart = new Chart(barCtx, {1});",
                     WorkflowTypeName = trigger.WorkflowType.Name;
                 }
             }
+        }
+
+        /// <summary>
+        /// Stores information about a dataset to be displayed on a chart.
+        /// </summary>
+        private class ChartDatasetInfo
+        {
+            public string DatasetName { get; set; }
+            public DateTime DateTime { get; set; }
+            public int Value { get; set; }
+            public string SortKey { get; set; }
         }
 
         #endregion
