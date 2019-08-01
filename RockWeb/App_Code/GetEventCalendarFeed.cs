@@ -117,87 +117,89 @@ namespace RockWeb
             {
                 foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
                 {
-                    if ( occurrence.Schedule != null )
+                    if ( occurrence.Schedule == null )
                     {
-                        iCalendarSerializer serializer = new iCalendarSerializer();
-                        iCalendarCollection ical = (iCalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+                        continue;
+                    }
 
-                        foreach ( var icalEvent in ical[0].Events )
+                    iCalendarSerializer serializer = new iCalendarSerializer();
+                    iCalendarCollection ical = (iCalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+
+                    foreach ( var icalEvent in ical[0].Events )
+                    {
+                        // We get all of the schedule info from Schedule.iCalendarContent
+                        Event ievent = icalEvent.Copy<Event>();
+
+                        ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
+                        ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+
+                        ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
+                        ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
+
+                        // Rock has more descriptions than iCal so lets concatenate them
+                        string description = CreateEventDescription( eventItem, occurrence );
+
+                        // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
+                        if ( interactionDeviceType != "Outlook" )
                         {
-                            // We get all of the schedule info from Schedule.iCalendarContent
-                            Event ievent = icalEvent.Copy<Event>();
-
-                            ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
-                            ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
-
-                            ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
-                            ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
-
-                            // Rock has more descriptions than iCal so lets concatenate them
-                            string description = CreateEventDescription( eventItem, occurrence );
-
-                            // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
-                            if ( interactionDeviceType != "Outlook" )
-                            {
-                                ievent.Description = description.ConvertBrToCrLf()
-                                                                    .Replace( "</P>", "" )
-                                                                    .Replace( "</p>", "" )
-                                                                    .Replace( "<P>", Environment.NewLine )
-                                                                    .Replace( "<p>", Environment.NewLine )
-                                                                    .Replace( "&nbsp;", " " )
-                                                                    .SanitizeHtml();
-                            }
-
-                            // HTML version of the description for outlook
-                            ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
-
-                            // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
-                            ievent.Class = "PUBLIC";
-
-                            if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
-                            {
-                                Uri result;
-                                if ( Uri.TryCreate( eventItem.DetailsUrl, UriKind.Absolute, out result ) )
-                                {
-                                    ievent.Url = result;
-                                }
-                                else if ( Uri.TryCreate( "http://" + eventItem.DetailsUrl, UriKind.Absolute, out result ) )
-                                {
-                                    ievent.Url = result;
-                                }
-                            }
-
-                            // add contact info if it exists
-                            if ( occurrence.ContactPersonAlias != null )
-                            {
-                                ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
-                                ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
-
-                                // Outlook doesn't seems to use Contacts or Comments
-                                string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
-                                string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
-                                string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
-                                string contactInfo = contactName + contactEmail + contactPhone;
-
-                                ievent.Contacts.Add( contactInfo );
-                                ievent.Comments.Add( contactInfo );
-                            }
-
-                            // TODO: categories - comma delimited list of whatever, might use audience
-                            foreach ( var a in eventItem.EventItemAudiences )
-                            {
-                                ievent.Categories.Add( a.DefinedValue.Value );
-                            }
-
-                            //// No attachments for now.
-                            ////if ( eventItem.PhotoId != null )
-                            ////{
-                            ////    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
-                            ////    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
-                            ////}
-
-                            icalendar.Events.Add( ievent );
+                            ievent.Description = description.ConvertBrToCrLf()
+                                                                .Replace( "</P>", "" )
+                                                                .Replace( "</p>", "" )
+                                                                .Replace( "<P>", Environment.NewLine )
+                                                                .Replace( "<p>", Environment.NewLine )
+                                                                .Replace( "&nbsp;", " " )
+                                                                .SanitizeHtml();
                         }
+
+                        // HTML version of the description for outlook
+                        ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
+
+                        // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
+                        ievent.Class = "PUBLIC";
+
+                        if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
+                        {
+                            Uri result;
+                            if ( Uri.TryCreate( eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
+                            else if ( Uri.TryCreate( "http://" + eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                            {
+                                ievent.Url = result;
+                            }
+                        }
+
+                        // add contact info if it exists
+                        if ( occurrence.ContactPersonAlias != null )
+                        {
+                            ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
+                            ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
+
+                            // Outlook doesn't seems to use Contacts or Comments
+                            string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
+                            string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
+                            string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
+                            string contactInfo = contactName + contactEmail + contactPhone;
+
+                            ievent.Contacts.Add( contactInfo );
+                            ievent.Comments.Add( contactInfo );
+                        }
+
+                        // TODO: categories - comma delimited list of whatever, might use audience
+                        foreach ( var a in eventItem.EventItemAudiences )
+                        {
+                            ievent.Categories.Add( a.DefinedValue.Value );
+                        }
+
+                        //// No attachments for now.
+                        ////if ( eventItem.PhotoId != null )
+                        ////{
+                        ////    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
+                        ////    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
+                        ////}
+
+                        icalendar.Events.Add( ievent );
                     }
                 }
             }
