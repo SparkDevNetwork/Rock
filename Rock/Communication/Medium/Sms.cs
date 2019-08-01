@@ -216,7 +216,7 @@ namespace Rock.Communication.Medium
 
             if ( enableResponseRecipientForwarding )
             {
-                CreateCommunicationMobile( fromPerson, toPersonAliasId.Value, message, rockSmsFromPhoneDv, responseCode, rockContext  );
+                CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext  );
             }
 
             // To and from person can be null and the response linked to a person later.
