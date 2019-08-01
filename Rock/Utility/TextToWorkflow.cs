@@ -140,7 +140,7 @@ namespace Rock.Utility
         /// <param name="response">The response to be sent back to the user.</param>
         public static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
         {
-            LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, null, workflowAttributesSettings, out response );
+            LaunchWorkflow( workflowType, nameTemplate, fromPerson, fromPhone, toPhone, message, null, attachments, workflowAttributesSettings, out response );
         }
 
         /// <summary>
