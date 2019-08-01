@@ -23,12 +23,14 @@ using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 
+using RestSharp.Extensions;
+
 using System.Globalization;
-using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -115,70 +117,87 @@ namespace RockWeb
             {
                 foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
                 {
-                    iCalendarSerializer serializer = new iCalendarSerializer();
-                    iCalendarCollection ical = ( iCalendarCollection ) serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
-
-                    foreach ( var icalEvent in ical[0].Events )
+                    if ( occurrence.Schedule != null )
                     {
-                        // We get all of the schedule info from Schedule.iCalendarContent
-                        Event ievent = icalEvent.Copy<Event>();
-                        
-                        ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
-                        ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+                        iCalendarSerializer serializer = new iCalendarSerializer();
+                        iCalendarCollection ical = (iCalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
 
-                        ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
-                        ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
-
-                        // Rock has more descriptions than iCal so lets concatenate them
-                        string description = CreateEventDescription( eventItem, occurrence );
-
-                        // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
-                        if ( interactionDeviceType != "Outlook" )
+                        foreach ( var icalEvent in ical[0].Events )
                         {
-                            ievent.Description = description.ConvertBrToCrLf().SanitizeHtml();
+                            // We get all of the schedule info from Schedule.iCalendarContent
+                            Event ievent = icalEvent.Copy<Event>();
+
+                            ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
+                            ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+
+                            ievent.DTStart.SetTimeZone( icalendar.TimeZones[0] );
+                            ievent.DTEnd.SetTimeZone( icalendar.TimeZones[0] );
+
+                            // Rock has more descriptions than iCal so lets concatenate them
+                            string description = CreateEventDescription( eventItem, occurrence );
+
+                            // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
+                            if ( interactionDeviceType != "Outlook" )
+                            {
+                                ievent.Description = description.ConvertBrToCrLf()
+                                                                    .Replace( "</P>", "" )
+                                                                    .Replace( "</p>", "" )
+                                                                    .Replace( "<P>", Environment.NewLine )
+                                                                    .Replace( "<p>", Environment.NewLine )
+                                                                    .Replace( "&nbsp;", " " )
+                                                                    .SanitizeHtml();
+                            }
+
+                            // HTML version of the description for outlook
+                            ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
+
+                            // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
+                            ievent.Class = "PUBLIC";
+
+                            if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
+                            {
+                                Uri result;
+                                if ( Uri.TryCreate( eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                                {
+                                    ievent.Url = result;
+                                }
+                                else if ( Uri.TryCreate( "http://" + eventItem.DetailsUrl, UriKind.Absolute, out result ) )
+                                {
+                                    ievent.Url = result;
+                                }
+                            }
+
+                            // add contact info if it exists
+                            if ( occurrence.ContactPersonAlias != null )
+                            {
+                                ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
+                                ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
+
+                                // Outlook doesn't seems to use Contacts or Comments
+                                string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
+                                string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
+                                string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
+                                string contactInfo = contactName + contactEmail + contactPhone;
+
+                                ievent.Contacts.Add( contactInfo );
+                                ievent.Comments.Add( contactInfo );
+                            }
+
+                            // TODO: categories - comma delimited list of whatever, might use audience
+                            foreach ( var a in eventItem.EventItemAudiences )
+                            {
+                                ievent.Categories.Add( a.DefinedValue.Value );
+                            }
+
+                            //// No attachments for now.
+                            ////if ( eventItem.PhotoId != null )
+                            ////{
+                            ////    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
+                            ////    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
+                            ////}
+
+                            icalendar.Events.Add( ievent );
                         }
-
-                        // HTML version of the description for outlook
-                        ievent.AddProperty( "X-ALT-DESC;FMTTYPE=text/html", "<html>" + description + "</html>" );
-
-                        // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
-                        ievent.Class = "PUBLIC";
-
-                        if ( !string.IsNullOrEmpty( eventItem.DetailsUrl ) )
-                        {
-                            ievent.Url = new Uri( eventItem.DetailsUrl );
-                        }
-
-                        // add contact info if it exists
-                        if ( occurrence.ContactPersonAlias != null )
-                        {
-                            ievent.Organizer = new Organizer( string.Format( "MAILTO:{0}", occurrence.ContactPersonAlias.Person.Email ) );
-                            ievent.Organizer.CommonName = occurrence.ContactPersonAlias.Person.FullName;
-
-                            // Outlook doesn't seems to use Contacts or Comments
-                            string contactName = !string.IsNullOrEmpty( occurrence.ContactPersonAlias.Person.FullName ) ? "Name: " + occurrence.ContactPersonAlias.Person.FullName : string.Empty;
-                            string contactEmail = !string.IsNullOrEmpty( occurrence.ContactEmail ) ? ", Email: " + occurrence.ContactEmail : string.Empty;
-                            string contactPhone = !string.IsNullOrEmpty( occurrence.ContactPhone ) ? ", Phone: " + occurrence.ContactPhone : string.Empty;
-                            string contactInfo = contactName + contactEmail + contactPhone;
-
-                            ievent.Contacts.Add( contactInfo );
-                            ievent.Comments.Add( contactInfo );
-                        }
-
-                        // TODO: categories - comma delimited list of whatever, might use audience
-                        foreach ( var a in eventItem.EventItemAudiences )
-                        {
-                            ievent.Categories.Add( a.DefinedValue.Value );
-                        }
-                        
-                        //// No attachments for now.
-                        ////if ( eventItem.PhotoId != null )
-                        ////{
-                        ////    // The DDay Attachment obj doesn't allow you to name the attachment. Nice huh? So just add prop manually...
-                        ////    ievent.AddProperty( "ATTACH;VALUE=BINARY;ENCODING=BASE64;X-FILENAME=\"" + eventItem.Photo.FileName + "\"", Convert.ToBase64String( eventItem.Photo.ContentStream.ReadBytesToEnd().ToArray() ) );
-                        ////}
-
-                        icalendar.Events.Add( ievent );
                     }
                 }
             }
@@ -234,7 +253,7 @@ namespace RockWeb
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate >= calendarProps.StartDate && o.Schedule.EffectiveEndDate <= calendarProps.EndDate ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
@@ -417,7 +436,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _startDate != null ? (DateTime) _startDate : DateTime.Now.Date;
+                    return _startDate ?? DateTime.Now.AddMonths( -3 ).Date;
                 }
 
                 set
@@ -436,7 +455,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _endDate != null ? (DateTime) _endDate : DateTime.Now.AddMonths( 2 ).Date;
+                    return _endDate ?? DateTime.Now.AddMonths( 12 ).Date;
                 }
 
                 set
