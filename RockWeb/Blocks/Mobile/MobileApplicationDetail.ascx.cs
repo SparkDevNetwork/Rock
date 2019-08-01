@@ -229,6 +229,7 @@ namespace RockWeb.Blocks.Mobile
             hfSiteId.Value = site.Id.ToString();
             ltAppName.Text = site.Name.EncodeHtml();
             ltDescription.Text = site.Description.EncodeHtml();
+            lSiteId.Text = site.Id.ToString();
 
             //
             // Set the UI fields for the images.

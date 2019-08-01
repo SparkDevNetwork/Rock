@@ -29,6 +29,10 @@
                 <h3 class="panel-title">
                     <i class="fa fa-mobile"></i>
                     <asp:Literal ID="ltAppName" runat="server" />
+
+                    <div class="panel-labels">
+                        <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
+                    </div>
                 </h3>
             </div>
 
