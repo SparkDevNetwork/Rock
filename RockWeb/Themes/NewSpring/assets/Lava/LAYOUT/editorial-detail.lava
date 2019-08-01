@@ -162,7 +162,10 @@
                 <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
                     {{ tags }}
                 </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                    <p><small><b>{{ date }}</b></small></p>
+                    {% if Item.ContentChannelId == '17' or Item.ContentChannelId == '23' %}
+                    {% else %}
+                        <p><small><b>{{ date }}</b></small></p>
+                    {% endif %}
                 </div>
             </div>
         </div>
