@@ -499,7 +499,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var description = string.IsNullOrWhiteSpace( item.Description )
                     ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
-                    : item.Description.LeftWithEllipsis( 25 );
+                    : item.Description;
 
                 ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
