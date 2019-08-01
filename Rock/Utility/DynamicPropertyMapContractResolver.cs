@@ -30,6 +30,9 @@ namespace Rock.Utility
         private readonly Dictionary<Type, HashSet<string>> _IgnoreTypePropertyNames;
         private readonly Dictionary<Type, Dictionary<string, string>> _RemapTypePropertyNames;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DynamicPropertyMapContractResolver"/> class.
+        /// </summary>
         public DynamicPropertyMapContractResolver()
         {
             _IgnoreTypePropertyNames = new Dictionary<Type, HashSet<string>>();
@@ -57,8 +60,9 @@ namespace Rock.Utility
         /// <summary>
         /// Add a mapping to change the name of a property during serialization of the specified Type.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="newJsonPropertyName"></param>
+        /// <param name="type">The type.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="newJsonPropertyName">New name of the json property.</param>
         public void RenameProperty( Type type, string propertyName, string newJsonPropertyName )
         {
             if ( !_RemapTypePropertyNames.ContainsKey( type ) )
@@ -69,6 +73,14 @@ namespace Rock.Utility
             _RemapTypePropertyNames[type][propertyName] = newJsonPropertyName;
         }
 
+        /// <summary>
+        /// Creates a <see cref="T:Newtonsoft.Json.Serialization.JsonProperty" /> for the given <see cref="T:System.Reflection.MemberInfo" />.
+        /// </summary>
+        /// <param name="member">The member to create a <see cref="T:Newtonsoft.Json.Serialization.JsonProperty" /> for.</param>
+        /// <param name="memberSerialization">The member's parent <see cref="T:Newtonsoft.Json.MemberSerialization" />.</param>
+        /// <returns>
+        /// A created <see cref="T:Newtonsoft.Json.Serialization.JsonProperty" /> for the given <see cref="T:System.Reflection.MemberInfo" />.
+        /// </returns>
         protected override JsonProperty CreateProperty( MemberInfo member, MemberSerialization memberSerialization )
         {
             var property = base.CreateProperty( member, memberSerialization );

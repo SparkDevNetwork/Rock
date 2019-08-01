@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Steps
 {
-    [DisplayName( "Steps" )]
+    [DisplayName( "Personal Step List" )]
     [Category( "Steps" )]
     [Description( "Displays step records for a person in a step program." )]
     [ContextAware( typeof( Person ) )]
@@ -42,29 +42,29 @@ namespace RockWeb.Blocks.Steps
         description: "The Step Program to display. This value can also be a page parameter: StepProgramId. Leave this attribute blank to use the page parameter.",
         required: false,
         order: 1,
-        key: AttributeKeys.StepProgram )]
+        key: AttributeKey.StepProgram )]
 
     [LinkedPage(
         name: "Step Entry Page",
         description: "The page where step records can be edited or added",
         order: 2,
-        key: AttributeKeys.StepPage )]
+        key: AttributeKey.StepPage )]
 
     [IntegerField(
         name: "Steps Per Row",
         description: "The number of step cards that should be shown on a row",
         order: 3,
         required: true,
-        key: AttributeKeys.StepsPerRow,
-        defaultValue: 6 )]
+        key: AttributeKey.StepsPerRow,
+        defaultValue: AttributeDefault.StepsPerRow )]
 
     [IntegerField(
         name: "Steps Per Row Mobile",
         description: "The number of step cards that should be shown on a row on a mobile screen size",
         order: 4,
         required: true,
-        key: AttributeKeys.StepsPerRowMobile,
-        defaultValue: 2 )]
+        key: AttributeKey.StepsPerRowMobile,
+        defaultValue: AttributeDefault.StepsPerRowMobile )]
 
     #endregion Attributes
 
@@ -75,36 +75,80 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Attribute keys
         /// </summary>
-        private static class AttributeKeys
+        protected static class AttributeKey
         {
+            /// <summary>
+            /// The step program attribute key
+            /// </summary>
             public const string StepProgram = "StepProgram";
+
+            /// <summary>
+            /// The step page attribute key
+            /// </summary>
             public const string StepPage = "StepPage";
+
+            /// <summary>
+            /// The steps per row attribute key
+            /// </summary>
             public const string StepsPerRow = "StepsPerRow";
+
+            /// <summary>
+            /// The steps per row on mobile attribute key
+            /// </summary>
             public const string StepsPerRowMobile = "StepsPerRowMobile";
+        }
+
+        /// <summary>
+        /// Attribute Default Values
+        /// </summary>
+        protected static class AttributeDefault
+        {
+            /// <summary>
+            /// The steps per row attribute default value
+            /// </summary>
+            public const int StepsPerRow = 5;
+
+            /// <summary>
+            /// The steps per row on mobile attribute default value
+            /// </summary>
+            public const int StepsPerRowMobile = 1;
         }
 
         /// <summary>
         /// Filter keys
         /// </summary>
-        private static class FilterKeys
+        protected static class FilterKey
         {
+            /// <summary>
+            /// The step type name filter key
+            /// </summary>
             public const string StepTypeName = "StepTypeName";
+
+            /// <summary>
+            /// The step status name filter key
+            /// </summary>
             public const string StepStatusName = "StepStatusName";
         }
 
         /// <summary>
         /// Query string or other page parameter keys
         /// </summary>
-        private static class PageParameters
+        protected static class PageParameterKey
         {
+            /// <summary>
+            /// The step program id page parameter
+            /// </summary>
             public const string StepProgramId = "StepProgramId";
         }
 
         /// <summary>
         /// User preference keys
         /// </summary>
-        private static class PreferenceKeys
+        protected static class PreferenceKey
         {
+            /// <summary>
+            /// The is card view user preference key
+            /// </summary>
             public const string IsCardView = "PersonProgramStepList.IsCardView";
         }
 
@@ -133,7 +177,7 @@ namespace RockWeb.Blocks.Steps
             {
                 SetProgramDetailsOnBlock();
 
-                var isCardViewPref = GetUserPreference( PreferenceKeys.IsCardView ).AsBooleanOrNull();
+                var isCardViewPref = GetUserPreference( PreferenceKey.IsCardView ).AsBooleanOrNull();
 
                 if ( isCardViewPref.HasValue )
                 {
@@ -209,7 +253,7 @@ namespace RockWeb.Blocks.Steps
             pnlCardView.Visible = isCardView;
             pnlGridView.Visible = !isCardView;
 
-            SetUserPreference( PreferenceKeys.IsCardView, isCardView.ToString(), true );
+            SetUserPreference( PreferenceKey.IsCardView, isCardView.ToString(), true );
         }
 
         /// <summary>
@@ -238,7 +282,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !stepGridRow.StepStatusColor.IsNullOrWhiteSpace() )
             {
-                classAttribute = string.Format( @" class=""label"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
+                classAttribute = string.Format( @" class=""label label-default"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
             }
 
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",
@@ -431,8 +475,8 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfGridFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfGridFilter.SaveUserPreference( FilterKeys.StepTypeName, tbStepTypeName.Text );
-            gfGridFilter.SaveUserPreference( FilterKeys.StepStatusName, tbStepStatus.Text );
+            gfGridFilter.SaveUserPreference( FilterKey.StepTypeName, tbStepTypeName.Text );
+            gfGridFilter.SaveUserPreference( FilterKey.StepStatusName, tbStepStatus.Text );
             RenderGridView();
         }
 
@@ -452,10 +496,10 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BindFilter()
         {
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepTypeName );
+            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
             tbStepTypeName.Text = !string.IsNullOrWhiteSpace( stepTypeNameFilter ) ? stepTypeNameFilter : string.Empty;
 
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepStatusName );
+            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
             tbStepStatus.Text = !string.IsNullOrWhiteSpace( stepStatusNameFilter ) ? stepStatusNameFilter : string.Empty;
         }
 
@@ -474,8 +518,8 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _stepProgram == null )
             {
-                var programGuid = GetAttributeValue( AttributeKeys.StepProgram ).AsGuidOrNull();
-                var programId = PageParameter( PageParameters.StepProgramId ).AsIntegerOrNull();
+                var programGuid = GetAttributeValue( AttributeKey.StepProgram ).AsGuidOrNull();
+                var programId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
                 var rockContext = GetRockContext();
                 var service = new StepProgramService( rockContext );
 
@@ -755,9 +799,7 @@ namespace RockWeb.Blocks.Steps
 
             service.Delete( step );
             rockContext.SaveChanges();
-
-            RenderGridView();
-            RenderCardView();
+            ClearBlockCache();
         }
 
         /// <summary>
@@ -775,6 +817,19 @@ namespace RockWeb.Blocks.Steps
         }
         private RockContext _rockContext;
 
+        /// <summary>
+        /// Clears the block cache.
+        /// </summary>
+        private void ClearBlockCache()
+        {
+            _rockContext = null;
+            _personStepsMap = null;
+            _person = null;
+            _stepProgram = null;
+            _stepTerm = null;
+            _stepTypes = null;
+        }
+
         #endregion Model Helpers
 
         #region Control Helpers
@@ -784,12 +839,12 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RenderStepsPerRow()
         {
-            var stepsPerRow = GetAttributeValue( AttributeKeys.StepsPerRow ).AsIntegerOrNull() ?? 4;
-            var stepsPerRowMobile = GetAttributeValue( AttributeKeys.StepsPerRowMobile ).AsIntegerOrNull() ?? 1;
+            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
+            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
 
             lStepsPerRowCss.Text =
 @"<style>
-    :root {
+    #" + upContent.ClientID + @" {
         --stepsPerRow: " + stepsPerRow + @";
         --stepsPerRowMobile: " + stepsPerRowMobile + @";
         }
@@ -871,6 +926,7 @@ namespace RockWeb.Blocks.Steps
                 var latestStepStatus = latestStep == null ? null : latestStep.StepStatus;
                 var isComplete = personStepsOfType.Any( s => s.IsComplete );
                 var canAddStep = CanAddStep( stepType );
+                var hasMetPrerequisites = HasMetPrerequisites( stepType.Id );
 
                 var rendered = stepType.CardLavaTemplate.ResolveMergeFields( new Dictionary<string, object> {
                     { "StepType", stepType },
@@ -889,7 +945,7 @@ namespace RockWeb.Blocks.Steps
                 {
                     cardCssClasses.Add( "is-complete" );
                 }
-                
+
                 if ( personStepsOfType.Any() )
                 {
                     cardCssClasses.Add( "has-steps" );
@@ -902,6 +958,11 @@ namespace RockWeb.Blocks.Steps
                 if ( canAddStep )
                 {
                     cardCssClasses.Add( "has-add" );
+                }
+
+                if ( !hasMetPrerequisites )
+                {
+                    cardCssClasses.Add( "has-prerequisite" );
                 }
 
                 cardsData.Add( new CardViewModel
@@ -946,8 +1007,8 @@ namespace RockWeb.Blocks.Steps
             var stepTypes = GetStepTypes();
 
             // Get filter values
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepTypeName );
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKeys.StepStatusName );
+            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
+            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
 
             // Apply step type filters
             if ( !string.IsNullOrEmpty( stepTypeNameFilter ) )
@@ -986,6 +1047,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusColor = s.StepStatus == null ? string.Empty : s.StepStatus.StatusColor,
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
+                StepTypeOrder = s.StepType.Order,
                 Summary = string.Empty // TODO
             } );
 
@@ -996,7 +1058,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                viewModels = viewModels.OrderBy( vm => vm.StepTypeName );
+                viewModels = viewModels.OrderBy( vm => vm.StepTypeOrder ).ThenBy( vm => vm.StepTypeName );
             }
 
             // Bind the grid for the steps
@@ -1049,7 +1111,7 @@ namespace RockWeb.Blocks.Steps
             {
                 ShowError( string.Format(
                     "The step program was not found. Please set the block attribute or ensure a query parameter `{0}` is set.",
-                    PageParameters.StepProgramId ) );
+                    PageParameterKey.StepProgramId ) );
                 return false;
             }
 
@@ -1073,7 +1135,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Navigate to the step page. StepTypeId is required. StepId can be ommitted for add, or set for edit.
+        /// Navigate to the step page. StepTypeId is required. StepId can be omitted for add, or set for edit.
         /// </summary>
         /// <param name="stepTypeId"></param>
         /// <param name="stepId"></param>
@@ -1083,7 +1145,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( person != null )
             {
-                NavigateToLinkedPage( AttributeKeys.StepPage, new Dictionary<string, string> {
+                NavigateToLinkedPage( AttributeKey.StepPage, new Dictionary<string, string> {
                     { "personId", person.Id.ToString() },
                     { "stepTypeId", stepTypeId.ToString() },
                     { "stepId", (stepId ?? 0).ToString() }
@@ -1093,54 +1155,184 @@ namespace RockWeb.Blocks.Steps
 
         #endregion Control Helpers
 
-        #region Helper Classes
+        #region View Models
 
         /// <summary>
         /// View model for data for a grid row
         /// </summary>
-        public class StepGridRowViewModel
+        private class StepGridRowViewModel
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step type.
+            /// </summary>
+            /// <value>
+            /// The name of the step type.
+            /// </value>
             public string StepTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the completed date time.
+            /// </summary>
+            /// <value>
+            /// The completed date time.
+            /// </value>
             public DateTime? CompletedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the color of the step status.
+            /// </summary>
+            /// <value>
+            /// The color of the step status.
+            /// </value>
             public string StepStatusColor { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step status.
+            /// </summary>
+            /// <value>
+            /// The name of the step status.
+            /// </value>
             public string StepStatusName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step type icon CSS class.
+            /// </summary>
+            /// <value>
+            /// The step type icon CSS class.
+            /// </value>
             public string StepTypeIconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the summary.
+            /// </summary>
+            /// <value>
+            /// The summary.
+            /// </value>
             public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets the step type order.
+            /// </summary>
+            /// <value>
+            /// The step type order.
+            /// </value>
+            public int StepTypeOrder { get; internal set; }
         }
 
         /// <summary>
         /// View model for the add step buttons above the grid
         /// </summary>
-        public class AddStepButtonViewModel
+        private class AddStepButtonViewModel
         {
+            /// <summary>
+            /// Gets or sets the step type identifier.
+            /// </summary>
+            /// <value>
+            /// The step type identifier.
+            /// </value>
             public int StepTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is enabled.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+            /// </value>
             public bool IsEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the button contents.
+            /// </summary>
+            /// <value>
+            /// The button contents.
+            /// </value>
             public string ButtonContents { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
         }
 
         /// <summary>
         /// View model for the data show on a card
         /// </summary>
-        public class CardViewModel
+        private class CardViewModel
         {
+            /// <summary>
+            /// Gets or sets the type of the step.
+            /// </summary>
+            /// <value>
+            /// The type of the step.
+            /// </value>
             public StepType StepType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rendered lava.
+            /// </summary>
+            /// <value>
+            /// The rendered lava.
+            /// </value>
             public string RenderedLava { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
+
+            /// <summary>
+            /// Gets or sets the card CSS class.
+            /// </summary>
+            /// <value>
+            /// The card CSS class.
+            /// </value>
             public string CardCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can add step.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
+            /// </value>
             public bool CanAddStep { get; set; }
         }
 
         /// <summary>
         /// View model for a single step shown on the hover state of the card
         /// </summary>
-        public class CardStepViewModel
+        private class CardStepViewModel
         {
+            /// <summary>
+            /// Gets or sets the step identifier.
+            /// </summary>
+            /// <value>
+            /// The step identifier.
+            /// </value>
             public int StepId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status HTML.
+            /// </summary>
+            /// <value>
+            /// The status HTML.
+            /// </value>
             public string StatusHtml { get; set; }
         }
 
-        #endregion Helper Classes
+        #endregion View Models
     }
 }

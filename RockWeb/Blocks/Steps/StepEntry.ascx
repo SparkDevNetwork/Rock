@@ -26,13 +26,13 @@
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </div>
                         <div class="col-sm-6 col-md-3">
-                            <Rock:DatePicker ID="rdpStartDate" runat="server" PropertyName="StartDate" />
+                            <Rock:DatePicker ID="rdpStartDate" runat="server" PropertyName="StartDate" Required="true" />
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <Rock:DatePicker ID="rdpEndDate" runat="server" PropertyName="EndDate" />
                         </div>
                         <div class="col-sm-12 col-md-6">
-                            <Rock:StepStatusPicker ID="rsspStatus" runat="server" Label="Status" />
+                            <Rock:StepStatusPicker ID="rsspStatus" runat="server" Label="Status" Required="true" />
                         </div>
                     </div>
 

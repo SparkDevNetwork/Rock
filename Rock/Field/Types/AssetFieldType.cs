@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     public class AssetFieldType : FieldType
@@ -35,15 +35,15 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         private readonly string pickerButtonTemplate = @"
-{% assign imageTypeUrl = '/Assets/Images/no-asset.svg' %}
-{% assign selectedFileName = SelectedValue | FromJSON | Property:'Key' | Escape %}
-{% if selectedFileName != '' %}
-  {% assign imageType = selectedFileName | Split:'.' | Last | Trim %}
-  {% capture imageTypeUrl %}/Assets/Icons/FileTypes/{{ imageType }}.png{% endcapture %}
+{% assign iconPath = SelectedValue | FromJSON | Property:'IconPath' %}
+{% assign fileName = SelectedValue | FromJSON | Property:'Name' %}
+{% if iconPath != '' and fileName != '' %}
+    {% assign escFileName = fileName | UrlEncode %}
+    {% assign imageTypeUrl = iconPath | Replace: fileName, escFileName %}
 {% endif %}
 
-<div class='imageupload-thumbnail-image' style='height:100px; width:100px; background-image:url({{ imageTypeUrl }}); background-size:40%; background-position:50%; background-repeat: no-repeat;'>
-    <span class='file-link'><p style='width: 95px; overflow: hidden' title='{{ selectedFileName }}'>{{ selectedFileName }}</p></span>
+<div class='fileupload-thumbnail{% if imageTypeUrl contains '/Assets/Icons/FileTypes/' %} fileupload-thumbnail-icon{% endif %}' {% if fileName != '' %}style='background-image:url({{ imageTypeUrl }}) !important;' title='{{ fileName }}'{% endif %}>
+    {% if fileName != '' %}<span class='file-link'>{{ fileName }}</span>{% else %}<span class='file-link file-link-default'></span>{% endif %}
 </div>
 <div class='imageupload-dropzone'>
     <span>
@@ -66,7 +66,7 @@ namespace Rock.Field.Types
                 ID = id,
                 BlockTypePath = "~/Blocks/CMS/AssetManager.ascx",
                 ShowInModal = true,
-                SelectControlCssClass = "btn btn-xs btn-default imageupload-group",
+                SelectControlCssClass = "imageupload-group",
                 CssClass = "picker-asset",
                 ModalSaveButtonText = "Select",
                 ModalSaveButtonCssClass = "js-singleselect aspNetDisabled",

@@ -387,8 +387,29 @@ namespace Rock.Model
             var calEvent = GetCalendarEvent();
             if ( calEvent != null )
             {
-                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : ( DateTime? ) null;
-                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : ( DateTime? ) null;
+
+                EffectiveStartDate = calEvent.DTStart?.Value.Date;
+
+                // If there are any recurrence rules with no end date, the Effective End Date is infinity
+                if ( calEvent.RecurrenceRules.Count > 0 )
+                {
+                    if ( calEvent.RecurrenceRules.Any( rule => rule.Until == DateTime.MinValue && rule.Count <= 0 ) )
+                    {
+                        EffectiveEndDate = DateTime.MaxValue;
+                    }
+                }
+
+                // If this isn't a perpetually recurring event, set the EffectiveEndDate to the actual end date/time of the last occurrence of this event
+                if ( EffectiveEndDate != DateTime.MaxValue )
+                {
+                    var occurrences = GetOccurrences( DateTime.MinValue, DateTime.MaxValue );
+                    if ( occurrences.Any() )
+                    {
+                        EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
+                                               ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
+                                               : EffectiveStartDate;
+                    }
+                }
             }
 
             base.PreSaveChanges( dbContext, state );

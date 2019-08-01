@@ -71,6 +71,24 @@ namespace Rock.Web.Cache
         public string Name { get; private set; }
 
         /// <summary>
+        /// Gets or sets the layout mobile tablet.
+        /// </summary>
+        /// <value>
+        /// The layout mobile tablet.
+        /// </value>
+        [DataMember]
+        public string LayoutMobilePhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the layout mobile tablet.
+        /// </summary>
+        /// <value>
+        /// The layout mobile tablet.
+        /// </value>
+        [DataMember]
+        public string LayoutMobileTablet { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -114,6 +132,8 @@ namespace Rock.Web.Cache
             SiteId = layout.SiteId;
             FileName = layout.FileName;
             Name = layout.Name;
+            LayoutMobilePhone = layout.LayoutMobilePhone;
+            LayoutMobileTablet = layout.LayoutMobileTablet;
             Description = layout.Description;
         }
 

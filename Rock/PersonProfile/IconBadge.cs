@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -30,28 +31,74 @@ namespace Rock.PersonProfile
         /// Gets the tool tip text.
         /// </summary>
         /// <param name="person">The person.</param>
-        public abstract string GetToolTipText(Person person);
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
+        public virtual string GetToolTipText( Person person ) {
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the icon path.
         /// </summary>
         /// <param name="person">The person.</param>
-        public abstract string GetIconPath( Person person );
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
+        public virtual string GetIconPath( Person person )
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the tool tip text.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public virtual string GetToolTipText( IEntity entity )
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the icon path.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public virtual string GetIconPath( IEntity entity )
+        {
+            return string.Empty;
+        }
 
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, HtmlTextWriter writer )
         {
-            if ( Person != null )
+            if ( Entity != null )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "badge" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Title, GetToolTipText( Person ) );
+
+                var tooltipText = GetToolTipText( Entity );
+
+                if (tooltipText.IsNullOrWhiteSpace())
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    tooltipText = GetToolTipText( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Title, tooltipText );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Src, GetIconPath( Person ) );
+                var iconPath = GetIconPath( Entity );
+
+                if ( iconPath.IsNullOrWhiteSpace() )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    iconPath = GetIconPath( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Src, iconPath );
                 writer.RenderBeginTag( HtmlTextWriterTag.Img );
                 writer.RenderEndTag();
 

@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
 
         /// <summary>
+        /// The guid for the Rock.Model.Badge entity
+        /// </summary>
+        public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
+
+        /// <summary>
         /// The benevolence request
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
@@ -146,6 +151,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.FinancialBatch entity.
         /// </summary>
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialScheduledTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_SCHEDULED_TRANSACTION = "76824E8A-CCC4-4085-84D9-8AF8C0807E20";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialTransaction entity.

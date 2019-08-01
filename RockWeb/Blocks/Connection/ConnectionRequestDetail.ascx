@@ -1,5 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
+<Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
+
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
 
@@ -37,7 +39,7 @@
                         </div>
                         <div class="col-md-8">
                             <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
-                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                                <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
                             
                             <div class="row">

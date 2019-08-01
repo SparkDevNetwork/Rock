@@ -34,38 +34,35 @@
                             <asp:Literal ID="lStepTypeDescription" runat="server"></asp:Literal>
                         </div>
                     </div>
-                    <div id="pnlGraph" runat="server">
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
                         <div class="row">
                             <div class="col-sm-6">
-                                <h3>Steps Activity Summary</h3>
-                                <p class="small">Shows steps started or completed within the activity period.</p>
+                                <h5>Steps Activity Summary</h5>
                             </div>
                             <div class="col-sm-6">
-                                <div class="panel panel-body">
-                                    <div class="row">
-                                        <div class="col-sm-8">
-                                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
-                                                runat="server"
-                                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                                EnabledSlidingDateRangeUnits="Week, Month, Year"
-                                                SlidingDateRangeMode="Current"
-                                                TimeUnit="Year"
-                                                CssClass="pull-right" />
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <span class="pull-right">
-                                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-primary" Style="vertical-align: bottom" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                                            runat="server"
+                                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                            EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                            SlidingDateRangeMode="Current"
+                                            TimeUnit="Year"
+                                            Label=""
+                                            CssClass="pull-right" />
+
                             </div>
                         </div>
-                        <%-- Steps Activity Summary Line Chart --%>
-                        <!-- div class="chart-container">
-                            <Rock:NotificationBox ID="nbStepsActivityLineChartMessage" runat="server" NotificationBoxType="Info" Text="No activity to show for this Step" />
-                            <canvas id="barChartCanvas" runat="server" style="height: 280px;" />
-                        </div !-->
+                        <%-- Steps Activity Chart --%>
+                        <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
+                        <div id="pnlActivityChart" runat="server">
+                            <div class="chart-container" align="center">
+                                <canvas id="chartCanvas" runat="server" height="350" width="700" />
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -139,7 +136,6 @@
                                 Label="Prerequisite Steps"
                                 Help="The steps that must be completed prior to this step."
                                 RepeatDirection="Vertical"
-                                EmptyListMessage="(No selection available)"
                                 DataValueField="Id"
                                 DataTextField="Name" />
                         </div>
@@ -196,22 +192,6 @@
                                     Help="Can the details of this step achievement be modified by the participant?"
                                     Checked="false"
                                     Text="Yes" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:MergeTemplatePicker ID="mtpMergeTemplate"
-                                    runat="server"
-                                    Label="Merge Template"
-                                    Help="An optional merge template for a certificate, notification letter or other document associated with this step."
-                                    DataField="WorkflowType" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbMergeDescriptor"
-                                    runat="server"
-                                    SourceTypeName="Rock.Model.StepType, Rock"
-                                    PropertyName="MergeTemplateDescriptor"
-                                    Help="The name used to describe the merge template associated with this step, such as a certificate or notification letter." />
                             </div>
                         </div>
                         <div class="row">

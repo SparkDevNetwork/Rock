@@ -682,23 +682,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum SequenceOccurenceFrequency
-    {
-        Daily = 0x0,
-        Weekly = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum SequenceStructureType
-    {
-        Group = 0x1,
-        GroupType = 0x2,
-        CheckInConfig = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum SignatureDocumentAction
     {
         Email = 0x0,
@@ -732,6 +715,24 @@ namespace Rock.Client.Enums
         AllUsers = 0x1,
         AllAuthenticatedUsers = 0x2,
         AllUnAuthenticatedUsers = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum StreakOccurrenceFrequency
+    {
+        Daily = 0x0,
+        Weekly = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum StreakStructureType
+    {
+        Group = 0x1,
+        GroupType = 0x2,
+        GroupTypePurpose = 0x3,
+        CheckInConfig = 0x4,
     }
 
     /// <summary>

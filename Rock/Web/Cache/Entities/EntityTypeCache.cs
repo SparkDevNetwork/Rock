@@ -115,7 +115,7 @@ namespace Rock.Web.Cache
             {
                 if ( _properties == null )
                 {
-                    _properties = this.GetType().GetProperties().ToDictionary( k => k.Name, v => v );
+                    _properties = this.GetEntityType().GetProperties().ToDictionary( k => k.Name, v => v );
                 }
 
                 return _properties;

@@ -162,6 +162,7 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer" 
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+                                    <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 

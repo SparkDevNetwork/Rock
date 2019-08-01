@@ -29,8 +29,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // Converts any Scheduled Transaction Notes into Scheduled Transaction History. This removes the need to use Scheduled Transaction to store redundant history in both Notes and History.
-            Sql( MigrationSQL._201903202308416_ScheduledTransactionHistory_MigrateScheduledTransactionNotesToHistory );
+            // Adds job that converts any Scheduled Transaction Notes into Scheduled Transaction History. This removes the need to use Scheduled Transaction to store redundant history in both Notes and History.
+            AddMigrateScheduledTransactionNotesToHistoryJob();
+
+
 
             UpdateModifiedPagesAndBlocksUp();
         }
@@ -369,6 +371,41 @@ mission. We are so grateful for your commitment.</p>
         public override void Down()
         {
             UpdateModifiedPagesAndBlocksDown();
+        }
+
+        /// <summary>
+        /// Adds the migrate scheduled transaction notes to history job.
+        /// </summary>
+        private void AddMigrateScheduledTransactionNotesToHistoryJob()
+        {
+            Sql( @"IF NOT EXISTS (
+  SELECT[Id]
+  FROM[ServiceJob]
+  WHERE[Class] = 'Rock.Jobs.PostV90DataMigrationsScheduledTransactionNotesToHistory'
+   AND[Guid] = '6707AA98-7CF8-4258-A75A-0881CD68B0D9'
+  )
+BEGIN
+ INSERT INTO[ServiceJob](
+  [IsSystem]
+  ,[IsActive]
+  ,[Name]
+  ,[Description]
+  ,[Class]
+  ,[CronExpression]
+  ,[NotificationStatus]
+  ,[Guid]
+  )
+ VALUES(
+  0
+  ,1
+  ,'Rock Update Helper v9.0 - ScheduledTransactionNotesToHistory'
+  ,'Runs data updates to convert Scheduled Transaction Notes to History that need to occur after updating to v9.0.'
+  ,'Rock.Jobs.PostV90DataMigrationsScheduledTransactionNotesToHistory'
+  ,'0 0 21 1/1 * ? *'
+  ,1
+  ,'6707AA98-7CF8-4258-A75A-0881CD68B0D9'
+  );
+        END" );
         }
 
         /// <summary>

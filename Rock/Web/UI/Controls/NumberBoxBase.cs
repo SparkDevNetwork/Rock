@@ -66,6 +66,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an integer value for the control.
+        /// </summary>
+        public int? IntegerValue
+        {
+            get
+            {
+                EnsureChildControls();
+
+                return this.Text.ToStringSafe().AsIntegerOrNull();
+            }
+
+            set
+            {
+                EnsureChildControls();
+
+                this.Text = value.ToString();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the type of the validation data.
         /// </summary>
         /// <value>

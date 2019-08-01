@@ -47,8 +47,24 @@ namespace Rock.Client
         public int? AutoCompleteDataViewId { get; set; }
 
         /// <summary />
-        public string CardLavaTemplate { get; set; } = @"
-<h1>{{ Step.StepType.Name }} - {{ Step.PersonAlias.Person.FullName }}</h1>
+        public string CardLavaTemplate { get; set; } = @"<h3 class=""step-name"">{{ StepType.Name }}</h3>
+{% if StepType.HighlightColor == '' or IsComplete == false %}
+    <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+{% else %}
+    <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+{% endif %}
+<p class=""step-status"">
+    {% if LatestStepStatus %}
+        <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+    {% endif %}
+    {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+        <br />
+        <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+    {% endif %}
+</p>
+{% if StepCount > 1 %}
+    <span class=""badge"">{{ StepCount }}</span>
+{% endif %}
 ";
 
         /// <summary />

@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI
@@ -25,32 +26,23 @@ namespace Rock.Web.UI
     /// included in the attribute, a block property will automatically be added for user to set 
     /// the entity type when block is placed on a page
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
     public class ContextAwareAttribute : System.Attribute
     {
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// The contexts
         /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public EntityTypeCache EntityType { get; set; }
-        
-        /// <summary>
-        /// Gets the default name of the parameter.
-        /// </summary>
-        /// <value>
-        /// The default name of the parameter.
-        /// </value>
-        public string DefaultParameterName { get; private set; }
+        public List<Context> Contexts { get; } = new List<Context>();
 
         /// <summary>
         /// Gets or sets a value indicating whether this ContextAware attribute is configurable in BlockProperties
         /// </summary>
-        /// <value>
-        /// 	<c>true</c> if this instance is configurable; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsConfigurable { get; set; }
+        public bool IsConfigurable
+        {
+            get => _isConfigurable && !Contexts.Any();
+            set => _isConfigurable = value;
+        }
+        private bool _isConfigurable = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
@@ -61,13 +53,50 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
+        /// Initializes a new instance of the <see cref="ContextAwareAttribute"/> class.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        public ContextAwareAttribute( Type entityType )
+        /// <param name="entityTypes">The entity types.</param>
+        public ContextAwareAttribute( params Type[] entityTypes )
         {
-            EntityType = EntityTypeCache.Get( entityType );
-            DefaultParameterName = entityType.Name + "Id";
+            foreach ( var entityType in entityTypes )
+            {
+                if ( entityType != null )
+                {
+                    Contexts.Add( new Context( entityType ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// A context of an entity and default parameter
+        /// </summary>
+        public class Context
+        {
+            /// <summary>
+            /// Create a context
+            /// </summary>
+            /// <param name="entityType"></param>
+            public Context( Type entityType )
+            {
+                EntityType = EntityTypeCache.Get( entityType );
+                DefaultParameterName = entityType.Name + "Id";
+            }
+
+            /// <summary>
+            /// Gets or sets the type of the entity.
+            /// </summary>
+            /// <value>
+            /// The type of the entity.
+            /// </value>
+            public EntityTypeCache EntityType { get; private set; }
+
+            /// <summary>
+            /// Gets the default name of the parameter.
+            /// </summary>
+            /// <value>
+            /// The default name of the parameter.
+            /// </value>
+            public string DefaultParameterName { get; private set; }
         }
     }
 }

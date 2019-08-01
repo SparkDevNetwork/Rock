@@ -651,21 +651,26 @@ Guid - ContentChannelItem Guid
             }
             else
             {
+                var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
 
-                if ( Request.QueryString.HasKeys() )
+                // First, look for the item key via the route/slug so that something like this
+                // continues to work when an external system (such as Facebook) tacks a parameter
+                // onto the URL like this:
+                // https://community.rockrms.com/connect/a-dedicated-new-home-for-the-rock-community?fbclid=IwAR2VRUjhh...-9biFY
+
+                // if this is the standard "page/{PageId}" route, don't grab the Item from the route since it would just be the pageId
+                if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
+                {
+                    // if no specific Parameter was specified, get whatever the last Parameter in the Route is
+                    var key = this.Page.RouteData.Values.Keys.LastOrDefault();
+                    if ( key.IsNotNullOrWhiteSpace() )
+                    {
+                        contentChannelItemKey = this.Page.RouteData.Values[key].ToString();
+                    }
+                }
+                else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
-                }
-                else
-                {
-                    var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
-
-                    // if this is the standard "page/{PageId" route, don't grab the Item from the route since it would just be the pageId
-                    if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
-                    {
-                        // if no specific Parameter was specified, and there was no QueryString, get whatever the last Parameter in the Route is
-                        contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).LastOrDefault();
-                    }
                 }
             }
 

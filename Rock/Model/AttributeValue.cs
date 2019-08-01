@@ -62,9 +62,9 @@ namespace Rock.Model
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId).FirstOrDefault();
+                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext ).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
             }
 
@@ -131,23 +131,33 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the Value as a double (Computed Column)
+        /// Gets the Value as a decimal (Computed on Save).
         /// </summary>
         /// <value>
         /// </value>
-        /* Computed Column Spec:
-        CASE 
-        WHEN len([value]) < (100)
-            AND isnumeric([value]) = (1)
-            AND NOT [value] LIKE '%[^0-9.]%'
-            AND NOT [value] LIKE '%[.]%'
-            THEN CONVERT([numeric](38, 10), [value])
-        END         
-         */
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public decimal? ValueAsNumeric { get; set; }
+        public decimal? ValueAsNumeric
+        {
+            get
+            {
+                // since this will get called on every save, don't spend time attempting to convert a large string to a decimal
+                if ( this.Value.IsNull() || this.Value.Length > 100 )
+                {
+                    return null;
+                }
+
+                _valueAsNumeric = this.Value.AsDecimalOrNull();
+                return _valueAsNumeric;
+            }
+
+            set
+            {
+                _valueAsNumeric = value;
+            }
+        }
+
+        private decimal? _valueAsNumeric;
 
         /// <summary>
         /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
@@ -329,7 +339,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the history changes to be saved in PostSaveChanges
+        /// Gets or sets the history changes to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
         /// </summary>
         /// <value>
         /// The history changes.
@@ -338,7 +348,7 @@ namespace Rock.Model
         private History.HistoryChangeList HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether a new AttributeValueHistory with CurrentRowIndicator needs to be saved in PostSaveChanges
+        /// Gets or sets a value indicating whether a new AttributeValueHistory with CurrentRowIndicator needs to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
         /// </summary>
         /// <value>
         ///   <c>true</c> if [post save attribute value history]; otherwise, <c>false</c>.
@@ -635,7 +645,7 @@ namespace Rock.Model
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
                 }
-                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>() )
                 {
                     Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
                 }

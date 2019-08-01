@@ -486,6 +486,16 @@ namespace Rock.Model
         public int? PrimaryFamilyId { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus id for the primary family.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
+        /// </summary>
+        /// <value>
+        /// The campus id of the primary family.
+        /// </value>
+        [DataMember]
+        public int? PrimaryCampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if the Person is locked as child.
         /// </summary>
         /// <value>
@@ -1016,6 +1026,15 @@ namespace Rock.Model
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
+        /// Gets or sets the person's primary campus.
+        /// </summary>
+        /// <value>
+        /// The primary campus.
+        /// </value>
+        [LavaInclude]
+        public virtual Campus PrimaryCampus { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's default financial account gift designation.
         /// </summary>
         /// <value>
@@ -1025,16 +1044,17 @@ namespace Rock.Model
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
-        /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
+        /// Gets the Person's birth date. Note: Use <see cref="SetBirthDate(DateTime?)"/> set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? BirthDate
+        public DateTime? BirthDate 
         {
-            get {
+            get
+            {
                 _birthDate = CalculateBirthDate();
                 return _birthDate;
             }
@@ -2152,8 +2172,17 @@ namespace Rock.Model
         /// <returns></returns>
         public Campus GetCampus()
         {
-            var firstFamily = this.GetFamily();
-            return firstFamily != null ? firstFamily.Campus : null;
+            // If PrimaryCampus has been calculated, use that. Otherwise, retrieve the campus of the primary family.
+            if ( this.PrimaryCampus != null )
+            {
+                return this.PrimaryCampus;
+            }
+            else
+            {
+                var primaryFamily = this.GetFamily();
+
+                return primaryFamily != null ? primaryFamily.Campus : null;
+            }
         }
 
         /// <summary>
@@ -3025,6 +3054,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
         }
     }

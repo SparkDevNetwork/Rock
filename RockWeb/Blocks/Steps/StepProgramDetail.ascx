@@ -35,37 +35,34 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <h3>Steps Activity Summary</h3>
-                            <p class="small">Shows steps completed within the activity period.</p>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="panel panel-body">
-                                <div class="row">
-                                    <div class="col-sm-8">
-                                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5 class="margin-t-none">Steps Activity Summary</h5>
+                            </div>
+                            <div class="col-sm-6">
+
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
                                             runat="server"
                                             EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
                                             EnabledSlidingDateRangeUnits="Week, Month, Year"
                                             SlidingDateRangeMode="Current"
                                             TimeUnit="Year"
-                                            CssClass="pull-right" />
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <span class="pull-right">
-                                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-primary" Style="vertical-align: bottom" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
-                                        </span>
-                                    </div>
-                                </div>
+                                            CssClass="pull-right" Label="" />
+
                             </div>
                         </div>
-                    </div>
-
-                    <%-- Steps Activity Summary Line Chart --%>
-                    <div class="chart-container">
-                        <Rock:NotificationBox ID="nbStepsActivityLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Steps Activity for this Program" />
-                         <canvas id="barChartCanvas" runat="server" style="height: 280px;" />
+                        <%-- Steps Activity Chart --%>
+                        <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
+                        <div id="pnlActivityChart" runat="server">
+                            <div class="chart-container" align="center">
+                                <canvas id="chartCanvas" runat="server" height="350" width="700" />
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -112,7 +109,7 @@
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:BoolField DataField="IsCompleteStatus" HeaderText="Completion?" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                    <Rock:BoolField DataField="IsCompleteStatus" HeaderText="Completion" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                     <Rock:EditField OnClick="gStatuses_Edit" />
                                     <Rock:DeleteField OnClick="gStatuses_Delete" />
                                 </Columns>
