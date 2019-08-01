@@ -638,6 +638,22 @@ namespace Rock.Data
         public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the document types.
+        /// </summary>
+        /// <value>
+        /// The document types.
+        /// </value>
+        public DbSet<DocumentType> DocumentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        public DbSet<Document> Documents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
