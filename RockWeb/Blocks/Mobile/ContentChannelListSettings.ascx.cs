@@ -824,6 +824,8 @@ namespace RockWeb.Blocks.Mobile
             ddlContentChannel.SelectedValue = attributeEntity.GetAttributeValue( AttributeKeys.ContentChannel );
             nbPageSize.Text = attributeEntity.GetAttributeValue( AttributeKeys.PageSize );
             cbIncludeFollowing.Checked = attributeEntity.GetAttributeValue( AttributeKeys.IncludeFollowing ).AsBoolean();
+            cbCheckItemSecurity.Checked = attributeEntity.GetAttributeValue( AttributeKeys.CheckItemSecurity ).AsBoolean();
+            cbShowChildrenOfParent.Checked = attributeEntity.GetAttributeValue( AttributeKeys.ShowChildrenOfParent ).AsBoolean();
             var pageCache = PageCache.Get( attributeEntity.GetAttributeValue( AttributeKeys.DetailPage ).AsGuid() );
             ppDetailPage.SetValue( pageCache != null ? ( int? ) pageCache.Id : null );
             hfDataFilterId.Value = attributeEntity.GetAttributeValue( AttributeKeys.FilterId );
@@ -846,6 +848,8 @@ namespace RockWeb.Blocks.Mobile
             attributeEntity.SetAttributeValue( AttributeKeys.PageSize, nbPageSize.Text );
             attributeEntity.SetAttributeValue( AttributeKeys.IncludeFollowing, cbIncludeFollowing.Checked.ToString() );
             attributeEntity.SetAttributeValue( AttributeKeys.QueryParameterFiltering, cbQueryParamFiltering.Checked.ToString() );
+            attributeEntity.SetAttributeValue( AttributeKeys.ShowChildrenOfParent, cbShowChildrenOfParent.Checked.ToString() );
+            attributeEntity.SetAttributeValue( AttributeKeys.CheckItemSecurity, cbCheckItemSecurity.Checked.ToString() );
             attributeEntity.SetAttributeValue( AttributeKeys.Order, kvlOrder.Value );
 
             string detailPage = string.Empty;
