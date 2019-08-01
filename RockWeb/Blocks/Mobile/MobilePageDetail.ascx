@@ -93,11 +93,11 @@
 
                         <asp:Repeater ID="rptrZones" runat="server" OnItemDataBound="rptrZones_ItemDataBound">
                             <ItemTemplate>
-                                <div style="padding: 20px">
-                                    <div data-zone-name="<%# Eval( "Name" ) %>" class="js-block-zone" style="background: #f3f3f3; padding: 12px; margin-bottom: 12px;">
-                                        <div class="margin-b-md" style="font-size: 1.25em; font-weight: bold;"><%# Eval( "Name" ) %></div>
+                                <div class="padding-all-md">
+                                    <div data-zone-name="<%# Eval( "Name" ) %>" class="panel panel-default js-block-zone">
+                                        <div class="panel-heading"><strong><%# Eval( "Name" ) %></strong></div>
 
-                                        <div class="drag-container js-drag-container list-unstyled" style="min-height: 100px;">
+                                        <div class="drag-container js-drag-container list-unstyled panel-body mobile-pages-container" style="min-height: 100px;">
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
                                                     <div class="panel panel-widget">
