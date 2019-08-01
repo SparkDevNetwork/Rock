@@ -38,7 +38,7 @@ namespace Rock.Mobile
 
             // Look for host headers from a proxy of some sort
             var proto = request.Headers["X-Forwarded-Proto"];
-            var host = request.Headers["X-Forwarded-For"].IsNotNull() ? request.Headers["X-Forwarded-For"] : request.Headers["X-Original-Host"]; // X-Forwarded-For is for an HTTP proxy; X-Original-Host is for a redirector like ngrok
+            var host = request.Headers["X-Original-Host"].IsNotNull() ? request.Headers["X-Original-Host"] : request.Headers["X-Forwarded-For"]; // X-Forwarded-For is for an HTTP proxy; X-Original-Host is for a redirector like ngrok
             if ( proto != null && host != null )
             {
 
