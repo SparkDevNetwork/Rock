@@ -10,9 +10,23 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6"><Rock:NumberBox ID="nbPageSize" runat="server" Label="Page Size" Help="The number of results to return per page." /></div>
+    <div class="col-md-6">
+        <Rock:NumberBox ID="nbPageSize" runat="server" Label="Page Size" Help="The number of results to return per page." />
+    </div>
 
-    <div class="col-md-6"><Rock:RockCheckBox ID="cbIncludeFollowing" runat="server" Label="Include Following Data" Help="Determines if following data should be appended to the dataset. This will determine if the current person is following each content channel item. This does decrease performance a bit to query and append this data." /></div>
+    <div class="col-md-6">
+        <Rock:RockCheckBox ID="cbIncludeFollowing" runat="server" Label="Include Following Data" Help="Determines if following data should be appended to the dataset. This will determine if the current person is following each content channel item. This does decrease performance a bit to query and append this data." />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <Rock:RockCheckBox ID="cbCheckItemSecurity" runat="server" Label="Check Item Security" Help="Determines if security should be check on each returned item to see if the current person has View rights. This check can slow down the results, especially with channels with lots of items." />
+    </div>
+
+    <div class="col-md-6">
+        <Rock:RockCheckBox ID="cbShowChildrenOfParent" runat="server" Label="Show Children of Parent" Help="If enabled the block will look for a passed ParentItemId parameter and if found filter for children of this parent item." />
+    </div>
 </div>
 
 <h5>Fields</h5>
