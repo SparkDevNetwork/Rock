@@ -121,6 +121,10 @@
     <Compile Include="Migrations\201908010037500_UpdateSchedulesEffectiveEndDate.Designer.cs">
       <DependentUpon>201908010037500_UpdateSchedulesEffectiveEndDate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908010914511_AddDocumentModel.cs" />
+    <Compile Include="Migrations\201908010914511_AddDocumentModel.Designer.cs">
+      <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -771,6 +775,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908010037500_UpdateSchedulesEffectiveEndDate.resx">
       <DependentUpon>201908010037500_UpdateSchedulesEffectiveEndDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908010914511_AddDocumentModel.resx">
+      <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

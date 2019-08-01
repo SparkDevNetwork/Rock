@@ -120,6 +120,8 @@
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
