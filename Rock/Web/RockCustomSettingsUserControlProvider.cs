@@ -17,6 +17,7 @@
 using System;
 using System.Web.UI;
 using Rock.Attribute;
+using Rock.Data;
 
 namespace Rock.Web
 {
@@ -76,19 +77,22 @@ namespace Rock.Web
         /// Update the entity with values from the custom UI.
         /// </summary>
         /// <param name="attributeEntity">The attribute entity.</param>
-        /// <param name="control">The control.</param>
+        /// <param name="control">The control returned by the GetCustomSettingsControl() method.</param>
+        /// <param name="rockContext">The rock context to use when accessing the database.</param>
         /// <exception cref="InvalidOperationException">Custom settings user control does not implement {nameof( IRockCustomSettingsUserControl )}</exception>
         /// <remarks>
-        /// Do not save the entity, it will be automatically saved later.
+        /// Do not save the entity, it will be automatically saved later. This call will be made inside
+        /// a SQL transaction for the passed rockContext. If you need to make changes to the database
+        /// do so on this context so they can be rolled back if something fails during the final save.
         /// </remarks>
-        public override void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control )
+        public override void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext )
         {
             if ( !( control is IRockCustomSettingsUserControl customSettingsControl ) )
             {
                 throw new InvalidOperationException( $"Custom settings user control does not implement {nameof( IRockCustomSettingsUserControl )}" );
             }
 
-            customSettingsControl.WriteSettingsToEntity( attributeEntity );
+            customSettingsControl.WriteSettingsToEntity( attributeEntity, rockContext );
         }
 
         #endregion

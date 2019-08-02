@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Data;
 
 namespace Rock.Web
 {
@@ -73,8 +74,13 @@ namespace Rock.Web
         /// </summary>
         /// <param name="attributeEntity">The attribute entity.</param>
         /// <param name="control">The control returned by the GetCustomSettingsControl() method.</param>
-        /// <remarks>Do not save the entity, it will be automatically saved later.</remarks>
-        public abstract void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control );
+        /// <param name="rockContext">The rock context to use when accessing the database.</param>
+        /// <remarks>
+        /// Do not save the entity, it will be automatically saved later. This call will be made inside
+        /// a SQL transaction for the passed rockContext. If you need to make changes to the database
+        /// do so on this context so they can be rolled back if something fails during the final save.
+        /// </remarks>
+        public abstract void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext );
 
         #endregion
 

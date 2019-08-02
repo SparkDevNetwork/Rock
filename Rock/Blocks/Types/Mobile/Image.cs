@@ -27,7 +27,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Image" )]
+    [DisplayName( "Image" )]
     [Category( "Mobile" )]
     [Description( "Display an image on the mobile device screen." )]
     [IconCssClass( "fa fa-image" )]
@@ -58,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileImage : RockBlockType, IRockMobileBlockType
+    public class Image : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileContent block.

@@ -27,7 +27,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Content" )]
+    [DisplayName( "Content" )]
     [Category( "Mobile" )]
     [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "fa fa-align-center" )]
@@ -72,7 +72,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileContent : RockBlockType, IRockMobileBlockType
+    public class Content : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileContent block.

@@ -81,7 +81,7 @@ namespace Rock.Mobile
             if ( validateApiKey )
             {
                 var appApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
                 //
                 // Ensure we have valid site configuration.
@@ -130,7 +130,7 @@ namespace Rock.Mobile
             var homePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
             var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
 
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
             if ( person.Attributes == null )
             {

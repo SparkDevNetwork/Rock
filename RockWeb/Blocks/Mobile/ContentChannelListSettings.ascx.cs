@@ -741,29 +741,29 @@ namespace RockWeb.Blocks.Mobile
         /// <summary>
         /// Saves the data view filter and removes the old one.
         /// </summary>
-        /// <returns>A reference to the new DataViewFilter.</returns>
-        private DataViewFilter SaveDataViewFilter()
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// A reference to the new DataViewFilter.
+        /// </returns>
+        private DataViewFilter SaveDataViewFilter( RockContext rockContext )
         {
             var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
             // update Guids since we are creating a new dataFilter and children and deleting the old one
             SetNewDataFilterGuids( dataViewFilter );
 
-            using ( var rockContext = new RockContext() )
+            DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+
+            int? dataViewFilterId = hfDataFilterId.Value.AsIntegerOrNull();
+            if ( dataViewFilterId.HasValue )
             {
-                DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
-
-                int? dataViewFilterId = hfDataFilterId.Value.AsIntegerOrNull();
-                if ( dataViewFilterId.HasValue )
-                {
-                    var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                    DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
-                }
-
-                dataViewFilterService.Add( dataViewFilter );
-
-                rockContext.SaveChanges();
+                var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
+                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
             }
+
+            dataViewFilterService.Add( dataViewFilter );
+
+            rockContext.SaveChanges();
 
             return dataViewFilter;
         }
@@ -841,7 +841,13 @@ namespace RockWeb.Blocks.Mobile
         /// Update the entity with values from the custom UI.
         /// </summary>
         /// <param name="attributeEntity">The attribute entity.</param>
-        public void WriteSettingsToEntity( IHasAttributes attributeEntity )
+        /// <param name="rockContext">The rock context to use when accessing the database.</param>
+        /// <remarks>
+        /// Do not save the entity, it will be automatically saved later. This call will be made inside
+        /// a SQL transaction for the passed rockContext. If you need to make changes to the database
+        /// do so on this context so they can be rolled back if something fails during the final save.
+        /// </remarks>
+        public void WriteSettingsToEntity( IHasAttributes attributeEntity, RockContext rockContext )
         {
             attributeEntity.SetAttributeValue( AttributeKeys.FieldSettings, this.FieldSettings.ToJson() );
             attributeEntity.SetAttributeValue( AttributeKeys.ContentChannel, ddlContentChannel.SelectedValue );
@@ -859,7 +865,7 @@ namespace RockWeb.Blocks.Mobile
             }
             attributeEntity.SetAttributeValue( AttributeKeys.DetailPage, detailPage );
 
-            attributeEntity.SetAttributeValue( AttributeKeys.FilterId, SaveDataViewFilter().Id.ToString() );
+            attributeEntity.SetAttributeValue( AttributeKeys.FilterId, SaveDataViewFilter( rockContext ).Id.ToString() );
         }
 
         #endregion

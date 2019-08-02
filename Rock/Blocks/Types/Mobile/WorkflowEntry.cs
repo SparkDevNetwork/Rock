@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Workflow Entry" )]
+    [DisplayName( "Workflow Entry" )]
     [Category( "Mobile" )]
     [Description( "Allows for filling out workflows from a mobile application." )]
     [IconCssClass( "fa fa-gears" )]
@@ -78,7 +78,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileWorkflowEntry : RockBlockType, IRockMobileBlockType
+    public class WorkflowEntry : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileWorkflowEntry block.

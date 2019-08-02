@@ -194,8 +194,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.1.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.1.9\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.3\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -397,10 +397,11 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileContentChannelItemView.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileLavaItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
+    <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
-    <Compile Include="Mobile\AdditionalSettings.cs" />
+    <Compile Include="Mobile\AdditionalPageSettings.cs" />
+    <Compile Include="Mobile\AdditionalSiteSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
@@ -423,13 +424,13 @@
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileContent.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileDynamicContent.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileImage.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileLogin.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileProfileDetails.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileRegister.cs" />
-    <Compile Include="Blocks\Types\Mobile\MobileWorkflowEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Content.cs" />
+    <Compile Include="Blocks\Types\Mobile\DynamicContent.cs" />
+    <Compile Include="Blocks\Types\Mobile\Image.cs" />
+    <Compile Include="Blocks\Types\Mobile\Login.cs" />
+    <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\Register.cs" />
+    <Compile Include="Blocks\Types\Mobile\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />

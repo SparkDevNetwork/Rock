@@ -33,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Content Channel Item View" )]
+    [DisplayName( "Content Channel Item View" )]
     [Category( "Mobile" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
     [IconCssClass( "fa fa-chalkboard" )]
@@ -67,7 +67,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileContentChannelItemView : RockBlockType, IRockMobileBlockType
+    public class ContentChannelItemView : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block settings attribute keys for the MobileContentChannelItemView block.
