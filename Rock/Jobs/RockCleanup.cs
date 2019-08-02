@@ -26,7 +26,6 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -259,6 +258,16 @@ namespace Rock.Jobs
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in MergeStreaks", ex ) );
+            }
+
+            try
+            {
+                var rowsUpdated = EnsureScheduleEffectiveStartEndDates();
+                databaseRowsCleanedUp.Add( "Calendar EffectiveStart and EffectiveEnd dates", rowsUpdated );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in EnsureCalendarEffectiveStartEndDates", ex ) );
             }
 
             // ***********************
@@ -1351,7 +1360,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
         /// Merges the streaks.
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         private int MergeStreaks()
         {
             var recordsDeleted = 0;
@@ -1383,6 +1391,34 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             }
 
             return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Ensures the schedule effective start end dates.
+        /// </summary>
+        /// <returns></returns>
+        private int EnsureScheduleEffectiveStartEndDates()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var scheduleList = scheduleService.Queryable().ToList();
+                foreach ( var schedule in scheduleList )
+                {
+                    if ( schedule.EnsureEffectiveStartEndDates() )
+                    {
+                        rowsUpdated++;
+                    }
+                }
+
+                if ( rowsUpdated > 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return rowsUpdated;
         }
     }
 }

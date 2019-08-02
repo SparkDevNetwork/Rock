@@ -35,14 +35,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            var rockContext = new RockContext();
-            var recurring = new ScheduleService( rockContext ).Queryable().Where( s => s.IsActive ).Where( s => s.iCalendarContent.Contains( "RRULE" ) || s.iCalendarContent.Contains( "RDATE" ) ).ToList();
-            foreach ( var schedule in recurring )
-            {
-                schedule.PreSaveChanges( rockContext, EntityState.Modified );
-            }
-
-            rockContext.SaveChanges();
+            // NOTE: The code that was in this migration has been removed
         }
         
         /// <summary>
