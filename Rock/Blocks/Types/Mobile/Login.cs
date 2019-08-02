@@ -26,9 +26,9 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Login" )]
+    [DisplayName( "Login" )]
     [Category( "Mobile" )]
-    [Description( "Allows the user to login on amobile application." )]
+    [Description( "Allows the user to login on a mobile application." )]
     [IconCssClass( "fa fa-user-lock" )]
 
     #region Block Attributes
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileLogin : RockBlockType, IRockMobileBlockType
+    public class Login : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileLogin block.

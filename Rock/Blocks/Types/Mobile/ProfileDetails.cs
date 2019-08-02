@@ -31,7 +31,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Profile Details" )]
+    [DisplayName( "Profile Details" )]
     [Category( "Mobile" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
     [IconCssClass( "fa fa-user-cog" )]
@@ -150,7 +150,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileProfileDetails: RockBlockType, IRockMobileBlockType
+    public class ProfileDetails: RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileProfileDetails block.

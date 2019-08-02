@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Rock.Mobile.Common.Enums;
 
 namespace Rock.Mobile
@@ -23,15 +24,40 @@ namespace Rock.Mobile
     /// This class is used to store and retrieve
     /// Additional Setting for Mobile against the Site Entity
     /// </summary>
-    public class AdditionalSettings
+    public class AdditionalSiteSettings
     {
+        #region Private Fields
+
+        private const string _defaultFlyoutXaml = @"
+<ListView SeparatorVisibility=""None""
+          HasUnevenRows=""true""
+          BackgroundColor=""#c4c4c4""
+          ItemsSource=""{Binding MenuItems}"">
+    <ListView.Header>
+        <Rock:LoginStatus Padding=""20, 20, 20, 20"" />
+    </ListView.Header>
+    <ListView.ItemTemplate>
+        <DataTemplate>
+            <ViewCell>
+                <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
+                    <Rock:RockImage ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
+                    <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
+                </StackLayout>
+            </ViewCell>
+        </DataTemplate>
+    </ListView.ItemTemplate>
+</ListView>
+";
+
+        #endregion
+
         /// <summary>
         /// Gets or sets the type of the shell.
         /// </summary>
         /// <value>
         /// The type of the shell.
         /// </value>
-        public ShellType? ShellType { get; set; }
+        public ShellType? ShellType { get; set; } = Common.Enums.ShellType.Flyout;
 
         /// <summary>
         /// Gets or sets the tab location.
@@ -39,7 +65,7 @@ namespace Rock.Mobile
         /// <value>
         /// The tab location.
         /// </value>
-        public TabLocation? TabLocation { get; set; }
+        public TabLocation? TabLocation { get; set; } = Mobile.TabLocation.Bottom;
 
         /// <summary>
         /// Gets or sets the CSS style.
@@ -47,7 +73,7 @@ namespace Rock.Mobile
         /// <value>
         /// The CSS style.
         /// </value>
-        public string CssStyle { get; set; }
+        public string CssStyle { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the API key identifier.
@@ -96,5 +122,13 @@ namespace Rock.Mobile
         /// The color of the activity indicator.
         /// </value>
         public string ActivityIndicatorColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the xaml to use for the flyout shell menu.
+        /// </summary>
+        /// <value>
+        /// The xaml to use for the flyout shell menu.
+        /// </value>
+        public string FlyoutXaml { get; set; } = _defaultFlyoutXaml;
     }
 }

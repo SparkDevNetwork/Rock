@@ -31,7 +31,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Register" )]
+    [DisplayName( "Register" )]
     [Category( "Mobile" )]
     [Description( "Allows the user to register a new account on a mobile application." )]
     [IconCssClass( "fa fa-user-plus" )]
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileRegister : RockBlockType, IRockMobileBlockType
+    public class Register : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileRegister block.

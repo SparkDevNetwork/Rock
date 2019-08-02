@@ -17,7 +17,6 @@
             </div>
 
             <div class="panel-body">
-
                 <div class="row">
                     <asp:Literal ID="ltDetails" runat="server" />
                 </div>
@@ -49,11 +48,15 @@
                     </div>
 
                     <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbInternalName" runat="server" Label="Internal Name" Required="true" ValidationGroup="EditPage" />
+
                         <Rock:RockCheckBox ID="cbDisplayInNavigation" runat="server" Label="Display In Navigation" ValidationGroup="EditPage" />
                     </div>
                 </div>
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
+
+                <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                 <div class="actions margin-t-md">
                     <asp:LinkButton ID="lbSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbSave_Click" ValidationGroup="EditPage" />

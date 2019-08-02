@@ -507,6 +507,7 @@ namespace RockWeb.Blocks.Mobile
 
             var fields = new List<KeyValuePair<string, string>>();
 
+            fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
             fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
             fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed ? "<i class='fa fa-check'></i>" : string.Empty ) );
 
@@ -562,6 +563,10 @@ namespace RockWeb.Blocks.Mobile
 
             BindBlockTypeRepeater();
             BindZones();
+
+            pnlDetails.Visible = true;
+            pnlEditPage.Visible = false;
+            pnlBlocks.Visible = true;
         }
 
         /// <summary>
@@ -605,12 +610,16 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
+            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+
             //
             // Set the basic fields of the page.
             //
-            tbName.Text = page.InternalName;
+            tbName.Text = page.PageTitle;
+            tbInternalName.Text = page.InternalName;
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
+            ceEventHandler.Text = additionalSettings.LavaEventHandler;
 
             //
             // Configure the layout options.
@@ -658,12 +667,16 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            page.InternalName = tbName.Text;
+            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            additionalSettings.LavaEventHandler = ceEventHandler.Text;
+
+            page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
             page.PageTitle = tbName.Text;
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
+            page.HeaderContent = additionalSettings.ToJson();
 
             rockContext.SaveChanges();
 

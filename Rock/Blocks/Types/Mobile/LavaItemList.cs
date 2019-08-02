@@ -31,7 +31,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Lava Item List" )]
+    [DisplayName( "Lava Item List" )]
     [Category( "Mobile" )]
     [Description( "List items genreated by Lava." )]
     [IconCssClass( "fa fa-th" )]
@@ -53,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile
 
     [CodeEditorField(
         "List Template",
-        Description = "The Lava used to generate the JSON object structure for teh item list.",
+        Description = "The Lava used to generate the JSON object structure for the item list.",
         Key = AttributeKeys.ListTemplate,
         Order = 2,
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
@@ -70,7 +70,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileLavaItemList : RockBlockType, IRockMobileBlockType
+    public class LavaItemList : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// The key names of all block attributes used by the ContentChannelItemList block.

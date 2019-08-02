@@ -27,7 +27,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
 
-    [DisplayName( "Mobile Dynamic Content" )]
+    [DisplayName( "Dynamic Content" )]
     [Category( "Mobile" )]
     [Description( "Displays XAML content that can respond to user interaction." )]
     [IconCssClass( "fa fa-magic" )]
@@ -56,7 +56,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class MobileDynamicContent : RockBlockType, IRockMobileBlockType
+    public class DynamicContent : RockBlockType, IRockMobileBlockType
     {
         /// <summary>
         /// Defines the block setting attribute keys for the MobileDynamicContent block.
