@@ -1572,7 +1572,7 @@ tr.inactive {
 .add-step-buttons {
   padding: 8px 0;
   margin: -16px -16px 0 -16px;
-  background: #f7f7f7;
+  background: @drawer-bg;
   border-bottom: 1px solid @panel-border;
 
   + .row {
@@ -1608,7 +1608,7 @@ tr.inactive {
   margin-bottom: 15px;
   overflow: hidden;
   text-align: center;
-  border: 1px solid #d4d4d4;
+  border: 1px solid @panel-border;
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d;
   transform-style: preserve-3d;
@@ -1667,7 +1667,7 @@ tr.inactive {
   }
 
   &.has-prerequisite .step-card-hover {
-    background: #fff;
+    background: @ui-2;
   }
 
 
@@ -1676,7 +1676,7 @@ tr.inactive {
   }
 
   .badge {
-    background-color: #23a5c5;
+    background-color: @brand-info;
   }
 
   > .step-card-hover {
@@ -1689,7 +1689,6 @@ tr.inactive {
     overflow-y: auto;
     opacity: 0;
     transition-duration: .25s;
-    //background-color: #fff;
     -webkit-transform: translateY(100%);
     transform: translateY(100%);
     will-change: opacity, transform;
@@ -1713,13 +1712,13 @@ tr.inactive {
     color: inherit;
 
     &:hover {
-      color: #fff;
-      background-color: #d4d4d4;
+      background-color: darken(@btn-default-bg, 10%);
     }
   }
 
   .btn-delete:hover {
-    background-color: #d4442e;
+    color: #fff;
+    background-color: @btn-danger-bg;
   }
 }
 
@@ -1748,7 +1747,7 @@ tr.inactive {
   td {
     width: 50px;
     vertical-align: middle;
-    border: 1px solid #d4d4d4;
+    border: 1px solid @panel-border;
 
     &.steps-status {
       width: auto;
@@ -1775,7 +1774,7 @@ tr.inactive {
   width: 100%;
   height: 100%;
   font-size: 28px;
-  background: #fff;
+  background: @ui-2;
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d;
   transform-style: preserve-3d;
