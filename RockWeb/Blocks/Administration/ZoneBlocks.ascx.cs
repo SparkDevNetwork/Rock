@@ -620,7 +620,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadBlockTypes( bool registerBlockTypes )
         {
-            if ( registerBlockTypes )
+            if ( registerBlockTypes ) 
             {
                 // Add any unregistered blocks
                 try
@@ -637,7 +637,7 @@ namespace RockWeb.Blocks.Administration
 
             // Get a list of BlockTypes that does not include Mobile block types.
             var allExceptMobileBlockTypes = new System.Collections.Generic.List<BlockTypeCache>();
-            foreach( var cachedBlockType in BlockTypeCache.All() )
+            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
             {
                 try
                 {
