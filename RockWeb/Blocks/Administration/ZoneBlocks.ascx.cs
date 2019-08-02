@@ -636,16 +636,16 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Get a list of BlockTypes that does not include Mobile block types.
-            var allExceptMobileBlockTypes = new System.Collections.Generic.List<BlockTypeCache>();
+            var allExceptMobileBlockTypes = BlockTypeCache.All();
             foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
             {
                 try
                 {
                     var blockCompiledType = cachedBlockType.GetCompiledType();
 
-                    if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
                     {
-                        allExceptMobileBlockTypes.Add( cachedBlockType );
+                        allExceptMobileBlockTypes.Remove( cachedBlockType );
                     }
                 }
                 catch ( Exception )
