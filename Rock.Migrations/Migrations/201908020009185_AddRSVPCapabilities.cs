@@ -34,7 +34,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.AttendanceOccurrence", "AcceptConfirmationMessage", c => c.String() );
             AddColumn( "dbo.AttendanceOccurrence", "DeclineConfirmationMessage", c => c.String() );
             AddColumn( "dbo.AttendanceOccurrence", "ShowDeclineReasons", c => c.Boolean( nullable: false, defaultValue: true ) );
-            AddColumn( "dbo.AttendanceOccurrence", "DeclineReasons", c => c.String( maxLength: 250 ) );
+            AddColumn( "dbo.AttendanceOccurrence", "DeclineReasonValueIds", c => c.String( maxLength: 250 ) );
         }
         
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn( "dbo.AttendanceOccurrence", "DeclineReasons" );
+            DropColumn( "dbo.AttendanceOccurrence", "DeclineReasonValueIds" );
             DropColumn( "dbo.AttendanceOccurrence", "ShowDeclineReasons" );
             DropColumn( "dbo.AttendanceOccurrence", "DeclineConfirmationMessage" );
             DropColumn( "dbo.AttendanceOccurrence", "AcceptConfirmationMessage" );

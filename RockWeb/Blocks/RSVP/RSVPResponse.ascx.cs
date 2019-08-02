@@ -513,7 +513,7 @@ namespace RockWeb.Blocks.RSVP
                 if ( occurrence.ShowDeclineReasons == true )
                 {
                     // Show Decline Reasons.
-                    string declineReasons = occurrence.DeclineReasons;
+                    string declineReasons = occurrence.DeclineReasonValueIds;
                     if ( string.IsNullOrWhiteSpace( declineReasons ) )
                     {
                         // Use default decline reasons (block setting).
