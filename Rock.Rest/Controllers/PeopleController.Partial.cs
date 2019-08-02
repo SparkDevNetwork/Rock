@@ -908,6 +908,30 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the current person's impersonation token. This is used by external apps who might have a logged in person but
+        /// need to create a impersonation token to link to the website. For instance a mobile app might have the current person
+        /// and have a cookie, but would like to link out to the website.
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
+        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            var currentPerson = GetPerson();
+
+            if ( currentPerson == null )
+            {
+                return string.Empty;
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
+        }
+
+        /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
         /// <param name="personId">The person id.</param>
