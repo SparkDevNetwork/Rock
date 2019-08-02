@@ -239,23 +239,25 @@ namespace RockWeb.Blocks.Finance
             var workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() ).Id;
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
-            var businessList = queryable.Select( b => new
-            {
-                Id = b.Id,
-                b.LastName,
-                BusinessName = b.LastName,
-                PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
-                Email = b.Email,
-                Address = b.GivingGroup.GroupLocations
-                                .Where( gl => gl.GroupLocationTypeValueId == workLocationTypeId )
-                                .FirstOrDefault()
-                                .Location,
-                Contacts = b.Members
-                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS )
-                                .SelectMany( m => m.Group.Members )
-                                .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id )
-                                .Select( p => p.Person.LastName + ", " + p.Person.NickName )
-            } );
+            var businessList = queryable
+                .Select( b => new
+                    {
+                        Id = b.Id,
+                        b.LastName,
+                        BusinessName = b.LastName,
+                        PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
+                        Email = b.Email,
+                        Address = b.GivingGroup.GroupLocations
+                                        .Where( gl => gl.GroupLocationTypeValueId == workLocationTypeId )
+                                        .FirstOrDefault()
+                                        .Location,
+                        Contacts = b.Members
+                                        .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS )
+                                        .SelectMany( m => m.Group.Members )
+                                        .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id )
+                                        .Select( p => p.Person.LastName + ", " + p.Person.NickName )
+                    } )
+                .OrderBy( b => b.Id );
 
             if ( viaSearch && businessList.ToList().Count == 1 )
             {
