@@ -384,35 +384,51 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
+            EnsureEffectiveStartEndDates();
+
+            base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
+        /// Ensures that the EffectiveStartDate and EffectiveEndDate are set correctly based on the CalendarContent.
+        /// Returns true if any changes were made.
+        /// </summary>
+        /// <returns></returns>
+        internal bool EnsureEffectiveStartEndDates()
+        {
             var calEvent = GetCalendarEvent();
-            if ( calEvent != null )
+            if ( calEvent == null )
             {
+                return false;
+            }
 
-                EffectiveStartDate = calEvent.DTStart?.Value.Date;
+            DateTime? originalEffectiveStartDate = EffectiveStartDate;
+            var originalEffectiveEndDate = EffectiveEndDate;
 
-                // If there are any recurrence rules with no end date, the Effective End Date is infinity
-                if ( calEvent.RecurrenceRules.Count > 0 )
+            EffectiveStartDate = calEvent.DTStart?.Value.Date;
+
+            // If there are any recurrence rules with no end date, the Effective End Date is infinity
+            if ( calEvent.RecurrenceRules.Count > 0 )
+            {
+                if ( calEvent.RecurrenceRules.Any( rule => rule.Until == DateTime.MinValue && rule.Count <= 0 ) )
                 {
-                    if ( calEvent.RecurrenceRules.Any( rule => rule.Until == DateTime.MinValue && rule.Count <= 0 ) )
-                    {
-                        EffectiveEndDate = DateTime.MaxValue;
-                    }
-                }
-
-                // If this isn't a perpetually recurring event, set the EffectiveEndDate to the actual end date/time of the last occurrence of this event
-                if ( EffectiveEndDate != DateTime.MaxValue )
-                {
-                    var occurrences = GetOccurrences( DateTime.MinValue, DateTime.MaxValue );
-                    if ( occurrences.Any() )
-                    {
-                        EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
-                                               ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
-                                               : EffectiveStartDate;
-                    }
+                    EffectiveEndDate = DateTime.MaxValue;
                 }
             }
 
-            base.PreSaveChanges( dbContext, state );
+            // If this isn't a perpetually recurring event, set the EffectiveEndDate to the actual end date/time of the last occurrence of this event
+            if ( EffectiveEndDate != DateTime.MaxValue )
+            {
+                var occurrences = GetOccurrences( DateTime.MinValue, DateTime.MaxValue );
+                if ( occurrences.Any() )
+                {
+                    EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
+                                           ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
+                                           : EffectiveStartDate;
+                }
+            }
+
+            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date || EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
         }
 
         /// <summary>
@@ -434,7 +450,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalendarEvent()  
+        public virtual DDay.iCal.Event GetCalendarEvent()
         {
             return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
         }
@@ -1181,7 +1197,7 @@ namespace Rock.Model
             {
                 if ( TotalCount > 0 )
                 {
-                    return ( double ) ( DidAttendCount ) / ( double ) TotalCount;
+                    return DidAttendCount / ( double ) TotalCount;
                 }
                 else
                 {
