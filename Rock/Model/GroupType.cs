@@ -631,7 +631,7 @@ namespace Rock.Model
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool? EnableRsvp { get; set; }
+        public bool EnableRSVP { get; set; }
 
         #endregion Entity Properties
 

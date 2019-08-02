@@ -295,13 +295,13 @@ namespace Rock.Model
         private string _abbreviatedName;
 
         /// <summary>
-        /// Indicates whether or not this attribute should be shown publicly.
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
         /// </summary>
         /// <value>
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool? IsPublic { get; set; }
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
