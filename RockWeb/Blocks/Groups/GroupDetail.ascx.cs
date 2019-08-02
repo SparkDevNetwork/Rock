@@ -1943,7 +1943,7 @@ namespace RockWeb.Blocks.Groups
             string groupRSVPUrl = LinkedPageUrl( "GroupRSVPPage", pageParams );
             if ( groupRSVPUrl.IsNotNullOrWhiteSpace() )
             {
-                hlGroupRSVP.Visible = ( groupType != null ) && ( groupType.EnableRsvp == true );
+                hlGroupRSVP.Visible = ( groupType != null ) && ( groupType.EnableRSVP == true );
                 hlGroupRSVP.NavigateUrl = groupRSVPUrl;
             }
             else

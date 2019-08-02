@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
             // RSVP
-            groupType.EnableRsvp = cbGroupRSVPEnabled.Checked;
+            groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
 
             // Scheduling
             groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
@@ -879,7 +879,7 @@ namespace RockWeb.Blocks.Groups
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
             // RSVP
-            cbGroupRSVPEnabled.Checked = ( groupType.EnableRsvp == true );
+            cbGroupRSVPEnabled.Checked = ( groupType.EnableRSVP == true );
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
