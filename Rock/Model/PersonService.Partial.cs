@@ -2637,6 +2637,90 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Configures the text to give settings including the person's preferred target financial account and default source saved account.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="contributionFinancialAccountId">The contribution financial account identifier.</param>
+        /// <param name="financialPersonSavedAccountId">The financial person saved account identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public bool ConfigureTextToGive( int personId, int? contributionFinancialAccountId, int? financialPersonSavedAccountId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            // Validate the person
+            var person = Get( personId );
+
+            if ( person == null )
+            {
+                errorMessage = "The person ID is not valid";
+                return false;
+            }
+
+            // Load the person's saved accounts
+            var rockContext = Context as RockContext;
+            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personsSavedAccounts = savedAccountService.Queryable()
+                .Include( sa => sa.PersonAlias )
+                .Where( sa => sa.PersonAlias.PersonId == personId )
+                .ToList();
+
+            // Loop through each saved account. Set default to false unless the args dictate that it is the default
+            var foundDefaultAccount = false;
+
+            foreach ( var savedAccount in personsSavedAccounts )
+            {
+                if ( !foundDefaultAccount && savedAccount.Id == financialPersonSavedAccountId )
+                {
+                    savedAccount.IsDefault = true;
+                    foundDefaultAccount = true;
+                }
+                else
+                {
+                    savedAccount.IsDefault = false;
+                }
+            }
+
+            // If the args specified an account to be default but it was not found, then return an error
+            if ( financialPersonSavedAccountId.HasValue && !foundDefaultAccount )
+            {
+                errorMessage = "The saved account ID is not valid";
+                return false;
+            }
+
+            // Validate the account if it is being set
+            if ( contributionFinancialAccountId.HasValue )
+            {
+                var accountService = new FinancialAccountService( rockContext );
+                var account = accountService.Get( contributionFinancialAccountId.Value );
+
+                if ( account == null )
+                {
+                    errorMessage = "The financial account ID is not valid";
+                    return false;
+                }
+
+                if ( !account.IsActive )
+                {
+                    errorMessage = "The financial account is not active";
+                    return false;
+                }
+
+                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
+                {
+                    errorMessage = "The financial account is not public";
+                    return false;
+                }
+            }
+
+            // Set the person's contribution account ID
+            person.ContributionFinancialAccountId = contributionFinancialAccountId;
+
+            // Success
+            return true;
+        }
+
         #endregion
 
         #region Person Group Methods
