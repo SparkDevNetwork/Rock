@@ -382,7 +382,7 @@ namespace Rock.Web.Cache
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool? EnableRsvp { get; private set; }
+        public bool EnableRSVP { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
@@ -743,7 +743,7 @@ namespace Rock.Web.Cache
             ShowAdministrator = groupType.ShowAdministrator;
             EnableGroupTag = groupType.EnableGroupTag;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
-            EnableRsvp = groupType.EnableRsvp;
+            EnableRSVP = groupType.EnableRSVP;
             IsSchedulingEnabled = groupType.IsSchedulingEnabled;
             ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
             ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
