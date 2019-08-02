@@ -125,6 +125,10 @@
     <Compile Include="Migrations\201908010914511_AddDocumentModel.Designer.cs">
       <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908020009185_AddRSVPCapabilities.cs" />
+    <Compile Include="Migrations\201908020009185_AddRSVPCapabilities.Designer.cs">
+      <DependentUpon>201908020009185_AddRSVPCapabilities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -437,10 +441,6 @@
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906192243232_Rollup_0618.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201906192243232_Rollup_0618.Designer.cs">
       <DependentUpon>201906192243232_Rollup_0618.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201906122150183_AddRSVPCapabilities.cs" />
-    <Compile Include="Migrations\201906122150183_AddRSVPCapabilities.Designer.cs">
-      <DependentUpon>201906122150183_AddRSVPCapabilities.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -783,6 +783,9 @@
     <EmbeddedResource Include="Migrations\201908010914511_AddDocumentModel.resx">
       <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908020009185_AddRSVPCapabilities.resx">
+      <DependentUpon>201908020009185_AddRSVPCapabilities.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </EmbeddedResource>
@@ -1013,9 +1016,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201906192243232_Rollup_0618.resx">
       <DependentUpon>201906192243232_Rollup_0618.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201906122150183_AddRSVPCapabilities.resx">
-      <DependentUpon>201906122150183_AddRSVPCapabilities.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

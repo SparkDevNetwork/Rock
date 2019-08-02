@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201906122150183_AddRSVPCapabilities"; }
+            get { return "201908020009185_AddRSVPCapabilities"; }
         }
         
         string IMigrationMetadata.Source
