@@ -125,46 +125,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Processes the asset storage provider asset.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="uploadedFile">The uploaded file.</param>
-        /// <exception cref="Rock.Web.FileUploadException">
-        /// Insufficient info to upload a file of this type.
-        /// or
-        /// Unable to upload file
-        /// </exception>
-        private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
-        {
-            int? assetStorageId = context.Request.Form["StorageId"].AsIntegerOrNull();
-            string assetKey = context.Request.Form["Key"] + uploadedFile.FileName;
-
-            if ( assetStorageId == null || assetKey.IsNullOrWhiteSpace() )
-            {
-                throw new Rock.Web.FileUploadException( "Insufficient info to upload a file of this type.", System.Net.HttpStatusCode.Forbidden );
-            }
-
-            var assetStorageService = new AssetStorageProviderService( new RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageService.Get( ( int ) assetStorageId );
-            assetStorageProvider.LoadAttributes();
-            var component = assetStorageProvider.GetAssetStorageComponent();
-
-            var asset = new Rock.Storage.AssetStorage.Asset();
-            asset.Key = assetKey;
-            asset.Type = Rock.Storage.AssetStorage.AssetType.File;
-            asset.AssetStream = uploadedFile.InputStream;
-
-            if ( component.UploadObject( assetStorageProvider, asset ) )
-            {
-                context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
-            }
-            else
-            {
-                throw new Rock.Web.FileUploadException( "Unable to upload file", System.Net.HttpStatusCode.BadRequest );
-            }
-        }
-
-        /// <summary>
         /// Processes the content file.
         /// </summary>
         /// <param name="context">The context.</param>

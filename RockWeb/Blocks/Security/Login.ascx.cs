@@ -450,7 +450,8 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = Server.UrlDecode( returnUrl );
+                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                redirectUrl =  Server.UrlDecode( redirectUrl );
                 Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
