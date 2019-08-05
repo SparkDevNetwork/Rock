@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Mobile
 {
-    public static class MobileHelper
+    internal static class MobileHelper
     {
         /// <summary>
         /// Gets the base URL.
@@ -38,7 +38,7 @@ namespace Rock.Mobile
 
             // Look for host headers from a proxy of some sort
             var proto = request.Headers["X-Forwarded-Proto"];
-            var host = request.Headers["X-Original-Host"].IsNotNull() ? request.Headers["X-Original-Host"] : request.Headers["X-Forwarded-For"]; // X-Forwarded-For is for an HTTP proxy; X-Original-Host is for a redirector like ngrok
+            var host = request.Headers["X-Original-Host"].IsNotNull() ? request.Headers["X-Original-Host"] : request.Headers["X-Forwarded-Host"];
             if ( proto != null && host != null )
             {
 
@@ -158,6 +158,7 @@ namespace Rock.Mobile
                 SecurityGroupGuids = new List<Guid>(),
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
+                PersonId = person.Id,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
