@@ -843,6 +843,12 @@ namespace Rock.Rest.Controllers
             /// </value>
             public decimal Amount { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account.
+            /// </summary>
+            /// <value>
+            /// The account.
+            /// </value>
             public GiftAccount Account { get; set; }
         }
 

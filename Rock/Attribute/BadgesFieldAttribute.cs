@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -24,10 +25,15 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class BadgesFieldAttribute : FieldAttribute
     {
+        /// <summary>
+        /// The entity type key
+        /// </summary>
+        public static string ENTITY_TYPE_KEY = "entitytype";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgesFieldAttribute"/> class.
         /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
@@ -35,9 +41,40 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public BadgesFieldAttribute( string name = "Badges", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "", int order = 0, string key = null )
+        public BadgesFieldAttribute( string name = "Badges", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "",
+            int order = 0, string key = null, string entityTypeGuid = SystemGuid.EntityType.PERSON )
             : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgesFieldType ).FullName )
         {
+            EntityTypeGuid = entityTypeGuid;
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The defined type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get
+            {
+                var entityTypeId = FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY ).AsIntegerOrNull();
+
+                if ( entityTypeId.HasValue )
+                {
+                    return EntityTypeCache.Get( entityTypeId.Value )?.Guid.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                var entityTypeGuid = value.AsGuidOrNull();
+                var entityTypeId = entityTypeGuid.HasValue ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( entityTypeId?.ToString() ) );
+            }
         }
     }
 }
