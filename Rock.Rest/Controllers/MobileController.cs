@@ -40,17 +40,18 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the launch packet.
         /// </summary>
-        /// <param name="deviceData">The device data.</param>
         /// <returns></returns>
         [Route( "api/mobile/GetLaunchPacket" )]
-        [HttpPost]
+        [HttpPost] // Remove once the client is updated
+        [HttpGet]
         [Authenticate]
-        public object GetLaunchPacket( [FromBody] DeviceData deviceData )
+        public object GetLaunchPacket()
         {
             var baseUrl = MobileHelper.GetBaseUrl();
             var site = MobileHelper.GetCurrentApplicationSite();
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
             var person = GetPerson();
+            var deviceData = Request.GetHeader( "X-Rock-DeviceData" ).FromJsonOrNull<DeviceData>();
 
             var launchPacket = new LaunchPackage
             {

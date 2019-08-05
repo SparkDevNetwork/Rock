@@ -89,6 +89,14 @@ namespace Rock.Net
         /// </value>
         internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
+        /// <summary>
+        /// Gets or sets the headers.
+        /// </summary>
+        /// <value>
+        /// The headers.
+        /// </value>
+        private IDictionary<string, IEnumerable<string>> Headers { get; set; }
+
         #endregion
 
         #region Constructors
@@ -130,10 +138,17 @@ namespace Rock.Net
             }
 
             //
+            // Setup the headers
+            //
+            Headers = request.Headers.AllKeys
+                .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
+                .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+
+            //
             // Todo: Setup the ContextEntities somehow. Probably from an additional paramter of the page cache object.
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
-            AddContextEntitiesFromHeaders( request.Headers.AllKeys.Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) ) );
+            AddContextEntitiesFromHeaders();
         }
 
         /// <summary>
@@ -160,10 +175,15 @@ namespace Rock.Net
             }
 
             //
+            // Setup the headers
+            //
+            Headers = request.Headers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+
+            //
             // Initialize any context entities found.
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
-            AddContextEntitiesFromHeaders( request.Headers );
+            AddContextEntitiesFromHeaders();
         }
 
         #endregion
@@ -173,10 +193,9 @@ namespace Rock.Net
         /// <summary>
         /// Adds the context entities from headers.
         /// </summary>
-        /// <param name="headers">The headers to search through.</param>
-        protected virtual void AddContextEntitiesFromHeaders( IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers )
+        protected virtual void AddContextEntitiesFromHeaders()
         {
-            foreach ( var kvp in headers )
+            foreach ( var kvp in Headers )
             {
                 //
                 // Skip any header that isn't an entity context header.
@@ -309,14 +328,20 @@ namespace Rock.Net
                 mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
             }
 
-            if ( options.GetCurrentPerson && CurrentPerson != null )
+            var person = currentPersonOverride ?? CurrentPerson;
+            if ( options.GetCurrentPerson && person != null )
             {
-                mergeFields.Add( "CurrentPerson", currentPersonOverride ?? CurrentPerson );
+                mergeFields.Add( "CurrentPerson", person );
             }
 
             if ( options.GetCampuses )
             {
                 mergeFields.Add( "Campuses", CampusCache.All() );
+            }
+
+            if ( Headers != null && Headers.ContainsKey( "X-Rock-DeviceData" ) )
+            {
+                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Mobile.Common.DeviceData>() );
             }
 
             return mergeFields;
