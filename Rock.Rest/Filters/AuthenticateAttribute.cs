@@ -42,10 +42,9 @@ namespace Rock.Rest.Filters
             // See if user is logged in
             var principal = System.Threading.Thread.CurrentPrincipal;
 
-
-            // [NP] Don't authenticate API requests with website cookies
-            if ( actionContext.Request.Method.Method == "GET" && principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
+            if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
             {
+
                 //var userLoginService = new UserLoginService();
                 //var user = userLoginService.GetByUserName(principal.Identity.Name);
                 //if ( user != null )
