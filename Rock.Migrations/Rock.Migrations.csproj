@@ -133,6 +133,10 @@
     <Compile Include="Migrations\201908061655121_MenuShift.Designer.cs">
       <DependentUpon>201908061655121_MenuShift.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908062250316_Rollup_08061.cs" />
+    <Compile Include="Migrations\201908062250316_Rollup_08061.Designer.cs">
+      <DependentUpon>201908062250316_Rollup_08061.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -792,6 +796,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908061655121_MenuShift.resx">
       <DependentUpon>201908061655121_MenuShift.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908062250316_Rollup_08061.resx">
+      <DependentUpon>201908062250316_Rollup_08061.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
