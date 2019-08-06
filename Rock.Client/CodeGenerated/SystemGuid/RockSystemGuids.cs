@@ -359,6 +359,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
         public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
+        public const string GROUP_LOCATION_TYPE_OTHER = "D49965C7-5254-4D2D-BC77-F390375F0C44";
         public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
         public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
@@ -460,6 +461,7 @@ namespace Rock.Client.SystemGuid
         public const string TRANSACTION_FREQUENCY_YEARLY = "AC88C37A-901E-4CBB-947B-11348C208192";
         public const string TRANSACTION_TYPE_CONTRIBUTION = "2D607262-52D6-4724-910D-5C6E8FB89ACC";
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
+        public const string TRANSACTION_TYPE_RECEIPT = "F57AAF36-F208-4A85-A078-E2B1F91798EB";
     }
 
     /// <summary>
@@ -1049,6 +1051,13 @@ namespace Rock.Client.SystemGuid
     public class PageRoute
     {
         public const string TEXT_TO_GIVE_SETUP = "58592279-6CD7-47FD-BD0C-E35784FF69FF";
+    }
+
+    /// <summary>
+    /// </summary>
+    public class Person
+    {
+        public const string GIVER_ANONYMOUS = "802235DC-3CA5-94B0-4326-AACE71180F48";
     }
 
     /// <summary>
