@@ -521,47 +521,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgStepWorkflow_SaveClick( object sender, EventArgs e )
         {
-            StepWorkflowTriggerViewModel workflowTrigger = null;
-
-            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
-            if ( !guid.IsEmpty() )
-            {
-                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
-            }
-
-            if ( workflowTrigger == null )
-            {
-                workflowTrigger = new StepWorkflowTriggerViewModel();
-
-                workflowTrigger.Guid = Guid.NewGuid();
-            }
-
-            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
-            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
-
-            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
-            {
-                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
-                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
-            };
-
-            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
-
-            var dataContext = GetDataContext();
-
-            var workflowTypeService = new WorkflowTypeService( dataContext );
-
-            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
-
-            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
-
-            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
-
-            WorkflowsState.Add( workflowTrigger );
-
-            BindStepWorkflowsGrid();
-
-            HideDialog();
+            SaveWorkflowProperties();
         }
 
         /// <summary>
@@ -609,23 +569,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
         protected void gWorkflows_ShowEdit( Guid triggerGuid )
         {
-            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
-
-            if ( workflowTrigger != null )
-            {
-                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
-                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
-            }
-            else
-            {
-                // Set default values
-                wpWorkflowType.SetValue( null );
-                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
-            }
-
-            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
-            ShowDialog( "StepWorkflows", true );
-            UpdateTriggerQualifiers();
+            ShowWorkflowTriggerPropertiesDialog( triggerGuid );
         }
 
         /// <summary>
@@ -646,6 +590,82 @@ namespace RockWeb.Blocks.Steps
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
         {
             UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Show the edit dialog for the specified Workflow Trigger.
+        /// </summary>
+        /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
+        private void ShowWorkflowTriggerPropertiesDialog( Guid triggerGuid )
+        {
+            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
+
+            if ( workflowTrigger != null )
+            {
+                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
+                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
+            }
+            else
+            {
+                // Set default values
+                wpWorkflowType.SetValue( null );
+                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
+            }
+
+            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
+
+            ShowDialog( "StepWorkflows", true );
+
+            UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Save changes to the Workflow Trigger currently displayed in the Workflow properties dialog.
+        /// </summary>
+        private void SaveWorkflowProperties()
+        {
+            StepWorkflowTriggerViewModel workflowTrigger = null;
+
+            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
+
+            if ( !guid.IsEmpty() )
+            {
+                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( workflowTrigger == null )
+            {
+                workflowTrigger = new StepWorkflowTriggerViewModel();
+
+                workflowTrigger.Guid = Guid.NewGuid();
+
+                WorkflowsState.Add( workflowTrigger );
+            }
+
+            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
+            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
+
+            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
+            {
+                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
+                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
+            };
+
+            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
+
+            var dataContext = GetDataContext();
+
+            var workflowTypeService = new WorkflowTypeService( dataContext );
+
+            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
+
+            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
+
+            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
+
+            BindStepWorkflowsGrid();
+
+            HideDialog();
         }
 
         /// <summary>
