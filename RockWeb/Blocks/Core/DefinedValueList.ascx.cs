@@ -350,6 +350,7 @@ namespace RockWeb.Blocks.Core
                         var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
                         if ( attributeCache != null )
                         {
+                            boundField.HeaderStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                             boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                         }
 
