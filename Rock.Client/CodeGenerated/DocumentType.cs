@@ -27,39 +27,27 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Attribute that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for DocumentType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AttributeEntity
+    public partial class DocumentTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string AbbreviatedName { get; set; }
+        public int BinaryFileTypeId { get; set; }
 
         /// <summary />
-        public bool AllowSearch { get; set; }
+        public string DefaultDocumentNameTemplate { get; set; }
 
         /// <summary />
-        public string DefaultValue { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool EnableHistory { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary />
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary />
         public string EntityTypeQualifierValue { get; set; }
-
-        /// <summary />
-        public int FieldTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -71,34 +59,7 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
-
-        /// <summary />
-        public bool IsAnalytic { get; set; }
-
-        /// <summary />
-        public bool IsAnalyticHistory { get; set; }
-
-        /// <summary />
-        public bool IsGridColumn { get; set; }
-
-        /// <summary />
-        public bool IsIndexEnabled { get; set; }
-
-        /// <summary />
-        public bool IsMultiValue { get; set; }
-
-        /// <summary />
-        public bool IsPublic { get; set; }
-
-        /// <summary />
-        public bool IsRequired { get; set; }
-
-        /// <summary />
         public bool IsSystem { get; set; }
-
-        /// <summary />
-        public string Key { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -112,13 +73,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public string PostHtml { get; set; }
-
-        /// <summary />
-        public string PreHtml { get; set; }
-
-        /// <summary />
-        public bool ShowOnBulk { get; set; }
+        public bool UserSelectable { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -147,40 +102,25 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Attribute object
+        /// Copies the base properties from a source DocumentType object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Attribute source )
+        public void CopyPropertiesFrom( DocumentType source )
         {
             this.Id = source.Id;
-            this.AbbreviatedName = source.AbbreviatedName;
-            this.AllowSearch = source.AllowSearch;
-            this.DefaultValue = source.DefaultValue;
-            this.Description = source.Description;
-            this.EnableHistory = source.EnableHistory;
+            this.BinaryFileTypeId = source.BinaryFileTypeId;
+            this.DefaultDocumentNameTemplate = source.DefaultDocumentNameTemplate;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            this.FieldTypeId = source.FieldTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
-            this.IsActive = source.IsActive;
-            this.IsAnalytic = source.IsAnalytic;
-            this.IsAnalyticHistory = source.IsAnalyticHistory;
-            this.IsGridColumn = source.IsGridColumn;
-            this.IsIndexEnabled = source.IsIndexEnabled;
-            this.IsMultiValue = source.IsMultiValue;
-            this.IsPublic = source.IsPublic;
-            this.IsRequired = source.IsRequired;
             this.IsSystem = source.IsSystem;
-            this.Key = source.Key;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
-            this.PostHtml = source.PostHtml;
-            this.PreHtml = source.PreHtml;
-            this.ShowOnBulk = source.ShowOnBulk;
+            this.UserSelectable = source.UserSelectable;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -192,21 +132,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Attribute that includes all the fields that are available for GETs. Use this for GETs (use AttributeEntity for POST/PUTs)
+    /// Client model for DocumentType that includes all the fields that are available for GETs. Use this for GETs (use DocumentTypeEntity for POST/PUTs)
     /// </summary>
-    public partial class Attribute : AttributeEntity
+    public partial class DocumentType : DocumentTypeEntity
     {
         /// <summary />
-        public ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
-
-        /// <summary />
-        public ICollection<Category> Categories { get; set; }
+        public BinaryFileType BinaryFileType { get; set; }
 
         /// <summary />
         public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public FieldType FieldType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
