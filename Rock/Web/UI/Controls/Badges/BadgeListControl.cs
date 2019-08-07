@@ -117,7 +117,6 @@ namespace Rock.Web.UI.Controls
             foreach ( var badgeControl in _badges )
             {
                 badgeControl.RenderControl( writer );
-                writer.Write( " " );
             }
         }
 
