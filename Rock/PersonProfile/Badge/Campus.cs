@@ -36,13 +36,13 @@ namespace Rock.PersonProfile.Badge
     {
 
         /// <summary>
-        /// Gets the badge label
+        /// Gets the Entity's Campus badge label even if the campus is inactive.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
         public override HighlightLabel GetLabel( IEntity entity )
         {
-            if ( CampusCache.All( false ).Count <= 1 || entity == null )
+            if ( CampusCache.All().Count <= 1 || entity == null )
             {
                 return null;
             }
