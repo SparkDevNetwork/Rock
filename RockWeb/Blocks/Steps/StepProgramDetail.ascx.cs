@@ -762,7 +762,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void LoadWorkflowTriggerTypesSelectionList()
         {
-            ddlTriggerType.Items.Add( new ListItem( "Program Completed", StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() ) );
+            ddlTriggerType.Items.Add( new ListItem( "Step Completed", StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() ) );
             ddlTriggerType.Items.Add( new ListItem( "Status Changed", StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() ) );
             ddlTriggerType.Items.Add( new ListItem( "Manual", StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() ) );
         }
