@@ -158,11 +158,13 @@ namespace Rock.Chart
                 stepSize = 1;
             }
 
+            var isStacked = ( this.ChartStyle == ChartJsTimeSeriesChartStyleSpecifier.StackedLine );
+
             // Get options for the Y-axis, showing the values.
             // The suggested scale is from 0 to the maximum value in the data set, +10% to allow for a top margin.
             var suggestedMax = Math.Ceiling( maxValue * 1.1M );
 
-            var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize } } };
+            var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize }, stacked = isStacked } };
 
             var optionsLegend = new { position = "bottom", display = true };
 
@@ -652,29 +654,53 @@ namespace Rock.Chart
         }
 
         /// <summary>
-        /// Get the maximum data value of all data points.
+        /// Gets the maximum value that will be plotted for the current set of data points.
         /// </summary>
         /// <returns></returns>
         private decimal GetMaximumDataValue()
         {
-            decimal maxDataset = 0;
+            decimal maxValue = 0;
 
-            foreach ( var dataset in this.Datasets )
+            bool isStacked = ( this.ChartStyle == ChartJsTimeSeriesChartStyleSpecifier.StackedLine );
+
+            if ( isStacked )
             {
-                if ( !dataset.DataPoints.Any() )
+                // If the datasets are stacked, the maximum value of each Y-axis category is the sum of the data values.
+                var datasets = GetCategoryDatasets( this.TimeScale );
+
+                var dataPoints = datasets.SelectMany( x => x.DataPoints );
+
+                var categoryNames = dataPoints.Select( x => x.Category );
+
+                foreach ( var categoryName in categoryNames )
                 {
-                    continue;
+                    var localMaxValue = dataPoints.Where(x => x.Category == categoryName ).Sum( x => x.Value );
+
+                    if ( localMaxValue > maxValue )
+                    {
+                        maxValue = localMaxValue;
+                    }
                 }
-
-                var maxValue = dataset.DataPoints.Max( x => x.Value );
-
-                if ( maxValue > maxDataset )
+            }
+            else
+            {
+                foreach ( var dataset in this.Datasets )
                 {
-                    maxDataset = maxValue;
+                    if ( !dataset.DataPoints.Any() )
+                    {
+                        continue;
+                    }
+
+                    var localMaxValue = dataset.DataPoints.Max( x => x.Value );
+
+                    if ( localMaxValue > maxValue )
+                    {
+                        maxValue = localMaxValue;
+                    }
                 }
             }
 
-            return maxDataset;
+            return maxValue;
         }
 
         /// <summary>
@@ -702,7 +728,8 @@ namespace Rock.Chart
     {
         Line = 0,
         Bar = 1,
-        Bubble = 2
+        Bubble = 2,
+        StackedLine = 10
     }
 
     /// <summary>

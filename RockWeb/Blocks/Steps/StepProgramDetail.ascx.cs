@@ -1398,7 +1398,7 @@ namespace RockWeb.Blocks.Steps
             factory.StartDateTime = startDate;
             factory.EndDateTime = endDate;
             factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
 
             foreach ( var stepTypeDataset in stepTypeDatasets )
             {
