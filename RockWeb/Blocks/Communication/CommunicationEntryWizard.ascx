@@ -208,6 +208,7 @@
                                         <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
                                         <a class="btn btn-xs btn-default js-email-sendtest" href="#">Send Test</a>
                                         <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                        <asp:LinkButton ID="btnEmailEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Save" OnClick="btnEmailEditorSaveDraft_Click" />
                                     </div>
 
                                     <div class="js-email-sendtest-inputs" style="display: none">
@@ -215,11 +216,8 @@
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
-
-
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-
                         </div>
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
@@ -909,6 +907,7 @@
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <asp:LinkButton ID="btnSMSEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default" Text="Save" OnClick="btnSMSEditorSaveDraft_Click" />
                                     <div class="js-sms-sendtest-inputs" style="display:none">
                                         <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" Help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete." />
                                         <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
@@ -1053,6 +1052,7 @@
 
                 $('.js-email-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').hide();
                     $('#<%=nbEmailTestResult.ClientID%>').hide();
                     $(this).hide();
                     $('#<%=btnEmailPreview.ClientID%>').hide();
@@ -1065,12 +1065,14 @@
                 {
                     $('.js-email-sendtest').show();
                     $('#<%=btnEmailPreview.ClientID%>').show();
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').show();
                     $('.js-email-sendtest-inputs').hide();
                     return false;
                 });
 
                 $('.js-sms-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').hide();
                     $(this).hide();
 
                     $('.js-sms-sendtest-inputs').slideDown();
@@ -1079,6 +1081,7 @@
 
                 $('.js-sms-sendtest-cancel').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').show();
                     $('.js-sms-sendtest').show();
                     $('.js-sms-sendtest-inputs').hide();
                     return false;

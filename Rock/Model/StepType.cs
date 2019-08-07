@@ -1,4 +1,20 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,24 +35,30 @@ namespace Rock.Model
         #region Constants
 
         private const string _defaultCardLavaTemplate =
-@"<h3 class=""step-name"">{{ StepType.Name }}</h3>
-{% if StepType.HighlightColor == '' or IsComplete == false %}
-    <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
-{% else %}
-    <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
-{% endif %}
-<p class=""step-status"">
-    {% if LatestStepStatus %}
-        <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+@"<div class=""card-top"">
+    <h3 class=""step-name"">{{ StepType.Name }}</h3>
+</div>
+<div class=""card-middle"">
+    {% if StepType.HighlightColor == '' or IsComplete == false %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+    {% else %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
     {% endif %}
-    {% if LatestStep and LatestStep.CompletedDateTime != '' %}
-        <br />
-        <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+</div>
+<div class=""card-bottom"">
+    <p class=""step-status"">
+        {% if LatestStepStatus %}
+            <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+        {% endif %}
+        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+            <br />
+            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+        {% endif %}
+    </p>
+    {% if StepCount > 1 %}
+        <span class=""badge"">{{ StepCount }}</span>
     {% endif %}
-</p>
-{% if StepCount > 1 %}
-    <span class=""badge"">{{ StepCount }}</span>
-{% endif %}
+</div>
 ";
 
         #endregion Constants

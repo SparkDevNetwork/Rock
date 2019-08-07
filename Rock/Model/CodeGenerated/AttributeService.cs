@@ -112,6 +112,7 @@ namespace Rock.Model
             target.IsGridColumn = source.IsGridColumn;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsMultiValue = source.IsMultiValue;
+            target.IsPublic = source.IsPublic;
             target.IsRequired = source.IsRequired;
             target.IsSystem = source.IsSystem;
             target.Key = source.Key;

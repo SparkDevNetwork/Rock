@@ -334,6 +334,25 @@ namespace RockWeb.Blocks.Reporting
                             try
                             {
                                 filterControl.SetSelection( selection );
+
+                                // if the selection is the same as what is stored in the database for that DataViewFilter,
+                                // Do a GetSelection to get the selection in the current format for that filter
+                                // This will prevent this dynamic report from thinking the selection has changed from the orig filter
+                                if ( selection == filter.Selection )
+                                {
+                                    var normalizedSelection = filterControl.GetSelection();
+                                    if ( normalizedSelection != filter.Selection )
+                                    {
+                                        // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
+                                        filter.Selection = normalizedSelection;
+                                        using ( var updateSelectionContext = new RockContext() )
+                                        {
+                                            var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
+                                            dataViewFilter.Selection = normalizedSelection;
+                                            updateSelectionContext.SaveChanges();
+                                        }
+                                    }
+                                }
                             }
                             catch ( Exception ex )
                             {
@@ -791,7 +810,7 @@ namespace RockWeb.Blocks.Reporting
                 lFilterDetails.Text = new DescriptionList()
                     .Add( "Filter", filterInfo.TitlePath )
                     .Add( "Summary", filterInfo.Summary )
-                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
+                    .Add( "Parent Data View", filterInfo.FromDataViewName )
                     .Html;
             }
         }

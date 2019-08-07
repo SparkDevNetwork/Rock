@@ -101,6 +101,42 @@
     <Compile Include="Migrations\201907241959453_Rollup_0724.Designer.cs">
       <DependentUpon>201907241959453_Rollup_0724.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907251802371_PersonSearchKeyIndex.cs" />
+    <Compile Include="Migrations\201907251802371_PersonSearchKeyIndex.Designer.cs">
+      <DependentUpon>201907251802371_PersonSearchKeyIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.cs" />
+    <Compile Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.Designer.cs">
+      <DependentUpon>201907261619498_FixSpiritualGiftsAssessmentBadge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907291225564_Streaks.cs" />
+    <Compile Include="Migrations\201907291225564_Streaks.Designer.cs">
+      <DependentUpon>201907291225564_Streaks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.cs" />
+    <Compile Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.Designer.cs">
+      <DependentUpon>201907311659067_RemoveDefaultLegacySupportLevelOption.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201908010037500_UpdateSchedulesEffectiveEndDate.cs" />
+    <Compile Include="Migrations\201908010037500_UpdateSchedulesEffectiveEndDate.Designer.cs">
+      <DependentUpon>201908010037500_UpdateSchedulesEffectiveEndDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201908010914511_AddDocumentModel.cs" />
+    <Compile Include="Migrations\201908010914511_AddDocumentModel.Designer.cs">
+      <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201908022221135_AddRSVPModel.cs" />
+    <Compile Include="Migrations\201908022221135_AddRSVPModel.Designer.cs">
+      <DependentUpon>201908022221135_AddRSVPModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201908061655121_MenuShift.cs" />
+    <Compile Include="Migrations\201908061655121_MenuShift.Designer.cs">
+      <DependentUpon>201908061655121_MenuShift.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201908062250316_Rollup_08061.cs" />
+    <Compile Include="Migrations\201908062250316_Rollup_08061.Designer.cs">
+      <DependentUpon>201908062250316_Rollup_08061.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -736,6 +772,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907241959453_Rollup_0724.resx">
       <DependentUpon>201907241959453_Rollup_0724.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907251802371_PersonSearchKeyIndex.resx">
+      <DependentUpon>201907251802371_PersonSearchKeyIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907261619498_FixSpiritualGiftsAssessmentBadge.resx">
+      <DependentUpon>201907261619498_FixSpiritualGiftsAssessmentBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907291225564_Streaks.resx">
+      <DependentUpon>201907291225564_Streaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907311659067_RemoveDefaultLegacySupportLevelOption.resx">
+      <DependentUpon>201907311659067_RemoveDefaultLegacySupportLevelOption.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908010037500_UpdateSchedulesEffectiveEndDate.resx">
+      <DependentUpon>201908010037500_UpdateSchedulesEffectiveEndDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908010914511_AddDocumentModel.resx">
+      <DependentUpon>201908010914511_AddDocumentModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908022221135_AddRSVPModel.resx">
+      <DependentUpon>201908022221135_AddRSVPModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908061655121_MenuShift.resx">
+      <DependentUpon>201908061655121_MenuShift.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908062250316_Rollup_08061.resx">
+      <DependentUpon>201908062250316_Rollup_08061.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

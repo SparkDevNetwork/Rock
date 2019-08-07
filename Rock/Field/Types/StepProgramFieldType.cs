@@ -30,6 +30,11 @@ namespace Rock.Field.Types
     /// </summary>
     public class StepProgramFieldType : EntitySingleSelectionListFieldTypeBase<Rock.Model.StepProgram>
     {
+        /// <summary>
+        /// Returns a user-friendly description of the entity.
+        /// </summary>
+        /// <param name="entityGuid"></param>
+        /// <returns></returns>
         protected override string OnFormatValue( Guid entityGuid )
         {
             var entity = this.GetEntity( entityGuid.ToString() ) as StepProgram;
@@ -37,6 +42,10 @@ namespace Rock.Field.Types
             return entity.Name;
         }
 
+        /// <summary>
+        /// Returns a dictionary of the items available for selection.
+        /// </summary>
+        /// <returns></returns>
         protected override Dictionary<Guid, string> OnGetItemList()
         {
             var service = new StepProgramService( new RockContext() );

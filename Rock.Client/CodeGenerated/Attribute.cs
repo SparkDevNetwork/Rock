@@ -89,6 +89,9 @@ namespace Rock.Client
         public bool IsMultiValue { get; set; }
 
         /// <summary />
+        public bool IsPublic { get; set; }
+
+        /// <summary />
         public bool IsRequired { get; set; }
 
         /// <summary />
@@ -168,6 +171,7 @@ namespace Rock.Client
             this.IsGridColumn = source.IsGridColumn;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsMultiValue = source.IsMultiValue;
+            this.IsPublic = source.IsPublic;
             this.IsRequired = source.IsRequired;
             this.IsSystem = source.IsSystem;
             this.Key = source.Key;

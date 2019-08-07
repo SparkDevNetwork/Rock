@@ -154,7 +154,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             recordsDeleted += dataContext.Database.ExecuteSqlCommand( $"delete from [StepType] where ForeignKey = '{_SampleDataForeignKey}'" );
             recordsDeleted += dataContext.Database.ExecuteSqlCommand( $"delete from [Step] where ForeignKey = '{_SampleDataForeignKey}'" );
             recordsDeleted += dataContext.Database.ExecuteSqlCommand( $"delete from [StepProgram] where ForeignKey = '{_SampleDataForeignKey}'" );
-            
+
             // Remove Categories associated with Steps data.
             recordsDeleted += dataContext.Database.ExecuteSqlCommand( $"delete from [Category] where ForeignKey = '{_SampleDataForeignKey}'" );
 
@@ -318,7 +318,7 @@ namespace Rock.Tests.Integration.Crm.Steps
                 Constants.StatusSacramentsSuccessGuid,
                 new DateTime( 1998, 11, 30 ) );
             stepService.Add( confirmation );
-            
+
             // Marriage - First
             Step marriage;
 
@@ -521,6 +521,12 @@ namespace Rock.Tests.Integration.Crm.Steps
 
                         var eligibleStatuses = stepStatuses.Where( x => x.IsCompleteStatus == isCompleted ).ToList();
 
+                        // If there is no status that represents completion, allow any status.
+                        if ( eligibleStatuses.Count == 0 )
+                        {
+                            eligibleStatuses = stepStatuses;
+                        }
+
                         var newStatus = eligibleStatuses.GetRandomElement();
 
                         // Subtract a random number of days from the current step date to get a suitable date for the preceding step in the program.
@@ -531,7 +537,12 @@ namespace Rock.Tests.Integration.Crm.Steps
                         var newStep = new Step();
 
                         newStep.StepTypeId = stepTypeToAdd.Id;
-                        newStep.StepStatusId = newStatus.Id;
+
+                        if ( newStatus != null )
+                        {
+                            newStep.StepStatusId = newStatus.Id;
+                        }
+
                         newStep.PersonAliasId = personAliasId;
                         newStep.CampusId = campusId;
                         newStep.StartDateTime = newStepDateTime;
@@ -648,7 +659,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             }
         }
 
-        private Category CreateCategory( string name, Guid guid, int appliesToEntityTypeId, int order = 0)
+        private Category CreateCategory( string name, Guid guid, int appliesToEntityTypeId, int order = 0 )
         {
             var newCategory = new Category();
 

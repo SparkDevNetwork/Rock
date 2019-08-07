@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -283,6 +283,8 @@ namespace RockWeb.Blocks.Groups
                             {
                                 homeLocation = new GroupLocation();
                                 homeLocation.GroupLocationTypeValueId = _homeAddressType.Id;
+                                // If there are not any addresses with a Map Location, set the first home location to be a mapped location
+                                homeLocation.IsMappedLocation = true;
                                 family.GroupLocations.Add( homeLocation );
                             }
                             else

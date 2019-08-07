@@ -45,19 +45,42 @@ namespace Rock.Reporting.DataFilter.Person
         /// </summary>
         public class FilterSettings : SettingsStringBase
         {
+            /// <summary>
+            /// The step program unique identifier
+            /// </summary>
             public Guid? StepProgramGuid;
 
+            /// <summary>
+            /// The step type guids
+            /// </summary>
             public List<Guid> StepTypeGuids = new List<Guid>();
+
+            /// <summary>
+            /// The step status guids
+            /// </summary>
             public List<Guid> StepStatusGuids = new List<Guid>();
 
+            /// <summary>
+            /// The started in period
+            /// </summary>
             public TimePeriod StartedInPeriod = new TimePeriod();
+
+            /// <summary>
+            /// The completed in period
+            /// </summary>
             public TimePeriod CompletedInPeriod = new TimePeriod();
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
             public FilterSettings()
             {
-                //
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
+            /// <param name="settingsString">The settings string.</param>
             public FilterSettings( string settingsString )
             {
                 FromSelectionString( settingsString );
