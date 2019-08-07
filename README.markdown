@@ -1,7 +1,6 @@
 <div align="center">
 
 Rock RMS (NewPointe Edition)
-=======
 
 ![NewPointe + Rock RMS](https://newpointe.blob.core.windows.net/newpointe-webassets/Default/940fb09cf280462f997d556af951a608_np_rock_small.png)
 
@@ -37,11 +36,11 @@ Note: remind me to make a pre-built VM image for this sometime.
 - [SQL Server 2017 Developer or later][download-sql-server]
 
   You'll want some kind of database for testing and debugging. If you already have SQL Server installed somewhere you can use that. If not, you should download and install the free developer edition. Note: SQL Server 2017 and later also have a Linux version available if you want to mess with it - my brief testing shows that it will work with Rock (and might even be a bit faster) but it has not been thoroughly stress tested so I can't give you any guarantees.
-  
+
 - [SQL Server Management Studio][download-sql-server-management-studio] OR [Azure Data Studio (formerly known as SQL Operations Studio)][download-azure-data-studio]
 
   In order to directly interact with your test databases and configure your development server, you're going to need one of Microsoft's management solutions. SQL Server Management Studio (SSMS) is the standard full-featured solution, and the one I'd recommend. Azure Data Studio is a newer, cross-platform option for those who want to try it.
-  
+
 - Git
 
   We use Git for all of our version control. While I highly recommend learning and using the standard [Git command-line](https://git-scm.com) program, those who like clicking on things can use alternatives such as [GitKraken](https://www.gitkraken.com/git-client) or [SmartGit](https://www.syntevo.com/smartgit/). There are even some editors like Visual Studio and VS Code that have git built in!
@@ -106,7 +105,7 @@ Rock has a lot of developer resources to help you get started:
 * [Community Slack](https://www.rockrms.com/slack)
 
 ## License
-Rock released under the [Rock Community License](http://www.rockrms.com/license).
+Rock released under the [Rock Community License](https://www.rockrms.com/license).
 
 ## Crafted By
 

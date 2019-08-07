@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 
 namespace Rock.Utility
@@ -45,8 +44,9 @@ namespace Rock.Utility
         /// <param name="defaultTranslation">The default translation.</param>
         /// <param name="landingSite">The landing site.</param>
         /// <param name="cssClass">The CSS class.</param>
+        /// <param name="openInTab">if set to <c>true</c> [open in tab].</param>
         /// <returns></returns>
-        public static string Parse( string text, string defaultTranslation = "NLT", LandingSite landingSite = LandingSite.YouVersion, string cssClass = "" )
+        public static string Parse( string text, string defaultTranslation = "NLT", LandingSite landingSite = LandingSite.YouVersion, string cssClass = "", bool openInTab = false )
         {
             var scripturizedString = new StringBuilder();
 
@@ -60,7 +60,7 @@ namespace Rock.Utility
                 }
                 else
                 {
-                    scripturizedString.Append( AddScriptureLinks( token, defaultTranslation, landingSite, cssClass ) );
+                    scripturizedString.Append( AddScriptureLinks( token, defaultTranslation, landingSite, cssClass, openInTab ) );
                 }
 
             }
@@ -134,8 +134,9 @@ namespace Rock.Utility
         /// <param name="defaultTranslation">The default translation.</param>
         /// <param name="landingSite">The landing site.</param>
         /// <param name="cssClass">The CSS class.</param>
+        /// <param name="openInTab">if set to <c>true</c> [open in tab].</param>
         /// <returns></returns>
-        private static string AddScriptureLinks( string token, string defaultTranslation, LandingSite landingSite, string cssClass = "" )
+        private static string AddScriptureLinks( string token, string defaultTranslation, LandingSite landingSite, string cssClass = "", bool openInTab = false )
         {
             string regexVolumes = @"1|2|3|I|II|III|1st|2nd|3rd|First|Second|Third";
 
@@ -206,20 +207,29 @@ namespace Rock.Utility
                     return match.Value;
                 }
 
+                var target = string.Empty;
+
+                if ( openInTab )
+                {
+                    target = " target=\"_blank\"";
+                }
+
                 if ( cssClass.IsNullOrWhiteSpace() )
                 {
-                    return string.Format( "<a href=\"{0}\" title=\"{1}\">{2}</a>",
+                    return string.Format( "<a href=\"{0}\" {1} title=\"{2}\">{3}</a>",
                                 scriptureLink,  // 0
-                                serviceLabel,   // 1
-                                match.Value     // 2
+                                target,         // 1
+                                serviceLabel,   // 2
+                                match.Value     // 3
                     );
                 }
 
-                return string.Format( "<a href=\"{0}\" class=\"{1}\" title=\"{2}\">{3}</a>",
+                return string.Format( "<a href=\"{0}\" {1} class=\"{2}\" title=\"{3}\">{4}</a>",
                                 scriptureLink,  // 0
-                                cssClass,       // 1
-                                serviceLabel,   // 2
-                                match.Value     // 3
+                                target,         // 1
+                                cssClass,       // 2
+                                serviceLabel,   // 3
+                                match.Value     // 4
                     );
             } );
         }

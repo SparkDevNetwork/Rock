@@ -17,8 +17,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Title" />
-                        <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="FromName" Label="From Name" />
-                        <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="From" Label="From Address" />
+                        <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
+                        <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="From" Label="From Address" Help="<small><span class='tip tip-lava'></span></small>"/>
                         <Rock:DataTextBox ID="tbTo" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="To" />
                     </div>
                     <div class="col-md-6">

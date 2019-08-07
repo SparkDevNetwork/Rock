@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using Rock.Web.Cache;
 
 namespace Rock

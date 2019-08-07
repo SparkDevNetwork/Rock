@@ -22,6 +22,7 @@ using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -252,6 +253,23 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Properties
+
+
+        /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
+        public override string ToolTip
+        {
+            get
+            {
+                return ViewState["ToolTip"] as string;
+            }
+
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the binary file id.
@@ -556,9 +574,14 @@ namespace Rock.Web.UI.Controls
             DropZone,
 
             /// <summary>
-            /// As a button
+            /// As a primary button
             /// </summary>
-            Button
+            Button,
+
+            /// <summary>
+            /// As a default button
+            /// </summary>
+            DefaultButton
         }
 
         /// <summary>
@@ -642,6 +665,12 @@ namespace Rock.Web.UI.Controls
         {
             writer.AddAttribute( "class", "fileupload-group" );
             writer.AddAttribute( "id", this.ClientID );
+
+            if ( ToolTip.IsNotNullOrWhiteSpace() )
+            {
+                writer.AddAttribute( "title", ToolTip );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null || !string.IsNullOrWhiteSpace( this.UploadedContentFilePath ) )
@@ -692,15 +721,22 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.Write( @"
-                    <div class='js-upload-progress upload-progress' style='display:none;'>
-                        <i class='fa fa-refresh fa-2x fa-spin'></i>
+                string uploadClass = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "upload-progress-sm" : "upload-progress";
+                string spinnerSize = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "fa-lg" : "fa-3x";
+
+                writer.Write( $@"
+                    <div class='js-upload-progress {uploadClass}' style='display:none;'>
+                        <i class='fa fa-refresh {spinnerSize} fa-spin'></i>
                         <div class='js-upload-progress-percent'></div>
                     </div>" );
 
                 if (this.DisplayMode == UploaderDisplayMode.Button)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-button");
+                }
+                else if ( this.DisplayMode == UploaderDisplayMode.DefaultButton )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileuploaddefault-button" );
                 }
                 else
                 {

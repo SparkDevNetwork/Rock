@@ -57,6 +57,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No longer needed" )]
         public static new LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
         {
@@ -79,6 +80,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="content">The content.</param>
         /// <returns></returns>
+        [RockObsolete( "1.8" )]
         [Obsolete("Use Get instead")]
         public static LavaTemplateCache Read( string content )
         {

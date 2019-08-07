@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
-    [Description( "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc)." )]
+    [Description( "Block used to set values specific to data automation (Updating Person Status, Family Campus, Etc)." )]
     public partial class DataAutomationSettings : RockBlock
     {
         #region private variables

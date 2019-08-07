@@ -14,6 +14,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Workflow;
+using Rock.Web.Cache;
 
 namespace org.newpointe.RockU.Workflow.Action.RockU
 {
@@ -74,10 +75,9 @@ namespace org.newpointe.RockU.Workflow.Action.RockU
 
             var workflow = action.Activity.Workflow;
 
-            var activityType = new WorkflowActivityTypeService( rockContext ).Queryable()
-                .Where( a => a.Guid.Equals( guid ) ).FirstOrDefault();
+            var activityTypeCache = WorkflowActivityTypeCache.Get( guid );
 
-            if (activityType == null)
+            if ( activityTypeCache == null )
             {
                 action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
@@ -88,12 +88,12 @@ namespace org.newpointe.RockU.Workflow.Action.RockU
 
             foreach (var item in itemListValue.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries ))
             {
-                var activity = WorkflowActivity.Activate( activityType, workflow );
+                var activity = WorkflowActivity.Activate( activityTypeCache, workflow );
                 if (hasActivityAttributeKey)
                 {
                     activity.SetAttributeValue( activityAttributeKey, item );
                 }
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityTypeCache.ToString() ) );
             }
 
             return true;

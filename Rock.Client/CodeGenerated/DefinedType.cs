@@ -53,7 +53,7 @@ namespace Rock.Client
         public string HelpText { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsSystem { get; set; }

@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "RSS Feed Item" )]
     [Category( "CMS" )]
-    [Description( "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template." )]
+    [Description( "Gets an item from a RSS feed and displays the content of that item based on a provided Lava template." )]
     [TextField( "RSS Feed Url", "The Url to the RSS feed that the item belongs to.", true, "", "Feed" )]
     [IntegerField( "Cache Duration", "The length of time (in minutes) that the RSS feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes.", false, 20, "Feed" )]
     [TextField( "CSS File", "An optional CSS File to add to the page for styling. Example \"Styles/rss.css\" would point to a stylesheet in the current theme's style folder.", false, "", "Layout" )]

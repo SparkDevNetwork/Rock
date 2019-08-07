@@ -570,8 +570,8 @@ namespace RockWeb.Blocks.Crm
                     form.Fields.Add( field );
                 }
 
-                field.PreText = ceAttributePreText.Text;
-                field.PostText = ceAttributePostText.Text;
+                field.PreHtml = ceAttributePreHtml.Text;
+                field.PostHtml = ceAttributePostHtml.Text;
 
                 field.AttributeId = ddlPersonAttributes.SelectedValueAsInt();
                 field.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
@@ -688,9 +688,9 @@ namespace RockWeb.Blocks.Crm
                         .Where( f => f.AttributeId.HasValue )
                         .OrderBy( f => f.Order ) )
                     {
-                        if ( !string.IsNullOrWhiteSpace( field.PreText ) )
+                        if ( !string.IsNullOrWhiteSpace( field.PreHtml ) )
                         {
-                            phContent.Controls.Add( new LiteralControl( field.PreText.ResolveMergeFields( mergeFields ) ) );
+                            phContent.Controls.Add( new LiteralControl( field.PreHtml.ResolveMergeFields( mergeFields ) ) );
                         }
 
                         string value = null;
@@ -701,9 +701,9 @@ namespace RockWeb.Blocks.Crm
                         var attribute = AttributeCache.Get( field.AttributeId.Value );
                         attribute.AddControl( phContent.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, string.Empty );
 
-                        if ( !string.IsNullOrWhiteSpace( field.PostText ) )
+                        if ( !string.IsNullOrWhiteSpace( field.PostHtml ) )
                         {
-                            phContent.Controls.Add( new LiteralControl( field.PostText.ResolveMergeFields( mergeFields ) ) );
+                            phContent.Controls.Add( new LiteralControl( field.PostHtml.ResolveMergeFields( mergeFields ) ) );
                         }
                     }
                 }
@@ -882,8 +882,8 @@ namespace RockWeb.Blocks.Crm
                     field.IsRequired = false;
                 }
 
-                ceAttributePreText.Text = field.PreText;
-                ceAttributePostText.Text = field.PostText;
+                ceAttributePreHtml.Text = field.PreHtml;
+                ceAttributePostHtml.Text = field.PostHtml;
 
                 ddlPersonAttributes.Items.Clear();
                 var person = new Person();
@@ -1042,7 +1042,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void RegisterClientScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             string script = string.Format( @"
 
@@ -1665,9 +1665,9 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
         public int Order { get; set; }
 
-        public string PreText { get; set; }
+        public string PreHtml{ get; set; }
 
-        public string PostText { get; set; }
+        public string PostHtml { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]
         public AttributeCache Attribute

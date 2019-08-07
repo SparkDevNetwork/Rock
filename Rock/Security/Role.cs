@@ -27,6 +27,7 @@ namespace Rock.Security
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [RockObsolete( "1.8" )]
     [Obsolete( "Use RoleCache Instead")]
     public class Role
     {

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 

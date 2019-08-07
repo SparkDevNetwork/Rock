@@ -18,11 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Data.Entity;
+using System.Linq;
 
 using Rock;
-using Rock.Workflow;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

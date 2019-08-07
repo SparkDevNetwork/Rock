@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Crm
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             List<int> selectedRoleIds = cblRoles.SelectedValuesAsInt;
 
-            var selectedConnectionStatuses = cblConnectionStatus.SelectedValuesAsInt;
+            var selectedConnectionStatuses = dvpConnectionStatus.SelectedValuesAsInt;
             var ageBirthDate = RockDateTime.Now.AddYears( -nbAge.Text.AsInteger() );
             var photoUpdatedDate = RockDateTime.Now.AddYears( - nbUpdatedLessThan.Text.AsInteger() );
             var people = personService.Queryable("Members", false, false);
@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.Crm
             people = people.Where( p => ! ( p.Email == null || p.Email.Trim() == string.Empty ) );
 
             // people who match the Connection Status criteria
-            people = people.Where( p => cblConnectionStatus.SelectedValuesAsInt.Contains( p.ConnectionStatusValueId ?? -1 ) );
+            people = people.Where( p => dvpConnectionStatus.SelectedValuesAsInt.Contains( p.ConnectionStatusValueId ?? -1 ) );
 
             // people who are old enough
             people = people.Where( p => p.BirthDate <= ageBirthDate );
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Crm
             //}
 
             // otherwise we can just bind like this for now
-            cblConnectionStatus.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ) );
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
         }
 
         #endregion

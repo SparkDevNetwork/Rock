@@ -79,8 +79,8 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 ChannelAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
-            }            
-            
+            }
+
             json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -227,6 +227,7 @@ namespace RockWeb.Blocks.Cms
                 contentType.DisablePriority = cbDisablePriority.Checked;
                 contentType.DisableContentField = cbDisableContentField.Checked;
                 contentType.DisableStatus = cbDisableStatus.Checked;
+                contentType.ShowInChannelList = cbShowInChannelList.Checked;
 
                 if ( !Page.IsValid || !contentType.IsValid )
                 {
@@ -647,7 +648,7 @@ namespace RockWeb.Blocks.Cms
             cbDisablePriority.Checked = contentType.DisablePriority;
             cbDisableContentField.Checked = contentType.DisableContentField;
             cbDisableStatus.Checked = contentType.DisableStatus;
-
+            cbShowInChannelList.Checked = contentType.ShowInChannelList;
             // load attribute data 
             ChannelAttributesState = new List<Attribute>();
             ItemAttributesState = new List<Attribute>();
@@ -662,6 +663,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
+            
+            // Set order 
+            int newOrder = 0;
+            ChannelAttributesState.ForEach( a => a.Order = newOrder++ );
+                
             BindChannelAttributesGrid();
 
             attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
@@ -670,6 +676,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
+                
+            // Set order 
+            newOrder = 0;
+            ItemAttributesState.ForEach( a => a.Order = newOrder++ );
+            
             BindItemAttributesGrid();
         }
 

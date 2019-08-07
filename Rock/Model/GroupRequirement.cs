@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -161,7 +162,8 @@ namespace Rock.Model
         /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead", true )]
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
         {
             if ( this.GroupId.HasValue )
@@ -202,21 +204,20 @@ namespace Rock.Model
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
             {
+                var errorMessages = new List<string>();
+                var personService = new PersonService( rockContext );
+                var paramExpression = personService.ParameterExpression;
+                IQueryable<Person> warningDataViewQry = null;
+                if ( this.GroupRequirementType.WarningDataViewId.HasValue )
+                {
+                    var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    warningDataViewQry = personService.Get( paramExpression, warningDataViewWhereExpression );
+                }
+
                 if ( this.GroupRequirementType.DataViewId.HasValue )
                 {
-                    var errorMessages = new List<string>();
-                    var personService = new PersonService( rockContext );
-                    var paramExpression = personService.ParameterExpression;
                     var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression, out errorMessages );
                     var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
-
-                    IQueryable<Person> warningDataViewQry = null;
-                    if ( this.GroupRequirementType.WarningDataViewId.HasValue )
-                    {
-                        var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression, out errorMessages );
-                        warningDataViewQry = personService.Get( paramExpression, warningDataViewWhereExpression );
-                    }
-
                     if ( dataViewQry != null )
                     {
                         var personWithRequirements = from p in personQry
@@ -250,7 +251,26 @@ namespace Rock.Model
                 }
                 else
                 {
-                    throw new Exception( "No dataview assigned to Group Requirement Type: " + this.GroupRequirementType.Name );
+                    var personWithRequirements = personQry.Select( p => new { PersonId = p.Id, WarningIncluded = false } );
+                    if ( warningDataViewQry != null )
+                    {
+                        personWithRequirements = personWithRequirements.Select( a => new
+                        {
+                            a.PersonId,
+                            WarningIncluded = warningDataViewQry.Any( w => w.Id == a.PersonId )
+                        } );
+                    }
+
+                    var result = personWithRequirements.ToList().Select( a =>
+                            new PersonGroupRequirementStatus
+                            {
+                                PersonId = a.PersonId,
+                                GroupRequirement = this,
+                                MeetsGroupRequirement = a.WarningIncluded ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
+                            } );
+
+                    return result;
+
                 }
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
@@ -335,7 +355,8 @@ namespace Rock.Model
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         /// <exception cref="System.NotSupportedException"></exception>
-        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead", true )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
             if ( this.GroupId.HasValue )
@@ -383,7 +404,8 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="meetsGroupRequirement">The meets group requirement.</param>
-        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead", true )]
         public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
         {
             if ( this.GroupId.HasValue )

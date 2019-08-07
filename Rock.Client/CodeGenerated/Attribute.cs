@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AbbreviatedName { get; set; }
+
+        /// <summary />
         public bool AllowSearch { get; set; }
 
         /// <summary />
@@ -68,7 +71,7 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsAnalytic { get; set; }
@@ -105,6 +108,12 @@ namespace Rock.Client
         /// <summary />
         public int Order { get; set; }
 
+        /// <summary />
+        public string PostHtml { get; set; }
+
+        /// <summary />
+        public string PreHtml { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -138,6 +147,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Attribute source )
         {
             this.Id = source.Id;
+            this.AbbreviatedName = source.AbbreviatedName;
             this.AllowSearch = source.AllowSearch;
             this.DefaultValue = source.DefaultValue;
             this.Description = source.Description;
@@ -161,6 +171,8 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.PostHtml = source.PostHtml;
+            this.PreHtml = source.PreHtml;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

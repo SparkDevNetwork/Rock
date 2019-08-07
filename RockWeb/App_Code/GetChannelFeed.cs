@@ -15,19 +15,14 @@
 // </copyright>
 //
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Xml;
-using System.Text;
-using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
-using System.Collections.Generic;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -115,7 +110,7 @@ namespace RockWeb
             {
                 dvRssTemplate = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEFAULT_RSS_CHANNEL );
             }
-            
+
             if ( dvRssTemplate.DefinedType.Guid != new Guid( Rock.SystemGuid.DefinedType.LAVA_TEMPLATES ) )
             {
                 response.TrySkipIisCustomErrors = true;
@@ -135,7 +130,7 @@ namespace RockWeb
                 response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
             }
 
-            if (request.HttpMethod == "HEAD")
+            if ( request.HttpMethod == "HEAD" )
             {
                 response.StatusCode = 200;
                 return;
@@ -173,17 +168,17 @@ namespace RockWeb
                                 ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.ContentChannelType.DisableStatus || c.ContentChannel.RequiresApproval == false ) &&
                                 c.StartDateTime <= RockDateTime.Now );
 
-                        if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
-                        {
-                            if ( channel.ContentChannelType.IncludeTime )
-                            {
-                                content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
-                            }
-                            else
-                            {
-                                content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
-                            }
-                        }
+            if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+            {
+                if ( channel.ContentChannelType.IncludeTime )
+                {
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
+                }
+                else
+                {
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
+                }
+            }
 
             if ( channel.ItemsManuallyOrdered )
             {
@@ -196,6 +191,8 @@ namespace RockWeb
 
             content = content.Take( rssItemLimit );
 
+            content.LoadAttributes();
+
             foreach ( var item in content )
             {
                 item.Content = item.Content.ResolveMergeFields( mergeFields );
@@ -207,7 +204,6 @@ namespace RockWeb
                 item.Content = item.Content.Replace( @" href=""/", @" href=""" + publicAppRoot );
 
                 // get item attributes and add them as elements to the feed
-                item.LoadAttributes( rockContext );
                 foreach ( var attributeValue in item.AttributeValues )
                 {
                     attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( mergeFields );

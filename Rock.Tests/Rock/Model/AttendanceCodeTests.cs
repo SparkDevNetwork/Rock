@@ -49,7 +49,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Deletes the test data added to the database for each tests.
         /// </summary>
-        public void Cleanup()
+        private void Cleanup()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -69,6 +69,8 @@ namespace Rock.Tests.Rock.Model
             AttendanceCodeService.FlushTodaysCodes();
         }
 
+        #region Tests that don't require a database/context
+
         /// <summary>
         /// Avoids the triple six.  Note: Does not use the database.
         /// </summary>
@@ -85,6 +87,8 @@ namespace Rock.Tests.Rock.Model
             Assert.Equal( "0667", code );
         }
 
+        #endregion
+
         #region Alpha-numeric codes
 
         [Fact( Skip = "Requires a db" )]
@@ -100,9 +104,7 @@ namespace Rock.Tests.Rock.Model
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Select( x => x )
-                          .Intersect( noGood )
-                          .Any();
+            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.False( hasMatchIsBad );
         }
@@ -132,34 +134,48 @@ namespace Rock.Tests.Rock.Model
 
             var codeList = new List<string>();
             AttendanceCode code = null;
-            for ( int i = 0; i < 1000; i++ )
+            for ( int i = 0; i < 2000; i++ )
             {
                 code = AttendanceCodeService.GetNew( 0, 0, 4, false );
                 codeList.Add( code.Code );
             }
 
-            Assert.False( codeList.Any( s => "911".Contains( s ) ) );
-            Assert.False( codeList.Any( s => "666".Contains( s ) ) );
+            Assert.DoesNotContain( codeList, s => s == "911" );
+            Assert.DoesNotContain( codeList, s => s == "666" );
         }
 
+        /// <summary>
+        /// Numeric only code with length of 2 should not go beyond 99.
+        /// Attempting to create one should not be allowed so throwing a
+        /// timeout exception is acceptable to let the admin know there is a
+        /// configuration problem.
+        /// </summary>
         [Fact( Skip = "Requires a db" )]
         public void NumericCodeWithLengthOf2ShouldNotGoBeyond99()
         {
             Cleanup();
 
-            var codeList = new List<string>();
-            AttendanceCode code = null;
-            for ( int i = 0; i < 101; i++ )
+            try
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 2, false );
-                codeList.Add( code.Code );
+                var codeList = new List<string>();
+                AttendanceCode code = null;
+                for ( int i = 0; i < 101; i++ )
+                {
+                    code = AttendanceCodeService.GetNew( 0, 0, 2, false );
+                    codeList.Add( code.Code );
+                }
+
+                // should not be longer than 4 characters
+                // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
+                Assert.True( codeList.Last().Length == 4 );
             }
-
-            // should not be longer than 4 characters
-            // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
-            Assert.True( codeList.Last().Length == 4 );
+            catch ( TimeoutException )
+            {
+                // An exception in this case is considered better than hanging (since there is 
+                // no actual solution).
+                Assert.True( true );
+            }
         }
-
 
         /// <summary>
         /// Numerics codes should not repeat.  This is/was a known bug in v7.4 and earlier
@@ -171,9 +187,9 @@ namespace Rock.Tests.Rock.Model
 
             var codeList = new List<string>();
             AttendanceCode code = null;
-            for ( int i = 0; i < 101; i++ )
+            for ( int i = 0; i < 999; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 2, false );
+                code = AttendanceCodeService.GetNew( 0, 0, 3, false );
                 codeList.Add( code.Code );
             }
 
@@ -184,6 +200,28 @@ namespace Rock.Tests.Rock.Model
             Assert.True( duplicates.Count() == 0 );
         }
 
+        /// <summary>
+        /// Numerics codes should not repeat.  This is/was a known bug in v7.4 and earlier
+        /// </summary>
+        [Fact( Skip = "Requires a db" )]
+        public void RandomNumericCodesShouldNotRepeat()
+        {
+            Cleanup();
+
+            var codeList = new List<string>();
+            AttendanceCode code = null;
+            for ( int i = 0; i < 999; i++ )
+            {
+                code = AttendanceCodeService.GetNew( 0, 0, 3, true );
+                codeList.Add( code.Code );
+            }
+
+            var duplicates = codeList.GroupBy( x => x )
+                                    .Where( group => group.Count() > 1 )
+                                    .Select( group => group.Key );
+
+            Assert.True( duplicates.Count() == 0 );
+        }
 
         /// <summary>
         /// Requestings the more codes than are possible should throw exception...
@@ -287,9 +325,7 @@ namespace Rock.Tests.Rock.Model
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Select( x => x )
-                          .Intersect( noGood )
-                          .Any();
+            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.False( hasMatchIsBad );
         }
@@ -325,27 +361,49 @@ namespace Rock.Tests.Rock.Model
 
         #region Alpha-numeric + numeric only codes
 
+        /// <summary>
+        /// NOTE: This appears to be a current bug in v8.0 and earlier.  It cazn only generate 100 codes
+        /// Two character alpha numeric codes (codeCharacters) has possible 24*24 (576) combinations
+        /// plus two character numeric codes has a possible 10*10 (100) for a total set of
+        /// 676 combinations.  Removing the noGood (~60) codes leaves us with a valid set of
+        /// 616 codes.
+        /// There should be no bad codes in this list either even though
+        /// individually each part has no bad codes.
+        /// </summary>
         [Fact( Skip = "Requires a db" )]
-        public void AlphaNumericCodesShouldNeverContain911And666()
+        public void AlphaNumericWithNumericCodesShouldSkipBadCodes()
         {
             Cleanup();
+            int attemptCombination = 0;
 
-            var codeList = new List<string>();
-            AttendanceCode code = null;
-            for ( int i = 0; i < 10000; i++ )
+            try
             {
-                code = AttendanceCodeService.GetNew( 3, 0, 2, false );
-                codeList.Add( code.Code );
+                var codeList = new List<string>();
+                AttendanceCode code = null;
+                for ( int i = 0; i < 676; i++ )
+                {
+                    attemptCombination = i;
+                    code = AttendanceCodeService.GetNew( 2, 0, 2, true );
+                    codeList.Add( code.Code );
+                }
+
+                bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
+
+                Assert.False( hasMatchIsBad );
+
             }
-
-            Assert.False( codeList.Any( s => "911".Contains( s ) ) );
-            Assert.False( codeList.Any( s => "666".Contains( s ) ) );
+            catch( TimeoutException )
+            {
+                // If an infinite loop was detected, but we tried at least 616 codes then
+                // we'll consider this a pass.
+                Assert.True( attemptCombination >= 616 );
+            }
         }
-
 
         #endregion
 
         #region Alpha only + numeric only codes
+
         [Fact( Skip = "Requires a db" )]
         public void AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes()
         {
@@ -359,9 +417,7 @@ namespace Rock.Tests.Rock.Model
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Select( x => x )
-                          .Intersect( noGood )
-                          .Any();
+            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.False( hasMatchIsBad );
         }

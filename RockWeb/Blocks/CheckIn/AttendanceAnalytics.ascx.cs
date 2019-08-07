@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -252,7 +253,7 @@ namespace RockWeb.Blocks.CheckIn
                 btnCopyToClipboard.Visible = true;
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -1240,8 +1241,8 @@ function(item) {
             var allResults = new List<AttendeeResult>();
 
             // Collection of async queries to run before assembling data
-            var qryTasks = new List<Task>();
-            var taskInfos = new List<TaskInfo>();
+            var qryTasks = new ConcurrentBag<Task>();
+            var taskInfos = new ConcurrentBag<TaskInfo>();
 
             DataTable dtAttendeeLastAttendance = null;
             DataTable dtAttendees = null;

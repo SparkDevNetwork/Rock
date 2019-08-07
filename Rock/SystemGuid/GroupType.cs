@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.SystemGuid
 {
@@ -49,6 +46,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Implied relationship group type guid (aka peer network group type)
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use GROUPTYPE_PEER_NETWORK instead.", false )]
         public const string GROUPTYPE_IMPLIED_RELATIONSHIPS = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
 

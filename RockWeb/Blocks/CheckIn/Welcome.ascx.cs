@@ -17,18 +17,25 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -36,19 +43,127 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Welcome screen for check-in." )]
 
-    [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
-    [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
+    [LinkedPage(
+        "Family Select Page",
+        Key = AttributeKey.FamilySelectPage,
+        IsRequired = false,
+        Order = 5 )]
 
-    [TextField( "Not Active Title", "Title displayed when there are not any active options today.", false, "Check-in Is Not Active", "Text", 7 )]
-    [TextField( "Not Active Caption", "Caption displayed when there are not any active options today.", false, "There are no current or future schedules for this kiosk today!", "Text", 8 )]
-    [TextField( "Not Active Yet Title", "Title displayed when there are active options today, but none are active now.", false, "Check-in Is Not Active Yet", "Text", 9 )]
-    [TextField( "Not Active Yet Caption", "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.", false, "This kiosk is not active yet.  Countdown until active: {0}.", "Text", 10 )]
-    [TextField( "Closed Title", "", false, "Closed", "Text", 11 )]
-    [TextField( "Closed Caption", "", false, "This location is currently closed.", "Text", 12 )]
-    [TextField( "Check-in Button Text", "The text to display on the check-in button. Defaults to 'Start' if left blank.", false, "", "Text", 13, "CheckinButtonText" )]
-    [TextField( "No Option Caption", "The text to display when there are not any families found matching a scanned identifier (barcode, etc).", false, "Sorry, there were not any families found with the selected identifier.", "Text", 14 )]
+    [LinkedPage(
+        "Scheduled Locations Page",
+        Key = AttributeKey.ScheduledLocationsPage,
+        IsRequired = false,
+        Order = 6 )]
+
+    [TextField(
+        "Not Active Title",
+        Key = AttributeKey.NotActiveTitle,
+        Description = "Title displayed when there are not any active options today.",
+        IsRequired = false,
+        DefaultValue = "Check-in Is Not Active",
+        Category = "Text",
+        Order = 7 )]
+
+    [TextField(
+        "Not Active Caption",
+        Key = AttributeKey.NotActiveCaption,
+        Description = "Caption displayed when there are not any active options today.",
+        IsRequired = false,
+        DefaultValue = "There are no current or future schedules for this kiosk today!",
+        Category = "Text",
+        Order = 8 )]
+
+    [TextField(
+        "Not Active Yet Title",
+        Key = AttributeKey.NotActiveYetTitle,
+        Description = "Title displayed when there are active options today, but none are active now.",
+        IsRequired = false,
+        DefaultValue = "Check-in Is Not Active Yet",
+        Category = "Text",
+        Order = 9 )]
+
+    [TextField(
+        "Not Active Yet Caption",
+        Key = AttributeKey.NotActiveYetCaption,
+        Description = "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.",
+        IsRequired = false,
+        DefaultValue = "This kiosk is not active yet.  Countdown until active: {0}.",
+        Category = "Text",
+        Order = 10 )]
+
+    [TextField(
+        "Closed Title",
+        Key = AttributeKey.ClosedTitle,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "Closed",
+        Category = "Text",
+        Order = 11 )]
+
+    [TextField(
+        "Closed Caption",
+        Key = AttributeKey.ClosedCaption,
+        IsRequired = false,
+        DefaultValue = "This location is currently closed.",
+        Category = "Text",
+        Order = 12 )]
+
+    [TextField(
+        "Check-in Button Text",
+        Key = AttributeKey.CheckinButtonText,
+        Description = "The text to display on the check-in button. Defaults to 'Start' if left blank.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "Text",
+        Order = 13 )]
+
+    [TextField(
+        "No Option Caption",
+        Key = AttributeKey.NoOptionCaption,
+        Description = "The text to display when there are not any families found matching a scanned identifier (barcode, etc).",
+        IsRequired = false,
+        DefaultValue = "Sorry, there were not any families found with the selected identifier.",
+        Category = "Text",
+        Order = 14 )]
+
+    [BooleanField(
+        "Allow Opening and Closing Rooms",
+        Key = AttributeKey.AllowOpeningAndClosingRooms,
+        Description = "Determines if opening and closing rooms should be allowed. If not allowed, the locations only show counts and the open/close toggles are not shown.",
+        DefaultBooleanValue = true,
+        Category = "Manager Settings",
+        Order = 20 )]
+
+    [BooleanField(
+        "Allow Label Reprinting",
+        Key = AttributeKey.AllowLabelReprinting,
+        Description = " Determines if reprinting labels should be allowed.",
+        DefaultBooleanValue = false,
+        Category = "Manager Settings",
+        Order = 21 )]
+
     public partial class Welcome : CheckInBlock
     {
+        #region Attribute Keys
+
+        protected static class AttributeKey
+        {
+            public const string FamilySelectPage = "FamilySelectPage";
+            public const string ScheduledLocationsPage = "ScheduledLocationsPage";
+            public const string NotActiveTitle = "NotActiveTitle";
+            public const string NotActiveCaption = "NotActiveCaption";
+            public const string NotActiveYetTitle = "NotActiveYetTitle";
+            public const string NotActiveYetCaption = "NotActiveYetCaption";
+            public const string ClosedTitle = "ClosedTitle";
+            public const string ClosedCaption = "ClosedCaption";
+            public const string CheckinButtonText = "CheckinButtonText";
+            public const string NoOptionCaption = "NoOptionCaption";
+            public const string AllowOpeningAndClosingRooms = "AllowOpeningAndClosingRooms";
+            public const string AllowLabelReprinting = "AllowLabelReprinting";
+        }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -59,6 +174,9 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
+            // ZebraPrint is needed for client side label re-printing.
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
+
             if ( CurrentCheckInState == null )
             {
                 NavigateToPreviousPage();
@@ -67,8 +185,6 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
-
-            RegisterScript();
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
             if ( bodyTag != null )
@@ -118,17 +234,17 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         RefreshView();
 
-                        lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
-                        lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
-                        lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveYetTitle" );
-                        lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveYetCaption" ), "<span class='countdown-timer'></span>" );
-                        lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
-                        lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
+                        lNotActiveTitle.Text = GetAttributeValue( AttributeKey.NotActiveTitle );
+                        lNotActiveCaption.Text = GetAttributeValue( AttributeKey.NotActiveCaption );
+                        lNotActiveYetTitle.Text = GetAttributeValue( AttributeKey.NotActiveYetTitle );
+                        lNotActiveYetCaption.Text = string.Format( GetAttributeValue( AttributeKey.NotActiveYetCaption ), "<span class='countdown-timer'></span>" );
+                        lClosedTitle.Text = GetAttributeValue( AttributeKey.ClosedTitle );
+                        lClosedCaption.Text = GetAttributeValue( AttributeKey.ClosedCaption );
 
-                        string checkinButtonText = GetAttributeValue( "CheckinButtonText" ).IfEmpty( "Start" );
+                        string checkinButtonText = GetAttributeValue( AttributeKey.CheckinButtonText ).IfEmpty( "Start" );
 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                        mergeFields.Add( "CheckinButtonText", checkinButtonText );
+                        mergeFields.Add( AttributeKey.CheckinButtonText, checkinButtonText );
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
 
@@ -176,39 +292,11 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the Click event of the btnOverride control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnOverride_Click( object sender, EventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "Override", "True" );
-            NavigateToNextPage( queryParams );
-        }
-
-        /// <summary>
         /// Handles the start click.
         /// </summary>
         protected void HandleStartClick()
         {
             NavigateToNextPage();
-        }
-
-        /// <summary>
-        /// Registers the script.
-        /// </summary>
-        private void RegisterScript()
-        {
-            var script = new StringBuilder();
-            script.AppendFormat( @"
-
-        function PostRefresh() {{
-            window.location = ""javascript:{0}"";
-        }}
-
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "refresh-postback", script.ToString(), true );
         }
 
         /// <summary>
@@ -220,9 +308,8 @@ namespace RockWeb.Blocks.CheckIn
             CurrentCheckInState.Messages = new List<CheckInMessage>();
         }
 
-        // TODO: Add support for scanner
         /// <summary>
-        /// Somes the scanner search.
+        /// Performs a search for the family.
         /// </summary>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="searchValue">The search value.</param>
@@ -238,12 +325,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionCaption" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( AttributeKey.NoOptionCaption ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
                     SaveState();
-                    NavigateToLinkedPage( "FamilySelectPage" );
+                    NavigateToLinkedPage( AttributeKey.FamilySelectPage );
                 }
             }
             else
@@ -269,6 +356,7 @@ namespace RockWeb.Blocks.CheckIn
             ManagerLoggedIn = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
+            HideReprintPanels();
             btnManager.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableManagerOption : true );
             btnOverride.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableOverride : true );
 
@@ -409,6 +497,316 @@ namespace RockWeb.Blocks.CheckIn
             hfRefreshTimerSeconds.Value = "600";
         }
 
+        #region Device Manager
+
+        #region Device Manager Events
+
+        #region Device Manager Reprint Label Events
+
+        protected void HideReprintPanels()
+        {
+            // Hide all the manager reprint operations
+            pnlReprintLabels.Visible = false;
+            pnlReprintSearchPersonResults.Visible = false;
+            pnlReprintSelectedPersonLabels.Visible = false;
+            pnlReprintResults.Visible = false;
+        }
+
+        protected void lbManagerCancel_Click( object sender, EventArgs e )
+        {
+            HideReprintPanels();
+            // Show the manager panel since we're still in that mode.
+            pnlManager.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnReprintLabels control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnReprintLabels_Click( object sender, EventArgs e )
+        {
+            pnlReprintLabels.Visible = true;
+            pnlManager.Visible = false;
+            tbNameOrPhone.Focus();
+            tbNameOrPhone.Text = string.Empty;
+        }
+
+        /// <summary>
+        /// Manager Reprint screen to search by name or phone
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void lbManagerReprintSearch_Click( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( tbNameOrPhone.Text ) )
+            {
+                tbNameOrPhone.Focus();
+                maWarning.Show( "Please enter a phone number or name.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                return;
+            }
+
+            pnlReprintSearchPersonResults.Visible = true;
+
+            var people = FindPossibleMatchingCheckedInPeople();
+
+            if ( people == null || people.Count == 0 )
+            {
+                maWarning.Show( "There is no one currently checked-in that matches the search criteria.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                pnlReprintLabels.Visible = true;
+                pnlReprintSearchPersonResults.Visible = false;
+                tbNameOrPhone.Text = string.Empty;
+                tbNameOrPhone.Focus();
+            }
+            else
+            {
+                rReprintLabelPersonResults.DataSource = people;
+                rReprintLabelPersonResults.DataBind();
+                pnlReprintLabels.Visible = false;
+                pnlReprintSearchPersonResults.Visible = true;
+            }
+        }
+
+        private List<ReprintLabelPersonResult> FindPossibleMatchingCheckedInPeople()
+        {
+            var people = new List<ReprintLabelPersonResult>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                bool reversed = false;
+
+                List<int> matchingPeopleIds = null;
+
+                // Find all matching people
+                var isNumericMatch = Regex.Match( tbNameOrPhone.Text, @"\d+" );
+
+                if ( isNumericMatch.Success )
+                {
+                    matchingPeopleIds = PhoneSearch( tbNameOrPhone.Text ).ToList();
+                }
+                else
+                {
+                    matchingPeopleIds = personService
+                        .GetByFullName( tbNameOrPhone.Text, false, false, false, out reversed )
+                        .Select( p => p.Id ).ToList();
+                }
+
+                // Find all people currently checked in.
+                var dayStart = RockDateTime.Today.AddDays( -1 );
+                var attendees = new AttendanceService( rockContext )
+                    .Queryable( "Occurrence.Group,PersonAlias.Person,Occurrence.Schedule,AttendanceCode" )
+                    .AsNoTracking()
+                    .Where( a =>
+                        a.StartDateTime > dayStart &&
+                        !a.EndDateTime.HasValue &&
+                        a.Occurrence.LocationId.HasValue &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value &&
+                        a.Occurrence.ScheduleId.HasValue )
+                    .Where( a => matchingPeopleIds.Contains( a.PersonAlias.PersonId ) )
+                    .ToList()
+                    .Where( a => a.IsCurrentlyCheckedIn )
+                    .ToList();
+
+                foreach ( var personId in attendees
+                    .OrderBy( a => a.PersonAlias.Person.NickName )
+                    .ThenBy( a => a.PersonAlias.Person.LastName )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .Distinct() )
+                {
+                    var matchingAttendeesAttendanceRecords = attendees
+                        .Where( a => a.PersonAlias.PersonId == personId )
+                        .ToList();
+
+                    people.Add( new ReprintLabelPersonResult( matchingAttendeesAttendanceRecords ) );
+                }
+            }
+
+            return people;
+        }
+
+        /// <summary>
+        /// Handles when a person is selected from the re-print label button.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        protected void rReprintLabelPersonResults_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            // Get the person Id
+            int personId = Int32.Parse( e.CommandArgument.ToString() );
+            hfSelectedPersonId.Value = personId.ToStringSafe();
+
+            // Get the attendanceIds
+            var hfAttendanceIds = e.Item.FindControl( "hfAttendanceIds" ) as HiddenField;
+            if ( hfAttendanceIds == null )
+            {
+                return;
+            }
+
+            // save the attendance ids for later use.
+            hfSelectedAttendanceIds.Value = hfAttendanceIds.Value;
+
+            // hide the reprint person select results, then show the selected labels to pick from
+            pnlReprintLabels.Visible = false;
+            pnlManager.Visible = false;
+            pnlReprintSearchPersonResults.Visible = false;
+            pnlReprintSelectedPersonLabels.Visible = true;
+
+            // bind all possible tags to reprint
+            var possibleLabels = ZebraPrint.GetLabelTypesForPerson( personId, hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList() );
+            if ( possibleLabels.Count != 0 )
+            {
+                lbReprintSelectLabelTypes.Visible = true;
+            }
+            else
+            {
+                lbReprintSelectLabelTypes.Visible = false;
+                maNoLabelsFound.Show( "No labels were found for that selection.", ModalAlertType.Alert );
+            }
+
+            rReprintLabelTypeSelection.DataSource = possibleLabels;
+            rReprintLabelTypeSelection.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSelection control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rReprintLabelTypeSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var pnlLabel = e.Item.FindControl( "pnlLabel" ) as Panel;
+
+                if ( pnlLabel != null )
+                {
+                    pnlLabel.CssClass = "col-md-10 col-sm-10 col-xs-8";
+
+                    var lLabelButton = e.Item.FindControl( "lLabelButton" ) as Literal;
+                    var labelType = e.Item.DataItem as ReprintLabelCheckInLabelType;
+
+                    if ( lLabelButton != null && labelType != null )
+                    {
+                        lLabelButton.Text = string.Format( "{0}", labelType.Name );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reprint the selected labels
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void lbReprintSelectLabelTypes_Click( object sender, EventArgs e )
+        {
+            var fileGuids = hfLabelFileGuids.Value.SplitDelimitedValues().AsGuidList();
+            var personId = hfSelectedPersonId.ValueAsInt();
+            var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request );
+
+            pnlReprintResults.Visible = true;
+            pnlReprintSelectedPersonLabels.Visible = false;
+
+            hfLabelFileGuids.Value = string.Empty;
+            hfSelectedPersonId.Value = string.Empty;
+
+            lReprintResultsHtml.Text = messages.JoinStrings( "<br>" );
+        }
+
+        /// <summary>
+        /// When label re-printing is done, this button would be pressed
+        /// so the person is returned back to the device manager screen.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void lbManagerReprintDone_Click( object sender, EventArgs e )
+        {
+            // Hide our panels and show the Manager panel.
+            HideReprintPanels();
+            pnlManager.Visible = true;
+        }
+
+        /// <summary>
+        /// Gets the icon CSS class for the checkbox for either state.
+        /// </summary>
+        /// <param name="selected"></param>
+        /// <returns></returns>
+        protected string GetCheckboxClass( bool selected )
+        {
+            return selected ? "fa fa-check-square" : "fa fa-square-o";
+        }
+
+        /// <summary>
+        /// Gets the icon CSS class that represents the 'selected' or non-selected state.
+        /// </summary>
+        /// <param name="selected"></param>
+        /// <returns></returns>
+        protected string GetSelectedClass( bool selected )
+        {
+            return selected ? "active" : "";
+        }
+
+        /// <summary>
+        /// Returns a list of people who belong to a family that matches the given number
+        /// </summary>
+        /// <param name="numericPhone"></param>
+        /// <returns></returns>
+        private IQueryable<int> PhoneSearch( string numericPhone )
+        {
+            var rockContext = new RockContext();
+
+            var personService = new PersonService( rockContext );
+            var memberService = new GroupMemberService( rockContext );
+            var groupService = new GroupService( rockContext );
+
+            int personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            int familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
+            var dvInactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+
+            IQueryable<int> personIds = null;
+
+            var phoneQry = new PhoneNumberService( rockContext ).Queryable().AsNoTracking();
+
+            phoneQry = phoneQry.Where( o => o.Number.Contains( numericPhone ) );
+
+            // Similar query used by the FindFamilies check-in workflow action
+            var tmpQry = phoneQry
+                .Join( personService.Queryable().AsNoTracking(),
+                    o => new { PersonId = o.PersonId, IsDeceased = false, RecordTypeValueId = personRecordTypeId },
+                    p => new { PersonId = p.Id, IsDeceased = p.IsDeceased, RecordTypeValueId = p.RecordTypeValueId.Value },
+                    ( pn, p ) => new { Person = p, PhoneNumber = pn } )
+                .Join( memberService.Queryable().AsNoTracking(),
+                pn => pn.Person.Id,
+                m => m.PersonId,
+                ( o, m ) => new { PersonNumber = o.PhoneNumber, GroupMember = m } );
+
+            personIds = groupService.Queryable()
+                .Where( g => tmpQry.Any( o => o.GroupMember.GroupId == g.Id ) && g.GroupTypeId == familyGroupTypeId )
+                .SelectMany( g => g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ) )
+                .Select( p => p.PersonId )
+                .Distinct();
+
+            return personIds;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnOverride control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnOverride_Click( object sender, EventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "Override", "True" );
+            NavigateToNextPage( queryParams );
+        }
+
         /// <summary>
         /// Handles the Click event of the btnBack control.
         /// </summary>
@@ -419,6 +817,7 @@ namespace RockWeb.Blocks.CheckIn
             RefreshView();
             ManagerLoggedIn = false;
             pnlManager.Visible = false;
+            HideReprintPanels();
         }
 
         /// <summary>
@@ -428,7 +827,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnScheduleLocations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "ScheduledLocationsPage" );
+            NavigateToLinkedPage( AttributeKey.ScheduledLocationsPage );
         }
 
         /// <summary>
@@ -477,10 +876,26 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Shows the management details.
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            btnBack_Click( sender, e );
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Shows the management screen details.
         /// </summary>
         private void ShowManagementDetails()
         {
+            // Only show Schedule Locations if setting is not empty
+            btnScheduleLocations.Visible = GetAttributeValue( AttributeKey.ScheduledLocationsPage ).IsNotNullOrWhiteSpace();
+
+            btnReprintLabels.Visible = GetAttributeValue( AttributeKey.AllowLabelReprinting ).AsBoolean();
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = true;
             btnManager.Visible = false;
@@ -492,6 +907,9 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindManagerLocationsGrid()
         {
+            // Do this only once for efficiency sake vs in the repeater's ItemDataBound
+            hfAllowOpenClose.Value = GetAttributeValue( AttributeKey.AllowOpeningAndClosingRooms );
+
             var rockContext = new RockContext();
             if ( this.CurrentKioskId.HasValue )
             {
@@ -553,23 +971,31 @@ namespace RockWeb.Blocks.CheckIn
             object locationDataItem = e.Item.DataItem;
             if ( locationDataItem != null )
             {
-                var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
-                var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
-                var isActive = ( bool ) locationDataItem.GetPropertyValue( "IsActive" );
-
-                if ( isActive )
+                if ( hfAllowOpenClose.Value.AsBoolean() )
                 {
-                    lbClose.RemoveCssClass( "btn-danger" );
-                    lbClose.RemoveCssClass( "active" );
-                    lbOpen.AddCssClass( "btn-success" );
-                    lbOpen.AddCssClass( "active" );
+                    var lbOpen = e.Item.FindControl( "lbOpen" ) as LinkButton;
+                    var lbClose = e.Item.FindControl( "lbClose" ) as LinkButton;
+                    var isActive = ( bool ) locationDataItem.GetPropertyValue( "IsActive" );
+
+                    if ( isActive )
+                    {
+                        lbClose.RemoveCssClass( "btn-danger" );
+                        lbClose.RemoveCssClass( "active" );
+                        lbOpen.AddCssClass( "btn-success" );
+                        lbOpen.AddCssClass( "active" );
+                    }
+                    else
+                    {
+                        lbOpen.RemoveCssClass( "btn-success" );
+                        lbOpen.RemoveCssClass( "active" );
+                        lbClose.AddCssClass( "btn-danger" );
+                        lbClose.AddCssClass( "active" );
+                    }
                 }
                 else
                 {
-                    lbOpen.RemoveCssClass( "btn-success" );
-                    lbOpen.RemoveCssClass( "active" );
-                    lbClose.AddCssClass( "btn-danger" );
-                    lbClose.AddCssClass( "active" );
+                    var divLocationToggle = e.Item.FindControl( "divLocationToggle" ) as HtmlGenericControl;
+                    divLocationToggle.Visible = false;
                 }
 
                 var lLocationName = e.Item.FindControl( "lLocationName" ) as Literal;
@@ -580,15 +1006,6 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        /// <summary>
-        /// Handles the Click event of the lbCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            btnBack_Click( sender, e );
-        }
-
+        #endregion
     }
 }

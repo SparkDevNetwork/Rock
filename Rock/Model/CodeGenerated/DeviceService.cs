@@ -111,6 +111,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IPAddress = source.IPAddress;
+            target.IsActive = source.IsActive;
             target.LocationId = source.LocationId;
             target.Name = source.Name;
             target.PrinterDeviceId = source.PrinterDeviceId;

@@ -62,6 +62,9 @@ namespace Rock.Client
         public string ComponentListTemplate { get; set; }
 
         /// <summary />
+        public int? EngagementStrength { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -77,7 +80,7 @@ namespace Rock.Client
         public string InteractionListTemplate { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -141,6 +144,7 @@ namespace Rock.Client
             this.ComponentDetailTemplate = source.ComponentDetailTemplate;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ComponentListTemplate = source.ComponentListTemplate;
+            this.EngagementStrength = source.EngagementStrength;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionDetailTemplate = source.InteractionDetailTemplate;

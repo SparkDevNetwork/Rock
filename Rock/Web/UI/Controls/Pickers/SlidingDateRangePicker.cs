@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering
+    public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -294,16 +294,19 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            if ( SelectedDateRangeChanged != null )
-            {
-                SelectedDateRangeChanged( this, e );
-            }
+            SelectedDateRangeChanged?.Invoke( this, e );
+            ValueChanged?.Invoke( this, e );
         }
 
         /// <summary>
         /// Occurs when [selected date range changed].
         /// </summary>
         public event EventHandler SelectedDateRangeChanged;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
 
         /// <summary>
         /// Populates the drop downs.
@@ -487,7 +490,7 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( isLast || isPrevious ) ? "block" : "none";
             _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( isDateRange ) ? "block" : "none";
 
-            bool needsAutoPostBack = SelectedDateRangeChanged != null;
+            bool needsAutoPostBack = SelectedDateRangeChanged != null || ValueChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;

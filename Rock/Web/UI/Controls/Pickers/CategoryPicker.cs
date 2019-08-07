@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,6 +37,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
             this.IconCssClass = "fa fa-folder-open";
+            this.AllowCategorySelection = true;
             base.OnInit( e );
         }
 

@@ -101,9 +101,8 @@ namespace Rock.Model
                     // Attempt to load the control
                     try
                     {
-                        System.Web.UI.Control control = page.LoadControl( path );
-                        var rockBlock = control as Web.UI.RockBlock;
-                        if ( rockBlock != null )
+                        var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( path );
+                        if ( blockCompiledType != null )
                         {
                             using ( var rockContext = new RockContext() )
                             {
@@ -118,7 +117,7 @@ namespace Rock.Model
                                     blockTypeService.Add( blockType );
                                 }
 
-                                Type controlType = rockBlock.GetType();
+                                Type controlType = blockCompiledType;
 
                                 // Update Name, Category, and Description based on block's attribute definitions
                                 blockType.Name = Reflection.GetDisplayName( controlType ) ?? string.Empty;
@@ -152,6 +151,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
+                        System.Diagnostics.Debug.WriteLine( $"RegisterBlockTypes failed for {path} with exception: {ex.Message}" );
                         ExceptionLogService.LogException( new Exception( string.Format("Problem processing block with path '{0}'.", path ), ex ), null );
                     }
                 }
@@ -203,6 +203,25 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Deletes the specified item.  Will try to determine current person
+        /// alias from HttpContext.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( BlockType item )
+        {
+            // block has a cascading delete on BlockType, but lets delete it manually so that the BlockCache gets updated correctly
+            var blockService = new BlockService( this.Context as RockContext );
+            var blocks = blockService.Queryable().Where( a => a.BlockTypeId == item.Id ).ToList();
+            foreach ( var block in blocks )
+            {
+                blockService.Delete( block );
+            }
+
+            return base.Delete( item );
         }
     }
 }

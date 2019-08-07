@@ -62,7 +62,7 @@ namespace Rock.Client
         public int? BatchId { get; set; }
 
         /// <summary />
-        public int Count { get; set; }
+        public int Count { get; set; } = 1;
 
         /// <summary />
         public string CreditCardType { get; set; }

@@ -23,7 +23,7 @@
                 $dateTimePickerInputGroup.datepicker({
                     format: dateFormat,
                     autoclose: true,
-                    todayBtn: true,
+                    todayBtn: "linked",
                     startView: options.startView || 'month',
                     todayHighlight: options.todayHighlight || true
                 });

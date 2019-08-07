@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
@@ -582,7 +584,7 @@ namespace Rock.StatementGenerator.Rest
                         } )
                         .OrderBy( s => s.Order ) );
 
-                if ( options.PledgesAccountIds.Any() )
+                if ( options.PledgesAccountIds != null && options.PledgesAccountIds.Any() )
                 {
                     var pledgeList = financialPledgeQry
                                         .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value ) )
@@ -693,6 +695,85 @@ namespace Rock.StatementGenerator.Rest
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Render and return a giving statement for the specified person.
+        /// </summary>
+        /// <param name="personId">The person that made the contributions. That person's entire
+        /// giving group is included, which is typically the family.</param>
+        /// <param name="year">The contribution calendar year. ie 2019.  If not specified, the
+        /// current year is assumed.</param>
+        /// <param name="templateDefinedValueId">The defined value ID that represents the statement
+        /// lava. This defined value should be a part of the Statement Generator Lava Template defined
+        /// type. If no ID is specified, then the default defined value for the Statement Generator Lava
+        /// Template defined type is assumed.</param>
+        /// <returns>The rendered giving statement</returns>
+        [System.Web.Http.Route( "api/GivingStatement/{personId}" )]
+        [HttpGet]
+        [Authenticate, Secured]
+        public HttpResponseMessage RenderGivingStatement( int personId, [FromUri] int? year = null, [FromUri] int? templateDefinedValueId = null )
+        {
+            // Assume the current year if no year is specified
+            var currentYear = RockDateTime.Now.Year;
+            year = year ?? currentYear;
+            var isCurrentYear = year == currentYear;
+            var startDate = new DateTime( year.Value, 1, 1 );
+            var endDate = isCurrentYear ? RockDateTime.Now : new DateTime( year.Value + 1, 1, 1 );
+
+            // Load the statement lava defined type
+            var definedTypeCache = DefinedTypeCache.Get( SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE );
+            if ( definedTypeCache == null )
+            {
+                throw new Exception( "The defined type 'Statement Generator Lava Template' could not be found." );
+            }
+
+            // Get the specified defined value or the default if none is specified
+            var templateValues = definedTypeCache.DefinedValues;
+            var templateValue = templateDefinedValueId.HasValue ?
+                templateValues.FirstOrDefault( dv => dv.Id == templateDefinedValueId.Value ) :
+                templateValues.OrderBy( dv => dv.Order ).FirstOrDefault();
+
+            if ( templateValue == null )
+            {
+                throw new Exception( string.Format(
+                    "The defined value '{0}' within 'Statement Generator Lava Template' could not be found.",
+                    templateDefinedValueId.HasValue ?
+                        templateDefinedValueId.Value.ToString() :
+                        "default" ) );
+            }
+
+            // Declare the necessary services
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            // Get the family ID
+            var person = personService.Get( personId );
+            if ( person == null )
+            {
+                throw new Exception( string.Format( "The person with ID {0} could not be found", personId ) );
+            }
+            if (!person.PrimaryFamilyId.HasValue)
+            {
+                throw new Exception( string.Format( "The person with ID {0} does not have a primary family ID", personId ) );
+            }
+
+            // Build the options for the generator
+            var options = new StatementGeneratorOptions
+            {
+                EndDate = endDate,                
+                LayoutDefinedValueGuid = templateValue.Guid,
+                StartDate = startDate
+            };
+
+            // Get the generator result
+            var result = GetStatementGeneratorRecipientResult( person.PrimaryFamilyId.Value, options );
+
+            // Render the statement as HTML and send back to the user
+            var response = new HttpResponseMessage();
+            response.Content = new StringContent( result.Html );
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue( "text/html" );
+            return response;
         }
 
         /// <summary>

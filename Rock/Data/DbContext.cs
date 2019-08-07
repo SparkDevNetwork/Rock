@@ -19,18 +19,17 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
-using Z.EntityFramework.Plus;
 
 using Rock.Model;
 using Rock.Transactions;
 using Rock.UniversalSearch;
-using Rock.Workflow;
+using Rock.Web.Cache;
+using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
-using System.Linq.Expressions;
-using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -763,6 +762,7 @@ namespace Rock.Data
         /// <summary>
         /// State of entity being changed during a context save
         /// </summary>
+        [System.Diagnostics.DebuggerDisplay( "{Entity.GetType()}:{Entity}, State:{State}" )]
         protected class ContextItem
         {
             /// <summary>

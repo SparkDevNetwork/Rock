@@ -56,7 +56,8 @@
 
         <div class="actions margin-t-xl">
             <Rock:BootstrapButton runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" DataLoadingText="Clearing..." ToolTip="Flushes all cached items from the Rock cache (e.g. Pages, BlockTypes, Blocks, Attributes, etc." />
-            <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link js-restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
+            <a href="#" Class="btn btn-link js-restart" title="Restarts the Application.">Restart Rock</a>
+            <asp:Button runat="server" ID="btnRestart" OnClick="btnRestart_Click" CssClass="hidden" />
         </div>
     </div>
 
@@ -136,7 +137,12 @@
         <div id="cache-objects" style="display:none">
             <p><asp:Literal ID="lCacheObjects" runat="server"></asp:Literal></p>
         </div>
-               
+
+        <div>
+            <h4>Threads</h4>
+            <asp:Literal ID="lThreads" runat="server"></asp:Literal>
+        </div>
+
         <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action margin-t-lg" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
             <i class="fa fa-download"></i> Download Diagnostics File
         </asp:LinkButton>
@@ -145,7 +151,12 @@
 
     <script>
         $(".js-restart").on("click", function () {
-            bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
+            Rock.dialogs.confirm('Are you sure you want to restart Rock?', function (result) {
+                if (result) {
+                    bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
+                    __doPostBack('<%= btnRestart.UniqueID %>', '');
+                }
+            });
         });
     </script>
 

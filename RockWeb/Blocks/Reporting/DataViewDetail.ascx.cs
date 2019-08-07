@@ -465,10 +465,10 @@ $(document).ready(function() {
         protected void lbCreateReport_Click( object sender, EventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "reportId", "0" );
+            queryParams.Add( "ReportId", "0" );
             if ( hfDataViewId.ValueAsInt() != default( int ) )
             {
-                queryParams.Add( "dataViewId", hfDataViewId.ValueAsInt().ToString() );
+                queryParams.Add( "DataViewId", hfDataViewId.ValueAsInt().ToString() );
             }
             NavigateToLinkedPage( "ReportDetailPage", queryParams );
         }

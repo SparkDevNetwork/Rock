@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
-            SetAttributeValue( "MapStyle", ddlMapStyle.SelectedValue );
+            SetAttributeValue( "MapStyle", dvpMapStyle.SelectedValue );
             SetAttributeValue( "MapHeight", nbMapHeight.Text );
             SetAttributeValue( "MarkerPrecision", nbMarkerPrecision.Text );
             SetAttributeValue( "ShowFence", cbShowFence.Checked.ToString() );
@@ -454,6 +454,10 @@ namespace RockWeb.Blocks.Groups
             {
                 rblFilterDOW.SetValue( "Days" );
             }
+            else
+            {
+                rblFilterDOW.SelectedIndex = 0;
+            }
 
             cbFilterTimeOfDay.Checked = scheduleFilters.Contains( "Time" );
 
@@ -471,8 +475,8 @@ namespace RockWeb.Blocks.Groups
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
 
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
-            ddlMapStyle.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
-            ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
+            dvpMapStyle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ).Id;
+            dvpMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
             nbMapHeight.Text = GetAttributeValue( "MapHeight" );
             nbMarkerPrecision.Text = GetAttributeValue( "MarkerPrecision" );
             cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();

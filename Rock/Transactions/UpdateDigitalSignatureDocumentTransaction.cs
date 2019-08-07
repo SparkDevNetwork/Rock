@@ -15,11 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Transactions
 {

@@ -18,10 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
+
 using dotless.Core;
 using dotless.Core.configuration;
 using dotless.Core.Loggers;
@@ -175,6 +173,7 @@ namespace Rock.Web.UI
             {
                 compiledSuccessfully = false;
                 messages = ex.Message;
+                Rock.Model.ExceptionLogService.LogException( ex );
             }
 
             return compiledSuccessfully;
@@ -208,7 +207,7 @@ namespace Rock.Web.UI
                 if ( !themeSuccess )
                 {
                     allCompiled = false;
-                    messages += string.Format( "Failed to compile the theme {0} ({1}).", theme.Name, themeMessage );
+                    messages += string.Format( "Failed to compile the theme {0} ({1})." + Environment.NewLine, theme.Name, themeMessage );
                 }
             }
 

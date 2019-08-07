@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Administration
             dvpNcoaPersonDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             var inactiveRecordReasonDt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            dvpNcoaInactiveRecordReason.BindToDefinedType( inactiveRecordReasonDt, true );
+            dvpNcoaInactiveRecordReason.DefinedTypeId = inactiveRecordReasonDt.Id;
         }
 
         /// <summary>
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Administration
             var enabledLabel = string.Empty;
             if ( enabled )
             {
-                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-warning'>$</span>";
+                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-success'>$</span>";
             }
             else
             {

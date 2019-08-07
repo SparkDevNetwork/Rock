@@ -79,9 +79,9 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
         }
 
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Core
 
             location.Name = tbName.Text;
             location.IsActive = cbIsActive.Checked;
-            location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
+            location.LocationTypeValueId = dvpLocationType.SelectedValueAsId();
             if ( gpParentLocation != null && gpParentLocation.Location != null )
             {
                 location.ParentLocationId = gpParentLocation.Location.Id;
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Core
             {
                 location = new Location();
             }
-            location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
+            location.LocationTypeValueId = dvpLocationType.SelectedValueAsId();
 
             phAttributeEdits.Controls.Clear();
             location.LoadAttributes();
@@ -542,19 +542,19 @@ namespace RockWeb.Blocks.Core
             var locationService = new LocationService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            ddlLocationType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ), true );
+            dvpLocationType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ).Id;
 
             gpParentLocation.Location = location.ParentLocation ?? locationService.Get( location.ParentLocationId ?? 0 );
 
             // LocationType depends on Selected ParentLocation
-            if ( location.Id == 0 && ddlLocationType.Items.Count > 1 )
+            if ( location.Id == 0 && dvpLocationType.Items.Count > 1 )
             {
                 // if this is a new location 
-                ddlLocationType.SelectedIndex = 0;
+                dvpLocationType.SelectedIndex = 0;
             }
             else
             {
-                ddlLocationType.SetValue( location.LocationTypeValueId );
+                dvpLocationType.SetValue( location.LocationTypeValueId );
             }
 
             location.LoadAttributes( rockContext );

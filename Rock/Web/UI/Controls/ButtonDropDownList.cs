@@ -15,9 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Linq;
-using System.Web.UI;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -27,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl, IRockControl
+    public class ButtonDropDownList : ListControl, IRockControl, INamingContainer
     {
         #region IRockControl implementation
 
@@ -222,9 +223,9 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private HtmlGenericControl _divControl;
+        private HtmlGenericControl _childControlWrapper;
         private HtmlGenericControl _btnSelect;
-        private HiddenField _hfSelectedItemId;
+        private HiddenFieldWithClass _hfSelectedItemId;
         private HtmlGenericControl _listControl;
 
         #endregion
@@ -292,11 +293,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 return _hfSelectedItemId.Value;
             }
 
             set
             {
+                EnsureChildControls();
                 _hfSelectedItemId.Value = value;
                 base.SelectedValue = value;
             }
@@ -338,6 +341,7 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
+            EnsureChildControls();
         }
 
         /// <summary>
@@ -372,56 +376,15 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+        }
 
-            EnsureChildControls();
-
-            var updatePanel = this.ParentUpdatePanel();
-            string postbackControlId;
-            if ( updatePanel != null )
-            {
-                postbackControlId = updatePanel.ClientID;
-            }
-            else
-            {
-                postbackControlId = this.ID;
-            }
-
-            // Caching $(this) into $el for efficiency purposes, and suppressing the default
-            // <a> click event to prevent the browser from appending '#' to the URL and 
-            // causing the window to jump to the top of the.
-            const string scriptFormat = @"
-            $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
-                e.preventDefault();
-                var $el = $(this);
-                var text =  $el.html();
-                var textHtml = $el.html() + "" <span class='fa fa-caret-down'></span>"";
-                var idvalue = $el.attr('data-id');
-                if ({2}) {{
-                    $('#ButtonDropDown_btn_{0}').html(textHtml);
-                }} else {{
-                    $el.closest('.dropdown-menu').find('.js-selectionicon').removeClass('fa-check');                    
-                    $el.find('.js-selectionicon').addClass('fa-check');
-                }}
-                $('#hfSelectedItemId_{0}').val(idvalue);
-                {1}
-            }});";
-
-            string postbackScript = string.Empty;
-            if ( SelectionChanged != null )
-            {
-                postbackScript = $@"
-                    var postbackArg = '{this.ID}=' + idvalue;
-                    window.location = ""javascript:__doPostBack('{postbackControlId}', '"" +  postbackArg + ""')"";";
-            }
-
-            string script = string.Format(
-                scriptFormat,
-                this.ID, // {0}
-                postbackScript, // {1}
-                ( this.SelectionStyle == ButtonSelectionStyle.Title ).Bit() // {2}
-            );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "buttondropdownlist-script-" + this.ID, script, true );
+        /// <summary>
+        /// Registers the JavaScript.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            string script = $"Rock.controls.buttonDropDownList.initialize({{ controlId: '{this.ClientID}' }});";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "person_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -433,29 +396,27 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            _divControl = new HtmlGenericControl( "div" );
-            _divControl.Attributes["class"] = "btn-group " + this.FormGroupCssClass;
-            _divControl.ClientIDMode = ClientIDMode.Static;
-            _divControl.ID = string.Format( "ButtonDropDown_{0}", this.ID );
+            _childControlWrapper = new HtmlGenericControl( "div" );
 
-            _hfSelectedItemId = new HiddenField();
-            _hfSelectedItemId.ClientIDMode = ClientIDMode.Static;
-            _hfSelectedItemId.ID = string.Format( "hfSelectedItemId_{0}", this.ID );
+            _hfSelectedItemId = new HiddenFieldWithClass();
+            _hfSelectedItemId.CssClass = "js-buttondropdown-selected-id";
+            _hfSelectedItemId.ID = "_hfSelectedItemId";
+
 
             _btnSelect = new HtmlGenericControl( "button" );
-            _divControl.Controls.Add( _btnSelect );
-            _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
+            _childControlWrapper.Controls.Add( _btnSelect );
+            _btnSelect.ID = "_btnSelect";
             _btnSelect.Attributes["type"] = "button";
-            _btnSelect.Attributes["class"] = "btn btn-default dropdown-toggle " + this.CssClass;
+            _btnSelect.Attributes["class"] = "btn btn-default dropdown-toggle js-buttondropdown-btn-select " + this.CssClass;
             _btnSelect.Attributes["data-toggle"] = "dropdown";
 
             _listControl = new HtmlGenericControl( "ul" );
-            _divControl.Controls.Add( _listControl );
+            _childControlWrapper.Controls.Add( _listControl );
             _listControl.Attributes["class"] = "dropdown-menu";
 
-            Controls.Add( _divControl );
-            Controls.Add( _hfSelectedItemId );
+            _childControlWrapper.Controls.Add( _hfSelectedItemId );
+
+            Controls.Add( _childControlWrapper );
 
             RequiredFieldValidator.InitialValue = string.Empty;
             RequiredFieldValidator.ControlToValidate = _hfSelectedItemId.ID;
@@ -487,9 +448,28 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "class", "btn-group js-button-dropdownlist " + this.FormGroupCssClass );
+            writer.AddAttribute( "data-checkmarks-enabled", ( this.SelectionStyle == ButtonSelectionStyle.Checkmark ).Bit().ToString() );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             string selectedText = ( ( this.SelectionStyle == ButtonSelectionStyle.Title ) && SelectedItem != null ) ? SelectedItem.Text : Title;
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='fa fa-caret-down'></span>", selectedText ) } );
+
+            // only add a postback if there is a SelectionChanged event or if AutoPostBack is set to true
+            bool doPostBack = ( SelectionChanged != null || AutoPostBack == true );
+            
+            var updatePanel = this.ParentUpdatePanel();
+            string postbackControlId;
+            if ( updatePanel != null )
+            {
+                postbackControlId = updatePanel.ClientID;
+            }
+            else
+            {
+                postbackControlId = this.ID;
+            }
 
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
@@ -499,21 +479,37 @@ namespace Rock.Web.UI.Controls
                     faChecked = SelectedValue == item.Value ? "<i class='js-selectionicon fa fa-fw fa-check'></i>" : "<i class='js-selectionicon fa fa-fw'></i>";
                 }
 
-                string html = string.Format(
-                        "<li><a href='#' data-id='{0}'>{2} {1}</a></li>",
-                        item.Value,
-                        item.Text,
-                        faChecked );
+                StringBuilder htmlBuilder = new StringBuilder();
+                htmlBuilder.Append( "<li><a " );
+                if ( doPostBack )
+                {
+                    htmlBuilder.Append( $"data-postback-script=\"javascript:__doPostBack('{postbackControlId}', '{this.ID}={item.Value}')\" " );
+                }
 
-                _listControl.Controls.Add( new LiteralControl { Text = html } );
+                htmlBuilder.Append( $" data-id='{item.Value}'>" );
+                if ( faChecked.IsNotNullOrWhiteSpace() )
+                {
+                    htmlBuilder.Append( $"{faChecked} " );
+                }
+
+                htmlBuilder.Append( $"{item.Text}</a></li>" );
+
+                _listControl.Controls.Add( new LiteralControl { Text = htmlBuilder.ToString() } );
             }
-            _divControl.RenderControl( writer );
 
-            _hfSelectedItemId.RenderControl( writer );
+            _childControlWrapper.RenderControl( writer );
 
             if ( renderLabel )
             {
                 writer.RenderEndTag();
+            }
+
+            // btn-group js-button-dropdownlist
+            writer.RenderEndTag();
+
+            if ( this.Enabled )
+            {
+                RegisterJavaScript();
             }
         }
 
@@ -521,5 +517,21 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [selection changed].
         /// </summary>
         public event EventHandler SelectionChanged;
+
+        /// <summary>
+        /// Occurs when the selection from the list control changes between posts to the server.
+        /// </summary>
+        public new event EventHandler SelectedIndexChanged
+        {
+            add
+            {
+                SelectionChanged += value;
+            }
+
+            remove
+            {
+                SelectionChanged -= value;
+            }
+        }
     }
 }

@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Web.Cache;
-using Rock.Security;
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Extension
 {
@@ -175,14 +175,14 @@ namespace Rock.Extension
                 int order = 0;
 
                 string value = GetAttributeValue( "Order" );
-                if ( Int32.TryParse( value, out order ) )
+                if ( int.TryParse( value, out order ) )
                 {
                     return order;
                 }
 
                 if (Attributes.ContainsKey("Order"))
                 {
-                    if ( Int32.TryParse( Attributes["Order"].DefaultValue, out order ) )
+                    if ( int.TryParse( Attributes["Order"].DefaultValue, out order ) )
                     {
                         return order;
                     }

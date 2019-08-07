@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -657,10 +658,7 @@ namespace Rock.Utility
                             }
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 
@@ -718,10 +716,7 @@ namespace Rock.Utility
                             return isCloseToCampus;
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 

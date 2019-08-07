@@ -1,4 +1,4 @@
-{%- if Page.DisplayChildPages == 'true' and Page.Pages != empty -%}
+{%- if Page.DisplayChildPages and Page.Pages != empty -%}
     <ul class="nav nav-stacked navbar-side">
         <li class="navbar-logo">
         {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
@@ -10,21 +10,21 @@
         {%- endif -%}
         </li>
 		{%- for childPage in Page.Pages -%}
-            {%- if childPage.IsParentOfCurrent == 'true' -%}
-				<li class="current {% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}has-children{% endif %}">
+            {%- if childPage.IsParentOfCurrent -%}
+				<li class="current {% if childPage.DisplayChildPages and childPage.Pages != empty %}has-children{% endif %}">
 			{%- else -%}
-				<li {% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}class="has-children"{% endif %}>
+				<li {% if childPage.DisplayChildPages and childPage.Pages != empty %}class="has-children"{% endif %}>
 			{%- endif -%}
 				<i class="{{ childPage.IconCssClass }}"></i>
 
-				{%- if childPage.DisplayChildPages == 'true' and childPage.Pages != empty -%}
+				{%- if childPage.DisplayChildPages and childPage.Pages != empty -%}
                     <ul class="nav nav-childpages">
                         <li class="title">{{ childPage.Title }}</li>
 						{%- for grandchildPage in childPage.Pages -%}
                             <li class="header">{{ grandchildPage.Title }}</li>
-                            {%- if grandchildPage.DisplayChildPages == 'true' -%}
+                            {%- if grandchildPage.DisplayChildPages -%}
                                 {%- for greatgrandchildPage in grandchildPage.Pages -%}
-                                    {%- if greatgrandchildPage.IsParentOfCurrent == 'true' or greatgrandchildPage.Current == 'true' -%}
+                                    {%- if greatgrandchildPage.IsParentOfCurrent or greatgrandchildPage.Current -%}
                                         <li class="current">
                                     {%- else -%}
                                         <li>

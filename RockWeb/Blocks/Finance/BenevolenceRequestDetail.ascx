@@ -29,7 +29,7 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValue" />
+                            <Rock:DefinedValuePicker ID="dvpRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValue" />
                         </div>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                         <Rock:DataTextBox ID="dtbLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="LastName" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ConnectionStatusValue" />
+                        <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ConnectionStatusValue" />
                     </div>
                 </div>
 
@@ -129,7 +129,7 @@
                 <asp:HiddenField ID="hfInfoGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
+                        <Rock:DefinedValuePicker ID="dvpResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
                     </div>
                     <div class="col-md-6">
                         <Rock:CurrencyBox ID="dtbAmount" runat="server" Label="Amount" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="Amount" />

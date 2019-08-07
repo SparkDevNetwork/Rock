@@ -52,8 +52,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
+            dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
@@ -159,13 +159,13 @@ namespace RockWeb.Blocks.Finance
             business.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // Record Status
-            business.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt(); ;
+            business.RecordStatusValueId = dvpRecordStatus.SelectedValueAsInt(); ;
 
             // Record Status Reason
             int? newRecordStatusReasonId = null;
             if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
             {
-                newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+                newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
             }
             business.RecordStatusReasonValueId = newRecordStatusReasonId;
 
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
         /// <summary>
@@ -366,82 +366,11 @@ namespace RockWeb.Blocks.Finance
             var groupMemberService = new GroupMemberService( rockContext );
             var business = personService.Get( int.Parse( hfBusinessId.Value ) );
             int? contactId = ppContact.PersonId;
+            
             if ( contactId.HasValue && contactId.Value > 0 )
             {
-                // Get the relationship roles to use
-                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-                int businessContactRoleId = knownRelationshipGroupType.Roles
-                    .Where( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                int businessRoleId = knownRelationshipGroupType.Roles
-                    .Where( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                int ownerRoleId = knownRelationshipGroupType.Roles
-                    .Where( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-
-                if ( ownerRoleId > 0 && businessContactRoleId > 0 && businessRoleId > 0 )
-                {
-                    // get the known relationship group of the business contact
-                    // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
-                    var contactKnownRelationshipGroup = groupMemberService.Queryable()
-                        .Where( g =>
-                            g.GroupRoleId == ownerRoleId &&
-                            g.PersonId == contactId.Value )
-                        .Select( g => g.Group )
-                        .FirstOrDefault();
-                    if ( contactKnownRelationshipGroup == null )
-                    {
-                        // In some cases person may not yet have a know relationship group type
-                        contactKnownRelationshipGroup = new Group();
-                        groupService.Add( contactKnownRelationshipGroup );
-                        contactKnownRelationshipGroup.Name = "Known Relationship";
-                        contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                        var ownerMember = new GroupMember();
-                        ownerMember.PersonId = contactId.Value;
-                        ownerMember.GroupRoleId = ownerRoleId;
-                        contactKnownRelationshipGroup.Members.Add( ownerMember );
-                    }
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = int.Parse( hfBusinessId.Value );
-                    groupMember.GroupRoleId = businessRoleId;
-                    contactKnownRelationshipGroup.Members.Add( groupMember );
-
-                    // get the known relationship group of the business
-                    // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
-                    var businessKnownRelationshipGroup = groupMemberService.Queryable()
-                        .Where( g =>
-                            g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                            g.PersonId == business.Id )
-                        .Select( g => g.Group )
-                        .FirstOrDefault();
-                    if ( businessKnownRelationshipGroup == null )
-                    {
-                        // In some cases business may not yet have a know relationship group type
-                        businessKnownRelationshipGroup = new Group();
-                        groupService.Add( businessKnownRelationshipGroup );
-                        businessKnownRelationshipGroup.Name = "Known Relationship";
-                        businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-
-                        var ownerMember = new GroupMember();
-                        ownerMember.PersonId = int.Parse( hfBusinessId.Value );
-                        ownerMember.GroupRoleId = ownerRoleId;
-                        businessKnownRelationshipGroup.Members.Add( ownerMember );
-                    }
-                    var businessGroupMember = new GroupMember();
-                    businessGroupMember.PersonId = contactId.Value;
-                    businessGroupMember.GroupRoleId = businessContactRoleId;
-                    businessKnownRelationshipGroup.Members.Add( businessGroupMember );
-
-                    rockContext.SaveChanges();
-                }
+                personService.AddContactToBusiness( business.Id, contactId.Value );
+                rockContext.SaveChanges();
             }
 
             mdAddContact.Hide();
@@ -678,9 +607,9 @@ namespace RockWeb.Blocks.Finance
                 tbEmail.Text = business.Email;
                 rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
 
-                ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
-                ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
-                ddlReason.Visible = business.RecordStatusReasonValueId.HasValue &&
+                dvpRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
+                dvpReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+                dvpReason.Visible = business.RecordStatusReasonValueId.HasValue &&
                     business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             }
             else

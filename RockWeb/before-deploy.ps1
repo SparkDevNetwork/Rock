@@ -75,7 +75,9 @@ Write-Host "==========================================";
 $InProgressBackupLocation = "$($RootLocation.TrimEnd("/\\")).backup.deploy-in-progress";
 if (Test-Path $InProgressBackupLocation) {
     Write-Host "Detected a deployment backup, assuming old deployment failed and restoring...";
-    Remove-Item -Recurse -Force $RootLocation\*;
+    Remove-Item -Recurse -Force $RootLocation\* | Out-Null;
+    Remove-Item -Recurse -Force $RootLocation\* | Out-Null;
+    Remove-Item -Recurse -Force $RootLocation\* | Out-Null;
     Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $InProgressBackupLocation $RootLocation;
 }
 else {
@@ -106,7 +108,7 @@ Set-Content (Join-Path $RootLocation "web.config") @'
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <system.web>
-        <httpRuntime waitChangeNotification="300" maxWaitChangeNotification="300"/>
+        <httpRuntime waitChangeNotification="3000" maxWaitChangeNotification="3000"/>
     </system.web>
     <system.webServer>
         <modules runAllManagedModulesForAllRequests="true" />
@@ -114,7 +116,7 @@ Set-Content (Join-Path $RootLocation "web.config") @'
 </configuration>
 '@
 
-Invoke-WebRequest "https://newpointe.org" | Out-Null
+Invoke-WebRequest "http://localhost" | Out-Null
 
 
 # 3. Save server-specific files like static files, logs, plugin packages, and caches

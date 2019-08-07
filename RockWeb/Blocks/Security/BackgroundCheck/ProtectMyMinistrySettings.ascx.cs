@@ -296,7 +296,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     definedValue.LoadAttributes( rockContext );
 
                     Guid? dvJurisdicationCodeGuid = null;
-                    int? dvJurisdictionCodeId = ddlMVRJurisdiction.SelectedValueAsInt();
+                    int? dvJurisdictionCodeId = dvpMVRJurisdiction.SelectedValueAsInt();
                     if ( dvJurisdictionCodeId.HasValue && dvJurisdictionCodeId.Value > 0 )
                     {
                         var dvJurisdicationCode = DefinedValueCache.Get( dvJurisdictionCodeId.Value );
@@ -427,12 +427,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             using ( var rockContext = new RockContext() )
             {
-                var mvrJurisdictionCodes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
-                if ( mvrJurisdictionCodes != null )
-                {
-                    ddlMVRJurisdiction.BindToDefinedType( mvrJurisdictionCodes, true, true );
-                }
-
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
@@ -583,6 +577,12 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="definedValueId">The defined value identifier.</param>
         public void ShowPackageEdit( int definedValueId )
         {
+            var mvrJurisdicationCodes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
+            if ( mvrJurisdicationCodes != null )
+            {
+                dvpMVRJurisdiction.DefinedTypeId = mvrJurisdicationCodes.Id;
+            }
+
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
             if ( definedType != null )
             {
@@ -610,14 +610,14 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 definedValue.LoadAttributes();
 
-                ddlMVRJurisdiction.SetValue( 0 );
+                dvpMVRJurisdiction.SetValue( 0 );
                 Guid? mvrJurisdictionGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                 if ( mvrJurisdictionGuid.HasValue )
                 {
                     var mvrJurisdiction = DefinedValueCache.Get( mvrJurisdictionGuid.Value );
                     if ( mvrJurisdiction != null )
                     {
-                        ddlMVRJurisdiction.SetValue( mvrJurisdiction.Id );
+                        dvpMVRJurisdiction.SetValue( mvrJurisdiction.Id );
                     }
                 }
 

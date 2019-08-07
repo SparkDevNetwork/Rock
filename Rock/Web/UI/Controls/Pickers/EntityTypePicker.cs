@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls

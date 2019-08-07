@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:Toggle runat=server></{0}:Toggle>" )]
-    public class Toggle : CompositeControl, IRockControl
+    public class Toggle : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -409,7 +409,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( CheckedChanged != null )
+            if ( CheckedChanged != null || ValueChanged != null )
             {
                 EnsureChildControls();
                 _btnOn.ServerClick += btnOnOff_ServerClick;
@@ -462,6 +462,8 @@ namespace Rock.Web.UI.Controls
                 this.Checked = sender == _btnOn;
                 CheckedChanged( this, new EventArgs() );
             }
+
+            ValueChanged?.Invoke( this, e );
         }
 
         /// <summary>
@@ -540,5 +542,10 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [checked changed].
         /// </summary>
         public event EventHandler CheckedChanged;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
     }
 }

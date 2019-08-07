@@ -699,6 +699,7 @@ function New-MigrationsRunner($ProjectName, $StartUpProjectName, $ContextProject
     $startUpProject = Get-MigrationsStartUpProject $StartUpProjectName $ProjectName
     
     # Special Rock Customization to EF Powershell scripts
+	# Run Get-EntityFrameworkInstallPath before to prevent waiting a long time when the wrong default project is selected
 	# Don't build the startUpProject (RockWeb), just build Rock.csproj instead
 	# Build-Project $startUpProject
 	$rockProject = Get-SingleProject('Rock');
@@ -708,6 +709,8 @@ function New-MigrationsRunner($ProjectName, $StartUpProjectName, $ContextProject
 	}
 
     $project = Get-MigrationsProject $ProjectName
+	$installPath = Get-EntityFrameworkInstallPath $project
+	
     Build-Project $project
 
     $contextProject = $project
@@ -716,8 +719,7 @@ function New-MigrationsRunner($ProjectName, $StartUpProjectName, $ContextProject
         $contextProject = Get-SingleProject $ContextProjectName
         Build-Project $contextProject
     }
-
-    $installPath = Get-EntityFrameworkInstallPath $project
+    
     $toolsPath = Join-Path $installPath tools
 
     $info = New-AppDomainSetup $project $installPath

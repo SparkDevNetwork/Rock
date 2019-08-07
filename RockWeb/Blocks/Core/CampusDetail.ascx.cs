@@ -20,7 +20,6 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -51,26 +50,6 @@ namespace RockWeb.Blocks.Core
                 LoadDropDowns();
                 ShowDetail( PageParameter( "campusId" ).AsInteger() );
             }
-            else
-            {
-                if ( pnlDetails.Visible )
-                {
-                    var rockContext = new RockContext();
-                    Campus campus;
-                    string itemId = PageParameter( "campusId" );
-                    if ( !string.IsNullOrWhiteSpace( itemId ) && int.Parse( itemId ) > 0 )
-                    {
-                        campus = new CampusService( rockContext ).Get( int.Parse( PageParameter( "campusId" ) ) );
-                    }
-                    else
-                    {
-                        campus = new Campus { Id = 0 };
-                    }
-                    campus.LoadAttributes();
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( campus, phAttributes, false, BlockValidationGroup );
-                }
-            }
         }
 
         #endregion
@@ -94,6 +73,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var campusLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
+
+            if ( campusLocationType.Id != lpLocation.Location.LocationTypeValueId )
+            {
+                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbEditModeMessage.Text = "The selected named location is not a 'Campus' location type. Please update this before continuing.";
+                return;
+            }
+
             Campus campus;
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
@@ -134,8 +122,7 @@ namespace RockWeb.Blocks.Core
 
             campus.ServiceTimes = kvlServiceTimes.Value;
 
-            campus.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, campus );
+            avcAttributes.GetEditValues( campus );
 
             if ( !campus.IsValid && campus.Location.IsValid )
             {
@@ -208,9 +195,8 @@ namespace RockWeb.Blocks.Core
             kvlServiceTimes.Value = campus.ServiceTimes;
 
             campus.LoadAttributes();
-            phAttributes.Controls.Clear();
-            var excludeForEdit = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup, excludeForEdit );
+            avcAttributes.ExcludedAttributes = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcAttributes.AddEditControls( campus );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

@@ -193,6 +193,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.CategoryId.HasValue )
+                {
+                    return Rock.Web.Cache.CategoryCache.Get( this.CategoryId.Value ) ?? base.ParentAuthority;
+                }
+
                 return this.Category != null ? this.Category : base.ParentAuthority;
             }
         }
@@ -208,7 +213,7 @@ namespace Rock.Model
                 {
                     _supportedActions = new Dictionary<string, string>();
                     _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( "Tag", "The roles and/or users that have access to tag items." );
+                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
                     _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                     _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
@@ -222,17 +227,25 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Determines whether the specified action is authorized.
+        /// Determines whether the specified action is authorized. If the tag is personal and
+        /// owned by the person, it returns true, but if it's personal and NOT owned by the person
+        /// it returns false -- otherwise (not a personal tag) it returns what the chain of authority
+        ///  determines, but note: the parent authority is the category (if the tag has a category).
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <returns></returns>
+        /// <returns>True if the person is authorized; false otherwise.</returns>
         public override bool IsAuthorized( string action, Person person )
         {
             if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
             {
                 // always allow people to do anything with their own tags
                 return true;
+            }
+            else if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId != person.Id )
+            {
+                // always prevent people from doing anything with someone else's tags
+                return false;
             }
             else
             {

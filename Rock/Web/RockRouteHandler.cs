@@ -16,16 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data.Entity;
 using System.IO;
+using System.Linq;
+using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
+
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Transactions;
 using Rock.Data;
 using Rock.Utility;
-using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Web
 {
@@ -134,7 +136,7 @@ namespace Rock.Web
             if ( checkMobile && site.EnableMobileRedirect )
             {
                 var clientType = InteractionDeviceType.GetClientType( requestContext.HttpContext.Request.UserAgent );
-                
+
                 if ( clientType == "Mobile" || ( site.RedirectTablets && clientType == "Tablet" ) )
                 {
                     if ( site.MobilePageId.HasValue )
@@ -243,7 +245,7 @@ namespace Rock.Web
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
-                
+
                 RockQueue.TransactionQueue.Enqueue( new ShortLinkTransaction
                 {
                     PageShortLinkId = pageShortLink.Id,
@@ -289,7 +291,7 @@ namespace Rock.Web
                  * site a person is requesting. In this mode, we require the page being matched to be a part of the site that
                  * was requested. This causes a few issues with some system pages that need to be available on all sites, but
                  * is otherwise effective.
-                 * 
+                 *
                  *
                  * Need to determine:
                  * 1. The Site
@@ -310,7 +312,7 @@ namespace Rock.Web
                  *
                  * We can get the Page from:
                  * 1. The Page Id
-                 * 
+                 *
                  * We can infer the Page from:
                  * 1. The first matching site + route
                  * 2. The first matching site + shortlink
@@ -319,7 +321,7 @@ namespace Rock.Web
                  * 5. The first matching shortlink
                  *
                  * What are the possibilities?
-                 * 
+                 *
                  * - site id + page id
                  * - site id + route
                  * - site id + shortlink
@@ -359,7 +361,7 @@ namespace Rock.Web
                  * Note 1: page id can't be restricted by matched site because that breaks Block Properties dialogs.
                  * Note 2: restricting routes breaks the Child Pages dialog, grrr. Let's try prioritizing layout type == Dialog.
                  * Note 3: page id can't be restricted by site id because that breaks the CMS -> Sites details page.
-                 * 
+                 *
                  * Conclusion: We either need a better way of deciding when to use "strict mode" (page or site setting?),
                  * or we need to refactor how system pages work so they behave properly
                  *
@@ -472,7 +474,7 @@ namespace Rock.Web
 
                 // If we got this far without any matches, do a 404
                 return GetHandlerFor404( requestContext, lastSite ?? defaultSite );
-                
+
             }
             catch ( Exception ex )
             {
@@ -486,6 +488,107 @@ namespace Rock.Web
                 return errorPage;
             }
         }
+
+
+
+        /// <summary>
+        /// Reregisters the routes from PageRoute and default routes. Does not affect ODataService routes. Call this method after saving changes to PageRoute entities.
+        /// </summary>
+        public static void ReregisterRoutes()
+        {
+            RemoveRockPageRoutes();
+            RegisterRoutes();
+        }
+
+        /// <summary>
+        /// Registers the routes from PageRoute and default routes.
+        /// </summary>
+        public static void RegisterRoutes()
+        {
+            RouteCollection routes = RouteTable.Routes;
+
+            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+
+            var routesToInsert = new RouteCollection();
+
+            // Add ignore rule for asp.net ScriptManager files.
+            routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
+
+            //Add page routes, order is very important here as IIS takes the first match
+            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
+
+            foreach ( var pageRoute in pageRoutes )
+            {
+                routesToInsert.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
+            }
+
+            // Add a default page route
+            routesToInsert.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for when no parameters are passed
+            routesToInsert.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for shortlinks
+            routesToInsert.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+
+            // Insert the list of routes to the beginning of the Routes so that PageRoutes, etc are before OdataRoutes. Even when Re-Registering routes
+            // Since we are inserting at 0, reverse the list to they end up in the original order
+            foreach ( var pageRoute in routesToInsert.Reverse() )
+            {
+                routes.Insert( 0, pageRoute );
+            }
+        }
+
+        /// <summary>
+        /// Removes the rock page and default routes from RouteTable.Routes but leaves the ones created by ODataService.
+        /// </summary>
+        public static void RemoveRockPageRoutes()
+        {
+            RouteCollection routes = RouteTable.Routes;
+            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            var pageRoutes = pageRouteService.Queryable().ToList();
+
+            // First we have to remove the routes stored in the DB without removing the ODataService routes because we can't reload them.
+            // Routes that were removed from the DB have already been removed from the RouteTable in PreSaveChanges()
+            foreach( var pageRoute in pageRoutes )
+            {
+                var route = routes.OfType<Route>().Where( a => a.Url == pageRoute.Route ).FirstOrDefault();
+
+                if ( route != null )
+                {
+                    routes.Remove( route );
+                }
+            }
+
+            // Remove the shortlink route
+            var shortLinkRoute = routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+            if ( shortLinkRoute != null )
+            {
+                routes.Remove( shortLinkRoute );
+            }
+
+            // Remove the page route
+            var pageIdRoute = routes.OfType<Route>().Where( r => r.Url == "page/{PageId}" ).FirstOrDefault();
+            if ( pageIdRoute != null )
+            {
+                routes.Remove( pageIdRoute );
+            }
+
+            // Remove the default route for when no parameters are passed
+            var defaultRoute = routes.OfType<Route>().Where( r => r.Url == "" ).FirstOrDefault();
+            if( defaultRoute != null )
+            {
+                routes.Remove( pageIdRoute );
+            }
+
+            // Remove scriptmanager ignore route
+            var scriptmanagerRoute = routes.OfType<Route>().Where( r => r.Url == "{resource}.axd/{*pathInfo}" ).FirstOrDefault();
+            if ( scriptmanagerRoute != null )
+            {
+                routes.Remove( scriptmanagerRoute );
+            }
+        }
+
     }
 
     /// <summary>
