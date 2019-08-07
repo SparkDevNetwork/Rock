@@ -409,6 +409,7 @@
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
     <Compile Include="Net\ClientInformation.cs" />
+    <Compile Include="PersonProfile\Badge\Steps.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
