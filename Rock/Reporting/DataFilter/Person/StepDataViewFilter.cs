@@ -46,13 +46,22 @@ namespace Rock.Reporting.DataFilter.Person
         /// </summary>
         public class FilterSettings : SettingsStringBase
         {
+            /// <summary>
+            /// The data view unique identifier
+            /// </summary>
             public Guid? DataViewGuid;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
             public FilterSettings()
             {
-                //
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
+            /// <param name="settingsString">The settings string.</param>
             public FilterSettings( string settingsString )
             {
                 FromSelectionString( settingsString );

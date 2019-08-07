@@ -303,9 +303,14 @@ namespace RockWeb.Blocks.Core
         {
             bool reloadPage = false;
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            if ( Page.IsValid )
+            if ( !Page.IsValid )
             {
-                var rockContext = new RockContext();
+                return;
+            }
+
+            var rockContext = new RockContext();
+            rockContext.WrapTransaction( () =>
+            {
                 var blockService = new Rock.Model.BlockService( rockContext );
                 var block = blockService.Get( blockId );
 
@@ -324,7 +329,7 @@ namespace RockWeb.Blocks.Core
 
                 foreach ( var kvp in CustomSettingsProviders )
                 {
-                    kvp.Key.WriteSettingsToEntity( block, kvp.Value );
+                    kvp.Key.WriteSettingsToEntity( block, kvp.Value, rockContext );
                 }
 
                 SaveCustomColumnsConfigToViewState();
@@ -395,7 +400,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );
-            }
+            } );
         }
 
         #region Internal Methods

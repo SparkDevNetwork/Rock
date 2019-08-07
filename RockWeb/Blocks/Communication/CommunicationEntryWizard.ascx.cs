@@ -547,7 +547,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var description = string.IsNullOrWhiteSpace( item.Description )
                     ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
-                    : item.Description.LeftWithEllipsis( 25 );
+                    : item.Description;
 
                 ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
@@ -2260,14 +2260,43 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 return;
             }
 
-            var rockContext = new RockContext();
-            Rock.Model.Communication communication = UpdateCommunication( rockContext );
-            communication.Status = CommunicationStatus.Draft;
-            rockContext.SaveChanges();
-
-            hfCommunicationId.Value = communication.Id.ToString();
+            Rock.Model.Communication communication = SaveAsDraft();
 
             ShowResult( "The communication has been saved", communication );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailEditorSaveDraft control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailEditorSaveDraft_Click( object sender, EventArgs e )
+        {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            Rock.Model.Communication communication = SaveAsDraft();
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            upnlContent.Update();
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the btnSMSEditorSaveDraft control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSMSEditorSaveDraft_Click( object sender, EventArgs e )
+        {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            Rock.Model.Communication communication = SaveAsDraft();
+            upnlContent.Update();
         }
 
         /// <summary>
@@ -2315,6 +2344,21 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Saves the communication as Draft
+        /// </summary>
+        /// <returns></returns>
+        private Rock.Model.Communication SaveAsDraft()
+        {
+            var rockContext = new RockContext();
+            Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            communication.Status = CommunicationStatus.Draft;
+            rockContext.SaveChanges();
+
+            hfCommunicationId.Value = communication.Id.ToString();
+            return communication;
         }
 
         /// <summary>

@@ -59,6 +59,7 @@
     <Compile Include="GroupAddressImport.cs" />
     <Compile Include="PersonAddressImport.cs" />
     <Compile Include="PersonImport.cs" />
+    <Compile Include="PersonSearchKeyImport.cs" />
     <Compile Include="PhoneNumberImport.cs" />
     <Compile Include="PhotoImport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

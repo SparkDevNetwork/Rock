@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 namespace Rock.BulkExport
 {
     /// <summary>
-    /// 
+    /// Base class that identifies the a page of results to be exported.
     /// </summary>
     public abstract class ExportResult
     {

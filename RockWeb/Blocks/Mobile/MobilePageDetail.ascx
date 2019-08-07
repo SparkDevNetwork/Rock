@@ -9,12 +9,14 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title">Page</h3>
+                <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
+
+                <div class="panel-labels">
+                    <span class="label label-default"><asp:Literal ID="lPageGuid" runat="server" /></span>
+                </div>
             </div>
 
             <div class="panel-body">
-                <h4><asp:Literal ID="ltPageName" runat="server" /></h4>
-
                 <div class="row">
                     <asp:Literal ID="ltDetails" runat="server" />
                 </div>
@@ -46,11 +48,15 @@
                     </div>
 
                     <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbInternalName" runat="server" Label="Internal Name" Required="true" ValidationGroup="EditPage" />
+
                         <Rock:RockCheckBox ID="cbDisplayInNavigation" runat="server" Label="Display In Navigation" ValidationGroup="EditPage" />
                     </div>
                 </div>
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
+
+                <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                 <div class="actions margin-t-md">
                     <asp:LinkButton ID="lbSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbSave_Click" ValidationGroup="EditPage" />
@@ -90,11 +96,11 @@
 
                         <asp:Repeater ID="rptrZones" runat="server" OnItemDataBound="rptrZones_ItemDataBound">
                             <ItemTemplate>
-                                <div style="padding: 20px">
-                                    <div data-zone-name="<%# Eval( "Name" ) %>" class="js-block-zone" style="background: #f3f3f3; padding: 12px; margin-bottom: 12px;">
-                                        <div class="margin-b-md" style="font-size: 1.25em; font-weight: bold;"><%# Eval( "Name" ) %></div>
+                                <div class="padding-all-md">
+                                    <div data-zone-name="<%# Eval( "Name" ) %>" class="panel panel-default js-block-zone">
+                                        <div class="panel-heading"><strong><%# Eval( "Name" ) %></strong></div>
 
-                                        <div class="drag-container js-drag-container list-unstyled" style="min-height: 100px;">
+                                        <div class="drag-container js-drag-container list-unstyled panel-body mobile-pages-container" style="min-height: 100px;">
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
                                                     <div class="panel panel-widget">

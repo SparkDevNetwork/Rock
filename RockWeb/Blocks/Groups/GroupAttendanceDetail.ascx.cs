@@ -1104,8 +1104,8 @@ cbDidNotMeet.ClientID );
 
                 _occurrence.Id = occurrence.Id;
 
-                // Sync attendance changes to the appropriate sequences
-                SequenceService.HandleAttendanceRecordsAsync( occurrence.Id );
+                // Sync attendance changes to the appropriate streaks
+                StreakTypeService.HandleAttendanceRecordsAsync( occurrence.Id );
             }
 
             return true;

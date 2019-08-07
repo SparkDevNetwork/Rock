@@ -67,7 +67,9 @@ namespace RockWeb.Blocks.Groups
         Order = 16)]
 
     [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 17 )]
-    public partial class GroupDetail : RockBlock, IDetailBlock
+
+    [ContextAware( typeof(Group) )]
+    public partial class GroupDetail : ContextEntityBlock, IDetailBlock
     {
         #region Constants
 
@@ -273,6 +275,18 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupDetail );
+
+            // Add all of the badges for Group to the badge list control
+            var badgeCaches = BadgeCache.All( typeof( Group ) );
+
+            if ( badgeCaches.Any() )
+            {
+                blBadgeList.BadgeTypes.AddRange( badgeCaches );
+            }
+            else
+            {
+                divBadgeContainer.Visible = false;
+            }
         }
 
         /// <summary>

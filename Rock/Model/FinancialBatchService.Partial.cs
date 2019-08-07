@@ -96,7 +96,7 @@ namespace Rock.Model
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
 
-            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
+            return GetByNameAndDate( batchName.Truncate(50), transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
         }
 
         /// <summary>

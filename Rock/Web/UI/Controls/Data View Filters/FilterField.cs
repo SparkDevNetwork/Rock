@@ -58,6 +58,11 @@ namespace Rock.Web.UI.Controls
         public RockCheckBox cbIncludeFilter;
 
         /// <summary>
+        /// If the component has a Description this will be rendered with a description
+        /// </summary>
+        protected NotificationBox nbComponentDescription;
+
+        /// <summary>
         /// The filter controls
         /// </summary>
         protected Control[] filterControls;
@@ -69,8 +74,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            ReportingHelper.RegisterJavascriptInclude( this );
         }
 
         /// <summary>
@@ -551,6 +554,11 @@ namespace Rock.Web.UI.Controls
             cbIncludeFilter.TextCssClass = "control-label";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
+
+            nbComponentDescription = new NotificationBox();
+            nbComponentDescription.NotificationBoxType = NotificationBoxType.Info;
+            nbComponentDescription.ID = this.ID + "_nbComponentDescription";
+            Controls.Add( nbComponentDescription );
         }
 
         /// <summary>
@@ -679,6 +687,13 @@ namespace Rock.Web.UI.Controls
 
             if ( component != null && !HideFilterCriteria )
             {
+                if ( !string.IsNullOrEmpty( component.Description ) )
+                {
+                    nbComponentDescription.Text = component.Description;
+                    nbComponentDescription.CssClass = "filter-field-descripion";
+                    nbComponentDescription.RenderControl( writer );
+                }
+
                 component.RenderControls( FilteredEntityType, this, writer, filterControls, this.FilterMode );
             }
 
@@ -698,7 +713,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFilterType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
             FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
 
@@ -708,7 +728,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void lbDelete_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbDelete_Click( object sender, EventArgs e )
         {
             if ( DeleteClick != null )
             {
@@ -725,7 +750,5 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [selection changed].
         /// </summary>
         public event EventHandler SelectionChanged;
-
-
     }
 }

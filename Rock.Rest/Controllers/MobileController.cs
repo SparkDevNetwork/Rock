@@ -40,25 +40,26 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the launch packet.
         /// </summary>
-        /// <param name="deviceData">The device data.</param>
-        /// <param name="applicationId">The application (site) identifier.</param>
         /// <returns></returns>
         [Route( "api/mobile/GetLaunchPacket" )]
-        [HttpPost]
+        [HttpPost] // Remove once the client is updated
+        [HttpGet]
         [Authenticate]
-        public object GetLaunchPacket( [FromBody] DeviceData deviceData, int applicationId )
+        public object GetLaunchPacket()
         {
             var baseUrl = MobileHelper.GetBaseUrl();
             var site = MobileHelper.GetCurrentApplicationSite();
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+            var person = GetPerson();
+            var deviceData = Request.GetHeader( "X-Rock-DeviceData" ).FromJsonOrNull<DeviceData>();
 
             var launchPacket = new LaunchPackage
             {
                 LatestVersionId = ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ),
-                LatestVersionSettingsUrl = $"{baseUrl}api/mobile/GetLatestVersion?ApplicationId={applicationId}&Platform={deviceData.DevicePlatform.ConvertToInt()}"
+                LatestVersionSettingsUrl = $"{baseUrl}api/mobile/GetLatestVersion?ApplicationId={site.Id}&Platform={deviceData.DevicePlatform.ConvertToInt()}",
+                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
 
-            var person = GetPerson();
             if ( person != null )
             {
                 var principal = ControllerContext.Request.GetUserPrincipal();
@@ -83,7 +84,7 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = new Rock.Data.RockContext();
             var site = SiteCache.Get( applicationId );
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
             var phoneFormats = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE )
                 .DefinedValues
@@ -108,6 +109,7 @@ namespace Rock.Rest.Controllers
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
+            package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
@@ -135,6 +137,8 @@ namespace Rock.Rest.Controllers
             //
             foreach ( var page in PageCache.All().Where( p => p.SiteId == site.Id ) )
             {
+                var additionalPageSettings = page.HeaderContent.FromJsonOrNull<AdditionalPageSettings>();
+
                 var mobilePage = new MobilePage
                 {
                     LayoutGuid = page.Layout.Guid,
@@ -143,7 +147,8 @@ namespace Rock.Rest.Controllers
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconFileId.HasValue ? $"" : null
+                    IconUrl = page.IconFileId.HasValue ? $"" : null,
+                    LavaEventHandler = additionalPageSettings?.LavaEventHandler
                 };
 
                 package.Pages.Add( mobilePage );
@@ -176,7 +181,10 @@ namespace Rock.Rest.Controllers
                         BlockType = mobileBlockEntity.MobileBlockType,
                         ConfigurationValues = mobileBlockEntity.GetMobileConfigurationValues(),
                         Order = block.Order,
-                        AttributeValues = MobileHelper.GetMobileAttributeValues( block, attributes )
+                        AttributeValues = MobileHelper.GetMobileAttributeValues( block, attributes ),
+                        PreXaml = block.PreHtml,
+                        PostXaml = block.PostHtml,
+                        CssClasses = block.CssClass
                     };
 
                     package.Blocks.Add( mobileBlock );
@@ -241,10 +249,9 @@ namespace Rock.Rest.Controllers
                 var pageEntityTypeId = EntityTypeCache.Get( typeof( Model.Page ) ).Id;
 
                 //
-                // Check against our temporary development api key or a real api key.
-                // Do we need to somehow validate this api key against a site or is this enough? -dsh
+                // Check to see if we have a site and the API key is valid.
                 //
-                if ( MobileHelper.GetCurrentApplicationSite() != null )
+                if ( MobileHelper.GetCurrentApplicationSite() == null )
                 {
                     return StatusCode( System.Net.HttpStatusCode.Forbidden );
                 }

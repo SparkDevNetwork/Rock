@@ -81,7 +81,9 @@ namespace Rock.PersonProfile
 
                 if (tooltipText.IsNullOrWhiteSpace())
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     tooltipText = GetToolTipText( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Title, tooltipText );
@@ -91,7 +93,9 @@ namespace Rock.PersonProfile
 
                 if ( iconPath.IsNullOrWhiteSpace() )
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     iconPath = GetIconPath( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Src, iconPath );
