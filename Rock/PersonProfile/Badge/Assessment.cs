@@ -38,12 +38,12 @@ namespace Rock.PersonProfile.Badge
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Assessment Badge" )]
 
-    [AssessmentTypesField("Assessments To Show",
-        Description = "Select the assessments that should be displayed in the badge. If none are selected then all assessments will be shown.",
+    [AssessmentTypesField( "Assessments To Show",
+        Description = "Select the assesements that should be displayed in the badge. If none are selected then all assessments will be shown.",
         Key = AttributeKeys.AssessmentsToShow,
         IncludeInactive = false,
         IsRequired = false,
-        Order = 0)]
+        Order = 0 )]
     class Assessment : BadgeComponent
     {
 
@@ -84,11 +84,25 @@ namespace Rock.PersonProfile.Badge
             }
 
             StringBuilder toolTipText = new StringBuilder();
-            StringBuilder badgeIcons = new StringBuilder();
-
-            foreach( var assessmentTypeGuid in assessmentTypeGuids )
+            StringBuilder badgeRow1 = new StringBuilder( $@"<div class='badge-row'>" );
+            StringBuilder badgeRow2 = new StringBuilder();
+            if ( assessmentTypeGuids.Length > 1 )
             {
-                var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuid.AsGuid() );
+                badgeRow2.AppendLine( $@"<div class='badge-row'>" );
+            }
+
+            for ( int i = 0; i < assessmentTypeGuids.Length; i++ )
+            {
+                StringBuilder badgeIcons = new StringBuilder();
+                if ( i % 2 == 0 )
+                {
+                    badgeIcons = badgeRow1;
+                }
+                else
+                {
+                    badgeIcons = badgeRow2;
+                }
+                var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuids[i].AsGuid() );
                 string resultsPath = assessmentType.AssessmentResultsPath;
                 string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
                 string iconCssClass = assessmentType.IconCssClass;
@@ -97,7 +111,7 @@ namespace Rock.PersonProfile.Badge
                 var mergeFields = new Dictionary<string, object>();
                 string mergedBadgeSummaryLava = "Not taken";
 
-                switch ( assessmentTypeGuid.ToUpper() )
+                switch ( assessmentTypeGuids[i].ToUpper() )
                 {
                     case Rock.SystemGuid.AssessmentType.CONFLICT:
 
@@ -173,8 +187,16 @@ namespace Rock.PersonProfile.Badge
                     </p>" );
             }
 
-            writer.Write( $@"<div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
-            writer.Write( badgeIcons.ToString() );
+            badgeRow1.AppendLine( $@"</div>" );
+            if ( assessmentTypeGuids.Length > 1 )
+            {
+                badgeRow2.AppendLine( $@"</div>" );
+            }
+
+
+            writer.Write( $@" <div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
+            writer.Write( badgeRow1.ToString() );
+            writer.Write( badgeRow2.ToString() );
             writer.Write( "</div></div>" );
             writer.Write( $@"
                 <script>
