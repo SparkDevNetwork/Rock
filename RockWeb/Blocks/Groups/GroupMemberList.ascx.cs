@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
+                if ( ! _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
                     sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
                 }
