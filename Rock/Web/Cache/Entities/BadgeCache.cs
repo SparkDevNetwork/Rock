@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -140,6 +142,34 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Returns all of the badges that apply to the given type (for example Person or Group).
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static List<BadgeCache> All( Type type )
+        {
+            var entityTypeCache = EntityTypeCache.Get( type );
+
+            if ( entityTypeCache == null )
+            {
+                return new List<BadgeCache>();
+            }
+
+            return All( entityTypeCache.Id );
+        }
+
+        /// <summary>
+        /// Returns all of the badges that apply to the given type (for example Person or Group).
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <returns></returns>
+        public static List<BadgeCache> All( int entityTypeId )
+        {
+            var allBadges = All();
+            return allBadges.Where( b => !b.EntityTypeId.HasValue || b.EntityTypeId.Value == entityTypeId ).ToList();
+        }
 
         /// <summary>
         /// Copies from model.

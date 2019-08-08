@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,7 +26,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Mobile
 {
-    public static class MobileHelper
+    internal static class MobileHelper
     {
         /// <summary>
         /// Gets the base URL.
@@ -20,8 +36,9 @@ namespace Rock.Mobile
         {
             var request = HttpContext.Current.Request;
 
+            // Look for host headers from a proxy of some sort
             var proto = request.Headers["X-Forwarded-Proto"];
-            var host = request.Headers["X-Forwarded-Host"];
+            var host = request.Headers["X-Original-Host"].IsNotNull() ? request.Headers["X-Original-Host"] : request.Headers["X-Forwarded-Host"];
             if ( proto != null && host != null )
             {
 
@@ -64,7 +81,7 @@ namespace Rock.Mobile
             if ( validateApiKey )
             {
                 var appApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
                 //
                 // Ensure we have valid site configuration.
@@ -113,7 +130,7 @@ namespace Rock.Mobile
             var homePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
             var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
 
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
             if ( person.Attributes == null )
             {
@@ -141,6 +158,7 @@ namespace Rock.Mobile
                 SecurityGroupGuids = new List<Guid>(),
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
+                PersonId = person.Id,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }

@@ -241,6 +241,19 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ConnectionOpportunity ?? base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>

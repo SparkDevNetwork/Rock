@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -520,47 +521,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgStepWorkflow_SaveClick( object sender, EventArgs e )
         {
-            StepWorkflowTriggerViewModel workflowTrigger = null;
-
-            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
-            if ( !guid.IsEmpty() )
-            {
-                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
-            }
-
-            if ( workflowTrigger == null )
-            {
-                workflowTrigger = new StepWorkflowTriggerViewModel();
-
-                workflowTrigger.Guid = Guid.NewGuid();
-            }
-
-            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
-            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
-
-            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
-            {
-                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
-                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
-            };
-
-            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
-
-            var dataContext = GetDataContext();
-
-            var workflowTypeService = new WorkflowTypeService( dataContext );
-
-            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
-
-            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
-
-            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
-
-            WorkflowsState.Add( workflowTrigger );
-
-            BindStepWorkflowsGrid();
-
-            HideDialog();
+            SaveWorkflowProperties();
         }
 
         /// <summary>
@@ -608,23 +569,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
         protected void gWorkflows_ShowEdit( Guid triggerGuid )
         {
-            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
-
-            if ( workflowTrigger != null )
-            {
-                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
-                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
-            }
-            else
-            {
-                // Set default values
-                wpWorkflowType.SetValue( null );
-                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
-            }
-
-            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
-            ShowDialog( "StepWorkflows", true );
-            UpdateTriggerQualifiers();
+            ShowWorkflowTriggerPropertiesDialog( triggerGuid );
         }
 
         /// <summary>
@@ -645,6 +590,82 @@ namespace RockWeb.Blocks.Steps
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
         {
             UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Show the edit dialog for the specified Workflow Trigger.
+        /// </summary>
+        /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
+        private void ShowWorkflowTriggerPropertiesDialog( Guid triggerGuid )
+        {
+            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
+
+            if ( workflowTrigger != null )
+            {
+                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
+                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
+            }
+            else
+            {
+                // Set default values
+                wpWorkflowType.SetValue( null );
+                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
+            }
+
+            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
+
+            ShowDialog( "StepWorkflows", true );
+
+            UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Save changes to the Workflow Trigger currently displayed in the Workflow properties dialog.
+        /// </summary>
+        private void SaveWorkflowProperties()
+        {
+            StepWorkflowTriggerViewModel workflowTrigger = null;
+
+            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
+
+            if ( !guid.IsEmpty() )
+            {
+                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( workflowTrigger == null )
+            {
+                workflowTrigger = new StepWorkflowTriggerViewModel();
+
+                workflowTrigger.Guid = Guid.NewGuid();
+
+                WorkflowsState.Add( workflowTrigger );
+            }
+
+            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
+            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
+
+            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
+            {
+                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
+                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
+            };
+
+            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
+
+            var dataContext = GetDataContext();
+
+            var workflowTypeService = new WorkflowTypeService( dataContext );
+
+            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
+
+            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
+
+            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
+
+            BindStepWorkflowsGrid();
+
+            HideDialog();
         }
 
         /// <summary>
@@ -1559,7 +1580,7 @@ namespace RockWeb.Blocks.Steps
             if ( chartFactory.HasData )
             {
                 // Add client script to construct the chart.
-                var chartDataJson = chartFactory.GetJson();
+                var chartDataJson = chartFactory.GetJson( autoResize: false );
 
                 string script = string.Format( @"
 var barCtx = $('#{0}')[0].getContext('2d');
@@ -1588,7 +1609,7 @@ var barChart = new Chart(barCtx, {1});",
 
             // Get the Steps associated with the current Step Type.
             var stepsStartedQuery = stepService.Queryable()
-                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null && x.CompletedDateTime == null );
+                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
 
             var stepsCompletedQuery = stepService.Queryable()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
@@ -1611,7 +1632,7 @@ var barChart = new Chart(barCtx, {1});",
 
             var startedSeriesDataPoints = stepsStartedQuery.ToList()
                 .GroupBy( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Started",
                     DateTime = x.Key,
@@ -1621,7 +1642,7 @@ var barChart = new Chart(barCtx, {1});",
 
             var completedSeriesDataPoints = stepsCompletedQuery.ToList()
                 .GroupBy( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Completed",
                     DateTime = x.Key,
@@ -1635,25 +1656,44 @@ var barChart = new Chart(barCtx, {1});",
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
+            factory.StartDateTime = startDate;
+            factory.EndDateTime = endDate;
             factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartHeight = 280;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
-            foreach ( var datasetName in dataSetNames )
-            {
-                var dataset = new ChartJsTimeSeriesDataset();
+            // Add Dataset for Steps Started.
+            var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
 
-                dataset.Name = datasetName;
+            var startedDataset = this.CreateDataSet( allDataPoints, "Started", colorStarted.ToHex() );
 
-                dataset.DataPoints = allDataPoints
-                                        .Where( x => x.DatasetName == datasetName )
-                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                        .Cast<IChartJsTimeSeriesDataPoint>()
-                                        .ToList();
+            factory.Datasets.Add( startedDataset );
 
-                factory.Datasets.Add( dataset );
-            }
+            // Add Dataset for Steps Completed.
+            var colorCompleted = new RockColor( ChartJsConstants.Colors.Green );
+
+            var completedDataset = this.CreateDataSet( allDataPoints, "Completed", colorCompleted.ToHex() );
+
+            factory.Datasets.Add( completedDataset );
 
             return factory;
+        }
+
+        private ChartJsTimeSeriesDataset CreateDataSet( IOrderedEnumerable<ChartDatasetInfo> allDataPoints, string datasetName, string colorString )
+        {
+            var dataset = new ChartJsTimeSeriesDataset();
+
+            dataset.Name = datasetName;
+
+
+            dataset.DataPoints = allDataPoints
+                                    .Where( x => x.DatasetName == datasetName )
+                                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                    .Cast<IChartJsTimeSeriesDataPoint>()
+                                    .ToList();
+
+            dataset.BorderColor = colorString;
+
+            return dataset;
         }
 
         #endregion
@@ -1694,6 +1734,17 @@ var barChart = new Chart(barCtx, {1});",
                     WorkflowTypeName = trigger.WorkflowType.Name;
                 }
             }
+        }
+
+        /// <summary>
+        /// Stores information about a dataset to be displayed on a chart.
+        /// </summary>
+        private class ChartDatasetInfo
+        {
+            public string DatasetName { get; set; }
+            public DateTime DateTime { get; set; }
+            public int Value { get; set; }
+            public string SortKey { get; set; }
         }
 
         #endregion

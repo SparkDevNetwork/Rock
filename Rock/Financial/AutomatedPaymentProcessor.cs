@@ -41,21 +41,37 @@ namespace Rock.Financial
     public class AutomatedPaymentProcessor
     {
         #region Keys
+
         /// <summary>
         /// Use this key to set metadata that will be used as the description of the transaction in some gateways
         /// </summary>
-        [Obsolete("Use the 'metadatakeys' static class constants instead.")]
-        [RockObsolete("1.10")]
+        [Obsolete( "Use the 'MetadataKey' static class constants instead." )]
+        [RockObsolete( "1.10" )]
         public const string DescriptionMetadataKey = "description";
 
         /// <summary>
         /// Commonly used keys within the transaction metadata
         /// </summary>
-        public static class MetadataKeys
+        public static class MetadataKey
         {
+            /// <summary>
+            /// The description
+            /// </summary>
             public const string Description = "description";
+
+            /// <summary>
+            /// The idempotency key
+            /// </summary>
             public const string IdempotencyKey = "idempotency_key";
+
+            /// <summary>
+            /// The giving system
+            /// </summary>
             public const string GivingSystem = "giving_system";
+
+            /// <summary>
+            /// The transaction unique identifier
+            /// </summary>
             public const string TransactionGuid = "transaction_guid";
         }
 
@@ -526,25 +542,25 @@ namespace Rock.Financial
             // Generate metadata which supporting gateways can utilize to provide context information about the transaction
             var metadata = new Dictionary<string, string>
             {
-                [MetadataKeys.GivingSystem] = "RockRMS",
-                [MetadataKeys.TransactionGuid] = transactionGuid.ToString()
+                [MetadataKey.GivingSystem] = "RockRMS",
+                [MetadataKey.TransactionGuid] = transactionGuid.ToString()
             };
 
             var description = GetDescription();
             if ( !description.IsNullOrWhiteSpace() )
             {
-                metadata[MetadataKeys.Description] = description;
+                metadata[MetadataKey.Description] = description;
             }
 
             // The Idempotency Key may be provided in the args, if not generate one
             if ( _automatedPaymentArgs.IdempotencyKey.IsNullOrWhiteSpace() )
             {
                 var idempotencyKey = GenerateIdempotencyKey();
-                metadata[MetadataKeys.IdempotencyKey] = idempotencyKey;
+                metadata[MetadataKey.IdempotencyKey] = idempotencyKey;
             }
             else
             {
-                metadata[MetadataKeys.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
+                metadata[MetadataKey.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
             }
 
             // 
@@ -776,7 +792,7 @@ namespace Rock.Financial
                 // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
-                _financialTransactionService.Add( financialTransaction );                             
+                _financialTransactionService.Add( financialTransaction );
             }
 
             _rockContext.SaveChanges();

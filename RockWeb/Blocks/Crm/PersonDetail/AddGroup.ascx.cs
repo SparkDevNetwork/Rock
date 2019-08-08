@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private string _smsOption = "False";
         private bool _enableAlternateIdentifier = false;
         private bool _generateAlternateIdentifier = true;
+        private bool _areDatePickersValid = true;
 
         #endregion
 
@@ -472,16 +473,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( GetAttributeValue( "BirthDate" ).AsBoolean() && people.Any( p => !p.BirthDate.HasValue ) )
                     {
-                        errorMessages.Add( "Birth Date is required for all members." );
+                        errorMessages.Add( "A valid Birthdate is required for all members." );
                     }
                     else if ( GetAttributeValue( "ChildBirthdate" ).AsBoolean() && children.Any( p => !p.BirthDate.HasValue ) )
                     {
-                        errorMessages.Add( "Birth Date is required for all children." );
+                        errorMessages.Add( "A valid Birth Date is required for all children." );
                     }
 
                     if ( GetAttributeValue( "Grade" ).AsBoolean() && children.Any( p => !p.GraduationYear.HasValue ) )
                     {
                         errorMessages.Add( "Grade is required for all children." );
+                    }
+
+                    // In GetControlData() all of the date pickers for each group member are checked (currently only birthday). If any are not a valid date (e.g. 19740110) then this value is false.
+                    // The each problem picker will have the "has-error" CSS class which will outline it in read so it can be easily identified and corrected.
+                    if( !_areDatePickersValid)
+                    {
+                        errorMessages.Add( "Date is not in the correct format." );
                     }
 
                     int? locationId = null;
@@ -1190,6 +1198,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.LastName = row.LastName.FixCase();
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
+
+                _areDatePickersValid = true;
+                var datePickers = row.Controls.OfType<DatePicker>();
+                foreach( DatePicker datePicker in datePickers )
+                {
+                    DateTime dateTime;
+                    if ( datePicker.Text.IsNotNullOrWhiteSpace() && !DateTime.TryParse( datePicker.Text, out dateTime ) )
+                    {
+                        datePicker.AddCssClass( "has-error" );
+                        datePicker.ShowErrorMessage( "Date is not in the correct format." );
+                        _areDatePickersValid = false;
+                    }
+                    else
+                    {
+                        datePicker.RemoveCssClass( "has-error" );
+                    }
+                }
 
                 var birthday = row.BirthDate;
                 if ( birthday.HasValue )

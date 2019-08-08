@@ -29,6 +29,10 @@
                 <h3 class="panel-title">
                     <i class="fa fa-mobile"></i>
                     <asp:Literal ID="ltAppName" runat="server" />
+
+                    <div class="panel-labels">
+                        <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
+                    </div>
                 </h3>
             </div>
 
@@ -149,6 +153,8 @@
 
                     <Rock:CodeEditor ID="ceEditCssStyles" runat="server" Label="CSS Styles" Help="CSS Styles to apply to UI elements." EditorMode="Css" />
 
+                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout Xaml" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+
                     <div class="row">
                         <div class="col-md-4">
                             <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
@@ -162,11 +168,11 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image to use in the top title bar header of the application." />
+                        <div class="col-md-4">
+                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
                         </div>
                     </div>

@@ -159,6 +159,12 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
 
+        /// <summary>
+        /// A Transaction Type of Receipt
+        /// NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot
+        /// </summary>
+        public const string TRANSACTION_TYPE_RECEIPT = "F57AAF36-F208-4A85-A078-E2B1F91798EB";
+
         #endregion
 
         #region Financial Source
@@ -203,7 +209,7 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
         /// <summary>
-        /// Work Record Type
+        /// Work location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
@@ -216,6 +222,12 @@ namespace Rock.SystemGuid
         /// Meeting Location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
+
+        /// <summary>
+        /// Some other type of Group Location
+        /// NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slinghshot.
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_OTHER = "D49965C7-5254-4D2D-BC77-F390375F0C44";
 
         #endregion
 

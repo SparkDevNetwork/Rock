@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Rock.Utility;
 
 namespace Rock.Chart
 {
@@ -30,20 +31,11 @@ namespace Rock.Chart
     /// * A JSON object compatible with the ChartJs constructor 'data' parameter: new Chart([chartContainer], [data]);
     /// * A Lava Chart Shortcode text block.
     /// </remarks>
-    /// 
     public class ChartJsTimeSeriesDataFactory<TDataPoint>
         where TDataPoint : IChartJsTimeSeriesDataPoint
     {
-        // Default color palette
-        private const string ColorGray = "#4D4D4D";
-        private const string ColorBlue = "#5DA5DA";
-        private const string ColorOrange = "#FAA43A";
-        private const string ColorGreen = "#60BD68";
-        private const string ColorPink = "#F17CB0";
-        private const string ColorBrown = "#B2912F";
-        private const string ColorPurple = "#B276B2";
-        private const string ColorYellow = "#DECF3F";
-        private const string ColorRed = "#F15854";
+
+        private const string DateFormatStringMonthYear = "MMM yyyy";
 
         private List<ChartJsTimeSeriesDataset> _Datasets = new List<ChartJsTimeSeriesDataset>();
 
@@ -51,7 +43,7 @@ namespace Rock.Chart
         {
             this.Datasets = new List<ChartJsTimeSeriesDataset>();
 
-            this.ChartColors = GetDefaultColorPalette();
+            this.ChartColors = ChartJsConstants.Colors.DefaultPalette;
         }
 
         #region Properties
@@ -65,6 +57,11 @@ namespace Rock.Chart
         /// The minimum time divisions show on the Y axis.
         /// </summary>
         public ChartJsTimeSeriesTimeScaleSpecifier TimeScale { get; set; } = ChartJsTimeSeriesTimeScaleSpecifier.Auto;
+
+        /// <summary>
+        /// The level of opacity for the area bounded by a dataset on a scale from 0 to 1, where 0 represents complete transparency.
+        /// </summary>
+        public double AreaFillOpacity { get; set; } = 0.5;
 
         /// <summary>
         /// The start date for the time series.
@@ -85,11 +82,6 @@ namespace Rock.Chart
         public List<string> ChartColors { get; set; }
 
         /// <summary>
-        /// The height of the chart, measured in pixels. If not specified, the chart will be sized automatically to fit.
-        /// </summary>
-        public int? ChartHeight { get; set; }
-
-        /// <summary>
         /// A collection of data points that are displayed on the chart as one or more series of data.
         /// </summary>
         public List<ChartJsTimeSeriesDataset> Datasets
@@ -102,13 +94,14 @@ namespace Rock.Chart
         }
 
         /// <summary>
-        /// Does the data set contain any data points?
+        /// Does the chart data contain any data points?
         /// </summary>
         public bool HasData
         {
             get
             {
-                return _Datasets != null && _Datasets.Any();
+                return _Datasets != null
+                       && _Datasets.SelectMany( x => x.DataPoints ).Any();
             }
         }
 
@@ -116,11 +109,16 @@ namespace Rock.Chart
 
         #region Chart.js JSON Renderer
 
+        public string GetJson()
+        {
+            return GetJson( false );
+        }
+
         /// <summary>
         /// Get a data structure in JSON format that is compatible for use with the Chart.js component.
         /// </summary>
         /// <returns></returns>
-        public string GetJson()
+        public string GetJson( bool autoResize )
         {
             // Create the data structure for Chart.js parameter "data.datasets".
             dynamic chartData;
@@ -161,14 +159,17 @@ namespace Rock.Chart
             }
 
             // Get options for the Y-axis, showing the values.
-            var optionsYaxes = new List<object>() { new { ticks = new { suggestedMin = 0, stepSize = stepSize } } };
+            // The suggested scale is from 0 to the maximum value in the data set, +10% to allow for a top margin.
+            var suggestedMax = Math.Ceiling( maxValue * 1.1M );
+
+            var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize } } };
 
             var optionsLegend = new { position = "bottom", display = true };
 
             // Create the data structure for Chart.js parameter "options".
-            // Note that parameters "maintainAspectRatio" and "responsive" must be set to true to avoid the chart resizing issue detailed here:
+            // Note if "maintainAspectRatio" is set to true, "responsive" must also be set to true to avoid the chart resizing issue detailed here:
             // https://github.com/chartjs/Chart.js/issues/1006
-            dynamic optionsData = new { maintainAspectRatio = true, responsive = true, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
+            dynamic optionsData = new { maintainAspectRatio = autoResize, responsive = autoResize, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
 
             // Create the data structure for Chartjs parameter "chart".
             string chartStyle = GetChartJsStyleParameterValue( this.ChartStyle );
@@ -252,7 +253,7 @@ namespace Rock.Chart
 
             foreach ( var dataset in datasets )
             {
-                // Use the color specifically assigned to this dataset, or get the next color from the queue.
+                // Use the line color specifically assigned to this dataset, or get the next color from the queue.
                 string borderColor = dataset.BorderColor;
 
                 if ( string.IsNullOrWhiteSpace( borderColor ) )
@@ -263,17 +264,58 @@ namespace Rock.Chart
                 // Create a sequence of datapoints, ensuring there is a value for each of the categories.
                 var dataValues = GetDataPointsForAllCategories( dataset, categoryNames );
 
-                string backColor = dataset.FillColor;
+                // Calculate the fill color for the area bounded by this dataset.
+                string fillColorText = dataset.FillColor;
 
-                bool hasFill = !string.IsNullOrWhiteSpace( backColor );
+                string fillOption;
 
-                if ( !hasFill )
+                if ( string.IsNullOrWhiteSpace( dataset.FillColor ) )
                 {
-                    // If a FillColor is not specified, disable fill but assign a color so a filled square is shown on the legend.
-                    backColor = borderColor;
+                    // Fill color not specified, so disable fill but assign a backcolor so a filled square is shown on the legend.
+                    fillOption = "false";
+
+                    fillColorText = borderColor;
+
+                }
+                else
+                {
+                    fillOption = "origin";
+
+                    fillColorText = borderColor;
                 }
 
-                var jsDataset = new { label = dataset.Name, borderColor, backgroundColor = backColor, fill = hasFill, data = dataValues };
+                // Get an opacity value between 0 and 1.
+                var alpha = this.AreaFillOpacity;
+
+                if ( alpha < 0 )
+                {
+                    alpha = 0;
+                }
+                else if ( alpha > 1 )
+                {
+                    alpha = 1;
+                }
+
+                if ( alpha >= 0.1 )
+                {
+                    fillOption = "origin";
+                }
+                else
+                {
+                    // Opacity is set to near 0, so disable fill.
+                    // A backcolor must be specified to show a filled square in the legend.
+                    fillOption = "false";
+                }
+
+                var backColor = new RockColor( fillColorText );
+
+                // Add the alpha component to set the transparency level.
+                if ( alpha >= 0.1 )
+                {
+                    backColor = new RockColor( backColor.R, backColor.G, backColor.B, alpha );
+                }
+
+                var jsDataset = new { label = dataset.Name, borderColor, backgroundColor = backColor.ToRGBA(), fill = fillOption, lineTension = 0, data = dataValues };
 
                 jsDatasets.Add( jsDataset );
             }
@@ -304,7 +346,7 @@ namespace Rock.Chart
             }
 
             // Allow Chart.js to scale the X-axis to best fit.
-            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { displayFormats = new { month = "MMM-YYYY" }, tooltipFormat = "MMM-YYYY", minUnit = "month", min = minDate, max = maxDate } } };
+            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { displayFormats = new { month = DateFormatStringMonthYear }, tooltipFormat = DateFormatStringMonthYear, minUnit = "month", min = minDate, max = maxDate } } };
 
             return optionsXaxes;
         }
@@ -316,8 +358,9 @@ namespace Rock.Chart
         /// <summary>
         /// Get a Lava Chart Shortcode block that describes the chart.
         /// </summary>
+        /// <param name="chartHeight">The height of the chart, measured in pixels.</param>
         /// <returns></returns>
-        public string GetLavaChartShortCodeText()
+        public string GetLavaChartShortCodeText( int chartHeight )
         {
             var sbLava = new StringBuilder();
 
@@ -336,7 +379,7 @@ namespace Rock.Chart
 
             var categoryNames = categories.Select( x => x.Category ).ToList();
 
-            sbLava.AppendFormat( "{{[ chart type:'line' labels:'{0}' legendshow:'true' chartheight:'{1}px' ]}}", categoryNames.AsDelimited( "," ), this.ChartHeight );
+            sbLava.AppendFormat( "{{[ chart type:'line' labels:'{0}' legendshow:'true' chartheight:'{1}px' ]}}", categoryNames.AsDelimited( "," ), chartHeight );
 
             var availableColors = GetDatasetColors();
 
@@ -397,7 +440,7 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextDay )
                 {
-                    var categoryDataPoint = new ChartJsCategoryValuesDataPoint() { Category = thisDate.ToString( "MMM-yyyy" ), SortKey = thisDate.ToString( "yyyyMM" ) };
+                    var categoryDataPoint = new ChartJsCategoryValuesDataPoint() { Category = thisDate.ToString( DateFormatStringMonthYear ), SortKey = thisDate.ToString( "yyyyMM" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 
@@ -479,7 +522,7 @@ namespace Rock.Chart
                         .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
                         .Select( x => new ChartJsCategoryValuesDataPoint
                         {
-                            Category = x.Key.Month.ToString( "MMM-yyyy" ),
+                            Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
                             Value = x.Sum( y => y.Value ),
                             SortKey = x.Key.Month.ToString( "yyyyMM" ),
                         } )
@@ -588,15 +631,6 @@ namespace Rock.Chart
         }
 
         /// <summary>
-        /// Get the default color palette.
-        /// </summary>
-        /// <returns></returns>
-        private List<string> GetDefaultColorPalette()
-        {
-            return new List<string> { ColorBlue, ColorGreen, ColorPink, ColorBrown, ColorPurple, ColorYellow, ColorRed, ColorOrange, ColorGray };
-        }
-
-        /// <summary>
         /// Convert the ChartJsTimeSeriesChartStyleSpecifier enumeration to a Chart.js parameter.
         /// </summary>
         /// <param name="chartStyle"></param>
@@ -627,6 +661,11 @@ namespace Rock.Chart
 
             foreach ( var dataset in this.Datasets )
             {
+                if ( !dataset.DataPoints.Any() )
+                {
+                    continue;
+                }
+
                 var maxValue = dataset.DataPoints.Max( x => x.Value );
 
                 if ( maxValue > maxDataset )
@@ -644,7 +683,7 @@ namespace Rock.Chart
         /// <returns></returns>
         private Queue<string> GetDatasetColors()
         {
-            var availableColors = this.ChartColors ?? this.GetDefaultColorPalette();
+            var availableColors = this.ChartColors ?? ChartJsConstants.Colors.DefaultPalette;
 
             var colorQueue = new Queue<string>( availableColors );
 
@@ -799,6 +838,34 @@ namespace Rock.Chart
         /// Gets or sets an arbitrary sort key that can be used to sort this data point within the data set.
         /// </summary>
         public string SortKey { get; set; }
+    }
+
+    /// <summary>
+    /// Defines a set of constant values that can be used with the Chart.js charting component.
+    /// </summary>
+    public static class ChartJsConstants
+    {
+        // Default color palette
+        public static class Colors
+        {
+            public static readonly string Gray = "#4D4D4D";
+            public static readonly string Blue = "#5DA5DA";
+            public static readonly string Orange = "#FAA43A";
+            public static readonly string Green = "#60BD68";
+            public static readonly string Pink = "#F17CB0";
+            public static readonly string Brown = "#B2912F";
+            public static readonly string Purple = "#B276B2";
+            public static readonly string Yellow = "#DECF3F";
+            public static readonly string Red = "#F15854";
+
+            /// <summary>
+            /// Get the default color palette.
+            /// </summary>
+            /// <remarks>
+            /// Color defaults are based on recommendations in this article: http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization/
+            /// </remarks>
+            public static List<string> DefaultPalette = new List<string> { Blue, Green, Pink, Brown, Purple, Yellow, Red, Orange, Gray };
+        }
     }
 
     #endregion

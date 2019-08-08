@@ -16,9 +16,8 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
-using Rock.Data;
-using Rock.Model;
+using Rock.Attribute;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -27,6 +26,25 @@ namespace Rock.Field.Types
     /// </summary>
     public class BadgesFieldType : SelectFromListFieldType
     {
+        /// <summary>
+        /// The configuration values
+        /// </summary>
+        private Dictionary<string, ConfigurationValue> _configurationValues = null;
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            _configurationValues = configurationValues;
+            return base.EditControl( configurationValues, id );
+        }
+
         /// <summary>
         /// Gets the list source.
         /// </summary>
@@ -37,9 +55,24 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new BadgeService( new RockContext() );
-                var qry = service.Queryable();
-                return qry.OrderBy( a => a.Order ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
+                List<BadgeCache> badges = null;
+                int? entityTypeId = null;
+
+                if ( _configurationValues != null && _configurationValues.TryGetValue( BadgesFieldAttribute.ENTITY_TYPE_KEY, out var value ) )
+                {
+                    entityTypeId = ( value.Value as string ).AsIntegerOrNull();
+                }
+
+                if ( entityTypeId.HasValue )
+                {
+                    badges = BadgeCache.All( entityTypeId.Value );
+                }
+                else
+                {
+                    badges = BadgeCache.All();
+                }
+
+                return badges.ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }
         }
     }

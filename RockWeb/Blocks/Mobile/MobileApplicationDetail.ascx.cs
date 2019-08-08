@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using AdditionalSettings = Rock.Mobile.AdditionalSettings;
+using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Mobile.Common.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
 using Rock.Web.Cache;
@@ -32,6 +32,7 @@ using Rock.Web.UI;
 using Rock.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Mobile
 {
@@ -125,6 +126,41 @@ namespace RockWeb.Blocks.Mobile
             }
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? siteId = PageParameter( pageReference, "siteId" ).AsIntegerOrNull();
+            if ( siteId != null )
+            {
+                var site = new SiteService( new RockContext() ).Get( siteId.Value );
+
+                if ( site != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( site.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Application", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
+        }
+
         #endregion
 
         #region Methods
@@ -193,6 +229,7 @@ namespace RockWeb.Blocks.Mobile
             hfSiteId.Value = site.Id.ToString();
             ltAppName.Text = site.Name.EncodeHtml();
             ltDescription.Text = site.Description.EncodeHtml();
+            lSiteId.Text = site.Id.ToString();
 
             //
             // Set the UI fields for the images.
@@ -205,7 +242,7 @@ namespace RockWeb.Blocks.Mobile
             //
             // Set the UI fields for the additional details.
             //
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>() ?? new AdditionalSettings();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
             var fields = new List<KeyValuePair<string, string>>();
 
             if ( additionalSettings.ShellType.HasValue )
@@ -305,7 +342,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( siteId );
-            AdditionalSettings additionalSettings;
+            AdditionalSiteSettings additionalSettings;
 
             //
             // Ensure user can edit the mobile site.
@@ -326,12 +363,7 @@ namespace RockWeb.Blocks.Mobile
                 site = new Site
                 {
                     IsActive = true,
-                    AdditionalSettings = new AdditionalSettings
-                    {
-                        ShellType = ShellType.Flyout,
-                        TabLocation = TabLocation.Bottom,
-                        CssStyle = string.Empty
-                    }.ToJson()
+                    AdditionalSettings = new AdditionalSiteSettings().ToJson()
                 };
             }
 
@@ -340,11 +372,11 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( site.AdditionalSettings != null )
             {
-                additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>() ?? new AdditionalSettings();
+                additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
             }
             else
             {
-                additionalSettings = new AdditionalSettings();
+                additionalSettings = new AdditionalSiteSettings();
             }
 
             //
@@ -357,6 +389,7 @@ namespace RockWeb.Blocks.Mobile
             rblEditApplicationType.SetValue( ( int? ) additionalSettings.ShellType ?? ( int ) ShellType.Flyout );
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
             ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
+            ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
             rblEditAndroidTabLocation.Visible = rblEditApplicationType.SelectedValueAsInt() == ( int ) ShellType.Tabbed;
@@ -631,7 +664,7 @@ namespace RockWeb.Blocks.Mobile
             site.Description = tbEditDescription.Text;
             site.LoginPageId = ppEditLoginPage.PageId;
 
-            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSettings>() ?? new AdditionalSettings();
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
 
             //
             // Save the additional settings.
@@ -644,6 +677,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
             additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
             additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
+            additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
 
             //
             // Save the images.

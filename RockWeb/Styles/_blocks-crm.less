@@ -115,7 +115,6 @@
 
   .photo {
     position: relative;
-    display: table;
     max-width: 200px;
     padding: 5px;
     margin: 0 auto;
@@ -307,9 +306,9 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      width: @badge-grid-width;
       height: @badge-icon-height;
       margin-top: -12px;
-      width: @badge-grid-width;
 
       .badge {
         display: flex;
@@ -455,26 +454,26 @@
   list-style: none;
 
   li {
+    position: relative;
+    display: table-cell;
     float: right;
     width: 9px;
     height: 100%;
     margin-right: 2px;
-    position: relative;
-    display: table-cell;
     vertical-align: bottom;
 
-      span {
-        display: block;
-        width: 100%;
-        min-height: 1px;
-        background: @brand-info;
+    span {
+      display: block;
+      width: 100%;
+      min-height: 1px;
+      background: @brand-info;
 
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          // needed for chrome but kills ie
-          position: absolute;
-          bottom: 0;
-        }
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        // needed for chrome but kills ie
+        position: absolute;
+        bottom: 0;
       }
+    }
   }
 }
 
@@ -1399,12 +1398,12 @@ tr.inactive {
 .disc-row {
   margin-bottom: @disc-question-spacing;
 
-  &:after {
-    content: ' ';
+  &::after {
     display: block;
-    margin: @disc-question-spacing 0;
-    border-bottom: 1px solid @ui-4;
     width: 100%;
+    margin: @disc-question-spacing 0;
+    content: " ";
+    border-bottom: 1px solid @ui-4;
   }
 }
 
@@ -1568,11 +1567,12 @@ tr.inactive {
 }
 
 // STEPS
+@steps-breakpoint: @screen-lg-min;
 
 .add-step-buttons {
-  margin: -16px -16px 0 -16px;
   padding: 8px 0;
-  background: #f7f7f7;
+  margin: -16px -16px 0 -16px;
+  background: @drawer-bg;
   border-bottom: 1px solid @panel-border;
 
   + .row {
@@ -1580,51 +1580,85 @@ tr.inactive {
   }
 
   .add-step-label {
-    font-size: @font-size-small;
+    float: left;
     padding: (@padding-small-vertical + 1) 0;
     margin: 0 6px 0 0;
-    float: left;
+    font-size: @font-size-small;
   }
 }
 
 .col-steps {
   position: relative;
-  min-height: 1px;
-  padding-right: 15px;
-  padding-left: 15px;
   float: left;
   width: 25%;
   width: ~"calc(100% / var(--stepsPerRowMobile))";
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
 
-  @media (min-width: @screen-lg-min) {
+  @media (min-width: @steps-breakpoint) {
     width: 100%;
     width: ~"calc(100% / var(--stepsPerRow))";
   }
 }
 
 .step-card {
-  border: 1px solid #d4d4d4;
-  height: 260px;
-  overflow: hidden;
   position: relative;
+  height: 260px;
   margin-bottom: 15px;
+  overflow: hidden;
   text-align: center;
+  border: 1px solid @panel-border;
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d;
   transform-style: preserve-3d;
 
   .card-info {
     position: relative;
-    margin-top: 36px;
-    transition-duration: 0.25s;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px 0;
+    text-align: center;
+    transition-duration: .25s;
     will-change: transform;
+  }
 
-    h3 {
-      margin: 0 0 12px;
+  .step-status {
+    margin: 12px 0 0;
+  }
+
+  .step-name {
+    display: -webkit-box;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.3;
+  }
+
+  @media (min-width: @steps-breakpoint) {
+    .card-info {
+      -ms-flex-pack: center;
+      justify-content: center;
+      padding: 0;
     }
 
-    p.step-status {
-      margin-top: 12px;
+    .card-top {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: end;
+      -ms-flex-pack: center;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .card-top,
+    .card-bottom {
+      -ms-flex: 1 1 50%;
+      flex: 1 1 50%;
     }
   }
 
@@ -1632,88 +1666,102 @@ tr.inactive {
     opacity: .75;
   }
 
-  p:blank {
+  &.has-prerequisite .step-card-hover {
+    background: @ui-2;
+  }
+
+
+  p:empty {
     display: none;
   }
 
   .badge {
-    background-color: #23a5c5;
+    background-color: @brand-info;
   }
 
   > .step-card-hover {
+    position: absolute;
     top: 0;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
+    max-height: 100%;
+    overflow-y: auto;
     opacity: 0;
-    transition-duration: 0.25s;
-    position: absolute;
-    //background-color: #fff;
+    transition-duration: .25s;
     -webkit-transform: translateY(100%);
     transform: translateY(100%);
-    will-change: opacity,transform;
+    will-change: opacity, transform;
     -webkit-transform-style: preserve-3d;
     -moz-transform-style: preserve-3d;
     transform-style: preserve-3d;
   }
 
   &:hover > .step-card-hover {
+    opacity: 1;
     -webkit-transform: translateY(0%);
     transform: translateY(0%);
-    opacity: 1;
   }
 
   .btn-actions {
-    color: inherit;
-    height: 49px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    height: 49px;
+    color: inherit;
 
     &:hover {
-      background-color: #d4d4d4;
-      color: #fff;
+      background-color: darken(@btn-default-bg, 10%);
     }
   }
 
   .btn-delete:hover {
-    background-color: #d4442e;
+    color: #fff;
+    background-color: @btn-danger-bg;
+  }
+}
+
+.has-overflow {
+  .step-records-table-container,
+  .card-add-step-button {
+    position: relative;
+    display: block;
+  }
+
+  .card-add-step-button > span {
+    transform: none;
   }
 }
 
 .step-records-table-container {
   position: absolute;
   bottom: 0;
-  overflow-y: auto;
   width: 100%;
+  background: #fff;
 }
 
 .step-records-table {
   width: 100%;
 
-  tr {
-    height: 50px;
-  }
-
   td {
-    border: 1px solid #d4d4d4;
-    vertical-align: middle;
     width: 50px;
+    vertical-align: middle;
+    border: 1px solid @panel-border;
 
     &.steps-status {
-      border-left: none;
       width: auto;
+      border-left: none;
     }
   }
 
   tr:last-child td {
     border-bottom: 0;
   }
-}
 
-.step-records-table td:last-of-type {
-  border-right: none;
+  td:last-of-type {
+    border-right: none;
+  }
 }
 
 .prereq-list-info {
@@ -1721,21 +1769,20 @@ tr.inactive {
 }
 
 .card-add-step-button {
-  width: 100%;
   position: absolute;
   left: 0;
-  //position: relative;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: @ui-2;
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d;
   transform-style: preserve-3d;
 
-  font-size: 28px;
-  height: 100%;
-  background: #fff;
   > span {
-    display: block;
     position: relative;
-      top: 50%;
-  transform: perspective(1px) translateY(-50%);
+    top: 50%;
+    display: block;
+    transform: perspective(1px) translateY(-50%);
   }
 }

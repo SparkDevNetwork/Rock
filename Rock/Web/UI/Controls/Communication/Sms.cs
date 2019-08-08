@@ -144,6 +144,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 dvpFrom.DefinedTypeId = definedType.Id;
             }
+            dvpFrom.DisplayDescriptions = true;
             dvpFrom.Required = true;
             Controls.Add( dvpFrom );
 
