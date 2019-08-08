@@ -1338,7 +1338,7 @@ namespace RockWeb.Blocks.Steps
             RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
 
-            var chartDataJson = chartFactory.GetJson();
+            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
 
             string script = string.Format( @"
             var barCtx = $('#{0}')[0].getContext('2d');
@@ -1346,7 +1346,7 @@ namespace RockWeb.Blocks.Steps
                                     chartCanvas.ClientID,
                                     chartDataJson );
 
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityBarChartScript", script, true );
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
         }
 
         /// <summary>

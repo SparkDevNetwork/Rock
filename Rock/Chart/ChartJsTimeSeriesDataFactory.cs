@@ -111,14 +111,15 @@ namespace Rock.Chart
 
         public string GetJson()
         {
-            return GetJson( false );
+            // Return the chart configuration using the default layout - width determined by container, aspect ratio not preserved.
+            return GetJson( sizeToFitContainerWidth:true, maintainAspectRatio:false );
         }
 
         /// <summary>
         /// Get a data structure in JSON format that is compatible for use with the Chart.js component.
         /// </summary>
         /// <returns></returns>
-        public string GetJson( bool autoResize )
+        public string GetJson( bool sizeToFitContainerWidth, bool maintainAspectRatio )
         {
             // Create the data structure for Chart.js parameter "data.datasets".
             dynamic chartData;
@@ -169,9 +170,17 @@ namespace Rock.Chart
             var optionsLegend = new { position = "bottom", display = true };
 
             // Create the data structure for Chart.js parameter "options".
-            // Note if "maintainAspectRatio" is set to true, "responsive" must also be set to true to avoid the chart resizing issue detailed here:
+
+            // If "maintainAspectRatio" is enabled, responsive mode must also be enabled to avoid a Chart.js resizing bug detailed here:
             // https://github.com/chartjs/Chart.js/issues/1006
-            dynamic optionsData = new { maintainAspectRatio = autoResize, responsive = autoResize, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
+            // Until this issue is resolved, avoid this invalid combination of settings.
+            if ( maintainAspectRatio &&
+                 !sizeToFitContainerWidth )
+            {
+                sizeToFitContainerWidth = true;
+            }
+
+            dynamic optionsData = new { maintainAspectRatio, responsive = sizeToFitContainerWidth, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
 
             // Create the data structure for Chartjs parameter "chart".
             string chartStyle = GetChartJsStyleParameterValue( this.ChartStyle );
