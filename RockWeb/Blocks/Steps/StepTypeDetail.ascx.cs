@@ -1577,24 +1577,23 @@ namespace RockWeb.Blocks.Steps
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
 
-            if ( chartFactory.HasData )
-            {
-                // Add client script to construct the chart.
-                var chartDataJson = chartFactory.GetJson( autoResize: false );
-
-                string script = string.Format( @"
-var barCtx = $('#{0}')[0].getContext('2d');
-var barChart = new Chart(barCtx, {1});",
-                                                chartCanvas.ClientID,
-                                                chartDataJson );
-
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
-            }
-            else
+            if ( !chartFactory.HasData )
             {
                 // If no data, show a notification.
                 nbActivityChartMessage.Text = "There are no Steps matching the current filter.";
+                return;
             }
+
+            // Add client script to construct the chart.
+            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
+
+            string script = string.Format( @"
+            var barCtx = $('#{0}')[0].getContext('2d');
+            var barChart = new Chart(barCtx, {1});",
+                                            chartCanvas.ClientID,
+                                            chartDataJson );
+
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityChartScript", script, true );
         }
 
         /// <summary>
