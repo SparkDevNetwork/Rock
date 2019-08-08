@@ -799,7 +799,7 @@ namespace RockWeb.Blocks.Steps
 
             service.Delete( step );
             rockContext.SaveChanges();
-            ClearBlockCache();
+            ClearBlockData();
         }
 
         /// <summary>
@@ -818,9 +818,9 @@ namespace RockWeb.Blocks.Steps
         private RockContext _rockContext;
 
         /// <summary>
-        /// Clears the block cache.
+        /// Clears the block data.
         /// </summary>
-        private void ClearBlockCache()
+        private void ClearBlockData()
         {
             _rockContext = null;
             _personStepsMap = null;

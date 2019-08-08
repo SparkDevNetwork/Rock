@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -24,38 +25,30 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control that can be used to select a step status from a particular pre-configured step program.
+    /// Control that can be used to select a step program.
     /// </summary>
-    public class StepStatusPicker : RockDropDownList, IStepStatusPicker
+    public class StepProgramPicker : RockDropDownList, IStepProgramPicker
     {
         /// <summary>
-        /// Gets or sets the step program identifier ( Required )
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
-        public int? StepProgramId
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
-            get
-            {
-                return _stepProgramId;
-            }
+            base.OnLoad( e );
 
-            set
+            if ( !Page.IsPostBack )
             {
-                _stepProgramId = value;
-                StepStatusPicker.LoadDropDownItems( this, true );
+                LoadDropDownItems( this, true );
             }
         }
-
-        /// <summary>
-        /// The step program identifier
-        /// </summary>
-        private int? _stepProgramId;
 
         /// <summary>
         /// Loads the drop down items.
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        internal static void LoadDropDownItems( IStepStatusPicker picker, bool includeEmptyOption )
+        internal static void LoadDropDownItems( IStepProgramPicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -63,30 +56,23 @@ namespace Rock.Web.UI.Controls
 
             picker.Items.Clear();
 
-            if ( !picker.StepProgramId.HasValue )
-            {
-                return;
-            }
-
             if ( includeEmptyOption )
             {
                 // add Empty option first
                 picker.Items.Add( new ListItem() );
             }
 
-            var stepStatusService = new StepStatusService( new RockContext() );
-            var statuses = stepStatusService.Queryable().AsNoTracking()
-                .Where( ss =>
-                    ss.StepProgramId == picker.StepProgramId.Value &&
-                    ss.IsActive )
-                .OrderBy( ss => ss.Order )
-                .ThenBy( ss => ss.Name )
+            var stepProgramService = new StepProgramService( new RockContext() );
+            var stepPrograms = stepProgramService.Queryable().AsNoTracking()
+                .Where( sp => sp.IsActive )
+                .OrderBy( sp => sp.Order )
+                .ThenBy( sp => sp.Name )
                 .ToList();
 
-            foreach ( var status in statuses )
+            foreach ( var stepProgram in stepPrograms )
             {
-                var li = new ListItem( status.Name, status.Id.ToString() );
-                li.Selected = selectedItems.Contains( status.Id );
+                var li = new ListItem( stepProgram.Name, stepProgram.Id.ToString() );
+                li.Selected = selectedItems.Contains( stepProgram.Id );
                 picker.Items.Add( li );
             }
         }
@@ -95,13 +81,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IStepStatusPicker
+    public interface IStepProgramPicker
     {
-        /// <summary>
-        /// Gets or sets the step program identifier.
-        /// </summary>
-        int? StepProgramId { get; set; }
-
         /// <summary>
         /// Gets the items.
         /// </summary>

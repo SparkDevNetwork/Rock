@@ -24,9 +24,9 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control that can be used to select a step status from a particular pre-configured step program.
+    /// Control that can be used to select a step type from a particular pre-configured step program.
     /// </summary>
-    public class StepStatusPicker : RockDropDownList, IStepStatusPicker
+    public class StepTypePicker : RockDropDownList, IStepTypePicker
     {
         /// <summary>
         /// Gets or sets the step program identifier ( Required )
@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _stepProgramId = value;
-                StepStatusPicker.LoadDropDownItems( this, true );
+                StepTypePicker.LoadDropDownItems( this, true );
             }
         }
 
@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        internal static void LoadDropDownItems( IStepStatusPicker picker, bool includeEmptyOption )
+        internal static void LoadDropDownItems( IStepTypePicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -74,28 +74,28 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var stepStatusService = new StepStatusService( new RockContext() );
-            var statuses = stepStatusService.Queryable().AsNoTracking()
-                .Where( ss =>
-                    ss.StepProgramId == picker.StepProgramId.Value &&
-                    ss.IsActive )
-                .OrderBy( ss => ss.Order )
-                .ThenBy( ss => ss.Name )
+            var stepTypeService = new StepTypeService( new RockContext() );
+            var stepTypes = stepTypeService.Queryable().AsNoTracking()
+                .Where( st =>
+                    st.StepProgramId == picker.StepProgramId.Value &&
+                    st.IsActive )
+                .OrderBy( st => st.Order )
+                .ThenBy( st => st.Name )
                 .ToList();
 
-            foreach ( var status in statuses )
+            foreach ( var stepType in stepTypes )
             {
-                var li = new ListItem( status.Name, status.Id.ToString() );
-                li.Selected = selectedItems.Contains( status.Id );
+                var li = new ListItem( stepType.Name, stepType.Id.ToString() );
+                li.Selected = selectedItems.Contains( stepType.Id );
                 picker.Items.Add( li );
-            }
+            }            
         }
     }
 
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IStepStatusPicker
+    public interface IStepTypePicker
     {
         /// <summary>
         /// Gets or sets the step program identifier.
