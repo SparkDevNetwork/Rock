@@ -433,71 +433,20 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
         public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody]ConfigureTextToGiveArgs args )
         {
-            // Validate the person
-            var person = Service.Get( personId );
+            var personService = Service as PersonService;
+            var success = personService.ConfigureTextToGive( personId, args.ContributionFinancialAccountId, args.FinancialPersonSavedAccountId, out var errorMessage );
 
-            if ( person == null )
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The person ID is not valid" );
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, errorMessage );
             }
 
-            // Load the person's saved accounts
-            var rockContext = Service.Context as RockContext;
-            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
-            var personsSavedAccounts = savedAccountService.Queryable()
-                .Include( sa => sa.PersonAlias )
-                .Where( sa => sa.PersonAlias.PersonId == personId )
-                .ToList();
-
-            // Loop through each saved account. Set default to false unless the args dictate that it is the default
-            var foundDefaultAccount = false;
-
-            foreach ( var savedAccount in personsSavedAccounts )
+            if ( !success )
             {
-                if ( !foundDefaultAccount && savedAccount.Id == args.FinancialPersonSavedAccountId )
-                {
-                    savedAccount.IsDefault = true;
-                    foundDefaultAccount = true;
-                }
-                else
-                {
-                    savedAccount.IsDefault = false;
-                }
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.InternalServerError, "The action was not successful but not error was specified" );
             }
 
-            // If the args specified an account to be default but it was not found, then return an error
-            if ( args.FinancialPersonSavedAccountId.HasValue && !foundDefaultAccount )
-            {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The saved account ID is not valid" );
-            }
-
-            // Validate the account if it is being set
-            if ( args.ContributionFinancialAccountId.HasValue )
-            {
-                var accountService = new FinancialAccountService( rockContext );
-                var account = accountService.Get( args.ContributionFinancialAccountId.Value );
-
-                if ( account == null )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The financial account ID is not valid" );
-                }
-
-                if ( !account.IsActive )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not active" );
-                }
-
-                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not public" );
-                }
-            }
-
-            // Set the person's contribution account ID
-            person.ContributionFinancialAccountId = args.ContributionFinancialAccountId;
-
-            // Success
-            rockContext.SaveChanges();
+            Service.Context.SaveChanges();
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
@@ -905,6 +854,30 @@ namespace Rock.Rest.Controllers
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
+        }
+
+        /// <summary>
+        /// Gets the current person's impersonation token. This is used by external apps who might have a logged in person but
+        /// need to create a impersonation token to link to the website. For instance a mobile app might have the current person
+        /// and have a cookie, but would like to link out to the website.
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
+        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            var currentPerson = GetPerson();
+
+            if ( currentPerson == null )
+            {
+                return string.Empty;
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
         }
 
         /// <summary>

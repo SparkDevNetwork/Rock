@@ -38,7 +38,7 @@ namespace Rock.PersonProfile.Badge
         /// <summary>
         /// Gets the badge label
         /// </summary>
-        /// <param name="person">The entity.</param>
+        /// <param name="entity">The entity.</param>
         /// <returns></returns>
         public override HighlightLabel GetLabel( IEntity entity )
         {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -487,6 +488,107 @@ namespace Rock.Rest.Controllers
             return financialTransactionService.GetFinancialTransactionExport( page, actualPageSize, exportOptions );
         }
 
+        /// <summary>
+        /// Gets the giving history for the person (and giving group) during the year specified.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="year">Defaults to the current year.</param>
+        /// <param name="includeGivingGroup">Should transactions belonging to anyone in the person's giving group be included</param>
+        /// <param name="transactionTypeGuid">The guid of the defined value of the transaction type to include. If omitted, all transaction types will be included</param>
+        /// <param name="excludedStatus">Transactions of this status will be excluded. If omitted, all transaction statuses will be included</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/FinancialTransactions/GivingHistory/{personAliasId}" )]
+        public virtual List<Gift> GetGivingHistory( int personAliasId,
+            [FromUri]int? year = null, [FromUri]bool includeGivingGroup = true, [FromUri]Guid? transactionTypeGuid = null, [FromUri]string excludedStatus = null )
+        {
+            // Get all of the query filters ready
+            var yearFilter = year ?? RockDateTime.Now.Year;
+            var transactionTypeValue = transactionTypeGuid.HasValue ? DefinedValueCache.Get( transactionTypeGuid.Value ) : null;
+
+            // Validate the filters
+            if ( transactionTypeGuid.HasValue && transactionTypeValue == null )
+            {
+                var errorMessage = $"A transaction type defined value was expected for guid '{transactionTypeGuid.Value}', but was not found";
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Query for the transactions
+            var rockContext = new RockContext();
+            var transactionService = new FinancialTransactionService( rockContext );
+
+            var query = transactionService.Queryable( "FinancialPaymentDetail, TransactionDetails.Account" ).AsNoTracking().Where( t =>
+                t.AuthorizedPersonAliasId.HasValue &&
+                t.TransactionDateTime.HasValue &&
+                t.TransactionDateTime.Value.Year == yearFilter );
+
+            // If we include the giving group, then query for everyone in it, otherwise just the id sent
+            if ( includeGivingGroup )
+            {
+                query = query.Where( t => t.AuthorizedPersonAlias.Person.GivingGroup.Members.Any( m => m.Person.Aliases.Any( a => a.Id == personAliasId ) ) );
+            }
+            else
+            {
+                query = query.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+            }
+
+            // If there is an excluded param, then exclude those statuses from the results
+            if ( excludedStatus != null )
+            {
+                query = query.Where( t => t.Status != excludedStatus );
+            }
+
+            // If there is a transaction type then only include transactions of that type
+            if ( transactionTypeValue != null )
+            {
+                query = query.Where( t => t.TransactionTypeValueId == transactionTypeValue.Id );
+            }
+
+            // Enumerate the transactions. Expiration month and year cannot be copied directly in LINQ queries without first enumerating.
+            var transactions = query.OrderByDescending( g => g.TransactionDateTime ).ToList();
+
+            // Generate return objects from the transactions
+            var gifts = transactions.Select( t => new Gift
+            {
+                Id = t.Id,
+                Guid = t.Guid,
+                AuthorizedPersonAliasId = t.AuthorizedPersonAliasId.Value,
+                ForeignKey = t.ForeignKey,
+                ScheduledTransactionId = t.ScheduledTransactionId,
+                TransactionDateTime = t.TransactionDateTime.Value,
+                Summary = t.Summary,
+                TransactionCode = t.TransactionCode,
+                TransactionTypeValueId = t.TransactionTypeValueId,
+                Status = t.Status,
+                TotalAmount = t.TotalAmount,
+                FinancialPaymentDetail = t.FinancialPaymentDetail == null ? null : new GiftPaymentDetail
+                {
+                    Id = t.FinancialPaymentDetail.Id,
+                    AccountNumberMasked = t.FinancialPaymentDetail.AccountNumberMasked,
+                    ForeignKey = t.FinancialPaymentDetail.ForeignKey,
+                    CreditCardTypeValueId = t.FinancialPaymentDetail.CreditCardTypeValueId,
+                    CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
+                    ExpirationMonth = t.FinancialPaymentDetail.ExpirationMonth,
+                    ExpirationYear = t.FinancialPaymentDetail.ExpirationYear
+                },
+                TransactionDetails = t.TransactionDetails?.Select( d => new GiftDetail
+                {
+                    Amount = d.Amount,
+                    Account = d.Account == null ? null : new GiftAccount
+                    {
+                        Id = d.Account.Id,
+                        PublicName = d.Account.PublicName,
+                        ParentAccountId = d.Account.ParentAccountId,
+                        CampusId = d.Account.CampusId
+                    }
+                } ).ToList()
+            } ).ToList();
+
+            return gifts;
+        }
+
         #region helper classes
 
         /// <summary>
@@ -549,6 +651,246 @@ namespace Rock.Rest.Controllers
             ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
             /// </value>
             public bool OrderByPostalCode { get; set; }
+        }
+
+        /// <summary>
+        /// A response object for the giving history endpoint. Closely resembles a <see cref="Rock.Model.FinancialTransaction"/>
+        /// </summary>
+        public class Gift
+        {
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="Rock.Model.FinancialTransaction"/>.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authorized person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The authorized person alias identifier.
+            /// </value>
+            public int AuthorizedPersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique identifier of the <see cref="Rock.Model.FinancialTransaction"/>.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the foreign key. This may be the Stripe customer identifier.
+            /// </summary>
+            /// <value>
+            /// The foreign key.
+            /// </value>
+            public string ForeignKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets date and time that the transaction occurred. This is the local server time.
+            /// </summary>
+            /// <value>
+            /// A <see cref="DateTime"/> representing the time that the transaction occurred. This is the local server time.
+            /// </value>
+            public DateTime TransactionDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction" /> that triggered
+            /// this transaction. If this was an ad-hoc/on demand transaction, this property will be null.
+            /// </summary>
+            /// <value>
+            /// A <see cref="int"/> representing the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction"/>
+            /// </value>
+            public int? ScheduledTransactionId { get; set; }
+
+            /// <summary>
+            /// For Credit Card transactions, this is the response code that the gateway returns. 
+            /// For Scanned Checks, this is the check number.
+            /// </summary>
+            /// <value>
+            /// A <see cref="string"/> representing the transaction code of the transaction.
+            /// </value>
+            public string TransactionCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a summary of the transaction.
+            /// </summary>
+            /// <value>
+            /// A <see cref="string"/> representing a summary of the transaction.
+            /// </value>
+            public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets or sets the total amount.
+            /// </summary>
+            /// <value>
+            /// The total amount.
+            /// </value>
+            public decimal TotalAmount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction type identifier.
+            /// </summary>
+            /// <value>
+            /// The transaction type identifier.
+            /// </value>
+            public int TransactionTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status.
+            /// </summary>
+            /// <value>
+            /// The status.
+            /// </value>
+            public string Status { get; set; }
+
+            /// <summary>
+            /// Gets or sets the financial payment detail.
+            /// </summary>
+            /// <value>
+            /// The financial payment detail.
+            /// </value>
+            public GiftPaymentDetail FinancialPaymentDetail { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction details.
+            /// </summary>
+            /// <value>
+            /// The transaction details.
+            /// </value>
+            public List<GiftDetail> TransactionDetails { get; set; }
+        }
+
+        /// <summary>
+        /// A response object for the giving history endpoint. Closely resembles a <see cref="Rock.Model.FinancialPaymentDetail"/>
+        /// </summary>
+        public class GiftPaymentDetail
+        {
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="Rock.Model.FinancialPaymentDetail"/>.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s)
+            /// </summary>
+            /// <value>
+            /// The account number masked.
+            /// </value>
+            public string AccountNumberMasked { get; set; }
+
+            /// <summary>
+            /// Gets or sets the foreign key. This may be the Stripe customer identifier.
+            /// </summary>
+            /// <value>
+            /// The foreign key.
+            /// </value>
+            public string ForeignKey { get; set; }
+
+            /// <summary>
+            /// Gets the expiration month by decrypting ExpirationMonthEncrypted
+            /// </summary>
+            /// <value>
+            /// The expiration month.
+            /// </value>
+            public int? ExpirationMonth { get; set; }
+
+            /// <summary>
+            /// Gets the expiration year by decrypting ExpirationYearEncrypted
+            /// </summary>
+            /// <value>
+            /// The expiration year.
+            /// </value>
+            public int? ExpirationYear { get; set; }
+
+            /// <summary>
+            /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
+            /// to make this transaction. This value will be null for transactions that were not made by credit card.
+            /// </summary>
+            /// <value>
+            /// A <see cref="int"/> representing the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> that was used to make this transaction.
+            /// This value will be null for transactions that were not made by credit card.
+            /// </value>
+            public int? CreditCardTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the DefinedValueId of the currency type <see cref="Rock.Model.DefinedValue"/> indicating the currency that the
+            /// transaction was made in.
+            /// </summary>
+            /// <value>
+            /// A <see cref="int" /> representing the DefinedValueId of the CurrencyType <see cref="Rock.Model.DefinedValue" /> for this transaction.
+            /// </value>
+            public int? CurrencyTypeValueId { get; set; }
+        }
+
+        /// <summary>
+        /// A response object for the gift endpoint. Closely resembles a <see cref="Rock.Model.FinancialTransactionDetail"/>
+        /// </summary>
+        public class GiftDetail
+        {
+            /// <summary>
+            /// Gets or sets the total amount of the transaction detail. This total amount includes any associated fees.
+            /// </summary>
+            /// <value>
+            /// A <see cref="decimal"/> representing the total amount of the transaction detail.
+            /// </value>
+            public decimal Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account.
+            /// </summary>
+            /// <value>
+            /// The account.
+            /// </value>
+            public GiftAccount Account { get; set; }
+        }
+
+        /// <summary>
+        /// A response object for the gift endpoint. Closely resembles a <see cref="Rock.Model.FinancialAccount"/>
+        /// </summary>
+        public class GiftAccount
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the public name of the account.
+            /// </summary>
+            /// <value>
+            /// The name of the public.
+            /// </value>
+            public string PublicName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. If this
+            /// FinancialAccount does not have a parent, this property will be null.
+            /// </summary>
+            /// <value>
+            /// A <see cref="int"/> representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. 
+            /// This property will be null if the FinancialAccount does not have a parent.
+            /// </value>
+            public int? ParentAccountId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the CampusId of the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with. If this FinancialAccount is not
+            /// associated with a <see cref="Rock.Model.Campus"/> this property will be null.
+            /// </summary>
+            /// <value>
+            /// A <see cref="int"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that the FinancialAccount is associated with.
+            /// </value>
+            public int? CampusId { get; set; }
         }
 
         #endregion

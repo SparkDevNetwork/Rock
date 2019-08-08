@@ -68,7 +68,7 @@
                         <asp:repeater id="rStepTypeCards" runat="server" OnItemDataBound="rStepTypeCards_ItemDataBound">
                             <itemtemplate>
                                 <div class="col-steps">
-                                    <div class="step-card <%# Eval( "CardCssClass" ) %>">
+                                    <div class="step-card styled-scroll <%# Eval( "CardCssClass" ) %>">
                                         <div class="card-info">
                                             <%# Eval( "RenderedLava" ) %>
                                         </div>
@@ -145,8 +145,16 @@ $( ".step-card" ).each(function( index ) {
             scale = (freeSpace / (infoHeight + 8));
             pixelOffset = Math.floor((cardHeight/2) - ((freeSpace - (infoHeight)) / 2));
 
+            if (scale < .5 ) {
+                $(this).addClass('has-overflow');
+            }
+
             $(this).mouseenter(function() {
-                $(this).find('.card-add-step-button span').css('transform', 'translateY(-' + pixelOffset + 'px) scale('+scale+')');
+                if (scale < .5)  {
+                    $(this).find('.card-add-step-button span').css('position', 'relative').css('transform', 'scale(.75)');
+                } else {
+                    $(this).find('.card-add-step-button span').css('transform', 'translateY(-' + pixelOffset + 'px) scale('+scale+')');
+                }
             }).mouseleave(function() {
                 $(this).find('.card-add-step-button span').css('transform', '');
             });

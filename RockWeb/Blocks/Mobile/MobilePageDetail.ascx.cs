@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -127,6 +128,41 @@ namespace RockWeb.Blocks.Mobile
             ViewState["ComponentItemState"] = ComponentItemState;
 
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? pageId = PageParameter( pageReference, "Page" ).AsIntegerOrNull();
+            if ( pageId != null )
+            {
+                var page = new PageService( new RockContext() ).Get( pageId.Value );
+
+                if ( page != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( page.InternalName, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Page", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
         }
 
         #endregion
@@ -441,7 +477,7 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( page == null )
             {
-                nbError.Text = "That page does not exist in the system.";
+                nbError.Text = "This page does not exist in the system.";
 
                 pnlDetails.Visible = false;
                 pnlBlocks.Visible = false;
@@ -466,10 +502,12 @@ namespace RockWeb.Blocks.Mobile
             // Setup the Details panel information.
             //
             hfPageId.Value = page.Id.ToString();
-            ltPageName.Text = page.InternalName.EncodeHtml();
+            lPageName.Text = page.InternalName;
+            lPageGuid.Text = "Page Guid: " + page.Guid.ToString();
 
             var fields = new List<KeyValuePair<string, string>>();
 
+            fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
             fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
             fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed ? "<i class='fa fa-check'></i>" : string.Empty ) );
 
@@ -525,6 +563,10 @@ namespace RockWeb.Blocks.Mobile
 
             BindBlockTypeRepeater();
             BindZones();
+
+            pnlDetails.Visible = true;
+            pnlEditPage.Visible = false;
+            pnlBlocks.Visible = true;
         }
 
         /// <summary>
@@ -568,12 +610,16 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
+            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+
             //
             // Set the basic fields of the page.
             //
-            tbName.Text = page.InternalName;
+            tbName.Text = page.PageTitle;
+            tbInternalName.Text = page.InternalName;
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
+            ceEventHandler.Text = additionalSettings.LavaEventHandler;
 
             //
             // Configure the layout options.
@@ -621,12 +667,16 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            page.InternalName = tbName.Text;
+            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            additionalSettings.LavaEventHandler = ceEventHandler.Text;
+
+            page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
             page.PageTitle = tbName.Text;
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
+            page.HeaderContent = additionalSettings.ToJson();
 
             rockContext.SaveChanges();
 

@@ -35,11 +35,19 @@ namespace Rock.Transactions
         private int? CurrentStepStatusId;
         private int? PreviousStepStatusId;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StepChangeTransaction"/> class.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
         public StepChangeTransaction( DbEntityEntry entry )
             : base( entry )
         {
         }
 
+        /// <summary>
+        /// Called when [capture entity change parameters].
+        /// </summary>
+        /// <param name="entry">The entry.</param>
         protected override void OnCaptureEntityChangeParameters( DbEntityEntry entry )
         {
             var entity = (Step)entry.Entity;
@@ -64,6 +72,12 @@ namespace Rock.Transactions
             }
         }
 
+        /// <summary>
+        /// Get a list of triggers that may be fired by a state change in the entity being processed.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="entityGuid"></param>
+        /// <returns></returns>
         protected override List<StepWorkflowTrigger> GetEntityChangeTriggers( RockContext dataContext, Guid entityGuid )
         {
             // Get the triggers associated with this Step, as defined by the Step Type.
@@ -88,6 +102,14 @@ namespace Rock.Transactions
             return triggers;
         }
 
+        /// <summary>
+        /// Evaluate if a specific trigger should be processed for the target entity.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="trigger"></param>
+        /// <param name="entityGuid"></param>
+        /// <param name="entityState"></param>
+        /// <returns></returns>
         protected override bool ShouldProcessTrigger( RockContext dataContext, StepWorkflowTrigger trigger, Guid entityGuid, EntityState entityState )
         {
             if ( trigger.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged )
@@ -128,6 +150,13 @@ namespace Rock.Transactions
             return false;
         }
 
+        /// <summary>
+        /// Create an associative entity that stores the relationship between the workflow instance and the target entity.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="targetEntityId"></param>
+        /// <param name="workflowId"></param>
+        /// <param name="triggerId"></param>
         protected override void CreateWorkflowInstanceEntity( RockContext dataContext, int targetEntityId, int workflowId, int triggerId )
         {
             // Create a new StepWorkflow instance to track the association between the Step and the Workflow.
@@ -143,7 +172,12 @@ namespace Rock.Transactions
             stepWorkflowService.Add( stepWorkflow );
         }
 
-
+        /// <summary>
+        /// Get the target entity.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="entityGuid"></param>
+        /// <returns></returns>
         protected override IEntity GetTargetEntity( RockContext dataContext, Guid entityGuid )
         {
             var stepService = new StepService( dataContext );
@@ -153,6 +187,13 @@ namespace Rock.Transactions
             return step;
         }
 
+        /// <summary>
+        /// Get a set of known properties from the specified trigger.
+        /// </summary>
+        /// <param name="trigger"></param>
+        /// <param name="workflowTypeId"></param>
+        /// <param name="triggerId"></param>
+        /// <param name="triggerName"></param>
         protected override void GetWorkflowTriggerProperties( StepWorkflowTrigger trigger, out int workflowTypeId, out int triggerId, out string triggerName )
         {
             triggerId = trigger.Id;
@@ -191,15 +232,18 @@ namespace Rock.Transactions
         /// <summary>
         /// Get a list of triggers that may be fired by a state change in the entity being processed.
         /// </summary>
-        /// <param name="dataContext"></param>
+        /// <param name="dataContext">The data context.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
         /// <returns></returns>
         protected abstract List<TTrigger> GetEntityChangeTriggers( RockContext dataContext, Guid entityGuid );
 
         /// <summary>
         /// Evaluate if a specific trigger should be processed for the target entity.
         /// </summary>
-        /// <param name="dataContext"></param>
-        /// <param name="trigger"></param>
+        /// <param name="dataContext">The data context.</param>
+        /// <param name="trigger">The trigger.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="entityState">State of the entity.</param>
         /// <returns></returns>
         protected abstract bool ShouldProcessTrigger( RockContext dataContext, TTrigger trigger, Guid entityGuid, EntityState entityState );
 
@@ -213,9 +257,10 @@ namespace Rock.Transactions
         protected abstract void CreateWorkflowInstanceEntity( RockContext dataContext, int targetEntityId, int workflowId, int triggerId );
 
         /// <summary>
-        /// Get the target entity.
+        /// Gets the target entity.
         /// </summary>
-        /// <param name="dataContext"></param>
+        /// <param name="dataContext">The data context.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
         /// <returns></returns>
         protected abstract IEntity GetTargetEntity( RockContext dataContext, Guid entityGuid );
 
@@ -229,9 +274,10 @@ namespace Rock.Transactions
         protected abstract void GetWorkflowTriggerProperties( TTrigger trigger, out int workflowTypeId, out int triggerId, out string triggerName );
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityChangeWorkflowTriggerTransactionBase"/> class.
+        /// Initializes a new instance of the <see cref="EntityChangeWorkflowTriggerTransactionBase{TEntity, TTrigger}"/> class.
         /// </summary>
-        /// <param name="dbEntry">The Entity Framework object containing information about the change.</param>
+        /// <param name="dbEntry">The database entry.</param>
+        /// <exception cref="Exception">EntityChangeWorkflowTriggerTransaction initialization failed. A target entity of Type \"{ typeof( TEntity ).Name }\" is required. [EntityType=\"{ dbEntry.Entity.GetType().Name }\"]</exception>
         public EntityChangeWorkflowTriggerTransactionBase( DbEntityEntry dbEntry )
         {
             // Verify that the entity if of the expected type for this transaction.
@@ -290,9 +336,10 @@ namespace Rock.Transactions
         /// <summary>
         /// Create and launch a new instance of a workflow for the specified trigger.
         /// </summary>
-        /// <param name="dataContext"></param>
-        /// <param name="trigger"></param>
-        /// <param name="name"></param>
+        /// <param name="dataContext">The data context.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="triggerId">The trigger identifier.</param>
+        /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext dataContext, int workflowTypeId, int triggerId, string name )
         {
             // Get the Workflow Type associated with this trigger.

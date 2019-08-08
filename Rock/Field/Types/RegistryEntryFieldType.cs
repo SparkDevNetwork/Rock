@@ -1,4 +1,9 @@
-﻿// You may obtain a copy of the License at
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
 // http://www.rockrms.com/license
 //
@@ -17,6 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+    /// <summary>
+    /// Field Type used for Volume / Page / Entry that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
+    /// </summary>
+    /// <seealso cref="Rock.Field.FieldType" />
     public class RegistryEntryFieldType : FieldType
     {
         /// <summary>

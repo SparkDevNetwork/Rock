@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Rock;
 using Rock.Attribute;
@@ -25,19 +26,97 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// 
+    /// Transaction Links
     /// </summary>
     [DisplayName( "Person Transaction Links" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Block for displaying links to add and schedule transactions for a person." )]
 
-    [LinkedPage( "Add Transaction Page", "", true, Rock.SystemGuid.Page.ADD_TRANSACTION, "", 0 )]
-    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 1 )]
+    #region Block Attributes
 
-    [IntegerField( "Person Token Expire Minutes", "The number of minutes the person token for the transaction is valid after it is issued.", true, 60, "", 2 )]
-    [IntegerField( "Person Token Usage Limit", "The maximum number of times the person token for the transaction can be used.", false, 1, "", 3 )]
+    [LinkedPage(
+        name: "Add Transaction Page",
+        description: "",
+        required: true,
+        defaultValue: Rock.SystemGuid.Page.ADD_TRANSACTION,
+        category: "",
+        order: 0,
+        key: AttributeKey.AddTransactionPage )]
+
+    [LinkedPage(
+        name: "Text to Give Settings Page",
+        description: "",
+        required: false,
+        defaultValue: "",
+        category: "",
+        order: 0,
+        key: AttributeKey.TextToGiveSettingsPage )]
+
+    [BooleanField(
+        name: "Is Secondary Block",
+        description: "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
+        defaultValue: false,
+        category: "",
+        order: 1,
+        key: AttributeKey.IsSecondaryBlock )]
+
+    [IntegerField(
+        name: "Person Token Expire Minutes",
+        description: "The number of minutes the person token for the transaction is valid after it is issued.",
+        required: true,
+        defaultValue: 60,
+        category: "",
+        order: 2,
+        key: AttributeKey.PersonTokenExpireMinutes )]
+
+    [IntegerField(
+        name: "Person Token Usage Limit",
+        description: "The maximum number of times the person token for the transaction can be used.",
+        required: false,
+        defaultValue: 1,
+        category: "",
+        order: 3,
+        key: AttributeKey.PersonTokenUsageLimit )]
+
+    #endregion Block Attributes
+
     public partial class TransactionLinks : PersonBlock, ISecondaryBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        protected static class AttributeKey
+        {
+            /// <summary>
+            /// The add transaction page
+            /// </summary>
+            public const string AddTransactionPage = "AddTransactionPage";
+
+            /// <summary>
+            /// The is secondary block
+            /// </summary>
+            public const string IsSecondaryBlock = "IsSecondaryBlock";
+
+            /// <summary>
+            /// The person token expire minutes
+            /// </summary>
+            public const string PersonTokenExpireMinutes = "PersonTokenExpireMinutes";
+
+            /// <summary>
+            /// The person token usage limit
+            /// </summary>
+            public const string PersonTokenUsageLimit = "PersonTokenUsageLimit";
+
+            /// <summary>
+            /// The text to give settings page
+            /// </summary>
+            public const string TextToGiveSettingsPage = "TextToGiveSettingsPage";
+        }
+
+        #endregion Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -51,6 +130,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            if ( !IsPostBack )
+            {
+                if ( GetAttributeValue( AttributeKey.TextToGiveSettingsPage ).IsNullOrWhiteSpace() )
+                {
+                    btnTextToGiveSettings.Visible = false;
+                }
+            }
         }
 
         /// <summary>
@@ -77,7 +164,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            if ( GetAttributeValue( AttributeKey.TextToGiveSettingsPage ).IsNullOrWhiteSpace() )
+            {
+                btnTextToGiveSettings.Visible = false;
+            }
+            else
+            {
+                btnTextToGiveSettings.Visible = true;
+            }
         }
 
         /// <summary>
@@ -87,12 +181,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddTransaction_Click( object sender, EventArgs e )
         {
-            var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( "AddTransactionPage" ) );
+            var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( AttributeKey.AddTransactionPage ) );
             if ( addTransactionPage != null )
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.PageId );
+                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
                 Response.Redirect( string.Format( "~/AddTransaction?Person={0}", personKey ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnTextToGiveSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnTextToGiveSettings_Click( object sender, EventArgs e )
+        {
+            var settingsPage = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.TextToGiveSettingsPage ) );
+
+            if ( settingsPage != null && Person != null )
+            {
+                NavigateToLinkedPage( AttributeKey.TextToGiveSettingsPage, new Dictionary<string, string> { { "PersonId", Person.Id.ToString() } } );
             }
         }
 
@@ -117,7 +226,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            if ( this.GetAttributeValue( "IsSecondaryBlock" ).AsBooleanOrNull() ?? false )
+            if ( this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false )
             {
                 // hide the entire block
                 this.Visible = visible;

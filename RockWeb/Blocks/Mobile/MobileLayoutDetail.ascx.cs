@@ -22,6 +22,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Mobile
@@ -45,6 +46,41 @@ namespace RockWeb.Blocks.Mobile
             {
                 ShowDetail( PageParameter( "LayoutId" ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? layoutId = PageParameter( pageReference, "LayoutId" ).AsIntegerOrNull();
+            if ( layoutId != null )
+            {
+                var layout = new LayoutService( new RockContext() ).Get( layoutId.Value );
+
+                if ( layout != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( layout.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Layout", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
         }
 
         #endregion

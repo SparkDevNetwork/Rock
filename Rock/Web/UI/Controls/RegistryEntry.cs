@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Volume / Page / Entry Control that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />

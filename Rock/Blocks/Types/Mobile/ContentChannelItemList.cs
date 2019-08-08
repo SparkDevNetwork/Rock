@@ -101,12 +101,28 @@ namespace Rock.Blocks.Types.Mobile
         Order = 7,
         Category = "CustomSetting" )]
 
+    [BooleanField( "Show Children of Parent",
+        Description = "If enabled the block will look for a passed ParentItemId parameter and if found filter for children of this parent item.",
+        Key = AttributeKeys.ShowChildrenOfParent,
+        IsRequired = false,
+        Order = 8,
+        DefaultBooleanValue = false,
+        Category = "CustomSetting" )]
+
+    [BooleanField( "Check Item Security",
+        Description = "Determines if the security of each item should be checked. Recommend not checking security of each item unless required.",
+        Key = AttributeKeys.CheckItemSecurity,
+        IsRequired = true,
+        Order = 9,
+        DefaultBooleanValue = false,
+        Category = "CustomSetting" )]
+
     [TextField( "Order",
         Description = "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.",
         Key = AttributeKeys.Order,
         IsRequired = false,
         DefaultValue = "",
-        Order = 8,
+        Order = 10,
         Category = "CustomSetting" )]
 
     [CodeEditorField(
@@ -134,11 +150,6 @@ namespace Rock.Blocks.Types.Mobile
         /// </summary>
         public static class AttributeKeys
         {
-            /// <summary>
-            /// The lava template key
-            /// </summary>
-            public const string LavaTemplate = "LavaTemplate";
-
             /// <summary>
             /// The content channel key
             /// </summary>
@@ -188,12 +199,22 @@ namespace Rock.Blocks.Types.Mobile
             /// The detail page key
             /// </summary>
             public const string DetailPage = "DetailPage";
+
+            /// <summary>
+            /// The show children of parent key
+            /// </summary>
+            public const string ShowChildrenOfParent = "ShowChildrenOfParent";
+
+            /// <summary>
+            /// The check item security key
+            /// </summary>
+            public const string CheckItemSecurity = "CheckItemSecurity";
         }
 
         #region Constants
 
         private const string defaultDataTemplate = @"<StackLayout HeightRequest=""50"" WidthRequest=""200"" Orientation=""Horizontal"" Padding=""0,5,0,5"">
-    <Label Text=""{Binding [Content]}"" />
+    <Label Text=""{Binding Content}"" />
 </StackLayout>";
 
         #endregion
@@ -246,42 +267,78 @@ namespace Rock.Blocks.Types.Mobile
         {
             var contentChannelId = GetAttributeValue( AttributeKeys.ContentChannel ).AsInteger();
             var pageSize = GetAttributeValue( AttributeKeys.PageSize ).AsInteger();
+            var checkSecurity = GetAttributeValue( AttributeKeys.CheckItemSecurity ).AsBoolean();
             var skipNumber = pageNumber * pageSize;
 
             var rockContext = new RockContext();
-            var service = new ContentChannelItemService( rockContext );
-            var qry = service.Queryable().AsNoTracking().Where( i => i.ContentChannelId == contentChannelId );
+            var contentChannelItemService = new ContentChannelItemService( rockContext );
+            var contentChannelItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+
+            var qry = contentChannelItemService.Queryable().AsNoTracking().Where( i => i.ContentChannelId == contentChannelId );
 
             //
-            // Apply custom filtering.
+            // Determine if we should be loading child items from a parent
             //
-            qry = FilterResults( rockContext, service, qry );
+            var showChildrenOfParent = GetAttributeValue( AttributeKeys.ShowChildrenOfParent ).AsBoolean();
+            var parentKeyPassed = RequestContext.GetPageParameters().ContainsKey("ParentItemId");
 
-            //
-            // Now run query, check security and load attributes.
-            //
-            var results = new List<ContentChannelItem>();
-            foreach ( var item in qry.ToList() )
+            if ( parentKeyPassed && showChildrenOfParent )
             {
-                if ( item.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                var parentItemId = RequestContext.GetPageParameters()["ParentItemId"].AsIntegerOrNull();
+
+                if ( parentItemId.HasValue )
                 {
-                    item.LoadAttributes( rockContext );
-                    results.Add( item );
+                    var assoctaionsQry = contentChannelItemAssociationService.Queryable().Where( a => a.ContentChannelItemId == parentItemId );
+
+                    qry = qry.Where( i => assoctaionsQry.Any( a => a.ChildContentChannelItemId == i.Id ) );
                 }
             }
 
             //
-            // Apply custom sorting to the results.
+            // Apply custom filtering.
             //
-            results = SortResults( results );
+            qry = FilterResults( rockContext, contentChannelItemService, qry );
 
             //
-            // Take the final number of items requested.
+            // Apply custom sorting to the results.
             //
-            results = results
-                .Skip( skipNumber )
-                .Take( pageSize )
-                .ToList();
+            qry = SortResults( qry );
+
+            var results = new List<ContentChannelItem>();
+
+            //
+            // Determine if we need to check the security of the items. Is can be slow, especially for channels with LOTS of items.
+            //
+            if ( checkSecurity )
+            {
+                // We have to take all items to check security to ensure we have enough to return the desired item count
+                results = qry.ToList();
+                foreach ( var item in results )
+                {
+                    if ( item.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    {
+                        results.Add( item );
+                    }
+                }
+
+                // Take the final number of items requested.
+                results = results.Skip( skipNumber )
+                            .Take( pageSize )
+                            .ToList();
+            }
+            else
+            {
+                // Just take the number requested
+                results = qry.Skip( skipNumber )
+                            .Take( pageSize )
+                            .ToList();
+            }
+
+            // Load attributes
+            foreach ( var item in results )
+            {
+                item.LoadAttributes( rockContext );
+            }
 
             var followedItemIds = GetFollowedItemIds( rockContext, results );
 
@@ -429,11 +486,12 @@ namespace Rock.Blocks.Types.Mobile
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns></returns>
-        private List<ContentChannelItem> SortResults( List<ContentChannelItem> items )
+        private IQueryable<ContentChannelItem> SortResults( IQueryable<ContentChannelItem> items )
         {
             SortProperty sortProperty = null;
 
             string orderBy = GetAttributeValue( "Order" );
+
             if ( !string.IsNullOrWhiteSpace( orderBy ) )
             {
                 var fieldDirection = new List<string>();
@@ -461,7 +519,6 @@ namespace Rock.Blocks.Types.Mobile
 
                 string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                var itemQry = items.AsQueryable();
                 IOrderedQueryable<ContentChannelItem> orderedQry = null;
 
                 for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
@@ -484,13 +541,13 @@ namespace Rock.Blocks.Types.Mobile
                             if ( direction == SortDirection.Ascending )
                             {
                                 orderedQry = ( columnIndex == 0 ) ?
-                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                    items.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
                                     orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
                             }
                             else
                             {
                                 orderedQry = ( columnIndex == 0 ) ?
-                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                    items.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
                                     orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
                             }
                         }
@@ -498,30 +555,30 @@ namespace Rock.Blocks.Types.Mobile
                         {
                             if ( direction == SortDirection.Ascending )
                             {
-                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                                orderedQry = ( columnIndex == 0 ) ? items.OrderBy( column ) : orderedQry.ThenBy( column );
                             }
                             else
                             {
-                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                                orderedQry = ( columnIndex == 0 ) ? items.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
                             }
                         }
                     }
                     catch { }
-
                 }
 
                 try
                 {
                     if ( orderedQry != null )
                     {
-                        return orderedQry.ToList();
+                        return orderedQry;
                     }
                 }
                 catch { }
 
             }
 
-            return items;
+            // If we got here we did not have any sort requested, add a default by start date so pagination will work
+            return items.OrderByDescending( i => i.StartDateTime);
         }
 
         #endregion
