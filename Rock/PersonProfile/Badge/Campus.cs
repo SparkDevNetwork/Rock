@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -29,12 +27,11 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// Campus Badge
     /// </summary>
-    [Description("Campus Badge")]
-    [Export(typeof(BadgeComponent))]
-    [ExportMetadata("ComponentName", "Campus")]
+    [Description( "Campus Badge" )]
+    [Export( typeof( BadgeComponent ) )]
+    [ExportMetadata( "ComponentName", "Campus" )]
     public class Campus : HighlightLabelBadge
     {
-
         /// <summary>
         /// Gets the Entity's Campus badge label even if the campus is inactive.
         /// </summary>
@@ -42,78 +39,31 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override HighlightLabel GetLabel( IEntity entity )
         {
-            if ( CampusCache.All().Count <= 1 || entity == null )
+            // This badge is only setup to work with a person for now
+            var person = entity as Person;
+
+            // If the entity is not a person or there is only one campus, then don't display a badge
+            if ( person == null || CampusCache.All().Count <= 1 )
             {
                 return null;
             }
 
-            // Campus is associated with the family group(s) person belongs to.
-            var families = PersonGroups( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), entity.Id );
-
-            if ( families == null || !families.Any() )
-            {
-                return null;
-            }
-
-            var label = new HighlightLabel();
-            label.LabelType = LabelType.Campus;
-
-            var campusNames = new List<string>();
-            foreach ( int campusId in families
-                .Where( g => g.CampusId.HasValue )
-                .Select( g => g.CampusId )
-                .Distinct()
-                .ToList() )
-                campusNames.Add( CampusCache.Get( campusId ).Name );
-
-            label.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
-
-            return label;
-        }
-
-        /// <summary>
-        /// The groups of a particular type that current person belongs to
-        /// </summary>
-        /// <returns></returns>
-        public static IEnumerable<Group> PersonGroups( Guid groupTypeGuid, int personId )
-        {
-            var groupTypeId = GroupTypeCache.GetId( groupTypeGuid );
-            return PersonGroups( groupTypeId ?? 0, personId );
-        }
-
-        /// <summary>
-        /// The groups of a particular type that current person belongs to
-        /// </summary>
-        /// <returns></returns>
-        public static List<Group> PersonGroups( int groupTypeId, int personId )
-        {
-            var itemKey = $"RockGroups:{groupTypeId}:{personId}";
-            var previouslyQueried = _personGroups.TryGetValue( itemKey, out var groups );
-
-            if ( previouslyQueried )
-            {
-                return groups;
-            }
-
-            var rockContext = new RockContext();
-            var service = new GroupMemberService( rockContext );
-            groups = service.Queryable()
-                .Where( m =>
-                    m.PersonId == personId &&
-                    m.Group.GroupTypeId == groupTypeId )
-                .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-                .ThenByDescending( m => m.Group.Name )
-                .Select( m => m.Group )
-                .OrderByDescending( g => g.Name )
+            var campusNames = person.GetCampusIds()
+                .Select( id => CampusCache.Get( id )?.Name )
+                .Where( name => !name.IsNullOrWhiteSpace() )
+                .OrderBy( name => name )
                 .ToList();
 
-            _personGroups[itemKey] = groups;
-            return groups;
-        }
+            if ( !campusNames.Any() )
+            {
+                return null;
+            }
 
-        /// <summary>
-        /// Used to cache person groups in case they are queried multiple times
-        /// </summary>
-        private static Dictionary<string, List<Group>> _personGroups = new Dictionary<string, List<Group>>();
+            return new HighlightLabel
+            {
+                LabelType = LabelType.Campus,
+                Text = campusNames.AsDelimited( ", " )
+            };
+        }
     }
 }
