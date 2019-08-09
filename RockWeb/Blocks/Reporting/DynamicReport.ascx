@@ -9,7 +9,7 @@
 
             <asp:Panel ID="pnlFilter" runat="server">
                 <div class="panel panel-block margin-t-md">
-                    <div class="panel-heading clearfix">
+                    <div class="panel-heading">
                         <h1 class="panel-title pull-left">
                             <asp:Literal ID="lFilterIconCssClass" runat="server" />
                             <asp:Literal ID="lFilterTitle" runat="server" />
@@ -17,7 +17,7 @@
                     </div>
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbFiltersError" runat="server" NotificationBoxType="Danger" Visible="false" />
-                        
+
                         <div class="filter-list">
                             <asp:PlaceHolder ID="phFilters" runat="server" />
                         </div>
@@ -31,7 +31,7 @@
             </asp:Panel>
 
             <div class="panel panel-block margin-t-md">
-                <div class="panel-heading clearfix">
+                <div class="panel-heading">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lResultsIconCssClass" runat="server" />
                         <asp:Literal ID="lResultsTitle" runat="server" />
@@ -78,9 +78,9 @@
                                     </div>
                                 </div>
                             </ItemTemplate>
-                        </asp:Repeater>    
+                        </asp:Repeater>
                     </Rock:RockControlWrapper>
-                    
+
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>
@@ -93,13 +93,13 @@
                 var $tbLabel = row.find('.js-settings-label-html');
                 var $tbPreHtml = row.find('.js-settings-pre-html');
                 var $tbPostHtml = row.find('.js-settings-post-html');
-                
+
                 if ($cbShowAsFilter.is(':checked')) {
                     $cbConfigurable.removeAttr('disabled');
                     $tbLabel.removeAttr('disabled');
                     $tbPreHtml.removeAttr('disabled');
                     $tbPostHtml.removeAttr('disabled');
-                    
+
                     if ($cbConfigurable.is(':checked')) {
                         // if showfilter and configurable, let them choose whether to show the filter checkbox
                         $cbTogglable.removeAttr('disabled');

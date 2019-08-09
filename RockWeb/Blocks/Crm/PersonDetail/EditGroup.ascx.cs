@@ -154,6 +154,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        private string DefaultCountry
+        {
+            get
+            {
+                var globalAttributesCache = GlobalAttributesCache.Get();
+                return globalAttributesCache.OrganizationCountry;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -216,7 +225,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
-            cpCampus.Visible = campusi.Any();
 
             if ( _isFamilyGroupType )
             {
@@ -278,6 +286,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _showEmail = GetAttributeValue( "NewPersonEmail" ).AsBoolean();
             _showPhoneType = DefinedValueCache.Get( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
             _showCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -501,6 +510,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // Currently we need to go through the whole page cycle to get all of the data.
+            NavigateToCurrentPageReference();
         }
 
         #region Events
@@ -903,6 +923,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LocationTypeName = homeLocType.Value,
                     LocationIsDirty = true,
                     State = DefaultState,
+                    Country = DefaultCountry,
                     IsMailing = true,
                     IsLocation = setLocation,
                     ShowCounty = _showCounty
@@ -975,7 +996,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, IsMailing = true, ShowCounty = _showCounty } );
+            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, Country = DefaultCountry, IsMailing = true, ShowCounty = _showCounty } );
             gLocations.EditIndex = GroupAddresses.Count - 1;
 
             BindLocations();
@@ -1498,6 +1519,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #region Private Methods
 
+        private void InitializeValues()
+        {
+
+        }
+
         /// <summary>
         /// Sets the active tab.
         /// </summary>
@@ -1892,7 +1918,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             get
             {
                 string result = string.Empty;
-                if ( !ShowCounty )
+                if ( ShowCounty )
                 {
                     result = string.Format(
                         "{0}{1}{2}{3}, {4} {5}",

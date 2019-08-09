@@ -56,7 +56,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading clearfix">
+                <div class="panel-heading">
                     <h1 class="panel-title pull-left">Registration Details</h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlCost" runat="server" LabelType="Info" ToolTip="Cost" />
@@ -205,7 +205,7 @@
                                             <li class="card-amex"></li>
                                             <li class="card-discover"></li>
                                         </ul>
-                                        
+
                                         <div class="row">
                                             <div class="col-sm-6">
                                                 <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" Required="true" ValidationGroup="Payment" />
@@ -215,7 +215,7 @@
                                             </div>
                                         </div>
 
-                                        <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" 
+                                        <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false"
                                             Required="true" ValidationGroup="Payment" RequiredErrorMessage="Billing Address is required" />
 
                                     </asp:PlaceHolder>
@@ -259,7 +259,7 @@
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-registration" OnClick="btnDelete_Click" CausesValidation="false" />
-                            
+
                             <asp:LinkButton ID="lbShowMoveRegistrationDialog" runat="server" CssClass="btn btn-default btn-sm pull-right margin-l-sm" ToolTip="Move Registration" CausesValidation="false" OnClick="lbShowMoveRegistrationDialog_Click"><i class="fa fa-external-link"></i></asp:LinkButton>
                             <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default pull-right btn-sm" CausesValidation="false" ToolTip="View Audit Log" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>
                         </div>

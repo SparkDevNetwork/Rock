@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -31,6 +32,108 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         #region String Extensions
+
+        /// <summary>
+        /// Converts string to MD5 hash
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string Md5Hash( this string str )
+        {
+            using ( var crypt = MD5.Create() )
+            {
+                var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( str ) );
+
+                StringBuilder sb = new StringBuilder();
+                foreach ( byte b in hash )
+                {
+                    // Can be "x2" if you want lowercase
+                    sb.Append( b.ToString( "x2" ) );
+                }
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Converts string to Sha1 hash
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string Sha1Hash( this string str )
+        {
+            using ( var crypt = new SHA1Managed() )
+            {
+                var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( str ) );
+                var sb = new StringBuilder( hash.Length * 2 );
+
+                foreach ( byte b in hash )
+                {
+                    // Can be "x2" if you want lowercase
+                    sb.Append( b.ToString( "x2" ) );
+                }
+
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Converts string to Sha256 hash
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string Sha256Hash( this string str )
+        {
+            using ( var crypt = new System.Security.Cryptography.SHA256Managed() )
+            {
+                var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( str ) );
+                var sb = new StringBuilder();
+
+                foreach ( byte b in hash )
+                {
+                    // Can be "x2" if you want lowercase
+                    sb.Append( b.ToString( "x2" ) );
+                }
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Converts string to HMAC_SHA1 string using key
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="keyString">The key.</param>
+        /// <returns></returns>
+        public static string HmacSha1Hash( this string str, string keyString )
+        {
+            var key = Encoding.ASCII.GetBytes( keyString );
+
+            using ( var crypt = new HMACSHA1( key ) )
+            {
+                var hash = crypt.ComputeHash( Encoding.ASCII.GetBytes( str ) );
+
+                // Can be "x2" if you want lowercase
+                return hash.Aggregate( "", ( s, e ) => s + String.Format( "{0:x2}", e ), s => s );
+            }
+        }
+
+        /// <summary>
+        /// Converts string to HMAC_SHA256 string using key
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="keyString">The key string.</param>
+        /// <returns></returns>
+        public static string HmacSha256Hash( this string str, string keyString )
+        {
+            var key = Encoding.ASCII.GetBytes( keyString );
+
+            using ( var crypt = new HMACSHA256( key ) )
+            {
+                var hash = crypt.ComputeHash( Encoding.ASCII.GetBytes( str ) );
+
+                // Can be "x2" if you want lowercase
+                return hash.Aggregate( "", ( s, e ) => s + String.Format( "{0:x2}", e ), s => s );
+            }
+        }
 
         /// <summary>
         /// Reads the parameter to check for DOM objects and possible URLs
@@ -154,6 +257,18 @@ namespace Rock
         }
 
         /// <summary>
+        /// Strips HTML from the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string StripHtml( this string str )
+        {
+            return str.IsNullOrWhiteSpace()
+                ? str
+                : Regex.Replace( str, @"<.*?>|<!--(.|\r|\n)*?-->", string.Empty );
+        }
+
+        /// <summary>
         /// Determines whether the string is made up of only digits
         /// </summary>
         /// <param name="str">The string.</param>
@@ -169,6 +284,18 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Returns the number of words in the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static int WordCount( this string str )
+        {
+            // Attribution (aka future blame): https://stackoverflow.com/questions/8784517/counting-number-of-words-in-c-sharp
+            char[] delimiters = new char[] { ' ', '\r', '\n' };
+            return str.Split( delimiters, StringSplitOptions.RemoveEmptyEntries ).Length;
         }
 
         /// <summary>
@@ -324,6 +451,40 @@ namespace Rock
 
             char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+        }
+
+        /// <summary>
+        /// Returns an array that contains substrings of the target string that are separated by the specified delimiter.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="delimiter">The delimiter string.</param>
+        /// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str, string delimiter )
+        {
+            return SplitDelimitedValues( str, delimiter, StringSplitOptions.None );
+        }
+
+        /// <summary>
+        /// Returns an array that contains substrings of the target string that are separated by the specified delimiter.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="delimiter">The delimiter string.</param>
+        /// <param name="options">The split options.</param>
+        /// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str, string delimiter, StringSplitOptions options )
+        {
+            if ( str == null )
+            {
+                return new string[0];
+            }
+
+            // Replace the custom delimiter string with a single unprintable character that will not appear in the target string, then use the default string split function.
+            var newDelimiter = new char[] { '\x0001' };
+
+            var replaceString = str.Replace( delimiter, new string( newDelimiter) )
+                                   .Split( newDelimiter, options );
+
+            return replaceString;
         }
 
         /// <summary>
@@ -698,7 +859,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to decimal.  Returns null if unsuccessful.
+        /// Attempts to convert string to decimal. Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -706,8 +867,8 @@ namespace Rock
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.-]", string.Empty );
+                // strip off non numeric and characters at the beginning of the line (currency symbols)
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
             }
 
             decimal value;

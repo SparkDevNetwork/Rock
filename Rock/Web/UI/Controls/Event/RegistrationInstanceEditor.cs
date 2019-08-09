@@ -220,12 +220,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum attendees.
         /// </value>
-        public int MaxAttendees
+        public int? MaxAttendees
         {
             get
             {
                 EnsureChildControls();
-                return _nbMaxAttendees.Text.AsInteger();
+                return _nbMaxAttendees.Text.AsIntegerOrNull();
             }
             set
             {
@@ -679,7 +679,7 @@ namespace Rock.Web.UI.Controls
                 instance.Details = _ceDetails.Text;
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
-                instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
+                instance.MaxAttendees = _nbMaxAttendees.Text.AsIntegerOrNull();
                 instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
@@ -749,6 +749,7 @@ namespace Rock.Web.UI.Controls
                 _nbMaxAttendees = new NumberBox();
                 _nbMaxAttendees.ID = this.ID + "_nbMaxAttendees";
                 _nbMaxAttendees.Label = "Maximum Attendees";
+                _nbMaxAttendees.Help = "Total number of people who can register for the event. Leave blank for unlimited.";
                 _nbMaxAttendees.NumberType = ValidationDataType.Integer;
                 Controls.Add( _nbMaxAttendees );
 
@@ -773,7 +774,7 @@ namespace Rock.Web.UI.Controls
                 _cbDefaultPaymentAmount = new CurrencyBox();
                 _cbDefaultPaymentAmount.ID = this.ID + "_cbDefaultPaymentAmount";
                 _cbDefaultPaymentAmount.Label = "Default Payment Amount";
-                _cbDefaultPaymentAmount.Help = "The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined.";
+                _cbDefaultPaymentAmount.Help = "The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0.";
                 Controls.Add( _cbDefaultPaymentAmount );
 
                 _apAccount = new AccountPicker();
@@ -814,7 +815,7 @@ namespace Rock.Web.UI.Controls
                 _htmlRegistrationInstructions.ID = this.ID + "_htmlRegistrationInstructions";
                 _htmlRegistrationInstructions.Toolbar = HtmlEditor.ToolbarConfig.Light;
                 _htmlRegistrationInstructions.Label = "Registration Instructions";
-                _htmlRegistrationInstructions.Help = "These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration. These instructions can be provided on the registration template also. Any instructions here will override the instructions on the template.";
+                _htmlRegistrationInstructions.Help = "These instructions will appear at the beginning of the registration process. Instructions can be provided on the registration template also. Any instructions here will override the instructions on the template.";
                 _htmlRegistrationInstructions.Height = 200;
                 Controls.Add(_htmlRegistrationInstructions);
 
@@ -822,7 +823,7 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalReminderDetails.ID = this.ID + "_htmlAdditionalReminderDetails";
                 _htmlAdditionalReminderDetails.Toolbar = HtmlEditor.ToolbarConfig.Light;
                 _htmlAdditionalReminderDetails.Label = "Additional Reminder Details";
-                _htmlAdditionalReminderDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
+                _htmlAdditionalReminderDetails.Help = "These reminder details will be included in the reminder notification.";
                 _htmlAdditionalReminderDetails.Height = 200;
                 Controls.Add( _htmlAdditionalReminderDetails );
 

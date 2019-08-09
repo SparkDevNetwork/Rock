@@ -239,14 +239,15 @@ namespace RockWeb.Blocks.Finance
                 .Where( a => a.Status == BatchStatus.Open ).OrderBy( a => a.Name ).Select( a => new
                 {
                     a.Id,
-                    a.Name
+                    a.Name,
+                    a.BatchStartDateTime
                 } ).ToList();
 
             ddlBatch.Items.Clear();
             ddlBatch.Items.Add( new ListItem() );
             foreach ( var batch in financialBatchList )
             {
-                ddlBatch.Items.Add( new ListItem( batch.Name, batch.Id.ToString() ) );
+                ddlBatch.Items.Add( new ListItem( string.Format( "#{0} {1} ({2})", batch.Id, batch.Name, batch.BatchStartDateTime.Value.ToString( "d" ) ), batch.Id.ToString() ) );
             }
         }
 

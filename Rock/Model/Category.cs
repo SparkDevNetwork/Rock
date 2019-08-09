@@ -210,7 +210,7 @@ namespace Rock.Model
                             {
                                 var supportedActions = new Dictionary<string, string>();
                                 supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                                supportedActions.Add( "Tag", "The roles and/or users that have access to tag items." );
+                                supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
                                 supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                                 supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                                 return supportedActions;

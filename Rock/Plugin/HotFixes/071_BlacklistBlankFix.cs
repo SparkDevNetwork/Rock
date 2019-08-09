@@ -53,9 +53,9 @@ namespace Rock.Plugin.HotFixes
         private void UpdateContentBlackList()
         {
             Sql( @"
-                DELETE FROM AttributeValue 
+                DELETE FROM [dbo].[AttributeValue]
                 WHERE [Value] = ', config' 
-	                AND [AttributeId] = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '9FFB15C1-AA53-4FBA-A480-64C9B348C5E5' )" );
+	                AND [AttributeId] = ( SELECT [Id] FROM [dbo].[Attribute] WHERE [Guid] = '9FFB15C1-AA53-4FBA-A480-64C9B348C5E5' )" );
         }
     }
 }

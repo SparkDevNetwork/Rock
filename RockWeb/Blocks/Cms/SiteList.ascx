@@ -6,7 +6,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i>Site List</h1>
+                <h1 class="panel-title"><asp:Literal ID="lBlockIcon" runat="server" /> <asp:Literal ID="lBlockTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
@@ -17,7 +17,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
-                            <Rock:RockTemplateField HeaderText="Domain(s)">
+                            <Rock:RockTemplateField HeaderText="Domain(s)" ID="colDomains">
                                 <ItemTemplate><%# GetDomains( (int)Eval("Id") ) %></ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField HeaderText="Theme" DataField="Theme" SortExpression="Theme" />

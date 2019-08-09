@@ -69,6 +69,18 @@ namespace RockWeb.Blocks.Utility
 
         #endregion Attribute Keys
 
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        protected static class PageParameterKey
+        {
+            public const string StarkId = "StarkId";
+        }
+
+        #endregion PageParameterKeys
+
         #region Fields
 
         // used for private variables

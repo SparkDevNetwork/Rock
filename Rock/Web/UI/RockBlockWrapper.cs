@@ -123,7 +123,7 @@ namespace Rock.Web.UI
                 blockTypeCss = parts[parts.Length - 1].Trim();
             }
             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-            string blockInstanceCss = "block-instance " +
+            string blockInstanceCss = "block-instance js-block-instance " +
                 blockTypeCss +
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? "" : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : "" );

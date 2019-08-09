@@ -39,7 +39,8 @@ namespace Rockweb.Blocks.Crm
     /// </summary>
     [DisplayName( "DISC Result" )]
     [Category( "CRM" )]
-    [Description( "View the results of a DISC assessment." )]
+    [Description( "View the results of a DISC assessment. (Obsolete)" )]
+    [RockObsolete("1.9")]
     public partial class DiscResult : Rock.Web.UI.RockBlock
     {
         #region Fields

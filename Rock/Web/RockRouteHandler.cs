@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -123,13 +124,26 @@ namespace Rock.Web
                         site = SiteCache.Get( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                     }
 
-                    if ( site != null )
+                    // Are shortlinks enabled for this site? If so, check for a matching shortlink route.
+                    if ( site != null && site.EnabledForShortening )
                     {
                         // Check to see if this is a short link route
                         string shortlink = null;
                         if ( requestContext.RouteData.Values.ContainsKey( "shortlink" ) )
                         {
                             shortlink = requestContext.RouteData.Values["shortlink"].ToString();
+                        }
+                        else
+                        {
+                            // Because we implemented shortlinks using a {shortlink} (catchall) route, it's
+                            // possible the organization added a custom {catchall} route (at root level; no slashes)
+                            // and it is overriding our shortlink route.  If they did, use it for a possible 'shortlink'
+                            // route match.
+                            if ( requestContext.RouteData.DataTokens["RouteName"] != null && requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().StartsWith( "{" ) )
+                            {
+                                var routeName = requestContext.RouteData.DataTokens["RouteName"].ToStringSafe().Trim( new Char[] { '{', '}' } );
+                                shortlink = requestContext.RouteData.Values[routeName].ToStringSafe();
+                            }
                         }
 
                         // If shortlink have the same name as route and route's site did not match, then check if shortlink site match.
@@ -280,6 +294,104 @@ namespace Rock.Web
                 }
 
                 return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
+            }
+        }
+
+        /// <summary>
+        /// Reregisters the routes from PageRoute and default routes. Does not affect ODataService routes. Call this method after saving changes to PageRoute entities.
+        /// </summary>
+        public static void ReregisterRoutes()
+        {
+            RemoveRockPageRoutes();
+            RegisterRoutes();
+        }
+
+        /// <summary>
+        /// Registers the routes from PageRoute and default routes.
+        /// </summary>
+        public static void RegisterRoutes()
+        {
+            RouteCollection routes = RouteTable.Routes;
+
+            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+
+            var routesToInsert = new RouteCollection();
+
+            // Add ignore rule for asp.net ScriptManager files. 
+            routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
+
+            //Add page routes, order is very important here as IIS takes the first match
+            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
+
+            foreach ( var pageRoute in pageRoutes )
+            {
+                routesToInsert.AddPageRoute( pageRoute.Route, new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id } );
+            }
+
+            // Add a default page route
+            routesToInsert.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for when no parameters are passed
+            routesToInsert.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for shortlinks
+            routesToInsert.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
+
+            // Insert the list of routes to the beginning of the Routes so that PageRoutes, etc are before OdataRoutes. Even when Re-Registering routes
+            // Since we are inserting at 0, reverse the list to they end up in the original order
+            foreach ( var pageRoute in routesToInsert.Reverse() )
+            {
+                routes.Insert( 0, pageRoute );
+            }
+        }
+
+        /// <summary>
+        /// Removes the rock page and default routes from RouteTable.Routes but leaves the ones created by ODataService.
+        /// </summary>
+        public static void RemoveRockPageRoutes()
+        {
+            RouteCollection routes = RouteTable.Routes;
+            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            var pageRoutes = pageRouteService.Queryable().ToList();
+
+            // First we have to remove the routes stored in the DB without removing the ODataService routes because we can't reload them.
+            // Routes that were removed from the DB have already been removed from the RouteTable in PreSaveChanges()
+            foreach( var pageRoute in pageRoutes )
+            {
+                var route = routes.OfType<Route>().Where( a => a.Url == pageRoute.Route ).FirstOrDefault();
+
+                if ( route != null )
+                {
+                    routes.Remove( route );
+                }
+            }
+
+            // Remove the shortlink route
+            var shortLinkRoute = routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+            if ( shortLinkRoute != null )
+            {
+                routes.Remove( shortLinkRoute );
+            }
+
+            // Remove the page route
+            var pageIdRoute = routes.OfType<Route>().Where( r => r.Url == "page/{PageId}" ).FirstOrDefault();
+            if ( pageIdRoute != null )
+            {
+                routes.Remove( pageIdRoute );
+            }
+
+            // Remove the default route for when no parameters are passed
+            var defaultRoute = routes.OfType<Route>().Where( r => r.Url == "" ).FirstOrDefault();
+            if( defaultRoute != null )
+            {
+                routes.Remove( pageIdRoute );
+            }
+
+            // Remove scriptmanager ignore route
+            var scriptmanagerRoute = routes.OfType<Route>().Where( r => r.Url == "{resource}.axd/{*pathInfo}" ).FirstOrDefault();
+            if ( scriptmanagerRoute != null )
+            {
+                routes.Remove( scriptmanagerRoute );
             }
         }
 

@@ -185,6 +185,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The message to display if there are no options in the list." )
+        ]
+        public string EmptyListMessage
+        {
+            get { return ViewState["EmptyListMessage"] as string ?? string.Empty; }
+            set { ViewState["EmptyListMessage"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -410,11 +428,23 @@ namespace Rock.Web.UI.Controls
 
             if ( Items.Count == 0 )
             {
-                writer.Write( None.TextHtml );
+                writer.Write( this.EmptyListMessage );
             }
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();

@@ -27,7 +27,7 @@
 
   &:focus,
   &.focus {
-    box-shadow: 0 0 0 3px rgba(red(@background), green(@background), blue(@background), .5);
+    box-shadow: 0 0 0 @btn-focus-width fade(@background, 50%);
   }
 
   &.disabled {

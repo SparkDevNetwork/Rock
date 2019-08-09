@@ -209,10 +209,9 @@ namespace Rock.Web.UI
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
-                        var contextAttribute = (ContextAwareAttribute)attribute;
-                        var entityType = contextAttribute.EntityType;
+                        var contextAttribute = ( ContextAwareAttribute ) attribute;
 
-                        if ( contextAttribute.EntityType == null )
+                        if ( !contextAttribute.Contexts.Any() )
                         {
                             // If the entity type was not specified in the attribute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
@@ -221,20 +220,19 @@ namespace Rock.Web.UI
                             Guid guid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                entityType = EntityTypeCache.Get( guid );
+                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
                             }
-                        }
-
-                        if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
-                        {
-                            _contextTypesRequired.Add( entityType );
                         }
                         else
                         {
-                            if ( !contextAttribute.IsConfigurable )
+                            foreach ( var context in contextAttribute.Contexts )
                             {
-                                // block support any ContextType of any entityType, and it isn't configurable in BlockPropties, so load all the ones that RockPage knows about
-                                _contextTypesRequired = RockPage.GetContextEntityTypes();
+                                var entityType = context.EntityType;
+
+                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
+                                {
+                                    _contextTypesRequired.Add( entityType );
+                                }
                             }
                         }
                     }
@@ -838,6 +836,29 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Navigates to current page reference including current page and query parameters not included in the removeQueryParameterKeys parameter.
+        /// </summary>
+        /// <param name="removeQueryParameterKeys">The remove query parameter keys.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReferenceWithRemove( List<string> removeQueryParameterKeys )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            var currentQueryStrings = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+
+            if ( removeQueryParameterKeys != null )
+            {
+                foreach ( var key in removeQueryParameterKeys )
+                {
+                    currentQueryStrings.Remove( key );
+                }
+            }
+
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( currentQueryStrings );
+
+            return NavigateToPage( pageReference );
+        }
+
+        /// <summary>
         /// Navigates/redirects to the parent <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.
@@ -1111,7 +1132,8 @@ namespace Rock.Web.UI
         #region User Preferences
 
         /// <summary>
-        /// Returns the user preference value for the current user for a given key
+        /// Returns the application user preference value for the current user for a given key
+        /// NOTE: To get a user preference for a specific block, use <see cref="GetBlockUserPreference(string)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
@@ -1136,7 +1158,8 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets a user preference for the current user with the specified key and value, and optionally save value to database
+        /// Sets an application user preference for the current user with the specified key and value, and optionally save value to database.
+        /// NOTE: To set a user preference for a specific block, use <see cref="SetBlockUserPreference(string, string, bool)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> that represents the key value that identifies the
         /// user preference.</param>
@@ -1192,6 +1215,20 @@ namespace Rock.Web.UI
         public string GetBlockUserPreference( string key )
         {
             return RockPage.GetUserPreference( BlockUserPreferencePrefix + key );
+        }
+
+        /// <summary>
+        /// Returns the preference values for the current user and the current block
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, string> GetBlockUserPreferences()
+        {
+            var userPreferences = RockPage.GetUserPreferences( BlockUserPreferencePrefix );
+            int blockUserPreferencePrefixLength = BlockUserPreferencePrefix.Length;
+
+            // remove the block id prefix since we only want the key that the block knows about
+            var blockUserPreferences = userPreferences.ToDictionary( k => k.Key.Substring( blockUserPreferencePrefixLength ), v => v.Value );
+            return blockUserPreferences;
         }
 
         /// <summary>

@@ -34,15 +34,46 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site List" )]
     [Category( "CMS" )]
     [Description( "Lists sites defined in the system." )]
-    [LinkedPage( "Detail Page" )]
 
-    [EnumsField( "Site Type", "Includes Items with the following Type.", typeof( SiteType ), false, "", order: 1, key: AttributeKey.SiteType )]
+    #region Block Attributes
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    [EnumsField(
+        "Site Type",
+        "Includes Items with the following Type.",
+        typeof( SiteType ),
+        false, "",
+        order: 1,
+        key: AttributeKey.SiteType )]
+
+    [TextField(
+        "Block Title",
+        Key = AttributeKey.BlockTitle,
+        Description = "The title for the block.",
+        IsRequired = false,
+        DefaultValue = "Site List",
+        Order = 2 )]
+
+    [TextField(
+        "Block Icon CSS Class",
+        Key = AttributeKey.BlockIconCssClass,
+        Description = "The icon CSS class for the block.",
+        IsRequired = false,
+        DefaultValue = "fa fa-desktop",
+        Order = 3)]
+    #endregion
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys
         protected static class AttributeKey
         {
             public const string SiteType = "SiteType";
+            public const string BlockTitle = "BlockTitle";
+            public const string BlockIconCssClass = "BlockIcon";
+            public const string DetailPage = "DetailPage";
         }
         #endregion
         private const string INCLUE_INACTIVE = "Include Inactive";
@@ -80,6 +111,9 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
+                lBlockIcon.Text = string.Format( @"<i class=""fa {0}""></i>", GetAttributeValue( AttributeKey.BlockIconCssClass ) );
+                lBlockTitle.Text = GetAttributeValue( AttributeKey.BlockTitle );
+
                 BindGrid();
             }
 
@@ -97,7 +131,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "siteId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", 0 );
         }
 
         /// <summary>
@@ -107,7 +141,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "siteId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "siteId", e.RowKeyId );
         }
 
         /// <summary>
@@ -134,15 +168,22 @@ namespace RockWeb.Blocks.Cms
             var qry = siteService.Queryable();
 
             var siteType = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SiteType>() ).ToList();
-            //Default show inactive to false if no filter (user preference) applied. 
+
+            if ( !siteType.Contains( SiteType.Web ) )
+            {
+                gSites.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Theme" ).Visible = false;
+                gSites.ColumnsOfType<RockTemplateField>().First( c => c.ID == "colDomains" ).Visible = false;
+            }
+
+            // Default show inactive to false if no filter (user preference) applied. 
             bool showInactiveSites = rFilterSite.GetUserPreference( INCLUE_INACTIVE ).AsBoolean();
 
             if ( siteType.Count() > 0 )
             {
-                // filter by block setting Site type
+                // Filter by block setting Site type
                 qry = qry.Where( s => siteType.Contains( s.SiteType ) );
             }
-            // filter by selected filter
+            // Filter by selected filter
             if ( !showInactiveSites )
             {
                 qry = qry.Where( s => s.IsActive == true );
@@ -161,6 +202,11 @@ namespace RockWeb.Blocks.Cms
             gSites.DataBind();
         }
 
+        /// <summary>
+        /// Gets the domains for the site.
+        /// </summary>
+        /// <param name="siteID">The site identifier.</param>
+        /// <returns></returns>
         protected string GetDomains( int siteID )
         {
             return new SiteDomainService( new RockContext() ).Queryable()

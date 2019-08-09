@@ -369,7 +369,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the person's primary alias identifier.
+        /// Gets the selected person's primary alias identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -391,7 +391,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected value.
+        /// Gets or sets the Id of the selected person. See also <seealso cref="PersonId"/>.
         /// </summary>
         /// <value>
         /// The selected value.

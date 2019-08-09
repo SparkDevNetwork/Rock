@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,7 +26,7 @@ using System.Text;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -128,6 +128,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupId { get; set; }
 
         /// <summary>
@@ -373,6 +374,27 @@ Registration By: {0} Total Cost/Fees:{1}
             result.AppendFormat( "Registrants: {0}", registrantPersons.AsDelimited( ", " ) );
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets the confirmation recipient as either an email to the person that registered, or as an anonymous email to the specified confirmation email if it is different than the person's email.
+        /// </summary>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public RockMessageRecipient GetConfirmationRecipient( Dictionary<string, object> mergeObjects )
+        {
+            var person = this.PersonAlias?.Person;
+            string personEmail = person?.Email;
+
+            var confirmationEmail = this.ConfirmationEmail;
+            if ( personEmail == confirmationEmail )
+            {
+                return new RockEmailMessageRecipient( person, mergeObjects );
+            }
+            else
+            {
+                return RockEmailMessageRecipient.CreateAnonymous( confirmationEmail, mergeObjects );
+            }
         }
 
         /// <summary>
@@ -792,7 +814,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     LastName = registration.PersonAlias.Person.LastName;
                     ConfirmationEmail = registration.ConfirmationEmail;
                 }
-                                
+
                 DiscountCode = registration.DiscountCode != null ? registration.DiscountCode.Trim() : string.Empty;
                 DiscountPercentage = registration.DiscountPercentage;
                 DiscountAmount = registration.DiscountAmount;
@@ -1229,9 +1251,12 @@ Registration By: {0} Total Cost/Fees:{1}
 
                     switch ( field.PersonFieldType )
                     {
-                        case RegistrationPersonFieldType.FirstName: return person.NickName;
-                        case RegistrationPersonFieldType.MiddleName: return person.MiddleName;
-                        case RegistrationPersonFieldType.LastName: return person.LastName;
+                        case RegistrationPersonFieldType.FirstName:
+                            return person.NickName;
+                        case RegistrationPersonFieldType.MiddleName:
+                            return person.MiddleName;
+                        case RegistrationPersonFieldType.LastName:
+                            return person.LastName;
                         case RegistrationPersonFieldType.Campus:
                             {
                                 if ( family != null )
@@ -1249,12 +1274,18 @@ Registration By: {0} Total Cost/Fees:{1}
                                 }
                                 break;
                             }
-                        case RegistrationPersonFieldType.Email: return person.Email;
-                        case RegistrationPersonFieldType.Birthdate: return person.BirthDate;
-                        case RegistrationPersonFieldType.Grade: return person.GraduationYear;
-                        case RegistrationPersonFieldType.Gender: return person.Gender;
-                        case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
-                        case RegistrationPersonFieldType.AnniversaryDate: return person.AnniversaryDate;
+                        case RegistrationPersonFieldType.Email:
+                            return person.Email;
+                        case RegistrationPersonFieldType.Birthdate:
+                            return person.BirthDate;
+                        case RegistrationPersonFieldType.Grade:
+                            return person.GraduationYear;
+                        case RegistrationPersonFieldType.Gender:
+                            return person.Gender;
+                        case RegistrationPersonFieldType.MaritalStatus:
+                            return person.MaritalStatusValueId;
+                        case RegistrationPersonFieldType.AnniversaryDate:
+                            return person.AnniversaryDate;
                         case RegistrationPersonFieldType.MobilePhone:
                             {
                                 dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
@@ -1270,7 +1301,8 @@ Registration By: {0} Total Cost/Fees:{1}
                                 dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                                 break;
                             }
-                        case RegistrationPersonFieldType.ConnectionStatus: return person.ConnectionStatusValueId;
+                        case RegistrationPersonFieldType.ConnectionStatus:
+                            return person.ConnectionStatusValueId;
                     }
 
                     if ( dvPhone != null )
@@ -1483,21 +1515,21 @@ Registration By: {0} Total Cost/Fees:{1}
                         case RegistrationPersonFieldType.MaritalStatus:
                         case RegistrationPersonFieldType.Grade:
                         case RegistrationPersonFieldType.ConnectionStatus:
-                                return typeof( int? );
+                            return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:
-                                return typeof( Location );
+                            return typeof( Location );
 
                         case RegistrationPersonFieldType.Birthdate:
-                                return typeof( DateTime? );
+                            return typeof( DateTime? );
 
                         case RegistrationPersonFieldType.Gender:
-                                return  typeof( Gender );
+                            return typeof( Gender );
 
                         case RegistrationPersonFieldType.MobilePhone:
                         case RegistrationPersonFieldType.HomePhone:
                         case RegistrationPersonFieldType.WorkPhone:
-                                return typeof( PhoneNumber );
+                            return typeof( PhoneNumber );
                     }
                 }
                 return typeof( string );
@@ -1516,14 +1548,14 @@ Registration By: {0} Total Cost/Fees:{1}
         /// </summary>
         /// <param name="field">The field.</param>
         /// <param name="fieldValue">The field value.</param>
-        public FieldValueObject( RegistrationTemplateFormField field, object fieldValue)
+        public FieldValueObject( RegistrationTemplateFormField field, object fieldValue )
         {
             FieldSource = field.FieldSource;
             PersonFieldType = field.PersonFieldType;
             FieldValue = fieldValue;
         }
 
-        
+
     }
 
     /// <summary>
@@ -1776,12 +1808,12 @@ Registration By: {0} Total Cost/Fees:{1}
                     if ( string.Equals( str, "FieldSource", StringComparison.OrdinalIgnoreCase ) )
                     {
                         reader.Read();
-                        fieldValueObject.FieldSource = (RegistrationFieldSource)serializer.Deserialize( reader, typeof( RegistrationFieldSource ) );
+                        fieldValueObject.FieldSource = ( RegistrationFieldSource ) serializer.Deserialize( reader, typeof( RegistrationFieldSource ) );
                     }
                     else if ( string.Equals( str, "PersonFieldType", StringComparison.OrdinalIgnoreCase ) )
                     {
                         reader.Read();
-                        fieldValueObject.PersonFieldType = (RegistrationPersonFieldType)serializer.Deserialize( reader, typeof( RegistrationPersonFieldType ) );
+                        fieldValueObject.PersonFieldType = ( RegistrationPersonFieldType ) serializer.Deserialize( reader, typeof( RegistrationPersonFieldType ) );
                     }
                     else if ( string.Equals( str, "FieldValue", StringComparison.OrdinalIgnoreCase ) )
                     {
@@ -1809,7 +1841,7 @@ Registration By: {0} Total Cost/Fees:{1}
             {
                 DefaultContractResolver contractResolver = serializer.ContractResolver as DefaultContractResolver;
                 writer.WriteStartObject();
-                
+
                 writer.WritePropertyName( ( contractResolver != null ? contractResolver.GetResolvedPropertyName( "FieldSource" ) : "FieldSource" ) );
                 serializer.Serialize( writer, fieldValueObject.FieldSource );
 

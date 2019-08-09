@@ -44,6 +44,9 @@ namespace Rock.Client
         public int? CheckedInByPersonAliasId { get; set; }
 
         /// <summary />
+        public int? DeclineReasonValueId { get; set; }
+
+        /// <summary />
         public int? DeviceId { get; set; }
 
         /// <summary />
@@ -94,12 +97,30 @@ namespace Rock.Client
         public int? QualifierValueId { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.RSVP RSVP { get; set; }
+        public bool? RequestedToAttend { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.RSVP RSVP { get; set; } = Rock.Client.Enums.RSVP.Unknown;
+
+        /// <summary />
+        public DateTime? RSVPDateTime { get; set; }
+
+        /// <summary />
+        public bool? ScheduleConfirmationSent { get; set; }
+
+        /// <summary />
+        public int? ScheduledByPersonAliasId { get; set; }
+
+        /// <summary />
+        public bool? ScheduledToAttend { get; set; }
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.ScheduleId instead", false )]
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool? ScheduleReminderSent { get; set; }
 
         /// <summary />
         public int? SearchResultGroupId { get; set; }
@@ -154,6 +175,7 @@ namespace Rock.Client
             this.AttendanceCodeId = source.AttendanceCodeId;
             this.CampusId = source.CampusId;
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
+            this.DeclineReasonValueId = source.DeclineReasonValueId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;
             #pragma warning disable 612, 618
@@ -174,10 +196,16 @@ namespace Rock.Client
             this.PersonAliasId = source.PersonAliasId;
             this.Processed = source.Processed;
             this.QualifierValueId = source.QualifierValueId;
+            this.RequestedToAttend = source.RequestedToAttend;
             this.RSVP = source.RSVP;
+            this.RSVPDateTime = source.RSVPDateTime;
+            this.ScheduleConfirmationSent = source.ScheduleConfirmationSent;
+            this.ScheduledByPersonAliasId = source.ScheduledByPersonAliasId;
+            this.ScheduledToAttend = source.ScheduledToAttend;
             #pragma warning disable 612, 618
             this.ScheduleId = source.ScheduleId;
             #pragma warning restore 612, 618
+            this.ScheduleReminderSent = source.ScheduleReminderSent;
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
@@ -204,10 +232,16 @@ namespace Rock.Client
         public AttendanceCode AttendanceCode { get; set; }
 
         /// <summary />
+        public DefinedValue DeclineReasonValue { get; set; }
+
+        /// <summary />
         public Device Device { get; set; }
 
         /// <summary />
         public DefinedValue Qualifier { get; set; }
+
+        /// <summary />
+        public PersonAlias ScheduledByPersonAlias { get; set; }
 
         /// <summary />
         public DefinedValue SearchTypeValue { get; set; }

@@ -158,5 +158,92 @@ namespace Rock.Rest.Controllers
 
             return locationNameList.AsQueryable();
         }
+
+        /// <summary>
+        /// Gets the EntityStringValue for a list of location IDs.
+        /// </summary>
+        /// <param name="locationIds">A (comma, semi-colon or pipe) delimited list of location IDs.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/locations/GetLocationTitles")]
+        public Dictionary<int, string> GetLocationTitles( string locationIds )
+        {
+            List<int> locationIdList = locationIds.SplitDelimitedValues().Select( int.Parse ).ToList();
+            var locationNames = Get().Where( l => locationIdList.Contains( l.Id ) ).ToDictionary( l => l.Id, l => l.EntityStringValue );
+            return locationNames;
+        }
+
+        /// <summary>
+        /// Gets the children, excluding inactive items.
+        /// </summary>
+        /// <param name="id">The unique identifier.</param>
+        /// <param name="rootLocationId">The root location unique identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/locations/getactivechildren/{id}/{rootLocationId}" )]
+        public IQueryable<TreeViewItem> GetActiveChildren( int id, int rootLocationId )
+        {
+            IQueryable<Location> qry;
+            if ( id == 0 )
+            {
+                qry = Get().Where( a => a.ParentLocationId == null );
+                if ( rootLocationId != 0 )
+                {
+                    qry = qry.Where( a => a.Id == rootLocationId );
+                }
+            }
+            else
+            {
+                qry = Get().Where( a => a.ParentLocationId == id );
+            }
+
+            // limit to only active locations.
+            qry = qry.Where( a => a.IsActive );
+
+            // limit to only Named Locations (don't show home addresses, etc)
+            qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
+
+            List<Location> locationList = new List<Location>();
+            List<TreeViewItem> locationNameList = new List<TreeViewItem>();
+
+            var person = GetPerson();
+
+            foreach ( var location in qry.OrderBy ( l => l.Name ) )
+            {
+                if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    locationList.Add( location );
+                    var treeViewItem = new TreeViewItem();
+                    treeViewItem.Id = location.Id.ToString();
+                    treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( location.Name );
+                    locationNameList.Add( treeViewItem );
+                }
+            }
+
+            // try to quickly figure out which items have Children
+            List<int> resultIds = locationList.Select( a => a.Id ).ToList();
+
+            var qryHasChildren = Get()
+                .Where( l => 
+                    l.ParentLocationId.HasValue &&
+                    resultIds.Contains( l.ParentLocationId.Value ) &&
+                    l.IsActive
+                )
+                .Select( l => l.ParentLocationId.Value )
+                .Distinct()
+                .ToList();
+
+            var qryHasChildrenList = qryHasChildren.ToList();
+
+            foreach ( var item in locationNameList )
+            {
+                int locationId = int.Parse( item.Id );
+                item.HasChildren = qryHasChildrenList.Any( a => a == locationId );
+            }
+
+            return locationNameList.AsQueryable();
+        }
     }
 }

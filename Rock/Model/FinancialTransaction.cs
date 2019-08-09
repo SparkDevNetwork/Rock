@@ -98,6 +98,12 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
+        /// </summary>
+        [DataMember]
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
         /// For Credit Card transactions, this is the response code that the gateway returns. 
         /// For Scanned Checks, this is the check number.
         /// </summary>
@@ -283,6 +289,15 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
         public DateTime? SundayDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non cash asset type value identifier.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value identifier.
+        /// </value>
+        [DataMember]
+        public int? NonCashAssetTypeValueId { get; set; }
 
         #endregion Entity Properties
 
@@ -505,6 +520,15 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the non cash asset type value.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue NonCashAssetTypeValue { get; set; }
+
         #endregion Virtual Properties
 
         #region Public Methods
@@ -708,7 +732,8 @@ namespace Rock.Model
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
-        }
+            this.HasRequired( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
+            }
     }
 
     #endregion Entity Configuration

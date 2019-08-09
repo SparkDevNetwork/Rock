@@ -79,6 +79,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to allow lava
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow lava]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowLava
+        {
+            get
+            {
+                return this.ViewState["AllowLava"] as bool? ?? false;
+            }
+
+            set
+            {
+                this.ViewState["AllowLava"] = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -95,12 +114,27 @@ namespace Rock.Web.UI.Controls
                 // using approach from https://channel9.msdn.com/Forums/TechOff/250895-Regular-Expression-for-multiple-email-validation-using-the-RegularExpressionValidator-control
                 // "...the built-in RegEx for emails, plus a clause allowing for an optional comma "([,])*". I also wrapped the whole thing on "(...)*" to allow for multiple occurrences"
                 // then added a \s so that spaces are allowed between email addresses
-                _regexValidator.ValidationExpression = @"((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*";
+                if ( this.AllowLava )
+                {
+                    _regexValidator.ValidationExpression = @"({{\s*[\w\.]+\s*}})|(((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*)";
+                }
+                else
+                {
+                  
+                    _regexValidator.ValidationExpression = @"((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*";
+                }
             }
             else
             {
-                // from https://msdn.microsoft.com/en-us/library/aa711310(v=vs.71).aspx and https://stackoverflow.com/a/1710535/1755417
-                _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
+                if ( this.AllowLava )
+                {
+                    _regexValidator.ValidationExpression = @"({{\s*[\w\.]+\s*}})|(\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)";
+                }
+                else
+                {
+                    // from https://msdn.microsoft.com/en-us/library/aa711310(v=vs.71).aspx and https://stackoverflow.com/a/1710535/1755417
+                    _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
+                }
             }
 
             _regexValidator.ErrorMessage = "Email address is not valid";

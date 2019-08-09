@@ -62,7 +62,9 @@ namespace RockWeb.Blocks.Cms
                     if ( cbEvent.Checked == true )
                     {
                         var keyControl = repeaterItem.FindControl( "lbKey" ) as Label;
-                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\" }}", hfAssetStorageId.Value, keyControl.Text );
+                        var imageControl = repeaterItem.FindControl( "imgIconPath" ) as System.Web.UI.HtmlControls.HtmlImage;
+                        var nameControl = repeaterItem.FindControl( "lbName" ) as Label;
+                        return string.Format( "{{ \"AssetStorageProviderId\": \"{0}\", \"Key\": \"{1}\", \"IconPath\": \"{2}\", \"Name\": \"{3}\" }}", hfAssetStorageId.Value, keyControl.Text, imageControl.Attributes["src"], nameControl.Text );
                     }
                 }
 
@@ -221,7 +223,7 @@ upnlFiles.ClientID // {2}
             base.OnLoad( e );
 
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
-            var hasAssetStorageId = hfAssetStorageId.Value.IsNotNullOrWhiteSpace();
+            var hasAssetStorageId = hfAssetStorageId.Value.IsNotNullOrWhiteSpace() && hfAssetStorageId.Value != NullSelectedId;
 
             if ( !this.IsPostBack || !hasAssetStorageId )
             {
@@ -229,7 +231,7 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            fupUpload.Enabled = true;
+            fupUpload.Enabled = hasAssetStorageId;
 
             // handle custom postback events
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )

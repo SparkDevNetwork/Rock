@@ -79,10 +79,23 @@ achieve our mission.  We are so grateful for your commitment.
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 12 )]
 
+    [WorkflowTypeField(
+        name: "Workflow Trigger",
+        description: "Workflow types to trigger when an edit is submitted for a schedule.",
+        allowMultiple: true,
+        required: false,
+        order: 13,
+        key: AttributeKeys.WorkflowType )]
+
     #endregion
 
     public partial class ScheduledTransactionEdit : RockBlock
     {
+        private class AttributeKeys
+        {
+            public const string WorkflowType = "WorkflowType";
+        }
+
         #region Fields
 
         protected bool FluidLayout { get; set; }
@@ -838,16 +851,11 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             string howOften = DefinedValueCache.Get( btnFrequency.SelectedValueAsId().Value ).Value;
-            DateTime when = DateTime.MinValue;
 
             // Make sure a repeating payment starts in the future
-            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
+            if ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate <= RockDateTime.Today )
             {
-                when = dtpStartDate.SelectedDate.Value;
-            }
-            else
-            {
-                errorMessages.Add( "Make sure the Next  Gift date is in the future (after today)" );
+                errorMessages.Add( "Make sure the Next Gift date is in the future (after today)" );
             }
 
             if ( hfPaymentTab.Value == "ACH" )
@@ -964,8 +972,6 @@ achieve our mission.  We are so grateful for your commitment.
                     tdAccountNumber.Visible = true;
                     tdAccountNumber.Description = paymentInfo.MaskedNumber;
                 }
-
-                tdWhen.Description = string.Format( "{0} starting on {1}", howOften, when.ToShortDateString() );
             }
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
@@ -1034,24 +1040,15 @@ achieve our mission.  We are so grateful for your commitment.
                 // Get the payment schedule
                 scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
 
-                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
-                {
-                    scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
-                }
-                else
-                {
-                    scheduledTransaction.StartDate = DateTime.MinValue;
-                }
-
+                // ProcessPaymentInfo ensures that dtpStartDate.SelectedDate has a value and is after today
+                scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                scheduledTransaction.NextPaymentDate = Gateway.CalculateNextPaymentDate( scheduledTransaction, null );
 
                 PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                 if ( paymentInfo == null )
                 {
                     errorMessage = "There was a problem creating the payment information";
                     return false;
-                }
-                else
-                {
                 }
 
                 // If transaction is not active, attempt to re-activate it first
@@ -1118,6 +1115,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+
+                TriggerWorkflows( scheduledTransaction );
 
                 return true;
             }
@@ -1426,6 +1425,35 @@ achieve our mission.  We are so grateful for your commitment.
                 GlobalAttributesCache.Value( "CurrencySymbol") // {4}
                 );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
+        }
+
+        /// <summary>
+        /// Trigger an instance of each active workflow type selected in the block attributes
+        /// </summary>
+        private void TriggerWorkflows( FinancialScheduledTransaction schedule )
+        {
+            if ( schedule == null )
+            {
+                return;
+            }
+
+            var workflowTypeGuids = GetAttributeValues( AttributeKeys.WorkflowType ).AsGuidList();
+
+            if ( workflowTypeGuids.Any() )
+            {
+                // Make sure the workflow types are active and then trigger an instance of each
+                var rockContext = new RockContext();
+                var service = new WorkflowTypeService( rockContext );
+                var workflowTypes = service.Queryable()
+                    .AsNoTracking()
+                    .Where( wt => wt.IsActive == true && workflowTypeGuids.Contains( wt.Guid ) )
+                    .ToList();
+
+                foreach ( var workflowType in workflowTypes )
+                {
+                    schedule.LaunchWorkflow( workflowType.Guid );
+                }
+            }
         }
 
         #endregion

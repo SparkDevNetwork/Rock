@@ -40,7 +40,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
@@ -71,7 +71,7 @@ namespace Rock.PersonProfile.Badge
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/LastVisitOnSite/{Person.Id}/{siteId}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                         var badgeHtml = '';

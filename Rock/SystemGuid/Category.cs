@@ -31,7 +31,12 @@ namespace Rock.SystemGuid
         #endregion DataView Categories
 
         #region Defined Type Categories
-        
+
+        /// <summary>
+        /// Campus Category
+        /// </summary>
+        public const string DEFINEDTYPE_CAMPUS = "4503C83E-4171-4EAE-99C1-A3647E065181";
+
         /// <summary>
         /// CMS Category
         /// </summary>
@@ -130,19 +135,29 @@ namespace Rock.SystemGuid
         #region Person Attributes
 
         /// <summary>
-        /// The person attributes Social guid
+        /// The category for person attributes Social guid
         /// </summary>
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
-        
+
         /// <summary>
-        /// The person attribute for ERA
+        /// The category for person attribute for ERA
         /// </summary>
         public const string PERSON_ATTRIBUTES_ERA = "266A1EA8-425C-7BB0-4191-C2E234D60086";
 
         /// <summary>
-        /// The person attribute for Finance Internal
+        /// The category for person attribute for Finance Internal
         /// </summary>
         public const string PERSON_ATTRIBUTES_FINANCE_INTERNAL = "3030B3E2-91EE-4833-BACE-47F775FA98A0";
+
+        /// <summary>
+        /// The category for person attributes for DISC
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_DISC = "0B187C81-2106-4875-82B6-FBF1277AE23B";
+
+        /// <summary>
+        /// The category for person attributes for Personality Assessment Data
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
         #endregion
 

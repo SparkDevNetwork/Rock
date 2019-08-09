@@ -44,6 +44,9 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -102,7 +105,13 @@ namespace Rock.Client
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
+        public int? ScheduleCancellationPersonAliasId { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool SchedulingMustMeetRequirements { get; set; }
 
         /// <summary />
         public int? StatusValueId { get; set; }
@@ -143,6 +152,7 @@ namespace Rock.Client
             this.AllowGuests = source.AllowGuests;
             this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             this.ArchivedDateTime = source.ArchivedDateTime;
+            this.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             this.CampusId = source.CampusId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
@@ -160,7 +170,9 @@ namespace Rock.Client
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             this.ScheduleId = source.ScheduleId;
+            this.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

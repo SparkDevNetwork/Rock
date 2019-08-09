@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -94,7 +96,7 @@ namespace Rock.Model
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
 
-            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
+            return GetByNameAndDate( batchName.Truncate(50), transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
         }
 
         /// <summary>
@@ -196,6 +198,40 @@ namespace Rock.Model
             }
 
             return batch;
+        }
+
+        /// <summary>
+        /// Use this to increment <see cref="FinancialBatch.ControlAmount"/> in cases where a transaction amount should increase the control
+        /// amount. In the event that multiple transactions charge simultaneously, it is possible that the control amount additions will
+        /// be overwritten. This method ensures that the control amount is safely updated and no data is lost.
+        /// </summary>
+        /// <param name="batchId"></param>
+        /// <param name="newTransactionAmount">Use a negative amount to decrease the control amount</param>
+        /// <param name="history"></param>
+        public void IncrementControlAmount( int batchId, decimal newTransactionAmount, History.HistoryChangeList history )
+        {
+            var result = Context.Database.SqlQuery<ControlAmountUpdateResult>(
+@"UPDATE [FinancialBatch]
+SET [ControlAmount] = [ControlAmount] + @newTransactionAmount
+OUTPUT 
+    deleted.[ControlAmount] [OldAmount],
+    inserted.[ControlAmount] [NewAmount]
+WHERE [Id] = @batchId;",
+                new SqlParameter( "@newTransactionAmount", newTransactionAmount ),
+                new SqlParameter( "@batchId", batchId ) ).FirstOrDefault();
+
+            if ( history != null && result != null )
+            {
+                History.EvaluateChange( history, "Control Amount", result.OldAmount.FormatAsCurrency(), result.NewAmount.FormatAsCurrency() );
+            }
+        }
+
+        /// <summary>
+        /// Type used to get the control amount changes from SQL Server within <see cref="IncrementControlAmount"/>
+        /// </summary>
+        private class ControlAmountUpdateResult {
+            public decimal OldAmount { get; set; }
+            public decimal NewAmount { get; set; }
         }
     }
 }

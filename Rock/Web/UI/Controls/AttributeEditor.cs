@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +57,11 @@ namespace Rock.Web.UI.Controls
         protected RockTextBox _tbName;
 
         /// <summary>
+        /// The abbreviated name control
+        /// </summary>
+        protected RockTextBox _tbAbbreviatedName;
+
+        /// <summary>
         /// Description control
         /// </summary>
         protected RockTextBox _tbDescription;
@@ -95,6 +100,11 @@ namespace Rock.Web.UI.Controls
         /// Show in grid control
         /// </summary>
         protected RockCheckBox _cbShowInGrid;
+
+        /// <summary>
+        /// Show on bulk control
+        /// </summary>
+        protected RockCheckBox _cbShowOnBulk;
 
         /// <summary>
         /// Allow search control
@@ -426,6 +436,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the abbreviated name.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        public string AbbreviatedName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbAbbreviatedName.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label of the abbreviated name field.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name label.
+        /// </value>
+        public string AbbreviatedNameLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return string.IsNullOrEmpty( _tbAbbreviatedName.Label ) ? "Abbreviated Name" : _tbAbbreviatedName.Label;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Label = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -650,6 +701,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether Show on Bulk option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show on Bulk option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsShowOnBulkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the excluded field types.
         /// </summary>
         /// <value>
@@ -710,6 +781,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbShowInGrid.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show on bulk].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on bulk]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnBulk
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Checked = value;
             }
         }
 
@@ -1243,6 +1334,12 @@ namespace Rock.Web.UI.Controls
             _tbName.Required = true;
             Controls.Add( _tbName );
 
+            _tbAbbreviatedName = new RockTextBox();
+            _tbAbbreviatedName.ID = "tbAbbreviatedName";
+            _tbAbbreviatedName.Label = AbbreviatedNameLabel;
+            _tbAbbreviatedName.Required = false;
+            Controls.Add( _tbAbbreviatedName );
+
             _cbIsActive = new RockCheckBox();
             _cbIsActive.ID = "_cbIsActive";
             _cbIsActive.Label = "Active";
@@ -1300,6 +1397,13 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.Text = "Yes";
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
+
+            _cbShowOnBulk = new RockCheckBox();
+            _cbShowOnBulk.ID = "cbShowOnBulk";
+            _cbShowOnBulk.Label = "Show on Bulk";
+            _cbShowOnBulk.Text = "Yes";
+            _cbShowOnBulk.Help = "If selected, this attribute will be shown with bulk update attributes.";
+            Controls.Add( _cbShowOnBulk );
 
             _lFieldType = new RockLiteral();
             _lFieldType.Label = "Field Type";
@@ -1470,6 +1574,7 @@ namespace Rock.Web.UI.Controls
             string validationGroup = ValidationGroup;
             _validationSummary.ValidationGroup = validationGroup;
             _tbName.ValidationGroup = validationGroup;
+            _tbAbbreviatedName.ValidationGroup = validationGroup;
             _tbDescription.ValidationGroup = validationGroup;
             _cpCategories.ValidationGroup = validationGroup;
             _tbKey.ValidationGroup = validationGroup;
@@ -1477,6 +1582,7 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
+            _cbShowOnBulk.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
             _cbIsIndexingEnabled.ValidationGroup = validationGroup;
             _cbIsAnalytic.ValidationGroup = validationGroup;
@@ -1554,10 +1660,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _tbDescription.RenderControl( writer );
+            _tbAbbreviatedName.RenderControl( writer );
             writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag(); // empty column
 
             writer.RenderEndTag();  // row
 
@@ -1565,7 +1675,18 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // row 3 col 1
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbDescription.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // row
+
+            // row 4
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // row 4 col 1
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cpCategories.RenderControl( writer );
@@ -1586,11 +1707,16 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbShowOnBulk.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
 
-            // row 3 col 2
+            writer.RenderEndTag();
+
+            // row 4 col 2
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfReadOnlyFieldTypeId.RenderControl( writer );
@@ -1710,6 +1836,7 @@ namespace Rock.Web.UI.Controls
                 this.Description = attribute.Description;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+                this.ShowOnBulk = attribute.ShowOnBulk;
                 this.AllowSearch = attribute.AllowSearch;
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
                 this.IsAnalytic = attribute.IsAnalytic;
@@ -1718,6 +1845,7 @@ namespace Rock.Web.UI.Controls
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
+                this.AbbreviatedName = attribute.AbbreviatedName;
 
                 // only allow the fieldtype to be set if this a new attribute
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
@@ -1778,6 +1906,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
+                attribute.ShowOnBulk = this.ShowOnBulk;
                 attribute.AllowSearch = this.AllowSearch;
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
                 attribute.IsAnalytic = this.IsAnalytic;
@@ -1786,6 +1915,7 @@ namespace Rock.Web.UI.Controls
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;
+                attribute.AbbreviatedName = this.AbbreviatedName;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>

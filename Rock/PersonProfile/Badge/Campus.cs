@@ -14,11 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -28,45 +27,43 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// Campus Badge
     /// </summary>
-    [Description("Campus Badge")]
-    [Export(typeof(BadgeComponent))]
-    [ExportMetadata("ComponentName", "Campus")]
+    [Description( "Campus Badge" )]
+    [Export( typeof( BadgeComponent ) )]
+    [ExportMetadata( "ComponentName", "Campus" )]
     public class Campus : HighlightLabelBadge
     {
-
         /// <summary>
-        /// Gets the badge label
+        /// Gets the Entity's Campus badge label even if the campus is inactive.
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public override HighlightLabel GetLabel(Person person)
+        public override HighlightLabel GetLabel( IEntity entity )
         {
-            if (ParentPersonBlock != null)
+            // This badge is only setup to work with a person for now
+            var person = entity as Person;
+
+            // If the entity is not a person or there is only one campus, then don't display a badge
+            if ( person == null || CampusCache.All().Count <= 1 )
             {
-                // Campus is associated with the family group(s) person belongs to.
-                var families = ParentPersonBlock.PersonGroups(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY);
-                if (families != null)
-                {
-                    var label = new HighlightLabel();
-                    label.LabelType = LabelType.Campus;
-
-                    var campusNames = new List<string>();
-                    foreach (int campusId in families
-                        .Where(g => g.CampusId.HasValue)
-                        .Select(g => g.CampusId)
-                        .Distinct()
-                        .ToList())
-                        campusNames.Add(CampusCache.Get(campusId).Name);
-
-                    label.Text = campusNames.OrderBy(n => n).ToList().AsDelimited(", ");
-
-                    return label;
-                }
+                return null;
             }
 
-            return null;
+            var campusNames = person.GetCampusIds()
+                .Select( id => CampusCache.Get( id )?.Name )
+                .Where( name => !name.IsNullOrWhiteSpace() )
+                .OrderBy( name => name )
+                .ToList();
 
+            if ( !campusNames.Any() )
+            {
+                return null;
+            }
+
+            return new HighlightLabel
+            {
+                LabelType = LabelType.Campus,
+                Text = campusNames.AsDelimited( ", " )
+            };
         }
-
     }
 }

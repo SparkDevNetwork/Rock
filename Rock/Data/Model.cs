@@ -231,7 +231,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
@@ -242,7 +242,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Posts the save changes.
+        /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
@@ -370,7 +370,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == Authorization.VIEW;
+            // Model is the ultimate base Parent Authority of child classes of Models, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
+            // In the case of VIEW or TAG, we want to default to Allowed.
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>
@@ -434,10 +436,12 @@ namespace Rock.Data
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <remarks>
-        /// This method is only necessary to support the old way of getting attribute values in 
-        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
-        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// This method is necessary to support getting AttributeValues in Lava templates and
+        /// to support the old way of getting attribute values in Lava templates
+        /// (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// removed and only the new method of using the Attribute filter is 
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be
+        /// trimmed to only support the AttributeValues key.
         /// </remarks>
         /// <value>
         /// The <see cref="System.Object"/>.
@@ -476,7 +480,6 @@ namespace Rock.Data
                         return null;
                     }
                     
-
                     if ( this.Attributes != null )
                     {
                         string attributeKey = keyString;
@@ -499,10 +502,7 @@ namespace Rock.Data
                             var attribute = this.Attributes[attributeKey];
                             if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
-                                if ( lavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning )
-                                {
-                                    Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
-                                }
+                                Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
 
                                 if ( unformatted )
                                 {

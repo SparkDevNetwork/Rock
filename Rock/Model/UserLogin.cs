@@ -17,7 +17,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading;
@@ -25,6 +28,7 @@ using System.Web;
 using System.Web.Hosting;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -194,6 +198,15 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private History.HistoryChangeList HistoryChanges { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -307,6 +320,121 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.UserName;
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context.  Takes
+        /// care of logging any particular change history for user login.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            HistoryChanges = new History.HistoryChangeList();
+
+            switch ( entry.State )
+            {
+                case EntityState.Added:
+                    {
+                        // Get the authentication provider entity type
+                        var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
+                        var change = HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Authentication Provider" ).SetNewValue( entityType?.FriendlyName );
+
+                        // Don't log Pin Authentication user names.
+                        var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+
+                        if ( isUserNameSensitive )
+                        {
+                            change.SetCaption( "User Account" );
+                        }
+
+                        History.EvaluateChange( HistoryChanges, "User Login", string.Empty, UserName, isUserNameSensitive );
+                        History.EvaluateChange( HistoryChanges, "Is Confirmed", null, IsConfirmed );
+                        History.EvaluateChange( HistoryChanges, "Is Password Change Required", null, IsPasswordChangeRequired );
+                        History.EvaluateChange( HistoryChanges, "Is Locked Out", null, IsLockedOut );
+
+                        break;
+                    }
+
+                case EntityState.Modified:
+                    {
+                        var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
+
+                        // Don't log Pin Authentication user names.
+                        var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+
+                        History.EvaluateChange( HistoryChanges, "User Login", entry.OriginalValues["UserName"].ToStringSafe(), UserName, isUserNameSensitive );
+                        History.EvaluateChange( HistoryChanges, "Is Confirmed", entry.OriginalValues["IsConfirmed"].ToStringSafe().AsBooleanOrNull(), IsConfirmed );
+                        History.EvaluateChange( HistoryChanges, "Is Password Change Required", entry.OriginalValues["IsPasswordChangeRequired"].ToStringSafe().AsBooleanOrNull(), IsPasswordChangeRequired );
+                        History.EvaluateChange( HistoryChanges, "Is Locked Out", entry.OriginalValues["IsLockedOut"].ToStringSafe().AsBooleanOrNull(), IsLockedOut );
+                        History.EvaluateChange( HistoryChanges, "Password", entry.OriginalValues["Password"].ToStringSafe(), Password, true );
+
+                        // Did the provider type change?
+                        int? origEntityTypeId = entry.OriginalValues["EntityTypeId"].ToStringSafe().AsIntegerOrNull();
+                        int? entityTypeId = EntityType != null ? EntityType.Id : EntityTypeId;
+                        if ( !entityTypeId.Equals( origEntityTypeId ) )
+                        {
+                            var origProviderType = EntityTypeCache.Get( origEntityTypeId ?? 0 )?.FriendlyName;
+                            var providerType = EntityTypeCache.Get( this.EntityTypeId ?? 0 )?.FriendlyName;
+                            History.EvaluateChange( HistoryChanges, "User Login", origProviderType, providerType );
+                        }
+
+                        // Change the caption if this is a sensitive user account
+                        if ( HistoryChanges.Count > 0 && isUserNameSensitive )
+                        {
+                                var change = HistoryChanges.FirstOrDefault();
+                                change.SetCaption( "User Account" );
+                        }
+
+                        break;
+                    }
+
+                case EntityState.Deleted:
+                    {
+                        // By this point EF has stripped out some of the data we need to save history
+                        // Reload the data using a new context.
+                        RockContext newRockContext = new RockContext();
+                        var userLogin = new UserLoginService( newRockContext ).Get( this.Id );
+                        if ( userLogin != null )
+                        {
+                            var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
+                            var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+
+                            if ( ! isUserNameSensitive )
+                            {
+                                HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
+                                HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, UserName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                            }
+                            else
+                            {
+                                HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
+                                HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                            }
+                        }
+
+                        HistoryChanges.Clear();
+                        return;
+                    }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+
+            if ( HistoryChanges != null && HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), this.PersonId.Value, HistoryChanges, this.UserName, typeof( UserLogin ), this.Id, true, this.ModifiedByPersonAliasId, null );
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion

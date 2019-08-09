@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
 
-    [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
+    [BooleanField( "Show Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true, "", 0 )]
     [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
     [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "", 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The Family attributes that should be displayed", false, true, "", "", 3 )]
@@ -69,8 +69,9 @@ the value entered for the Planned Visit Date field if it was displayed.
     [CustomDropdownListField( "Gender", "How should Gender be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Child Fields", 1, CHILD_GENDER_KEY )]
     [CustomDropdownListField( "Birth Date", "How should Birth Date be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Required", "Child Fields", 2, CHILD_BIRTHDATE_KEY )]
     [CustomDropdownListField( "Grade", "How should Grade be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "Child Fields", 3, CHILD_GRADE_KEY )]
-    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Hide", "Child Fields", 4, CHILD_MOBILE_KEY )]
-    [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 5, CHILD_CATEGORIES_KEY )]
+    [CustomDropdownListField( "Email", "How should Email be displayed for children?  Be sure to seek legal guidance when collecting email addresses on minors.", HIDE_OPTIONAL_REQUIRED, false, "Hide", "Child Fields", 4, CHILD_EMAIL_KEY )]
+    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", HIDE_OPTIONAL_REQUIRED, false, "Hide", "Child Fields", 5, CHILD_MOBILE_KEY )]
+    [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 6, CHILD_CATEGORIES_KEY )]
 
     [CustomEnhancedListField( "Relationship Types", "The possible child-to-adult relationships. The value 'Child' will always be included.", @"
 SELECT 
@@ -121,6 +122,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         private const string CHILD_BIRTHDATE_KEY = "ChildBirthdate";
         private const string CHILD_GRADE_KEY = "ChildGrade";
         private const string CHILD_MOBILE_KEY = "ChildMobilePhone";
+        private const string CHILD_EMAIL_KEY = "ChildEmail";
         private const string CHILD_CATEGORIES_KEY = "ChildAttributeCategories";
 
         private const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
@@ -396,6 +398,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var familyRelationships = GetAttributeValue( "FamilyRelationships" ).SplitDelimitedValues().AsIntegerList();
                 var canCheckinRelationships = GetAttributeValue( "CanCheckinRelationships" ).SplitDelimitedValues().AsIntegerList();
                 var showChildMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) != "Hide";
+                var showChildEmailAddress = GetAttributeValue( CHILD_EMAIL_KEY ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -603,6 +606,12 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         person.GradeOffset = child.GradeOffset;
                     }
 
+                    // Save the email address
+                    if ( showChildEmailAddress && child.EmailAddress.IsNotNullOrWhiteSpace() )
+                    {
+                        person.Email = child.EmailAddress;
+                    }
+
                     _rockContext.SaveChanges();
 
                     // Save the mobile phone number
@@ -788,8 +797,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             if ( GetAttributeValue( "ShowCampus" ).AsBoolean() )
             {
                 cpCampus.Campuses = CampusCache.All( false );
-                pnlCampus.Visible = true;
-                cpCampus.Required = GetAttributeValue("RequireCampus").AsBoolean();
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    pnlCampus.Visible = true;
+                    cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+                }
+                else
+                {
+                    pnlCampus.Visible = false;
+                }
             }
             else
             {
@@ -1172,6 +1188,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             var requireGrade = GetAttributeValue( CHILD_GRADE_KEY ) == "Required";
             var showMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) != "Hide";
             var requireMobilePhone = GetAttributeValue( CHILD_MOBILE_KEY ) == "Required";
+            var showEmailAddress = GetAttributeValue( CHILD_EMAIL_KEY ) != "Hide";
+            var requireEmailAddress = GetAttributeValue( CHILD_EMAIL_KEY ) == "Required";
 
             var attributeList = GetCategoryAttributeList( CHILD_CATEGORIES_KEY );
 
@@ -1199,6 +1217,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     childRow.RequireGrade = requireGrade;
                     childRow.ShowMobilePhone = showMobilePhone;
                     childRow.RequireMobilePhone = requireMobilePhone;
+                    childRow.ShowEmailAddress = showEmailAddress;
+                    childRow.RequireEmailAddress = requireEmailAddress;
                     childRow.RelationshipTypeList = _relationshipTypes;
                     childRow.AttributeList = attributeList;
 
@@ -1215,6 +1235,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         childRow.RelationshipType = child.RelationshipType;
                         childRow.MobilePhone = child.MobilePhoneNumber;
                         childRow.MobilePhoneCountryCode = child.MobileCountryCode;
+                        childRow.EmailAddress = child.EmailAddress;
 
                         childRow.SetAttributeValues( child );
                     }
@@ -1414,6 +1435,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 child.MobilePhoneNumber = childRow.MobilePhone;
                 child.MobileCountryCode = childRow.MobilePhoneCountryCode;
+                child.EmailAddress = childRow.EmailAddress;
 
                 child.RelationshipType = childRow.RelationshipType;
 

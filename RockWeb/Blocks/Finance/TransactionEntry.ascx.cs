@@ -927,7 +927,7 @@ TransactionAccountDetails: [
                                 mergeFields.Add( "User", user );
 
                                 var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
-                                emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = false;
@@ -2236,6 +2236,7 @@ TransactionAccountDetails: [
             }
             else
             {
+                paymentInfo.FirstName = "-";
                 paymentInfo.LastName = txtBusinessName.Text;
             }
 
@@ -2284,21 +2285,28 @@ TransactionAccountDetails: [
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
-            if ( txtCurrentName.Visible )
+
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            if ( !givingAsBusiness )
             {
-                Person person = GetPerson( false );
-                if ( person != null )
+                if ( txtCurrentName.Visible )
                 {
-                    paymentInfo.FirstName = person.FirstName;
-                    paymentInfo.LastName = person.LastName;
-                    paymentInfo.Email = person.Email;
+                    Person person = GetPerson( false );
+                    if ( person != null )
+                    {
+                        paymentInfo.FirstName = person.FirstName;
+                        paymentInfo.LastName = person.LastName;
+                    }
+                }
+                else
+                {
+                    paymentInfo.FirstName = txtFirstName.Text;
+                    paymentInfo.LastName = txtLastName.Text;
                 }
             }
             else
             {
-                paymentInfo.FirstName = txtFirstName.Text;
-                paymentInfo.LastName = txtLastName.Text;
-                paymentInfo.Email = txtEmail.Text;
+                paymentInfo.LastName = txtBusinessName.Text;
             }
 
             paymentInfo.IPAddress = GetClientIpAddress();
@@ -2330,7 +2338,7 @@ TransactionAccountDetails: [
         /// <returns></returns>
         private PaymentInfo GetPaymentInfo()
         {
-            PaymentInfo paymentInfo = null;
+            PaymentInfo paymentInfo;
             if ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 )
             {
                 paymentInfo = GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value );
@@ -2356,6 +2364,9 @@ TransactionAccountDetails: [
             paymentInfo.State = acAddress.State;
             paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( "TransactionType" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
         }
@@ -2590,6 +2601,12 @@ TransactionAccountDetails: [
             bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
             Person person = GetPerson( !givingAsBusiness );
 
+            // Add contact person if giving as a business and current person is unknow
+            if ( person == null && givingAsBusiness )
+            {
+                person = GetBusinessContact();
+            }
+
             if ( person == null )
             {
                 errorMessage = "There was a problem creating the person information";
@@ -2602,7 +2619,7 @@ TransactionAccountDetails: [
                 return false;
             }
 
-            Person BusinessOrPerson = GetPersonOrBusiness( person );
+            Person businessOrPerson = GetPersonOrBusiness( person );
 
             PaymentInfo paymentInfo = GetPaymentInfo();
             if ( paymentInfo == null )
@@ -2612,8 +2629,8 @@ TransactionAccountDetails: [
             }
             else
             {
-                paymentInfo.FirstName = person.FirstName;
-                paymentInfo.LastName = person.LastName;
+                paymentInfo.FirstName = businessOrPerson.FirstName;
+                paymentInfo.LastName = businessOrPerson.LastName;
             }
 
             if ( paymentInfo.CreditCardTypeValue != null )
@@ -2650,7 +2667,7 @@ TransactionAccountDetails: [
                 }
 
                 paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
-                SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
+                SaveScheduledTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
             }
             else
             {
@@ -2664,7 +2681,7 @@ TransactionAccountDetails: [
                 transaction.Guid = transactionGuid;
 
                 paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
-                SaveTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, transaction, rockContext );
+                SaveTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, transaction, rockContext );
             }
 
             ShowSuccess( gateway, person, paymentInfo, schedule, paymentDetail, rockContext );
@@ -2886,13 +2903,8 @@ TransactionAccountDetails: [
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            }            
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
-            transaction.BatchId = batch.Id;
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2912,7 +2924,7 @@ TransactionAccountDetails: [
             {
                 rockContext.SaveChanges();
             }
-
+            
             transaction.BatchId = batch.Id;
 
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -2920,6 +2932,9 @@ TransactionAccountDetails: [
 
             rockContext.SaveChanges();
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,

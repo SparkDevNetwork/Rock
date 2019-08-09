@@ -452,6 +452,10 @@ namespace RockWeb.Blocks.Groups
             {
                 rblFilterDOW.SetValue( "Days" );
             }
+            else
+            {
+                rblFilterDOW.SelectedIndex = 0;
+            }
 
             cbFilterTimeOfDay.Checked = scheduleFilters.Contains( "Time" );
 

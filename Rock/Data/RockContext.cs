@@ -214,6 +214,22 @@ namespace Rock.Data
         public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
 
         /// <summary>
+        /// Gets or sets the assessments.
+        /// </summary>
+        /// <value>
+        /// The assessments
+        /// </value>
+        public DbSet<Assessment> Assessments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AssessmentTypes.
+        /// </summary>
+        /// <value>
+        /// The AssessmentTypes
+        /// </value>
+        public DbSet<AssessmentType> AssessmentTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>
@@ -228,6 +244,14 @@ namespace Rock.Data
         /// The attendance codes.
         /// </value>
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendances data.
+        /// </summary>
+        /// <value>
+        /// The attendances data.
+        /// </value>
+        public DbSet<AttendanceData> AttendancesData { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance occurrences.
@@ -614,6 +638,22 @@ namespace Rock.Data
         public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the document types.
+        /// </summary>
+        /// <value>
+        /// The document types.
+        /// </value>
+        public DbSet<DocumentType> DocumentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        public DbSet<Document> Documents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -934,12 +974,28 @@ namespace Rock.Data
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location schedule configs.
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        public DbSet<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member assignments.
+        /// </summary>
+        /// <value>
+        /// The group member assignments.
+        /// </value>
+        public DbSet<GroupMemberAssignment> GroupMemberAssignments { get; set; }
 
         /// <summary>
         /// Gets or sets the group member historicals.
@@ -956,6 +1012,14 @@ namespace Rock.Data
         /// The group member requirements.
         /// </value>
         public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member schedule templates.
+        /// </summary>
+        /// <value>
+        /// The group member schedule templates.
+        /// </value>
+        public DbSet<GroupMemberScheduleTemplate> GroupMemberScheduleTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the group member workflow triggers.
@@ -1036,6 +1100,14 @@ namespace Rock.Data
         /// the Html Contents.
         /// </value>
         public DbSet<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS actions.
+        /// </summary>
+        /// <value>
+        /// The SMS actions.
+        /// </value>
+        public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
         /// Gets or sets the Interactions.
@@ -1286,12 +1358,12 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
-        /// Gets or sets the person badge types.
+        /// Gets or sets the badges.
         /// </summary>
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<PersonBadge> PersonBadges { get; set; }
+        public DbSet<Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.
@@ -1308,6 +1380,14 @@ namespace Rock.Data
         /// The person previous names.
         /// </value>
         public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The person schedule exclusions.
+        /// </value>
+        public DbSet<PersonScheduleExclusion> PersonScheduleExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Signals.
@@ -1558,12 +1638,92 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the steps.
+        /// </summary>
+        /// <value>
+        /// The steps.
+        /// </value>
+        public DbSet<Step> Steps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step programs.
+        /// </summary>
+        /// <value>
+        /// The step programs.
+        /// </value>
+        public DbSet<StepProgram> StepPrograms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step statuses.
+        /// </summary>
+        /// <value>
+        /// The step statuses.
+        /// </value>
+        public DbSet<StepStatus> StepStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step types.
+        /// </summary>
+        /// <value>
+        /// The step types.
+        /// </value>
+        public DbSet<StepType> StepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The step type prerequisites.
+        /// </value>
+        public DbSet<StepTypePrerequisite> StepTypePrerequisites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflows.
+        /// </summary>
+        /// <value>
+        /// The step workflows.
+        /// </value>
+        public DbSet<StepWorkflow> StepWorkflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The step workflow triggers.
+        /// </value>
+        public DbSet<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
+
+        /// <summary>
         /// Gets or sets the site URL maps.
         /// </summary>
         /// <value>
         /// The site URL maps.
         /// </value>
         public DbSet<PageShortLink> PageShortLinks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Streaks.
+        /// </summary>
+        /// <value>
+        /// The Streaks.
+        /// </value>
+        public DbSet<Streak> Streaks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypes.
+        /// </summary>
+        /// <value>
+        /// The StreakTypes.
+        /// </value>
+        public DbSet<StreakType> StreakTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypeExclusions.
+        /// </summary>
+        /// <value>
+        /// The StreakTypeExclusions.
+        /// </value>
+        public DbSet<StreakTypeExclusion> StreakTypeExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the system emails.

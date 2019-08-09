@@ -34,8 +34,8 @@ namespace Rock.Store
         /// <summary>
         /// Initializes a new instance of the <see cref="Rock.Model.CategoryService" /> class.
         /// </summary>
-        public InstalledPackageService() :base()
-        {}
+        public InstalledPackageService() : base()
+        { }
 
         /// <summary>
         /// Gets the installed packages.
@@ -43,7 +43,11 @@ namespace Rock.Store
         /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
-            string packageFile = HostingEnvironment.MapPath("~/App_Data/InstalledStorePackages.json");
+            string packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            if ( !File.Exists( packageFile ) )
+            {
+                return new List<InstalledPackage>();
+            }
 
             try
             {
@@ -53,7 +57,7 @@ namespace Rock.Store
                     return JsonConvert.DeserializeObject<List<InstalledPackage>>( json );
                 }
             }
-            catch 
+            catch
             {
                 return new List<InstalledPackage>();
             }
@@ -116,7 +120,7 @@ namespace Rock.Store
         private static void SaveInstalledPackages( List<InstalledPackage> packages )
         {
             string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
-            
+
             string packagesAsJson = packages.ToJson();
 
             System.IO.File.WriteAllText( packageFile, packagesAsJson );

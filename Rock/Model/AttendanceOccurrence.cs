@@ -128,6 +128,46 @@ namespace Rock.Model
         [DataMember]
         public int? AnonymousAttendanceCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Accept Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Decline Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not to show the Decline Confirmation Message.
+        /// </summary>
+        [DataMember]
+        public bool ShowDeclineReasons { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
+        /// </summary>
+        /// <value>
+        /// The integer IDs.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string DeclineReasonValueIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurence is associated.
+        /// </summary>
+        [DataMember]
+        public int? StepTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -210,7 +250,7 @@ namespace Rock.Model
                 var totalCount = Attendees.Count();
                 if ( totalCount > 0 )
                 {
-                    return (double)( DidAttendCount ) / (double)totalCount;
+                    return ( double ) ( DidAttendCount ) / ( double ) totalCount;
                 }
                 else
                 {
@@ -218,6 +258,12 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the Step Type.
+        /// </summary>
+        [DataMember]
+        public virtual StepType StepType { get; set; }
 
         #endregion
 
@@ -234,15 +280,18 @@ namespace Rock.Model
             get
             {
                 var result = base.IsValid;
-                if (!result) return result;
+                if ( !result )
+                    return result;
 
                 using ( var rockContext = new RockContext() )
                 {
                     // validate cases where the group type requires that a location/schedule is required
-                    if (GroupId == null) return result;
+                    if ( GroupId == null )
+                        return result;
 
-                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault(g => g.Id == GroupId);
-                    if (group == null) return result;
+                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault( g => g.Id == GroupId );
+                    if ( group == null )
+                        return result;
 
                     if ( group.GroupType.GroupAttendanceRequiresLocation && LocationId == null )
                     {
@@ -261,6 +310,17 @@ namespace Rock.Model
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"Occurrence for {Schedule} {Group} at {Location} on { OccurrenceDate }";
         }
 
         #endregion
@@ -282,6 +342,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.StepType ).WithMany().HasForeignKey( p => p.StepTypeId ).WillCascadeOnDelete( true );
         }
     }
 

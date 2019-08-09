@@ -232,6 +232,31 @@ namespace Rock.Web.Cache
         public string PostHtml { get; private set; }
 
         /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name of the Attribute.
+        /// </value>
+        [DataMember]
+        public string  AbbreviatedName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; private set; }
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -394,6 +419,9 @@ namespace Rock.Web.Cache
             EnableHistory = attribute.EnableHistory;
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
+            AbbreviatedName = attribute.AbbreviatedName;
+            ShowOnBulk = attribute.ShowOnBulk;
+            IsPublic = attribute.IsPublic;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )

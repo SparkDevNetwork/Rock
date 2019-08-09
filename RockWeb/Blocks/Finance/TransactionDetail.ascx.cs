@@ -1973,7 +1973,7 @@ namespace RockWeb.Blocks.Finance
 
         /// <summary>
         /// Finds the first occuring cell within the collection that contains a EditField
-        /// or null if no occurences are found
+        /// or null if no occurrences are found
         /// </summary>
         /// <param name="cells"></param>
         /// <returns></returns>
@@ -1984,7 +1984,7 @@ namespace RockWeb.Blocks.Finance
 
         /// <summary>
         /// Finds the first occuring cell within the collection that contains a DeleteField
-        /// or null if no occurences are found
+        /// or null if no occurrences are found
         /// </summary>
         /// <param name="cells"></param>
         /// <returns></returns>
@@ -1994,8 +1994,8 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Within the collection, returns the first occurence of a cell containing a field of type T
-        /// or null if no occurences are found.
+        /// Within the collection, returns the first occurrence of a cell containing a field of type T
+        /// or null if no occurrences are found.
         /// </summary>
         /// <typeparam name="T">The IRockGridField type to search for</typeparam>
         /// <param name="cells">The collection of cells</param>

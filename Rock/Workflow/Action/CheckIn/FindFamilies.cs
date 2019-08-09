@@ -203,7 +203,7 @@ namespace Rock.Workflow.Action.CheckIn
                         .ToList();
 
                     // Add each family
-                    foreach ( int familyId in familyIdQry )
+                    foreach ( int familyId in familyMembers.Select( fm => fm.GroupId ).Distinct() )
                     {
                         // Get each of the members for this family
                         var familyMemberQry = familyMembers

@@ -16,12 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -844,7 +846,7 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
                 {
                     // attempt to find the body tag
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );
@@ -878,6 +880,12 @@ namespace Rock.Web.UI
                 if ( !WebRequestHelper.IsSecureConnection(HttpContext.Current)  && ( _pageCache.RequiresEncryption || Site.RequiresEncryption ) )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
+
+                    // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
+                    SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
+                    string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
+                    Response.Cookies[sidCookieName].Expires = DateTime.Now.AddDays( -1 );
+
                     Response.Redirect( redirectUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
                     return;
@@ -1160,8 +1168,35 @@ namespace Rock.Web.UI
                             {
                                 try
                                 {
-                                    control = TemplateControl.LoadControl( block.BlockType.Path );
-                                    control.ClientIDMode = ClientIDMode.AutoID;
+                                    if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
+                                    {
+                                        control = TemplateControl.LoadControl( block.BlockType.Path );
+                                        control.ClientIDMode = ClientIDMode.AutoID;
+                                    }
+                                    else if ( block.BlockType.EntityTypeId.HasValue )
+                                    {
+                                        var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
+
+                                        if ( blockEntity is Rock.Blocks.IRockBlockType rockBlockEntity )
+                                        {
+                                            var wrapper = new RockBlockTypeWrapper
+                                            {
+                                                Page = this,
+                                                Block = rockBlockEntity
+                                            };
+
+                                            wrapper.InitializeAsUserControl( this );
+                                            wrapper.AppRelativeTemplateSourceDirectory = "~";
+
+                                            control = wrapper;
+                                            control.ClientIDMode = ClientIDMode.AutoID;
+                                        }
+                                    }
+
+                                    if ( control == null )
+                                    {
+                                        throw new Exception( "Cannot instantiate unknown block type" );
+                                    }
                                 }
                                 catch ( Exception ex )
                                 {
@@ -1215,6 +1250,12 @@ namespace Rock.Web.UI
 
                                     // If the blocktype's security actions have not yet been loaded, load them now
                                     block.BlockType.SetSecurityActions( blockControl );
+                                }
+
+                                if ( control is RockBlockTypeWrapper wrapper )
+                                {
+                                    // If the blocktype's security actions have not yet been loaded, load them now
+                                    block.BlockType.SetSecurityActions( wrapper.Block.GetType() );
                                 }
                             }
 
@@ -1480,8 +1521,9 @@ namespace Rock.Web.UI
                             {
                                 using ( var rockContext = new RockContext() )
                                 {
-                                    string blockTypePath = BlockTypeCache.Get( blockTypeId ).Path;
-                                    var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( blockTypePath );
+                                    var blockTypeCache = BlockTypeCache.Get( blockTypeId );
+                                    Type blockCompiledType = blockTypeCache.GetCompiledType();
+
                                     bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
                                     BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
                                 }
@@ -2850,6 +2892,7 @@ Sys.Application.add_load(function () {
         /// Adds a script tag with the specified id and source to head (if it doesn't already exist)
         /// </summary>
         /// <param name="page">The page.</param>
+        /// <param name="scriptId">The script identifier.</param>
         /// <param name="src">The source.</param>
         public static void AddScriptSrcToHead( Page page, string scriptId, string src )
         {
@@ -3044,7 +3087,7 @@ Sys.Application.add_load(function () {
         {
             foreach ( var rockBlock in RockBlocks )
             {
-                if ( rockBlock.BlockCache.BlockType.Path.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) )
+                if ( rockBlock.BlockCache.BlockType.Path?.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) ?? false )
                 {
                     OnBlockUpdated( rockBlock.BlockId );
                 }

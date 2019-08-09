@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
-
+ 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -91,11 +91,34 @@ namespace Rock.Jobs
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The days back
+            /// </summary>
             public const string DaysBack = "DaysBack";
-            public const string BatchNamePrefix = "Batch Name Prefix";
-            public const string ReceiptEmail = "Receipt Email";
-            public const string FailedPaymentEmail = "Failed Payment Email";
-            public const string FailedPaymentWorkflow = "Failed Payment Workflow";
+
+            /// <summary>
+            /// The batch name prefix
+            /// </summary>
+            public const string BatchNamePrefix = "BatchNamePrefix";
+
+            /// <summary>
+            /// The receipt email
+            /// </summary>
+            public const string ReceiptEmail = "ReceiptEmail";
+
+            /// <summary>
+            /// The failed payment email
+            /// </summary>
+            public const string FailedPaymentEmail = "FailedPaymentEmail";
+
+            /// <summary>
+            /// The failed payment workflow
+            /// </summary>
+            public const string FailedPaymentWorkflow = "FailedPaymentWorkflow";
+
+            /// <summary>
+            /// The target gateway
+            /// </summary>
             public const string TargetGateway = "TargetGateway";
         }
 

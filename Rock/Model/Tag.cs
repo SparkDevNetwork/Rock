@@ -143,6 +143,26 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background color of each tag
+        /// </summary>
+        /// <value>
+        /// The color of the tag.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string BackgroundColor { get; set; } = "#e0e0e0";
+
         #endregion
 
         #region Virtual Properties
@@ -193,6 +213,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.CategoryId.HasValue )
+                {
+                    return Rock.Web.Cache.CategoryCache.Get( this.CategoryId.Value ) ?? base.ParentAuthority;
+                }
+
                 return this.Category != null ? this.Category : base.ParentAuthority;
             }
         }
@@ -208,7 +233,7 @@ namespace Rock.Model
                 {
                     _supportedActions = new Dictionary<string, string>();
                     _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( "Tag", "The roles and/or users that have access to tag items." );
+                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
                     _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                     _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }

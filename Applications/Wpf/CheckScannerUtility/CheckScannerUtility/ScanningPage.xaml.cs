@@ -630,25 +630,10 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void LoadAccounts()
         {
-            RockConfig rockConfig = RockConfig.Load();
+            List<DisplayAccountValueModel> sortedDisplayedAccountList = ScanningPageUtility.GetVisibleAccountsSortedAndFlattened();
 
-            var filteredAccounts = ScanningPageUtility.Accounts.Where( a => rockConfig.SelectedAccountForAmountsIds.Contains( a.Id ) );
-            List<DisplayAccountValueModel> displayedAccountList = new List<DisplayAccountValueModel>();
-
-            foreach ( var account in filteredAccounts )
-            {
-                displayedAccountList.Add( new DisplayAccountValueModel( account ));
-            }
-
-            int index = 0;
-            displayedAccountList = displayedAccountList.OrderBy( a => a.AccountOrder ).ThenBy( a => a.AccountDisplayName ).ToList();
-            foreach (var displayedAccount in displayedAccountList)
-            {
-                displayedAccount.Index = index++;
-            }
-
-            this.lvAccountDetailsEntry.ItemsSource = displayedAccountList;
-            this.lvAccountDetailsDisplay.ItemsSource = displayedAccountList;
+            this.lvAccountDetailsEntry.ItemsSource = sortedDisplayedAccountList;
+            this.lvAccountDetailsDisplay.ItemsSource = sortedDisplayedAccountList;
         }
 
         /// <summary>
@@ -1222,23 +1207,21 @@ namespace Rock.Apps.CheckScannerUtility
                 scannedDoc.Upload = true;
                 scannedDoc.CurrencyTypeValue = this._batchPage.SelectedCurrencyValue;
                 scannedDoc.SourceTypeValue = this._batchPage.SelectedSourceTypeValue;
-                if ( scannedDoc.IsCheck )
-                {
-                    if ( _isBackScan )
-                    {
-                        scannedDoc = _currentMagtekScannedDoc;
-                        scannedDoc.BackImageData = e.ImageData;
-                    }
-                    else
-                    {
-                        // Check Bad Read without prompt
-                        if ( e.ScannedCheckMicrData.Contains( "?" ) )
-                        {
-                            scannedDoc.BadMicr = true;
-                        }
 
-                        scannedDoc.FrontImageData = e.ImageData;
+                if ( _isBackScan )
+                {
+                    scannedDoc = _currentMagtekScannedDoc;
+                    scannedDoc.BackImageData = e.ImageData;
+                }
+                else
+                {
+                    // Check Bad Read without prompt
+                    if ( scannedDoc.IsCheck && e.ScannedCheckMicrData.Contains( "?" ) )
+                    {
+                        scannedDoc.BadMicr = true;
                     }
+
+                    scannedDoc.FrontImageData = e.ImageData;
                 }
 
                 _isBackScan = false;
@@ -1477,7 +1460,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             // set focus to the first amount entry box
             CurrencyBox currencyBox = sender as CurrencyBox;
-            if ( ( currencyBox?.DataContext as DisplayAccountValueModel )?.Index == 0 )
+            if ( ( currencyBox?.DataContext as DisplayAccountValueModel )?.DisplayIndex == 0 )
             {
                 _firstAmountBox = currencyBox;
             }

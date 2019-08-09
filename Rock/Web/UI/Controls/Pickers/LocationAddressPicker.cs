@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class LocationAddressPicker : Panel, IRockControl, INamingContainer
     {
@@ -328,7 +328,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowDropDown 
+        public bool ShowDropDown
         {
             get
             {
@@ -386,8 +386,8 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
-            
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+
             base.Render( writer );
         }
 
@@ -482,7 +482,7 @@ namespace Rock.Web.UI.Controls
             LocationService locationService = new LocationService( new RockContext() );
             var location = locationService.Get( _acAddress.Street1, _acAddress.Street2, _acAddress.City, _acAddress.State, _acAddress.PostalCode, _acAddress.Country );
             Location = location;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
             ShowDropDown = false;
 
             if ( SelectGeography != null )
@@ -499,7 +499,7 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
         {
             Location = null;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
         }
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace Rock.Web.UI.Controls
         {
 
             RegisterJavaScript();
-            
+
             _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = ShowDropDown ? "block" : "none";
             this.Render( writer );
         }

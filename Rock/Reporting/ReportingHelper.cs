@@ -20,11 +20,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.Reporting.DataFilter;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
@@ -196,13 +196,15 @@ namespace Rock.Reporting
                                 {
                                     boundField = new CallbackField();
                                     boundField.HtmlEncode = false;
-                                    ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
+                                    ( boundField as CallbackField ).OnFormatDataValue += ( sender, e ) =>
+                                    {
                                         string resultHtml = null;
-                                        if (e.DataValue != null)
+                                        var attributeValue = e.DataValue ?? attribute.DefaultValueAsType;
+                                        if ( attributeValue != null )
                                         {
                                             bool condensed = true;
-                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue.ToString(), attribute.QualifierValues, condensed );
-                                            
+                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, attributeValue.ToString(), attribute.QualifierValues, condensed );
+
                                         }
 
                                         e.FormattedValue = resultHtml ?? string.Empty;
@@ -360,7 +362,7 @@ namespace Rock.Reporting
                     dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, dataViewFilterOverrides, databaseTimeoutSeconds ?? 180, isCommunication, out qryErrors, out reportDbContext );
                     errors.AddRange( qryErrors );
 
-                    if ( !string.IsNullOrEmpty( report.QueryHint ) && reportDbContext is RockContext)
+                    if ( !string.IsNullOrEmpty( report.QueryHint ) && reportDbContext is RockContext )
                     {
                         using ( new QueryHintScope( reportDbContext as RockContext, report.QueryHint ) )
                         {
@@ -439,6 +441,8 @@ namespace Rock.Reporting
                     Selection = a.GetSelection()
                 } ).ToList();
 
+                List<int> ignoreDataViewPersistedValues = new List<int>();
+
                 if ( dataView != null )
                 {
                     // only include overrides that are different than the saved dataview's filter
@@ -453,11 +457,19 @@ namespace Rock.Reporting
                                 // the filter override is the same as the saved dataview, so no need to override it
                                 dataViewFilterOverrideList.Remove( dataViewFilterOverride );
                             }
+                            else
+                            {
+                                // if the selection has changed, and it is from a 'other data view'  filter, add the other dataview and the dataviews it impacts to the list of dataviews that should not use the persisted values
+                                if ( originalFilter.ImpactedDataViews?.Any() == true )
+                                {
+                                    ignoreDataViewPersistedValues.AddRange( originalFilter.ImpactedDataViews.Select( a => a.Id ).ToList() );
+                                }
+                            }
                         }
                     }
                 }
 
-                return new DataViewFilterOverrides( dataViewFilterOverrideList );
+                return new DataViewFilterOverrides( dataViewFilterOverrideList ) { IgnoreDataViewPersistedValues = new HashSet<int>( ignoreDataViewPersistedValues ) };
             }
 
             return null;
@@ -551,9 +563,11 @@ namespace Rock.Reporting
         /// Registers the javascript include needed for reporting client controls
         /// </summary>
         /// <param name="filterField">The filter field.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No Longer Needed" )]
         public static void RegisterJavascriptInclude( FilterField filterField )
         {
-            //ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
+            // no longer needed since the required javascript is now bundled
         }
 
         #region FilterInfo Helpers
@@ -640,7 +654,7 @@ namespace Rock.Reporting
                     string result;
                     if ( FilterExpressionType != FilterExpressionType.Filter )
                     {
-                        var childFilters = this.FilterList.Where( a => a.ParentFilter == this ).ToList();
+                        var childFilters = this.AllFilterList.Where( a => a.ParentFilter == this ).ToList();
                         var parentSummaries = childFilters.Select( a => a.Summary ?? string.Empty ).ToList().AsDelimited( ", ", this.FilterExpressionType == FilterExpressionType.GroupAny ? " OR " : " AND " );
                         if ( childFilters.Count > 1 )
                         {
@@ -688,7 +702,7 @@ namespace Rock.Reporting
             {
                 get
                 {
-                    return this.DataViewFilter.ParentId.HasValue ? this.FilterList.FirstOrDefault( a => a.Guid == this.DataViewFilter.Parent.Guid ) : null;
+                    return this.DataViewFilter.ParentId.HasValue ? this.AllFilterList.FirstOrDefault( a => a.Guid == this.DataViewFilter.Parent.Guid ) : null;
                 }
             }
 
@@ -698,7 +712,25 @@ namespace Rock.Reporting
             /// <value>
             /// The filter list.
             /// </value>
-            public List<FilterInfo> FilterList { get; internal set; }
+            [RockObsolete( "1.10" )]
+            [Obsolete( "Changed to internal property" )]
+            public List<FilterInfo> FilterList
+            {
+                get => AllFilterList;
+
+                internal set
+                {
+                    // obsolete internal set, so no need to do anything
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets all filter list.
+            /// </summary>
+            /// <value>
+            /// All filter list.
+            /// </value>
+            internal List<FilterInfo> AllFilterList { get; set; }
 
             /// <summary>
             /// Gets or sets the component.
@@ -717,12 +749,99 @@ namespace Rock.Reporting
             public Type ReportEntityTypeModel { get; internal set; }
 
             /// <summary>
-            /// Gets or sets from other data view.
+            /// Gets or sets name of the other data view.
             /// </summary>
             /// <value>
             /// From other data view.
             /// </value>
-            public string FromOtherDataView { get; set; }
+            [RockObsolete( "1.10" )]
+            [Obsolete( "Use FromOtherDataViewName instead" )]
+            public string FromOtherDataView
+            {
+                get => FromDataView?.Name;
+                set
+                {
+
+                }
+            }
+
+
+            /// <summary>
+            /// If this Filter is an OtherDataViewFilter, gets the DataView that this filter has selected
+            /// </summary>
+            /// <value>
+            /// The parent data view.
+            /// </value>
+            public DataView SelectedDataView
+            {
+                get
+                {
+                    var selectionDataView = ( this.Component as OtherDataViewFilter )?.GetSelectedDataView( this.Selection );
+                    return selectionDataView;
+                }
+            }
+
+            /// <summary>
+            /// If this Filter is part of another dataview, gets the DataView that this filter is from
+            /// </summary>
+            /// <value>
+            /// From other data view identifier.
+            /// </value>
+            public DataView FromDataView { get; internal set; }
+
+            /// <summary>
+            /// Gets the data views that would be impacted if this filter was customized
+            /// </summary>
+            /// <value>
+            /// The impacted data views.
+            /// </value>
+            public List<DataView> ImpactedDataViews
+            {
+                get
+                {
+                    if ( FromDataView == null && !( this.Component is OtherDataViewFilter ) )
+                    {
+                        return new List<DataView>();
+                    }
+
+                    List<DataView> impactedDataViews = new List<DataView>();
+                    impactedDataViews.Add( FromDataView );
+
+                    GetImpactedDataViewRecursive( impactedDataViews, FromDataView );
+
+                    return impactedDataViews;
+                }
+            }
+
+            /// <summary>
+            /// Gets the impacted data view recursive.
+            /// </summary>
+            /// <param name="impactedDataViews">The impacted data views.</param>
+            /// <param name="dataView">The data view.</param>
+            private void GetImpactedDataViewRecursive( List<DataView> impactedDataViews, DataView dataView )
+            {
+                var dataViewfiltersThatUseDataView = AllFilterList.Where( a => a.SelectedDataView?.Id == dataView.Id ).ToList();
+                foreach ( var dataViewFilter in dataViewfiltersThatUseDataView )
+                {
+                    var impactedDataView = dataViewFilter.FromDataView;
+                    if ( impactedDataView != null )
+                    {
+                        if ( !impactedDataViews.Any( a => a.Id == impactedDataView.Id ) )
+                        {
+                            impactedDataViews.Add( impactedDataView );
+                            GetImpactedDataViewRecursive( impactedDataViews, impactedDataView );
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// If this Filter is part of another dataview, gets Name of the DataView that this filter is from
+            /// </summary>
+            /// <value>
+            /// The name of from other data view.
+            /// </value>
+            public string FromDataViewName => FromDataView?.Name;
 
             /// <summary>
             /// Gets or sets the selection.
@@ -759,6 +878,21 @@ namespace Rock.Reporting
         {
             List<FilterInfo> filterList = new List<FilterInfo>();
             GetFilterListRecursive( filterList, dataView.DataViewFilter, dataView.EntityType );
+
+            // now that we have the full filter list, set the AllFilterList of all the filters
+            foreach ( var filter in filterList )
+            {
+                filter.AllFilterList = filterList;
+            }
+
+            // set FromDataView from this dataview's datafilters
+            var dataViewDataFilters = filterList.Where( a => a.ParentFilter != null && a.ParentFilter.Guid == dataView.DataViewFilter.Guid ).ToList();
+            foreach ( var dataViewDataFilter in dataViewDataFilters )
+            {
+                dataViewDataFilter.FromDataView = dataView;
+            }
+
+
             return filterList;
         }
 
@@ -777,7 +911,7 @@ namespace Rock.Reporting
             var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
 
             var filterInfo = new FilterInfo( filter );
-            filterInfo.FilterList = filterList;
+            filterInfo.AllFilterList = filterList;
 
             if ( entityType != null )
             {
@@ -824,9 +958,9 @@ namespace Rock.Reporting
                     GetFilterListRecursive( otherDataViewFilterList, otherDataView.DataViewFilter, reportEntityType );
                     foreach ( var otherFilter in otherDataViewFilterList )
                     {
-                        if ( otherFilter.FromOtherDataView == null )
+                        if ( otherFilter.FromDataView == null )
                         {
-                            otherFilter.FromOtherDataView = otherDataView.Name;
+                            otherFilter.FromDataView = otherDataView;
                         }
                     }
 

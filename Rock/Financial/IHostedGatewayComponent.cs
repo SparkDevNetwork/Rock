@@ -28,7 +28,7 @@ namespace Rock.Financial
     {
         /// <summary>
         /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
-        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControl" />
+        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="IHostedGatewayPaymentControlTokenEvent" />
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="controlId">The control identifier.</param>
@@ -50,9 +50,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        string GetHostedPaymentInfoToken( FinancialGateway financialGateway, Control hostedPaymentInfoControl, out string errorMessage );
+        void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage );
 
         /// <summary>
         /// Gets the URL that the Gateway Information UI will navigate to when they click the 'Configure' link
@@ -71,14 +71,14 @@ namespace Rock.Financial
         string LearnMoreURL { get; }
 
         /// <summary>
-        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl(FinancialGateway, bool, string)"/>
+        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl" />
         /// and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentToken">The payment token.</param>
         /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        string CreateCustomerAccount( FinancialGateway financialGateway, string paymentToken, PaymentInfo paymentInfo, out string errorMessage );
+        string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
         /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.

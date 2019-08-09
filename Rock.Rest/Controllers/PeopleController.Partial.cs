@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -143,6 +144,32 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = new Rock.Data.RockContext();
             return new PersonService( rockContext ).GetByPhonePartial( number, true ).Include( a => a.Aliases );
+        }
+
+        /// <summary>
+        /// GET a person record based on a temporary person token and increment the usage count of the token
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByToken/{token}" )]
+        public Person GetByToken( string token )
+        {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var personService = Service as PersonService;
+            var person = personService.GetByImpersonationToken( token, true, null );
+
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
         }
 
         /// <summary>
@@ -393,6 +420,100 @@ namespace Rock.Rest.Controllers
             }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <summary>
+        /// Allows setting a configuration for the person for text-to-give.
+        /// </summary>
+        /// <param name="personId">The person to configure text-to-give options</param>
+        /// <param name="args">The options to set</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
+        public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody]ConfigureTextToGiveArgs args )
+        {
+            var personService = Service as PersonService;
+            var success = personService.ConfigureTextToGive( personId, args.ContributionFinancialAccountId, args.FinancialPersonSavedAccountId, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, errorMessage );
+            }
+
+            if ( !success )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.InternalServerError, "The action was not successful but not error was specified" );
+            }
+
+            Service.Context.SaveChanges();
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
+        }
+
+        /// <summary>
+        /// Updates the profile photo of the logged in person.
+        /// </summary>
+        /// <param name="photoBytes">The photo bytes.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/UpdateProfilePhoto" )]
+        [HttpPost]
+        public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
+        {
+            var personId = GetPerson()?.Id;
+
+            if ( !personId.HasValue )
+            {
+                return NotFound();
+            }
+
+            if ( photoBytes.Length == 0 || string.IsNullOrWhiteSpace( filename ) )
+            {
+                return BadRequest();
+            }
+
+            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+            if ( filename.IndexOfAny( illegalCharacters ) >= 0 )
+            {
+                return BadRequest( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ")." );
+            }
+
+            using ( var rockContext = new Data.RockContext() )
+            {
+                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+                // always create a new BinaryFile record of IsTemporary when a file is uploaded
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFile = new BinaryFile();
+                binaryFileService.Add( binaryFile );
+
+                binaryFile.IsTemporary = false;
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.MimeType = "octet/stream";
+                binaryFile.FileSize = photoBytes.Length;
+                binaryFile.FileName = filename;
+                binaryFile.ContentStream = new MemoryStream( photoBytes );
+
+                rockContext.SaveChanges();
+
+                var person = new Model.PersonService( rockContext ).Get( personId.Value );
+                int? oldPhotoId = person.PhotoId;
+                person.PhotoId = binaryFile.Id;
+
+                rockContext.SaveChanges();
+
+                if ( oldPhotoId.HasValue )
+                {
+                    binaryFile = binaryFileService.Get( oldPhotoId.Value );
+                    binaryFile.IsTemporary = true;
+
+                    rockContext.SaveChanges();
+                }
+
+                return Ok( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}{person.PhotoUrl}" );
+            }
         }
 
         #endregion
@@ -736,6 +857,30 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the current person's impersonation token. This is used by external apps who might have a logged in person but
+        /// need to create a impersonation token to link to the website. For instance a mobile app might have the current person
+        /// and have a cookie, but would like to link out to the website.
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
+        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            var currentPerson = GetPerson();
+
+            if ( currentPerson == null )
+            {
+                return string.Empty;
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
+        }
+
+        /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -1055,5 +1200,23 @@ namespace Rock.Rest.Controllers
         /// The picker item details person information HTML.
         /// </value>
         public string PickerItemDetailsPersonInfoHtml { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ConfigureTextToGiveArgs
+    {
+        /// <summary>
+        /// The Financial Account Id that will be the default gift designation for the person. Null value
+        /// clears the setting and requires the user to set before text-to-give will work for them.
+        /// </summary>
+        public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// The Saved Account associated with the person that will be used as the default payment method for
+        /// the person throughout Rock
+        /// </summary>
+        public int? FinancialPersonSavedAccountId { get; set; }
     }
 }

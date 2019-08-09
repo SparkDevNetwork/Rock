@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary />
+        public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary />
         public DateTime? DeceasedDate { get; set; }
 
         /// <summary />
@@ -127,6 +130,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PhotoId { get; set; }
+
+        /// <summary />
+        public int? PrimaryCampusId { get; set; }
 
         /// <summary />
         public int? PrimaryFamilyId { get; set; }
@@ -210,6 +216,7 @@ namespace Rock.Client
             this.BirthYear = source.BirthYear;
             this.CommunicationPreference = source.CommunicationPreference;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.ContributionFinancialAccountId = source.ContributionFinancialAccountId;
             this.DeceasedDate = source.DeceasedDate;
             this.Email = source.Email;
             this.EmailNote = source.EmailNote;
@@ -233,6 +240,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
+            this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

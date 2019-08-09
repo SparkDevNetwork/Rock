@@ -132,27 +132,23 @@ namespace RockWeb.Blocks.Crm
             ddlTagList.DataValueField = "Id";
             var currentPersonAliasIds = CurrentPerson.Aliases.Select( a => a.Id ).ToList();
 
-            var tagList = new TagService( new RockContext() ).Queryable()
+            new TagService( new RockContext() ).Queryable()
                                             .Where( t =>
                                                         t.EntityTypeId == personEntityTypeId
                                                         && ( t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value ) ) )
-                                            .Select( t => new
-                                            {
-                                                Id = t.Id,
-                                                Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
-                                                Name = t.Name
-                                            } )
-                                            .OrderByDescending( t => t.Type )
+                                            .OrderByDescending( t => t.OwnerPersonAliasId.HasValue )
                                             .ThenBy( t => t.Name )
-                                            .ToList();
-            foreach ( var tag in tagList )
-            {
-                ListItem item = new ListItem( tag.Name, tag.Id.ToString() );
-                item.Attributes["OptionGroup"] = tag.Type;
-                ddlTagList.Items.Add( item );
-            }
+                                            .ToList()
+                                            .ForEach( t =>
+                                            {
+                                                if ( t.IsAuthorized( Authorization.TAG, CurrentPerson ) )
+                                                {
+                                                    ListItem item = new ListItem( t.Name, t.Id.ToString() );
+                                                    item.Attributes["OptionGroup"] = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags";
+                                                    ddlTagList.Items.Add( item );
+                                                }
+                                            } );
             ddlTagList.Items.Insert( 0, "" );
-
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             ddlNoteType.Items.Clear();
@@ -1592,6 +1588,7 @@ namespace RockWeb.Blocks.Crm
 
                     var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
+                    launchWorkflowsTxn.InitiatorPersonAliasId = CurrentPersonAliasId;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }

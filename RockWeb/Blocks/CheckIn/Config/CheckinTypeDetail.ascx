@@ -99,7 +99,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlSearchType_SelectedIndexChanged"
-                                        Help="The type of search that is available after person clicks the 'Check In' button on the check-in Welcome screen. Note, the user can also always check-in using
+                                        Help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the user can also always check-in using
                                         a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode."/>
                                     <Rock:NumberBox ID="nbMaxResults" runat="server" Label="Maximum Number of Results"  NumberType="Integer" 
                                         Help="The maximum number of search results to return when searching (default is 100)." />
@@ -136,7 +136,7 @@
                                     <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonConnectionStatus" runat="server" Label="Default Person Connection Status" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForAdults" runat="server" Label="Display Alternate ID Field for Adults" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForChildren" runat="server" Label="Display Alternate ID Field for Children" />
-                                    <Rock:RockCheckBox ID="cbEnableCheckInAfterRegistration" runat="server" Label="Enable Check-in After Registration" Help="This determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take then back to search )." />
+                                    <Rock:RockCheckBox ID="cbEnableCheckInAfterRegistration" runat="server" Label="Enable Check-in After Registration" Help="This determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search )." />
                                     <Rock:RockListBox ID="lbKnownRelationshipTypes" runat="server" Label="Known Relationship Types" Help="The known relationships to display in the child's 'Relationship to Adult' field." />
                                     <Rock:RockListBox ID="lbSameFamilyKnownRelationshipTypes" runat="server" Label="Same Family Known Relationship Types" Help="Of the known relationships defined above which should be used to place the child in the family with the adults." />
                                     <Rock:RockListBox ID="lbCanCheckInKnownRelationshipTypes" runat="server" Label="Can Check-in Known Relationship Types" Help="The known relationships that will place the child in a separate family with a 'Can Check-in' relationship back to the person." />
@@ -162,6 +162,7 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer" 
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+                                    <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 

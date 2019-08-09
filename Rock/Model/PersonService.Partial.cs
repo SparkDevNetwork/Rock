@@ -1234,20 +1234,51 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return Queryable( includeDeceased, includeBusinesses )
-                        .Where( p =>
-                            p.LastName.StartsWith( singleName ) ||
-                            previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+                    // Originally written as:
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .Where( p =>
+                    //        p.LastName.StartsWith( singleName ) ||
+                    //        previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( singleName ) ) );
+
+                    // The LEFT OUTER JOIN version below is faster than the original
+                    // because SQL uses a different index for the WHERE EXISTS version
+                    // due to the fact that it will require the entire table to be scanned
+                    // and return 1 where the criteria match.
+                    //
+                    // The query below could have been written in fluent syntax, but it's a
+                    // bit more complicated like this (they produce the exact same SQL):
+                    //
+                    // return Queryable( includeDeceased, includeBusinesses )
+                    //    .GroupJoin(
+                    //            previousNamesQry,
+                    //            Person => Person.Id,
+                    //            PrevName => PrevName.PersonAlias.PersonId,
+                    //            ( x, y ) => new { Person = x, PrevNames = y } )
+                    //    .SelectMany(
+                    //            x => x.PrevNames.DefaultIfEmpty(),
+                    //            ( x, y ) => new { Person = x.Person, PrevName = y } )
+                    //    .Where( x => x.Person.LastName.StartsWith( singleName ) || x.PrevName.LastName.StartsWith( singleName ) )
+                    //    .Select( x => x.Person );
+
+                    return from person in Queryable( includeDeceased, includeBusinesses )
+                           join personPreviousName in previousNamesQry
+                                on person.Id equals personPreviousName.PersonAlias.PersonId into pnQuery
+                           from ppn in pnQuery.DefaultIfEmpty()
+                           where person.LastName.StartsWith( singleName ) || ppn.LastName.StartsWith( singleName )
+                           select person;
                 }
             }
             else
             {
                 if ( firstNames.Any() && lastNames.Any() )
                 {
-                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    // Find all matching First and LastName, or LastName, but only select the person IDs to reduce
+                    // the pressure that the UNION below would otherwise have (SELECT DISTINCT * issue).
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses )
+                        .Select( p => p.Id );
                     for ( var i = 1; i < firstNames.Count; i++ )
                     {
-                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
                     // always include a search for just last name using the last two parts of name search
@@ -1255,18 +1286,18 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    //
                     // If searching for businesses, search by the full name as well to handle "," in the name
-                    //
                     if ( includeBusinesses )
                     {
-                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
                     }
 
-                    return qry;
+                    // Lastly, return all people with those person Ids using the base Queryable used
+                    // initially by the GetByFirstLastName() call.
+                    return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
                 else
                 {
@@ -2606,6 +2637,90 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Configures the text to give settings including the person's preferred target financial account and default source saved account.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="contributionFinancialAccountId">The contribution financial account identifier.</param>
+        /// <param name="financialPersonSavedAccountId">The financial person saved account identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public bool ConfigureTextToGive( int personId, int? contributionFinancialAccountId, int? financialPersonSavedAccountId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            // Validate the person
+            var person = Get( personId );
+
+            if ( person == null )
+            {
+                errorMessage = "The person ID is not valid";
+                return false;
+            }
+
+            // Load the person's saved accounts
+            var rockContext = Context as RockContext;
+            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personsSavedAccounts = savedAccountService.Queryable()
+                .Include( sa => sa.PersonAlias )
+                .Where( sa => sa.PersonAlias.PersonId == personId )
+                .ToList();
+
+            // Loop through each saved account. Set default to false unless the args dictate that it is the default
+            var foundDefaultAccount = false;
+
+            foreach ( var savedAccount in personsSavedAccounts )
+            {
+                if ( !foundDefaultAccount && savedAccount.Id == financialPersonSavedAccountId )
+                {
+                    savedAccount.IsDefault = true;
+                    foundDefaultAccount = true;
+                }
+                else
+                {
+                    savedAccount.IsDefault = false;
+                }
+            }
+
+            // If the args specified an account to be default but it was not found, then return an error
+            if ( financialPersonSavedAccountId.HasValue && !foundDefaultAccount )
+            {
+                errorMessage = "The saved account ID is not valid";
+                return false;
+            }
+
+            // Validate the account if it is being set
+            if ( contributionFinancialAccountId.HasValue )
+            {
+                var accountService = new FinancialAccountService( rockContext );
+                var account = accountService.Get( contributionFinancialAccountId.Value );
+
+                if ( account == null )
+                {
+                    errorMessage = "The financial account ID is not valid";
+                    return false;
+                }
+
+                if ( !account.IsActive )
+                {
+                    errorMessage = "The financial account is not active";
+                    return false;
+                }
+
+                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
+                {
+                    errorMessage = "The financial account is not public";
+                    return false;
+                }
+            }
+
+            // Set the person's contribution account ID
+            person.ContributionFinancialAccountId = contributionFinancialAccountId;
+
+            // Success
+            return true;
+        }
+
         #endregion
 
         #region Person Group Methods
@@ -2691,21 +2806,27 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Updates Person.BirthDate for each person that is not deceased or inactive.
+        /// Updates Person.BirthDate for each person that is not deceased or inactive, and has a non-null <seealso cref="Person.BirthYear"/> greater than 1800
         /// </summary>
         public static void UpdateBirthDateAll( RockContext rockContext = null )
         {
             var inactiveStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
+            // NOTE: if BirthYear is 1800 or earlier, set BirthDate to null so that database Age calculations don't get an exception
             string sql = $@"
                 UPDATE Person
-                SET [BirthDate] = (
-                    SELECT CASE
-                    WHEN [BirthYear] IS NOT NULL 
-                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-                    END)
-                FROM Person
-                WHERE IsDeceased = 0
+                    SET [BirthDate] = (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    FROM Person
+                    WHERE IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();
@@ -2824,7 +2945,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to group.
+        /// Adds the person to group and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>
@@ -3442,7 +3563,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static bool UpdatePrimaryFamily( int personId, RockContext rockContext )
         {
-            int recordsUpdated = UpdatePersonsPrimaryFamily( personId, rockContext );
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, personId: personId );
             return recordsUpdated != 0;
         }
 
@@ -3453,33 +3574,58 @@ namespace Rock.Model
         /// <returns></returns>
         public static int UpdatePrimaryFamilyAll( RockContext rockContext )
         {
-            return UpdatePersonsPrimaryFamily( null, rockContext );
+            return UpdatePersonsPrimaryFamily( rockContext );
         }
 
         /// <summary>
-        /// Updates the person primary family for the specified person, or for all persons in the database if personId is null
+        /// Ensures the PrimaryFamily and PrimaryCampus are correct for the people in the specified group.
+        /// </summary>
+        /// <param name="groupId">The group identifier, usually a reference to a Family.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdatePrimaryFamilyByGroup( int groupId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonsPrimaryFamily( rockContext, groupId: groupId );
+
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Updates the primary family and campus for the specified person or group members, or for all persons in the database if no parameters are specified.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static int UpdatePersonsPrimaryFamily( int? personId, RockContext rockContext )
+        private static int UpdatePersonsPrimaryFamily( RockContext rockContext, int? personId = null, int? groupId = null )
         {
+            // Verify only one of the optional parameters is specified.
+            if ( personId.HasValue
+                 && groupId.HasValue )
+            {
+                throw new ArgumentException( "Specified parameters are ambiguous." );
+            }
+
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family on each Person record matches the Calculated Primary Family
+            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family and Campus on each Person record matches the Calculated Primary Family and Campus.
             var sqlUpdateBuilder = new StringBuilder();
             sqlUpdateBuilder.Append( $@"
 UPDATE x
 SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+    ,x.PrimaryCampusId = x.CalculatedPrimaryCampusId
 FROM (
     SELECT p.Id
         ,p.NickName
         ,p.LastName
         ,p.PrimaryFamilyId
+        ,p.PrimaryCampusId
         ,pf.CalculatedPrimaryFamilyId
+        ,pf.CalculatedPrimaryCampusId
     FROM Person p
     OUTER APPLY (
-        SELECT TOP 1 g.Id [CalculatedPrimaryFamilyId]
+        SELECT TOP 1
+            g.Id [CalculatedPrimaryFamilyId]
+            ,g.CampusId [CalculatedPrimaryCampusId]
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
@@ -3489,12 +3635,18 @@ FROM (
         ) pf
     WHERE (
             p.PrimaryFamilyId IS NULL
+            OR p.PrimaryCampusId IS NULL
             OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
+            OR (p.PrimaryCampusId != pf.CalculatedPrimaryCampusId)
             )" );
 
             if ( personId.HasValue )
             {
                 sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+            }
+            else if ( groupId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id IN ( SELECT p1.Id FROM Person p1 INNER JOIN GroupMember gm2 ON p1.Id = gm2.PersonId WHERE gm2.GroupId = @groupId ) ) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );
@@ -3502,6 +3654,10 @@ FROM (
             if ( personId.HasValue )
             {
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+            }
+            else if ( groupId.HasValue )
+            {
+                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@groupId", groupId.Value ) );
             }
             else
             {
