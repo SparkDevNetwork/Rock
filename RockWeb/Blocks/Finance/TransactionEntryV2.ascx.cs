@@ -426,7 +426,7 @@ mission. We are so grateful for your commitment.</p>
     <dt>Confirmation Code</dt>
     <dd>{{ Transaction.TransactionCode }}</dd>
     <dd></dd>
-    
+
     <dt>Name</dt>
     <dd>{{ Person.FullName }}</dd>
     <dd></dd>
@@ -437,10 +437,10 @@ mission. We are so grateful for your commitment.</p>
 <dl class='dl-horizontal'>
     {% for transactionDetail in transactionDetails %}
         <dt>{{ transactionDetail.Account.PublicName }}</dt>
-        <dd>{{ transactionDetail.Amount }}</dd>
+        <dd>{{ transactionDetail.Amount | FormatAsCurrency }}</dd>
     {% endfor %}
     <dd></dd>
-    
+
     <dt>Payment Method</dt>
     <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
 
@@ -451,7 +451,7 @@ mission. We are so grateful for your commitment.</p>
 
     <dt>When<dt>
     <dd>
-    
+
     {% if Transaction.TransactionFrequencyValue %}
         {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
     {% else %}
@@ -470,7 +470,7 @@ mission. We are so grateful for your commitment.</p>
             <div class='panel-heading'>
                 <span class='panel-title h1'>
                     <i class='fa fa-calendar'></i>
-                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}                              
+                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}
                 </span>
 
                 <span class='js-scheduled-totalamount scheduled-totalamount margin-l-md'>
@@ -495,7 +495,7 @@ mission. We are so grateful for your commitment.</p>
                             </span>
                         </div>
                     {% endfor %}
-                        
+
                     <br />
                     <span class='scheduled-transaction-payment-detail'>
                         {% assign financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail %}
@@ -507,7 +507,7 @@ mission. We are so grateful for your commitment.</p>
                         {% endif %}
                     </span>
                     <br />
-                    
+
                     {% if scheduledTransaction.NextPaymentDate != null %}
                         Next Gift: {{ scheduledTransaction.NextPaymentDate | Date:'sd' }}.
                     {% endif %}
@@ -517,10 +517,10 @@ mission. We are so grateful for your commitment.</p>
                         {% if LinkedPages.ScheduledTransactionEditPage != '' %}
                             <a href='{{ LinkedPages.ScheduledTransactionEditPage }}?ScheduledTransactionId={{ scheduledTransaction.Id }}'>Edit</a>
                         {% endif %}
-                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>                    
+                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>
                     </div>
                 </div>
-            </div>                
+            </div>
         </div>
     </div>
 {% endfor %}
@@ -718,7 +718,7 @@ mission. We are so grateful for your commitment.</p>
         #region enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum EntryStep
         {
@@ -2085,6 +2085,7 @@ mission. We are so grateful for your commitment.</p>
 
             // Only show the SavedAccount picker if there are saved accounts. If there aren't any (or if they choose 'Use a different payment method'), a later step will prompt them to enter Payment Info (CC/ACH fields)
             ddlPersonSavedAccount.Visible = personSavedAccountList.Any();
+            pnlSavedAccounts.Visible = personSavedAccountList.Any();
 
             ddlPersonSavedAccount.Items.Clear();
             foreach ( var personSavedAccount in personSavedAccountList )
@@ -2186,12 +2187,12 @@ mission. We are so grateful for your commitment.</p>
                     dtpStartDate.Visible = true;
                 }
 
-                dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
+                lStartDateLabel.Text = string.Format( "Process {0} On", giftTerm );
             }
             else
             {
                 dtpStartDate.Visible = true;
-                dtpStartDate.Label = "Start Giving On";
+                lStartDateLabel.Text = "Start Giving On";
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
@@ -2476,7 +2477,7 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
-                paymentInfo.Comment1 = paymentComment; 
+                paymentInfo.Comment1 = paymentComment;
             }
 
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
@@ -2621,7 +2622,7 @@ mission. We are so grateful for your commitment.</p>
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }            
+            }
 
             transaction.LoadAttributes( rockContext );
 
