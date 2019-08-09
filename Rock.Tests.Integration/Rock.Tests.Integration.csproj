@@ -84,6 +84,7 @@
     <Compile Include="Rock\Communications\SmsTests.cs" />
     <Compile Include="Rock\Crm\StepsTests.cs" />
     <Compile Include="Rock\DatabaseTests.cs" />
+    <Compile Include="Rock\Migrations\MigrationTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock\Model\GroupTests.cs" />
