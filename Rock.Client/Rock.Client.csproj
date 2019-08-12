@@ -57,6 +57,8 @@
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
+    <Compile Include="CodeGenerated\Assessment.cs" />
+    <Compile Include="CodeGenerated\AssessmentType.cs" />
     <Compile Include="CodeGenerated\AssetStorageProvider.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
@@ -74,6 +76,7 @@
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
     <Compile Include="CodeGenerated\BackgroundCheck.cs" />
+    <Compile Include="CodeGenerated\Badge.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequestDocument.cs" />
     <Compile Include="CodeGenerated\BenevolenceResult.cs" />
@@ -114,6 +117,8 @@
     <Compile Include="CodeGenerated\DefinedType.cs" />
     <Compile Include="CodeGenerated\DefinedValue.cs" />
     <Compile Include="CodeGenerated\Device.cs" />
+    <Compile Include="CodeGenerated\Document.cs" />
+    <Compile Include="CodeGenerated\DocumentType.cs" />
     <Compile Include="CodeGenerated\EntitySet.cs" />
     <Compile Include="CodeGenerated\EntitySetItem.cs" />
     <Compile Include="CodeGenerated\EntityType.cs" />
@@ -248,6 +253,16 @@
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SmsAction.cs" />
+    <Compile Include="CodeGenerated\Step.cs" />
+    <Compile Include="CodeGenerated\StepProgram.cs" />
+    <Compile Include="CodeGenerated\StepStatus.cs" />
+    <Compile Include="CodeGenerated\StepType.cs" />
+    <Compile Include="CodeGenerated\StepTypePrerequisite.cs" />
+    <Compile Include="CodeGenerated\StepWorkflow.cs" />
+    <Compile Include="CodeGenerated\StepWorkflowTrigger.cs" />
+    <Compile Include="CodeGenerated\Streak.cs" />
+    <Compile Include="CodeGenerated\StreakType.cs" />
+    <Compile Include="CodeGenerated\StreakTypeExclusion.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
