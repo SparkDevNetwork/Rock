@@ -703,7 +703,10 @@ namespace RockWeb.Blocks.Mobile
 
             if ( site.Id == 0 )
             {
-                rockContext.WrapTransaction( () =>
+                // This causes a deadlock on some systems due to cache attempting to update,
+                // commented out until the RockPostSave UpdateCache call can be fixed to
+                // use the same context. -dsh 8/12/2019
+                //rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
 
@@ -745,7 +748,7 @@ namespace RockWeb.Blocks.Mobile
 
                     site.DefaultPageId = page.Id;
                     rockContext.SaveChanges();
-                } );
+                }// );
             }
             else
             {
