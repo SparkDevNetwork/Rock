@@ -158,7 +158,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
         /// <returns></returns>
         private List<int> GetCategories( RockContext rockContext )
         {
-            int entityTypeId = EntityTypeCache.Read( typeof( WorkflowType ) ).Id;
+            int entityTypeId = EntityTypeCache.Get( typeof( WorkflowType ) ).Id;
             return GetCategoryIds( new List<int>(), new CategoryService( rockContext ).GetNavigationItems( entityTypeId, new List<Guid>(), true, CurrentPerson ) );
         }
 

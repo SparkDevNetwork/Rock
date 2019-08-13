@@ -28,21 +28,25 @@
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
 
-                    <asp:Panel ID="pnlRecipientSelectionList" runat="server">
+                    <div class="row">
+                        <asp:Panel ID="pnlRecipientSelectionList" runat="server" CssClass="col-lg-6">
+                            <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true" OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
+                            <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
+                                <label>Segments</label>
+                                <p>Optionally, further refine your recipients by filtering by segment.</p>
+                                <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
 
-                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
-                        <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
-                            <label>Segments</label>
-                            <p>Optionally, further refine your recipients by filtering by segment.</p>
-                            <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
+                                <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
 
-                            <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
-
-                            <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
-                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
+                                    <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                </asp:Panel>
                             </asp:Panel>
                         </asp:Panel>
-                    </asp:Panel>
+                        <div class="col-lg-6">
+                            <Rock:RockCheckBox ID="cbDuplicatePreventionOption" runat="server" Label="Prevent Duplicate Email/SMS Addresses" Text="Yes" Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.  This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                        </div>
+                    </div>
 
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
@@ -204,6 +208,7 @@
                                         <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
                                         <a class="btn btn-xs btn-default js-email-sendtest" href="#">Send Test</a>
                                         <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                        <asp:LinkButton ID="btnEmailEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Save" OnClick="btnEmailEditorSaveDraft_Click" />
                                     </div>
 
                                     <div class="js-email-sendtest-inputs" style="display: none">
@@ -211,11 +216,8 @@
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
-
-
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-
                         </div>
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
@@ -905,6 +907,7 @@
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <asp:LinkButton ID="btnSMSEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default" Text="Save" OnClick="btnSMSEditorSaveDraft_Click" />
                                     <div class="js-sms-sendtest-inputs" style="display:none">
                                         <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" Help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete." />
                                         <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
@@ -1049,6 +1052,7 @@
 
                 $('.js-email-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').hide();
                     $('#<%=nbEmailTestResult.ClientID%>').hide();
                     $(this).hide();
                     $('#<%=btnEmailPreview.ClientID%>').hide();
@@ -1061,12 +1065,14 @@
                 {
                     $('.js-email-sendtest').show();
                     $('#<%=btnEmailPreview.ClientID%>').show();
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').show();
                     $('.js-email-sendtest-inputs').hide();
                     return false;
                 });
 
                 $('.js-sms-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').hide();
                     $(this).hide();
 
                     $('.js-sms-sendtest-inputs').slideDown();
@@ -1075,6 +1081,7 @@
 
                 $('.js-sms-sendtest-cancel').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').show();
                     $('.js-sms-sendtest').show();
                     $('.js-sms-sendtest-inputs').hide();
                     return false;

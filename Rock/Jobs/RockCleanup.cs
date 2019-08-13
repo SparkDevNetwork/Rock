@@ -26,7 +26,6 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -221,13 +220,14 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in GroupMembershipCleanup", ex ) );
             }
 
-            if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
+            try
             {
-                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+                var rowsDeleted = AttendanceDataCleanup( dataMap );
+                databaseRowsCleanedUp.Add( "Attendance Data (old label data)", rowsDeleted );
             }
-            else
+            catch ( Exception ex )
             {
-                context.Result = "Rock Cleanup completed";
+                rockCleanupExceptions.Add( new Exception( "Exception in AttendanceDataCleanup", ex ) );
             }
 
             try
@@ -238,6 +238,48 @@ namespace Rock.Jobs
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
+            }
+
+            try
+            {
+                // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
+                AttributeValueCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in AttributeValueCleanup", ex ) );
+            }
+
+            try
+            {
+                var rowsDeleted = MergeStreaks();
+                databaseRowsCleanedUp.Add( "Duplicate Streak Enrollments", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in MergeStreaks", ex ) );
+            }
+
+            try
+            {
+                var rowsUpdated = EnsureScheduleEffectiveStartEndDates();
+                databaseRowsCleanedUp.Add( "Calendar EffectiveStart and EffectiveEnd dates", rowsUpdated );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in EnsureCalendarEffectiveStartEndDates", ex ) );
+            }
+
+            // ***********************
+            //  Final count and report
+            // ***********************
+            if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
+            {
+                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+            }
+            else
+            {
+                context.Result = "Rock Cleanup completed";
             }
 
             if ( rockCleanupExceptions.Count > 0 )
@@ -1110,6 +1152,102 @@ WHERE ExpireDateTime IS NOT NULL
         }
 
         /// <summary>
+        /// Delete old attendance data (as of today, this is just label data) and
+        /// return the number of records deleted.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns>The number of records deleted</returns>
+        private int AttendanceDataCleanup( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                // 1 day (24 hrs) ago
+                DateTime olderThanDate = RockDateTime.Now.Add( new TimeSpan( -1, 0, 0, 0 ) );
+
+                var totalPossibleItemsToDelete = attendanceService.Queryable()
+                    .Where( a => a.CreatedDateTime <= olderThanDate && a.AttendanceData != null && a.AttendanceData.LabelData != null )
+                    .Take( batchAmount.Value )
+                    .Count();
+
+                if ( totalPossibleItemsToDelete > 0 )
+                {
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = rockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"
+DELETE TOP (@batchAmount)
+FROM ad
+FROM [AttendanceData] ad
+INNER JOIN [Attendance] a ON ad.[Id] = a.[Id]
+WHERE a.[CreatedDateTime] <= @olderThanDate
+";
+                            int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "olderThanDate", olderThanDate ) );
+                            keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void AttributeValueCleanup( JobDataMap dataMap )
+        {
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
+
+            AttributeValueCleanup( commandTimeout );
+        }
+
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        internal static void AttributeValueCleanup( int commandTimeout )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                // Ensure AttributeValue.ValueAsNumeric is in sync with AttributeValue.Value, just in case Value got updated without also updating ValueAsNumeric
+                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AttributeValue
+SET ValueAsNumeric = CASE 
+		WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END
+where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END), 0)
+" );
+            }
+        }
+
+        /// <summary>
         /// Does cleanup of Locations
         /// </summary>
         /// <param name="dataMap">The data map.</param>
@@ -1199,7 +1337,7 @@ WHERE ExpireDateTime IS NOT NULL
             var duplicateQuery = groupMemberService.Queryable()
                 // Duplicates are the same person, group, and role occuring more than once
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
-                // Filter out sets with only one occurence because those are not duplicates
+                // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
                 // Leave the oldest membership and delete the others
                 .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
@@ -1216,6 +1354,71 @@ WHERE ExpireDateTime IS NOT NULL
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        /// <summary>
+        /// Merges the streaks.
+        /// </summary>
+        /// <returns></returns>
+        private int MergeStreaks()
+        {
+            var recordsDeleted = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var streakService = new StreakService( rockContext );
+                var duplicateGroups = streakService.Queryable().GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } ).Where( g => g.Count() > 1 );
+
+                foreach ( var duplicateGroup in duplicateGroups )
+                {
+                    var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
+                    recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
+                    recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
+
+                    var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
+                    recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
+
+                    var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
+                    recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
+
+                    var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
+                    streakService.DeleteRange( recordsToDelete );
+
+                    rockContext.SaveChanges();
+
+                    recordsDeleted += recordsToDelete.Count();
+                }
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Ensures the schedule effective start end dates.
+        /// </summary>
+        /// <returns></returns>
+        private int EnsureScheduleEffectiveStartEndDates()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var scheduleList = scheduleService.Queryable().ToList();
+                foreach ( var schedule in scheduleList )
+                {
+                    if ( schedule.EnsureEffectiveStartEndDates() )
+                    {
+                        rowsUpdated++;
+                    }
+                }
+
+                if ( rowsUpdated > 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return rowsUpdated;
         }
     }
 }

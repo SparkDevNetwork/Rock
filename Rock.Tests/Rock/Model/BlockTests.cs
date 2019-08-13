@@ -43,7 +43,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should serialize a HtmlContent into a JSON string.
         /// </summary>
-        [Fact( Skip = "Need a mock for Global Attributes" )]
+        [Fact]
         public void ExportJson()
         {
             var block = new Block
@@ -59,7 +59,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should take a JSON string and copy its contents to a new Block, including its BlockType
         /// </summary>
-        [Fact( Skip = "Missing IsCommon in JSON" )]
+        [Fact]
         public void ImportJson()
         {
             var obj = new

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -28,11 +30,23 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Gets the badge label
         /// </summary>
+        /// <param name="entity">The person.</param>
+        /// <returns></returns>
+        public virtual HighlightLabel GetLabel( IEntity entity )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the badge label
+        /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the IEntity param instead.", false )]
         public virtual HighlightLabel GetLabel( Person person )
         {
-            return new HighlightLabel();
+            return null;
         }
 
         /// <summary>
@@ -40,14 +54,27 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            if ( Person != null )
+            if ( Entity != null )
             {
-                var label = GetLabel( Person );
+                // Code using the old Person interface will return null here. The else block handles rendering for those obsolete badges
+                var label = GetLabel( Entity );
+                
                 if ( label != null )
                 {
                     label.RenderControl( writer );
+                }
+                else
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    label = GetLabel( Person );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                    if ( label != null )
+                    {
+                        label.RenderControl( writer );
+                    }
                 }
             }
         }

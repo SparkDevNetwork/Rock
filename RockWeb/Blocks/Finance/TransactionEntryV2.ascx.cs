@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField(
         "Enable Credit Card",
         Key = AttributeKey.EnableCreditCard,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = AttributeCategory.None,
         Order = 2 )]
 
@@ -426,7 +426,7 @@ mission. We are so grateful for your commitment.</p>
     <dt>Confirmation Code</dt>
     <dd>{{ Transaction.TransactionCode }}</dd>
     <dd></dd>
-    
+
     <dt>Name</dt>
     <dd>{{ Person.FullName }}</dd>
     <dd></dd>
@@ -437,10 +437,10 @@ mission. We are so grateful for your commitment.</p>
 <dl class='dl-horizontal'>
     {% for transactionDetail in transactionDetails %}
         <dt>{{ transactionDetail.Account.PublicName }}</dt>
-        <dd>{{ transactionDetail.Amount }}</dd>
+        <dd>{{ transactionDetail.Amount | FormatAsCurrency }}</dd>
     {% endfor %}
     <dd></dd>
-    
+
     <dt>Payment Method</dt>
     <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
 
@@ -451,7 +451,7 @@ mission. We are so grateful for your commitment.</p>
 
     <dt>When<dt>
     <dd>
-    
+
     {% if Transaction.TransactionFrequencyValue %}
         {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
     {% else %}
@@ -470,7 +470,7 @@ mission. We are so grateful for your commitment.</p>
             <div class='panel-heading'>
                 <span class='panel-title h1'>
                     <i class='fa fa-calendar'></i>
-                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}                              
+                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}
                 </span>
 
                 <span class='js-scheduled-totalamount scheduled-totalamount margin-l-md'>
@@ -495,7 +495,7 @@ mission. We are so grateful for your commitment.</p>
                             </span>
                         </div>
                     {% endfor %}
-                        
+
                     <br />
                     <span class='scheduled-transaction-payment-detail'>
                         {% assign financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail %}
@@ -507,7 +507,7 @@ mission. We are so grateful for your commitment.</p>
                         {% endif %}
                     </span>
                     <br />
-                    
+
                     {% if scheduledTransaction.NextPaymentDate != null %}
                         Next Gift: {{ scheduledTransaction.NextPaymentDate | Date:'sd' }}.
                     {% endif %}
@@ -517,10 +517,10 @@ mission. We are so grateful for your commitment.</p>
                         {% if LinkedPages.ScheduledTransactionEditPage != '' %}
                             <a href='{{ LinkedPages.ScheduledTransactionEditPage }}?ScheduledTransactionId={{ scheduledTransaction.Id }}'>Edit</a>
                         {% endif %}
-                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>                    
+                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>
                     </div>
                 </div>
-            </div>                
+            </div>
         </div>
     </div>
 {% endfor %}
@@ -672,7 +672,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region Attribute Categories
 
-        public static class AttributeCategory
+        protected static class AttributeCategory
         {
             public const string None = "";
 
@@ -693,7 +693,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region PageParameterKeys
 
-        public static class PageParameterKey
+        protected static class PageParameterKey
         {
             public const string Person = "Person";
 
@@ -718,7 +718,7 @@ mission. We are so grateful for your commitment.</p>
         #region enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum EntryStep
         {
@@ -940,13 +940,11 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _hostedPaymentInfoControl_TokenReceived( object sender, EventArgs e )
+        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
         {
-            string errorMessage = null;
-            string token = this.FinancialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-            if ( errorMessage.IsNotNullOrWhiteSpace() )
+            if ( !e.IsValid )
             {
-                nbPaymentTokenError.Text = errorMessage;
+                nbPaymentTokenError.Text = e.ErrorMessage;
                 nbPaymentTokenError.Visible = true;
             }
             else
@@ -1360,7 +1358,7 @@ mission. We are so grateful for your commitment.</p>
                 mergeFields.Add( "User", userLogin );
 
                 var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountEmailTemplate ).AsGuid() );
-                emailMessage.AddRecipient( new RecipientData( targetPerson.Email, mergeFields ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( targetPerson, mergeFields ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = false;
@@ -2087,6 +2085,7 @@ mission. We are so grateful for your commitment.</p>
 
             // Only show the SavedAccount picker if there are saved accounts. If there aren't any (or if they choose 'Use a different payment method'), a later step will prompt them to enter Payment Info (CC/ACH fields)
             ddlPersonSavedAccount.Visible = personSavedAccountList.Any();
+            pnlSavedAccounts.Visible = personSavedAccountList.Any();
 
             ddlPersonSavedAccount.Items.Clear();
             foreach ( var personSavedAccount in personSavedAccountList )
@@ -2188,12 +2187,12 @@ mission. We are so grateful for your commitment.</p>
                     dtpStartDate.Visible = true;
                 }
 
-                dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
+                lStartDateLabel.Text = string.Format( "Process {0} On", giftTerm );
             }
             else
             {
                 dtpStartDate.Visible = true;
-                dtpStartDate.Label = "Start Giving On";
+                lStartDateLabel.Text = "Start Giving On";
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
@@ -2256,8 +2255,8 @@ mission. We are so grateful for your commitment.</p>
 
             if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {
-                var paymentToken = financialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentToken, paymentInfo, out errorMessage );
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
                     nbProcessTransactionError.Text = errorMessage ?? "Unknown Error";
@@ -2481,6 +2480,12 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.Comment1 = paymentComment;
             }
 
+            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
+            paymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
+
             return paymentInfo;
         }
 
@@ -2619,10 +2624,6 @@ mission. We are so grateful for your commitment.</p>
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
             }
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( AttributeKey.AllowedTransactionAttributesFromURL ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2648,8 +2649,10 @@ mission. We are so grateful for your commitment.</p>
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
             financialTransactionService.Add( transaction );
             rockContext.SaveChanges();
-
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,
@@ -2900,5 +2903,9 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion navigation
+    }
+
+    public interface IPageParameterClass
+    {
     }
 }

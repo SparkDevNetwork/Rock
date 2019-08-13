@@ -79,6 +79,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int? NonCashAssetTypeValueId { get; set; }
+
+        /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -164,6 +167,7 @@ namespace Rock.Client
             this.IsSettled = source.IsSettled;
             this.MICRStatus = source.MICRStatus;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NonCashAssetTypeValueId = source.NonCashAssetTypeValueId;
             this.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             this.ProcessedDateTime = source.ProcessedDateTime;
             this.ScheduledTransactionId = source.ScheduledTransactionId;
@@ -203,6 +207,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialTransactionImage> Images { get; set; }
+
+        /// <summary />
+        public DefinedValue NonCashAssetTypeValue { get; set; }
 
         /// <summary />
         public DefinedValue SourceTypeValue { get; set; }

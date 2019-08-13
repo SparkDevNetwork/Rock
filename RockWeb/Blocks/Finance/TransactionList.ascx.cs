@@ -34,6 +34,13 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
+    /// <summary>
+    /// Transaction List
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.RockBlock" />
+    /// <seealso cref="Rock.Web.UI.ISecondaryBlock" />
+    /// <seealso cref="System.Web.UI.IPostBackEventHandler" />
+    /// <seealso cref="Rock.Web.UI.ICustomGridColumns" />
     [DisplayName( "Transaction List" )]
     [Category( "Finance" )]
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
@@ -41,19 +48,185 @@ namespace RockWeb.Blocks.Finance
     [ContextAware]
     [SecurityAction( "FilterByPerson", "The roles and/or users that can filter transactions by person." )]
 
-    [LinkedPage( "Detail Page", required: false, order: 0 )]
-    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order: 1 )]
-    [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter" )]
-    [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
-    [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transaction types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
-    [CustomDropdownListField( "Default Transaction View", "Select whether you want to initially see Transactions or Transaction Details", "Transactions,Transaction Details", false, "Transactions", "", 6 )]
-    [LinkedPage( "Batch Page", required: false, order: 7 )]
-    [BooleanField( "Show Foreign Key", "Should the transaction foreign key column be displayed?", false, order: 8 )]
-    [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 9 )]
-    [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 10 )]
+    [LinkedPage(
+        name: "Detail Page",
+        required: false,
+        order: 0,
+        key: AttributeKey.DetailPage )]
+
+    [TextField(
+        name: "Title",
+        description: "Title to display above the grid. Leave blank to hide.",
+        required: false,
+        order: 1,
+        key: AttributeKey.Title )]
+
+    [BooleanField(
+        name: "Show Only Active Accounts on Filter",
+        description: "If account filter is displayed, only list active accounts",
+        defaultValue: false,
+        category: "",
+        order: 2,
+        key: AttributeKey.ActiveAccountsOnlyFilter )]
+
+    [BooleanField(
+        name: "Show Options",
+        description: "Show an Options button in the title panel for showing images or summary.",
+        defaultValue: false,
+        order: 3,
+        key: AttributeKey.ShowOptions )]
+
+    [IntegerField(
+        name: "Image Height",
+        description: "If the Show Images option is selected, the image height",
+        required: false,
+        defaultValue: 200,
+        order: 4,
+        key: AttributeKey.ImageHeight )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        name: "Transaction Types",
+        description: "Optional list of transaction types to limit the list to (if none are selected all types will be included).",
+        required: false,
+        allowMultiple: true,
+        defaultValue: "",
+        category: "",
+        order: 5,
+        key: AttributeKey.TransactionTypes )]
+
+    [CustomDropdownListField(
+        name: "Default Transaction View",
+        description: "Select whether you want to initially see Transactions or Transaction Details",
+        listSource: "Transactions,Transaction Details",
+        required: false,
+        defaultValue: "Transactions",
+        category: "",
+        order: 6,
+        key: AttributeKey.DefaultTransactionView )]
+
+    [LinkedPage(
+        name: "Batch Page",
+        required: false,
+        order: 7,
+        key: AttributeKey.BatchPage )]
+
+    [BooleanField(
+        name: "Show Foreign Key",
+        description: "Should the transaction foreign key column be displayed?",
+        defaultValue: false,
+        order: 8,
+        key: AttributeKey.ShowForeignKey )]
+
+    [BooleanField(
+        name: "Show Account Summary",
+        description: "Should the account summary be displayed at the bottom of the list?",
+        defaultValue: false,
+        order: 9,
+        key: AttributeKey.ShowAccountSummary )]
+
+    [AccountsField(
+        name: "Accounts",
+        description: "Limit the results to transactions that match the selected accounts.",
+        required: false,
+        defaultValue: "",
+        category: "",
+        order: 10,
+        key: AttributeKey.Accounts )]
+
+    [BooleanField(
+        name: "Show Future Transactions",
+        description: "Should future transactions (transactions scheduled to be charged) be shown in this list?",
+        defaultValue: false,
+        order: 10,
+        key: AttributeKey.ShowFutureTransactions )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        name: "Source Types",
+        description: "Optional list of financial source types to limit the list to (if none are selected all types will be included).",
+        required: false,
+        allowMultiple: true,
+        defaultValue: "",
+        category: "",
+        order: 11,
+        key: AttributeKey.SourceTypes )]
+
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        protected static class AttributeKey
+        {
+            /// <summary>
+            /// The detail page
+            /// </summary>
+            public const string DetailPage = "DetailPage";
+
+            /// <summary>
+            /// The title
+            /// </summary>
+            public const string Title = "Title";
+
+            /// <summary>
+            /// The active accounts only filter
+            /// </summary>
+            public const string ActiveAccountsOnlyFilter = "ActiveAccountsOnlyFilter";
+
+            /// <summary>
+            /// The show options
+            /// </summary>
+            public const string ShowOptions = "ShowOptions";
+
+            /// <summary>
+            /// The image height
+            /// </summary>
+            public const string ImageHeight = "ImageHeight";
+
+            /// <summary>
+            /// The transaction types
+            /// </summary>
+            public const string TransactionTypes = "TransactionTypes";
+
+            /// <summary>
+            /// The default transaction view
+            /// </summary>
+            public const string DefaultTransactionView = "DefaultTransactionView";
+
+            /// <summary>
+            /// The batch page
+            /// </summary>
+            public const string BatchPage = "BatchPage";
+
+            /// <summary>
+            /// The show foreign key
+            /// </summary>
+            public const string ShowForeignKey = "ShowForeignKey";
+
+            /// <summary>
+            /// The show account summary
+            /// </summary>
+            public const string ShowAccountSummary = "ShowAccountSummary";
+
+            /// <summary>
+            /// The accounts
+            /// </summary>
+            public const string Accounts = "Accounts";
+
+            /// <summary>
+            /// The show future transactions
+            /// </summary>
+            public const string ShowFutureTransactions = "ShowFutureTransactions";
+
+            /// <summary>
+            /// The source types
+            /// </summary>
+            public const string SourceTypes = "SourceTypes";
+        }
+
+        #endregion Keys
+
         #region Fields
 
         private bool _canEdit = false;
@@ -111,7 +284,7 @@ namespace RockWeb.Blocks.Finance
             if ( hfTransactionViewMode.Value.IsNullOrWhiteSpace() )
             {
                 var userViewMode = this.GetBlockUserPreference( "TransactionViewMode" );
-                var defaultViewMode = this.GetAttributeValue( "DefaultTransactionView" );
+                var defaultViewMode = this.GetAttributeValue( AttributeKey.DefaultTransactionView );
                 hfTransactionViewMode.Value = userViewMode.IsNullOrWhiteSpace() ? defaultViewMode : userViewMode;
             }
 
@@ -124,9 +297,9 @@ namespace RockWeb.Blocks.Finance
             _canEdit = UserCanEdit;
 
             gTransactions.DataKeyNames = new string[] { "Id" };
-            gTransactions.Actions.ShowAdd = _canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
+            gTransactions.Actions.ShowAdd = _canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DetailPage ) );
             gTransactions.Actions.AddClick += gTransactions_Add;
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DetailPage ) ) )
             {
                 gTransactions.RowSelected += gTransactions_Edit;
             }
@@ -197,14 +370,14 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetBlockOptions()
         {
-            string title = GetAttributeValue( "Title" );
+            string title = GetAttributeValue( AttributeKey.Title );
             if ( string.IsNullOrWhiteSpace( title ) )
             {
                 title = "Transaction List";
             }
 
-            bddlOptions.Visible = GetAttributeValue( "ShowOptions" ).AsBooleanOrNull() ?? false;
-            _imageHeight = GetAttributeValue( "ImageHeight" ).AsIntegerOrNull() ?? 200;
+            bddlOptions.Visible = GetAttributeValue( AttributeKey.ShowOptions ).AsBooleanOrNull() ?? false;
+            _imageHeight = GetAttributeValue( AttributeKey.ImageHeight ).AsIntegerOrNull() ?? 200;
 
             lTitle.Text = title;
         }
@@ -1013,7 +1186,7 @@ namespace RockWeb.Blocks.Finance
             drpDates.DelimitedValues = gfTransactions.GetUserPreference( "Date Range" );
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
 
-            if ( GetAttributeValue( "ShowForeignKey" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean() )
             {
                 tbForeignKey.Text = gfTransactions.GetUserPreference( "Foreign Key" );
                 tbForeignKey.Visible = true;
@@ -1025,8 +1198,8 @@ namespace RockWeb.Blocks.Finance
 
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
-            apAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
-            apAccount.DisplayActiveOnly = GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean();
+            apAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.Accounts ) );
+            apAccount.DisplayActiveOnly = GetAttributeValue( AttributeKey.ActiveAccountsOnlyFilter ).AsBoolean();
 
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
             if ( accountIds.Any() )
@@ -1049,11 +1222,9 @@ namespace RockWeb.Blocks.Finance
             {
                 var campusi = CampusCache.All();
                 campCampusBatch.Campuses = campusi;
-                campCampusBatch.Visible = campusi.Any();
                 campCampusBatch.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
 
                 campCampusAccount.Campuses = campusi;
-                campCampusAccount.Visible = campusi.Any();
                 campCampusAccount.SetValue( gfTransactions.GetUserPreference( "CampusAccount" ) );
             }
             else
@@ -1302,7 +1473,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             gTransactions.ColumnsOfType<RockBoundField>().First( c => c.DataField == "ForeignKey" ).Visible =
-                GetAttributeValue( "ShowForeignKey" ).AsBoolean();
+                GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean();
 
             var rockContext = new RockContext();
             _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
@@ -1314,9 +1485,20 @@ namespace RockWeb.Blocks.Finance
             if ( hfTransactionViewMode.Value == "Transaction Details" )
             {
                 gTransactions.RowItemText = "Transaction Detail";
-                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var financialTransactionDetailQry = financialTransactionDetailService.Queryable()
-                    .Where( a => a.Transaction.TransactionDateTime.HasValue );
+                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );                
+                var financialTransactionDetailQry = financialTransactionDetailService.Queryable().AsNoTracking();
+
+                var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
+                if ( includeFutureTransactions )
+                {
+                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a =>
+                        a.Transaction.TransactionDateTime.HasValue ||
+                        a.Transaction.FutureProcessingDateTime.HasValue );
+                }
+                else
+                {
+                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
+                }
 
                 if ( _availableAttributes != null && _availableAttributes.Any() )
                 {
@@ -1328,7 +1510,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Filter to configured accounts.
-                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                 if ( accountGuids.Any() )
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry
@@ -1341,13 +1523,13 @@ namespace RockWeb.Blocks.Finance
                     {
                         financialTransactionDetailQry = financialTransactionDetailQry
                             .OrderBy( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
+                            .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
                     }
                     else
                     {
                         financialTransactionDetailQry = financialTransactionDetailQry
                             .OrderByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
+                            .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
                     }
                 }
 
@@ -1358,7 +1540,8 @@ namespace RockWeb.Blocks.Finance
                     TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
                     ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
                     AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                    TransactionDateTime = a.Transaction.TransactionDateTime.Value,
+                    TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
+                    FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
                     SourceTypeValueId = a.Transaction.SourceTypeValueId,
                     TotalAmount = a.Amount,
                     TransactionCode = a.Transaction.TransactionCode,
@@ -1366,20 +1549,41 @@ namespace RockWeb.Blocks.Finance
                     Status = a.Transaction.Status,
                     SettledDate = a.Transaction.SettledDate,
                     SettledGroupId = a.Transaction.SettledGroupId,
-                    TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
-                    Summary = a.Transaction.Summary,
-                    FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
-                }
-                );
+                    TransactionDetail = new DetailInfo
+                    {
+                        AccountId = a.AccountId,
+                        Amount = a.Amount,
+                        EntityId = a.EntityId,
+                        EntityTypeId = a.EntityId
+                    },
+                    Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
+                    FinancialPaymentDetail = new PaymentDetailInfo
+                    {
+                        CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
+                        CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
+                    }
+                } );
             }
             else
             {
                 gTransactions.RowItemText = "Transactions";
                 var financialTransactionService = new FinancialTransactionService( rockContext );
-                var financialTransactionQry = financialTransactionService.Queryable();
+                var financialTransactionQry = financialTransactionService.Queryable().AsNoTracking();
+
+                var includeFutureTransactions = GetAttributeValue( AttributeKey.ShowFutureTransactions ).AsBooleanOrNull() ?? false;
+                if ( includeFutureTransactions )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( a =>
+                        a.TransactionDateTime.HasValue ||
+                        a.FutureProcessingDateTime.HasValue );
+                }
+                else
+                {
+                    financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
+                }
 
                 // Filter to configured accounts.
-                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                 if ( accountGuids.Any() )
                 {
                     financialTransactionQry = financialTransactionQry
@@ -1400,17 +1604,16 @@ namespace RockWeb.Blocks.Finance
                     if ( sortProperty.Direction == SortDirection.Ascending )
                     {
                         financialTransactionQry = financialTransactionQry.OrderBy( a => a.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                            .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                     }
                     else
                     {
                         financialTransactionQry = financialTransactionQry.OrderByDescending( a => a.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.AuthorizedPersonAlias.Person.NickName )
-                            .ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                            .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                     }
                 }
 
                 qry = financialTransactionQry
-                    .Where( a => a.TransactionDateTime.HasValue )
                     .Select( a => new FinancialTransactionRow
                     {
                         Id = a.Id,
@@ -1418,7 +1621,8 @@ namespace RockWeb.Blocks.Finance
                         TransactionTypeValueId = a.TransactionTypeValueId,
                         ScheduledTransactionId = a.ScheduledTransactionId,
                         AuthorizedPersonAliasId = a.AuthorizedPersonAliasId,
-                        TransactionDateTime = a.TransactionDateTime.Value,
+                        TransactionDateTime = a.TransactionDateTime ?? a.FutureProcessingDateTime.Value,
+                        FutureProcessingDateTime = a.FutureProcessingDateTime,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
                         SourceTypeValueId = a.SourceTypeValueId,
                         TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
@@ -1427,17 +1631,25 @@ namespace RockWeb.Blocks.Finance
                         Status = a.Status,
                         SettledDate = a.SettledDate,
                         SettledGroupId = a.SettledGroupId,
-                        Summary = a.Summary,
+                        Summary = a.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
                     } );
             }
 
             // Transaction Types
-            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+            var transactionTypeValueIdList = GetAttributeValue( AttributeKey.TransactionTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
 
             if ( transactionTypeValueIdList.Any() )
             {
                 qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
+            }
+
+            // Transaction Sources
+            var sourceValueIdList = GetAttributeValue( AttributeKey.SourceTypes ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Get( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( sourceValueIdList.Any() )
+            {
+                qry = qry.Where( t => t.SourceTypeValueId.HasValue && sourceValueIdList.Contains( t.SourceTypeValueId.Value ) );
             }
 
             // Set up the selection filter
@@ -1533,7 +1745,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Foreign Key
-                if ( GetAttributeValue( "ShowForeignKey" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean() )
                 {
                     string foreingKey = gfTransactions.GetUserPreference( "Foreign Key" );
                     if ( !string.IsNullOrWhiteSpace( foreingKey ) )
@@ -1648,7 +1860,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                    qry = qry.OrderByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                 }
             }
 
@@ -1706,7 +1918,7 @@ namespace RockWeb.Blocks.Finance
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
-            var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
+            var showAccountSummary = this.GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean();
             if ( showAccountSummary ||
                 _scheduledTxn == null &&
                 _registration == null &&
@@ -1800,7 +2012,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else if ( txn.TransactionDetails != null )
                 {
-                    var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                    var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                     summary = txn.TransactionDetails.Select( a => new { Account = _financialAccountLookup[a.AccountId], a.Amount } )
                     .Select( d => new
                     {
@@ -1844,18 +2056,18 @@ namespace RockWeb.Blocks.Finance
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "batchId", _batch.Id.ToString() );
                 qryParams.Add( "transactionId", id.ToString() );
-                NavigateToLinkedPage( "DetailPage", qryParams );
+                NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
             }
             else if ( _person != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "personId", _person.Id.ToString() );
                 qryParams.Add( "transactionId", id.ToString() );
-                NavigateToLinkedPage( "DetailPage", qryParams );
+                NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
             }
             else
             {
-                NavigateToLinkedPage( "DetailPage", "transactionId", id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "transactionId", id );
             }
         }
 
@@ -1940,6 +2152,7 @@ namespace RockWeb.Blocks.Finance
             public int? BatchId { get; internal set; }
             public int? ScheduledTransactionId { get; internal set; }
             public DateTime TransactionDateTime { get; internal set; }
+            public DateTime? FutureProcessingDateTime { get; internal set; }
             public int TransactionTypeValueId { get; internal set; }
             public PaymentDetailInfo FinancialPaymentDetail { get; internal set; }
             public string TransactionCode { get; internal set; }

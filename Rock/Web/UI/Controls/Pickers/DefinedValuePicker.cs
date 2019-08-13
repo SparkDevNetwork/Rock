@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    this.SelectedDefinedValuesId = null;
+                    this.SelectedDefinedValuesId = new int[0];
                 }
             }
         }
@@ -143,7 +143,8 @@ namespace Rock.Web.UI.Controls
                         var selectedDefinedValue = DefinedValueCache.Get( selectedValue );
                         if ( selectedDefinedValue != null )
                         {
-                            this.Items.Add( new ListItem( this.DisplayDescriptions ? selectedDefinedValue.Description : selectedDefinedValue.Value, selectedDefinedValue.Id.ToString() ) { Selected = true } );
+                            var text = this.DisplayDescriptions && selectedDefinedValue.Description.IsNotNullOrWhiteSpace() ? selectedDefinedValue.Description : selectedDefinedValue.Value;
+                            this.Items.Add( new ListItem { Text = text, Value = selectedDefinedValue.Id.ToString(), Selected = true } );
                         }
                     }
                 }
@@ -195,7 +196,9 @@ namespace Rock.Web.UI.Controls
                 {
                     foreach ( var definedValue in definedValuesList )
                     {
-                        var li = new ListItem( picker.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() );
+                        var text = picker.DisplayDescriptions && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value;
+
+                        var li = new ListItem( text, definedValue.Id.ToString() );
                         li.Selected = selectedItems.Contains( definedValue.Id );
                         picker.Items.Add( li );
                     }

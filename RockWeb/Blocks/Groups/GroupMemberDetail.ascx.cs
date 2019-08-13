@@ -156,6 +156,16 @@ namespace RockWeb.Blocks.Groups
             if ( groupMemberToRestore != null )
             {
                 groupMemberService.Restore( groupMemberToRestore );
+
+                // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+                // So, make sure a message is displayed in the validation summary
+                var isValid = groupMemberToRestore.IsValidGroupMember( rockContext );
+                if ( !isValid )
+                {
+                    nbRestoreError.Text = groupMemberToRestore.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    nbRestoreError.Visible = true;
+                    return;
+                }
                 rockContext.SaveChanges();
                 NavigateToCurrentPageReference( new Dictionary<string, string> { { "GroupMemberId", restoreGroupMemberId.ToString() } } );
             }
@@ -301,6 +311,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         // matching archived person found, so prompt
                         mdRestoreArchivedPrompt.Show();
+                        nbRestoreError.Visible = false;
                         var person = new PersonService( rockContext ).Get( personId.Value );
                         nbRestoreArchivedGroupMember.Text = string.Format(
                             "There is an archived record for {0} as a {1} in this group. Do you want to restore the previous settings? Notes will be retained.",

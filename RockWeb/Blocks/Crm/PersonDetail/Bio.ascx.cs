@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [PersonBadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
+    [BadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
     [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
     [CodeEditorField( "Additional Custom Actions", @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
@@ -51,18 +51,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
     [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, "", "", 4)]
-    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
+    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is requested.", false, "", "", 5 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
     [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7)]
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 8, "CustomContent" )]
     [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 9)]
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
-    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
+    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed?", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
     [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false,
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
-    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
+    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from.", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
     [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
     public partial class Bio : PersonBlock
@@ -98,6 +98,24 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person != null )
             {
+                // If this is the empty person, check for an old Alias record and if found, redirect permanent to it instead.
+                if ( Person.Id == 0 )
+                {
+                    //referring to aliasPersonId as person might be merged
+                    var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+
+                    if ( personId.HasValue )
+                    {
+                        var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
+                        if ( personAlias != null )
+                        {
+                            var pageReference = RockPage.PageReference;
+                            pageReference.Parameters.AddOrReplace( "PersonId", personAlias.PersonId.ToString() );
+                            Response.RedirectPermanent( pageReference.BuildUrl(), false );
+                        }
+                    }
+                }
+
                 pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
 
                 // Record Type - this is always "business". it will never change.
@@ -124,10 +142,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Get( guid );
-                            if ( personBadge != null )
+                            var badge = BadgeCache.Get( guid );
+                            if ( badge != null )
                             {
-                                blStatus.PersonBadges.Add( personBadge );
+                                blStatus.BadgeTypes.Add( badge );
                             }
                         }
                     }
@@ -246,7 +264,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.PhoneNumbers != null )
                     {
-                        rptPhones.DataSource = Person.PhoneNumbers.ToList();
+                        var phoneNumbers = Person.PhoneNumbers.AsEnumerable();
+                        var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+                        if ( phoneNumberTypes.DefinedValues.Any() )
+                        {
+                            var phoneNumberTypeIds = phoneNumberTypes.DefinedValues.Select( a => a.Id ).ToList();
+                            phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
+                        }
+
+                        rptPhones.DataSource = phoneNumbers;
                         rptPhones.DataBind();
                     }
                     
@@ -555,7 +581,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
-                        formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+                        phoneMarkup = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
                     }
                 }                
 

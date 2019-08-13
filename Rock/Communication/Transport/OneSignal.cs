@@ -273,6 +273,11 @@ namespace Rock.Communication.Transport
             options.Contents.Add(LanguageCodes.English, message );
             client.Notifications.Create(options );
 
+            // Create a communication in Rock
+            //RockContext rockContext = new RockContext();
+            //CommunicationService communicationService = new CommunicationService( rockContext );
+            //Rock.Model.Communication communication = CommunicationService.Create
+
         }
 
         #region Obsolete

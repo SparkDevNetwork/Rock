@@ -624,6 +624,15 @@ namespace Rock.Model
         [DataMember]
         public int? GroupStatusDefinedTypeId { get; set; }
 
+        /// <summary>
+        /// Indicates whether RSVP functionality should be enabled for this group.
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool EnableRSVP { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
@@ -680,7 +689,7 @@ namespace Rock.Model
         /// The schedule reminder email offset days.
         /// </value>
         [DataMember]
-        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
 
         /// <summary>
         /// Gets or sets a value indicating whether a person must specify a reason when declining/cancelling.

@@ -229,7 +229,6 @@ namespace RockWeb
                     bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                     if ( runJobsInContext )
                     {
-
                         ISchedulerFactory sf;
 
                         // create scheduler
@@ -241,12 +240,17 @@ namespace RockWeb
                         foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                         {
                             const string errorLoadingStatus = "Error Loading Job";
+
                             try  
                             {
                                 IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                                 ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                                sched.ScheduleJob( jobDetail, jobTrigger );
+                                // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
+                                if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
+                                {
+                                    sched.ScheduleJob( jobDetail, jobTrigger );
+                                }
 
                                 //// if the last status was an error, but we now loaded successful, clear the error
                                 // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
@@ -285,6 +289,9 @@ namespace RockWeb
 
                         // set up the listener to report back from jobs as they complete
                         sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                        // set up a trigger listener that can prevent a job from running if another scheduler is
+                        // already running it (i.e., someone running it manually).
+                        sched.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
 
                         // start the scheduler
                         sched.Start();
@@ -1099,10 +1106,10 @@ namespace RockWeb
                             }
 
                             mergeFields.Add( "Person", person );
-                            var recipients = new List<RecipientData>();
+                            var recipients = new List<RockEmailMessageRecipient>();
                             foreach ( string emailAddress in emailAddresses )
                             {
-                                recipients.Add( new RecipientData( emailAddress, mergeFields ) );
+                                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( emailAddress, mergeFields ) );
                             }
 
                             if ( recipients.Any() )

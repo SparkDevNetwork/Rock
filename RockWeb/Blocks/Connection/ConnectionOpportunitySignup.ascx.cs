@@ -289,9 +289,9 @@ namespace RockWeb.Blocks.Connection
                 // load campus dropdown
                 var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Any();
+                //cpCampus.Visible = campuses.Count > 1;
 
-                if ( campuses.Any() )
+                if ( campuses.Count > 1 )
                 {
                     cpCampus.SetValue( campuses.First().Id );
                 }
@@ -371,6 +371,8 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
                 }
+
+                cpCampus.Visible = campuses.Count > 1;
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -143,6 +144,32 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = new Rock.Data.RockContext();
             return new PersonService( rockContext ).GetByPhonePartial( number, true ).Include( a => a.Aliases );
+        }
+
+        /// <summary>
+        /// GET a person record based on a temporary person token and increment the usage count of the token
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByToken/{token}" )]
+        public Person GetByToken( string token )
+        {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var personService = Service as PersonService;
+            var person = personService.GetByImpersonationToken( token, true, null );
+
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return person;
         }
 
         /// <summary>
@@ -406,72 +433,87 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/ConfigureTextToGive/{personId}" )]
         public HttpResponseMessage ConfigureTextToGive( int personId, [FromBody]ConfigureTextToGiveArgs args )
         {
-            // Validate the person
-            var person = Service.Get( personId );
+            var personService = Service as PersonService;
+            var success = personService.ConfigureTextToGive( personId, args.ContributionFinancialAccountId, args.FinancialPersonSavedAccountId, out var errorMessage );
 
-            if ( person == null )
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The person ID is not valid" );
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, errorMessage );
             }
 
-            // Load the person's saved accounts
-            var rockContext = Service.Context as RockContext;
-            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
-            var personsSavedAccounts = savedAccountService.Queryable()
-                .Include( sa => sa.PersonAlias )
-                .Where( sa => sa.PersonAlias.PersonId == personId )
-                .ToList();
-
-            // Loop through each saved account. Set default to false unless the args dictate that it is the default
-            var foundDefaultAccount = false;
-
-            foreach ( var savedAccount in personsSavedAccounts )
+            if ( !success )
             {
-                if ( !foundDefaultAccount && savedAccount.Id == args.FinancialPersonSavedAccountId )
-                {
-                    savedAccount.IsDefault = true;
-                    foundDefaultAccount = true;
-                }
-                else
-                {
-                    savedAccount.IsDefault = false;
-                }
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.InternalServerError, "The action was not successful but not error was specified" );
             }
 
-            // If the args specified an account to be default but it was not found, then return an error
-            if ( args.FinancialPersonSavedAccountId.HasValue && !foundDefaultAccount )
-            {
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The saved account ID is not valid" );
-            }
-
-            // Validate the account if it is being set
-            if ( args.ContributionFinancialAccountId.HasValue )
-            {
-                var accountService = new FinancialAccountService( rockContext );
-                var account = accountService.Get( args.ContributionFinancialAccountId.Value );
-
-                if ( account == null )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound, "The financial account ID is not valid" );
-                }
-
-                if ( !account.IsActive )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not active" );
-                }
-
-                if ( account.IsPublic.HasValue && !account.IsPublic.Value )
-                {
-                    return ControllerContext.Request.CreateResponse( HttpStatusCode.BadRequest, "The financial account is not public" );
-                }
-            }
-
-            // Set the person's contribution account ID
-            person.ContributionFinancialAccountId = args.ContributionFinancialAccountId;
-
-            // Success
-            rockContext.SaveChanges();
+            Service.Context.SaveChanges();
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
+        }
+
+        /// <summary>
+        /// Updates the profile photo of the logged in person.
+        /// </summary>
+        /// <param name="photoBytes">The photo bytes.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/UpdateProfilePhoto" )]
+        [HttpPost]
+        public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
+        {
+            var personId = GetPerson()?.Id;
+
+            if ( !personId.HasValue )
+            {
+                return NotFound();
+            }
+
+            if ( photoBytes.Length == 0 || string.IsNullOrWhiteSpace( filename ) )
+            {
+                return BadRequest();
+            }
+
+            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+            if ( filename.IndexOfAny( illegalCharacters ) >= 0 )
+            {
+                return BadRequest( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ")." );
+            }
+
+            using ( var rockContext = new Data.RockContext() )
+            {
+                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+                // always create a new BinaryFile record of IsTemporary when a file is uploaded
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFile = new BinaryFile();
+                binaryFileService.Add( binaryFile );
+
+                binaryFile.IsTemporary = false;
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.MimeType = "octet/stream";
+                binaryFile.FileSize = photoBytes.Length;
+                binaryFile.FileName = filename;
+                binaryFile.ContentStream = new MemoryStream( photoBytes );
+
+                rockContext.SaveChanges();
+
+                var person = new Model.PersonService( rockContext ).Get( personId.Value );
+                int? oldPhotoId = person.PhotoId;
+                person.PhotoId = binaryFile.Id;
+
+                rockContext.SaveChanges();
+
+                if ( oldPhotoId.HasValue )
+                {
+                    binaryFile = binaryFileService.Get( oldPhotoId.Value );
+                    binaryFile.IsTemporary = true;
+
+                    rockContext.SaveChanges();
+                }
+
+                return Ok( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}{person.PhotoUrl}" );
+            }
         }
 
         #endregion
@@ -812,6 +854,30 @@ namespace Rock.Rest.Controllers
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
+        }
+
+        /// <summary>
+        /// Gets the current person's impersonation token. This is used by external apps who might have a logged in person but
+        /// need to create a impersonation token to link to the website. For instance a mobile app might have the current person
+        /// and have a cookie, but would like to link out to the website.
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
+        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            var currentPerson = GetPerson();
+
+            if ( currentPerson == null )
+            {
+                return string.Empty;
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
         }
 
         /// <summary>

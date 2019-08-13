@@ -1,12 +1,28 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-/// <summary>
-/// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
-/// </summary>
+//// <summary>
+//// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
+//// </summary>
 namespace Rock.TransNational.Pi
 {
     #region Customer Related
@@ -259,6 +275,12 @@ namespace Rock.TransNational.Pi
         [Newtonsoft.Json.JsonProperty( "card", NullValueHandling = NullValueHandling.Ignore )]
         public PaymentMethodCardResponse Card { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ach.
+        /// </summary>
+        /// <value>
+        /// The ach.
+        /// </value>
         [Newtonsoft.Json.JsonProperty( "ach", NullValueHandling = NullValueHandling.Ignore )]
         public PaymentMethodACHResponse ACH { get; set; }
     }
@@ -286,7 +308,7 @@ namespace Rock.TransNational.Pi
         [JsonProperty( "auth_code" )]
         public string AuthCode { get; set; }
 
-        // <summary>
+        /// <summary>
         /// Gets or sets the processor response code.
         /// </summary>
         /// <value>
@@ -768,6 +790,12 @@ namespace Rock.TransNational.Pi
             return this.Status == "validation" || ( !this.IsSuccessStatus() && this.Invalid?.Any() == true );
         }
 
+        /// <summary>
+        /// Gets or sets the invalid.
+        /// </summary>
+        /// <value>
+        /// The invalid.
+        /// </value>
         [JsonProperty( "invalid" )]
         public string[] Invalid { get; set; }
     }
@@ -1134,7 +1162,8 @@ namespace Rock.TransNational.Pi
         public bool EmailReceipt { get; set; }
 
         /// <summary>
-        /// Gets or sets the email address
+        /// Gets or sets the email address.
+        /// </summary>
         /// <value>
         /// The email address.
         /// </value>
@@ -1283,6 +1312,10 @@ namespace Rock.TransNational.Pi
         public int AmountCents { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.TransNational.Pi.BaseResponseData" />
     public class TransactionVoidRefundResponse : BaseResponseData
     {
         /// <summary>
@@ -1295,13 +1328,15 @@ namespace Rock.TransNational.Pi
         public object Data { get; set; }
     }
 
-
-
     #endregion Transactions
 
     #region Transaction Status
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.TransNational.Pi.BaseResponseData" />
     public class TransactionStatusResponse : BaseResponseData
     {
         /// <summary>
@@ -1320,6 +1355,10 @@ namespace Rock.TransNational.Pi
         public int TotalCount { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.TransNational.Pi.TransactionQueryResultData" />
     public class TransactionStatusResponseData : TransactionQueryResultData
     {
     }
@@ -1709,8 +1748,17 @@ namespace Rock.TransNational.Pi
     /// URL ~api//recurring/subscription/search.
     /// Search body example: {"customer":{"id":{"value":"&lt;customer id here&gt;","operator":"="}}}
     /// </summary>
-    public class QuerySubscriptionsRequest
+    public class QueryCustomerSubscriptionsRequest
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QueryCustomerSubscriptionsRequest"/> class.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        public QueryCustomerSubscriptionsRequest( string customerId )
+        {
+            CustomerIdSearch = new QuerySearchCustomerId( customerId );
+        }
+
         /// <summary>
         /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
         /// </summary>
@@ -1721,13 +1769,13 @@ namespace Rock.TransNational.Pi
         public int Limit { get; set; } = 0;
 
         /// <summary>
-        /// Gets or sets the customer identifier search (optional)
+        /// Gets or sets the customer identifier search
         /// </summary>
         /// <value>
         /// The customer identifier search.
         /// </value>
-        [JsonProperty( "customer_id", NullValueHandling = NullValueHandling.Ignore )]
-        public QuerySearchString CustomerIdSearch { get; set; }
+        [JsonProperty( "customer", NullValueHandling = NullValueHandling.Ignore )]
+        public QuerySearchCustomerId CustomerIdSearch { get; set; }
     }
 
     /// <summary>
@@ -1848,6 +1896,30 @@ namespace Rock.TransNational.Pi
     }
 
     /// <summary>
+    /// Searching by the Customer property of a record
+    /// </summary>
+    public class QuerySearchCustomerId
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QuerySearchCustomerId"/> class.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        public QuerySearchCustomerId( string customerId )
+        {
+            Id = new QuerySearchString { ComparisonOperator = "=", SearchValue = customerId };
+        }
+
+        /// <summary>
+        /// The 'id' of the 'customer' property
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        [JsonProperty( "id" )]
+        public QuerySearchString Id { get; set; }
+    }
+
+    /// <summary>
     /// see https://sandbox.gotnpgateway.com/docs/api/#query-transactions
     /// </summary>
     public class QuerySearchInt
@@ -1878,7 +1950,7 @@ namespace Rock.TransNational.Pi
     public class QueryDateTimeRange
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueryDateRange" /> class.
+        /// Initializes a new instance of the <see cref="QueryDateTimeRange"/> class.
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
@@ -2372,8 +2444,19 @@ namespace Rock.TransNational.Pi
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum BillingFrequency
     {
+        /// <summary>
+        /// The daily
+        /// </summary>
         daily,
+
+        /// <summary>
+        /// The monthly
+        /// </summary>
         monthly,
+
+        /// <summary>
+        /// The twice monthly
+        /// </summary>
         twice_monthly
     }
 
@@ -2383,8 +2466,19 @@ namespace Rock.TransNational.Pi
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum TransactionType
     {
+        /// <summary>
+        /// The sale
+        /// </summary>
         sale,
+
+        /// <summary>
+        /// The authorize
+        /// </summary>
         authorize,
+
+        /// <summary>
+        /// The credit
+        /// </summary>
         credit
     }
 
@@ -2394,7 +2488,14 @@ namespace Rock.TransNational.Pi
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum PiPaymentType
     {
+        /// <summary>
+        /// The card
+        /// </summary>
         card,
+
+        /// <summary>
+        /// The ach
+        /// </summary>
         ach
     }
 

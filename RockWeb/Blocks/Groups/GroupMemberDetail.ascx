@@ -113,6 +113,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <asp:HiddenField ID="hfRestoreGroupMemberId" runat="server" />
+                                    <Rock:NotificationBox ID="nbRestoreError" runat="server" NotificationBoxType="Danger" Visible="false"/>
                                     <Rock:NotificationBox ID="nbRestoreArchivedGroupMember" runat="server" NotificationBoxType="Info" Text="There is an archived record for the person in this role in this group. Do you want to restore the previous settings? Notes will be retained." />
                                 </div>
                             </div>

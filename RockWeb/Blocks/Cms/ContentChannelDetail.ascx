@@ -74,7 +74,7 @@
                                     <Rock:RockCheckBox ID="cbItemsManuallyOrdered" runat="server" Label="Items Manually Ordered" Text="Yes" Help="Are items of this channel manually ordered? If not they will be ordered by their Start Date/Time." />
                                 </div>
                                 <div class="col-xs-6">
-                                    <Rock:RockCheckBox ID="cbChildItemsManuallyOrdered" runat="server" Label="Child Items Manually Ordered" Text="Yes" Help="If items in this channel have child itesm, should those child items be manually ordered? If not they will be ordered by their Start Date/Time." />
+                                    <Rock:RockCheckBox ID="cbChildItemsManuallyOrdered" runat="server" Label="Child Items Manually Ordered" Text="Yes" Help="If items in this channel have child items, should those child items be manually ordered? If not they will be ordered by their Start Date/Time." />
                                 </div>
                             </div>
                         </div>

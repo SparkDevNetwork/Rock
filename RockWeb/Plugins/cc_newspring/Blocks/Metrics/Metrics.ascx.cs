@@ -222,7 +222,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             if ( GetAttributeValue( preKey + "RespectCampusContext" ).AsBoolean() )
             {
-                var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
+                var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
 
                 if ( campusContext != null )
                 {
@@ -232,8 +232,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             if ( GetAttributeValue( preKey + "RespectGroupContext" ).AsBoolean() )
             {
-                var groupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
-                var groupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
+                var groupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( GroupType ) ) );
+                var groupContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Group ) ) );
 
                 if ( groupContext != null )
                 {
@@ -260,7 +260,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             if ( GetAttributeValue( preKey + "RespectScheduleContext" ).AsBoolean() )
             {
-                var scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
+                var scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Schedule ) ) );
 
                 if ( scheduleContext != null )
                 {

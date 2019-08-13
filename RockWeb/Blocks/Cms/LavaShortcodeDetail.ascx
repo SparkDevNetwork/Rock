@@ -35,7 +35,7 @@
                                 <asp:HiddenField ID="hfOriginalTagName" runat="server" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockRadioButtonList ID="rblTagType" Required="true" runat="server" Help="Block tags require an end tag while inline do not." Label="TagType" RepeatDirection="Horizontal" />
+                                <Rock:RockRadioButtonList ID="rblTagType" Required="true" runat="server" Help="Block tags require an end tag while inline do not." Label="Tag Type" RepeatDirection="Horizontal" />
                             </div>
                         </div>
 

@@ -77,6 +77,9 @@ namespace Rock.Client
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
+        public bool EnableRSVP { get; set; }
+
+        /// <summary />
         public bool EnableSpecificGroupRequirements { get; set; }
 
         /// <summary />
@@ -327,7 +330,7 @@ namespace Rock.Client
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
         /// <summary />
-        public int? ScheduleReminderEmailOffsetDays { get; set; } = 1;
+        public int? ScheduleReminderEmailOffsetDays { get; set; } = 2;
 
         /// <summary />
         public int? ScheduleReminderSystemEmailId { get; set; }
@@ -400,6 +403,7 @@ namespace Rock.Client
             this.EnableGroupHistory = source.EnableGroupHistory;
             this.EnableGroupTag = source.EnableGroupTag;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
+            this.EnableRSVP = source.EnableRSVP;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

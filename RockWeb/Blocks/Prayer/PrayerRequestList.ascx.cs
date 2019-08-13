@@ -610,6 +610,9 @@ namespace RockWeb.Blocks.Prayer
                 gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDateTime ).ThenByDescending( p => p.Id ).ToList();
             }
 
+            // Hide the campus column if the campus filter is not visible.
+            gPrayerRequests.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpPrayerCampusFilter.Visible;
+
             gPrayerRequests.EntityTypeId = EntityTypeCache.Get<PrayerRequest>().Id;
             gPrayerRequests.DataBind();
         }

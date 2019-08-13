@@ -431,7 +431,6 @@ iframe.email-body {
   background: @panel-heading-bg;
 }
 
-
 .components-list {
   margin: 12px 0;
 
@@ -452,6 +451,7 @@ iframe.email-body {
     font-size: 12px;
     color: @text-color;
     text-align: center;
+    cursor: grab;
     cursor: -webkit-grab;
     cursor: -moz-grab;
     zoom: 1;
@@ -491,10 +491,31 @@ iframe.email-body {
   }
 }
 
+.mobile-pages-container {
+  .component {
+    display: none;
+  }
+
+  .component.gu-transit {
+    display: block;
+    padding: @panel-heading-padding;
+    background-color: @panel-heading-bg; // Replace with @panel-widget-heading-bg
+    border: 1px solid @panel-heading-border; // Replace with @panel-widget-heading-border
+    margin-bottom: @line-height-computed;
+  }
+}
 
 .sms-actions-container {
   padding: 20px 20px !important;
   counter-reset: section;
+
+  .component {
+    display: none;
+  }
+
+  .component.gu-transit {
+    display: block;
+  }
 }
 
 .sms-action {
@@ -596,13 +617,25 @@ iframe.email-body {
     font-size: 21px;
     text-align: center;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, .9);
+    background-color: @panel-heading-bg;
     border-radius: 2px;
     box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
   }
 
   .drag-container {
     height: 100%;
+  }
+
+  .drag-container-empty::after {
+    display: block;
+    content: 'Drag and Drop Here';
+    max-width: 500px;
+    padding: 80px 0;
+    margin: 0 auto 20px;
+    font-size: 20px;
+    text-align: center;
+    border: 3px dashed rgba(0,0,0,0.2);
+    height: 200px;
   }
 
   h4 {
@@ -626,6 +659,15 @@ iframe.email-body {
   }
 }
 
-.component.gu-mirror {
+.component.gu-mirror,
+.sms-action.gu-mirror {
   list-style: none;
+  cursor: grabbing !important;
+  cursor: -moz-grabbing !important;
+  cursor: -webkit-grabbing !important;
+
+  &::before,
+  &::after {
+    display: none;
+  }
 }

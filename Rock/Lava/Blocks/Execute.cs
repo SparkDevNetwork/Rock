@@ -140,11 +140,7 @@ namespace Rock.Lava.Blocks
                 else
                 {
                     // treat this like a class
-
-                    // remove any reference to 'using System;' as this will cause an issue
-                    var cleanScript = Regex.Replace( userScript, @"\s*using\s*System;", "" );
-
-                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( cleanScript );
+                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( userScript );
                     string scriptResult = csScript.Execute();
                     result.Write( scriptResult );
                 }

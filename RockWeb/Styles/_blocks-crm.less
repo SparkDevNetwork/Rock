@@ -115,7 +115,6 @@
 
   .photo {
     position: relative;
-    display: table;
     max-width: 200px;
     padding: 5px;
     margin: 0 auto;
@@ -270,6 +269,8 @@
 
 // 3. Badge Bar
 // -------------------------
+@badge-icon-height: 45px;
+
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
@@ -286,6 +287,11 @@
       display: inline-block; // fixes issue in default browser on Android
       padding: 3px 7px 0;
       background-color: inherit;
+
+      .tooltip-inner {
+        max-width: 300px;
+        padding: 12px;
+      }
     }
 
     .badge-debug {
@@ -294,6 +300,44 @@
       z-index: 9999;
       width: 900px;
       text-align: left;
+    }
+
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: @badge-grid-width;
+      height: @badge-icon-height;
+      margin-top: -12px;
+
+      .badge {
+        display: flex;
+        flex-basis: 33.3%;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin-bottom: .5%;
+
+        &:nth-last-child(n+6),
+        &:nth-last-child(n+6) ~ & {
+          flex-basis: 20%;
+        }
+
+        .fa-stack {
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+        }
+
+        .fa-stack-1x {
+          font-size: 12px;
+          color: #fff;
+        }
+
+        .fa-stack-2x {
+          font-size: 24px;
+        }
+      }
     }
   }
 }
@@ -307,7 +351,7 @@
 
   &::before {
     font-family: @fa-font-face;
-    font-size: 45px;
+    font-size: @badge-icon-height;
     font-weight: @fa-theme-weight;
     color: @brand-success;
     content: @fa-var-circle;
@@ -326,7 +370,7 @@
 }
 
 .badge-icon {
-  font-size: 45px;
+  font-size: @badge-icon-height;
 
   &.badge-disabled {
     color: #939393;
@@ -334,46 +378,105 @@
   }
 }
 
-.badge-attendance {
-  ul.badge-attendance-chart {
-    //http://codepen.io/Victa/pen/xDqbf
-    display: table;
+.attendance-chart {
+  //http://codepen.io/Victa/pen/xDqbf
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: nowrap;
+
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &-sm {
+    height: 20px;
+  }
+
+  &-block {
+    height: 18px;
+
+    li span {
+      width: ~"calc(100% - 3px)";
+      background: @brand-info !important;
+    }
+  }
+
+  .badge-attendance & {
     width: 220px;
     height: 40px;
-    margin: 0 auto;
-    table-layout: fixed;
+  }
 
-    li {
-      position: relative;
-      display: table-cell;
-      width: 10px;
-      height: 40px;
-      vertical-align: bottom;
+  li {
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
 
-      span {
-        display: block;
-        width: 8px;
-        min-height: 1px;
-        background: @persondetails-badge-color;
+    span {
+      display: block;
+      width: 8px;
+      width: ~"calc(100% - 2px)";
+      min-width: 2px;
+      min-height: 1px;
+      background: @persondetails-badge-color;
 
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          // needed for chrome but kills ie
-          position: absolute;
-          bottom: 0;
-        }
+      &:hover {
+        opacity: .85;
+      }
+
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        // needed for chrome but kills ie
+        position: absolute;
+        bottom: 0;
+      }
+
+      .animate & {
+        -webkit-animation: bar-grow 1s ease-in-out;
+        -moz-animation: bar-grow 1s ease-in-out;
+        -o-animation: bar-grow 1s ease-in-out;
+        animation: bar-grow 1s ease-in-out;
       }
     }
   }
+}
 
-  &.animate {
-    ul.badge-attendance-chart li span {
-      -webkit-animation: bar-grow 1s ease-in-out;
-      -moz-animation: bar-grow 1s ease-in-out;
-      -o-animation: bar-grow 1s ease-in-out;
-      animation: bar-grow 1s ease-in-out;
+.streak-chart {
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: table-cell;
+    float: right;
+    width: 9px;
+    height: 100%;
+    margin-right: 2px;
+    vertical-align: bottom;
+
+    span {
+      display: block;
+      width: 100%;
+      min-height: 1px;
+      background: @brand-info;
+
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        // needed for chrome but kills ie
+        position: absolute;
+        bottom: 0;
+      }
     }
   }
 }
+
 
 .badge-disc {
   position: relative;
@@ -1154,12 +1257,8 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-photo {
-  border: 3px solid @photo-border;
-}
-
 /* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
-.merge-personselect .merge-header-summary {
+.person-merge .merge-header-summary {
   cursor: pointer;
 }
 
@@ -1296,19 +1395,42 @@ tr.inactive {
   text-align: center;
 }
 
+.disc-row {
+  margin-bottom: @disc-question-spacing;
+
+  &::after {
+    display: block;
+    width: 100%;
+    margin: @disc-question-spacing 0;
+    content: " ";
+    border-bottom: 1px solid @ui-4;
+  }
+}
+
+
+@disc-chart-height: 425px;
 .discchart {
   position: relative;
   width: 80%;
   max-width: 650px;
-  height: 425px;
+  height: @disc-chart-height;
   padding: 0;
   margin: 0 auto;
   clear: both;
+  font-size: 0;
+  background-image:
+    linear-gradient(
+      to bottom,
+      @ui-4 0%,
+      transparent 2%,
+      transparent 100%
+    );
+  background-size: 100% (@disc-chart-height/10);
 
   li {
     position: relative;
     display: inline-block;
-    width: 20%;
+    width: 22.5%;
     height: 425px;
     padding: 0;
     margin: 0 2% 0 0;
@@ -1316,13 +1438,13 @@ tr.inactive {
     text-align: center;
     vertical-align: bottom;
     background-color: lighten(@brand-primary, 10%);
-    border-radius: @border-radius-large @border-radius-large 0 0;
 
     &.discchart-midpoint {
       position: absolute;
       bottom: 0;
       width: 100%;
       height: 70%;
+      margin: 0;
       background-color: transparent;
       border-top: 2px solid @brand-danger;
       border-radius: 0;
@@ -1331,28 +1453,26 @@ tr.inactive {
 
   .discbar-label {
     position: absolute;
-    bottom: 20px;
+    bottom: 10px;
     width: 100%;
     overflow: hidden;
     font-size: 28px;
-    font-weight: 500;
-    text-transform: uppercase;
+    font-weight: @font-weight-bold;
+    text-shadow: 0 0 3px @brand-primary;
   }
 
   .discbar {
-    border: 1px solid #ddd;
-
     &::before {
       position: absolute;
-      top: 5%;
+      top: -25px;
       right: 0;
       left: 0;
+      z-index: 1;
       display: block;
-      padding: 5px 1em 0;
       font-size: 20px;
       line-height: 1em;
+      color: @text-color;
       text-align: center;
-      letter-spacing: -3px;
       word-wrap: break-word;
       content: attr(title);
     }
@@ -1395,6 +1515,25 @@ tr.inactive {
       }
     }
   }
+
+  .likert-7 > span {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+
+
+    @media (max-width: @likert-screen-column) {
+      -ms-flex-align: start;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .radio-inline {
+      flex: 0 0 14.28571428571429%;
+    }
+  }
 }
 
 // 18. Edit Person
@@ -1425,4 +1564,225 @@ tr.inactive {
 
 .eventitem.selected .eventitem-select::after {
   content: @fa-var-check-square;
+}
+
+// STEPS
+@steps-breakpoint: @screen-lg-min;
+
+.add-step-buttons {
+  padding: 8px 0;
+  margin: -16px -16px 0 -16px;
+  background: @drawer-bg;
+  border-bottom: 1px solid @panel-border;
+
+  + .row {
+    margin-top: 16px;
+  }
+
+  .add-step-label {
+    float: left;
+    padding: (@padding-small-vertical + 1) 0;
+    margin: 0 6px 0 0;
+    font-size: @font-size-small;
+  }
+}
+
+.col-steps {
+  position: relative;
+  float: left;
+  width: 25%;
+  width: ~"calc(100% / var(--stepsPerRowMobile))";
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+
+  @media (min-width: @steps-breakpoint) {
+    width: 100%;
+    width: ~"calc(100% / var(--stepsPerRow))";
+  }
+}
+
+.step-card {
+  position: relative;
+  height: 260px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid @panel-border;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  .card-info {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px 0;
+    text-align: center;
+    transition-duration: .25s;
+    will-change: transform;
+  }
+
+  .step-status {
+    margin: 12px 0 0;
+  }
+
+  .step-name {
+    display: -webkit-box;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.3;
+  }
+
+  @media (min-width: @steps-breakpoint) {
+    .card-info {
+      -ms-flex-pack: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .card-top {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: end;
+      -ms-flex-pack: center;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .card-top,
+    .card-bottom {
+      -ms-flex: 1 1 50%;
+      flex: 1 1 50%;
+    }
+  }
+
+  &.no-steps .card-info {
+    opacity: .75;
+  }
+
+  &.has-prerequisite .step-card-hover {
+    background: @ui-2;
+  }
+
+
+  p:empty {
+    display: none;
+  }
+
+  .badge {
+    background-color: @brand-info;
+  }
+
+  > .step-card-hover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    opacity: 0;
+    transition-duration: .25s;
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+    will-change: opacity, transform;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  &:hover > .step-card-hover {
+    opacity: 1;
+    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
+  }
+
+  .btn-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 49px;
+    color: inherit;
+
+    &:hover {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+  }
+
+  .btn-delete:hover {
+    color: #fff;
+    background-color: @btn-danger-bg;
+  }
+}
+
+.has-overflow {
+  .step-records-table-container,
+  .card-add-step-button {
+    position: relative;
+    display: block;
+  }
+
+  .card-add-step-button > span {
+    transform: none;
+  }
+}
+
+.step-records-table-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+}
+
+.step-records-table {
+  width: 100%;
+
+  td {
+    width: 50px;
+    vertical-align: middle;
+    border: 1px solid @panel-border;
+
+    &.steps-status {
+      width: auto;
+      border-left: none;
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  td:last-of-type {
+    border-right: none;
+  }
+}
+
+.prereq-list-info {
+  padding: 20px 20px 0 20px;
+}
+
+.card-add-step-button {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: @ui-2;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  > span {
+    position: relative;
+    top: 50%;
+    display: block;
+    transform: perspective(1px) translateY(-50%);
+  }
 }

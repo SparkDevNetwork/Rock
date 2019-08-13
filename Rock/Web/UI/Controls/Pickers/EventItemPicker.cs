@@ -28,9 +28,41 @@ namespace Rock.Web.UI.Controls
     public class EventItemPicker : RockDropDownList
     {
         /// <summary>
+        /// Gets or sets a value indicating whether [display active only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display active only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? true;
+            }
+
+            set
+            {
+                bool valueChanged = ( IncludeInactive != value );
+                if ( valueChanged )
+                {
+                    ViewState["IncludeInactive"] = value;
+                    LoadDropDownItems();
+                }
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EventItemPicker" /> class.
         /// </summary>
         public EventItemPicker()
+        {
+            LoadDropDownItems();
+        }
+
+        /// <summary>
+        /// Loads the drop down items.
+        /// </summary>
+        private void LoadDropDownItems()
         {
             this.Items.Clear();
             this.Items.Add( new ListItem() );
@@ -43,10 +75,17 @@ namespace Rock.Web.UI.Controls
                                     {
                                         Calendar = i.EventCalendar.Name,
                                         Id = i.EventItem.Id,
-                                        Name = i.EventItem.Name
+                                        Name = i.EventItem.Name,
+                                        IsActive = i.EventItem.IsActive
                                     } )
                                 .OrderBy( i => i.Calendar )
+                                .ThenBy( i => i.Name )
                                 .ToList();
+
+                if ( !IncludeInactive )
+                {
+                    calendarItems = calendarItems.Where( i => i.IsActive ).ToList();
+                }
 
                 foreach ( var calendarItem in calendarItems )
                 {

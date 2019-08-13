@@ -626,6 +626,12 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+
+                if ( !EnabledSlidingDateRangeUnits.Contains( value ) )
+                {
+                    throw new Exception( "Specified TimeUnitType is invalid for this SlidingDateRangePicker control." );
+                }
+
                 _ddlTimeUnitTypePlural.SelectedValue = value.ConvertToInt().ToString();
                 _ddlTimeUnitTypeSingular.SelectedValue = value.ConvertToInt().ToString();
             }
@@ -735,7 +741,7 @@ namespace Rock.Web.UI.Controls
                 {
                     this.SlidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
                     this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
-                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? TimeUnitType.Day;
+                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? this.EnabledSlidingDateRangeUnits.First();
                     this.DateRangeModeStart = splitValues[3].AsDateTime();
                     this.DateRangeModeEnd = splitValues[4].AsDateTime();
                 }

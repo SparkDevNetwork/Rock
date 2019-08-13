@@ -32,7 +32,17 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
-        /// The benevolenc e_ request
+        /// The pin authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Badge entity
+        /// </summary>
+        public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
+
+        /// <summary>
+        /// The benevolence request
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
@@ -141,6 +151,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.FinancialBatch entity.
         /// </summary>
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialScheduledTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_SCHEDULED_TRANSACTION = "76824E8A-CCC4-4085-84D9-8AF8C0807E20";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialTransaction entity.
@@ -256,5 +271,10 @@ namespace Rock.SystemGuid
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+
+        /// <summary>
+        /// The guid for the Step entity type
+        /// </summary>
+        public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
     }
 }

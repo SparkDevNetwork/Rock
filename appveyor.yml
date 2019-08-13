@@ -15,6 +15,7 @@ branches:
   - master
   - beta
   - alpha
+  - pre-alpha-release
 
 # Do not build on tags (GitHub only)
 skip_tags: true

@@ -556,6 +556,12 @@ namespace Rock.SystemGuid
         public const string EMPLOYEE_DETAILS = "DA8E33F3-2EEF-4C4B-87F3-715C3F107CAF";
 
         /// <summary>
+        /// Gets the Engagement page guid
+        /// ParentPage: People > Manage
+        /// </summary>
+        public const string ENGAGEMENT = "48242949-944A-4651-B6CC-60194EDE08A0";
+
+        /// <summary>
         /// Gets the Entity Administration page guid
         /// ParentPage: Security
         /// </summary>
@@ -596,6 +602,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Website
         /// </summary>
         public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
+
+        /// <summary>
+        /// Gets the Registration Instance page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
 
         /// <summary>
         /// Gets the Exception Detail page guid
@@ -1106,16 +1118,16 @@ namespace Rock.SystemGuid
         public const string PERSON_PROFILE_PERSON_PAGES = "08DBD8A5-2C35-4146-B4A8-0F7652348B25";
 
         /// <summary>
-        /// Gets the Person Profile Badge Detail page guid
+        /// Gets the Badge Detail page guid
         /// ParentPage: Person Profile Badges
         /// </summary>
-        public const string PERSON_PROFILE_BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
+        public const string BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
 
         /// <summary>
-        /// Gets the Person Profile Badges page guid
+        /// Gets the Badges page guid
         /// ParentPage: General Settings
         /// </summary>
-        public const string PERSON_PROFILE_BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
+        public const string BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
 
         /// <summary>
         /// Gets the Person Search page guid
@@ -1423,6 +1435,36 @@ namespace Rock.SystemGuid
         /// ParentPage: Power Tools
         /// </summary>
         public const string SQL_COMMAND = "03C49950-9C4C-4668-9C65-9A0DF43D1B33";
+
+        /// <summary>
+        /// Gets the Step Programs page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STEP_PROGRAMS = "F5E8A369-4856-42E5-B187-276DFCEB1F3F";
+
+        /// <summary>
+        /// Gets the Streak page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK = "488BE67C-EDA0-489E-8D80-8CC67F5854D4";
+
+        /// <summary>
+        /// Gets the Streak Types page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STREAK_TYPES = "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Types
+        /// </summary>
+        public const string STREAK_TYPE_DETAIL = "CA566B33-0265-45C5-B1B2-6FFA6D4743F4";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK_TYPE_EXCLUSION_DETAIL = "68EF459F-5D23-4930-8EA8-80CDF986BB94";
 
         /// <summary>
         /// Gets the Success page guid

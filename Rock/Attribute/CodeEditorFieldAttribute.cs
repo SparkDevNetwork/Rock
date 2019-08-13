@@ -80,12 +80,12 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).ConvertToEnumOrNull<CodeEditorTheme>() ?? CodeEditorTheme.Rock;
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_THEME ).ConvertToEnumOrNull<CodeEditorTheme>() ?? CodeEditorTheme.Rock;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( EDITOR_THEME, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
 
@@ -99,12 +99,12 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( EDITOR_MODE ).AsIntegerOrNull() ?? 200;
+                return FieldConfigurationValues.GetValueOrNull( EDITOR_HEIGHT ).AsIntegerOrNull() ?? 200;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( EDITOR_MODE, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( EDITOR_HEIGHT, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

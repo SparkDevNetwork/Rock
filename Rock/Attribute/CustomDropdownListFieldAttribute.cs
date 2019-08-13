@@ -59,8 +59,50 @@ namespace Rock.Attribute
         public CustomDropdownListFieldAttribute( string name, string description, string listSource, bool enhanced, bool required, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( FIELDTYPE_KEY, new Field.ConfigurationValue( enhanced ? "ddl_enhanced" : "ddl" ) );
+            this.ListSource = listSource;
+            this.IsEnhanced = enhanced;
+        }
+
+        /// <summary>
+        /// Gets or sets the source of the values to display in a list.
+        /// </summary>
+        /// <value>
+        /// Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.
+        /// </value>
+        public string ListSource
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( VALUES_KEY ).ToStringSafe();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( VALUES_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this list will use the enhanced dropdown value picker.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enhanced; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEnhanced
+        {
+            get
+            {
+                var fieldType = FieldConfigurationValues.GetValueOrNull( FIELDTYPE_KEY ).ToStringSafe();
+
+                return ( fieldType == "ddl_enhanced" );
+            }
+
+            set
+            {
+                var fieldType = value ? "ddl_enhanced" : "ddl";
+
+                FieldConfigurationValues.AddOrReplace( FIELDTYPE_KEY, new Field.ConfigurationValue( fieldType ) );
+            }
         }
     }
 }
