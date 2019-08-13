@@ -42,6 +42,36 @@ namespace Rock.Rest.Controllers
             return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
         }
 
+        /// <summary>
+        /// Adds the attendance. If it already exists then it is updated. An Attendance object is returned.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="personId">The person identifier. If provided it is used to get the primary PersonAliasId and takes presidence over "personAliasId"</param>
+        /// <param name="personAliasId">The person alias identifier. Is not used if a "personId" is provided.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/AddAttendance" )]
+        [HttpPut]
+        public Attendance AddAttendance( int groupId, int locationId, int scheduleId, DateTime occurrenceDate, int? personId = null, int? personAliasId = null )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // If personId is provided set the personAliasId to the primary alias of the person.
+                if ( personId != null )
+                {
+                    personAliasId = new PersonService( rockContext ).Get( personId.Value ).PrimaryAliasId;
+                }
+
+                int? campusId = null;
+                var attendance = new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, occurrenceDate, groupId, locationId, scheduleId, campusId );
+                rockContext.SaveChanges();
+                return attendance;
+            }
+        }
+
         #region Group Scheduler Related
 
         /// <summary>
