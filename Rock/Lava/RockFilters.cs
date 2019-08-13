@@ -4801,6 +4801,73 @@ namespace Rock.Lava
             return e.Distinct().Cast<object>().ToList();
         }
 
+        /// <summary>
+        /// Orders a collection of elements by the specified property (or properties)
+        /// and returns a new collection in that order.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property">The property or properties to order the collection by.</param>
+        /// <returns>A new collection sorted in the requested order.</returns>
+        /// <example>
+        ///     {% assign members = 287635 | GroupById | Property:'Members' | OrderBy:'GroupRole.IsLeader desc,Person.FullNameReversed' %}
+        ///    <ul>
+        ///    {% for member in members %}
+        ///        <li>{{ member.Person.FullName }} - {{ member.GroupRole.Name }}</li>
+        ///    {% endfor %}
+        ///    </ul>
+        /// </example>
+        public static IEnumerable OrderBy( object input, string property )
+        {
+            IEnumerable<object> e = input is IEnumerable<object> ? input as IEnumerable<object> : new List<object> { input };
+
+            if ( !e.Any() || string.IsNullOrWhiteSpace( property ) )
+            {
+                return e;
+            }
+
+            //
+            // Create a list of order by objects for the field to order by
+            // and the ascending/descending flag.
+            //
+            var orderBy = property
+                .Split( ',' )
+                .Select( s => s.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ) )
+                .Select( a => new { Property = a[0], Descending = a.Length >= 2 && "desc" == a[1].ToLower() } )
+                .ToList();
+
+            //
+            // Do initial ordering of first property requested.
+            //
+            IOrderedQueryable<object> qry;
+            if ( orderBy[0].Descending )
+            {
+                qry = e.Cast<object>().AsQueryable().OrderByDescending( d => GetPropertyPathValue( d, orderBy[0].Property ) );
+            }
+            else
+            {
+                qry = e.Cast<object>().AsQueryable().OrderBy( d => GetPropertyPathValue( d, orderBy[0].Property ) );
+            }
+
+            //
+            // For the rest use ThenBy and ThenByDescending.
+            //
+            for ( int i = 1; i < orderBy.Count; i++ )
+            {
+                var propertyName = orderBy[i].Property; // This can't be inlined. -dsh
+
+                if ( orderBy[i].Descending )
+                {
+                    qry = qry.ThenByDescending( d => GetPropertyPathValue( d, propertyName ) );
+                }
+                else
+                {
+                    qry = qry.ThenBy( d => GetPropertyPathValue( d, propertyName ) );
+                }
+            }
+
+            return qry.ToList();
+        }
+
         #endregion
 
         #region Object Filters
@@ -5485,6 +5552,52 @@ namespace Rock.Lava
                 _cookie = cookie;
             }
         }
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Special use method to get the property value of some unknown object. Handles special
+        /// cases like Liquid Drops and recursive property searches.
+        /// </summary>
+        /// <param name="obj">The object whose property value we want.</param>
+        /// <param name="propertyPath">The path to the property.</param>
+        /// <returns>The value at the given path or null.</returns>
+        private static object GetPropertyPathValue( object obj, string propertyPath )
+        {
+            if ( string.IsNullOrWhiteSpace( propertyPath ) )
+            {
+                return obj;
+            }
+
+            var properties = propertyPath.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            while ( properties.Any() && obj != null )
+            {
+                if ( obj is Drop drop )
+                {
+                    obj = drop.InvokeDrop( properties.First() );
+                }
+                else if ( obj is IDictionary dictionary )
+                {
+                    obj = dictionary[properties.First()];
+                }
+                else if ( obj is IDictionary<string, object> stringDictionary )
+                {
+                    obj = stringDictionary[properties.First()];
+                }
+                else
+                {
+                    var property = obj.GetType().GetProperty( properties.First() );
+                    obj = property?.GetValue( obj );
+                }
+
+                properties.RemoveAt( 0 );
+            }
+
+            return obj;
+        }
+
         #endregion
     }
 }

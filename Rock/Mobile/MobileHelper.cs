@@ -21,35 +21,14 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Mobile.Common;
+using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Mobile
 {
-    internal static class MobileHelper
+    public static class MobileHelper
     {
-        /// <summary>
-        /// Gets the base URL.
-        /// </summary>
-        /// <returns></returns>
-        public static string GetBaseUrl()
-        {
-            var request = HttpContext.Current.Request;
-
-            // Look for host headers from a proxy of some sort
-            var proto = request.Headers["X-Forwarded-Proto"];
-            var host = request.Headers["X-Original-Host"].IsNotNull() ? request.Headers["X-Original-Host"] : request.Headers["X-Forwarded-Host"];
-            if ( proto != null && host != null )
-            {
-
-                return $"{proto}://{host}/";
-            }
-            else
-            {
-                return $"{request.Url.Scheme}://{request.Url.Authority}/";
-            }
-        }
-
         /// <summary>
         /// Get the current site as specified by the X-Rock-App-Id header and optionally
         /// validate the X-Rock-Mobile-Api-Key against that site.
@@ -98,15 +77,6 @@ namespace Rock.Mobile
                 {
                     return site;
                 }
-#if DEBUG
-                //
-                // Check against our temporary development api key or a real api key.
-                //
-                else if ( appApiKey == "PUT_ME_IN_COACH!" )
-                {
-                    return site;
-                }
-#endif
                 else
                 {
                     return null;
@@ -126,7 +96,7 @@ namespace Rock.Mobile
         /// <returns>A MobilePerson object.</returns>
         public static MobilePerson GetMobilePerson( Person person, SiteCache site )
         {
-            var baseUrl = GetBaseUrl();
+            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var homePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
             var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
 
@@ -234,5 +204,163 @@ namespace Rock.Mobile
             return mobileAttributeValues;
         }
 
+        /// <summary>
+        /// Builds the mobile package that can be archived for deployment.
+        /// </summary>
+        /// <param name="applicationId">The application identifier.</param>
+        /// <param name="deviceType">The type of device to build for.</param>
+        /// <returns>An update package for the specified application and device type.</returns>
+        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType )
+        {
+            var site = SiteCache.Get( applicationId );
+            string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            //
+            // Get all the system phone formats.
+            //
+            var phoneFormats = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE )
+                .DefinedValues
+                .Select( dv => new MobilePhoneFormat
+                {
+                    CountryCode = dv.Value,
+                    MatchExpression = dv.GetAttributeValue( "MatchRegEx" ),
+                    FormatExpression = dv.GetAttributeValue( "FormatRegEx" )
+                } )
+                .ToList();
+
+            //
+            // Initialize the base update package settings.
+            //
+            var package = new UpdatePackage
+            {
+                ApplicationType = additionalSettings.ShellType ?? ShellType.Blank,
+                ApplicationVersionId = ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ),
+                CssStyles = additionalSettings?.CssStyle ?? string.Empty,
+                LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
+                ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
+                PhoneFormats = phoneFormats
+            };
+
+            //
+            // Setup the appearance settings.
+            //
+            package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
+            package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
+            package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
+            package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
+
+            if ( site.FavIconBinaryFileId.HasValue )
+            {
+                package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";
+            }
+
+            //
+            // Load all the layouts.
+            //
+            foreach ( var layout in LayoutCache.All().Where( l => l.SiteId == site.Id ) )
+            {
+                var mobileLayout = new MobileLayout
+                {
+                    LayoutGuid = layout.Guid,
+                    Name = layout.Name,
+                    LayoutXaml = deviceType == DeviceType.Tablet ? layout.LayoutMobileTablet : layout.LayoutMobilePhone
+                };
+
+                package.Layouts.Add( mobileLayout );
+            }
+
+            //
+            // Load all the pages.
+            //
+            foreach ( var page in PageCache.All().Where( p => p.SiteId == site.Id ) )
+            {
+                var additionalPageSettings = page.HeaderContent.FromJsonOrNull<AdditionalPageSettings>();
+
+                var mobilePage = new MobilePage
+                {
+                    LayoutGuid = page.Layout.Guid,
+                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
+                    Title = page.PageTitle,
+                    PageGuid = page.Guid,
+                    Order = page.Order,
+                    ParentPageGuid = page.ParentPage?.Guid,
+                    IconUrl = page.IconFileId.HasValue ? $"" : null,
+                    LavaEventHandler = additionalPageSettings?.LavaEventHandler
+                };
+
+                package.Pages.Add( mobilePage );
+            }
+
+            //
+            // Load all the blocks.
+            //
+            foreach ( var block in BlockCache.All().Where( b => b.Page != null && b.Page.SiteId == site.Id && b.BlockType.EntityTypeId.HasValue ).OrderBy( b => b.Order ) )
+            {
+                var blockEntityType = block.BlockType.EntityType.GetEntityType();
+
+                if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
+                {
+                    var mobileBlockEntity = ( Rock.Blocks.IRockMobileBlockType ) Activator.CreateInstance( blockEntityType );
+                    mobileBlockEntity.BlockCache = block;
+                    mobileBlockEntity.PageCache = block.Page;
+                    mobileBlockEntity.RequestContext = new Net.RockRequestContext();
+
+                    var attributes = block.Attributes
+                        .Select( a => a.Value )
+                        .Where( a => a.Categories.Any( c => c.Name == "custommobile" ) );
+
+                    var mobileBlock = new MobileBlock
+                    {
+                        PageGuid = block.Page.Guid,
+                        Zone = block.Zone,
+                        BlockGuid = block.Guid,
+                        RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
+                        BlockType = mobileBlockEntity.MobileBlockType,
+                        ConfigurationValues = mobileBlockEntity.GetMobileConfigurationValues(),
+                        Order = block.Order,
+                        AttributeValues = GetMobileAttributeValues( block, attributes ),
+                        PreXaml = block.PreHtml,
+                        PostXaml = block.PostHtml,
+                        CssClasses = block.CssClass
+                    };
+
+                    package.Blocks.Add( mobileBlock );
+                }
+            }
+
+            //
+            // Load all the campuses.
+            //
+            foreach ( var campus in CampusCache.All().Where( c => c.IsActive ?? true ) )
+            {
+                var mobileCampus = new MobileCampus
+                {
+                    Guid = campus.Guid,
+                    Name = campus.Name
+                };
+
+                if ( campus.Location != null )
+                {
+                    if ( campus.Location.Latitude.HasValue && campus.Location.Longitude.HasValue )
+                    {
+                        mobileCampus.Latitude = campus.Location.Latitude;
+                        mobileCampus.Longitude = campus.Location.Longitude;
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( campus.Location.Street1 ) )
+                    {
+                        mobileCampus.Street1 = campus.Location.Street1;
+                        mobileCampus.City = campus.Location.City;
+                        mobileCampus.State = campus.Location.State;
+                        mobileCampus.PostalCode = campus.Location.PostalCode;
+                    }
+                }
+
+                package.Campuses.Add( mobileCampus );
+            }
+
+            return package;
+        }
     }
 }

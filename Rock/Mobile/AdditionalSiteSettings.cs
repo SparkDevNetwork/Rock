@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.Mobile.Common.Enums;
@@ -50,6 +51,14 @@ namespace Rock.Mobile
 ";
 
         #endregion
+
+        /// <summary>
+        /// Gets or sets the last deployment date.
+        /// </summary>
+        /// <value>
+        /// The last deployment date.
+        /// </value>
+        public DateTime? LastDeploymentDate { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the shell.

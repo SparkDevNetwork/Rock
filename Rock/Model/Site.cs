@@ -25,6 +25,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -508,6 +509,33 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the phone configuration file.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile phone file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ConfigurationMobilePhoneFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tablet configuration file.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile tablet file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ConfigurationMobileTabletFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ThumbnailFile { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.Layout"/> entities that are a part of the Site.
         /// </summary>
         /// <value>
@@ -833,16 +861,16 @@ namespace Rock.Model
         /// <summary>
         /// Gets the file URL.
         /// </summary>
-        /// <param name="configurationMobilePhoneFileId">The configuration mobile phone file identifier.</param>
+        /// <param name="fileId">The configuration mobile phone file identifier.</param>
         /// <returns>full path of resource from Binary file path</returns>
-        private static string GetFileUrl( int? configurationMobilePhoneFileId )
+        private static string GetFileUrl( int? fileId )
         {
             string virtualPath = string.Empty;
-            if ( configurationMobilePhoneFileId.HasValue )
+            if ( fileId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) configurationMobilePhoneFileId );
+                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) fileId );
                     if ( binaryFile != null )
                     {
                         if ( binaryFile.Path.Contains( "~" ) )
@@ -886,14 +914,11 @@ namespace Rock.Model
         {
             SiteCache.UpdateCachedEntity( this.Id, entityState );
 
-            using ( var rockContext = new RockContext() )
+            foreach ( int pageId in new PageService( ( RockContext ) dbContext ).GetBySiteId( this.Id )
+                    .Select( p => p.Id )
+                    .ToList() )
             {
-                foreach ( int pageId in new PageService( rockContext ).GetBySiteId( this.Id )
-                        .Select( p => p.Id )
-                        .ToList() )
-                {
-                    PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
-                }
+                PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
             }
         }
 
@@ -960,6 +985,9 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
+            this.HasOptional( p => p.ConfigurationMobilePhoneFile ).WithMany().HasForeignKey( p => p.ConfigurationMobilePhoneFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConfigurationMobileTabletFile ).WithMany().HasForeignKey( p => p.ConfigurationMobileTabletFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ThumbnailFile ).WithMany().HasForeignKey( p => p.ThumbnailFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
