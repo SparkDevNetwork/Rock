@@ -141,6 +141,10 @@
     <Compile Include="Migrations\201908081906152_StepBulkEntry.Designer.cs">
       <DependentUpon>201908081906152_StepBulkEntry.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908122024549_NamelessPerson.cs" />
+    <Compile Include="Migrations\201908122024549_NamelessPerson.Designer.cs">
+      <DependentUpon>201908122024549_NamelessPerson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -806,6 +810,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908081906152_StepBulkEntry.resx">
       <DependentUpon>201908081906152_StepBulkEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908122024549_NamelessPerson.resx">
+      <DependentUpon>201908122024549_NamelessPerson.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

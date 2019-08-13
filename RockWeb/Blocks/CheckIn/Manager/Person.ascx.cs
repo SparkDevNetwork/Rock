@@ -491,7 +491,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 var personService = new PersonService( rockContext );
 
-                var person = personService.Queryable( "PhoneNumbers.NumberTypeValue,RecordTypeValue", true, true )
+                var person = personService.Queryable( true, true ).Include(a => a.PhoneNumbers).Include(a => a.RecordStatusValue)
                     .FirstOrDefault( a => a.Guid == personGuid );
 
                 if ( person == null )
