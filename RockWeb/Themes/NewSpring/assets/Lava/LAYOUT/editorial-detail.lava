@@ -158,16 +158,32 @@
             
             {[ modalShare ]}
             {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
-            <div class="row">
-                <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
-                    {{ tags }}
-                </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                    {% if Item.ContentChannelId == '17' or Item.ContentChannelId == '23' %}
-                    {% else %}
-                        <p><small><b>{{ date }}</b></small></p>
-                    {% endif %}
+
+            {% capture isDateVisible %}
+            {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
+                {% for channel in channels %}
+                    {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                {% endfor %}
+            {% endcontentchannel %}
+            {% endcapture %}
+            {% assign isDateVisible = isDateVisible | Trim %}
+            
+            {% if isDateVisible == 'True' %}
+                <div class="row">
+                    <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                        {{ tags }}
+                    </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                        <p class="flush"><small><b>{{ date }}</b></small></p>
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-xs-12 text-center">
+                        {{ tags }}
+                    </div>
+                </div>
+            {% endif %}
+
         </div>
     </div>
 
@@ -200,11 +216,15 @@
   {% if subtitle and subtitle != empty %}
     "alternativeHeadline": "{{ subtitle }}",
   {% endif %}
+
+  {% if isDateVisible == 'True' %}
   "datePublished": "{{ Item.StartDateTime }}",
   "dateModified": "{{ Item.ModifiedDateTime }}",
-  {% if Item.ExpireDateTime %}
-  "expires": "{{ Item.ExpireDateTime }}",
+    {% if Item.ExpireDateTime %}
+    "expires": "{{ Item.ExpireDateTime }}",
+    {% endif %}
   {% endif %}
+
   {% if imageurl and imageurl != empty %}
     "image": "{{ imageurl }}",
   {% endif %}
