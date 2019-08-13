@@ -36,6 +36,13 @@ namespace Rock.Security
     public static class Authorization
     {
 
+        public enum SameSiteCookieSetting
+        {
+            None,
+            Lax,
+            Strict
+        }
+
         #region Constants
 
         /// <summary>
@@ -773,13 +780,18 @@ namespace Rock.Security
         /// <returns></returns>
         private static HttpCookie GetAuthCookie( string domain, string value )
         {
+            // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax" and "Strict" so if None was selected don't put the setting in the cookie.
+            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+            string sameSiteCookieValue = sameSiteCookieSetting == SameSiteCookieSetting.None ? string.Empty : ";SameSite=" + sameSiteCookieSetting;
+
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
                 Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
                 HttpOnly = true,
-                Path = FormsAuthentication.FormsCookiePath,
+                Path = FormsAuthentication.FormsCookiePath + sameSiteCookieValue,
                 Secure = FormsAuthentication.RequireSSL
             };
+
             return httpCookie;
         }
 
