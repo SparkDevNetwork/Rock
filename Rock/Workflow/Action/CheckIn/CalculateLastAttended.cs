@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -64,10 +65,15 @@ namespace Rock.Workflow.Action.CheckIn
 
                 foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
-                    foreach ( var person in family.People )
+                    foreach ( var person in family.People.Union( family.OriginalPeople )  )
                     {
                         // Find all of the attendance records for this person for any of the check-in types that are currently available for this kiosk and person
                         var groupTypeIds = person.GroupTypes.Select( t => t.GroupType.Id ).ToList();
+                        if ( checkInState.CheckInType.AllowCheckout )
+                        {
+                            groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
+                        }
+
                         var personAttendance = attendanceService
                             .Queryable().AsNoTracking()
                             .Where( a =>
@@ -96,6 +102,24 @@ namespace Rock.Workflow.Action.CheckIn
                         // If there are any previous attendance records start evaluating them for last check-in and if options should be preselected.
                         if ( personAttendance.Any() )
                         {
+                            // Determine who from the family can check-out and add them to the
+                            // family's CheckOutPeople collection.
+                            if ( checkInState.CheckInType.AllowCheckout )
+                            {
+                                var todaysAttendance = personAttendance.Where( a => a.StartDateTime > DateTime.Today ).ToList();
+                                foreach ( var kioskGroupType in checkInState.Kiosk.ActiveForCheckOutGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                                {
+                                    // if the group is active for check-out...
+                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive || g.IsCheckOutActive ) )
+                                    {
+                                        foreach ( var kioskLocation in kioskGroup.KioskLocations )
+                                        {
+                                            AddPeopleToFamilyCheckOutPeopleCollection( checkinSchedules, family, person, kioskLocation, todaysAttendance.Where( a => a.LocationId == kioskLocation.Location.Id ).ToList() );
+                                        }
+                                    }
+                                }
+                            }
+
                             person.FirstTime = false;
 
                             // Get the date time that person last checked in
@@ -125,8 +149,9 @@ namespace Rock.Workflow.Action.CheckIn
                                     }
                                 }
                             }
-                            var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
 
+                            var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
+                            
                             foreach ( var groupType in person.GroupTypes )
                             {
                                 // Find the previous attendance for this group type and save the most recent attendance date
@@ -190,10 +215,6 @@ namespace Rock.Workflow.Action.CheckIn
                                                 }
                                             }
                                         }
-
-                                        // Determine who from the family can check-out and
-                                        // add them to the family's CheckOutPeople collection.
-                                        AddPeopleToFamilyCheckOutPeopleCollection( checkinSchedules, family, person, location, locationAttendance );
                                     }
 
                                     // If the group was preselected, but could not preselect the location, try to preselect the first location and schedule
@@ -237,7 +258,6 @@ namespace Rock.Workflow.Action.CheckIn
                 }
 
                 return true;
-
             }
 
             return false;
@@ -251,8 +271,13 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="person">The person.</param>
         /// <param name="location">The location.</param>
         /// <param name="locationAttendance">The location attendance.</param>
-        private static void AddPeopleToFamilyCheckOutPeopleCollection( List<Schedule> checkinSchedules, Rock.CheckIn.CheckInFamily family, Rock.CheckIn.CheckInPerson person, Rock.CheckIn.CheckInLocation location, List<PersonAttendanceInfo> locationAttendance )
+        private static void AddPeopleToFamilyCheckOutPeopleCollection( List<Schedule> checkinSchedules, CheckInFamily family, CheckInPerson person, KioskLocation location, List<PersonAttendanceInfo> locationAttendance )
         {
+            if ( locationAttendance == null || locationAttendance.Count() == 0 )
+            {
+                return;
+            }
+
             // Find the active (for checkout) schedules for this location (campus)
             var locationDateTime = RockDateTime.Now;
             if ( location.CampusId.HasValue )
@@ -285,7 +310,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var checkOutPerson = family.CheckOutPeople.FirstOrDefault( p => p.Person.Id == person.Person.Id );
                 if ( checkOutPerson == null )
                 {
-                    checkOutPerson = new Rock.CheckIn.CheckOutPerson();
+                    checkOutPerson = new CheckOutPerson();
                     checkOutPerson.Person = person.Person;
                     family.CheckOutPeople.Add( checkOutPerson );
                 }
