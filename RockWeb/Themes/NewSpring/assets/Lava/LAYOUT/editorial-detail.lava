@@ -12,25 +12,24 @@
 {% endif %}
 
 <!-- Set Parent Variables-->
-{% if Item.ParentItems %}
-    {% for parent in Item.ParentItems %}
-        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
-            {% for parent in parents %}
-                {% assign parentTitle = parent.Title %}
-                {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
-                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-                {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                    {% assign backgroundColor = baseBackgroundColor %}
-                    <style>
-                        .brand-bg {
-                            background-color: {{ backgroundColor | Darken:'10%' }};
-                        }
-                    </style>
-                {% endif %}
-
-            {% endfor %}
-        {% endcontentchannelitem %}
-    {% endfor %}
+{% assign parentCount = Item.ParentItems | Size %}
+{% if parentCount > 0 %}
+    {% capture parentids %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+    {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
+        {% for parent in parents %}
+            {% assign parentTitle = parent.Title %}
+            {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+            {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
+            {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                {% assign backgroundColor = baseBackgroundColor %}
+                <style>
+                    .brand-bg {
+                        background-color: {{ backgroundColor | Darken:'10%' }};
+                    }
+                </style>
+            {% endif %}
+        {% endfor %}
+    {% endcontentchannelitem %}
 {% endif %}
 
 <!-- Set Page/Browser Titles -->
