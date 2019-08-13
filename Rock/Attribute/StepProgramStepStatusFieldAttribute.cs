@@ -19,24 +19,26 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a Step Type.
+    /// Field Attribute to select 0 or 1 step statuses filtered by step program
+    /// Stored as "StepProgram.Guid|StepStatus.Guid"
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class StepTypeFieldAttribute : SelectFieldAttribute
+    public class StepProgramStepStatusFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="StepTypeFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="StepProgramStepStatusFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default guid.</param>
+        /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public StepTypeFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.StepTypeFieldType ).FullName )
+        public StepProgramStepStatusFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string defaultStepProgramGuid = "" )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.StepProgramStepStatusFieldType ).FullName )
         {
+            FieldConfigurationValues.Add( Rock.Field.Types.StepProgramStepStatusFieldType.ConfigKey.DefaultStepProgramGuid, new Field.ConfigurationValue( defaultStepProgramGuid ) );
         }
     }
 }

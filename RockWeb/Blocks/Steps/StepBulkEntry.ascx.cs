@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -34,19 +35,19 @@ namespace RockWeb.Blocks.Steps
 
     #region Block Attributes
 
-    [StepProgramField(
-        name: "Step Program",
-        description: "The step program to use to add a new step.",
+    [StepProgramStepTypeField(
+        name: "Step Program and Type",
+        description: "The step program and step type to use to add a new step. Leave this empty to allow the user to choose.",
         required: false,
         order: 1,
-        key: AttributeKey.StepProgram )]
+        key: AttributeKey.StepProgramStepType )]
 
-    [StepTypeField(
-        name: "Step Type",
-        description: "The step type to use to add a new step. This setting takes precedence over the step program setting.",
+    [StepProgramStepStatusField(
+        name: "Step Program and Status",
+        description: "The step program and step status to use to add a new step. Leave this empty to allow the user to choose.",
         required: false,
         order: 2,
-        key: AttributeKey.StepType )]
+        key: AttributeKey.StepProgramStepStatus )]
 
     #endregion Block Attributes
 
@@ -62,12 +63,12 @@ namespace RockWeb.Blocks.Steps
             /// <summary>
             /// The step program
             /// </summary>
-            public const string StepProgram = "StepProgram";
+            public const string StepProgramStepType = "StepProgramStepType";
 
             /// <summary>
-            /// The step type
+            /// The step program step status
             /// </summary>
-            public const string StepType = "StepType";
+            public const string StepProgramStepStatus = "StepProgramStepStatus";
         }
 
         /// <summary>
@@ -137,6 +138,7 @@ namespace RockWeb.Blocks.Steps
         /// <exception cref="NotImplementedException"></exception>
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
+            InitializeNavigationActions();
             InitializeStepProgramPicker();
             InitializeStepTypePicker();
         }
@@ -144,6 +146,36 @@ namespace RockWeb.Blocks.Steps
         #endregion Life Cycle Events
 
         #region Methods
+
+        /// <summary>
+        /// Gets the step type unique identifier from block attribute.
+        /// </summary>
+        /// <returns></returns>
+        private Guid? GetStepTypeGuidFromBlockAttribute()
+        {
+            var attributeValue = GetAttributeValue( AttributeKey.StepProgramStepType );
+
+            Guid? stepProgramGuid;
+            Guid? stepTypeGuid;
+            StepProgramStepTypeFieldType.ParseDelimitedGuids( attributeValue, out stepProgramGuid, out stepTypeGuid );
+
+            return stepTypeGuid;
+        }
+
+        /// <summary>
+        /// Gets the step program unique identifier from block attribute.
+        /// </summary>
+        /// <returns></returns>
+        private Guid? GetStepProgramGuidFromBlockAttribute()
+        {
+            var attributeValue = GetAttributeValue( AttributeKey.StepProgramStepType );
+
+            Guid? stepProgramGuid;
+            Guid? stepTypeGuid;
+            StepProgramStepTypeFieldType.ParseDelimitedGuids( attributeValue, out stepProgramGuid, out stepTypeGuid );
+
+            return stepProgramGuid;
+        }
 
         /// <summary>
         /// Saves the record.
@@ -362,8 +394,8 @@ namespace RockWeb.Blocks.Steps
         {
             var isSelectedable =
                 !PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull().HasValue &&
-                !GetAttributeValue( AttributeKey.StepType ).AsGuidOrNull().HasValue &&
-                !GetAttributeValue( AttributeKey.StepProgram ).AsGuidOrNull().HasValue &&
+                !GetStepTypeGuidFromBlockAttribute().HasValue &&
+                !GetStepProgramGuidFromBlockAttribute().HasValue &&
                 !PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull().HasValue;
 
             var stepProgram = GetStepProgram();
@@ -390,14 +422,13 @@ namespace RockWeb.Blocks.Steps
         {
             var isSelectedable =
                 !PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull().HasValue &&
-                !GetAttributeValue( AttributeKey.StepType ).AsGuidOrNull().HasValue;
+                !GetStepTypeGuidFromBlockAttribute().HasValue;
 
             var stepType = GetStepType();
+            stpStepTypePicker.Enabled = isSelectedable;
 
             if ( !isSelectedable )
             {
-                stpStepTypePicker.Enabled = false;
-
                 if ( stepType == null )
                 {
                     ShowBlockLevelError( "The specified step type could not be found" );
@@ -734,8 +765,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private StepProgram GetStepProgram()
         {
-            var blockSettingStepTypeGuid = GetAttributeValue( AttributeKey.StepType ).AsGuidOrNull();
-            var blockSettingStepProgramGuid = GetAttributeValue( AttributeKey.StepProgram ).AsGuidOrNull();
+            var blockSettingStepTypeGuid = GetStepTypeGuidFromBlockAttribute();
+            var blockSettingStepProgramGuid = GetStepProgramGuidFromBlockAttribute();
             var pageParamStepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
             var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
             const string includes = "StepStatuses, StepTypes.StepTypePrerequisites.PrerequisiteStepType";
@@ -808,7 +839,7 @@ namespace RockWeb.Blocks.Steps
         private StepType GetStepType()
         {
             var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
-            var blockSettingStepTypeGuid = GetAttributeValue( AttributeKey.StepType ).AsGuidOrNull();
+            var blockSettingStepTypeGuid = GetStepTypeGuidFromBlockAttribute();
 
             // #1 priority is the block setting for the step type
             if ( blockSettingStepTypeGuid.HasValue )
