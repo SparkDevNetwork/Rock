@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -2079,7 +2080,17 @@ Sys.Application.add_load(function () {
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
                             keyModel.Entity = new PersonService( new RockContext() )
-                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases", true, true )
+                                .Queryable( true, true )
+                                .Include( p => p.MaritalStatusValue)
+                                .Include( p => p.ConnectionStatusValue )
+                                .Include( p => p.RecordStatusValue )
+                                .Include( p => p.RecordStatusReasonValue )
+                                .Include( p => p.RecordTypeValue )
+                                .Include( p => p.SuffixValue )
+                                .Include( p => p.TitleValue )
+                                .Include( p => p.GivingGroup )
+                                .Include( p => p.Photo )
+                                .Include( p => p.Aliases )
                                 .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
