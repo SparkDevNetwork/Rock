@@ -17,22 +17,26 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
+using Rock.Mobile.Common.Enums;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Mobile.Common.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Security;
-using System.Text;
-using System.Text.RegularExpressions;
-using Rock.Web;
 
 namespace RockWeb.Blocks.Mobile
 {
@@ -252,6 +256,11 @@ namespace RockWeb.Blocks.Mobile
 
             var apiKeyLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId ?? 0 );
             fields.Add( new KeyValuePair<string, string>( "API Key", apiKeyLogin != null ? apiKeyLogin.ApiKey : string.Empty ) );
+
+            if ( additionalSettings.LastDeploymentDate.HasValue )
+            {
+                fields.Add( new KeyValuePair<string, string>( "Last Deployed", additionalSettings.LastDeploymentDate.Value.ToShortDateTimeString() ) );
+            }
 
             var selectedCategories = CategoryCache.All( rockContext )
                 .Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) )
@@ -703,10 +712,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( site.Id == 0 )
             {
-                // This causes a deadlock on some systems due to cache attempting to update,
-                // commented out until the RockPostSave UpdateCache call can be fixed to
-                // use the same context. -dsh 8/12/2019
-                //rockContext.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
 
@@ -748,7 +754,7 @@ namespace RockWeb.Blocks.Mobile
 
                     site.DefaultPageId = page.Id;
                     rockContext.SaveChanges();
-                }// );
+                } );
             }
             else
             {
@@ -944,5 +950,85 @@ namespace RockWeb.Blocks.Mobile
         }
 
         #endregion
+
+        protected void lbDeploy_Click( object sender, EventArgs e )
+        {
+            var applicationId = PageParameter( "SiteId" ).AsInteger();
+
+            //
+            // Generate the packages and then encode to JSON.
+            //
+            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
+            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
+            var phoneJson = phonePackage.ToJson();
+            var tabletJson = tabletPackage.ToJson();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var site = new SiteService( rockContext ).Get( applicationId );
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
+
+                //
+                // Prepare the phone configuration file.
+                //
+                var phoneFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = phoneJson.Length,
+                    FileName = "phone.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                };
+                binaryFileService.Add( phoneFile );
+
+                //
+                // Prepare the tablet configuration file.
+                //
+                var tabletFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = tabletJson.Length,
+                    FileName = "tablet.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                };
+                binaryFileService.Add( tabletFile );
+
+                rockContext.SaveChanges();
+
+                //
+                // Remove old configuration files.
+                //
+                if ( site.ConfigurationMobilePhoneFile != null )
+                {
+                    site.ConfigurationMobilePhoneFile.IsTemporary = true;
+                }
+
+                if ( site.ConfigurationMobileTabletFile != null )
+                {
+                    site.ConfigurationMobileTabletFile.IsTemporary = true;
+                }
+
+                //
+                // Set new configuration file references.
+                //
+                site.ConfigurationMobilePhoneFileId = phoneFile.Id;
+                site.ConfigurationMobileTabletFileId = tabletFile.Id;
+
+                //
+                // Update the last deployment date.
+                //
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+                additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                site.AdditionalSettings = additionalSettings.ToJson();
+
+                rockContext.SaveChanges();
+
+                ShowDetail( applicationId );
+            }
+        }
     }
 }

@@ -107,6 +107,10 @@
                     <div class="actions margin-t-md">
                         <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" AccessKey="m" ToolTip="Alt+m" />
                         <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />
+
+                        <div class="pull-right">
+                            <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-success" Text="Deploy" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');" />
+                        </div>
                     </div>
                 </asp:Panel>
 
