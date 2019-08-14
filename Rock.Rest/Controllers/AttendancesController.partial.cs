@@ -43,7 +43,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Adds the attendance. If it already exists then it is updated. An Attendance object is returned.
+        /// Adds an attendance. If the AttendanceOccurrence record does not exist it is created. If the Attendance record already exists then it is updated.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="personId">The person identifier. If provided it is used to get the primary PersonAliasId and takes presidence over "personAliasId"</param>
         /// <param name="personAliasId">The person alias identifier. Is not used if a "personId" is provided.</param>
-        /// <returns></returns>
+        /// <returns>Attendance</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/AddAttendance" )]
         [HttpPut]
