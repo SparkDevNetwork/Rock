@@ -61,6 +61,9 @@ namespace Rock.Migrations
 
         private void AddStepsProgramsUp()
         {
+            // Rock.Model.StepProgram doesn't exist on a new database build yet
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.StepProgram", SystemGuid.EntityType.STEP_PROGRAM, true, true );
+
             //
             // Add Step Program Category: "Discipleship"
             //
