@@ -153,6 +153,10 @@
     <Compile Include="Migrations\201908141043495_AddWeekendServicesCheckin.Designer.cs">
       <DependentUpon>201908141043495_AddWeekendServicesCheckin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908141547094_AddStepsDefaultData.cs" />
+    <Compile Include="Migrations\201908141547094_AddStepsDefaultData.Designer.cs">
+      <DependentUpon>201908141547094_AddStepsDefaultData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -827,6 +831,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908141043495_AddWeekendServicesCheckin.resx">
       <DependentUpon>201908141043495_AddWeekendServicesCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908141547094_AddStepsDefaultData.resx">
+      <DependentUpon>201908141547094_AddStepsDefaultData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
