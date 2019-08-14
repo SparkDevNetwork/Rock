@@ -141,8 +141,9 @@ namespace Rock.Web.Utilities
             {
                 if ( control is TControl )
                 {
-                    if ( control.ID.Equals( id, StringComparison.OrdinalIgnoreCase )
-                        || control.ID.EndsWith( "_" + id ) )
+                    if ( control.ID != null
+                         && control.ID.Equals( id, StringComparison.OrdinalIgnoreCase )
+                         || control.ID.EndsWith( "_" + id ) )
                     {
                         resultCollection.Add( control );
                     }
