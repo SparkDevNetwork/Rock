@@ -52,7 +52,7 @@ namespace Rock.Model
         /// <summary>
         /// Determines whether the person can have another step of this type because of the type's allow multiple setting.
         /// </summary>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="stepType">Type of the step.</param>
         /// <returns>
         ///   <c>true</c> if this instance [can add because meets allow multiple rule] the specified person identifier; otherwise, <c>false</c>.

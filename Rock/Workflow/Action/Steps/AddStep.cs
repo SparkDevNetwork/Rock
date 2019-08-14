@@ -240,6 +240,7 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the step type.
         /// </summary>
+        /// <param name="rockContext"></param>
         /// <param name="action">The action.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
@@ -359,6 +360,7 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Logs the messages for exit.
         /// </summary>
+        /// <param name="action"></param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         private bool LogMessagesForExit( WorkflowAction action, List<string> errorMessages )
