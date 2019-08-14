@@ -31,6 +31,16 @@ namespace Rock.PersonProfile
     public abstract class BadgeComponent : Component
     {
         /// <summary>
+        /// Determines of this badge component applies to the given type
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public virtual bool DoesApplyToEntityType( string type )
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
         /// <value>

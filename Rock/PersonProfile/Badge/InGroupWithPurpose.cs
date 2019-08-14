@@ -36,7 +36,17 @@ namespace Rock.PersonProfile.Badge
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key:"BadgeIconCss")]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd")]
     public class InGroupWithPurpose : BadgeComponent
-    {        
+    {
+        /// <summary>
+        /// Determines of this badge component applies to the given type
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public override bool DoesApplyToEntityType( string type )
+        {
+            return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
+        }
+
         /// <summary>
         /// Renders the specified writer.
         /// </summary>

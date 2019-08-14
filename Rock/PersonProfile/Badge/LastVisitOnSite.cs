@@ -34,7 +34,17 @@ namespace Rock.PersonProfile.Badge
     [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
     [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]
     public class LastVisitOnSite : BadgeComponent
-    {        
+    {
+        /// <summary>
+        /// Determines of this badge component applies to the given type
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public override bool DoesApplyToEntityType( string type )
+        {
+            return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
+        }
+
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -42,6 +52,11 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            if ( Person == null )
+            {
+                return;
+            }
+
             int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
             {
