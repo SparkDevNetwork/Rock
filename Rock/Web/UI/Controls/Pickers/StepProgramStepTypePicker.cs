@@ -282,7 +282,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the step type identifier.
         /// </summary>
-        /// <value>
         public int? StepTypeId
         {
             get

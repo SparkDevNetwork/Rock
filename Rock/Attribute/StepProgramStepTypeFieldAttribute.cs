@@ -26,7 +26,7 @@ namespace Rock.Attribute
     public class StepProgramStepTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="StepProgramStepTypeFieldAttributeAttribute"/> class.
+        /// Initializes a new instance of the <see cref="StepProgramStepTypeFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -35,6 +35,7 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        /// <param name="defaultStepProgramGuid"></param>
         public StepProgramStepTypeFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string defaultStepProgramGuid = "" )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.StepProgramStepTypeFieldType ).FullName )
         {

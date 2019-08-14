@@ -282,7 +282,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the step status identifier.
         /// </summary>
-        /// <value>
         public int? StepStatusId
         {
             get
