@@ -80,6 +80,7 @@
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
     <Compile Include="RestTests\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Rock\Communications\CommunicationsModuleTestData.cs" />
     <Compile Include="Rock\Crm\StepsTests.cs" />
     <Compile Include="Rock\DatabaseTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
