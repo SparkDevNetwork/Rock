@@ -28,7 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.PersonProfile.AlertNote
+namespace Rock.Badge.Component
 {
 
     /// <summary>
