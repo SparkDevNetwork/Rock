@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.1.min.js", false );
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class CustomerVaultImportRecord
         {
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Finance
         #region Migrate Scheduled Transactions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class SubscriptionCustomerImportRecord
         {
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Finance
                             // update the scheduled transaction to point to the Pi scheduled transaction
                             using ( var updateRockContext = new RockContext() )
                             {
-                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext
                                 updateRockContext.FinancialScheduledTransactions.Attach( scheduledTransaction );
                                 scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
                                 scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Finance
 
             nbMigrateScheduledTransactions.Visible = false;
 
-            // wait for 5 seconds to see if this happens fast enough to do without Signal R. Otherwise, let the importTask continue and send progress to Signal R. 
+            // wait for 5 seconds to see if this happens fast enough to do without Signal R. Otherwise, let the importTask continue and send progress to Signal R.
             var waitResult = importTask.Wait( 5000 );
             if ( waitResult )
             {
@@ -543,7 +543,7 @@ namespace RockWeb.Blocks.Finance
                     nbMigrateScheduledTransactions.Title = "Completed with Warnings";
                     nbMigrateScheduledTransactions.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Info;
                 }
-                
+
                 nbMigrateScheduledTransactions.Text = importResult;
                 nbMigrateScheduledTransactions.Details = resultDetails.ConvertCrLfToHtmlBr();
             }

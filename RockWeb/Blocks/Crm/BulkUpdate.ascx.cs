@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.1.min.js", false );
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
@@ -190,10 +190,10 @@ namespace RockWeb.Blocks.Crm
         var formGroup = $(this).closest('.form-group');
         var selectIcon = formGroup.find('span.js-select-item').children('i');
 
-        // Toggle the selection of the form group        
+        // Toggle the selection of the form group
         formGroup.toggleClass('bulk-item-selected');
         var enabled = formGroup.hasClass('bulk-item-selected');
-            
+
         // Set the selection icon to show selected
         selectIcon.toggleClass('fa-check-circle-o', enabled);
         selectIcon.toggleClass('fa-circle-o', !enabled);
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Crm
             }}
 
         }});
-        
+
         // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
         var newValue = '';
         $('div.bulk-item-selected').each(function( index ) {{
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Crm
                 newValue += ctrlId + '|';
             }});
         }});
-        $('#{0}').val(newValue);            
+        $('#{0}').val(newValue);
 
     }});
 ", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );

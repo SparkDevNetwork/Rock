@@ -30,9 +30,9 @@ public class BundleConfig
     {
         // start with a clean bundles (this seems to have fixed the javascript errors that would occur on the first time you debug after opening the solution)
         bundles.ResetAll();
-        
+
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
-            "~/Scripts/jquery-3.3.1.min.js",
+            "~/Scripts/jquery-3.4.1.min.js",
             "~/Scripts/jquery-migrate-3.0.0.min.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
@@ -60,7 +60,7 @@ public class BundleConfig
             "~/Scripts/jquery.stickytableheaders.js",
             "~/Scripts/iscroll.js",
             "~/Scripts/jcrop.min.js",
-            "~/Scripts/ResizeSensor.js",       
+            "~/Scripts/ResizeSensor.js",
             "~/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js",
             "~/Scripts/Rock/Extensions/*.js" ) );
 
@@ -77,7 +77,7 @@ public class BundleConfig
 
         // Creating a separate "Admin" bundle specifically for JS functionality that needs
         // to be included for administrative users
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include( 
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include(
             "~/Scripts/Rock/Admin/*.js" ) );
 
         // Creating a separate "RockHtmlEditorPlugins" bundle specifically for JS functionality that needs

@@ -3,20 +3,27 @@
 # This script is run by AppVeyor's deploy agent after the deploy
 # --------------------------------------------------
 
+# Make sure the app path and job id are present
 if([string]::IsNullOrWhiteSpace($env:APPLICATION_PATH)) {
     Write-Error "APPLICATION_PATH is not set, aborting!";
     exit;
 }
 if([string]::IsNullOrWhiteSpace($env:APPVEYOR_JOB_ID)) {
-    Write-Error "APPVEYOR_JOB_ID is not set, aborting!"
+    Write-Error "APPVEYOR_JOB_ID is not set, aborting!";
     exit;
 }
 
+# Build the paths for things
 $RootLocation = $env:APPLICATION_PATH;
 $TempLocation = Join-Path $env:Temp $env:APPVEYOR_JOB_ID;
+$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
+
+# --------------------------- #
+#      Utility Functions      #
+# --------------------------- #
 
 function Join-Paths {
-    $path, $parts= $args;
+    $path, $parts = $args;
     foreach ($part in $parts) {
         $path = Join-Path $path $part;
     }
@@ -25,7 +32,7 @@ function Join-Paths {
 
 function Get-VersionId([string] $FileName) {
     $Parts = $FileName -split "-";
-    if($Parts.Length -gt 0) {
+    if ($Parts.Length -gt 0) {
         return $Parts[0] -replace "\D+" -as [Int];
     }
     else {
@@ -34,7 +41,7 @@ function Get-VersionId([string] $FileName) {
 }
 
 function Expand-RockPlugin([string] $PluginPath, [string] $DestinationPath) {
-    
+
     $PackageHash = (Get-FileHash $PluginPath).Hash;
     $TempZip = Join-Paths $TempLocation "$PackageHash.zip";
     Copy-Item $PluginPath $TempZip;
@@ -51,25 +58,25 @@ function Restore-RockPlugin([string] $PluginPackagePath) {
     Expand-RockPlugin $PluginPackagePath $PackageTempLocation;
 
     $ContentPath = Join-Path $PackageTempLocation "content";
-    if(Test-Path $ContentPath) {
+    if (Test-Path $ContentPath) {
         Get-ChildItem $ContentPath | Copy-Item -Destination $RootLocation -Recurse -Container -Force
     }
-    
+
     Remove-Item $PackageTempLocation -Recurse -Force;
 }
 
 function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $DirectoryToCopy, [string] $Destination) {
     New-Item -ItemType Directory $Destination -Force | Out-Null;
-    foreach($Child in Get-ChildItem $DirectoryToCopy) {
-        if($Child.LinkType) {
+    foreach ($Child in Get-ChildItem $DirectoryToCopy) {
+        if ($Child.LinkType) {
             $Dest = Join-Path $Destination $Child.Name;
-            if(Test-Path $Dest) {
+            if (Test-Path $Dest) {
                 Remove-Item $Dest -Recurse -Force
             }
             $LinkTarget, $OtherTargets = $Child.Target;
             New-Item -ItemType $Child.LinkType $Dest -Target $LinkTarget -Force | Out-Null;
         }
-        elseif($Child.PSIsContainer) {
+        elseif ($Child.PSIsContainer) {
             Copy-DirectoryContentsRecursivelyWithSaneLinkHandling (Join-Path $DirectoryToCopy $Child.Name) (Join-Path $Destination $Child.Name);
         }
         else {
@@ -78,8 +85,72 @@ function Copy-DirectoryContentsRecursivelyWithSaneLinkHandling([string] $Directo
     }
 }
 
+$TemplateFilenamePattern = "*.template.*" # something.template.txt
+function Get-TemplateFiles([string] $SearchDirectory) {
+    Get-ChildItem $SearchDirectory -Recurse -Include $TemplateFilenamePattern;
+}
 
-if(Test-Path "env:DEPLOY_DEBUG") {
+$TemplateVariableRegex = "\[\[(\w+)]]"; # [[Variable_Name]]
+function Get-TemplateVariables([string] $TemplateContent) {
+
+    # Get regex matches
+    $Matches = ($TemplateContent | Select-String -AllMatches $TemplateVariableRegex).Matches;
+
+    # Get the matched strings
+    $MatchValues = $Matches | ForEach-Object { $_.Groups[1].Value };
+
+    # Return the unique results
+    return $MatchValues | Sort-Object | Get-Unique;
+
+}
+
+function Merge-TemplateVariable([string] $TemplateContent, [string] $VariableName) {
+
+    $EnvironmentVariableName = "DEPLOY_$VariableName".ToUpper();
+    $EnvironmentVariablePath = "env:$EnvironmentVariableName";
+
+    # Check that it's in the environment
+    if (Test-Path $EnvironmentVariablePath) {
+
+        # Get the value
+        $VariableValue = (Get-Item $EnvironmentVariablePath).Value;
+
+        # Update the content
+        return $TemplateContents.Replace("[[$TemplateVariable]]", $VariableValue);
+    }
+    else {
+
+        # Oops
+        Write-Warning "Could not update '[[$TemplateVariable]]' in '$TemplateFile'. Environment variable '$EnvironmentVariableName' is not set.";
+
+    }
+
+}
+
+function Install-TemplateFile([string] $FilePath) {
+
+    # Get the raw contents
+    $TemplateContent = Get-Content -Raw -Path $FilePath;
+
+    # Get a list of all the variables
+    $TemplateVariables = Get-TemplateVariables $TemplateContent;
+
+    # Merge each variable
+    foreach ($TemplateVariable in $TemplateVariables) {
+
+        $TemplateContent = Merge-TemplateVariable $TemplateContent $TemplateVariable;
+
+    }
+
+    # Save the new file
+    $InstallLocation = $TemplateFile.Replace(".template", "");
+
+    Set-Content $TemplateTempLocation $InstallLocation;
+
+}
+
+
+if (Test-Path "env:DEPLOY_DEBUG") {
     Write-Host "================= DEBUG ==================";
     Write-Host "Working Directories: $(Get-Location)";
     Write-Host "Environment:";
@@ -97,7 +168,6 @@ Write-Host "==========================================";
 # 1. Restore server-specific files like static files, logs, plugin packages, and caches
 
 Write-Host "Restoring server-specific files";
-$FileBackupLocation = Join-Path $TempLocation "SavedFiles";
 Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $FileBackupLocation $RootLocation;
 
 
@@ -105,41 +175,12 @@ Copy-DirectoryContentsRecursivelyWithSaneLinkHandling $FileBackupLocation $RootL
 
 Write-Host "Rewriting Templated Files";
 
-$TemplateFilenamePattern = "*.template.*" # something.template.txt
-$TemplateVariableRegex = "\[\[(\w+)]]";   # [[Variable_Name]]
-
-# For each template file
-$TemplateFiles = Get-ChildItem $RootLocation -Recurse -Include $TemplateFilenamePattern;
-foreach($TemplateFile in $TemplateFiles) {
+$TemplateFiles = Get-TemplateFiles $RootLocation;
+foreach ($TemplateFile in $TemplateFiles) {
 
     Write-Host "Rewriting $TemplateFile";
+    Install-TemplateFile $TemplateFile;
 
-    # Get the raw contents
-    $TemplateContents = Get-Content $TemplateFile -Raw;
-
-    # Get a list of all the variables
-    $TemplateVariables = ($TemplateContents | Select-String -AllMatches $TemplateVariableRegex).Matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object | Get-Unique;
-
-    # For each needed variable
-    foreach($TemplateVariable in $TemplateVariables) {
-
-        $EnvVar = "DEPLOY_$TemplateVariable".ToUpper();
-
-        # Check that it's in the environment
-        if(Test-Path "env:$EnvVar") {
-            
-            # Update it's value
-            $TemplateContents = $TemplateContents.Replace("[[$TemplateVariable]]", (Get-Item "env:$EnvVar").Value);
-        }
-        else {
-            Write-Warning "Could not update '[[$TemplateVariable]]' in '$TemplateFile'. Environment variable '$EnvVar' is not set.";
-        }
-
-    }
-
-    # Save the new file
-    $TemplateTempLocation = $TemplateFile -replace ".template", "";
-    Set-Content $TemplateTempLocation $TemplateContents;
 }
 
 
@@ -148,22 +189,22 @@ foreach($TemplateFile in $TemplateFiles) {
 Write-Host "Reinstalling Plugin Files";
 
 $InstalledPluginsPath = Join-Paths $RootLocation "App_Data" "RockShop";
-if(Test-Path $InstalledPluginsPath) {
+if (Test-Path $InstalledPluginsPath) {
 
     $InstalledPlugins = Get-ChildItem $InstalledPluginsPath;
     foreach ($Plugin in $InstalledPlugins) {
 
         $PluginVersions = Get-ChildItem $Plugin.FullName;
-        if($PluginVersions.Count -gt 0) {
+        if ($PluginVersions.Count -gt 0) {
 
-            $LatestVersion = $PluginVersions  | Sort-Object {Get-VersionId $_.BaseName} | Select-Object -Last 1;
+            $LatestVersion = $PluginVersions | Sort-Object { Get-VersionId $_.BaseName } | Select-Object -Last 1;
             Write-Host "Restoring ${LatestVersion.FullName}";
             Restore-RockPlugin $LatestVersion.FullName;
 
         }
 
     }
-    
+
 }
 
 

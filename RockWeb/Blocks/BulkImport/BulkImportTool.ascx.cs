@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.BulkImport
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Bulk Import" )]
     [Category( "Bulk Import" )]
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.1.min.js", false );
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.BulkImport
                             .Add( "Size (MB) ", Math.Round( ( ( decimal ) fileInfo.Length / 1024 / 1024 ), 2 ) )
                             .Html;
                         pnlActions.Visible = true;
-                        
+
                     }
 
                     if ( hfMainSlingshotFileName.Value != string.Empty )
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.BulkImport
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum ImportType
         {

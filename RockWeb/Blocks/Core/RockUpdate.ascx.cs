@@ -908,7 +908,7 @@ namespace RockWeb.Blocks.Core
             var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
-            request.AddBody( impactStatistic );
+            request.AddJsonBody( impactStatistic );
             var response = client.Execute( request );
         }
 

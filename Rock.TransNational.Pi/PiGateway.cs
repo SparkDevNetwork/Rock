@@ -16,7 +16,7 @@ using Rock.TransNational.Pi.Controls;
 using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer
-using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
+using RestRequest = RestSharp.Serializers.Newtonsoft.Json.RestRequest;
 
 namespace Rock.TransNational.Pi
 {
