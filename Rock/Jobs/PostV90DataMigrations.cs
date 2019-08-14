@@ -108,7 +108,7 @@ namespace Rock.Jobs
                         registrationRegistrantFee.RegistrationTemplateFeeItemId = registrationTemplateFeeItemService
                             .Queryable()
                             .Where( a => a.RegistrationTemplateFeeId == registrationRegistrantFee.RegistrationTemplateFeeId )
-                            .Select( a => a.Id )
+                            .Select( a => (int?) a.Id )
                             .FirstOrDefault();
                     }
                     else if ( registrationRegistrantFee.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
@@ -118,7 +118,7 @@ namespace Rock.Jobs
                             .Queryable()
                             .Where( a => a.RegistrationTemplateFeeId == registrationRegistrantFee.RegistrationTemplateFeeId )
                             .Where( a => a.Name == registrationRegistrantFee.Option )
-                            .Select( a => a.Id )
+                            .Select( a => (int?) a.Id )
                             .FirstOrDefault();
                     }
 
