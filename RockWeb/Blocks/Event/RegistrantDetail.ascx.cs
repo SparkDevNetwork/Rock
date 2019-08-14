@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Event
                         {
                             dbFee = new RegistrationRegistrantFee();
                             dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                            var registrationTemplateFeeItem = registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId );
+                            var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
                             if ( registrationTemplateFeeItem != null )
                             {
                                 dbFee.Option = registrationTemplateFeeItem.Name;
