@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
@@ -27,35 +25,19 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Utility
+namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    ///
     /// </summary>
-    [DisplayName( "Stark List" )]
-    [Category( "Utility" )]
-    [Description( "Template block for developers to use to start a new list block." )]
-    public partial class StarkList : RockBlock, ICustomGridColumns
+    [DisplayName( "Nameless Person List" )]
+    [Category( "Communication" )]
+    [Description( "List unmatched phonenumbers with an option to link to a person that has the same phonenumber." )]
+    public partial class NamelessPersonList : RockBlock, ICustomGridColumns
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -89,8 +71,6 @@ namespace RockWeb.Blocks.Utility
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -121,14 +101,13 @@ namespace RockWeb.Blocks.Utility
         private void BindGrid()
         {
             RockContext rockContext = new RockContext();
-            PersonService personService = new PersonService( rockContext );
-            
-            // sample query to display a few people
-            // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
-            var qry = personService.Queryable()
-                        .Where( p => p.Gender == Gender.Male)
-                        .AsNoTracking()
-                        .Take(10);
+            PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
+
+            var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            var qry = phoneNumberService.Queryable()
+                    .Where( p => p.Person.RecordTypeValueId == namelessPersonRecordTypeId )
+                    .AsNoTracking();
 
             // sort the query based on the column that was selected to be sorted
             var sortProperty = gList.SortProperty;
@@ -138,14 +117,30 @@ namespace RockWeb.Blocks.Utility
             }
             else
             {
-                qry = qry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+                qry = qry.OrderBy( a => a.Number );
             }
 
             // set the datasource as a query. This allows the grid to only fetch the records that need to be shown based on the grid page and page size
             gList.SetLinqDataSource( qry );
+
             gList.DataBind();
         }
 
         #endregion
+
+        protected void btnLinkToPerson_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            var phoneNumber = e.Row.DataItem as PhoneNumber;
+        }
+
+        protected void lUnmatchedPhoneNumber_DataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            Literal lPhoneNumberDisplay = sender as Literal;
+            var phoneNumber = e.Row.DataItem as PhoneNumber;
+            if ( phoneNumber != null )
+            {
+                lPhoneNumberDisplay.Text = string.Format( "{0} (Unknown Person)", phoneNumber.NumberFormatted );
+            }
+        }
     }
 }
