@@ -46,13 +46,22 @@ namespace Rock.PersonProfile.Badge
         Order = 0 )]
     class Assessment : BadgeComponent
     {
-
         private class AttributeKeys
         {
             public const string AssessmentsToShow = "AssessmentsToShow";
         }
 
         private const string UNTAKEN_BADGE_COLOR = "#DBDBDB";
+
+        /// <summary>
+        /// Determines of this badge component applies to the given type
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public override bool DoesApplyToEntityType( string type )
+        {
+            return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
+        }
 
         public override void Render( BadgeCache badge, HtmlTextWriter writer )
         {
