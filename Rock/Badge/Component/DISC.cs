@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.PersonProfile.Badge
+namespace Rock.Badge.Component
 {
     /// <summary>
     /// DISC Badge as implemented from http://www.gregwiens.com/scid/ assessment template.

@@ -23,7 +23,7 @@ using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
 
-namespace Rock.PersonProfile.Badge
+namespace Rock.Badge.Component
 {
     /// <summary>
     /// Badge showing the number of devices configured for the person.

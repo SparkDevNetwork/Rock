@@ -26,7 +26,6 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.PersonProfile;
 using Rock.Security;
 
 namespace RockWeb.Blocks.Crm

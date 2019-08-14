@@ -16,7 +16,7 @@
 //
 
 using System.Web.UI.WebControls;
-using Rock.PersonProfile;
+using Rock.Badge;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls

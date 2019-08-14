@@ -18,10 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Badge;
 using Rock.Data;
-using Rock.Model;
-using Rock.PersonProfile;
 
 namespace Rock.Web.Cache
 {
@@ -31,7 +29,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class BadgeCache : ModelCache<BadgeCache, Badge>
+    public class BadgeCache : ModelCache<BadgeCache, Rock.Model.Badge>
     {
 
         #region Properties
@@ -179,7 +177,7 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
-            var badge = entity as Badge;
+            var badge = entity as Model.Badge;
             if ( badge == null )
             {
                 return;

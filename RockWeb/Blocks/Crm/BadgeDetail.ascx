@@ -37,7 +37,7 @@
                         <Rock:RockTextBox ID="rtbQualifierValue" runat="server" Label="Qualifier Value" Required="false" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:BadgeComponentPicker ID="compBadgeType" runat="server" ContainerType="Rock.PersonProfile.BadgeContainer, Rock" Label="Badge Type" Required="true" OnSelectedIndexChanged="compBadgeType_SelectedIndexChanged" AutoPostBack="true"/>
+                        <Rock:BadgeComponentPicker ID="compBadgeType" runat="server" ContainerType="Rock.Badge.BadgeContainer, Rock" Label="Badge Type" Required="true" OnSelectedIndexChanged="compBadgeType_SelectedIndexChanged" AutoPostBack="true"/>
                     </div>
                     <div class="col-md-6">
                         <div class="attributes">

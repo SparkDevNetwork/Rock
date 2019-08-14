@@ -1363,7 +1363,7 @@ namespace Rock.Data
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<Badge> Badges { get; set; }
+        public DbSet<Model.Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.
