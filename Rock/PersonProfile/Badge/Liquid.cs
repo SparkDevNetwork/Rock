@@ -43,32 +43,45 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            string displayText = GetAttributeValue( badge, "DisplayText" );
+            var displayText = GetAttributeValue( badge, "DisplayText" );
+
             if ( Entity != null )
             {
-                Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                var mergeValues = new Dictionary<string, object>();
+
+                // Always add Entity as a merge field so that lava badges that aren't tied to a particular model can have consistency
                 mergeValues.Add( "Entity", Entity );
 
-                // Continue to provide the person merge field since this was originally a person badge and the lava would need to be
-                // updated to not break
-                mergeValues.Add( "Person", Person );
+                // Add a merge field by the model's name (Group, Person, FinancialAccount, etc)
+                var modelTypeName = Entity.GetType()?.BaseType?.Name;
+                if ( !modelTypeName.IsNullOrWhiteSpace() )
+                {
+                    mergeValues.Add( modelTypeName, Entity );
+                }
 
+                // Continue to provide the person merge field since this was originally a person badge and the lava would need to be updated to not break
+                if ( modelTypeName != "Person" )
+                {
+                    mergeValues.Add( "Person", Person );
+                }
+
+                // Resolve the merge fields and add debug info if requested
                 displayText = displayText.ResolveMergeFields( mergeValues );
 
                 if ( GetAttributeValue( badge, "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format( @"
-                            <small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='fa fa-eye'></i></a></small>
-                            <div id='badge-debug' class='collapse well badge-debug'>
-                                {0}
-                            </div>
-                        ", mergeValues.lavaDebugInfo() );
-
-                    displayText += debugInfo;
+                    displayText +=
+$@"<small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='fa fa-eye'></i></a></small>
+    <div id='badge-debug' class='collapse well badge-debug'>
+        {mergeValues.lavaDebugInfo()}
+    </div>";
                 }
-
             }
-            writer.Write( displayText );
+
+            if ( !displayText.IsNullOrWhiteSpace() )
+            {
+                writer.Write( displayText );
+            }
         }
     }
 }
