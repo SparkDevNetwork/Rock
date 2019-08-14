@@ -18,7 +18,8 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+    using Rock.Model;
+
     /// <summary>
     ///
     /// </summary>
@@ -29,13 +30,14 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddGroupType( "Service Attendance", "Used for tracking the attendance for people who attend the 'weekend' or 'weekly' service.", "Group", "Member", false, false, false, "fa fa-walking", 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "77713830-AE5E-4B1A-94FA-E145DFF85035", true );
-            Sql( @"
+            RockMigrationHelper.AddGroupType( "Service Attendance", "Used for tracking the attendance for people who attend the 'weekend' or 'weekly' service.", "Group", "Member", false, false, false, "fa fa-walking", 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "77713830-AE5E-4B1A-94FA-E145DFF85035", false );
+            Sql( string.Format(@"
                 DECLARE @GroupTypeId INT = (SELECT [Id] FROM [GroupType] WHERE [Guid]='77713830-AE5E-4B1A-94FA-E145DFF85035')
 
                 UPDATE
                     [GroupType]
-                SET [AttendanceCountsAsWeekendService] = 1
+                SET [AttendanceCountsAsWeekendService] = 1,
+                    [GroupViewLavaTemplate] = '{0}'
                 WHERE [Id] = @GroupTypeId
 
                 DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Key]='core_checkin_PreventDuplicateCheckin')
@@ -55,10 +57,10 @@ namespace Rock.Migrations
 		                                , 'True'
 		                                , 'A27A7E68-7FBA-4648-B71D-FAA324752850')
                                 END
-" );
-            RockMigrationHelper.AddGroupType( "Services", "", "Group", "Member", true, false, false, "", 0, "6E7AD783-7614-4721-ABC1-35842113EF59", 0, null, "235BAE2B-5760-4763-AADF-3938F34BA100", true );
+",new GroupType().GroupViewLavaTemplate.Replace( "'", "''" ) ) );
+            RockMigrationHelper.AddGroupType( "Services", "", "Group", "Member", true, false, false, "", 0, "6E7AD783-7614-4721-ABC1-35842113EF59", 0, null, "235BAE2B-5760-4763-AADF-3938F34BA100", false );
 
-            Sql( @"
+            Sql( string.Format( @"
     DECLARE @AttendanceServiceGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '77713830-AE5E-4B1A-94FA-E145DFF85035' )
     DECLARE @ServicesGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '235BAE2B-5760-4763-AADF-3938F34BA100' )
         IF @ServicesGroupTypeId IS NOT NULL
@@ -66,6 +68,13 @@ namespace Rock.Migrations
             INSERT INTO [GroupTypeAssociation] ( [GroupTypeId], [ChildGroupTypeId] )
 	        VALUES ( @AttendanceServiceGroupTypeId, @ServicesGroupTypeId )
         END
+
+   -- Set AttendanceCountsAsWeekendService to true for Services
+      UPDATE
+           [GroupType]
+      SET [AttendanceCountsAsWeekendService] = 1,[GroupViewLavaTemplate] = '{0}'
+      WHERE [Id] = @ServicesGroupTypeId
+
     -- Add a default 'Member' role to any group type that does not have any roles
     INSERT INTO [GroupTypeRole] ( [IsSystem], [GroupTypeId], [Name], [Description], [Order], [IsLeader], [Guid], [CanView], [CanEdit] )
     SELECT 0, [Id], 'Member', 'Member of group', 0, 0, NEWID(), 0, 0 
@@ -84,7 +93,7 @@ namespace Rock.Migrations
     INSERT INTO
 	     [Group]
      ([GroupTypeId], [Name],[IsSystem],[IsActive],[IsSecurityRole], [Guid], [IsPublic],[Order])
-    VALUES        (@GroupTypeId,'Weekend Service',1,1,0,'E000800B-B358-416F-BCD5-90C4CAC65AA3',1,0)
+    VALUES        (@GroupTypeId,'Weekend Service',0,1,0,'E000800B-B358-416F-BCD5-90C4CAC65AA3',1,0)
 
     --Add Weekend Service Group Locations
     DECLARE @GroupId INT = (SELECT [Id] FROM [Group] WHERE [Guid]='E000800B-B358-416F-BCD5-90C4CAC65AA3')
@@ -97,7 +106,7 @@ namespace Rock.Migrations
         WHERE [IsActive] = 1
         GROUP BY [LocationId] ORDER BY MAX([Name])
     END
-" );
+", new GroupType().GroupViewLavaTemplate.Replace( "'", "''" ) ) );
 
         }
         
@@ -106,6 +115,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteGroup( "E000800B-B358-416F-BCD5-90C4CAC65AA3");
+            Sql( @"
+UPDATE
+    [GroupType]
+SET [DefaultGroupRoleId] = NULL
+WHERE [Guid] IN ('235BAE2B-5760-4763-AADF-3938F34BA100','77713830-AE5E-4B1A-94FA-E145DFF85035')
+" );
+            RockMigrationHelper.DeleteGroupType( "235BAE2B-5760-4763-AADF-3938F34BA100" );
+            Sql( @"DELETE FROM [AttributeValue] WHERE [Guid]='a27a7e68-7fba-4648-b71d-faa324752850'" );
+            RockMigrationHelper.DeleteGroupType( "77713830-AE5E-4B1A-94FA-E145DFF85035" );
         }
     }
 }
