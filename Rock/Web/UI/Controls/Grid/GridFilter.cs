@@ -184,6 +184,7 @@ namespace Rock.Web.UI.Controls
             $hf.val('false');
         }
         $(this).siblings('div').slideToggle();
+        return false;
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), scriptKey, script, true );
