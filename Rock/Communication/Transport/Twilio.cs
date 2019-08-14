@@ -110,9 +110,9 @@ namespace Rock.Communication.Transport
                             // Create the communication record and send using that.
                             if ( rockMessage.CreateCommunicationRecord )
                             {
-                                Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
+                                var recipientPersonAliasId = recipient.PersonAliasId;
                                 var communicationService = new CommunicationService( rockContext );
-                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPersonAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
                                 rockContext.SaveChanges();
                                 Send( communication, mediumEntityTypeId, mediumAttributes );
                                 continue;

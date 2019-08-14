@@ -81,14 +81,14 @@ namespace Rock.Communication.Medium
         /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>
-        /// <param name="toPhone">The phone number a message is sent to.</param>
-        /// <param name="fromPhone">The phone number a message is sent from.</param>
+        /// <param name="toPhone">The transport (e.g. Twilio) phone number a message is sent to.</param>
+        /// <param name="fromPhone">The phone number a message is sent from. (This would be the number from somebody's mobile device) </param>
         /// <param name="message">The message that was sent.</param>
         /// <param name="errorMessage">The error message.</param>
         public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
+
             using ( var rockContext = new RockContext() )
             {
                 Person toPerson = null;
@@ -99,7 +99,7 @@ namespace Rock.Communication.Medium
 
                 // CountryCode can be NULL so we have to try and match without it
                 string fromPhoneNoCountryCode = fromPhone;
-                if (fromPhone.Length > 10)
+                if ( fromPhone.Length > 10 )
                 {
                     fromPhoneNoCountryCode = fromPhone.Right( 10 );
                 }
@@ -113,6 +113,7 @@ namespace Rock.Communication.Medium
                     .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.IsMessagingEnabled ) )
                     .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
                     .ThenBy( p => p.Id )
+                    .AsNoTracking()
                     .FirstOrDefault();
 
                 // get recipient from defined value
@@ -129,7 +130,7 @@ namespace Rock.Communication.Medium
                     }
                 }
 
-                // As of 9.0 the sms from number no longer has to have a person assigned to it.
+                // As of 9.0 the sms from number DefinedValue no longer has to have a person (toPersonAliasGuid) assigned to it.
                 if ( rockSmsFromPhoneDv != null )
                 {
                     string plainMessage = message;
@@ -160,7 +161,7 @@ namespace Rock.Communication.Medium
                     {
                         string messageId = GenerateResponseCode( rockContext );
                         int? toPersonPrimaryAliasId = toPerson?.PrimaryAliasId;
-                            
+
                         if ( fromPerson != null && fromPerson.PrimaryAliasId.HasValue )
                         {
                             message = $"-{fromPerson.FullName}-\n{message}\n( {messageId} )";
@@ -210,13 +211,13 @@ namespace Rock.Communication.Medium
                 // Log error and continue, don't stop because the workflow failed.
                 ExceptionLogService.LogException( ex );
             }
-            
+
             // See if this should go to a phone or to the DB. Default is to the phone so if for some reason we get a null here then just send it to the phone.
             var enableResponseRecipientForwarding = rockSmsFromPhoneDv.GetAttributeValue( "EnableResponseRecipientForwarding" ).AsBooleanOrNull() ?? true;
 
             if ( enableResponseRecipientForwarding )
             {
-                CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext  );
+                CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext );
             }
 
             // To and from person can be null and the response linked to a person later.
@@ -252,11 +253,11 @@ namespace Rock.Communication.Medium
                 workflowAttributeValues.Add( "FromPerson", personAliasService.Get( fromPersonAliasId.Value ).Guid.ToString() ?? string.Empty );
             }
 
-            if( toPersonAliasId != null )
+            if ( toPersonAliasId != null )
             {
                 workflowAttributeValues.Add( "ToPerson", personAliasService.Get( toPersonAliasId.Value ).Guid.ToString() ?? string.Empty );
             }
-            
+
             var launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id );
             launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
             launchWorkflowTransaction.Enqueue();
@@ -335,7 +336,7 @@ namespace Rock.Communication.Medium
                     .Where( c => c.Id == latestRecipientCommunication.Id )
                     .FirstOrDefault();
 
-                if (communication != null)
+                if ( communication != null )
                 {
                     return communication.Id;
                 }
@@ -465,11 +466,11 @@ namespace Rock.Communication.Medium
             var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if ( definedType != null )
             {
-                if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
+                if ( definedType.DefinedValues?.Any() == true  )
                 {
                     return definedType
                         .DefinedValues
-                        .Where( v => v.Value.RemoveSpaces().Replace("+","") == phoneNumber.RemoveSpaces().Replace("+","") )
+                        .Where( v => v.Value.RemoveSpaces().Replace( "+", "" ) == phoneNumber.RemoveSpaces().Replace( "+", "" ) )
                         .OrderBy( v => v.Order )
                         .FirstOrDefault();
                 }
