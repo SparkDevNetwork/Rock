@@ -145,6 +145,10 @@
     <Compile Include="Migrations\201908131528200_SameSiteGlobalAttribute.Designer.cs">
       <DependentUpon>201908131528200_SameSiteGlobalAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908140905026_AddIconToPage.cs" />
+    <Compile Include="Migrations\201908140905026_AddIconToPage.Designer.cs">
+      <DependentUpon>201908140905026_AddIconToPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -813,6 +817,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908131528200_SameSiteGlobalAttribute.resx">
       <DependentUpon>201908131528200_SameSiteGlobalAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908140905026_AddIconToPage.resx">
+      <DependentUpon>201908140905026_AddIconToPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

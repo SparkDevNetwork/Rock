@@ -55,7 +55,7 @@
                 </div>
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
-
+                <Rock:ImageUploader ID="imgPageIcon" runat="server" Help="This image is used as a icon for your page." Label="Icon" />
                 <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                 <div class="actions margin-t-md">

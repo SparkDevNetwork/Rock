@@ -57,7 +57,7 @@ namespace Rock.Rest.Controllers
                 return NotFound();
             }
 
-            int binaryFileId = deviceData.DeviceType == DeviceType.Phone ? site.ConfigurationMobilePhoneFileId.Value : site.ConfigurationMobileTabletFileId.Value;
+            int binaryFileId = deviceData.DeviceType == DeviceType.Phone ? site.ConfigurationMobilePhoneBinaryFileId.Value : site.ConfigurationMobileTabletBinaryFileId.Value;
 
             var launchPacket = new LaunchPackage
             {

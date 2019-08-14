@@ -510,6 +510,10 @@ namespace RockWeb.Blocks.Mobile
             fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
             fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
             fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed ? "<i class='fa fa-check'></i>" : string.Empty ) );
+            if ( page.IconBinaryFileId.HasValue )
+            {
+                fields.Add( new KeyValuePair<string, string>( "Icon", GetImageTag( page.IconBinaryFileId, 200, 200, isThumbnail: true ) ) );
+            }
 
             // TODO: I'm pretty sure something like this already exists in Rock, but I can never find it. - dh
             ltDetails.Text = string.Join( "", fields.Select( f => string.Format( "<div class=\"col-md-6\"><dl><dt>{0}</dt><dd>{1}</dd></dl></div>", f.Key, f.Value ) ) );
@@ -620,6 +624,7 @@ namespace RockWeb.Blocks.Mobile
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
+            imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             //
             // Configure the layout options.
@@ -677,8 +682,43 @@ namespace RockWeb.Blocks.Mobile
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
             page.HeaderContent = additionalSettings.ToJson();
+            int? oldIconId = null;
+            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
+            {
+                oldIconId = page.IconBinaryFileId;
+                page.IconBinaryFileId = imgPageIcon.BinaryFileId;
+            }
 
-            rockContext.SaveChanges();
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+
+                if ( oldIconId.HasValue || page.IconBinaryFileId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    if ( oldIconId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( oldIconId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
+
+                    if ( page.IconBinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( page.IconBinaryFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = false;
+                            rockContext.SaveChanges();
+                        }
+                    }
+                }
+            } );
 
             NavigateToCurrentPage( new Dictionary<string, string>
             {

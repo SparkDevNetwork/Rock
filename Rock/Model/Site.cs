@@ -25,7 +25,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
-
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -81,22 +80,22 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets the configuration mobile phone file identifier.
+        /// Gets or sets the configuration mobile phone binary file identifier.
         /// </summary>
         /// <value>
-        /// The configuration mobile phone file identifier.
+        /// The configuration mobile phone binary file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobilePhoneFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration tablet file identifier.
+        /// Gets or sets the configuration tablet binary file identifier.
         /// </summary>
         /// <value>
-        /// The configuration tablet file identifier.
+        /// The configuration tablet binary file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobileTabletFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the additional settings.
@@ -117,13 +116,13 @@ namespace Rock.Model
         public SiteType SiteType { get; set; }
 
         /// <summary>
-        /// Gets or sets the thumbnail file identifier.
+        /// Gets or sets the thumbnail binary file identifier.
         /// </summary>
         /// <value>
-        /// The thumbnail file identifier.
+        /// The thumbnail  file identifier.
         /// </value>
         [DataMember]
-        public int? ThumbnailFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; set; }
 
         /// <summary>
         /// Gets or sets a user defined description/summary  of the Site.
@@ -455,7 +454,7 @@ namespace Rock.Model
         {
             get
             {
-                return Site.GetFileUrl( this.ConfigurationMobilePhoneFileId );
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
             }
             private set { }
         }
@@ -471,7 +470,7 @@ namespace Rock.Model
         {
             get
             {
-                return Site.GetFileUrl( this.ConfigurationMobileTabletFileId );
+                return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
             }
             private set { }
         }
@@ -487,7 +486,7 @@ namespace Rock.Model
         {
             get
             {
-                return Site.GetFileUrl( this.ThumbnailFileId );
+                return Site.GetFileUrl( this.ThumbnailBinaryFileId );
             }
             private set { }
         }
@@ -507,33 +506,6 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the phone configuration file.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile phone file.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile ConfigurationMobilePhoneFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the tablet configuration file.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile tablet file.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile ConfigurationMobileTabletFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the thumbnail file.
-        /// </summary>
-        /// <value>
-        /// The thumbnail file.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile ThumbnailFile { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.Layout"/> entities that are a part of the Site.
@@ -706,6 +678,33 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual BinaryFile SiteLogoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail binary file.
+        /// </summary>
+        /// <value>
+        /// The thumbnail binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile ThumbnailBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile phone binary file.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile phone binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile ConfigurationMobilePhoneBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet phone binary file.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile tablet binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile ConfigurationMobileTabletBinaryFile { get; set; }
 
         /// <summary>
         /// Gets the default domain URI.
@@ -985,9 +984,6 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasOptional( p => p.ConfigurationMobilePhoneFile ).WithMany().HasForeignKey( p => p.ConfigurationMobilePhoneFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ConfigurationMobileTabletFile ).WithMany().HasForeignKey( p => p.ConfigurationMobileTabletFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ThumbnailFile ).WithMany().HasForeignKey( p => p.ThumbnailFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
@@ -1003,6 +999,9 @@ namespace Rock.Model
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SiteLogoBinaryFile ).WithMany().HasForeignKey( p => p.SiteLogoBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ThumbnailBinaryFile ).WithMany().HasForeignKey( p => p.ThumbnailBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConfigurationMobilePhoneBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobilePhoneBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConfigurationMobileTabletBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobileTabletBinaryFileId ).WillCascadeOnDelete( false );
 
 #pragma warning disable 0618
             // Need Associative table for IconExtensions (which are Defined Values)

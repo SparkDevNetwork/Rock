@@ -240,8 +240,8 @@ namespace RockWeb.Blocks.Mobile
             //
             imgAppIcon.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.SiteLogoBinaryFileId );
             imgAppIcon.Visible = site.SiteLogoBinaryFileId.HasValue;
-            imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailFileId );
-            pnlPreviewImage.Visible = site.ThumbnailFileId.HasValue;
+            imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
+            pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 
             //
             // Set the UI fields for the additional details.
@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Mobile
             // Set image UI fields.
             //
             imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
-            imgEditPreviewThumbnail.BinaryFileId = site.ThumbnailFileId;
+            imgEditPreviewThumbnail.BinaryFileId = site.ThumbnailBinaryFileId;
 
             pnlContent.Visible = false;
             pnlEdit.Visible = true;
@@ -692,7 +692,7 @@ namespace RockWeb.Blocks.Mobile
             // Save the images.
             //
             site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
-            site.ThumbnailFileId = imgEditPreviewThumbnail.BinaryFileId;
+            site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
 
             //
             // Ensure the images are persisted.
@@ -705,9 +705,9 @@ namespace RockWeb.Blocks.Mobile
             {
                 binaryFileService.Get( site.SiteLogoBinaryFileId.Value ).IsTemporary = false;
             }
-            if ( site.ThumbnailFileId.HasValue )
+            if ( site.ThumbnailBinaryFileId.HasValue )
             {
-                binaryFileService.Get( site.ThumbnailFileId.Value ).IsTemporary = false;
+                binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
             }
 
             if ( site.Id == 0 )
@@ -1002,21 +1002,21 @@ namespace RockWeb.Blocks.Mobile
                 //
                 // Remove old configuration files.
                 //
-                if ( site.ConfigurationMobilePhoneFile != null )
+                if ( site.ConfigurationMobilePhoneBinaryFile != null )
                 {
-                    site.ConfigurationMobilePhoneFile.IsTemporary = true;
+                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
                 }
 
-                if ( site.ConfigurationMobileTabletFile != null )
+                if ( site.ConfigurationMobileTabletBinaryFile != null )
                 {
-                    site.ConfigurationMobileTabletFile.IsTemporary = true;
+                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
                 }
 
                 //
                 // Set new configuration file references.
                 //
-                site.ConfigurationMobilePhoneFileId = phoneFile.Id;
-                site.ConfigurationMobileTabletFileId = tabletFile.Id;
+                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
+                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
 
                 //
                 // Update the last deployment date.
