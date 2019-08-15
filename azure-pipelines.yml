@@ -21,6 +21,13 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Facades'
+    Contents: '**'
+    TargetFolder: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2'
+    OverWrite: true
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
