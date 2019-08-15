@@ -47,5 +47,5 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- publish: $(System.DefaultWorkingDirectory)/RockWeb
+- publish: $(build.artifactStagingDirectory)
   artifact: RockWeb
