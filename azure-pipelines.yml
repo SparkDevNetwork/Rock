@@ -46,3 +46,6 @@ steps:
     searchFolder: '$(System.DefaultWorkingDirectory)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- publish: $(System.DefaultWorkingDirectory)/RockWeb
+  artifact: RockWeb
