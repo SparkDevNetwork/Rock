@@ -52,7 +52,10 @@ namespace Rock.Workflow.Action
         required: true,
         order: 1,
         key: AttributeKey.StepProgramStepType,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.StepProgramStepTypeFieldType" } )]
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.StepProgramStepTypeFieldType",
+            "Rock.Field.Types.TextFieldType"
+        } )]
 
     [WorkflowTextOrAttribute(
         textLabel: "Step Status Id",
@@ -61,7 +64,10 @@ namespace Rock.Workflow.Action
         required: true,
         order: 2,
         key: AttributeKey.StepProgramStepStatus,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.StepProgramStepStatusFieldType" } )]
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.StepProgramStepStatusFieldType",
+            "Rock.Field.Types.TextFieldType"
+        } )]
 
     [WorkflowTextOrAttribute(
         textLabel: "Start Date",
@@ -70,7 +76,10 @@ namespace Rock.Workflow.Action
         required: false,
         order: 3,
         key: AttributeKey.StartDate,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.DateFieldType" } )]
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.DateFieldType",
+            "Rock.Field.Types.TextFieldType"
+        } )]
 
     [WorkflowTextOrAttribute(
         textLabel: "End Date",
@@ -79,7 +88,10 @@ namespace Rock.Workflow.Action
         required: false,
         order: 4,
         key: AttributeKey.EndDate,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.DateFieldType" } )]
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.DateFieldType",
+            "Rock.Field.Types.TextFieldType"
+        } )]
 
     #endregion Attributes
 
@@ -127,6 +139,7 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+            var mergeFields = GetMergeFields( action );
 
             // Validate the person exists
             var personGuid = GetAttributeValue( action, AttributeKey.Person, true ).AsGuidOrNull();
@@ -184,8 +197,8 @@ namespace Rock.Workflow.Action
             }
 
             // Get the start and end dates
-            var startDate = GetAttributeValue( action, AttributeKey.StartDate, true ).AsDateTime() ?? RockDateTime.Now;
-            var endDate = GetAttributeValue( action, AttributeKey.EndDate, true ).AsDateTime();
+            var startDate = GetLavaAttributeValue( action, AttributeKey.StartDate ).AsDateTime() ?? RockDateTime.Now;
+            var endDate = GetLavaAttributeValue( action, AttributeKey.EndDate ).AsDateTime();
 
             // The completed date is today or the end date if the status is a completed status
             var completedDate = stepStatus.IsCompleteStatus ? ( endDate ?? RockDateTime.Now ) : ( DateTime? ) null;
@@ -250,7 +263,7 @@ namespace Rock.Workflow.Action
             var stepTypeIncludes = "StepProgram.StepStatuses";
             var stepTypeService = new StepTypeService( rockContext );
             StepType stepType = null;
-            var stepTypeValue = GetAttributeValue( action, AttributeKey.StepProgramStepType, true );
+            var stepTypeValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepType );
 
             // Check if the value is a guid. This method works for stepProgram|stepType or simply just step type guids
             StepProgramStepTypeFieldType.ParseDelimitedGuids( stepTypeValue, out var unused1, out var stepTypeGuid );
@@ -312,7 +325,7 @@ namespace Rock.Workflow.Action
         {
             errorMessage = string.Empty;
             StepStatus stepStatus = null;
-            var stepStatusValue = GetAttributeValue( action, AttributeKey.StepProgramStepStatus, true );
+            var stepStatusValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepStatus );
 
             if ( stepType == null || stepType.StepProgram == null || stepType.StepProgram.StepStatuses == null )
             {
@@ -368,5 +381,23 @@ namespace Rock.Workflow.Action
             errorMessages.ForEach( m => action.AddLogEntry( m ) );
             return !errorMessages.Any();
         }
+
+        /// <summary>
+        /// Gets the lava attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        private string GetLavaAttributeValue( WorkflowAction action, string attributeKey )
+        {
+            if ( _mergeFields == null )
+            {
+                _mergeFields = GetMergeFields( action );
+            }
+
+            var value = GetAttributeValue( action, attributeKey, true );
+            return value.ResolveMergeFields( _mergeFields );
+        }
+        private Dictionary<string, object> _mergeFields = null;
     }
 }
