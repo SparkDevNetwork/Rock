@@ -2233,20 +2233,23 @@ namespace Rock.Model
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber, bool createNamelessPersonIfNotFound )
         {
             int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-            var person = Queryable( new PersonQueryOptions() { IncludeNameless = true, IncludeRestUsers = false } )
-                .Where( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber ) )
-                .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.IsMessagingEnabled ) )
-                .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.CountryCode + n.Number ) == phoneNumber && n.NumberTypeValueId == numberTypeMobileValueId ) )
-                .ThenBy( p => p.Id )
+            var person = new PhoneNumberService( this.Context as RockContext ).Queryable()
+                .Where( pn => ( pn.CountryCode + pn.Number ) == phoneNumber )
+                .OrderByDescending( pn => pn.IsMessagingEnabled )
+                .ThenByDescending( pn => pn.NumberTypeValueId == numberTypeMobileValueId )
+                .ThenBy( pn => pn.PersonId )
+                .Select( a => a.Person )
                 .FirstOrDefault();
+            
 
-            if ( person == null)
+            if ( createNamelessPersonIfNotFound && person == null )
             {
                 using ( var nameLessPersonRockContext = new RockContext() )
                 {
                     var smsPhoneNumber = new PhoneNumber();
                     smsPhoneNumber.NumberTypeValueId = numberTypeMobileValueId;
                     smsPhoneNumber.Number = phoneNumber;
+                    smsPhoneNumber.IsMessagingEnabled = true;
 
                     person = new Person();
                     person.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );

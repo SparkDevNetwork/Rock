@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
             gList.GridRebind += gList_GridRebind;
+            gList.Actions.ShowMergeTemplate = false;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -128,11 +129,21 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
+        /// <summary>
+        /// Handles the Click event of the btnLinkToPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void btnLinkToPerson_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var phoneNumber = e.Row.DataItem as PhoneNumber;
         }
 
+        /// <summary>
+        /// Handles the DataBound event of the lUnmatchedPhoneNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void lUnmatchedPhoneNumber_DataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             Literal lPhoneNumberDisplay = sender as Literal;

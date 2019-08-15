@@ -108,7 +108,7 @@ namespace Rock.Communication.Medium
                 // of type. Then order by those with a matching number and SMS enabled; then further order
                 // by matching number with type == mobile; finally order by person Id to get the oldest
                 // person to get the oldest person in the case of duplicate records.
-                var fromPerson = new PersonService( rockContext ).Queryable()
+                var fromPerson = new PersonService( rockContext ).Queryable(new PersonService.PersonQueryOptions { IncludeNameless = true } )
                     .Where( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode ) )
                     .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.IsMessagingEnabled ) )
                     .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.NumberTypeValueId == mobilePhoneNumberValueId ) )

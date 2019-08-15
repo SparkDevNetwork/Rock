@@ -15,14 +15,13 @@
 // </copyright>
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -80,78 +79,6 @@ namespace RockWeb.Blocks.Communication
         #region Control Overrides
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
-
-            if ( mdLinkConversation.Visible )
-            {
-                string script = string.Format(
-                    @"
-
-    $('#{0}').on('click', function () {{
-
-        // if Save was clicked, set the fields that should be validated based on what tab they are on
-        if ($('#{9}').val() == 'Existing') {{
-            enableRequiredField( '{1}', true )
-            enableRequiredField( '{2}_rfv', false );
-            enableRequiredField( '{3}_rfv', false );
-            enableRequiredField( '{4}', false );
-            enableRequiredField( '{5}', false );
-            enableRequiredField( '{6}_rfv', false );
-            enableRequiredField( '{10}_rfv', false );
-        }} else {{
-            enableRequiredField('{1}', false)
-            enableRequiredField('{2}_rfv', true);
-            enableRequiredField('{3}_rfv', true);
-            enableRequiredField('{4}', true);
-            enableRequiredField('{5}', true);
-            enableRequiredField('{6}_rfv', true);
-            enableRequiredField('{10}_rfv', true);
-        }}
-
-        // update the scrollbar since our validation box could show
-        setTimeout( function ()
-        {{
-            Rock.dialogs.updateModalScrollBar( '{7}' );
-        }});
-
-    }})
-
-    $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
-
-        var tabHref = $( e.target ).attr( 'href' );
-        if ( tabHref == '#{8}' )
-        {{
-            $( '#{9}' ).val( 'Existing' );
-        }} else {{
-            $( '#{9}' ).val( 'New' );
-        }}
-
-        // if the validation error summary is shown, hide it when they switch tabs
-        $( '#{7}' ).hide();
-    }});
-",
-                    mdLinkConversation.ServerSaveLink.ClientID,                         // {0}
-                    ppPerson.RequiredFieldValidator.ClientID,                       // {1}
-                    tbNewPersonFirstName.ClientID,                                  // {2}
-                    tbNewPersonLastName.ClientID,                                   // {3}
-                    rblNewPersonRole.RequiredFieldValidator.ClientID,               // {4}
-                    rblNewPersonGender.RequiredFieldValidator.ClientID,             // {5}
-                    dvpNewPersonConnectionStatus.ClientID,                          // {6}
-                    valSummaryAddPerson.ClientID,                                   // {7}
-                    divExistingPerson.ClientID,                                     // {8}
-                    hfActiveTab.ClientID,                                           // {9}
-                    dpNewPersonBirthDate.ClientID );                                // {10}
-
-                ScriptManager.RegisterStartupScript( mdLinkConversation, mdLinkConversation.GetType(), "modaldialog-validation", script, true );
-            }
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -164,6 +91,7 @@ namespace RockWeb.Blocks.Communication
                 Name = "format-detection",
                 Content = "telephone=no"
             };
+
             RockPage.AddMetaTag( this.Page, preventPhoneMetaTag );
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -209,23 +137,6 @@ namespace RockWeb.Blocks.Communication
                     nbNoNumbers.Visible = true;
                     divMain.Visible = false;
                 }
-            }
-            else
-            {
-                if ( postbackArgs == "cancel" )
-                {
-                    HideDialog();
-                }
-                else
-                {
-                    ShowDialog();
-                }
-            }
-
-            if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
-            {
-                SetActiveTab();
-                mdLinkConversation.Show();
             }
         }
 
@@ -314,7 +225,7 @@ namespace RockWeb.Blocks.Communication
 
             // This is the person lava field, we want to clear it because reloading this list will deselect the user.
             litSelectedRecipientDescription.Text = string.Empty;
-            hfSelectedRecipientId.Value = string.Empty;
+            hfSelectedRecipientPersonAliasId.Value = string.Empty;
             hfSelectedMessageKey.Value = string.Empty;
             tbNewMessage.Visible = false;
             btnSend.Visible = false;
@@ -345,7 +256,7 @@ namespace RockWeb.Blocks.Communication
                 var responseListItems = responses.Tables[0].AsEnumerable()
                     .Select( r => new ResponseListItem
                     {
-                        RecipientId = r.Field<int?>( "FromPersonAliasId" ),
+                        RecipientPersonAliasId = r.Field<int?>( "FromPersonAliasId" ),
                         MessageKey = r.Field<string>( "MessageKey" ),
                         FullName = r.Field<string>( "FullName" ),
                         CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
@@ -425,7 +336,7 @@ namespace RockWeb.Blocks.Communication
             var communicationItems = responses.Tables[0].AsEnumerable()
                 .Select( r => new ResponseListItem
                 {
-                    RecipientId = r.Field<int?>( "FromPersonAliasId" ),
+                    RecipientPersonAliasId = r.Field<int?>( "FromPersonAliasId" ),
                     MessageKey = r.Field<string>( "MessageKey" ),
                     FullName = r.Field<string>( "FullName" ),
                     CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
@@ -469,17 +380,19 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         private void PopulatePersonLava( RowEventArgs e )
         {
-            var recipientId = ( HiddenField ) e.Row.FindControl( "hfRecipientId" );
-            var messageKey = ( HiddenField ) e.Row.FindControl( "hfMessageKey" );
-            var fullName = ( Label ) e.Row.FindControl( "lblName" );
-            string html = fullName.Text;
+            var hfRecipientPersonAliasId = ( HiddenField ) e.Row.FindControl( "hfRecipientPersonAliasId" );
+            int? recipientPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsIntegerOrNull();
+
+            var hfMessageKey = ( HiddenField ) e.Row.FindControl( "hfMessageKey" );
+            var lblName = ( Label ) e.Row.FindControl( "lblName" );
+            string html = lblName.Text;
             string unknownPerson = " (Unknown Person)";
             var lava = GetAttributeValue( "PersonInfoLavaTemplate" );
 
-            if ( recipientId.Value.IsNullOrWhiteSpace() || recipientId.Value == "-1" )
+            if ( !recipientPersonAliasId.HasValue || recipientPersonAliasId.Value == -1 )
             {
                 // We don't have a person to do the lava merge so just display the formatted phone number
-                html = PhoneNumber.FormattedNumber( string.Empty, messageKey.Value ) + unknownPerson;
+                html = PhoneNumber.FormattedNumber( string.Empty, hfMessageKey.Value ) + unknownPerson;
                 litSelectedRecipientDescription.Text = html;
             }
             else
@@ -488,7 +401,7 @@ namespace RockWeb.Blocks.Communication
                 using ( var rockContext = new RockContext() )
                 {
                     var personAliasService = new PersonAliasService( rockContext );
-                    var recipientPerson = personAliasService.GetPerson( recipientId.ValueAsInt() );
+                    var recipientPerson = personAliasService.GetPerson( hfRecipientPersonAliasId.ValueAsInt() );
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                     mergeFields.Add( "Person", recipientPerson );
 
@@ -520,7 +433,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected class ResponseListItem
         {
-            public int? RecipientId { get; set; }
+            public int? RecipientPersonAliasId { get; set; }
 
             public string MessageKey { get; set; }
 
@@ -533,70 +446,6 @@ namespace RockWeb.Blocks.Communication
             public string SMSMessage { get; set; }
 
             public bool IsRead { get; set; }
-        }
-
-        /// <summary>
-        /// Shows the dialog.
-        /// </summary>
-        /// <param name="dialog">The dialog.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( string dialog, bool setValues = false )
-        {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog( setValues );
-        }
-
-        /// <summary>
-        /// Shows the dialog.
-        /// </summary>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void ShowDialog( bool setValues = false )
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "MDNEWMESSAGE":
-                    mdNewMessage.Show();
-                    lblMdNewMessageSendingSMSNumber.Text = ddlSmsNumbers.SelectedItem.Text;
-                    break;
-                case "MDLINKCONVERSATION":
-                    mdLinkConversation.Show();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Hides the dialog.
-        /// </summary>
-        private void HideDialog()
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "MDNEWMESSAGE":
-                    ppRecipient.SetValue( null );
-                    tbSMSTextMessage.Text = string.Empty;
-                    nbNoSms.Visible = false;
-
-                    mdNewMessage.Hide();
-                    break;
-                case "MDLINKCONVERSATION":
-                    ppPerson.SetValue( null );
-                    nbAddPerson.Visible = false;
-                    dvpNewPersonTitle.ClearSelection();
-                    tbNewPersonFirstName.Text = string.Empty;
-                    tbNewPersonLastName.Text = string.Empty;
-                    dvpNewPersonSuffix.ClearSelection();
-                    dvpNewPersonConnectionStatus.ClearSelection();
-                    rblNewPersonRole.ClearSelection();
-                    rblNewPersonGender.ClearSelection();
-                    dpNewPersonBirthDate.SelectedDate = null;
-                    ddlGradePicker.ClearSelection();
-                    dvpNewPersonMaritalStatus.ClearSelection();
-
-                    mdLinkConversation.Hide();
-                    break;
-            }
-
-            hfActiveDialog.Value = string.Empty;
         }
 
         /// <summary>
@@ -696,7 +545,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLinkConversation_Click( object sender, EventArgs e )
         {
-            ShowDialog( "mdLinkConversation" );
+            mdLinkToPerson.Show();
         }
 
         /// <summary>
@@ -728,7 +577,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateNewMessage_Click( object sender, EventArgs e )
         {
-            ShowDialog( "mdNewMessage" );
+            mdNewMessage.Show();
         }
 
         /// <summary>
@@ -740,12 +589,12 @@ namespace RockWeb.Blocks.Communication
         {
             string message = tbNewMessage.Text.Trim();
 
-            if ( message.Length == 0 || hfSelectedRecipientId.Value == string.Empty )
+            if ( message.Length == 0 || hfSelectedRecipientPersonAliasId.Value == string.Empty )
             {
                 return;
             }
 
-            int toPersonAliasId = hfSelectedRecipientId.ValueAsInt();
+            int toPersonAliasId = hfSelectedRecipientPersonAliasId.ValueAsInt();
             SendMessage( toPersonAliasId, message );
             tbNewMessage.Text = string.Empty;
             LoadResponsesForRecipient( toPersonAliasId );
@@ -778,7 +627,7 @@ namespace RockWeb.Blocks.Communication
 
             SendMessage( toPersonAliasId, message );
 
-            HideDialog();
+            mdNewMessage.Hide();
             LoadResponseListing();
         }
 
@@ -807,25 +656,34 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            var recipientId = ( HiddenField ) e.Row.FindControl( "hfRecipientId" );
-            var messageKey = ( HiddenField ) e.Row.FindControl( "hfMessageKey" );
+            var hfRecipientPersonAliasId = ( HiddenField ) e.Row.FindControl( "hfRecipientPersonAliasId" );
+            var hfMessageKey = ( HiddenField ) e.Row.FindControl( "hfMessageKey" );
 
             // Since we can get newer messages when a selected let's also update the message part on the response recipients grid.
             var litMessagePart = ( Literal ) e.Row.FindControl( "litMessagePart" );
 
-            hfSelectedRecipientId.Value = recipientId.Value;
-            hfSelectedMessageKey.Value = messageKey.Value;
+            int? recipientPersonAliasId = hfRecipientPersonAliasId.Value.AsIntegerOrNull();
+            string messageKey = hfMessageKey.Value;
 
-            if ( recipientId.Value == "-1" )
+            hfSelectedRecipientPersonAliasId.Value = recipientPersonAliasId.ToString();
+            hfSelectedMessageKey.Value = hfMessageKey.Value;
+
+            Person recipientPerson = null;
+            if ( recipientPersonAliasId.HasValue )
             {
-                litMessagePart.Text = LoadResponsesForRecipient( messageKey.Value );
+                recipientPerson = new PersonAliasService( new RockContext() ).GetPerson( recipientPersonAliasId.Value );
+            }
+
+            if ( recipientPerson == null )
+            {
+                litMessagePart.Text = LoadResponsesForRecipient( messageKey );
             }
             else
             {
-                litMessagePart.Text = LoadResponsesForRecipient( recipientId.ValueAsInt() );
+                litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
             }
 
-            UpdateReadProperty( messageKey.Value );
+            UpdateReadProperty( messageKey );
             tbNewMessage.Visible = true;
             btnSend.Visible = true;
 
@@ -839,7 +697,9 @@ namespace RockWeb.Blocks.Communication
             e.Row.AddCssClass( "selected" );
             e.Row.RemoveCssClass( "unread" );
 
-            if ( recipientId.Value == "-1" )
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            if ( recipientPerson == null || ( recipientPerson.RecordTypeValueId == recordTypeValueIdNameless ) )
             {
                 lbLinkConversation.Visible = true;
             }
@@ -863,8 +723,8 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            var dataItem = e.Row.DataItem;
-            if ( !( bool ) dataItem.GetPropertyValue( "IsRead" ) )
+            var responseListItem = e.Row.DataItem as ResponseListItem;
+            if ( !responseListItem.IsRead )
             {
                 e.Row.AddCssClass( "unread" );
             }
@@ -892,36 +752,16 @@ namespace RockWeb.Blocks.Communication
         #endregion Control Events
 
         #region Link Conversation Modal
-        /// <summary>
-        /// Sets the active tab.
-        /// </summary>
-        private void SetActiveTab()
-        {
-            if ( hfActiveTab.Value == "Existing" )
-            {
-                liNewPerson.RemoveCssClass( "active" );
-                divNewPerson.RemoveCssClass( "active" );
-                liExistingPerson.AddCssClass( "active" );
-                divExistingPerson.AddCssClass( "active" );
-            }
-            else
-            {
-                liNewPerson.AddCssClass( "active" );
-                divNewPerson.AddCssClass( "active" );
-                liExistingPerson.RemoveCssClass( "active" );
-                divExistingPerson.RemoveCssClass( "active" );
-            }
-        }
-
+        
         /// <summary>
         /// Handles the SaveClick event of the mdLinkConversation control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdLinkConversation_SaveClick( object sender, EventArgs e )
+        protected void mdLinkToPerson_SaveClick( object sender, EventArgs e )
         {
             // Do some validation on entering a new person/family first
-            if ( hfActiveTab.Value != "Existing" )
+            if ( pnlLinkToNewPerson.Visible )
             {
                 var validationMessages = new List<string>();
                 bool isValid = true;
@@ -949,7 +789,7 @@ namespace RockWeb.Blocks.Communication
             {
                 int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
-                if ( hfActiveTab.Value == "Existing" )
+                if ( pnlLinkToExistingPerson.Visible )
                 {
                     if ( ppPerson.PersonId.HasValue )
                     {
@@ -981,7 +821,7 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         rockContext.SaveChanges();
-                        hfSelectedRecipientId.Value = person.PrimaryAliasId.ToString();
+                        hfSelectedRecipientPersonAliasId.Value = person.PrimaryAliasId.ToString();
                     }
                 }
                 else
@@ -1041,10 +881,10 @@ namespace RockWeb.Blocks.Communication
                     groupMembers.Add( groupMember );
 
                     Group group = GroupService.SaveNewFamily( rockContext, groupMembers, null, true );
-                    hfSelectedRecipientId.Value = person.PrimaryAliasId.ToString();
+                    hfSelectedRecipientPersonAliasId.Value = person.PrimaryAliasId.ToString();
                 }
 
-                new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
+                new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientPersonAliasId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
             }
 
             ppPerson.Required = false;
@@ -1054,15 +894,18 @@ namespace RockWeb.Blocks.Communication
             rblNewPersonGender.Required = false;
             dvpNewPersonConnectionStatus.Required = false;
 
-            hfActiveTab.Value = string.Empty;
 
-            mdLinkConversation.Hide();
-            HideDialog();
+            mdLinkToPerson.Hide();
             LoadResponseListing();
         }
 
         #endregion Link Conversation Modal
 
 
+        protected void tglLinkPersonMode_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlLinkToExistingPerson.Visible = tglLinkPersonMode.Checked;
+            pnlLinkToNewPerson.Visible = !tglLinkPersonMode.Checked;
+        }
     }
 }
