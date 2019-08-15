@@ -15,21 +15,33 @@
     	    {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
 			{% assign summary = item | Attribute:'Summary' %}
     	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
-    	    {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+    	    {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
     	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
     	    {% capture trimcopy %}{% endcapture %}
+
+			{%- comment -%}Get number of parent items{%- endcomment -%}
     	    {% assign parentsCount = item.ParentItems | Size %}
-    	    {% if parentsCount > 0 %}
-        	    {% for parent in item.ParentItems %}
-        	        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
-        	            {% for parentItem in parents %}
-        	                {% assign collectiontext = parentItem.Title %}
-        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
-        	                {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
-        	                {% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
-        	            {% endfor %}
-        	        {% endcontentchannelitem %}
-        	    {% endfor %}
+
+			{%- comment -%}Get Id of primary parent channel attribute so we know which item to pull image/slug from when there are more than one parent{%- endcomment -%}
+			{% contentchannel id:'{{ item.ContentChannelId }}' iterator:'channels' %}
+				{% for channel in channels %}
+					{% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
+				{% endfor %}
+			{% endcontentchannel %}
+
+			{%- comment -%}Get Ids of parent items for this item{%- endcomment -%}
+			{% capture parentids %}{% for parent in item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+
+			{%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
+    	    {% if parentsCount > 0 and parentids and  parentids != '' and parentccid and parentccid != '' %}
+				{% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
+					{% for parentItem in parents %}
+						{% assign collectiontext = parentItem.Title %}
+						{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
+						{% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
+						{% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
+					{% endfor %}
+				{% endcontentchannelitem %}
         	{% else %}
         	    {% assign collectiontext = '' %}
         	    {% assign collectionurl = '' %}

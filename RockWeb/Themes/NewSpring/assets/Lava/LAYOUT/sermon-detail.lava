@@ -11,6 +11,11 @@
 {% endif %}
 
 {% assign parentCount = Item.ParentItems | Size %}
+{% contentchannel id:'{{ Item.ContentChannelId }}' iterator:'channels' %}
+    {% for channel in channels %}
+        {% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
+    {% endfor %}
+{% endcontentchannel %}
 {% if parentCount > 0 %}
     {% capture parentIds %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
     {% contentchannelitem ids:'{{ parentIds }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}

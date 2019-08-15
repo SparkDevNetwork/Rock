@@ -1,11 +1,11 @@
-{%- capture parentSlug -%}
-{% contentchannelitemassociation where:'ChildContentChannelItemId == {{ id }}' iterator:'associations' %}
-    {% for association in associations %}
-        {% contentchannelitemslug where:'ContentChannelItemId == {{ association.ContentChannelItemId }}' iterator:'slugs' %}
-            {% for slug in slugs %}
-                {{ slug.Slug }}
-            {% endfor %}
-        {% endcontentchannelitemslug %}
-    {% endfor %}
-{% endcontentchannelitemassociation %}
-{%- endcapture -%}{{ parentSlug | Trim }}
+{% if id and id != empty and parentccid and parentccid != empty %}
+{% sql %}
+SELECT TOP 1 ccis.Slug
+FROM ContentChannelItemAssociation ccia
+JOIN ContentChannelItem pcci
+ON ccia.ContentChannelItemId = pcci.Id
+JOIN ContentChannelItemSlug ccis
+ON pcci.Id = ccis.ContentChannelItemId
+WHERE ccia.ChildContentChannelItemId = {{ id }}
+AND pcci.ContentChannelId = {{ parentccid }}
+{% endsql %}{% for result in results %}{{ result.Slug }}{% endfor %}{% endif %}
