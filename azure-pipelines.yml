@@ -37,5 +37,9 @@ steps:
 
 - task: VSTest@2
   inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\Rock.Tests.dll
+    searchFolder: '$(System.DefaultWorkingDirectory)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
