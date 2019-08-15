@@ -16,6 +16,7 @@
         {% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
     {% endfor %}
 {% endcontentchannel %}
+
 {% if parentCount > 0 %}
     {% capture parentIds %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
     {% contentchannelitem ids:'{{ parentIds }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
@@ -27,7 +28,7 @@
             {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
             {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
             {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
-            {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parent.Id }}' ]}{% endcapture %}
+            {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{{ parent.PrimarySlug }}{% endcapture %}
         {% endfor %}
     {% endcontentchannelitem %}
 {% endif %}

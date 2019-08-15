@@ -37,7 +37,7 @@
 				{% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
 					{% for parentItem in parents %}
 						{% assign collectiontext = parentItem.Title %}
-						{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
+						{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
 						{% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
 						{% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
 					{% endfor %}

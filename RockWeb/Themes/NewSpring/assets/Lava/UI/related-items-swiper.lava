@@ -4,11 +4,11 @@
 
     {[ swiper title:'{{ title }}' ]}
     
-    {% contentchannelitem ids:'{{ relatedIds }}' iterator:'items' %}
+    {% contentchannelitem dataview:'3552' ids:'{{ relatedIds }}' iterator:'items' %}
     
         {% for item in items %}[[ item ]]
 
-            {% capture slug %}{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+            {% capture slug %}{{ item.PrimarySlug }}{% endcapture %}
             {% capture id %}{{ item.Id }}{% endcapture %}
             {% capture cciid %}{{ item.Id }}{% endcapture %}
             {% capture guid %}{{ item.Guid }}{% endcapture %}
@@ -65,7 +65,7 @@
         	        {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
         	            {% for parentItem in parents %}
         	                {% assign collectiontext = parentItem.Title %}
-        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
+        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
         	                {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
         	                {% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
         	            {% endfor %}

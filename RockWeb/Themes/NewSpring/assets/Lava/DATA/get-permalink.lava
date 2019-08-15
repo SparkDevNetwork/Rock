@@ -40,4 +40,4 @@
         WHERE cci.Id = {{ cciid }}
     {% endsql %}{% for result in results %}{{ result.permalink }}{% endfor %}
 {% endif %}
-{% endcapture %}{{ permalink | Trim }}{{ pccid }}
+{% endcapture %}{{ permalink | Trim }}
