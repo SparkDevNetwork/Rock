@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Chart;
@@ -65,8 +67,18 @@ namespace Rock.Rest.Controllers
                     personAliasId = new PersonService( rockContext ).Get( personId.Value ).PrimaryAliasId;
                 }
 
-                int? campusId = null;
-                var attendance = new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, occurrenceDate, groupId, locationId, scheduleId, campusId );
+                if ( personAliasId == null )
+                {
+                    var response = new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Content = new StringContent( "PersonId or PersonAliasId is required." )
+                    };
+
+                    throw new HttpResponseException( response );
+                }
+
+                var attendance = new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, occurrenceDate, groupId, locationId, scheduleId, null );
                 rockContext.SaveChanges();
                 return attendance;
             }
