@@ -77,7 +77,7 @@
                                 <i class="fa fa-chevron-left"></i>
                             </a>
                             <asp:Literal ID="litSelectedRecipientDescription" runat="server"></asp:Literal>
-                            <asp:LinkButton ID="lbLinkConversation" runat="server" Text="Link To Person" Visible="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbLinkConversation_Click"></asp:LinkButton>
+                            <asp:LinkButton ID="lbLinkConversation" runat="server" Text="Link To Person" Visible="false" CausesValidation="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbLinkConversation_Click"></asp:LinkButton>
                         </div>
                         <div class="messages-outer-container">
                             <div class="conversation">
@@ -173,37 +173,15 @@
         <%-- Link to Person --%>
         <Rock:ModalDialog ID="mdLinkToPerson" runat="server" Title="Link Phone Number to Person" OnSaveClick="mdLinkToPerson_SaveClick" ValidationGroup="vgLinkToPerson" OnCancelScript="clearActiveDialog();">
             <Content>
+                <asp:HiddenField ID="hfNamelessPersonId" runat="server" />
+
                 <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgLinkToPerson" />
 
                 <Rock:Toggle ID="tglLinkPersonMode" runat="server" OnText="Link Existing Person" CssClass="margin-b-md" OffText="Add New Person" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglLinkPersonMode_CheckedChanged" />
 
                 <asp:Panel ID="pnlLinkToNewPerson" runat="server">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="well">
-                                <Rock:DefinedValuePicker ID="dvpNewPersonTitle" runat="server" Label="Title" CssClass="input-width-md" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" Required="true" autocomplete="off" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" Required="true" autocomplete="off" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:DefinedValuePicker ID="dvpNewPersonSuffix" runat="server" Label="Suffix" CssClass="input-width-md" ValidationGroup="vgLinkToPerson"/>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="well">
-                                <Rock:DefinedValuePicker ID="dvpNewPersonConnectionStatus" runat="server" Label="Connection Status" Required="true" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" Required="true" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:RockRadioButtonList ID="rblNewPersonGender" runat="server" Required="true" Label="Gender" RepeatDirection="Horizontal" ValidationGroup="vgLinkToPerson"/>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="well">
-                                <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" ValidationGroup="vgLinkToPerson"/>
-                                <Rock:DefinedValuePicker ID="dvpNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status" ValidationGroup="vgLinkToPerson"/>
-                            </div>
-                        </div>
-                    </div>
-
+                    <Rock:PersonBasicEditor ID="newPersonEditor" runat="server" ValidationGroup="vgLinkToPerson" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlLinkToExistingPerson" runat="server" Visible="false">

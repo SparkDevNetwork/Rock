@@ -1859,6 +1859,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
