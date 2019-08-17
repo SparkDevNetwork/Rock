@@ -14,14 +14,38 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+
+    /// <summary>
+    /// POCO to store the common fields of <see cref="CommunicationRecipient"/> and <see cref="CommunicationResponse"/>
+    /// </summary>
+    public class CommunicationRecipientResponse
+    {
+        public int? RecipientPersonAliasId { get; set; }
+
+        public string MessageKey { get; set; }
+
+        public string FullName { get; set; }
+
+        public DateTime? CreatedDateTime { get; set; }
+
+        public string HumanizedCreatedDateTime { get; set; }
+
+        public string SMSMessage { get; set; }
+
+        public bool IsRead { get; set; }
+        public int PersonId { get; internal set; }
+    }
+
     public partial class CommunicationResponseService
     {
         /// <summary>
@@ -47,6 +71,161 @@ namespace Rock.Model
                 .Where( r => r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId );
         }
 
+        public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, bool showReadMessages, int maxCount )
+        {
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
+
+            IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
+                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime );
+
+            if ( !showReadMessages )
+            {
+                communicationResponseQuery = communicationResponseQuery.Where( r => r.IsRead == false );
+            }
+
+            IQueryable<CommunicationResponse> mostRecentCommunicationResponseQuery = communicationResponseQuery
+                .GroupBy( r => r.FromPersonAlias.PersonId )
+                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.CreatedDateTime );
+
+            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
+                .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime );
+
+            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientQuery
+                .GroupBy( r => r.PersonAlias.PersonId )
+                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.CreatedDateTime );
+
+            var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.AsNoTracking().Take( maxCount ).ToList();
+
+            List<CommunicationRecipientResponse> communicationRecipientResponseList = new List<CommunicationRecipientResponse>();
+
+            foreach (var mostRecentCommunicationResponse in mostRecentCommunicationResponseList )
+            {
+                var communicationRecipientResponse = new CommunicationRecipientResponse
+                {
+                    CreatedDateTime = mostRecentCommunicationResponse.CreatedDateTime,
+                    PersonId = mostRecentCommunicationResponse.FromPersonAlias.PersonId,
+                    FullName = mostRecentCommunicationResponse.FromPersonAlias.Person.FullName,
+                    IsRead = mostRecentCommunicationResponse.IsRead,
+                    MessageKey = mostRecentCommunicationResponse.MessageKey,
+                    RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
+                    SMSMessage = mostRecentCommunicationResponse.Response
+                };
+
+                communicationRecipientResponseList.Add( communicationRecipientResponse );
+            }
+
+            var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount).Select( a => new
+            {
+                a.CreatedDateTime,
+                a.PersonAlias.Person,
+                a.PersonAliasId,
+                a.SentMessage
+            } ).ToList();
+
+            foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
+            {
+                var communicationRecipientResponse = new CommunicationRecipientResponse
+                {
+                    CreatedDateTime = mostRecentCommunicationRecipient.CreatedDateTime,
+                    PersonId = mostRecentCommunicationRecipient.Person.Id,
+                    FullName = mostRecentCommunicationRecipient.Person.FullName,
+                    IsRead = true,
+                    MessageKey =  "Is this needed?", // mostRecentCommunicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
+                    RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
+                    SMSMessage = mostRecentCommunicationRecipient.SentMessage
+                };
+
+                communicationRecipientResponseList.Add( communicationRecipientResponse );
+            }
+
+            communicationRecipientResponseList = communicationRecipientResponseList
+                .GroupBy( r => r.PersonId )
+                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.CreatedDateTime ).Take( maxCount). ToList();
+
+
+            return communicationRecipientResponseList;
+        }
+
+        public List<CommunicationRecipientResponse> GetCommunicationConversation( int personAliasId, int relatedSmsFromDefinedValueId )
+        {
+            List<CommunicationRecipientResponse> communicationRecipientResponseList = new List<CommunicationRecipientResponse>();
+
+
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
+
+            IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
+                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.FromPersonAliasId == personAliasId );
+
+
+            foreach ( var communicationResponse in communicationResponseQuery )
+            {
+                var communicationRecipientResponse = new CommunicationRecipientResponse
+                {
+                    CreatedDateTime = communicationResponse.CreatedDateTime,
+                    PersonId = communicationResponse.FromPersonAlias.PersonId,
+                    FullName = communicationResponse.FromPersonAlias.Person.FullName,
+                    IsRead = communicationResponse.IsRead,
+                    MessageKey = communicationResponse.MessageKey,
+                    RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
+                    SMSMessage = communicationResponse.Response
+                };
+
+                communicationRecipientResponseList.Add( communicationRecipientResponse );
+            }
+
+
+            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
+                .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.PersonAliasId == personAliasId );
+
+            var communicationRecipientList = communicationRecipientQuery.Include(a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
+            {
+                a.CreatedDateTime,
+                a.PersonAlias.Person,
+                a.PersonAliasId,
+                a.SentMessage
+            } ).ToList();
+
+            foreach ( var communicationRecipient in communicationRecipientList )
+            {
+                var communicationRecipientResponse = new CommunicationRecipientResponse
+                {
+                    CreatedDateTime = communicationRecipient.CreatedDateTime,
+                    PersonId = communicationRecipient.Person.Id,
+                    FullName = communicationRecipient.Person.FullName,
+                    IsRead = true,
+                    MessageKey = communicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
+                    RecipientPersonAliasId = communicationRecipient.PersonAliasId,
+                    SMSMessage = communicationRecipient.SentMessage
+                };
+
+                communicationRecipientResponseList.Add( communicationRecipientResponse );
+            }
+
+            return communicationRecipientResponseList.OrderBy( a => a.CreatedDateTime ).ToList();
+        }
+
+        /// <summary>
+        /// Updates the IsRead property of SMS Responses sent from the provided person to the SMSPhone number stored in SmsFromDefinedValue.
+        /// </summary>
+        /// <param name="fromPersonAliasId">From person alias identifier.</param>
+        /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
+        public void UpdateReadPropertyByFromPersonAliasId( int fromPersonAliasId, int relatedSmsFromDefinedValueId )
+        {
+            var communicationResponsesToUpdate = Queryable().Where( a => a.FromPersonAliasId == fromPersonAliasId && a.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && a.IsRead == false );
+
+            this.Context.BulkUpdate( communicationResponsesToUpdate, a => new CommunicationResponse { IsRead = true } );
+        }
+
+        [Obsolete("ToDo")]
+        public IQueryable<CommunicationResponse> GetCommunicationResponseConversation( int personAliasId, int relatedSmsFromDefinedValueId )
+        {
+            return null;
+        }
+
+        #region Obsolete
 
         /// <summary>
         /// Gets the SMS conversation history for a person alias ID. Inclues the communication sent by Rock that the person may be responding to.
@@ -54,6 +233,7 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="relatedSmsFromDefinedValueId">The releated SMS from defined value identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Probably No longer needed" )]
         public DataSet GetConversation( int personAliasId, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -102,6 +282,7 @@ namespace Rock.Model
         /// <param name="messageKey">The message key.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Probably No longer needed" )]
         public DataSet GetConversation( string messageKey, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -130,28 +311,7 @@ namespace Rock.Model
             return set;
         }
 
-        /// <summary>
-        /// Updates the IsRead property of SMS Responses sent from the provided person to the SMSPhone number stored in SmsFromDefinedValue.
-        /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
-        public void UpdateReadPropertyByFromPersonAliasId( int fromPersonAliasId, int relatedSmsFromDefinedValueId )
-        {
-            var sqlParams = new Dictionary<string, object>();
-            sqlParams.Add( "@fromPersonAliasId", fromPersonAliasId );
-            sqlParams.Add( "@releatedSmsFromDefinedValueId", relatedSmsFromDefinedValueId );
-            sqlParams.Add( "@smsMediumEntityTypeId", EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Id );
-
-            string sql = @"
-                UPDATE [CommunicationResponse]
-                SET IsRead = 1
-                WHERE [FromPersonAliasId] = @fromPersonAliasId
-                    AND [RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
-                    AND [RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
-                    AND [IsRead] = 0";
-
-            Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
-        }
+        
 
         /// <summary>
         /// Updates the IsRead property of SMS Responses sent from the provided MessageKey to the SMSPhone number stored in SmsFromDefinedValue.
@@ -159,6 +319,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="messageKey">The message key.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        [Obsolete( "Probably No longer needed" )]
         public void UpdateReadPropertyByMessageKey( string messageKey, int relatedSmsFromDefinedValueId )
         {
             var sqlParams = new Dictionary<string, object>();
@@ -183,6 +344,8 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="messageKey">The message key.</param>
         /// <param name="personAliasType">Type of the person alias.</param>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer needed" )]
         public void UpdatePersonAliasByMessageKey( int personAliasId, string messageKey, PersonAliasType personAliasType )
         {
             string sql = string.Empty;
@@ -200,10 +363,17 @@ namespace Rock.Model
             }
         }
 
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer needed" )]
         private void UpdateToPersonAliasByMessageKey( int personAliasId, string messageKey )
         {
-            var sqlParams = new Dictionary<string, object>();
-            sqlParams.Add( "@personAliasId", personAliasId );
+            //var sqlParams = new Dictionary<string, object>();
+
+            var communicationResponsesToUpdate = Queryable().Where( a => a.MessageKey == messageKey );
+
+            ( this.Context as RockContext ).BulkUpdate( communicationResponsesToUpdate, a => new CommunicationResponse { ToPersonAliasId = personAliasId } );
+
+            /*sqlParams.Add( "@personAliasId", personAliasId );
             sqlParams.Add( "@messageKey", messageKey );
 
             string sql = @"
@@ -212,10 +382,18 @@ namespace Rock.Model
                 WHERE [MessageKey] = @messageKey";
 
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
+            */
         }
 
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer needed" )]
         private void UpdateFromPersonAliasByMessageKey( int personAliasId, string messageKey )
         {
+            var communicationResponsesToUpdate = Queryable().Where( a => a.MessageKey == messageKey );
+
+            ( this.Context as RockContext ).BulkUpdate( communicationResponsesToUpdate, a => new CommunicationResponse { FromPersonAliasId = personAliasId } );
+
+            /*
             var sqlParams = new Dictionary<string, object>();
             sqlParams.Add( "personAliasId", personAliasId );
             sqlParams.Add( "messageKey", messageKey );
@@ -225,7 +403,11 @@ namespace Rock.Model
                 SET [FromPersonAliasId] = @personAliasId
                 WHERE [MessageKey] = @messageKey";
             Rock.Data.DbService.ExecuteCommand( sql, CommandType.Text, sqlParams );
+            */
         }
+
+
+
 
         /// <summary>
         /// Gets the communications and response recipients.
@@ -233,6 +415,8 @@ namespace Rock.Model
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer needed" )]
         public DataSet GetCommunicationsAndResponseRecipients( int relatedSmsFromDefinedValueId, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
@@ -288,6 +472,7 @@ namespace Rock.Model
             return Rock.Data.DbService.GetDataSet( sql, CommandType.Text, sqlParams );
         }
 
+
         /// <summary>
         /// Gets the response recipients.
         /// </summary>
@@ -295,6 +480,9 @@ namespace Rock.Model
         /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
         /// <param name="conversationAgeInMonths">The conversation age in months.</param>
         /// <returns></returns>
+
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Probably No longer needed" )]
         public DataSet GetResponseRecipients( int relatedSmsFromDefinedValueId, bool showReadMessages, int conversationAgeInMonths = 0 )
         {
             var sqlParams = new Dictionary<string, object>
@@ -339,6 +527,8 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.10" )]
+    [Obsolete( "No longer needed" )]
     public enum PersonAliasType
     {
         /// <summary>
@@ -351,4 +541,6 @@ namespace Rock.Model
         /// </summary>
         ToPersonAlias = 1
     }
+
+    #endregion Obsolete
 }

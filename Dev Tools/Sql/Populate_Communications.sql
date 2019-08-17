@@ -1,182 +1,258 @@
-set nocount on
+SET NOCOUNT OFF
 
 ----------------------------------------------
 -- README
 -- Adds 250,000 sample communications
 ----------------------------------------------
+DECLARE @recipientPersonAliasId INT
+	,@senderPersonAliasId INT
+	,@communicationCounter INT = 0
+	,@maxCommunicationCount INT = 250000
+	,@maxPersonAliasIdForCommunications INT = (
+		SELECT max(Id)
+		FROM (
+			SELECT TOP 4000 Id
+			FROM PersonAlias
+			ORDER BY Id
+			) x
+		)
+	,/* limit to first 4000 persons in the database */
+	@communicationDateTime DATETIME
+	,@futureSendDateTime DATETIME
+	,@communicationSubject NVARCHAR(max)
+	,@communicationId INT
+	,@mediumId INT
+	,@yearsBack INT = 4
+	,@isbulk BIT
+	,@communicationStatus INT = 0
+DECLARE @daysBack INT = @yearsBack * 366
 
-declare
-  @recipientPersonAliasId int,
-  @senderPersonAliasId int,
-  @communicationCounter int = 0,
-  @maxCommunicationCount int = 250000, 
-  @maxPersonAliasIdForCommunications int = (select max(Id) from (select top 4000 Id from PersonAlias order by Id) x),  /* limit to first 4000 persons in the database */ 
-  @communicationDateTime datetime,
-  @futureSendDateTime datetime,
-  @communicationSubject nvarchar(max),
-  @communicationId int,
-  @mediumId int,
-  @yearsBack int = 4,
-  @isbulk bit,
-  @communicationStatus int = 0
-
-declare
-  @daysBack int = @yearsBack * 366
-
-
-begin
-
-begin transaction
-
-/*
+BEGIN
+	--begin transaction
+	/*
  delete [CommunicationRecipient]
  delete [Communication]
 */
+	SET @communicationDateTime = DATEADD(DAY, - @daysBack, SYSDATETIME())
 
-set @communicationDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
+	WHILE @communicationCounter < @maxCommunicationCount
+	BEGIN
+		SET @communicationSubject = 'Random Subject ' + convert(NVARCHAR(max), rand());
+		SET @recipientPersonAliasId = (
+				SELECT TOP 1 Id
+				FROM PersonAlias
+				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
+				ORDER BY Id DESC
+				);
 
-while @communicationCounter < @maxCommunicationCount
-    begin
-        set @communicationSubject = 'Random Subject ' + convert(nvarchar(max), rand());
-        set @recipientPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForCommunications order by Id desc);
-        while @recipientPersonAliasId is null
-        begin
-          -- Try again just in case we didn't get anybody
-          set @recipientPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForCommunications order by Id desc);
-        end
+		WHILE @recipientPersonAliasId IS NULL
+		BEGIN
+			-- Try again just in case we didn't get anybody
+			SET @recipientPersonAliasId = (
+					SELECT TOP 1 Id
+					FROM PersonAlias
+					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
+					ORDER BY Id DESC
+					);
+		END
 
-		set @senderPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForCommunications order by Id desc);
-        while @senderPersonAliasId is null
-        begin
-          -- Try again just in case we didn't get anybody
-          set @senderPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForCommunications order by Id desc);
-        end
+		SET @senderPersonAliasId = (
+				SELECT TOP 1 Id
+				FROM PersonAlias
+				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
+				ORDER BY Id DESC
+				);
 
-		set @futureSendDateTime = DATEADD(DAY, round(50*rand(), 0)-1, @communicationDateTime)
-		if (@futureSendDateTime = @communicationDateTime) begin
-			set @futureSendDateTime = null
-		end
+		WHILE @senderPersonAliasId IS NULL
+		BEGIN
+			-- Try again just in case we didn't get anybody
+			SET @senderPersonAliasId = (
+					SELECT TOP 1 Id
+					FROM PersonAlias
+					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
+					ORDER BY Id DESC
+					);
+		END
 
-		set @communicationStatus = ROUND(5 * RAND(), 0) 
-		select top 1 @mediumId = id from EntityType where Name like 'Rock.Communication.Medium%' order by newid()
+		SET @futureSendDateTime = DATEADD(DAY, round(50 * rand(), 0) - 1, @communicationDateTime)
+
+		IF (@futureSendDateTime = @communicationDateTime)
+		BEGIN
+			SET @futureSendDateTime = NULL
+		END
+
+		SET @communicationStatus = ROUND(5 * RAND(), 0)
+
+		SELECT TOP 1 @mediumId = id
+		FROM EntityType
+		WHERE Name LIKE 'Rock.Communication.Medium%'
+		ORDER BY newid()
 
 		-- generate a bulk about 1/20th of the time
-		select @isbulk = case CAST(ROUND(RAND()*20,0) AS BIT) when 1 then 0 else 1 end
+		SELECT @isbulk = CASE CAST(ROUND(RAND() * 20, 0) AS BIT)
+				WHEN 1
+					THEN 0
+				ELSE 1
+				END
 
-        INSERT INTO [dbo].[Communication]
-           ([Subject]
-           ,[FutureSendDateTime]
-           ,[Status]
-           ,[ReviewedDateTime]
-           ,[ReviewerNote]
-           ,[AdditionalMergeFieldsJson]
-           ,[Guid]
-           ,[CreatedDateTime]
-           ,[ModifiedDateTime]
-           ,[CreatedByPersonAliasId]
-           ,[ModifiedByPersonAliasId]
-           ,[ForeignId]
-           ,[IsBulkCommunication]
-           ,[SenderPersonAliasId]
-           ,[ReviewerPersonAliasId]
-           ,[MediumDataJson])
-		VALUES
-           (@communicationSubject
-           ,@futureSendDateTime
-           ,@communicationStatus
-           ,DATEADD(DAY, round(50*rand(), 0), @communicationDateTime)
-           ,'some note'
-           ,''
-           ,newid()
-           ,@communicationDateTime
-           ,@communicationDateTime
-           ,null
-           ,null
-           ,null
-           ,@isbulk
-           ,@senderPersonAliasId
-           ,null
-           ,null)
+		INSERT INTO [dbo].[Communication] (
+			[Subject]
+			,[FutureSendDateTime]
+			,[Status]
+			,[ReviewedDateTime]
+			,[ReviewerNote]
+			,[AdditionalMergeFieldsJson]
+			,[Guid]
+			,[CreatedDateTime]
+			,[ModifiedDateTime]
+			,[CreatedByPersonAliasId]
+			,[ModifiedByPersonAliasId]
+			,[ForeignId]
+			,[IsBulkCommunication]
+			,[SenderPersonAliasId]
+			,[ReviewerPersonAliasId]
+			,[MediumDataJson]
+			)
+		VALUES (
+			@communicationSubject
+			,@futureSendDateTime
+			,@communicationStatus
+			,DATEADD(DAY, round(50 * rand(), 0), @communicationDateTime)
+			,'some note'
+			,''
+			,newid()
+			,@communicationDateTime
+			,@communicationDateTime
+			,NULL
+			,NULL
+			,NULL
+			,@isbulk
+			,@senderPersonAliasId
+			,NULL
+			,NULL
+			)
 
-		   set @communicationId = SCOPE_IDENTITY()
+		SET @communicationId = SCOPE_IDENTITY()
 
-		if (@isbulk = 0) begin
-			INSERT INTO [dbo].[CommunicationRecipient]
-				   ([CommunicationId]
-				   ,[Status]
-				   ,[StatusNote]
-				   ,[AdditionalMergeValuesJson]
-				   ,[Guid]
-				   ,[CreatedDateTime]
-				   ,[ModifiedDateTime]
-				   ,[CreatedByPersonAliasId]
-				   ,[ModifiedByPersonAliasId]
-				   ,[OpenedDateTime]
-				   ,[OpenedClient]
-				   ,[ForeignId]
-				   ,[TransportEntityTypeName]
-				   ,[UniqueMessageId]
-				   ,[ResponseCode]
-				   ,[PersonAliasId])
-			 VALUES
-				   (@communicationId
-				   ,ROUND(5 * RAND(), 0) 
-				   ,null
-				   ,null
-				   ,newid()
-				   ,@communicationDateTime
-				   ,@communicationDateTime
-				   ,null
-				   ,null
-				   ,DATEADD(day, 5, @communicationDateTime)
-				   ,null
-				   ,null
-				   ,null
-				   ,null
-				   ,null
-				   ,@recipientPersonAliasId)
-		end else begin
-			INSERT INTO [dbo].[CommunicationRecipient]
-				   ([CommunicationId]
-				   ,[Status]
-				   ,[StatusNote]
-				   ,[AdditionalMergeValuesJson]
-				   ,[Guid]
-				   ,[CreatedDateTime]
-				   ,[ModifiedDateTime]
-				   ,[CreatedByPersonAliasId]
-				   ,[ModifiedByPersonAliasId]
-				   ,[OpenedDateTime]
-				   ,[OpenedClient]
-				   ,[ForeignId]
-				   ,[TransportEntityTypeName]
-				   ,[UniqueMessageId]
-				   ,[ResponseCode]
-				   ,[PersonAliasId])
-			 select top 40
-				   @communicationId
-				   ,ROUND(5 * RAND(), 0) 
-				   ,null
-				   ,null
-				   ,newid()
-				   ,@communicationDateTime
-				   ,@communicationDateTime
-				   ,null
-				   ,null
-				   ,DATEADD(day, 5, @communicationDateTime)
-				   ,null
-				   ,null
-				   ,null
-				   ,null
-				   ,null
-				   ,Id from PersonAlias order by newid()
-		end
+		IF (@isbulk = 0)
+		BEGIN
+			INSERT INTO [dbo].[CommunicationRecipient] (
+				[CommunicationId]
+				,[Status]
+				,[StatusNote]
+				,[AdditionalMergeValuesJson]
+				,[Guid]
+				,[CreatedDateTime]
+				,[ModifiedDateTime]
+				,[CreatedByPersonAliasId]
+				,[ModifiedByPersonAliasId]
+				,[OpenedDateTime]
+				,[OpenedClient]
+				,[ForeignId]
+				,[TransportEntityTypeName]
+				,[UniqueMessageId]
+				,[ResponseCode]
+				,[PersonAliasId]
+				)
+			VALUES (
+				@communicationId
+				,ROUND(5 * RAND(), 0)
+				,NULL
+				,NULL
+				,newid()
+				,@communicationDateTime
+				,@communicationDateTime
+				,NULL
+				,NULL
+				,DATEADD(day, 5, @communicationDateTime)
+				,NULL
+				,NULL
+				,NULL
+				,NULL
+				,NULL
+				,@recipientPersonAliasId
+				)
+		END
+		ELSE
+		BEGIN
+			INSERT INTO [dbo].[CommunicationRecipient] (
+				[CommunicationId]
+				,[Status]
+				,[StatusNote]
+				,[AdditionalMergeValuesJson]
+				,[Guid]
+				,[CreatedDateTime]
+				,[ModifiedDateTime]
+				,[CreatedByPersonAliasId]
+				,[ModifiedByPersonAliasId]
+				,[OpenedDateTime]
+				,[OpenedClient]
+				,[ForeignId]
+				,[TransportEntityTypeName]
+				,[UniqueMessageId]
+				,[ResponseCode]
+				,[PersonAliasId]
+				)
+			SELECT TOP 40 @communicationId
+				,ROUND(5 * RAND(), 0)
+				,NULL
+				,NULL
+				,newid()
+				,@communicationDateTime
+				,@communicationDateTime
+				,NULL
+				,NULL
+				,DATEADD(day, 5, @communicationDateTime)
+				,NULL
+				,NULL
+				,NULL
+				,NULL
+				,NULL
+				,Id
+			FROM PersonAlias
+			ORDER BY newid()
+		END
 
-        set @communicationCounter += 1;
-        set @communicationDateTime = DATEADD(ss, (86000*@daysBack/@maxCommunicationCount), @communicationDateTime);
-    end
+		DECLARE @messageKey NVARCHAR(11) = (
+				SELECT TOP 1 CONCAT (
+						isnull(CountryCode, 1)
+						,Number
+						)
+				FROM PhoneNumber
+				WHERE IsMessagingEnabled = 1
+				ORDER BY newid()
+				)
 
-commit transaction
+		INSERT INTO [dbo].[CommunicationResponse] (
+			[MessageKey]
+			,[FromPersonAliasId]
+			,[ToPersonAliasId]
+			,[IsRead]
+			,[RelatedSmsFromDefinedValueId]
+			,[RelatedTransportEntityTypeId]
+			,[RelatedMediumEntityTypeId]
+			,[Response]
+			,[CreatedDateTime]
+			,[Guid]
+			)
+		VALUES (
+			@messageKey
+			,null -- @recipientPersonAliasId
+			,@senderPersonAliasId
+			,0
+			,780
+			,163
+			,38
+			,CONCAT (
+				'Some Message'
+				,rand()
+				)
+			,DATEADD(DAY, - round(50 * rand(), 0), getdate())
+			,NEWID()
+			)
 
-end;
-
+		SET @communicationCounter += 1;
+		SET @communicationDateTime = DATEADD(ss, (86000 * @daysBack / @maxCommunicationCount), @communicationDateTime);
+	END
+			--commit transaction
+END;
