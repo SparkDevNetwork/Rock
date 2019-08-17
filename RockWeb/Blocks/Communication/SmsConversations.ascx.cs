@@ -62,6 +62,13 @@ namespace RockWeb.Blocks.Communication
         defaultValue: 6,
         order: 5,
         key: "ShowConversationsFromMonthsAgo" )]
+
+    [IntegerField( name: "Max Conversations",
+        description: "Limits the number of conversations shown in the left pane. This does not affect the actual messages shown on the right.",
+        defaultValue: 100,
+        order: 5,
+        key: "MaxConversations" )]
+
     [CodeEditorField( "Person Info Lava Template",
         description: "A Lava template to display person information about the selected Communication Recipient.",
         defaultValue: "{{ Person.FullName }}",
@@ -226,31 +233,14 @@ namespace RockWeb.Blocks.Communication
             {
                 var communicationResponseService = new CommunicationResponseService( rockContext );
 
-                DataSet responses = null;
                 int months = GetAttributeValue( "ShowConversationsFromMonthsAgo" ).AsInteger();
 
-                if ( tglShowRead.Checked )
-                {
-                    responses = communicationResponseService.GetCommunicationsAndResponseRecipients( smsPhoneDefinedValueId.Value, months );
-                }
-                else
-                {
-                    // Since communications sent from Rock are always considered "Read" we don't need them included in the list if we are not showing "Read" messages.
-                    responses = communicationResponseService.GetResponseRecipients( smsPhoneDefinedValueId.Value, false, months );
-                }
+                var startDateTime = RockDateTime.Now.AddMonths( -months );
+                bool showRead = tglShowRead.Checked;
 
-                var responseListItems = responses.Tables[0].AsEnumerable()
-                    .Select( r => new ResponseListItem
-                    {
-                        RecipientPersonAliasId = r.Field<int?>( "FromPersonAliasId" ),
-                        MessageKey = r.Field<string>( "MessageKey" ),
-                        FullName = r.Field<string>( "FullName" ),
-                        CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
-                        HumanizedCreatedDateTime = HumanizeDateTime( r.Field<DateTime>( "CreatedDateTime" ) ),
-                        SMSMessage = r.Field<string>( "SMSMessage" ),
-                        IsRead = r.Field<bool>( "IsRead" )
-                    } )
-                    .ToList();
+                var maxConversations = this.GetAttributeValue( "MaxConversations" ).AsIntegerOrNull() ?? 1000;
+
+                var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, showRead, maxConversations );
 
                 // don't display conversations if we're rebinding the recipient list
                 rptConversation.Visible = false;
@@ -274,66 +264,26 @@ namespace RockWeb.Blocks.Communication
             }
 
             var communicationResponseService = new CommunicationResponseService( new RockContext() );
-            var responses = communicationResponseService.GetConversation( recipientId, smsPhoneDefinedValueId.Value );
+            List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversation( recipientId, smsPhoneDefinedValueId.Value );
 
             BindConversationRepeater( responses );
 
-            var list = responses.Tables[0].AsEnumerable();
-            if ( list != null && list.Count() > 0 )
+            if ( responses.Any() )
             {
-                DataRow row = list.Last();
-                return row["SMSMessage"].ToString();
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Loads the responses for recipient.
-        /// </summary>
-        /// <param name="messageKey">The message key.</param>
-        /// <returns></returns>
-        private string LoadResponsesForRecipient( string messageKey )
-        {
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
-
-            if ( smsPhoneDefinedValueId == default( int ) )
-            {
-                return string.Empty;
+                return responses.Last().SMSMessage;
             }
 
-            var communicationResponseService = new CommunicationResponseService( new RockContext() );
-            var responses = communicationResponseService.GetConversation( messageKey, smsPhoneDefinedValueId.Value );
-
-            BindConversationRepeater( responses );
-
-            DataRow row = responses.Tables[0].AsEnumerable().Last();
-            return row["SMSMessage"].ToString();
+            return string.Empty;
         }
 
         /// <summary>
         /// Binds the conversation repeater.
         /// </summary>
         /// <param name="responses">The responses.</param>
-        private void BindConversationRepeater( DataSet responses )
+        private void BindConversationRepeater( List<CommunicationRecipientResponse> responses )
         {
-            var communicationItems = responses.Tables[0].AsEnumerable()
-                .Select( r => new ResponseListItem
-                {
-                    RecipientPersonAliasId = r.Field<int?>( "FromPersonAliasId" ),
-                    MessageKey = r.Field<string>( "MessageKey" ),
-                    FullName = r.Field<string>( "FullName" ),
-                    CreatedDateTime = r.Field<DateTime>( "CreatedDateTime" ),
-                    HumanizedCreatedDateTime = HumanizeDateTime( r.Field<DateTime>( "CreatedDateTime" ) ),
-                    SMSMessage = r.Field<string>( "SMSMessage" ),
-                    IsRead = r.Field<bool>( "IsRead" )
-                } )
-                .ToList();
-
             rptConversation.Visible = true;
-            rptConversation.DataSource = communicationItems;
+            rptConversation.DataSource = responses;
             rptConversation.DataBind();
         }
 
@@ -396,42 +346,6 @@ namespace RockWeb.Blocks.Communication
             }
 
             litSelectedRecipientDescription.Text = string.Format( "<div class='header-lava pull-left'>{0}</div>", html );
-        }
-
-        /// <summary>
-        /// Updates the read property.
-        /// </summary>
-        /// <param name="messageKey">The message key.</param>
-        private void UpdateReadProperty( string messageKey )
-        {
-            int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
-
-            if ( smsPhoneDefinedValueId == default( int ) )
-            {
-                return;
-            }
-
-            new CommunicationResponseService( new RockContext() ).UpdateReadPropertyByMessageKey( messageKey, smsPhoneDefinedValueId.Value );
-        }
-
-        /// <summary>
-        /// POCO to store communication info
-        /// </summary>
-        protected class ResponseListItem
-        {
-            public int? RecipientPersonAliasId { get; set; }
-
-            public string MessageKey { get; set; }
-
-            public string FullName { get; set; }
-
-            public DateTime? CreatedDateTime { get; set; }
-
-            public string HumanizedCreatedDateTime { get; set; }
-
-            public string SMSMessage { get; set; }
-
-            public bool IsRead { get; set; }
         }
 
         /// <summary>
@@ -531,6 +445,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLinkConversation_Click( object sender, EventArgs e )
         {
+            mdLinkToPerson.Title = string.Format("Link Phone Number {0} to Person ", PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), hfSelectedMessageKey.Value, false) );
             mdLinkToPerson.Show();
         }
 
@@ -654,22 +569,30 @@ namespace RockWeb.Blocks.Communication
             hfSelectedRecipientPersonAliasId.Value = recipientPersonAliasId.ToString();
             hfSelectedMessageKey.Value = hfMessageKey.Value;
 
+            var rockContext = new RockContext();
+
             Person recipientPerson = null;
             if ( recipientPersonAliasId.HasValue )
             {
-                recipientPerson = new PersonAliasService( new RockContext() ).GetPerson( recipientPersonAliasId.Value );
+                recipientPerson = new PersonAliasService( rockContext ).GetPerson( recipientPersonAliasId.Value );
             }
 
             if ( recipientPerson == null )
             {
-                litMessagePart.Text = LoadResponsesForRecipient( messageKey );
+                //TODO???
             }
             else
             {
                 litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
             }
 
-            UpdateReadProperty( messageKey );
+            int? smsPhoneDefinedValueId = hfSmsNumber.Value.AsIntegerOrNull();
+
+            if ( smsPhoneDefinedValueId.HasValue && recipientPersonAliasId.HasValue )
+            {
+                new CommunicationResponseService( rockContext ).UpdateReadPropertyByFromPersonAliasId( recipientPersonAliasId.Value, smsPhoneDefinedValueId.Value );
+            }
+
             tbNewMessage.Visible = true;
             btnSend.Visible = true;
 
@@ -709,7 +632,20 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            var responseListItem = e.Row.DataItem as ResponseListItem;
+            var hfRecipientPersonAliasId = e.Row.FindControl( "hfRecipientPersonAliasId" ) as HiddenField;
+            var hfMessageKey = e.Row.FindControl( "hfMessageKey" ) as HiddenField;
+            var lblName = e.Row.FindControl( "lblName" ) as Label;
+            var litDateTime = e.Row.FindControl( "litDateTime" ) as Literal;
+            var litMessagePart = e.Row.FindControl( "litMessagePart" ) as Literal;
+
+            var responseListItem = e.Row.DataItem as CommunicationRecipientResponse;
+            hfRecipientPersonAliasId.Value = responseListItem.RecipientPersonAliasId.ToString();
+            hfMessageKey.Value = responseListItem.MessageKey;
+            lblName.Text = string.Format( "{0} ({1})", responseListItem.FullName, responseListItem.MessageKey );
+            litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
+            litMessagePart.Text = responseListItem.SMSMessage;
+
+
             if ( !responseListItem.IsRead )
             {
                 e.Row.AddCssClass( "unread" );
@@ -746,6 +682,9 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdLinkToPerson_SaveClick( object sender, EventArgs e )
         {
+            // #TODO# Test This, and maybe make it a shared method since we'll also need to do this in the NamelessPersonList block
+
+
             // Do some validation on entering a new person/family first
             if ( pnlLinkToNewPerson.Visible )
             {
@@ -890,7 +829,7 @@ namespace RockWeb.Blocks.Communication
                     hfSelectedRecipientPersonAliasId.Value = person.PrimaryAliasId.ToString();
                 }
 
-                new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientPersonAliasId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
+                //new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientPersonAliasId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
 
                 // now that we've linked to a new person, get rid of the NameLess Person record
                 if ( selectedRecipient != null )
@@ -908,6 +847,9 @@ namespace RockWeb.Blocks.Communication
                         // point any personAliases for the nameless person to the linked person
                         foreach ( var alias in selectedRecipient.Aliases.ToList() )
                         {
+                            selectedRecipient.Aliases.Remove(alias);
+                            person.Aliases.Add(alias);
+
                             alias.PersonId = person.Id;
                             alias.AliasPersonId = selectedRecipient.Id;
                             alias.AliasPersonGuid = selectedRecipient.Guid;

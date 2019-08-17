@@ -48,17 +48,17 @@
                                     <Rock:RockBoundField DataField="RecipientPersonAliasId" Visible="false"></Rock:RockBoundField>
                                     <Rock:RockTemplateField>
                                         <ItemTemplate>
-                                            <Rock:HiddenFieldWithClass ID="hfRecipientPersonAliasId" runat="server" CssClass="js-recipientId" Value='<%# Eval("RecipientPersonAliasId") %>' />
-                                            <Rock:HiddenFieldWithClass ID="hfMessageKey" runat="server" CssClass="js-messageKey" Value='<%# Eval("MessageKey") %>' />
+                                            <Rock:HiddenFieldWithClass ID="hfRecipientPersonAliasId" runat="server" CssClass="js-recipientId" />
+                                            <Rock:HiddenFieldWithClass ID="hfMessageKey" runat="server" CssClass="js-messageKey"  />
 
                                             <div class="layout-row">
-                                                <asp:Label ID="lblName" runat="server" Text='<%# Eval("FullName") ?? Rock.Model.PhoneNumber.FormattedNumber( "", (string)Eval( "MessageKey" ) ) %>' Class="sms-name"></asp:Label>
+                                                <asp:Label ID="lblName" runat="server" Class="sms-name" />
                                                 <div class="date">
-                                                    <asp:Literal ID="litDateTime" runat="server" Text='<%# Eval("HumanizedCreatedDateTime") %>'></asp:Literal>
+                                                    <asp:Literal ID="litDateTime" runat="server" />
                                                 </div>
                                             </div>
                                             <div class="message-truncate">
-                                                <asp:Literal ID="litMessagePart" runat="server" Text='<%# Eval("SMSMessage") %>'></asp:Literal>
+                                                <asp:Literal ID="litMessagePart" runat="server" />
                                             </div>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>

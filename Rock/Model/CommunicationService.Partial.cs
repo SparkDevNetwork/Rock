@@ -252,6 +252,7 @@ namespace Rock.Model
 
             // TODO. Create "Nameless Person" if a person
 
+
             if ( toPersonAliasId != null )
             {
                 var recipient = new Rock.Model.CommunicationRecipient();
