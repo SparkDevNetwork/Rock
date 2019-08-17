@@ -13,9 +13,9 @@
                     <Rock:GridFilter ID="rFilterSite" runat="server" OnApplyFilterClick="rFilterSite_ApplyFilterClick">
                         <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Include Inactive" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gSites" runat="server" AllowSorting="true" OnRowSelected="gSites_Edit">
+                    <Rock:Grid ID="gSites" runat="server" AllowSorting="true" OnRowSelected="gSites_Edit" CssClass="js-grid-site-list">
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField ItemStyle-CssClass="js-name" DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
                             <Rock:RockTemplateField HeaderText="Domain(s)" ID="colDomains">
                                 <ItemTemplate><%# GetDomains( (int)Eval("Id") ) %></ItemTemplate>
