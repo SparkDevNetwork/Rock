@@ -1,4 +1,7 @@
-{% assign offset = offset | AsInteger %}
+{% assign pagesize = 12 %}
+{% assign currentpage = 'Global' | PageParameter:'Page' %}
+{% assign offset = currentpage | Times:pagesize | Minus:pagesize %}
+
 {% assign pagesize = pagesize | AsInteger %}
 
 <section>

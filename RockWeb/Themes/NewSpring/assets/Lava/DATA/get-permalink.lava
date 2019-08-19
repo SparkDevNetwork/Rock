@@ -2,13 +2,18 @@
 {% capture permalink %}
 {% sql %}
     SELECT pcc.Id
-    FROM ContentChannelItem cci
+    FROM Attribute a
     JOIN AttributeValue av
-    ON av.EntityId = cci.ContentChannelId
+    ON a.Id = av.AttributeId
+    JOIN ContentChannel cc
+    ON av.EntityId = cc.Id
+    JOIN ContentChannelItem cci
+    ON cci.ContentChannelId = cc.Id
     JOIN ContentChannel pcc
     ON av.Value = pcc.Guid
-    WHERE cci.Id = {{ cciid }}
-    AND av.AttributeId = 94601
+    WHERE a.[Key] = 'PrimaryParentChannel'
+    AND a.EntityTypeId = 209
+    AND cci.Id = {{ cciid }}
 {% endsql %}{% capture pccid %}{% for result in results %}{{ result.Id }}{% endfor %}{% endcapture %}
 {% if pccid and pccid != empty %}
     {%- comment -%}Item has a primary parent channel{%- endcomment -%}
