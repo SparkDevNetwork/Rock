@@ -420,6 +420,8 @@
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
+    <Compile Include="Reporting\ReportOutputBuilder.cs" />
+    <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
