@@ -161,6 +161,10 @@
     <Compile Include="Migrations\201908142039514_BadgeNamespace.Designer.cs">
       <DependentUpon>201908142039514_BadgeNamespace.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908191827252_PersistedDataset.cs" />
+    <Compile Include="Migrations\201908191827252_PersistedDataset.Designer.cs">
+      <DependentUpon>201908191827252_PersistedDataset.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -841,6 +845,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908142039514_BadgeNamespace.resx">
       <DependentUpon>201908142039514_BadgeNamespace.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908191827252_PersistedDataset.resx">
+      <DependentUpon>201908191827252_PersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

@@ -413,6 +413,8 @@
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
@@ -424,8 +426,10 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
     <Compile Include="Web\IRockCustomSettingsUserControl.cs" />
     <Compile Include="Blocks\IRockMobileBlockType.cs" />
