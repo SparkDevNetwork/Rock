@@ -152,6 +152,14 @@ namespace Rock.Web.Cache
         public int OutputCacheDuration { get; private set; }
 
         /// <summary>
+        /// Gets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        public string AdditionalSettings { get; private set; }
+
+        /// <summary>
         /// Gets or sets the Page that this Block is implemented on. This 
         /// property will be null if this Block is being implemented on as part of a Layout or Site
         /// </summary>
@@ -288,6 +296,7 @@ namespace Rock.Web.Cache
             PreHtml = block.PreHtml;
             PostHtml = block.PostHtml;
             OutputCacheDuration = block.OutputCacheDuration;
+            AdditionalSettings = block.AdditionalSettings;
         }
 
         /// <summary>

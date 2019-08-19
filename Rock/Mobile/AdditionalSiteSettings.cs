@@ -41,7 +41,7 @@ namespace Rock.Mobile
         <DataTemplate>
             <ViewCell>
                 <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
-                    <Rock:RockImage ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
+                    <Rock:Image ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
                     <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
                 </StackLayout>
             </ViewCell>

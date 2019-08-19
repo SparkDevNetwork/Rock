@@ -194,8 +194,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.4\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.5\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -403,11 +403,13 @@
     <Compile Include="Badge\IconBadge.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
+    <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
+    <Compile Include="Mobile\AdditionalBlockSettings.cs" />
     <Compile Include="Mobile\AdditionalPageSettings.cs" />
     <Compile Include="Mobile\AdditionalSiteSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />

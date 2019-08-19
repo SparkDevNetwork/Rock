@@ -68,15 +68,13 @@ namespace RockWeb.Blocks.Mobile
         private const string _defaultLayoutXaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms""
-             xmlns:RockBlock=""clr-namespace:Rock.Mobile.Blocks"">
-    <ContentPage.Content>
-        <ScrollView>
-            <StackLayout>
-                <Rock:RockZone ZoneName=""Main""></Rock:RockZone>
-            </StackLayout>
-        </ScrollView>
-    </ContentPage.Content>
+             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile""
+             xmlns:Common=""clr-namespace:Rock.Mobile.Common;assembly=Rock.Mobile.Common"">
+    <ScrollView>
+        <StackLayout>
+            <Rock:Zone ZoneName=""Main"" />
+        </StackLayout>
+    </ScrollView>
 </ContentPage>";
 
         #endregion
@@ -808,6 +806,91 @@ namespace RockWeb.Blocks.Mobile
             ShowPagesTab();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbDeploy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeploy_Click( object sender, EventArgs e )
+        {
+            var applicationId = PageParameter( "SiteId" ).AsInteger();
+
+            //
+            // Generate the packages and then encode to JSON.
+            //
+            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
+            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
+            var phoneJson = phonePackage.ToJson();
+            var tabletJson = tabletPackage.ToJson();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var site = new SiteService( rockContext ).Get( applicationId );
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
+
+                //
+                // Prepare the phone configuration file.
+                //
+                var phoneFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = phoneJson.Length,
+                    FileName = "phone.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                };
+                binaryFileService.Add( phoneFile );
+
+                //
+                // Prepare the tablet configuration file.
+                //
+                var tabletFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = tabletJson.Length,
+                    FileName = "tablet.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                };
+                binaryFileService.Add( tabletFile );
+
+                rockContext.SaveChanges();
+
+                //
+                // Remove old configuration files.
+                //
+                if ( site.ConfigurationMobilePhoneBinaryFile != null )
+                {
+                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
+                }
+
+                if ( site.ConfigurationMobileTabletBinaryFile != null )
+                {
+                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
+                }
+
+                //
+                // Set new configuration file references.
+                //
+                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
+                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
+
+                //
+                // Update the last deployment date.
+                //
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+                additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                site.AdditionalSettings = additionalSettings.ToJson();
+
+                rockContext.SaveChanges();
+
+                ShowDetail( applicationId );
+            }
+        }
+
         #endregion
 
         #region Layouts Grid Event Handlers
@@ -950,85 +1033,5 @@ namespace RockWeb.Blocks.Mobile
         }
 
         #endregion
-
-        protected void lbDeploy_Click( object sender, EventArgs e )
-        {
-            var applicationId = PageParameter( "SiteId" ).AsInteger();
-
-            //
-            // Generate the packages and then encode to JSON.
-            //
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
-            var phoneJson = phonePackage.ToJson();
-            var tabletJson = tabletPackage.ToJson();
-
-            using ( var rockContext = new RockContext() )
-            {
-                var binaryFileService = new BinaryFileService( rockContext );
-                var site = new SiteService( rockContext ).Get( applicationId );
-                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
-
-                //
-                // Prepare the phone configuration file.
-                //
-                var phoneFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
-                    FileSize = phoneJson.Length,
-                    FileName = "phone.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
-                };
-                binaryFileService.Add( phoneFile );
-
-                //
-                // Prepare the tablet configuration file.
-                //
-                var tabletFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
-                    FileSize = tabletJson.Length,
-                    FileName = "tablet.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
-                };
-                binaryFileService.Add( tabletFile );
-
-                rockContext.SaveChanges();
-
-                //
-                // Remove old configuration files.
-                //
-                if ( site.ConfigurationMobilePhoneBinaryFile != null )
-                {
-                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
-                }
-
-                if ( site.ConfigurationMobileTabletBinaryFile != null )
-                {
-                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
-                }
-
-                //
-                // Set new configuration file references.
-                //
-                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
-                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
-
-                //
-                // Update the last deployment date.
-                //
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
-                additionalSettings.LastDeploymentDate = RockDateTime.Now;
-                site.AdditionalSettings = additionalSettings.ToJson();
-
-                rockContext.SaveChanges();
-
-                ShowDetail( applicationId );
-            }
-        }
     }
 }
