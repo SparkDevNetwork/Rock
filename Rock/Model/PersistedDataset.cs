@@ -176,8 +176,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -190,6 +189,20 @@ namespace Rock.Model
         public DateTime? ExpireDateTime { get; set; }
 
         #endregion Entity Properties
+
+        #region virtual properties
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
+
+
+        #endregion
 
         #region ICacheable
 
@@ -247,6 +260,7 @@ namespace Rock.Model
         /// </summary>
         public PesistedDatasetConfiguration()
         {
+            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

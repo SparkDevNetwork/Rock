@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201908191827252_PersistedDataset"; }
+            get { return "201908192217249_PersistedDataset"; }
         }
         
         string IMigrationMetadata.Source
