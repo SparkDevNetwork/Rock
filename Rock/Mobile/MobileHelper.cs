@@ -20,9 +20,11 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Mobile.Common;
 using Rock.Mobile.Common.Enums;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Mobile
@@ -111,6 +113,11 @@ namespace Rock.Mobile
                 .Select( a => a.Value )
                 .Where( a => a.Categories.Any( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ) );
 
+            var roleGuids = RoleCache.AllRoles()
+                .Where( r => r.IsPersonInRole( person.Guid ) )
+                .Select( r => r.Guid )
+                .ToList();
+
             return new MobilePerson
             {
                 FirstName = person.FirstName,
@@ -125,7 +132,7 @@ namespace Rock.Mobile
                 CampusGuid = person.GetCampus()?.Guid,
                 PersonAliasId = person.PrimaryAliasId.Value,
                 PhotoUrl = ( person.PhotoId.HasValue ? $"{baseUrl}{person.PhotoUrl}" : null ),
-                SecurityGroupGuids = new List<Guid>(),
+                SecurityGroupGuids = roleGuids,
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
@@ -273,23 +280,9 @@ namespace Rock.Mobile
             //
             // Load all the pages.
             //
-            foreach ( var page in PageCache.All().Where( p => p.SiteId == site.Id ) )
+            using ( var rockContext = new RockContext() )
             {
-                var additionalPageSettings = page.HeaderContent.FromJsonOrNull<AdditionalPageSettings>();
-
-                var mobilePage = new MobilePage
-                {
-                    LayoutGuid = page.Layout.Guid,
-                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
-                    Title = page.PageTitle,
-                    PageGuid = page.Guid,
-                    Order = page.Order,
-                    ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconFileId.HasValue ? $"" : null,
-                    LavaEventHandler = additionalPageSettings?.LavaEventHandler
-                };
-
-                package.Pages.Add( mobilePage );
+                AddPagesToUpdatePackage( package, applicationRoot, rockContext, new[] { PageCache.Get( site.DefaultPageId.Value ) } );
             }
 
             //
@@ -301,7 +294,10 @@ namespace Rock.Mobile
 
                 if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
                 {
+                    var additionalBlockSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+
                     var mobileBlockEntity = ( Rock.Blocks.IRockMobileBlockType ) Activator.CreateInstance( blockEntityType );
+
                     mobileBlockEntity.BlockCache = block;
                     mobileBlockEntity.PageCache = block.Page;
                     mobileBlockEntity.RequestContext = new Net.RockRequestContext();
@@ -322,7 +318,12 @@ namespace Rock.Mobile
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
                         PreXaml = block.PreHtml,
                         PostXaml = block.PostHtml,
-                        CssClasses = block.CssClass
+                        CssClasses = block.CssClass,
+                        ShowOnTablet = additionalBlockSettings.ShowOnTablet,
+                        ShowOnPhone = additionalBlockSettings.ShowOnPhone,
+                        RequiresNetwork = additionalBlockSettings.RequiresNetwork,
+                        NoNetworkContent = additionalBlockSettings.NoNetworkContent,
+                        AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( block ) )
                     };
 
                     package.Blocks.Add( mobileBlock );
@@ -361,6 +362,110 @@ namespace Rock.Mobile
             }
 
             return package;
+        }
+
+        /// <summary>
+        /// Adds the pages to update package.
+        /// </summary>
+        /// <param name="package">The package.</param>
+        /// <param name="applicationRoot">The application root.</param>
+        /// <param name="pages">The pages.</param>
+        /// <param name="depth">The depth.</param>
+        private static void AddPagesToUpdatePackage( UpdatePackage package, string applicationRoot, RockContext rockContext, IEnumerable<PageCache> pages, int depth = 0 )
+        {
+            foreach ( var page in pages )
+            {
+                var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+
+                var mobilePage = new MobilePage
+                {
+                    LayoutGuid = page.Layout.Guid,
+                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
+                    Title = page.PageTitle,
+                    PageGuid = page.Guid,
+                    Order = page.Order,
+                    ParentPageGuid = page.ParentPage?.Guid,
+                    IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
+                    LavaEventHandler = additionalPageSettings.LavaEventHandler,
+                    DepthLevel = depth,
+                    AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
+                };
+
+                package.Pages.Add( mobilePage );
+
+                var childPages = page.GetPages( rockContext );
+                if ( childPages.Any() )
+                {
+                    AddPagesToUpdatePackage( package, applicationRoot, rockContext, childPages, depth + 1 );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the ordered explicit authorization rules for an entity. The first rule in the list
+        /// should be checked first, and so on. The order follows from the first explicit rule on the
+        /// entity to the last explicit rule on the entity, then the first explicit rule on the parent
+        /// entity to the last explicit rule on the parent entity and so on.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns>A collection of explicit authorization rules in the proper order.</returns>
+        private static List<string> GetOrderedExplicitAuthorizationRules( ISecured entity )
+        {
+            var explicitRules = new List<string>();
+
+            if ( entity == null )
+            {
+                return explicitRules;
+            }
+
+            //
+            // Get the ancestor authorization rules.
+            //
+            var parentEntity = entity.ParentAuthority;
+            if ( parentEntity != null )
+            {
+                explicitRules = GetOrderedExplicitAuthorizationRules( parentEntity );
+            }
+
+            var authRules = Authorization.AuthRules( entity.TypeId, entity.Id, Authorization.VIEW );
+
+            //
+            // Walk each rule in descending order so that the final order is correct
+            // since we insert rules at index 0.
+            //
+            foreach ( var rule in authRules.OrderByDescending( a => a.Order ) )
+            {
+                string entityIdentifier;
+
+                if ( rule.SpecialRole != SpecialRole.None )
+                {
+                    entityIdentifier = $"S:{( int ) rule.SpecialRole}";
+                }
+                else if ( rule.GroupId.HasValue )
+                {
+                    var role = RoleCache.Get( rule.GroupId.Value );
+
+                    if ( role == null )
+                    {
+                        continue;
+                    }
+
+                    entityIdentifier = $"G:{role.Guid}";
+                }
+                else if ( rule.PersonId.HasValue )
+                {
+                    /* Not currently supported, maybe in the future. -dsh */
+                    continue;
+                }
+                else
+                {
+                    continue;
+                }
+
+                explicitRules.Insert( 0, $"{entityIdentifier}:{rule.AllowOrDeny}" );
+            }
+
+            return explicitRules;
         }
     }
 }
