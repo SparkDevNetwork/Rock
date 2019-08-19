@@ -181,7 +181,7 @@
 
                     <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced Settings">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6" style="display: none;"><!-- feature coming soon -->
                                 <Rock:DataViewItemPicker ID="dvpAutocomplete"
                                     runat="server"
                                     DataField="WorkflowType"
