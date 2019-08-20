@@ -109,6 +109,11 @@ namespace Rock.Chart
 
         #region Chart.js JSON Renderer
 
+        /// <summary>
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// The width is determined by the container and aspect ratio is not preserved.
+        /// </summary>
+        /// <returns></returns>
         public string GetJson()
         {
             // Return the chart configuration using the default layout - width determined by container, aspect ratio not preserved.
@@ -116,8 +121,21 @@ namespace Rock.Chart
         }
 
         /// <summary>
-        /// Get a data structure in JSON format that is compatible for use with the Chart.js component.
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// The aspect ratio is not preserved.
         /// </summary>
+        /// <param name="sizeToFitContainerWidth">if set to <c>true</c> [size to fit container width].</param>
+        /// <returns></returns>
+        public string GetJson( bool sizeToFitContainerWidth )
+        {
+            return GetJson( sizeToFitContainerWidth, false );
+        }
+
+        /// <summary>
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// </summary>
+        /// <param name="sizeToFitContainerWidth">if set to <c>true</c> [size to fit container width].</param>
+        /// <param name="maintainAspectRatio">if set to <c>true</c> [maintain aspect ratio].</param>
         /// <returns></returns>
         public string GetJson( bool sizeToFitContainerWidth, bool maintainAspectRatio )
         {
