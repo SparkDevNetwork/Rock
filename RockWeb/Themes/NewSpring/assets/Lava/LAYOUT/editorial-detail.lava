@@ -22,26 +22,49 @@
 {% endcontentchannel %}
 
 {%- comment -%}Get Ids of parent items for this item{%- endcomment -%}
-{% capture parentids %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+{% assign parentids = Item.ParentItems | Select:'ContentChannelItemId' | Join:',' %}
+{% assign itemIndex = '' %}
 
 {%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
 {% if parentCount > 0 %}
     {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
         {% for parent in parents %}
+            {% assign totalChildren = parent.ChildItems | Size %}
+
+            {% capture childrenPermalinks %}[
+                    {% for child in parent.ChildItems %}{
+                        
+                        "url": "{[ getPermalink cciid:'{{ child.ChildContentChannelItem.Id }}' ]}"
+
+                        {% if child.ChildContentChannelItem.Title == Item.Title %}
+                            {% assign itemIndex = forloop.index %}
+                        {% endif %}
+                    }{% if forloop.last != true %},{% endif %}{% endfor %}
+            ]{% endcapture %}
+            {% assign childrenPermalinks = childrenPermalinks | Trim | FromJSON %}
+
             {% assign parentTitle = parent.Title %}
             {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
             {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-            {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                {% assign backgroundColor = baseBackgroundColor %}
-                <style>
-                    .brand-bg {
-                        background-color: {{ backgroundColor | Darken:'10%' }};
-                    }
-                </style>
-            {% endif %}
+            
         {% endfor %}
     {% endcontentchannelitem %}
 {% endif %}
+
+{% if baseBackgroundColor and baseBackgroundColor != empty %}
+    {% assign backgroundColor = baseBackgroundColor %}
+    <style>
+        .brand-bg {
+            background-color: {{ backgroundColor | Darken:'10%' }};
+        }
+    </style>
+{% endif %}
+
+{% assign label = '' %}
+{% if itemIndex and itemIndex != empty %}
+    {% capture label %}Session {{ itemIndex }}{% endcapture %}
+{% endif %}
+
 
 <!-- Set Page/Browser Titles -->
 {% assign pagePath = 'Global' | Page:'Path' %}
@@ -78,7 +101,6 @@
 
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
         <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom">
-
             {% if cciid and cciid != empty %}
                 {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
                 {% if hasRights == 'true' %}
@@ -89,7 +111,7 @@
             {% endif %}
 
             {% if label and label != empty %}
-                <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                <p class="push-half-top"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
             {% endif %}
             
             <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
@@ -139,6 +161,19 @@
             {% endif %}
 
             {{ Item.Content }}
+
+            {% if itemIndex and itemIndex != empty %}
+                {% assign prevLinkIndex = itemIndex | Minus:2 %}
+                <div class="row flush">
+                    <div class="col-xs-4 col-sm-4 col-md-4 hard">
+                        {% if itemIndex and itemIndex != 1 %}<a href="{{ childrenPermalinks | Index:prevLinkIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
+                        <p class="text-gray-light"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">
+                        {% if itemIndex and itemIndex != totalChildren %}<a href="{{ childrenPermalinks | Index:itemIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom">Next <i class="fas fa-angle-right"></i></a>{% endif %}
+                    </div>
+                </div>
+            {% endif %}
             
             <div class="push-bottom">
                 <div class="row row-condensed">
@@ -165,6 +200,7 @@
                 {% endif %}
             {%- endcapture -%}
             {% assign sharehashtag = '' %}
+
             
             {[ modalShare ]}
             {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
@@ -178,6 +214,7 @@
                     {% endif %}
                 </div>
             </div>
+
         </div>
     </div>
 
