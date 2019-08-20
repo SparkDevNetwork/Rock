@@ -26,6 +26,9 @@ namespace Rock.Chart
     public class FlotChartDataSet<TDataPoint>
         where TDataPoint : IChartData
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FlotChartDataSet{TDataPoint}"/> class.
+        /// </summary>
         public FlotChartDataSet()
         {
             DataPoints = new List<TDataPoint>();
@@ -75,7 +78,6 @@ namespace Rock.Chart
         /// Get the chart data points as JSON data that is compatible for use with the Rock Chart component.
         /// The Rock FlotChart component requires specific property names to be used for the data points, so here we ensure that our data conforms to this requirement.
         /// </summary>
-        /// <param name="dataPoints"></param>
         /// <returns></returns>
         public string GetRockChartJsonData()
         {

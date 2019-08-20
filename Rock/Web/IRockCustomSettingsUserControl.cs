@@ -19,11 +19,11 @@ using Rock.Data;
 
 namespace Rock.Web
 {
+
     /// <summary>
     /// Defines the methods that an ASCX based user control which provides custom
     /// UI for settings must implement.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockCustomSettingsUserControlProvider"/>
     public interface IRockCustomSettingsUserControl
     {
         /// <summary>

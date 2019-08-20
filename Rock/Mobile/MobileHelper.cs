@@ -29,6 +29,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Mobile
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class MobileHelper
     {
         /// <summary>
@@ -369,6 +372,7 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="package">The package.</param>
         /// <param name="applicationRoot">The application root.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="pages">The pages.</param>
         /// <param name="depth">The depth.</param>
         private static void AddPagesToUpdatePackage( UpdatePackage package, string applicationRoot, RockContext rockContext, IEnumerable<PageCache> pages, int depth = 0 )
