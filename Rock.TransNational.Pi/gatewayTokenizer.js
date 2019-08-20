@@ -49,15 +49,38 @@
                 'body': {
                     'color': containerStyles('color')
                 },
-                'input': {
+                '#app': {
+                    'padding': '5px 15px'
+                },
+                'input,select': {
                     'color': inputStyles('color'),
                     'border-radius': inputStyles('border-radius'),
                     'background-color': inputStyles('background-color'),
-                    'border': inputStyles('border')
-                },
-                '.payment .cvv input': {
                     'border': inputStyles('border'),
-                    'padding-left': inputStyles('padding-left')
+                    'box-shadow': inputStyles('box-shadow'),
+                    'padding': inputStyles('padding'),
+                    'font-size': inputStyles('font-size'),
+                    'height': inputStyles('height'),
+                    'font-family': inputStyles('font-family'),
+                },
+                'input:focus,select:focus': {
+                    'border': getComputedStyle(document.documentElement).getPropertyValue('--focus-state-border'),
+                    'box-shadow': getComputedStyle(document.documentElement).getPropertyValue('--focus-state-shadow')
+                },
+                'select': {
+                    'padding': '6px 4px'
+                },
+                '.fieldsetrow': {
+                    'margin-left': '-2.5px',
+                    'margin-right': '-2.5px'
+                },
+                '.card > .fieldset': {
+                    'padding': '0 !important',
+                    'margin': '0 2.5px 5px !important'
+                },
+                'input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button': {
+                    '-webkit-appearance': 'none',
+                    'margin': '0'
                 }
             }
         }
@@ -81,6 +104,7 @@
         var $paymentButtonCreditCard = $control.find('.js-payment-creditcard');
 
         $paymentButtonCreditCard.off().on('click', function () {
+            $(this).addClass("active").siblings().removeClass("active");
             $creditCardContainer.show();
             $achContainer.hide();
         });
@@ -101,6 +125,7 @@
 
         var $paymentButtonACH = $control.find('.js-payment-ach');
         $paymentButtonACH.off().on('click', function () {
+            $(this).addClass("active").siblings().removeClass("active");
             $creditCardContainer.hide();
             $achContainer.show();
         });
@@ -141,6 +166,6 @@ function submitTokenizer(controlId) {
     else {
         gatewayTokenizer = $creditCardContainer.data('gatewayTokenizer');
     }
-    
+
     gatewayTokenizer.submit() // Use submission callback to deal with response
 }
