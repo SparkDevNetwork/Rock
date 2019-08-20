@@ -37,7 +37,7 @@
                         "url": "{[ getPermalink cciid:'{{ child.ChildContentChannelItem.Id }}' ]}"
 
                         {% if child.ChildContentChannelItem.Title == Item.Title %}
-                            {% assign itemIndex = forloop.index %}
+                            {% assign itemIndex = child.ChildContentChannelItem.Order | Plus:1 %}
                         {% endif %}
                     }{% if forloop.last != true %},{% endif %}{% endfor %}
             ]{% endcapture %}
