@@ -410,6 +410,7 @@
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalBlockSettings.cs" />
+    <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
     <Compile Include="Mobile\AdditionalPageSettings.cs" />
     <Compile Include="Mobile\AdditionalSiteSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
