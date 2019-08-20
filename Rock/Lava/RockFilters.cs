@@ -3972,96 +3972,93 @@ namespace Rock.Lava
 
             var resultDataObject = persistedDataset.ResultDataObject;
 
+            // Parse filter options
             var optionsList = options?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-            if ( optionsList?.Any() == false )
+            if ( optionsList == null || optionsList.Any() == false )
             {
                 return resultDataObject;
             }
 
-            var appendFollowing = optionsList?.Contains( "AppendFollowing" ) == true;
+            var returnOnlyFollowedItems = optionsList?.Contains( "ReturnOnlyFollowedItems" ) == true;
+            var returnOnlyNotFollowedItems = optionsList?.Contains( "ReturnOnlyNotFollowedItems" ) == true;
+            var appendFollowing = optionsList?.Contains( "AppendFollowing" ) == true  || returnOnlyFollowedItems || returnOnlyNotFollowedItems;
 
-            // resultDataObject will either be an ExpandoObject or List of ExpandoObject
-            // these can be cast to a dictionary where we can get the values
-            List<IDictionary<string, object>> resultAsList = null;
-            IDictionary<string, object> resultSingle = null;
+            // Determine if dataset is a collection or a single object
+            var isCollection = resultDataObject is IEnumerable;
 
-            if ( resultDataObject is IEnumerable resultDataObjectItems )
+            // Append following information
+            var currentPerson = GetCurrentPerson( context );
+            if ( appendFollowing == true && persistedDataset.EntityTypeId.HasValue && currentPerson != null )
             {
-                resultAsList = new List<IDictionary<string, object>>();
-                foreach ( var item in resultDataObjectItems )
+                List<int> entityIdList = new List<int>();
+                if ( isCollection )
                 {
-                    resultAsList.Add( item as IDictionary<string, object> );
+                    entityIdList = ( ( IEnumerable ) resultDataObject ).Cast<dynamic>()
+                            .Select( x => ( int? ) x.Id )
+                            .Where( e => e.HasValue)
+                            .Select( e => e.Value).ToList();
                 }
-            }
-            else
-            {
-                resultSingle = resultDataObject as IDictionary<string, object>;
-            }
-
-            if ( appendFollowing == true )
-            {
-                List<IEntity> followedEntities = new List<IEntity>();
-
-                if ( persistedDataset.EntityTypeId.HasValue )
+                else
                 {
-                    // NOTE: integer properties in the object are probably actually a long? datatype, so we have to use long instead of int
-                    List<long> entityIdList = null;
-                    if ( resultAsList != null )
+                    int? entityId = ( int? ) resultDataObject["Id"];
+                    if ( entityId.HasValue )
                     {
-                        entityIdList = resultAsList.ToList().Select( a => ( long? ) a.GetValueOrNull( "Id" ) ).Where( id => id.HasValue ).Select( a => a.Value ).ToList();
+                        entityIdList.Add( entityId.Value );
                     }
-                    else
+                }
+
+                var rockContext = new RockContext();
+                var followedEntityIds = new FollowingService( rockContext ).Queryable()
+                                            .Where( a => a.PersonAlias.PersonId == currentPerson.Id
+                                                && a.EntityTypeId == persistedDataset.EntityTypeId.Value
+                                                && entityIdList.Contains( a.EntityId ) )
+                                            .Select( a => a.EntityId ).ToList();
+
+                // Append new following properties if collection
+                if ( isCollection )
+                {
+                    foreach ( dynamic result in ( IEnumerable ) resultDataObject )
                     {
-                        entityIdList = new List<long>();
-                        long? entityId = ( long? ) resultSingle.GetValueOrNull( "Id" );
+                        int? entityId = (int?) result.Id;
+
                         if ( entityId.HasValue )
                         {
-                            entityIdList.Add( entityId.Value );
-                        }
-                    }
-
-                    var rockContext = new RockContext();
-                    var currentPerson = GetCurrentPerson( context );
-                    if ( currentPerson != null )
-                    {
-                        var personId = currentPerson.Id;
-                        var entityTypeId = persistedDataset.EntityTypeId.Value;
-                        var followingQuery = new FollowingService( rockContext ).Queryable();
-
-                        followingQuery = followingQuery
-                            .Where( a => a.PersonAlias.PersonId == personId )
-                            .Where( a => a.EntityTypeId == entityTypeId )
-                            .Where( a => entityIdList.Contains( a.EntityId ) );
-
-                        var followedEntityIds = followingQuery.Select( a => a.EntityId ).ToList();
-
-                        if ( resultAsList != null )
-                        {
-                            foreach ( var result in resultAsList )
-                            {
-                                // NOTE: have to cast as long before casting to int since the datatype in the object for integers is probably a long
-                                int? entityId = (int?) ( long? ) result.GetValueOrNull( "Id" );
-
-                                if ( entityId.HasValue )
-                                {
-                                    result.AddOrIgnore( "IsFollowing", followedEntityIds.Contains( entityId.Value ) );
-                                }
-                            }
+                            result.IsFollowing = followedEntityIds.Contains( entityId.Value );
+                            result.FollowingEntityTypeId = persistedDataset.EntityTypeId.Value;
+                            result.FollowingEntityId = entityId;
                         }
                     }
                 }
-            }
+                else
+                {
+                    int? entityId = ( int? ) resultDataObject.Id;
+
+                    if ( entityId.HasValue )
+                    {
+                        resultDataObject.IsFollowing =  followedEntityIds.Contains( entityId.Value );
+                        resultDataObject.FollowingEntityTypeId = persistedDataset.EntityTypeId.Value;
+                        resultDataObject.FollowingEntityId = entityId;
+                    }
+                }
+
+                // If requested only followed items filter
+                if ( returnOnlyFollowedItems )
+                {
+                    return ( ( IEnumerable ) resultDataObject ).Cast<dynamic>()
+                        .Where( d => d.IsFollowing == true ).ToList();
+                }
 
 
-            if ( resultAsList != null )
-            {
-                return resultAsList;
+                // If requested only unfollowed items filter
+                if ( returnOnlyNotFollowedItems )
+                {
+                    return ( ( IEnumerable ) resultDataObject ).Cast<dynamic>()
+                        .Where( d => d.IsFollowing == false ).ToList();
+                }
             }
-            else
-            {
-                return resultSingle;
-            }
+
+            return resultDataObject;
         }
 
         /// <summary>
