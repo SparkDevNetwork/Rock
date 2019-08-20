@@ -59,7 +59,7 @@ namespace Rock.Tests.Integration.Communications
 
         #region Add/Remove Test Data
 
-        private List<Guid> _EmailCreatorPersonGuidList;
+        //private List<Guid> _EmailCreatorPersonGuidList;
         private Random _Rng = new Random();
         private List<string> _ValidClientOsList = new List<string>() { "Windows 10", "Windows 8", "Windows 7", "Android", "OS X", "iOS", "Linux", "Chrome OS" };
         private List<string> _ValidClientTypeList = new List<string>() { "Mobile", "Tablet", "Crawler", "Outlook", "Desktop", "Browser", "None" };

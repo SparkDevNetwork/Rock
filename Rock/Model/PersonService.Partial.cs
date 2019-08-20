@@ -3593,9 +3593,11 @@ namespace Rock.Model
         /// <summary>
         /// Updates the primary family and campus for the specified person or group members, or for all persons in the database if no parameters are specified.
         /// </summary>
-        /// <param name="personId">The person identifier.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
         /// <returns></returns>
+        /// <exception cref="System.ArgumentException">Specified parameters are ambiguous.</exception>
         private static int UpdatePersonsPrimaryFamily( RockContext rockContext, int? personId = null, int? groupId = null )
         {
             // Verify only one of the optional parameters is specified.

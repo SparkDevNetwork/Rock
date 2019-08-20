@@ -16,9 +16,19 @@
 //
 namespace Rock.Mobile
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum TabLocation
     {
+        /// <summary>
+        /// The top
+        /// </summary>
         Top = 0,
+
+        /// <summary>
+        /// The bottom
+        /// </summary>
         Bottom = 1,
     }
 }

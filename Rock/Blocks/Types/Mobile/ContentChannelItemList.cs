@@ -453,7 +453,6 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the followed item ids.
         /// </summary>
-        /// <param name="includeFollowing">if set to <c>true</c> [include following].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="results">The results.</param>
         /// <returns></returns>

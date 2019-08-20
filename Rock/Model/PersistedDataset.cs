@@ -181,7 +181,7 @@ namespace Rock.Model
         public double? TimeToBuildMS { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
+        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"/> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>
@@ -312,6 +312,9 @@ namespace Rock.Model
     /// </summary>
     public enum PersistedDatasetScriptType
     {
+        /// <summary>
+        /// The lava
+        /// </summary>
         Lava,
         //Sql,
         //Report
@@ -322,6 +325,9 @@ namespace Rock.Model
     /// </summary>
     public enum PersistedDatasetDataFormat
     {
+        /// <summary>
+        /// The json
+        /// </summary>
         JSON
     }
 

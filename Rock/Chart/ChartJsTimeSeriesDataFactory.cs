@@ -39,6 +39,9 @@ namespace Rock.Chart
 
         private List<ChartJsTimeSeriesDataset> _Datasets = new List<ChartJsTimeSeriesDataset>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChartJsTimeSeriesDataFactory{TDataPoint}"/> class.
+        /// </summary>
         public ChartJsTimeSeriesDataFactory()
         {
             this.Datasets = new List<ChartJsTimeSeriesDataset>();
@@ -443,8 +446,9 @@ namespace Rock.Chart
         /// <summary>
         /// Get a set of X-axis categories defined by the selected timescale and time period.
         /// </summary>
-        /// <param name="timescaleDatasets"></param>
+        /// <param name="timeScale">The time scale.</param>
         /// <returns></returns>
+        /// <exception cref="System.NotImplementedException">Timescale is not implemented</exception>
         private List<ChartJsCategoryValuesDataPoint> GetTimescaleCategories( ChartJsTimeSeriesTimeScaleSpecifier timeScale )
         {
             // Determine the date range.
@@ -753,9 +757,24 @@ namespace Rock.Chart
     /// </summary>
     public enum ChartJsTimeSeriesChartStyleSpecifier
     {
+        /// <summary>
+        /// Chart style line
+        /// </summary>
         Line = 0,
+
+        /// <summary>
+        /// Chart style bar
+        /// </summary>
         Bar = 1,
+
+        /// <summary>
+        /// Chart style bubble
+        /// </summary>
         Bubble = 2,
+
+        /// <summary>
+        /// Chart style stacked line
+        /// </summary>
         StackedLine = 10
     }
 
@@ -772,7 +791,14 @@ namespace Rock.Chart
         //Day = 1,
         //Week = 2,
 
+        /// <summary>
+        /// Month time scale
+        /// </summary>
         Month = 3,
+
+        /// <summary>
+        /// Year time scale
+        /// </summary>
         Year = 4
     }
 
@@ -825,7 +851,20 @@ namespace Rock.Chart
     /// </summary>
     public interface IChartJsCategoryValuesDataPoint
     {
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
         string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         decimal Value { get; set; }
     }
 
@@ -834,9 +873,28 @@ namespace Rock.Chart
     /// </summary>
     public class ChartJsCategoryValuesDataPoint : IChartJsCategoryValuesDataPoint
     {
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
         public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public decimal Value { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sort key.
+        /// </summary>
+        /// <value>
+        /// The sort key.
+        /// </value>
         public string SortKey { get; set; }
     }
 
@@ -845,7 +903,20 @@ namespace Rock.Chart
     /// </summary>
     public interface IChartJsTimeSeriesDataPoint
     {
+        /// <summary>
+        /// Gets or sets the date time.
+        /// </summary>
+        /// <value>
+        /// The date time.
+        /// </value>
         DateTime DateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         decimal Value { get; set; }
     }
 
@@ -899,17 +970,46 @@ namespace Rock.Chart
     /// </summary>
     public static class ChartJsConstants
     {
-        // Default color palette
+        /// <summary>
+        /// Default color palette
+        /// </summary>
         public static class Colors
         {
+            /// <summary>
+            /// Hex value for the color gray
+            /// </summary>
             public static readonly string Gray = "#4D4D4D";
+            /// <summary>
+            /// Hex value for the color blue
+            /// </summary>
             public static readonly string Blue = "#5DA5DA";
+            /// <summary>
+            /// Hex value for the color orange
+            /// </summary>
             public static readonly string Orange = "#FAA43A";
+            /// <summary>
+            /// Hex value for the color green
+            /// </summary>
             public static readonly string Green = "#60BD68";
+            /// <summary>
+            /// Hex value for the color pink
+            /// </summary>
             public static readonly string Pink = "#F17CB0";
+            /// <summary>
+            /// Hex value for the color brown
+            /// </summary>
             public static readonly string Brown = "#B2912F";
+            /// <summary>
+            /// Hex value for the color purple
+            /// </summary>
             public static readonly string Purple = "#B276B2";
+            /// <summary>
+            /// Hex value for the color yellow
+            /// </summary>
             public static readonly string Yellow = "#DECF3F";
+            /// <summary>
+            /// Hex value for the color red
+            /// </summary>
             public static readonly string Red = "#F15854";
 
             /// <summary>

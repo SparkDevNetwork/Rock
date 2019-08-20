@@ -36,10 +36,24 @@ namespace Rock.Security
     public static class Authorization
     {
 
+        /// <summary>
+        /// Available settings for SameSiteCookie
+        /// </summary>
         public enum SameSiteCookieSetting
         {
+            /// <summary>
+            /// Do not specify a setting
+            /// </summary>
             None,
+
+            /// <summary>
+            /// Lax
+            /// </summary>
             Lax,
+
+            /// <summary>
+            /// Strict
+            /// </summary>
             Strict
         }
 

@@ -55,6 +55,11 @@ namespace Rock.Reporting
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReportOutputBuilder"/> class.
+        /// </summary>
+        /// <param name="report">The report.</param>
+        /// <param name="dataContext">The data context.</param>
         public ReportOutputBuilder( Report report, RockContext dataContext )
         {
             _Report = report;
@@ -66,6 +71,12 @@ namespace Rock.Reporting
 
         #region Public Properties and Methods
 
+        /// <summary>
+        /// Gets or sets the last result message.
+        /// </summary>
+        /// <value>
+        /// The last result message.
+        /// </value>
         public string LastResultMessage { get; set; }
 
         /// <summary>
@@ -85,8 +96,11 @@ namespace Rock.Reporting
         /// <param name="whereExpression">A Linq Expression that represents the query filter predicate.</param>
         /// <param name="parameterExpression">The Parameter Expression required as input to the query filter predicate.</param>
         /// <param name="dataContext">The data context in which the report is being built.</param>
+        /// <param name="fieldContent">Content of the field.</param>
         /// <param name="pageIndex">The index number of the data page to retrieve. If not specified, all pages will be included in the results.</param>
         /// <param name="pageSize">The number of rows of data to retrieve. If not specified, all rows will be included in the results.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Report data build failed.</exception>
         public TabularReportOutputResult GetReportData( Person currentPerson, Expression whereExpression, ParameterExpression parameterExpression, RockContext dataContext, ReportOutputBuilderFieldContentSpecifier fieldContent = ReportOutputBuilderFieldContentSpecifier.FormattedText, int? pageIndex = null, int? pageSize = null )
         {
             _DataContext = dataContext;
@@ -873,8 +887,9 @@ namespace Rock.Reporting
         /// Adds new rows to a DataTable for each item in the supplied list.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="dataTable"></param>
-        /// <param name="items"></param>
+        /// <param name="dataTable">The data table.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="reportFieldMaps">The report field maps.</param>
         private void AddDataTableRowsFromList<T>( DataTable dataTable, IEnumerable<T> items, List<ReportFieldMap> reportFieldMaps )
         {
             var listNameToColumnNameMap = reportFieldMaps.ToDictionary( k => k.QueryColumnName, v => v.TableColumnName );
@@ -938,15 +953,20 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets a query expression for the Report output, filtered using a supplied filter expression.
         /// </summary>
+        /// <param name="report">The report.</param>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="entityFields">The entity fields.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="selectComponents">The select components.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="sortProperty">The sort property.</param>
-        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <param name="reportDbContext">The report database context.</param>
+        /// <param name="pageSize">Size of the page.</param>
+        /// <param name="pageIndex">Index of the page.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
         /// <exception cref="Exception"></exception>
         private IQueryable GetQueryableForReport( Report report, Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Expression whereExpression, ParameterExpression parameterExpression, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages, System.Data.Entity.DbContext reportDbContext, int? pageSize, int? pageIndex )
         {
@@ -1217,6 +1237,9 @@ namespace Rock.Reporting
 
         #region Support classes
 
+        /// <summary>
+        /// The available text outuput options
+        /// </summary>
         public enum ReportOutputBuilderFieldContentSpecifier
         {
             /// <summary>

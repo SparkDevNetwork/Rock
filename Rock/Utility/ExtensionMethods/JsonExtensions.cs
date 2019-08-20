@@ -88,9 +88,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to deserialize a json string into either a <see cref="ExpandoObject"/> or a list of <see cref="ExpandoObject"/>.  If it can't be deserialized, returns null
+        /// Attempts to deserialize a json string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />.  If it can't be deserialized, returns null
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="val">The value.</param>
         /// <returns></returns>
         public static object FromJsonDynamicOrNull( this string val )

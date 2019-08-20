@@ -103,7 +103,7 @@ namespace Rock.Web.Cache
         public string ResultData { get; set; }
 
         /// <summary>
-        /// returns an <see cref="ExpandoObject"/> or a list of <see cref="ExpandoObject"/>.  If <see cref="ResultData"/> can't be deserialized, returns null
+        /// returns an <see cref="System.Dynamic.ExpandoObject"/> or a list of <see cref="System.Dynamic.ExpandoObject"/>.  If <see cref="ResultData"/> can't be deserialized, returns null
         /// </summary>
         /// <value>
         /// The result data object.
@@ -157,9 +157,9 @@ namespace Rock.Web.Cache
         public class DataFormatException : FormatException
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="DataFormatException"/> class.
+            /// Initializes a new instance of the <see cref="DataFormatException" /> class.
             /// </summary>
-            /// <param name="message">The message that describes the error.</param>
+            /// <param name="dataFormat">The data format.</param>
             public DataFormatException( PersistedDatasetDataFormat dataFormat )
                 : base( $"Unexpected ResultFormat: {dataFormat.ConvertToString()}" )
             {
@@ -230,7 +230,7 @@ namespace Rock.Web.Cache
         public double? TimeToBuildMS { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
+        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"/> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>

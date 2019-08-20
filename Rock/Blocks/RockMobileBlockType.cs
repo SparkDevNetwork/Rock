@@ -3,6 +3,11 @@ using Rock.Web;
 
 namespace Rock.Blocks
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
     public abstract class RockMobileBlockType : RockBlockType, IRockMobileBlockType
     {
         #region Properties

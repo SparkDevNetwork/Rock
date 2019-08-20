@@ -17,6 +17,9 @@
 
 namespace Rock.Mobile
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AdditionalPageSettings
     {
         /// <summary>
