@@ -30,7 +30,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddGroupType( "Service Attendance", "Used for tracking the attendance for people who attend the 'weekend' or 'weekly' service.", "Group", "Member", false, false, false, "fa fa-walking", 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "77713830-AE5E-4B1A-94FA-E145DFF85035", false );
+            RockMigrationHelper.AddGroupType( "Service Attendance", "Used for tracking the attendance for people who attend the 'weekend' or 'weekly' service.", "Group", "Member", false, false, false, "fa fa-walking", 0, null, 0, "4A406CB0-495B-4795-B788-52BDFDE00B01", "77713830-AE5E-4B1A-94FA-E145DFF85035", true );
             Sql( string.Format(@"
                 DECLARE @GroupTypeId INT = (SELECT [Id] FROM [GroupType] WHERE [Guid]='77713830-AE5E-4B1A-94FA-E145DFF85035')
 
@@ -58,7 +58,7 @@ namespace Rock.Migrations
 		                                , 'A27A7E68-7FBA-4648-B71D-FAA324752850')
                                 END
 ",new GroupType().GroupViewLavaTemplate.Replace( "'", "''" ) ) );
-            RockMigrationHelper.AddGroupType( "Services", "", "Group", "Member", true, false, false, "", 0, "6E7AD783-7614-4721-ABC1-35842113EF59", 0, null, "235BAE2B-5760-4763-AADF-3938F34BA100", false );
+            RockMigrationHelper.AddGroupType( "Services", "", "Group", "Member", true, false, false, "", 0, "6E7AD783-7614-4721-ABC1-35842113EF59", 0, null, "235BAE2B-5760-4763-AADF-3938F34BA100", true );
 
             Sql( string.Format( @"
     DECLARE @AttendanceServiceGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '77713830-AE5E-4B1A-94FA-E145DFF85035' )
@@ -93,7 +93,7 @@ namespace Rock.Migrations
     INSERT INTO
 	     [Group]
      ([GroupTypeId], [Name],[IsSystem],[IsActive],[IsSecurityRole], [Guid], [IsPublic],[Order])
-    VALUES        (@GroupTypeId,'Weekend Service',0,1,0,'E000800B-B358-416F-BCD5-90C4CAC65AA3',1,0)
+    VALUES        (@GroupTypeId,'Weekend Service',1,1,0,'E000800B-B358-416F-BCD5-90C4CAC65AA3',1,0)
 
     --Add Weekend Service Group Locations
     DECLARE @GroupId INT = (SELECT [Id] FROM [Group] WHERE [Guid]='E000800B-B358-416F-BCD5-90C4CAC65AA3')
