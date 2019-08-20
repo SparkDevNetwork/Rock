@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,7 +47,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         [HideFromReporting]
-        [Index( IsUnique = true )] 
+        [Index( IsUnique = true )]
         public string AccessKey { get; set; }
 
         /// <summary>
@@ -226,6 +227,66 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region methods
+
+        /// <summary>
+        /// Runs the <see cref="BuildScript" /> and sets <see cref="ResultData"/>
+        /// </summary>
+        public void UpdateResultData()
+        {
+            var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
+            switch ( this.BuildScriptType )
+            {
+                case PersistedDatasetScriptType.Lava:
+                    {
+                        var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
+
+                        this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields, null, "All");
+                        break;
+                    }
+
+                default:
+                    {
+                        throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
+                    }
+            }
+
+            timeToBuildStopwatch.Stop();
+            this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
+
+            this.LastRefreshDateTime = RockDateTime.Now;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        [Serializable]
+        private class UnsupportedBuildScriptTypeException : Exception
+        {
+            private readonly PersistedDatasetScriptType buildScriptType;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UnsupportedBuildScriptTypeException"/> class.
+            /// </summary>
+            public UnsupportedBuildScriptTypeException()
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UnsupportedBuildScriptTypeException"/> class.
+            /// </summary>
+            /// <param name="buildScriptType">Type of the build script.</param>
+            public UnsupportedBuildScriptTypeException( PersistedDatasetScriptType buildScriptType )
+                : base( $"Unsupported PersistedDatasetScriptType: {buildScriptType.ConvertToString()}" )
+            {
+                this.buildScriptType = buildScriptType;
+            }
+        }
+
+        #endregion
     }
 
     #region Enums
@@ -236,8 +297,8 @@ namespace Rock.Model
     public enum PersistedDatasetScriptType
     {
         Lava,
-        Sql,
-        Report
+        //Sql,
+        //Report
     }
 
     /// <summary>

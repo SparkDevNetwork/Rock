@@ -94,7 +94,7 @@ namespace Rock.Web.Cache
         public string ResultData { get; set; }
 
         /// <summary>
-        /// Gets the result data object.
+        /// returns an <see cref="ExpandoObject"/> or a list of <see cref="ExpandoObject"/>.  If <see cref="ResultData"/> can't be deserialized, returns null
         /// </summary>
         /// <value>
         /// The result data object.
@@ -111,7 +111,7 @@ namespace Rock.Web.Cache
                     switch ( this.ResultFormat )
                     {
                         case PersistedDatasetDataFormat.JSON:
-                            itemFactoryResultObject = this.ResultData.FromJsonOrNull<object>();
+                            itemFactoryResultObject = this.ResultData.FromJsonDynamicOrNull();
                             break;
 
                         default:
@@ -123,7 +123,7 @@ namespace Rock.Web.Cache
 
                 if ( this.MemoryCacheDurationMS.HasValue )
                 {
-                    var persistedDatasetValueCache = ItemCache<PersistedDatasetValueCache>.GetOrAddExisting(
+                    PersistedDatasetValueCache persistedDatasetValueCache = ItemCache<PersistedDatasetValueCache>.GetOrAddExisting(
                         this.Id,
                         itemFactory,
                         TimeSpan.FromMilliseconds( MemoryCacheDurationMS.Value ) );
@@ -132,7 +132,9 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    resultDataObject = itemFactory;
+                    PersistedDatasetValueCache persistedDatasetValueCache = itemFactory();
+
+                    resultDataObject = persistedDatasetValueCache?.ResultDataObjectValue;
                 }
 
                 return resultDataObject;
@@ -313,6 +315,9 @@ namespace Rock.Web.Cache
             TimeToBuildMS = persistedDataset.TimeToBuildMS;
             EntityTypeId = persistedDataset.EntityTypeId;
             ExpireDateTime = persistedDataset.ExpireDateTime;
+
+            // the ResultDataObject is cached in PersistedDatasetValueCache (with a cache expiration), so need to flush that when re-loading
+            PersistedDatasetValueCache.FlushItem( this.Id );
 
             AccessKeyIdLookup.AddOrUpdate( persistedDataset.AccessKey, persistedDataset.Id, ( k, v ) => persistedDataset.Id );
         }
