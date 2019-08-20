@@ -4001,7 +4001,7 @@ namespace Rock.Lava
                 }
                 else
                 {
-                    int? entityId = ( int? ) resultDataObject["Id"];
+                    int? entityId = ( int? ) resultDataObject.Id;
                     if ( entityId.HasValue )
                     {
                         entityIdList.Add( entityId.Value );
