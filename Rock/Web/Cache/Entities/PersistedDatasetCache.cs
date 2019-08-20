@@ -67,6 +67,15 @@ namespace Rock.Web.Cache
         public int? RefreshIntervalMinutes { get; set; }
 
         /// <summary>
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        [DataMember]
+        public string EnabledLavaCommands { get; set; }
+
+        /// <summary>
         /// Gets or sets the persisted last refresh date time.
         /// </summary>
         /// <value>
@@ -248,7 +257,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="accessKey">The access key.</param>
         /// <returns></returns>
-        public static object GetObjectFromAccessKey( string accessKey )
+        public static dynamic GetObjectFromAccessKey( string accessKey )
         {
             return GetFromAccessKey( accessKey )?.ResultDataObject;
         }
@@ -304,6 +313,7 @@ namespace Rock.Web.Cache
             Description = persistedDataset.Description;
             RefreshIntervalMinutes = persistedDataset.RefreshIntervalMinutes;
             LastRefreshDateTime = persistedDataset.LastRefreshDateTime;
+            EnabledLavaCommands = persistedDataset.EnabledLavaCommands;
             AllowManualRefresh = persistedDataset.AllowManualRefresh;
             ResultData = persistedDataset.ResultData;
             ResultFormat = persistedDataset.ResultFormat;

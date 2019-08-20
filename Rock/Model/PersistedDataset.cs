@@ -89,6 +89,15 @@ namespace Rock.Model
         public DateTime? LastRefreshDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        [DataMember]
+        public string EnabledLavaCommands { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [allow manual refresh].
         /// </summary>
         /// <value>
@@ -242,7 +251,14 @@ namespace Rock.Model
                     {
                         var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
 
-                        this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields, null, "All");
+                        if ( this.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
+                        {
+                            this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+                        }
+                        else
+                        {
+                            this.ResultData = this.BuildScript.ResolveMergeFields( mergeFields );
+                        }
                         break;
                     }
 
