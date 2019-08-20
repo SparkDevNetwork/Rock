@@ -319,4 +319,7 @@
   <data name="_201907082136571_Rollup0708_SegmentedChartUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 9.0\version 1.9.0\201907082136571_rollup0708_segmentedchartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201908202115162_Rollup_0820_GroupRequirementsBadge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201908202115162_rollup_0820_grouprequirementsbadge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
