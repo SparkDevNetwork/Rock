@@ -99,7 +99,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The result data object.
         /// </value>
-        public object ResultDataObject
+        public dynamic ResultDataObject
         {
             get
             {
