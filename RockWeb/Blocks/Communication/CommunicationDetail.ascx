@@ -6,92 +6,6 @@
     }
 </script>
 
-<style>
-    .metric {
-        border: 1px solid #ccc;
-        padding: 12px;
-        margin-bottom: 12px;
-        color: white;
-    }
-
-        .metric h5 {
-            font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 0;
-            width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .metric .value {
-            font-size: 48px;
-            font-weight: 800;
-            line-height: 1em;
-            text-align: right;
-        }
-
-            .metric .value small {
-                display: block;
-                font-weight: 300;
-                font-size: 14px;
-                line-height: 1em;
-                text-align: right;
-            }
-
-        .metric .icon {
-            float: left;
-            font-size: 65px;
-            border-radius: 0;
-            width: 85px;
-            height: 65px;
-            color: white;
-        }
-
-    .metric-sm .value {
-        font-size: 32px;
-        font-weight: 400;
-        line-height: 1em;
-        text-align: right;
-    }
-
-        .metric-sm .value small {
-            display: block;
-            font-weight: 300;
-            font-size: 10px;
-            line-height: 1em;
-            text-align: right;
-        }
-
-    .metric-pending {
-        background-color: #767676;
-    }
-
-    .metric-delivered {
-        background-color: #0079CC;
-    }
-
-    .metric-failed {
-        background-color: #D4442E;
-    }
-
-    .metric-cancelled {
-        background-color: #FFC870;
-    }
-
-    .metric-clicked {
-        background-color: #16C98C;
-    }
-
-    .metric-opened {
-        background-color: #0079CC;
-    }
-
-    .js-chart-canvas-main {
-        height: 350px;
-    }
-</style>
-
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
@@ -123,8 +37,8 @@
                                 <%-- Actions Summary --%>
                                 <div class="recipient-status row">
                                     <div class="col-sm-3">
-                                        <div class="metric metric-pending">
-                                            <i class="icon fa fa-layer-group"></i>
+                                        <div class="metric-tile metric-pending">
+                                            <div class="metric-icon"><i class="fa fa-clock"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lPending" runat="server"></asp:Literal>
                                                 <small>Pending</small>
@@ -132,8 +46,8 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric metric-delivered">
-                                            <i class="icon fa fa-inbox"></i>
+                                        <div class="metric-tile metric-delivered">
+                                            <div class="metric-icon"><i class="fa fa-inbox"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lDelivered" runat="server"></asp:Literal>
                                                 <small>Delivered</small>
@@ -141,8 +55,8 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric metric-failed">
-                                            <i class="icon fa fa-comment-slash"></i>
+                                        <div class="metric-tile metric-failed">
+                                            <div class="metric-icon"><i class="fa fa-comment-slash"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal>
                                                 <small>Failed</small>
@@ -150,8 +64,8 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric metric-cancelled">
-                                            <i class="icon fa fa-ban"></i>
+                                        <div class="metric-tile metric-cancelled">
+                                            <div class="metric-icon"><i class="fa fa-ban"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lCancelled" runat="server"></asp:Literal>
                                                 <small>Cancelled</small>
@@ -176,7 +90,7 @@
                                                 <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
                                                 <%-- Main Opens/Clicks Line Chart --%>
                                                 <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
-                                                <div class="chart-container">
+                                                <div class="chart-container" style="height:350px;">
                                                     <canvas id="openClicksLineChartCanvas" runat="server" class="js-chart-canvas-main" />
                                                 </div>
                                             </div>
@@ -192,53 +106,52 @@
                                                     <canvas id="opensClicksPieChartCanvas" runat="server" class="js-chart-canvas-opens" />
                                                 </div>
                                             </div>
+
+                                            <%-- Actions Summary --%>
                                             <div class="col-md-8">
-                                                <%-- Actions Summary --%>
                                                 <div class="row">
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-opened">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-opened">
                                                             <div class="value">
                                                                 <asp:Literal ID="lUniqueOpens" runat="server" />
                                                                 <small>Unique Opens</small>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-opened">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-opened">
                                                             <div class="value">
                                                                 <asp:Literal ID="lTotalOpens" runat="server" />
                                                                 <small>Total Opens</small>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-opened">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-opened">
                                                             <div class="value">
                                                                 <asp:Literal ID="lPercentOpened" runat="server" />
                                                                 <small>Percent Opened</small>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-clicked">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-clicked">
                                                             <div class="value">
                                                                 <asp:Literal ID="lUniqueClicks" runat="server" />
                                                                 <small>Unique Clicks</small>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-clicked">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-clicked">
                                                             <div class="value">
                                                                 <asp:Literal ID="lTotalClicks" runat="server" />
                                                                 <small>Total Clicks</small>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2">
-                                                        <div class="metric metric-sm metric-clicked">
+                                                    <div class="col-xs-6 col-sm-4">
+                                                        <div class="metric-tile metric-sm metric-clicked">
                                                             <div class="value">
                                                                 <asp:Literal ID="lClickThroughRate" runat="server" />
                                                                 <small>Click-Through Rate</small>
@@ -247,9 +160,9 @@
 
                                                     </div>
                                                 </div>
-
                                             </div>
                                         </div>
+
 
                                         <hr />
                                         <h1 class="text-center">Clients</h1>

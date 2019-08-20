@@ -499,9 +499,9 @@ iframe.email-body {
   .component.gu-transit {
     display: block;
     padding: @panel-heading-padding;
+    margin-bottom: @line-height-computed;
     background-color: @panel-heading-bg; // Replace with @panel-widget-heading-bg
     border: 1px solid @panel-heading-border; // Replace with @panel-widget-heading-border
-    margin-bottom: @line-height-computed;
   }
 }
 
@@ -628,14 +628,14 @@ iframe.email-body {
 
   .drag-container-empty::after {
     display: block;
-    content: 'Drag and Drop Here';
     max-width: 500px;
+    height: 200px;
     padding: 80px 0;
     margin: 0 auto 20px;
     font-size: 20px;
     text-align: center;
-    border: 3px dashed rgba(0,0,0,0.2);
-    height: 200px;
+    content: "Drag and Drop Here";
+    border: 3px dashed rgba(0,0,0,.2);
   }
 
   h4 {
@@ -670,4 +670,85 @@ iframe.email-body {
   &::after {
     display: none;
   }
+}
+
+.metric-tile {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center !important;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  align-items: center !important;
+  margin-bottom: 12px;
+  color: #fff;
+
+  .value {
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 60%;
+    max-width: 100%;
+    padding: 4px 12px 14px;
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: right;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+
+    small {
+      display: block;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1em;
+    }
+  }
+
+  .metric-icon {
+    flex-basis: 100px;
+    flex-grow: 1;
+    width: auto;
+    max-width: 100%;
+    height: 65px;
+    min-height: 100px;
+    font-size: 60px;
+    color: #fff;
+    text-align: center;
+    background: rgba(0, 0, 0, .15);
+    border-radius: 0;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+  }
+
+  &.metric-sm .value {
+    font-size: 26px;
+    line-height: 1.4;
+
+    small {
+      font-size: 16px;
+    }
+  }
+}
+
+.metric-pending {
+  background-color: @metric-pending-bg;
+}
+
+.metric-delivered {
+  background-color: @metric-delivered-bg;
+}
+
+.metric-failed {
+  background-color: @metric-failed-bg;
+}
+
+.metric-cancelled {
+  background-color: @metric-cancelled-bg;
+}
+
+.metric-clicked {
+  background-color: @metric-clicked-bg;
+}
+
+.metric-opened {
+  background-color: @metric-opened-bg;
 }
