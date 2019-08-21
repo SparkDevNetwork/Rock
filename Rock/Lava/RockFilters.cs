@@ -2208,23 +2208,6 @@ namespace Rock.Lava
                         return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
                     }
 
-                    // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
-                    if ( !string.IsNullOrWhiteSpace( qualifier ) && field is Rock.Field.IEntityFieldType )
-                    {
-                        IEntity entity = ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( rawValue );
-                        if ( entity != null )
-                        {
-                            if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
-                            {
-                                return entity;
-                            }
-                            else
-                            {
-                                return entity.GetPropertyValue( qualifier ).ToStringSafe();
-                            }
-                        }
-                    }
-
                     if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )
                     {
                         var cachedEntitiesField = ( Rock.Field.ICachedEntitiesFieldType ) field;
@@ -2245,6 +2228,25 @@ namespace Rock.Lava
                             return values.FirstOrDefault();
                         }
                     }
+
+                    // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
+                    if ( !string.IsNullOrWhiteSpace( qualifier ) && field is Rock.Field.IEntityFieldType )
+                    {
+                        IEntity entity = ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( rawValue );
+                        if ( entity != null )
+                        {
+                            if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                return entity;
+                            }
+                            else
+                            {
+                                return entity.GetPropertyValue( qualifier ).ToStringSafe();
+                            }
+                        }
+                    }
+
+                    
 
                     // Otherwise return the formatted value
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
