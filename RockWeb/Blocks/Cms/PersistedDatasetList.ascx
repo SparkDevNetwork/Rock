@@ -31,12 +31,11 @@
 
             </div>
 
-            <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview the Dataset JSON">
+            <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview the Dataset JSON" OnCancelScript="">
                 <Content>
                     <Rock:NotificationBox ID="nbPreviewMessage" runat="server" />
-                    <Rock:RockLiteral ID="lPreviewJson" runat="server" Label="Build Script output" />
-                    <Rock:CodeEditor ID="cePreviewJSON" runat="server" EditorMode="JavaScript" EditorHeight="500" Label="Build Script output" ReadOnly="true" Enabled="false" Visible="false" />
-
+                    <Rock:NotificationBox ID="nbPreviewMaxLengthWarning" NotificationBoxType="Info" runat="server" />
+                    <Rock:RockLiteral ID="lPreviewJson" runat="server" Label="Build Script output" CssClass="js-preview-json" ViewStateMode="Disabled" />
                 </Content>
             </Rock:ModalDialog>
 
