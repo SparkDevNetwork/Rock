@@ -517,6 +517,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the names of the selected items.
+        /// </summary>
+        /// <value>
+        /// The names of the selected items.
+        /// </value>
+        public List<string> SelectedNames
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Text ).ToList();
+            }
+        }
     }
 }
 

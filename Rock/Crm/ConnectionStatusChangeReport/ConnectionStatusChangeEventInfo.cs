@@ -18,6 +18,9 @@ using System;
 
 namespace Rock.Crm.ConnectionStatusChangeReport
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ConnectionStatusChangeEventInfo
     {
         /// <summary>
@@ -30,14 +33,20 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         /// </summary>
         public DateTime EventDate { get; set; }
 
-        // <summary>
-        // The system identifier of the person's current primary campus.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
         public int? CampusId { get; set; }
 
-        // <summary>
-        // The name of the person's current primary campus.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the name of the campus.
+        /// </summary>
+        /// <value>
+        /// The name of the campus.
+        /// </value>
         public string CampusName { get; set; }
 
         /// <summary>
@@ -85,6 +94,12 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         /// </summary>
         public string CreatedBy { get; set; }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return $"{FirstName} {LastName} [{OldConnectionStatusName} --> {NewConnectionStatusName}]";

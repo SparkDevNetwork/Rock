@@ -70,13 +70,17 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
+    <Compile Include="RestTests\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Rock\Communications\CommunicationsModuleTestData.cs" />
     <Compile Include="Rock\Crm\StepsTests.cs" />
     <Compile Include="Rock\DatabaseTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />

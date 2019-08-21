@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.Crm
                         rtbQualifierValue.Text = badge.EntityTypeQualifierValue;
                         rtbQualifierColumn.Text = badge.EntityTypeQualifierColumn;
                         etpEntityType.SelectedEntityTypeId = badge.EntityTypeId;
+                        SyncBadgeComponentsWithEntityType();
 
                         var badgeComponentType = EntityTypeCache.Get( badge.BadgeComponentEntityTypeId );
                         compBadgeType.SelectedValue = badgeComponentType.Guid.ToString().ToUpper();
@@ -106,6 +107,16 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the etpEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void etpEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncBadgeComponentsWithEntityType();
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the compBadgeType control.
@@ -198,6 +209,38 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
+        /// <summary>
+        /// Synchronizes the available badge components with the selected entity type.
+        /// </summary>
+        private void SyncBadgeComponentsWithEntityType()
+        {
+            var entityTypeId = etpEntityType.SelectedEntityTypeId;
+
+            if ( entityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( entityTypeId.Value );
+
+                if ( entityType != null )
+                {
+                    var type = entityType.GetEntityType();
+
+                    if ( type != null )
+                    {
+                        var typeName = type.FullName;
+                        compBadgeType.AppliesToEntityType = typeName;
+                        return;
+                    }
+                }
+            }
+
+            compBadgeType.AppliesToEntityType = string.Empty;
+        }
+
+        /// <summary>
+        /// Builds the edit controls.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildEditControls( Badge badge, bool setValues )
         {
             badge.LoadAttributes();
@@ -221,6 +264,6 @@ namespace RockWeb.Blocks.Crm
             etpEntityType.EntityTypes = entityTypes;
         }
 
-        #endregion
+        #endregion        
     }
 }

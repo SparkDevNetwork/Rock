@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -62,25 +63,31 @@ namespace Rock.Web.UI.Controls
 
             picker.Items.Clear();
 
-            if ( picker.StepProgramId.HasValue )
+            if ( !picker.StepProgramId.HasValue )
             {
-                if ( includeEmptyOption )
-                {
-                    // add Empty option first
-                    picker.Items.Add( new ListItem() );
-                }
+                return;
+            }
 
-                var stepProgram = new StepProgramService( new RockContext() ).Get( picker.StepProgramId.Value );
+            if ( includeEmptyOption )
+            {
+                // add Empty option first
+                picker.Items.Add( new ListItem() );
+            }
 
-                if ( stepProgram != null && stepProgram.StepStatuses.Any() )
-                {
-                    foreach ( var stepStatus in stepProgram.StepStatuses.OrderBy( ss => ss.Order ).ThenBy( ss => ss.Name ) )
-                    {
-                        var li = new ListItem( stepStatus.Name, stepStatus.Id.ToString() );
-                        li.Selected = selectedItems.Contains( stepStatus.Id );
-                        picker.Items.Add( li );
-                    }
-                }
+            var stepStatusService = new StepStatusService( new RockContext() );
+            var statuses = stepStatusService.Queryable().AsNoTracking()
+                .Where( ss =>
+                    ss.StepProgramId == picker.StepProgramId.Value &&
+                    ss.IsActive )
+                .OrderBy( ss => ss.Order )
+                .ThenBy( ss => ss.Name )
+                .ToList();
+
+            foreach ( var status in statuses )
+            {
+                var li = new ListItem( status.Name, status.Id.ToString() );
+                li.Selected = selectedItems.Contains( status.Id );
+                picker.Items.Add( li );
             }
         }
     }

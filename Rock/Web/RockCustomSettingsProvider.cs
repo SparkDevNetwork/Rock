@@ -98,14 +98,17 @@ namespace Rock.Web
                 InitializeCachedProviders();
             }
 
-            if ( !_cachedProviders.ContainsKey( type ) )
+            while ( type != null )
             {
-                yield break;
-            }
+                if ( _cachedProviders.TryGetValue( type, out var providers ) )
+                {
+                    foreach ( var t in providers )
+                    {
+                        yield return ( RockCustomSettingsProvider ) Activator.CreateInstance( t );
+                    }
+                }
 
-            foreach ( var t in _cachedProviders[type] )
-            {
-                yield return (RockCustomSettingsProvider)Activator.CreateInstance( t );
+                type = type.BaseType;
             }
         }
 

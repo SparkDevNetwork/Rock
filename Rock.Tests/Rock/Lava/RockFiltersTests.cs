@@ -1220,6 +1220,144 @@ a comment --> sit amet</p>";
 
         #endregion
 
+        #region OrderBy
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the default ordering (ascending).
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_Int()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    {""Title"": ""D"", ""Order"": 4},
+    {""Title"": ""A"", ""Order"": 1},
+    {""Title"": ""C"", ""Order"": 3},
+    {""Title"": ""B"", ""Order"": 2}
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the explicit ordering descending.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntDescending()
+        {
+            var expected = new List<string>() { "D", "C", "B", "A" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 4 },
+    { ""Title"": ""A"", ""Order"": 1 },
+    { ""Title"": ""C"", ""Order"": 3 },
+    { ""Title"": ""B"", ""Order"": 2 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""SecondOrder"": 1 },
+    { ""Title"": ""A"", ""Order"": 1, ""SecondOrder"": 2 },
+    { ""Title"": ""C"", ""Order"": 2, ""SecondOrder"": 2 },
+    { ""Title"": ""B"", ""Order"": 1, ""SecondOrder"": 1 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order,SecondOrder desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntNestedInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""Nested"": { ""Order"": 1 } },
+    { ""Title"": ""A"", ""Order"": 1, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""C"", ""Order"": 2, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""B"", ""Order"": 1, ""Nested"": { ""Order"": 1 } }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order, Nested.Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort collection of group members by person name.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromObject_GroupMemberPersonName()
+        {
+            var expected = new List<int>() { 1, 2, 3, 4 };
+
+            var members = new List<GroupMember>
+            {
+                new GroupMember
+                {
+                    Id = 2,
+                    Person = new Person { FirstName = "Zippey", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 4,
+                    Person = new Person { FirstName = "Nancy", LastName = "Smith" }
+                },
+                new GroupMember
+                {
+                    Id = 1,
+                    Person = new Person { FirstName = "Adele", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 3,
+                    Person = new Person { FirstName = "Fred", LastName = "Smith" }
+                },
+            };
+
+            var output = ( List<object> ) RockFilters.OrderBy( members, "Person.LastName, Person.FirstName" );
+            var sortedIds = output.Cast<dynamic>().Select( x => x.Id ).Cast<int>();
+
+            Assert.Equal( expected, sortedIds );
+        }
+
+        #endregion
+
         #region Date Filters
 
         /// <summary>

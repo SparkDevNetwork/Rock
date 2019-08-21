@@ -26,7 +26,7 @@
                     <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
                     <div class="controls">
                         <Rock:BootstrapButton ID="lbCheckOut" runat="server" Text="Check Out" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbCheckOut_Click" DataLoadingText="Loading..." />
-                       <Rock:BootstrapButton ID="lbCheckIn" runat="server" Text="Check In" CssClass="btn btn-default btn-large btn-block btn-checkin-select" OnClick="lbCheckIn_Click" DataLoadingText="Loading..." />
+                       <Rock:BootstrapButton ID="lbCheckIn" runat="server" Text="Check In" CssClass="btn btn-default btn-large btn-block btn-checkin-select" OnClick="lbCheckIn_Click" DataLoadingText="Loading..." Visible="false"/>
                     </div>
                 </div>
 

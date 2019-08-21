@@ -6,6 +6,17 @@
     }
 </script>
 
+<style>
+.chart-banner
+{
+    width: 100%;
+}
+.chart-banner canvas
+{
+    height: 350px;
+}
+</style>
+
 <asp:UpdatePanel ID="upStepType" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbBlockStatus" runat="server" NotificationBoxType="Info" />
@@ -58,10 +69,8 @@
                         </div>
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
-                        <div id="pnlActivityChart" runat="server">
-                            <div class="chart-container" align="center">
-                                <canvas id="chartCanvas" runat="server" height="350" width="700" />
-                            </div>
+                        <div id="pnlActivityChart" runat="server" class="chart-banner">
+                            <canvas id="chartCanvas" runat="server" />
                         </div>
                     </div>
 
@@ -76,6 +85,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnBulkEntry" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnBulkEntry_Click" CausesValidation="false"><i class="fa fa-truck"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
                     </div>
@@ -171,7 +181,7 @@
 
                     <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced Settings">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6" style="display: none;"><!-- feature coming soon -->
                                 <Rock:DataViewItemPicker ID="dvpAutocomplete"
                                     runat="server"
                                     DataField="WorkflowType"

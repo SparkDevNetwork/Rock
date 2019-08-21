@@ -15,11 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -64,6 +67,21 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         DefaultValue = "fa fa-desktop",
         Order = 3)]
+
+    [TextField(
+        "Block Icon CSS Class",
+        Key = AttributeKey.BlockIconCssClass,
+        Description = "The icon CSS class for the block.",
+        IsRequired = false,
+        DefaultValue = "fa fa-desktop",
+        Order = 3 )]
+
+    [BooleanField( "Show Delete Column",
+        Description = "Determines if the delete column should be shown.",
+        DefaultBooleanValue = false,
+        IsRequired = true,
+        Key = AttributeKey.ShowDeleteColumn,
+        Order = 5 )]
     #endregion
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
@@ -73,13 +91,14 @@ namespace RockWeb.Blocks.Cms
             public const string SiteType = "SiteType";
             public const string BlockTitle = "BlockTitle";
             public const string BlockIconCssClass = "BlockIcon";
+            public const string ShowDeleteColumn = "ShowDeleteColumn";
             public const string DetailPage = "DetailPage";
         }
         #endregion
         private const string INCLUE_INACTIVE = "Include Inactive";
 
-        #region Control Methods
 
+        #region Control Methods
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -91,6 +110,8 @@ namespace RockWeb.Blocks.Cms
             gSites.DataKeyNames = new string[] { "Id" };
             gSites.Actions.AddClick += gSites_Add;
             gSites.GridRebind += gSites_GridRebind;
+            gSites.ShowConfirmDeleteDialog = false;
+            gSites.IsDeleteEnabled = true;
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEdit = IsUserAuthorized( Authorization.EDIT );
@@ -101,6 +122,34 @@ namespace RockWeb.Blocks.Cms
             {
                 securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Site ) ).Id;
             }
+
+            var deleteField = new DeleteField();
+            gSites.Columns.Add( deleteField );
+            deleteField.Click += gSites_Delete;
+
+            var deleteColumn = gSites.Columns.OfType<DeleteField>().FirstOrDefault();
+            if ( deleteColumn != null )
+            {
+                deleteColumn.Visible = GetAttributeValue( AttributeKey.ShowDeleteColumn ).AsBoolean();
+            }
+
+            string deleteScript = @"
+                $('table.js-grid-site-list a.grid-delete-button').click(function( e ){
+                    var $btn = $(this);
+                    e.preventDefault();
+                    var siteName = $btn.closest('tr').find('.js-name').text();
+                    Rock.dialogs.confirm('Deleting a site will delete all layouts and pages related to it. Are you sure you want to delete the <strong>' + siteName + '</strong> site?', function (result) {
+                        if (result) {
+                                Rock.dialogs.confirm('Due to the large nature of the delete please confirm again your intent to delete the <strong>' + siteName + '</strong> site.', function (result) {
+                                    if (result) {
+                                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                                    }
+                                });
+                        }
+                    });
+                });";
+
+            ScriptManager.RegisterStartupScript( gSites, gSites.GetType(), "deleteSiteScript", deleteScript, true );
         }
 
         /// <summary>
@@ -151,6 +200,73 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_GridRebind( object sender, EventArgs e )
         {
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSites control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gSites_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( e.RowKeyId );
+            LayoutService layoutService = new LayoutService( rockContext );
+            PageService pageService = new PageService( rockContext );
+            UserLoginService userLoginService = new UserLoginService( rockContext );
+            if ( site != null )
+            {
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+
+                var sitePages = new List<int> {
+                    site.DefaultPageId ?? -1,
+                    site.LoginPageId ?? -1,
+                    site.RegistrationPageId ?? -1,
+                    site.PageNotFoundPageId ?? -1
+                };
+
+                var pageQry = pageService.Queryable( "Layout" )
+                    .Where( t =>
+                        t.Layout.SiteId == site.Id ||
+                        sitePages.Contains( t.Id ) );
+
+                pageService.DeleteRange( pageQry );
+
+                var layoutQry = layoutService.Queryable()
+                    .Where( l =>
+                        l.SiteId == site.Id );
+                layoutService.DeleteRange( layoutQry );
+                rockContext.SaveChanges( true );
+
+                string errorMessage;
+                var canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
+                if ( !canDelete )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
+                }
+
+                UserLogin userLogin = null;
+                if ( additionalSettings.ApiKeyId.HasValue )
+                {
+                    userLogin = userLoginService.Get( additionalSettings.ApiKeyId.Value );
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    siteService.Delete( site );
+                    if ( userLogin != null )
+                    {
+                        userLoginService.Delete( userLogin );
+                    }
+                    rockContext.SaveChanges();
+
+                } );
+                
+            }
+
             BindGrid();
         }
 
