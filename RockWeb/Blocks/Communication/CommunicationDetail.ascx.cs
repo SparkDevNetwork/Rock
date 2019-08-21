@@ -856,8 +856,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            Person p;
-
             if ( e.Row.RowType != DataControlRowType.DataRow )
             {
                 return;
@@ -2945,11 +2943,11 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private class InteractionInfo
         {
-            public DateTime InteractionDateTime;
-            public string Operation;
-            public string InteractionData;
-            public int? CommunicationRecipientId;
-            public int? PersonId;
+            public DateTime InteractionDateTime { get; set; }
+            public string Operation { get; set; }
+            public string InteractionData { get; set; }
+            public int? CommunicationRecipientId { get; set; }
+            public int? PersonId { get; set; }
         }
 
         /// <summary>
