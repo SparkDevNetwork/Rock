@@ -33,7 +33,6 @@
 
             {% capture childrenPermalinks %}[
                     {% for child in parent.ChildItems %}{
-                        
                         "url": "{[ getPermalink cciid:'{{ child.ChildContentChannelItem.Id }}' ]}"
 
                         {% if child.ChildContentChannelItem.Title == Item.Title %}
@@ -111,10 +110,10 @@
             {% endif %}
 
             {% if label and label != empty %}
-                <p class="push-half-top"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                <p><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
             {% endif %}
             
-            <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
+            <h1 class="h2 xs-h3 push-half-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
 
             {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
             {% assign collectiontext = collectiontext | Trim %}
@@ -161,19 +160,6 @@
             {% endif %}
 
             {{ Item.Content }}
-
-            {% if itemIndex and itemIndex != empty %}
-                {% assign prevLinkIndex = itemIndex | Minus:2 %}
-                <div class="row flush">
-                    <div class="col-xs-4 col-sm-4 col-md-4 hard">
-                        {% if itemIndex and itemIndex != 1 %}<a href="{{ childrenPermalinks | Index:prevLinkIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
-                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
-                        <p class="text-gray-light"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
-                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">
-                        {% if itemIndex and itemIndex != totalChildren %}<a href="{{ childrenPermalinks | Index:itemIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom">Next <i class="fas fa-angle-right"></i></a>{% endif %}
-                    </div>
-                </div>
-            {% endif %}
             
             <div class="push-bottom">
                 <div class="row row-condensed">
@@ -184,6 +170,22 @@
                     </div>
                 </div>
             </div>
+
+            <pre>{{ childrenPermalinks | ToJSON }}</pre>
+
+            {% if itemIndex and itemIndex != empty %}
+                {% assign prevLinkIndex = itemIndex | Minus:1 %}
+                {% assign nextLinkIndex = itemIndex | Plus:1 %}
+                <div class="row flush">
+                    <div class="col-xs-4 col-sm-4 col-md-4 hard">
+                        {% if itemIndex and itemIndex != 1 %}<a href="{{ childrenPermalinks | Index:prevLinkIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
+                        <p class="text-gray-light flush"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">
+                        {% if itemIndex and itemIndex != totalChildren %}<a href="{{ childrenPermalinks | Index:nextLinkIndex | Property:'url' }}" class="btn btn-primary xs-push-half-bottom">Next <i class="fas fa-angle-right"></i></a>{% endif %}
+                    </div>
+                </div>
+            {% endif %}
             
             {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
             {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
@@ -204,6 +206,7 @@
             
             {[ modalShare ]}
             {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
+            {% assign tags = tags | Trim %}
 
             {% capture isDateVisible %}
             {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
@@ -215,19 +218,29 @@
             {% assign isDateVisible = isDateVisible | Trim %}
             
             {% if isDateVisible == 'True' %}
-                <div class="row">
-                    <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
-                        {{ tags }}
-                    </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                        <p class="flush"><small><b>{{ date }}</b></small></p>
+                {% if tags and tags != empty %}
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                            {{ tags }}
+                        </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                            <p class="flush"><small><b>{{ date }}</b></small></p>
+                        </div>
                     </div>
-                </div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center xs-text-center">
+                            <p class="flush"><small><b>{{ date }}</b></small></p>
+                        </div>
+                    </div>
+                {% endif %}
             {% else %}
+                {% if tags and tags != empty %}
                 <div class="row">
                     <div class="col-xs-12 text-center">
                         {{ tags }}
                     </div>
                 </div>
+                {% endif %}
             {% endif %}
 
         </div>
