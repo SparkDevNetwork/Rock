@@ -40,7 +40,16 @@ namespace RockWeb.Blocks.Cms
 
     [LinkedPage(
         "Detail Page",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        Order = 1 )]
+
+    [DecimalField(
+        "Max Preview Size (MB)",
+        Key = AttributeKey.MaxPreviewSizeMB,
+        Description = "If the JSON data is large, it could cause the browser to timeout.",
+        IsRequired = true,
+        DefaultDecimalValue = 1,
+        Order = 2 )]
 
     public partial class PersistedDatasetList : RockBlock, ICustomGridColumns
     {
@@ -53,6 +62,7 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string MaxPreviewSizeMB = "MaxPreviewSizeMB";
         }
 
         #endregion Attribute Keys
@@ -86,7 +96,6 @@ namespace RockWeb.Blocks.Cms
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-
 
             gList.DataKeyNames = new string[] { "Id" };
             gList.Actions.ShowAdd = canAddEditDelete;
@@ -185,12 +194,30 @@ namespace RockWeb.Blocks.Cms
                 persistedDataset.UpdateResultData();
             }
 
-            lPreviewJson.Text = string.Format( "<pre>{0}</pre>", persistedDataset.ResultData );
+            // limit preview size (default is 1MB)
+            var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+
+            // make sure they didn't put in a negative number
+            maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+
+            var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+
+            lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", persistedDataset.ResultData ) ).Truncate( maxPreviewSizeLength );
+
+
             nbPreviewMessage.Visible = false;
+            nbPreviewMaxLengthWarning.Visible = false;
 
             try
             {
                 var preViewObject = persistedDataset.ResultData.FromJsonDynamic();
+                if ( persistedDataset.ResultData.Length > maxPreviewSizeLength )
+                {
+                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", persistedDataset.ResultData.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                    nbPreviewMaxLengthWarning.Visible = true;
+                }
+
                 nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F}ms", persistedDataset.TimeToBuildMS );
                 nbPreviewMessage.Details = null;
                 nbPreviewMessage.NotificationBoxType = NotificationBoxType.Success;
@@ -278,7 +305,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
-
     }
 }
