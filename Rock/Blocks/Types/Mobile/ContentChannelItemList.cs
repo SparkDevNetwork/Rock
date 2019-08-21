@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Net.Http;
 using System.Text;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
@@ -40,8 +41,7 @@ namespace Rock.Blocks.Types.Mobile
     /// Lists content channel items for a given channel and allow the user to
     /// format how they are displayed with XAML.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content Channel Item List" )]
     [Category( "Mobile" )]
@@ -143,7 +143,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class ContentChannelItemList : RockBlockType, IRockMobileBlockType
+    public class ContentChannelItemList : RockMobileBlockType
     {
         /// <summary>
         /// The key names of all block attributes used by the ContentChannelItemList block.
@@ -227,7 +227,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
-        public string MobileBlockType => "Rock.Mobile.Blocks.CollectionViewList";
+        public override string MobileBlockType => "Rock.Mobile.Blocks.CollectionViewList";
 
         /// <summary>
         /// Gets the required mobile application binary interface version.
@@ -235,7 +235,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The required mobile application binary interface version.
         /// </value>
-        public int RequiredMobileAbiVersion => 1;
+        public override int RequiredMobileAbiVersion => 1;
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -243,7 +243,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public object GetMobileConfigurationValues()
+        public override object GetMobileConfigurationValues()
         {
             return new Dictionary<string, object>
             {
@@ -453,7 +453,6 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the followed item ids.
         /// </summary>
-        /// <param name="includeFollowing">if set to <c>true</c> [include following].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="results">The results.</param>
         /// <returns></returns>

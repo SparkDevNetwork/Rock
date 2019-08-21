@@ -23,7 +23,7 @@
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                    </h1>                    
+                    </h1>
 
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivegroup-label" LabelType="Danger" Text="Inactive" />
@@ -38,6 +38,8 @@
                 </div>
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+
+                <div class="panel-badges" id="divBadgeContainer" runat="server"><Rock:BadgeListControl ID="blBadgeList" runat="server" /></div>
 
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -60,7 +62,7 @@
                                 <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" Style="display: none" />
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
                             </div>
-                        </div>                        
+                        </div>
 
                         <div class="row">
                             <div class="col-md-12">
@@ -251,13 +253,8 @@
                     </div>
 
                     <fieldset id="fieldsetViewDetails" runat="server">
-
                         <div class="taglist">
                             <Rock:TagList ID="taglGroupTags" runat="server" CssClass="clearfix" />
-                        </div>
-
-                        <div class="margin-b-lg" id="divBadgeContainer" runat="server">
-                            <Rock:BadgeListControl ID="blBadgeList" runat="server" />
                         </div>
 
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>

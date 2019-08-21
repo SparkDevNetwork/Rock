@@ -6,6 +6,17 @@
     }
 </script>
 
+<style>
+.chart-banner
+{
+    width: 100%;
+}
+.chart-banner canvas
+{
+    height: 350px;
+}
+</style>
+
 <asp:UpdatePanel ID="upStepProgram" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbBlockStatus" runat="server" NotificationBoxType="Info" Visible="false" />
@@ -58,10 +69,8 @@
                         </div>
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
-                        <div id="pnlActivityChart" runat="server">
-                            <div class="chart-container" align="center">
-                                <canvas id="chartCanvas" runat="server" height="350" width="700" />
-                            </div>
+                        <div id="pnlActivityChart" runat="server" class="chart-banner" >
+                            <canvas id="chartCanvas" runat="server" />
                         </div>
                     </div>
 

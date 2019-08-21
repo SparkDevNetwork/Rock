@@ -141,3 +141,149 @@
     }
   }
 }
+
+
+.give-box {
+  position: relative;
+  height: 100px;
+  font-size: 100px;
+
+  input {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100px;
+    padding: 0;
+    font-size: 100px;
+    line-height: 1;
+    text-align: center;
+    background: 0;
+    border: 0;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .decorator {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    line-height: 1;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-box-pack: center;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 0;
+    line-height: 1;
+    border-bottom: 1px solid #fff;
+  }
+
+  .currency-symbol {
+    position: absolute;
+    left: -24px;
+    display: inline-block;
+    width: 24px;
+    font-size: 32px;
+    text-align: center;
+    vertical-align: super;
+  }
+
+  .shadow-amount {
+    color: rgba(0,0,0,0);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}
+
+.transaction-entry-v2 {
+  max-width: 600px;
+  margin: 0 auto;
+
+  h2 {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .btn-give-now {
+    display: block;
+  }
+
+  .toggle-container {
+    margin-bottom: 8px;
+  }
+
+  .navigate-actions {
+    text-align: center;
+    margin-top: 15px;
+  }
+}
+
+.giving-personal-information {
+  padding: 15px 0;
+}
+
+.amount-summary {
+  text-align: center;
+}
+
+.gateway-hosted-payment {
+  padding: 15px 15px 0;
+  margin-bottom: 15px;
+  border: 1px solid @panel-default-border;
+}
+
+.gateway-type-selector {
+  margin-bottom: 15px;
+}
+
+.gateway-iframe-container {
+  min-height: 44px;
+  margin: -5px -15px 10px;
+}
+
+
+.amount-display {
+  font-size: 45px;
+  line-height: 1.15;
+  -webkit-transition: .25s;
+  transition: .25s;
+
+  @media @sm {
+    font-size: 100px;
+
+    &-md {
+      font-size: 45px;
+    }
+
+    &-lg {
+      font-size: 60px;
+    }
+  }
+
+  &::first-letter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    padding-right: 4px;
+    font-size: 32px;
+    vertical-align: top !important;
+  }
+}

@@ -242,11 +242,18 @@ namespace Rock.Web.Cache
         public string  AbbreviatedName { get; private set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; private set; }
+
+        /// <summary>
         /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
         /// </summary>
         /// <value>
         /// A boolean value.
         /// </value>
+        [DataMember]
         public bool IsPublic { get; set; }
 
         /// <summary>
@@ -413,6 +420,7 @@ namespace Rock.Web.Cache
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
             AbbreviatedName = attribute.AbbreviatedName;
+            ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();

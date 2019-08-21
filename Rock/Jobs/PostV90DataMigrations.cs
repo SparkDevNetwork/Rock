@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
@@ -73,8 +75,56 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
             }
 
+            PopulateRegistrationRegistrantFee();
 
             DeleteJob( context.GetJobId() );
+        }
+
+        /// <summary>
+        /// Set the value for RegistrationRegistrantFee.RegistrationTemplateFeeItemId to the IDs of the RegistrationTemplateFeeItem objects just created.
+        /// </summary>
+        private void PopulateRegistrationRegistrantFee()
+        {
+            List<int> registrationRegistrantFeeIds;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                registrationRegistrantFeeIds = registrationRegistrantFeeService.Queryable().AsNoTracking().Where( a => a.RegistrationTemplateFeeItemId == null ).Select( a => a.Id ).ToList();
+            }
+
+            foreach ( var registrationRegistrantFeeId in registrationRegistrantFeeIds )
+            {
+                // Create a new context each time to keep change tracking from bogging it down.
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationRegistrantFee = new RegistrationRegistrantFeeService( rockContext ).Get( registrationRegistrantFeeId );
+
+                    var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+
+                    if ( registrationRegistrantFee.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single )
+                    {
+                        // For Single Fee Types set the RegistrationTemplateFeeItemId by matching the RegistrationTemplateFeeId
+                        registrationRegistrantFee.RegistrationTemplateFeeItemId = registrationTemplateFeeItemService
+                            .Queryable()
+                            .Where( a => a.RegistrationTemplateFeeId == registrationRegistrantFee.RegistrationTemplateFeeId )
+                            .Select( a => (int?) a.Id )
+                            .FirstOrDefault();
+                    }
+                    else if ( registrationRegistrantFee.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
+                    {
+                        // For multiple Fee Types also have to match the name of the FeeItem to the Option of the RegistrantFee.
+                        registrationRegistrantFee.RegistrationTemplateFeeItemId = registrationTemplateFeeItemService
+                            .Queryable()
+                            .Where( a => a.RegistrationTemplateFeeId == registrationRegistrantFee.RegistrationTemplateFeeId )
+                            .Where( a => a.Name == registrationRegistrantFee.Option )
+                            .Select( a => (int?) a.Id )
+                            .FirstOrDefault();
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
         }
 
         /// <summary>
