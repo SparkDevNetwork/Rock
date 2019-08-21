@@ -171,6 +171,43 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the Click event of the lbPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lbPreview_Click( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
+            PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
+            if ( persistedDataset.LastRefreshDateTime == null )
+            {
+                persistedDataset.UpdateResultData();
+            }
+
+            lPreviewJson.Text = string.Format( "<pre>{0}</pre>", persistedDataset.ResultData );
+            nbPreviewMessage.Visible = false;
+
+            try
+            {
+                var preViewObject = persistedDataset.ResultData.FromJsonDynamic();
+                nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F}ms", persistedDataset.TimeToBuildMS );
+                nbPreviewMessage.Details = null;
+                nbPreviewMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbPreviewMessage.Visible = true;
+            }
+            catch ( Exception ex )
+            {
+                nbPreviewMessage.Text = "Error building Dataset object from the JSON generated from the Build Script";
+                nbPreviewMessage.Details = ex.Message;
+                nbPreviewMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbPreviewMessage.Visible = true;
+            }
+
+            mdPreview.Show();
+        }
+
+        /// <summary>
         /// Handles the DeleteClick event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -241,5 +278,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+
     }
 }

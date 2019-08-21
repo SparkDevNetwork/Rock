@@ -20,14 +20,25 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="AccessKey" HeaderText="AccessKey" SortExpression="AccessKey" />
-                            <Rock:DateTimeField DataField="LastRefreshDateTime" HeaderText="Last Refresh" SortExpression="LastRefreshDateTime" />
-                            <Rock:LinkButtonField HeaderText="Refresh" CssClass="btn btn-default btn-sm fa fa-refresh" ToolTip="Rebuild the persisted dataset" OnClick="lbRefresh_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" OnDataBound="btnRefresh_DataBound" />
+                            <Rock:RockBoundField DataField="TimeToBuildMS" HeaderText="Time to Build (ms)" NullDisplayText="-" SortExpression="TimeToBuildMS" />
+                            <Rock:DateTimeField DataField="LastRefreshDateTime" HeaderText="Last Refresh" NullDisplayText="-" SortExpression="LastRefreshDateTime" />
+                            <Rock:LinkButtonField HeaderText="Refresh" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-refresh'></i>" ToolTip="Rebuild the persisted dataset" OnClick="lbRefresh_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" OnDataBound="btnRefresh_DataBound" />
+                            <Rock:LinkButtonField HeaderText="Preview" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-search'></i>" ToolTip="Preview the generated JSON " OnClick="lbPreview_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
                 </div>
 
             </div>
+
+            <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview the Dataset JSON">
+                <Content>
+                    <Rock:NotificationBox ID="nbPreviewMessage" runat="server" />
+                    <Rock:RockLiteral ID="lPreviewJson" runat="server" Label="Build Script output" />
+                    <Rock:CodeEditor ID="cePreviewJSON" runat="server" EditorMode="JavaScript" EditorHeight="500" Label="Build Script output" ReadOnly="true" Enabled="false" Visible="false" />
+
+                </Content>
+            </Rock:ModalDialog>
 
         </asp:Panel>
 

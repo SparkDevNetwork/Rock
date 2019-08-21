@@ -226,8 +226,9 @@ namespace RockWeb.Blocks.Cms
             persistedDataset.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             persistedDataset.AllowManualRefresh = cbAllowManualRefresh.Checked;
 
-            // Build the ResultData after editing/adding
-            persistedDataset.UpdateResultData();
+            // just in case anything has changed, null out the LastRefreshDateTime and TimeToBuild to mark this as needing to be refreshed the next time the Persisted Dataset job runs
+            persistedDataset.LastRefreshDateTime = null;
+            persistedDataset.TimeToBuildMS = null;
 
             rockContext.SaveChanges();
 
