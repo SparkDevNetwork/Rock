@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string GroupType = "GroupType";
             public const string DetectGroupsAlreadyAtTheAddress = "DetectGroupsAlreadyAtTheAddress";

@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string Categories = "Categories";
             public const string DetailPage = "DetailPage";
@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attribute Categories
         /// </summary>
-        protected static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string LinkedPages = "Linked Pages";
         }

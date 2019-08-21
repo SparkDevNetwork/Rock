@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ShowChart = "Show Chart";
             public const string SlidingDateRange = "SlidingDateRange";
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string StepProgramId = "ProgramId";
         }
