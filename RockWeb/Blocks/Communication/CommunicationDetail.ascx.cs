@@ -1932,12 +1932,12 @@ namespace RockWeb.Blocks.Communication
                 cancelledRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Cancelled );
             }
 
-            string actionsStatFormatNumber = "<div class='js-actions-statistic' title='{0}'>{1:#,##0}</div>";
+            string actionsStatFormatNumber = "<div>{0:#,##0}</div>";
 
-            lPending.Text = string.Format( actionsStatFormatNumber, "The number of recipients that have not yet received the communication", pendingRecipientCount );
-            lDelivered.Text = string.Format( actionsStatFormatNumber, "The number of recipients that the communication was successfully delivered to", deliveredRecipientCount );
-            lFailed.Text = string.Format( actionsStatFormatNumber, "The number of recipients to whom the communication could not be sent", failedRecipientCount );
-            lCancelled.Text = string.Format( actionsStatFormatNumber, "The number of recipients for whom the communication was cancelled", cancelledRecipientCount );
+            lPending.Text = string.Format( actionsStatFormatNumber, pendingRecipientCount );
+            lDelivered.Text = string.Format( actionsStatFormatNumber, deliveredRecipientCount );
+            lFailed.Text = string.Format( actionsStatFormatNumber, failedRecipientCount );
+            lCancelled.Text = string.Format( actionsStatFormatNumber, cancelledRecipientCount );
 
             if ( !showAnalytics )
             {
