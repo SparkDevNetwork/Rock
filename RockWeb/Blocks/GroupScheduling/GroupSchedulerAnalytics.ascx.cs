@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
     public partial class GroupSchedulerAnalytics : RockBlock
     {
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DeclineChartColors = "DeclineChartColors";
             public const string BarChartNoResponseColor = "BarChartNoResponseColor";
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         /// Keys to use for UserPreferences
         /// </summary>
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
             /// <summary>
             /// The selected Date Range

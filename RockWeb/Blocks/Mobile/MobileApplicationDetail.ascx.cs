@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Mobile
         /// <summary>
         /// Keys to use for block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// Key for Layout Detail

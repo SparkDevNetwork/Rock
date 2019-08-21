@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string EntityId = "ExceptionId";
             public const string EntityGuid = "ExceptionGuid";

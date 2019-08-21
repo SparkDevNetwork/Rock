@@ -55,7 +55,7 @@ namespace Rock.Badge.Component
         /// <summary>
         /// Keys to use for the attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step program

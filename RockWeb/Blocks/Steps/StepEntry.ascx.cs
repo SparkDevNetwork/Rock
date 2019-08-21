@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step type
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for the page parameters
         /// </summary>
-        protected static class ParameterKey
+        private static class ParameterKey
         {
             /// <summary>
             /// The step type identifier

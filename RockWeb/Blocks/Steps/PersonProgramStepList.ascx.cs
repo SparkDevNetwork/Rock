@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Attribute keys
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step program attribute key
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Attribute Default Values
         /// </summary>
-        protected static class AttributeDefault
+        private static class AttributeDefault
         {
             /// <summary>
             /// The steps per row attribute default value
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Filter keys
         /// </summary>
-        protected static class FilterKey
+        private static class FilterKey
         {
             /// <summary>
             /// The step type name filter key
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Query string or other page parameter keys
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step program id page parameter
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// User preference keys
         /// </summary>
-        protected static class PreferenceKey
+        private static class PreferenceKey
         {
             /// <summary>
             /// The is card view user preference key

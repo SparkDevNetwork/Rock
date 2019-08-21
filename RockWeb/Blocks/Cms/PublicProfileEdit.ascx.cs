@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Cms
 
     public partial class PublicProfileEdit : RockBlock
     {
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DefaultConnectionStatus = "DefaultConnectionStatus";
             public const string DisableNameEdit = "DisableNameEdit";

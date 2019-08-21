@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string SeriesColors = "SeriesColors";
             public const string EnablePersonalTemplates = "EnablePersonalTemplates";
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for User Preferences
         /// </summary>
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
             public const string RecipientListSettings = "RecipientListSettings";
         }
@@ -886,7 +886,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Filter Settings
         /// </summary>
-        protected static class FilterSettingName
+        private static class FilterSettingName
         {
             public const string FirstName = "First Name";
             public const string LastName = "Last Name";

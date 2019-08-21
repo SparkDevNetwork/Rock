@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
         }
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string PersistedDatasetId = "PersistedDatasetId";
         }
