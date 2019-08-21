@@ -80,19 +80,37 @@ namespace Rock
                     return JsonConvert.DeserializeObject<T>( val );
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof(T).Name}. {ex}" );
+                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof( T ).Name}. {ex}" );
                 return default( T );
             }
         }
 
         /// <summary>
-        /// Attempts to deserialize a json string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />.  If it can't be deserialized, returns null
+        /// Attempts to deserialize a JSON string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />.  If it can't be deserialized, return null
         /// </summary>
         /// <param name="val">The value.</param>
         /// <returns></returns>
         public static object FromJsonDynamicOrNull( this string val )
+        {
+            try
+            {
+                return val.FromJsonDynamic();
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to dynamic. {ex}" );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to deserialize a JSON string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />. If it can't be deserialized, throws an exception
+        /// </summary>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static object FromJsonDynamic( this string val )
         {
             var converter = new ExpandoObjectConverter();
             object dynamicObject = null;
@@ -142,7 +160,7 @@ namespace Rock
                 .Select( r => r.Key )
                 .ToList();
 
-            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).ToObjectArray() );
+            arrayKeys.ForEach( k => result[k] = ( ( JArray ) result[k] ).ToObjectArray() );
             valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
 
             return result;
@@ -157,17 +175,17 @@ namespace Rock
         {
             var valueList = new List<object>();
 
-            for( var i = 0; i < jarray.Count; i++ )
+            for ( var i = 0; i < jarray.Count; i++ )
             {
                 var obj = jarray[i];
                 if ( obj.GetType() == typeof( JObject ) )
                 {
-                    valueList.Add( ( (JObject)obj ).ToDictionary() );
+                    valueList.Add( ( ( JObject ) obj ).ToDictionary() );
                 }
 
-                if ( obj.GetType() == typeof( JValue ))
+                if ( obj.GetType() == typeof( JValue ) )
                 {
-                    valueList.Add( ( (JValue)obj ).Value );
+                    valueList.Add( ( ( JValue ) obj ).Value );
                 }
             }
 
