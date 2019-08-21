@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Cms
             tbDescription.Text = persistedDataset.Description;
             ceBuildScript.Text = persistedDataset.BuildScript;
             lcpEnabledLavacommands.SelectedLavaCommands = persistedDataset.EnabledLavaCommands.SplitDelimitedValues().ToList();
-            nbRefreshIntervalHours.Text = persistedDataset.RefreshIntervalMinutes.HasValue ? TimeSpan.FromSeconds( persistedDataset.RefreshIntervalMinutes.Value ).TotalHours.ToString( "F" ) : string.Empty;
+            nbRefreshIntervalHours.Text = persistedDataset.RefreshIntervalMinutes.HasValue ? TimeSpan.FromMinutes( persistedDataset.RefreshIntervalMinutes.Value ).TotalHours.ToString( "F" ) : string.Empty;
             nbMemoryCacheDurationHours.Text = persistedDataset.MemoryCacheDurationMS.HasValue ? TimeSpan.FromMilliseconds( persistedDataset.MemoryCacheDurationMS.Value ).TotalHours.ToString( "F" ) : string.Empty;
             dtpExpireDateTime.SelectedDate = persistedDataset.ExpireDateTime;
             etpEntityType.SelectedEntityTypeId = persistedDataset.EntityTypeId;
