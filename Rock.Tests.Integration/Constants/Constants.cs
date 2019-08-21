@@ -37,6 +37,9 @@ namespace Rock.Tests.Integration
         // Tests having this property relate to data maintenance that may be needed during the development process.
         public const string DataMaintenance = "Data Maintenance";
 
+        // Tests having this property relate to the Reporting feature of Rock.
+        public const string Reporting = "Reporting";
+
         // Tests having this property relate to the Steps feature of Rock.
         public const string Steps = "Steps";
     }
