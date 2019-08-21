@@ -631,9 +631,14 @@ namespace Rock.Reporting
             _SelectedAttributes.Add( columnIndex, attribute );
 
             // Add column for Attribute.
-            var columnName = attribute.Name;
+            var columnName = reportField.ColumnHeaderText;
+
+            if ( string.IsNullOrEmpty( columnName ) )
+            {
+                columnName = attribute.Name;
+            }
+
             var queryFieldName = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-            var valueType = attribute.DefaultValueAsType.GetType();
 
             var column = AddDataTableColumn( _DataTable, columnName, typeof( string ) );
 
