@@ -38,10 +38,8 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <Rock:LavaCommandsPicker ID="lcpEnabledLavacommands" runat="server" Label="Enabled Lava Commands" />
-                    </div>
-                    <div class="col-md-6">
                     </div>
                 </div>
 
@@ -53,7 +51,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:EntityTypePicker ID="etpEntityType" runat="server" Required="false" Label="Entity Type" Help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'" />
-                        
+
                         <Rock:RockCheckBox ID="cbAllowManualRefresh" runat="server" Label="Allow Manual Refresh" Help="Determines if the persisted dataset can be manually refreshed in the Persisted Dataset list." />
                     </div>
                 </div>
