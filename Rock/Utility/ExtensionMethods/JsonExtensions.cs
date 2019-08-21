@@ -30,7 +30,7 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-        #region Json Extensions
+        #region JSON Extensions
 
         /// <summary>
         /// Converts object to JSON string
@@ -47,7 +47,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the json.
+        /// To the JSON.
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <param name="format">The format.</param>
@@ -62,7 +62,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to deserialize a json string into T.  If it can't be deserialized, returns null
+        /// Attempts to deserialize a JSON string into T.  If it can't be deserialized, returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="val">The value.</param>
@@ -115,22 +115,44 @@ namespace Rock
             var converter = new ExpandoObjectConverter();
             object dynamicObject = null;
 
+            // keep track of which exception most applies. 
+            Exception singleObjectException = null;
+            Exception arrayObjectException = null;
+
             try
             {
                 // first try to deserialize as straight ExpandoObject
                 dynamicObject = JsonConvert.DeserializeObject<ExpandoObject>( val, converter );
             }
-            catch
+            catch ( Exception firstException )
             {
                 try
                 {
-                    // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                    singleObjectException = firstException;
                     dynamicObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( val, converter );
+
                 }
-                catch
+                catch ( Exception secondException )
                 {
-                    // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
-                    dynamicObject = JsonConvert.DeserializeObject<List<object>>( val, converter );
+                    try
+                    {
+                        arrayObjectException = secondException;
+
+                        // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
+                        dynamicObject = JsonConvert.DeserializeObject<List<object>>( val, converter );
+                    }
+                    catch
+                    {
+                        // if both the attempt to deserialize an object and an object list fail, it probably isn't valid JSON, so throw the singleObjectException
+                        if ( singleObjectException != null )
+                        {
+                            throw singleObjectException;
+                        }
+                        else
+                        {
+                            throw arrayObjectException;
+                        }
+                    }
                 }
             }
 
@@ -144,7 +166,7 @@ namespace Rock
         /// <summary>
         /// Converts a jObject to a dictionary
         /// </summary>
-        /// <param name="jobject">The jobject.</param>
+        /// <param name="jobject">The JObject.</param>
         /// <returns></returns>
         public static IDictionary<string, object> ToDictionary( this JObject jobject )
         {
@@ -169,7 +191,7 @@ namespace Rock
         /// <summary>
         /// Converts a JArray to a Object array
         /// </summary>
-        /// <param name="jarray">The jarray.</param>
+        /// <param name="jarray">The JArray.</param>
         /// <returns></returns>
         public static object[] ToObjectArray( this JArray jarray )
         {
