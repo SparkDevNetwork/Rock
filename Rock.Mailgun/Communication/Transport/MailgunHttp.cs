@@ -228,7 +228,7 @@ namespace Rock.Communication.Transport
                     // Create the communication record
                     if ( emailMessage.CreateCommunicationRecord )
                     {
-                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, emailMessage.FromName, emailMessage.FromName, subject, body );
+                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, emailMessage.FromName, emailMessage.FromEmail, subject, body );
                         transaction.RecipientGuid = recipientGuid;
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }
