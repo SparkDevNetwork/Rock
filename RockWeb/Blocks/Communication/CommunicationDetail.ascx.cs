@@ -2417,7 +2417,7 @@ namespace RockWeb.Blocks.Communication
             gRecipients.Columns.Insert( insertAtIndex, statusField );
             insertAtIndex++;
 
-            var openedField = new CheckBoxField();
+            var openedField = new BoolField();
             openedField.HeaderText = "Opened";
             openedField.DataField = "HasOpened";
             openedField.SortExpression = "HasOpened";
@@ -2425,7 +2425,7 @@ namespace RockWeb.Blocks.Communication
             gRecipients.Columns.Insert( insertAtIndex, openedField );
             insertAtIndex++;
 
-            var clickedField = new CheckBoxField();
+            var clickedField = new BoolField();
             clickedField.HeaderText = "Clicked";
             clickedField.DataField = "HasClicked";
             clickedField.SortExpression = "HasClicked";
