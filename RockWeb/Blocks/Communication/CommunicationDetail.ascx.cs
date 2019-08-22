@@ -1882,13 +1882,14 @@ namespace RockWeb.Blocks.Communication
         {
             var dataContext = this.GetDataContext();
 
-            bool showAnalytics = false;
+            bool communicationTypeHasAnalytics = false;
 
             // Initialize the Communications data.
             hfCommunicationId.Value = this.PageParameter( PageParameterKey.CommunicationId );
 
             int? communicationId = hfCommunicationId.Value.AsIntegerOrNull();
             string noDataMessageName = string.Empty;
+            var analyticsUnavailableMessage = string.Empty;
 
             if ( communicationId.HasValue )
             {
@@ -1900,7 +1901,7 @@ namespace RockWeb.Blocks.Communication
                     if ( communication.CommunicationType == CommunicationType.Email
                          || communication.CommunicationType == CommunicationType.RecipientPreference )
                     {
-                        showAnalytics = true;
+                        communicationTypeHasAnalytics = true;
                     }
                     else
                     {
@@ -1914,6 +1915,11 @@ namespace RockWeb.Blocks.Communication
                     nbCommunicationorCommunicationListFound.Visible = true;
                     nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
                 }
+            }
+
+            if ( !communicationTypeHasAnalytics )
+            {
+                analyticsUnavailableMessage = "Analytics not available for this communication type.";
             }
 
             // Show Communication Status Summary
@@ -1943,21 +1949,39 @@ namespace RockWeb.Blocks.Communication
             lFailed.Text = string.Format( actionsStatFormatNumber, failedRecipientCount );
             lCancelled.Text = string.Format( actionsStatFormatNumber, cancelledRecipientCount );
 
-            if ( !showAnalytics )
+            // Get the set of Interactions for this communication.
+            var interactionsList = this.GetCommunicationInteractionsSummaryInfo( dataContext, communicationId );
+
+            int interactionCount = interactionsList.Count();
+
+            // If there are no interactions, analytics are not available.
+            if ( interactionCount == 0 )
             {
-                upAnalytics.Visible = false;
-                nbAnalyticsNotAvailable.Visible = true;
+                if ( string.IsNullOrEmpty( noDataMessageName ) )
+                {
+                    analyticsUnavailableMessage = "No activity found for this communication.";
+                }
+                else
+                {
+                    analyticsUnavailableMessage = string.Format( "No communications activity for {0}.", noDataMessageName );
+                }
+            }
+
+            var analyticsIsAvailable = string.IsNullOrEmpty( analyticsUnavailableMessage );
+
+            nbAnalyticsNotAvailable.Text = analyticsUnavailableMessage;
+            nbAnalyticsNotAvailable.Visible = !analyticsIsAvailable;
+
+            upAnalytics.Visible = analyticsIsAvailable;
+
+            // If analytics are unavailable, display a message and exit.
+            if ( !string.IsNullOrEmpty( analyticsUnavailableMessage ) )
+            {
+                nbAnalyticsNotAvailable.Text = analyticsUnavailableMessage;
                 return;
             }
 
-            nbAnalyticsNotAvailable.Visible = false;
-            upAnalytics.Visible = true;
-
-            var interactionsList = this.GetCommunicationInteractionsSummaryInfo( dataContext, communicationId );
-
             this.ShowAnalyticsPanelActionsSummary( dataContext, interactionsList, noDataMessageName, deliveredRecipientCount );
-
-            int interactionCount = interactionsList.Count();
 
             var interactionsQuery = this.GetCommunicationInteractionsQuery( dataContext, communicationId );
 
@@ -2134,16 +2158,8 @@ namespace RockWeb.Blocks.Communication
         {
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
-            var colors = this.GetAttributeValue( AttributeKey.SeriesColors );
-
-            if ( string.IsNullOrEmpty( colors ) )
-            {
-                colors = SeriesColorsDefaultValue;
-            }
-
-            this.SeriesColorsJSON = colors.SplitDelimitedValues().ToArray().ToJson();
-
-            this.LineChartTimeFormat = "LL";
+            // Get the interactions summary information
+            var interactionsSummary = new List<SummaryInfo>();
 
             if ( interactionsList.Any() )
             {
@@ -2167,29 +2183,36 @@ namespace RockWeb.Blocks.Communication
                     roundTimeSpan = TimeSpan.FromHours( 1 );
                     this.LineChartTimeFormat = "LLLL";
                 }
+
+                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
+                    .Select( a => new
+                    {
+                        InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
+                        a.Key.CommunicationRecipientId,
+                        a.Key.Operation
+                    } )
+                    .GroupBy( a => a.InteractionSummaryDateTime )
+                    .Select( x => new SummaryInfo
+                    {
+                        SummaryDateTime = x.Key,
+                        ClickCounts = x.Count( xx => xx.Operation == "Click" ),
+                        OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                    } ).OrderBy( a => a.SummaryDateTime ).ToList();
             }
 
-            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
-            interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
-                .Select( a => new
-                {
-                    InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
-                    a.Key.CommunicationRecipientId,
-                    a.Key.Operation
-                } )
-                .GroupBy( a => a.InteractionSummaryDateTime )
-                .Select( x => new SummaryInfo
-                {
-                    SummaryDateTime = x.Key,
-                    ClickCounts = x.Count( xx => xx.Operation == "Click" ),
-                    OpenCounts = x.Count( xx => xx.Operation == "Opened" )
-                } ).OrderBy( a => a.SummaryDateTime ).ToList();
+            var hasInteractions = interactionsSummary.Any();
 
-            var lineChartHasData = interactionsSummary.Any();
-            openClicksLineChartCanvas.Style[HtmlTextWriterStyle.Display] = lineChartHasData ? string.Empty : "none";
-            nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
-            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+            var colors = this.GetAttributeValue( AttributeKey.SeriesColors );
 
+            if ( string.IsNullOrEmpty( colors ) )
+            {
+                colors = SeriesColorsDefaultValue;
+            }
+
+            this.SeriesColorsJSON = colors.SplitDelimitedValues().ToArray().ToJson();
+
+            // Opens/Clicks Line Chart
+            this.LineChartTimeFormat = "LL";
             this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
 
             List<int> cumulativeClicksList = new List<int>();
@@ -2292,6 +2315,7 @@ namespace RockWeb.Blocks.Communication
 
             var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
+
             nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
             nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
         }
