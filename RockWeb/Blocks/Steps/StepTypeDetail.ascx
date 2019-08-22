@@ -119,20 +119,20 @@
                                 PropertyName="AllowMultiple"
                                 Label="Allow Multiple"
                                 Text="Yes"
-                                Help="Can this step be achieved more than once by the same person?" />
+                                Help="Determines if a person can complete a step more than once." />
                             <Rock:RockCheckBox ID="cbHasDuration"
                                 runat="server"
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="HasEndDate"
                                 Label="Spans Time"
                                 Text="Yes"
-                                Help="Does this step occur immediately or does it take some period of time to complete?" />
+                                Help="Determines if a step is happens in a momemnt in time or if it happens over time." />
                             <Rock:RockCheckBox ID="cbShowBadgeCount"
                                 runat="server"
                                 SourceTypeName="Rock.Model.StepType, Rock"
                                 PropertyName="ShowCountOnBadge"
                                 Label="Show Count on Badge"
-                                Help="Should the number of achievements for this step type be shown on the step badge?"
+                                Help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page."
                                 Checked="false"
                                 Text="Yes" />
                         </div>
