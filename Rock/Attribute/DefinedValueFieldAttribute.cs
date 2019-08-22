@@ -90,6 +90,21 @@ namespace Rock.Attribute
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
+        /// <param name="enhanced">if set to <c>true</c> [enhanced].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="displayDescription">if set to <c>true</c> [display description].</param>
         public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null, bool includeInactive = false, bool displayDescription = true )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {

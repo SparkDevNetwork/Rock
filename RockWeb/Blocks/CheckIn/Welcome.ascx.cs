@@ -375,7 +375,14 @@ namespace RockWeb.Blocks.CheckIn
             {
                 pnlNotActive.Visible = true;
             }
-            else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
+            // Temporarily closed if there are no locations  and check-out is not allowed, or if check-out is allowed but there
+            // are no active check-out locations.
+            else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) &&
+                      !CurrentCheckInState.CheckInType.AllowCheckout ||
+                      (
+                        CurrentCheckInState.CheckInType.AllowCheckout &&
+                        ! CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( CurrentCheckInState.ConfiguredGroupTypes )
+                       ) )
             {
                 DateTime activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
                 if ( activeAt == DateTime.MaxValue )
@@ -388,7 +395,14 @@ namespace RockWeb.Blocks.CheckIn
                     pnlNotActiveYet.Visible = true;
                 }
             }
-            else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
+            // Closed if there are no active locations and check-out is not allowed, or if check-out is allowed but there
+            // are no active check-out locations.
+            else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) &&
+                      !CurrentCheckInState.CheckInType.AllowCheckout ||
+                      (
+                        CurrentCheckInState.CheckInType.AllowCheckout &&
+                        !CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( CurrentCheckInState.ConfiguredGroupTypes )
+                       ) )
             {
                 pnlClosed.Visible = true;
             }

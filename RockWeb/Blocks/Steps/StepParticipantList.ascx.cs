@@ -232,11 +232,11 @@ namespace RockWeb.Blocks.Steps
             {
                 if ( step.IsCompleted )
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-success'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-success'>{0}</div>", step.StepStatusName );
                 }
                 else
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-info'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-info'>{0}</div>", step.StepStatusName );
                 }
             }
 

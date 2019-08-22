@@ -88,6 +88,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
+        /// <summary>
+        /// The same site cookie setting
+        /// </summary>
+        public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
+
         #region Assessment Test Related
 
         /// <summary>

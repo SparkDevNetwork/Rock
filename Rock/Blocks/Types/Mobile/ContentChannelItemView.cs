@@ -30,8 +30,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content Channel Item View" )]
     [Category( "Mobile" )]
@@ -67,7 +66,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class ContentChannelItemView : RockBlockType, IRockMobileBlockType
+    public class ContentChannelItemView : RockMobileBlockType
     {
         /// <summary>
         /// The block settings attribute keys for the MobileContentChannelItemView block.
@@ -103,7 +102,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The required mobile application binary interface version required to render this block.
         /// </value>
-        int IRockMobileBlockType.RequiredMobileAbiVersion => 1;
+        public override int RequiredMobileAbiVersion => 1;
 
         /// <summary>
         /// Gets the class name of the mobile block to use during rendering on the device.
@@ -111,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
-        string IRockMobileBlockType.MobileBlockType => "Rock.Mobile.Blocks.XamlContent";
+        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -119,7 +118,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        object IRockMobileBlockType.GetMobileConfigurationValues()
+        public override object GetMobileConfigurationValues()
         {
             return new
             {
@@ -135,7 +134,7 @@ namespace Rock.Blocks.Types.Mobile
         #region Actions
 
         /// <summary>
-        /// Gets the current configuration for the XamlContent block.
+        /// Gets the current configuration for the Content block.
         /// </summary>
         /// <returns></returns>
         [BlockAction]
