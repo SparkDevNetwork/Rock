@@ -587,7 +587,7 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string AccountsToDisplay = "AccountsToDisplay";
 
@@ -672,20 +672,14 @@ mission. We are so grateful for your commitment.</p>
 
         #region Attribute Categories
 
-        protected static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string None = "";
-
             public const string ScheduleGifts = "Scheduled Gifts";
-
             public const string PaymentComments = "Payment Comments";
-
             public const string TextOptions = "Text Options";
-
             public const string Advanced = "Advanced";
-
             public const string EmailTemplates = "Email Templates";
-
             public const string PersonOptions = "Person Options";
         }
 
@@ -693,7 +687,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region PageParameterKeys
 
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string Person = "Person";
 

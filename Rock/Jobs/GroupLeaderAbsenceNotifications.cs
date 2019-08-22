@@ -28,7 +28,10 @@ using Rock.Model;
 
 namespace Rock.Jobs
 {
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Quartz.IJob" />
     #region DataMap Field Attributes
 
     [GroupTypeField( "Group Type",
@@ -66,7 +69,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Keys for DataMap Field Attributes.
         /// </summary>
-        public static class AttributeKey
+        private static class AttributeKey
         {
             public const string GroupType = "GroupType";
             public const string NotificationEmail = "NotificationEmail";

@@ -73,49 +73,15 @@ namespace RockWeb.Blocks.GroupScheduling
 
         #region UserPreferenceKeys
 
-        /// <summary>
-        /// Keys to use for UserPreferences
-        /// </summary>
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
-            /// <summary>
-            /// The selected group identifier
-            /// </summary>
             public const string SelectedGroupId = "SelectedGroupId";
-
-            /// <summary>
-            /// The selected date
-            /// </summary>
             public const string SelectedDate = "SelectedDate";
-
-            /// <summary>
-            /// The selected schedule id
-            /// </summary>
             public const string SelectedScheduleId = "SelectedScheduleId";
-
-            /// <summary>
-            /// The selected group location ids
-            /// </summary>
             public const string SelectedGroupLocationIds = "SelectedGroupLocationIds";
-
-            /// <summary>
-            /// The selected resource list source type
-            /// </summary>
             public const string SelectedResourceListSourceType = "SelectedResourceListSourceType";
-
-            /// <summary>
-            /// The group member filter type
-            /// </summary>
             public const string GroupMemberFilterType = "GroupMemberFilterType";
-
-            /// <summary>
-            /// The alternate group identifier
-            /// </summary>
             public const string AlternateGroupId = "AlternateGroupId";
-
-            /// <summary>
-            /// The data view identifier
-            /// </summary>
             public const string DataViewId = "DataViewId";
         }
 

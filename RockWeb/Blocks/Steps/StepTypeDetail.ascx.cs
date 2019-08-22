@@ -74,6 +74,13 @@ namespace RockWeb.Blocks.Steps
         Category = "",
         Order = 7 )]
 
+    [LinkedPage(
+        name: "Bulk Entry Page",
+        description: "The page to use for bulk entry of steps data",
+        required: false,
+        order: 8,
+        key: AttributeKey.BulkEntryPage )]
+
     #endregion Block Attributes
 
     public partial class StepTypeDetail : RockBlock, IDetailBlock
@@ -85,10 +92,30 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class AttributeKey
         {
+            /// <summary>
+            /// The show chart
+            /// </summary>
             public const string ShowChart = "ShowChart";
+
+            /// <summary>
+            /// The chart style
+            /// </summary>
             public const string ChartStyle = "ChartStyle";
+
+            /// <summary>
+            /// The sliding date range
+            /// </summary>
             public const string SlidingDateRange = "SlidingDateRange";
+
+            /// <summary>
+            /// The data view categories
+            /// </summary>
             public const string DataViewCategories = "DataViewCategories";
+
+            /// <summary>
+            /// The bulk entry page
+            /// </summary>
+            public const string BulkEntryPage = "BulkEntryPage";
         }
 
         #endregion Attribute Keys
@@ -100,7 +127,14 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         protected static class PageParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step program identifier
+            /// </summary>
             public const string StepProgramId = "ProgramId";
         }
 
@@ -175,6 +209,7 @@ namespace RockWeb.Blocks.Steps
             if ( !Page.IsPostBack )
             {
                 ShowDetail( _stepTypeId );
+                btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
             }
             else
             {
@@ -268,6 +303,24 @@ namespace RockWeb.Blocks.Steps
         #region Events
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the Click event of the btnBulkEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnBulkEntry_Click( object sender, EventArgs e )
+        {
+            var stepType = GetStepType();
+            var queryParams = new Dictionary<string, string>();
+
+            if ( stepType != null )
+            {
+                queryParams[PageParameterKey.StepTypeId] = stepType.Id.ToString();
+            }
+
+            NavigateToLinkedPage( AttributeKey.BulkEntryPage, queryParams );
+        }
 
         /// <summary>
         /// Refresh the Steps Activity Chart.
@@ -508,6 +561,8 @@ namespace RockWeb.Blocks.Steps
                     pnlDetails.Visible = false;
                 }
             }
+
+            btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
         }
 
         #endregion
@@ -1577,24 +1632,23 @@ namespace RockWeb.Blocks.Steps
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
 
-            if ( chartFactory.HasData )
-            {
-                // Add client script to construct the chart.
-                var chartDataJson = chartFactory.GetJson( autoResize: false );
-
-                string script = string.Format( @"
-var barCtx = $('#{0}')[0].getContext('2d');
-var barChart = new Chart(barCtx, {1});",
-                                                chartCanvas.ClientID,
-                                                chartDataJson );
-
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
-            }
-            else
+            if ( !chartFactory.HasData )
             {
                 // If no data, show a notification.
                 nbActivityChartMessage.Text = "There are no Steps matching the current filter.";
+                return;
             }
+
+            // Add client script to construct the chart.
+            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
+
+            string script = string.Format( @"
+            var barCtx = $('#{0}')[0].getContext('2d');
+            var barChart = new Chart(barCtx, {1});",
+                                            chartCanvas.ClientID,
+                                            chartDataJson );
+
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityChartScript", script, true );
         }
 
         /// <summary>

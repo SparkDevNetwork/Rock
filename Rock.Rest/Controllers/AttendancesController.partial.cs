@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Chart;
@@ -40,6 +42,46 @@ namespace Rock.Rest.Controllers
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
         {
             return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
+        }
+
+        /// <summary>
+        /// Adds an attendance. If the AttendanceOccurrence record does not exist it is created. If the Attendance record already exists then it is updated.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="personId">The person identifier. If provided it is used to get the primary PersonAliasId and takes presidence over "personAliasId"</param>
+        /// <param name="personAliasId">The person alias identifier. Is not used if a "personId" is provided.</param>
+        /// <returns>Attendance</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/AddAttendance" )]
+        [HttpPut]
+        public Attendance AddAttendance( int groupId, int locationId, int scheduleId, DateTime occurrenceDate, int? personId = null, int? personAliasId = null )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // If personId is provided set the personAliasId to the primary alias of the person.
+                if ( personId != null )
+                {
+                    personAliasId = new PersonService( rockContext ).Get( personId.Value ).PrimaryAliasId;
+                }
+
+                if ( personAliasId == null )
+                {
+                    var response = new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Content = new StringContent( "PersonId or PersonAliasId is required." )
+                    };
+
+                    throw new HttpResponseException( response );
+                }
+
+                var attendance = new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, occurrenceDate, groupId, locationId, scheduleId, null );
+                rockContext.SaveChanges();
+                return attendance;
+            }
         }
 
         #region Group Scheduler Related

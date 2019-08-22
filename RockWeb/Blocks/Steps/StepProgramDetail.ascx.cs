@@ -762,7 +762,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void LoadWorkflowTriggerTypesSelectionList()
         {
-            ddlTriggerType.Items.Add( new ListItem( "Program Completed", StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() ) );
+            ddlTriggerType.Items.Add( new ListItem( "Step Completed", StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() ) );
             ddlTriggerType.Items.Add( new ListItem( "Status Changed", StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() ) );
             ddlTriggerType.Items.Add( new ListItem( "Manual", StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() ) );
         }
@@ -1338,7 +1338,7 @@ namespace RockWeb.Blocks.Steps
             RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
 
-            var chartDataJson = chartFactory.GetJson();
+            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
 
             string script = string.Format( @"
             var barCtx = $('#{0}')[0].getContext('2d');
@@ -1346,7 +1346,7 @@ namespace RockWeb.Blocks.Steps
                                     chartCanvas.ClientID,
                                     chartDataJson );
 
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityBarChartScript", script, true );
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
         }
 
         /// <summary>
@@ -1398,7 +1398,7 @@ namespace RockWeb.Blocks.Steps
             factory.StartDateTime = startDate;
             factory.EndDateTime = endDate;
             factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
 
             foreach ( var stepTypeDataset in stepTypeDatasets )
             {

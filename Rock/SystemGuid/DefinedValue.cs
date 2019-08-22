@@ -23,11 +23,29 @@ namespace Rock.SystemGuid
     {
         #region Campus
 
+        /// <summary>
+        /// The campus status pending
+        /// </summary>
         public const string CAMPUS_STATUS_PENDING = "008209F5-144E-4282-92C3-944A4AC78700";
+
+        /// <summary>
+        /// The campus status open
+        /// </summary>
         public const string CAMPUS_STATUS_OPEN = "10696FD8-D0C7-486F-B736-5FB3F5D69F1A";
+
+        /// <summary>
+        /// The campus status closed
+        /// </summary>
         public const string CAMPUS_STATUS_CLOSED = "99D2C9CB-B6DC-49C1-B626-B76BD398B63A";
 
+        /// <summary>
+        /// The campus type physical
+        /// </summary>
         public const string CAMPUS_TYPE_PHYSICAL = "5A61507B-79CB-4DA2-AF43-6F82260203B3";
+
+        /// <summary>
+        /// The campus type online
+        /// </summary>
         public const string CAMPUS_TYPE_ONLINE = "10101010-2DB4-4C95-B07D-C400E412289B";
 
         #endregion Campus

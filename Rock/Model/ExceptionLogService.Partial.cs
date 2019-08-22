@@ -116,7 +116,7 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrEmpty( descriptionPrefix ) )
             {
-                descriptionPrefix = descriptionPrefix.Substring( 0, DescriptionGroupingPrefixLength );
+                descriptionPrefix = descriptionPrefix.Substring( 0, Math.Min( descriptionPrefix.Length, DescriptionGroupingPrefixLength ) );
 
                 query = query.Where( e => e.Description.Substring( 0, DescriptionGroupingPrefixLength ) == descriptionPrefix );
             }

@@ -194,8 +194,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.4\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.5\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -282,6 +282,8 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
+    <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypeFieldAttribute.cs" />
@@ -395,26 +397,43 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Badge\BadgeComponent.cs" />
+    <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Badge\HighlightLabelBadge.cs" />
+    <Compile Include="Badge\IconBadge.cs" />
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
+    <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
+    <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
+    <Compile Include="Mobile\AdditionalBlockSettings.cs" />
+    <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
     <Compile Include="Mobile\AdditionalPageSettings.cs" />
     <Compile Include="Mobile\AdditionalSiteSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
+    <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
     <Compile Include="Net\ClientInformation.cs" />
+    <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
+    <Compile Include="Reporting\ReportOutputBuilder.cs" />
+    <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
     <Compile Include="Web\IRockCustomSettingsUserControl.cs" />
     <Compile Include="Blocks\IRockMobileBlockType.cs" />
@@ -550,7 +569,7 @@
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
-    <Compile Include="PersonProfile\Badge\Assessment.cs" />
+    <Compile Include="Badge\Component\Assessment.cs" />
     <Compile Include="Model\Step.cs" />
     <Compile Include="Model\Streak.cs" />
     <Compile Include="Model\StepWorkflow.cs" />
@@ -560,7 +579,7 @@
     <Compile Include="Model\StepStatus.cs" />
     <Compile Include="Model\StepProgram.cs" />
     <Compile Include="Model\StepWorkflowTriggerService.Partial.cs" />
-    <Compile Include="PersonProfile\Badge\StreakEngagement.cs" />
+    <Compile Include="Badge\Component\StreakEngagement.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Model\AttributeMatrixService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
@@ -585,6 +604,8 @@
     <Compile Include="Plugin\HotFixes\071_BlacklistBlankFix.cs" />
     <Compile Include="Plugin\HotFixes\072_RemoveDoNotDisturb.cs" />
     <Compile Include="Plugin\HotFixes\073_MigrationRollupsForV8_8.cs" />
+    <Compile Include="Plugin\HotFixes\086_MigrationRollupsForV9_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\085_UpdateRegistrationRegistrantFeeIds.cs" />
     <Compile Include="Plugin\HotFixes\084_FixSpiritualGiftsAssessmentBadge.cs" />
     <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
@@ -1494,12 +1515,12 @@
     <Compile Include="Pbx\CdrRecord.cs" />
     <Compile Include="Pbx\PbxComponent.cs" />
     <Compile Include="Pbx\PbxContainer.cs" />
-    <Compile Include="PersonProfile\Badge\Giving.cs" />
-    <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
-    <Compile Include="PersonProfile\Badge\InDataView.cs" />
-    <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
-    <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
-    <Compile Include="PersonProfile\Badge\InteractionsInRange.cs" />
+    <Compile Include="Badge\Component\Giving.cs" />
+    <Compile Include="Badge\Component\GroupTypeAttendance.cs" />
+    <Compile Include="Badge\Component\InDataView.cs" />
+    <Compile Include="Badge\Component\TopPersonSignal.cs" />
+    <Compile Include="Badge\Component\PersonalDevice.cs" />
+    <Compile Include="Badge\Component\InteractionsInRange.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
@@ -1597,7 +1618,7 @@
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Rule.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Sitemap.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
-    <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
+    <Compile Include="Badge\Component\GeofencedByGroup.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
@@ -1634,16 +1655,16 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
-    <Compile Include="PersonProfile\Badge\AlertNote.cs" />
-    <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
-    <Compile Include="PersonProfile\Badge\Campus.cs" />
-    <Compile Include="PersonProfile\Badge\DISC.cs" />
-    <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
-    <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
-    <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
-    <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
-    <Compile Include="PersonProfile\Badge\LastVisitOnSite.cs" />
-    <Compile Include="PersonProfile\Badge\Liquid.cs" />
+    <Compile Include="Badge\Component\AlertNote.cs" />
+    <Compile Include="Badge\Component\AttendingDuration.cs" />
+    <Compile Include="Badge\Component\Campus.cs" />
+    <Compile Include="Badge\Component\DISC.cs" />
+    <Compile Include="Badge\Component\FamilyAttendance.cs" />
+    <Compile Include="Badge\Component\FamilyWeeksAttendedInDuration.cs" />
+    <Compile Include="Badge\Component\InGroupOfType.cs" />
+    <Compile Include="Badge\Component\InGroupWithPurpose.cs" />
+    <Compile Include="Badge\Component\LastVisitOnSite.cs" />
+    <Compile Include="Badge\Component\Liquid.cs" />
     <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
     <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
@@ -1856,6 +1877,11 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
@@ -2388,6 +2414,7 @@
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\Registrations\GenerateDiscountCode.cs" />
     <Compile Include="Workflow\Action\Registrations\UpdateDiscountCode.cs" />
+    <Compile Include="Workflow\Action\Steps\AddStep.cs" />
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />

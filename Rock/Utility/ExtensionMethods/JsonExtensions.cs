@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace Rock
@@ -83,6 +85,38 @@ namespace Rock
                 System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof(T).Name}. {ex}" );
                 return default( T );
             }
+        }
+
+        /// <summary>
+        /// Attempts to deserialize a json string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />.  If it can't be deserialized, returns null
+        /// </summary>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static object FromJsonDynamicOrNull( this string val )
+        {
+            var converter = new ExpandoObjectConverter();
+            object dynamicObject = null;
+
+            try
+            {
+                // first try to deserialize as straight ExpandoObject
+                dynamicObject = JsonConvert.DeserializeObject<ExpandoObject>( val, converter );
+            }
+            catch
+            {
+                try
+                {
+                    // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                    dynamicObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( val, converter );
+                }
+                catch
+                {
+                    // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
+                    dynamicObject = JsonConvert.DeserializeObject<List<object>>( val, converter );
+                }
+            }
+
+            return dynamicObject;
         }
 
         #endregion

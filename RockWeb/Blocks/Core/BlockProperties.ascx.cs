@@ -321,7 +321,6 @@ namespace RockWeb.Blocks.Core
                 block.PreHtml = cePreHtml.Text;
                 block.PostHtml = cePostHtml.Text;
                 block.OutputCacheDuration = 0; //Int32.Parse( tbCacheDuration.Text );
-                rockContext.SaveChanges();
 
                 avcAttributes.GetEditValues( block );
                 avcMobileAttributes.GetEditValues( block );
@@ -379,6 +378,7 @@ namespace RockWeb.Blocks.Core
                     reloadPage = true;
                 }
 
+                rockContext.SaveChanges();
                 block.SaveAttributeValues( rockContext );
 
                 // If this is a page menu block then we need to also flush the LavaTemplateCache for the block ID
@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Core
 
             CustomSettingsProviders = new Dictionary<RockCustomSettingsProvider, Control>();
 
-            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() );
+            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
             foreach ( var provider in providers )
             {
                 var control = provider.GetCustomSettingsControl( block, phCustomSettings );

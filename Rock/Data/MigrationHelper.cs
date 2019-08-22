@@ -2158,9 +2158,9 @@ WHERE [Guid] = '{pageGuid}';";
                     fieldTypeGuid,
                     key,
                     name,
-                    description.Replace( "'", "''" ),
+                    description?.Replace( "'", "''" ) ?? string.Empty,
                     order,
-                    defaultValue.Replace( "'", "''" ),
+                    defaultValue?.Replace( "'", "''" ) ?? string.Empty,
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )

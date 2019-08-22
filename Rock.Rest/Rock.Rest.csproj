@@ -60,8 +60,8 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.4\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.5\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
@@ -136,10 +136,18 @@
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersistedDatasetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepTypePrerequisitesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
@@ -153,6 +161,7 @@
     <Compile Include="Controllers\DataViewsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
+    <Compile Include="Controllers\StepProgramsController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />
