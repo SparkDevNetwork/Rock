@@ -80,6 +80,20 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a value indicating whether the check-out window is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if check out is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckOutActive
+        {
+            get
+            {
+                return KioskSchedules != null && KioskSchedules.Any( s => s.IsCheckInActive || s.IsCheckOutActive );
+            }
+        }
+
+        /// <summary>
         /// Gets the next active date time.
         /// </summary>
         /// <value>

@@ -22,9 +22,9 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.OData;
+using Rock.Badge.Component;
 using Rock.Data;
 using Rock.Model;
-using Rock.PersonProfile.Badge;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 

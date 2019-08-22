@@ -129,8 +129,10 @@ a.aspNetDisabled {
         .make-sm-column(2);
 
         @media (min-width: @screen-sm-min) {
-          padding-top: 7px;
-          margin-bottom: 0;
+          padding-top: @padding-base-vertical + 1px;
+          padding-bottom: @padding-base-vertical + 1px;
+          margin-bottom: 0; // Override the `<label>/<legend>` default
+          line-height: @line-height-base;
           text-align: right;
         }
       }

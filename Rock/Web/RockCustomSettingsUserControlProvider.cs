@@ -24,7 +24,7 @@ namespace Rock.Web
     /// <summary>
     /// Defines a UI provider that uses a User Control (ascx) to provide the UI.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockCustomSettingsProvider" />
+    /// <seealso cref="Rock.Web.RockCustomSettingsProvider" />
     public abstract class RockCustomSettingsUserControlProvider : RockCustomSettingsProvider
     {
         #region Abstract Properties

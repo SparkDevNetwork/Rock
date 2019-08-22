@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.Mobile.Common.Enums;
@@ -40,7 +41,7 @@ namespace Rock.Mobile
         <DataTemplate>
             <ViewCell>
                 <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
-                    <Rock:RockImage ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
+                    <Rock:Image ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
                     <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
                 </StackLayout>
             </ViewCell>
@@ -50,6 +51,14 @@ namespace Rock.Mobile
 ";
 
         #endregion
+
+        /// <summary>
+        /// Gets or sets the last deployment date.
+        /// </summary>
+        /// <value>
+        /// The last deployment date.
+        /// </value>
+        public DateTime? LastDeploymentDate { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the shell.

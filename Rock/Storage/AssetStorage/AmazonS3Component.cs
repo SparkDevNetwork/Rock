@@ -92,7 +92,7 @@ namespace Rock.Storage.AssetStorage
 
     public class AmazonS3Component : AssetStorageComponent
     {
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string AWSRegion = "AWSRegion";
             public const string Bucket = "Bucket";

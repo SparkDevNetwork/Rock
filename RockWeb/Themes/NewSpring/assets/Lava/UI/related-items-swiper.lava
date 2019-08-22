@@ -15,8 +15,9 @@
             {% capture title %}{{ item.Title | Escape }}{% endcapture %}
             {% capture titlesize %}h4{% endcapture %}
             {% capture type %}{% assign nameParts = item.ContentChannel.Name | Split:' - ' %}{{ nameParts[1] | Singularize }}{% endcapture %}
-            {% if item.Summary != empty %}
-    	        {% capture content %}<p class="push-half-bottom">{{ item.Summary | StripHtml | Truncate:200,'...' }}</p>{% endcapture %}
+            {% assign summary = item | Attribute:'Summary' %}
+            {% if summary != empty %}
+    	        {% capture content %}<p class="push-half-bottom">{{ summary | StripHtml | Truncate:200,'...' }}</p>{% endcapture %}
     	    {% else %}
     	        {% capture content %}<p class="push-half-bottom">{{ item.Content | StripHtml | Truncate:200,'...' }}</p>{% endcapture %}
     	    {% endif %}

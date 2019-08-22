@@ -294,6 +294,24 @@ namespace Rock.Web.Cache
         public string BodyCssClass { get; private set; }
 
         /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Gets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; private set; }
+
+        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>
@@ -581,6 +599,8 @@ namespace Rock.Web.Cache
             IncludeAdminFooter = page.IncludeAdminFooter;
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
+            IconBinaryFileId = page.IconBinaryFileId;
+            AdditionalSettings = page.AdditionalSettings;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );

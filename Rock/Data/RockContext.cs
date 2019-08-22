@@ -1334,6 +1334,14 @@ namespace Rock.Data
         public DbSet<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
+        /// Gets or sets the persisted datasets.
+        /// </summary>
+        /// <value>
+        /// The persisted datasets.
+        /// </value>
+        public DbSet<PersistedDataset> PersistedDatasets { get; set; }
+
+        /// <summary>
         /// Gets or sets the People.
         /// </summary>
         /// <value>
@@ -1363,7 +1371,7 @@ namespace Rock.Data
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<Badge> Badges { get; set; }
+        public DbSet<Model.Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.

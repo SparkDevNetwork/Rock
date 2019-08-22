@@ -83,7 +83,7 @@ namespace Rock.Model
             }
             else if ( triggerType == StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete )
             {
-                return "Completed";
+                return "Step Completed";
             }
             else
             {
