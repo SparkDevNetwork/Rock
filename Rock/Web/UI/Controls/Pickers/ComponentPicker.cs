@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Web.UI.WebControls;
 
@@ -36,44 +38,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ContainerType
         {
-            get 
+            get
             {
-                return ViewState["ContainerType"] as string; 
+                return ViewState["ContainerType"] as string;
             }
 
             set
             {
                 ViewState["ContainerType"] = value;
-
-                this.Items.Clear();
-                this.Items.Add( new ListItem() );
-
-                if ( !string.IsNullOrWhiteSpace( value ) )
-                {
-                    Type containerType = Type.GetType( value );
-                    if ( containerType != null )
-                    {
-                        PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
-                        if ( instanceProperty != null )
-                        {
-                            IContainer container = instanceProperty.GetValue( null, null ) as IContainer;
-                            if ( container != null )
-                            {
-                                foreach ( var component in container.Dictionary )
-                                {
-                                    if ( component.Value.Value.IsActive )
-                                    {
-                                        var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
-                                        if ( entityType != null )
-                                        {
-                                            this.Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                BindItems();
             }
         }
 
@@ -101,5 +74,60 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the component dictionary from the container.
+        /// </summary>
+        /// <returns></returns>
+        protected Dictionary<int, KeyValuePair<string, Component>> GetComponentDictionary()
+        {
+            if ( ContainerType.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var resolvedContainerType = Type.GetType( ContainerType );
+
+            if ( resolvedContainerType == null )
+            {
+                return null;
+            }
+
+            var instanceProperty = resolvedContainerType.GetProperty( "Instance" );
+
+            if ( instanceProperty == null )
+            {
+                return null;
+            }
+
+            var container = instanceProperty.GetValue( null, null ) as IContainer;
+            return container?.Dictionary;
+        }
+
+        /// <summary>
+        /// Binds the items to the drop down list.
+        /// </summary>
+        protected virtual void BindItems()
+        {
+            Items.Clear();
+            Items.Add( new ListItem() );
+            var componentDictionary = GetComponentDictionary();
+
+            if ( componentDictionary == null )
+            {
+                return;
+            }
+
+            foreach ( var component in componentDictionary )
+            {
+                if ( component.Value.Value.IsActive )
+                {
+                    var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
+                    if ( entityType != null )
+                    {
+                        Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
+                    }
+                }
+            }
+        }
     }
 }

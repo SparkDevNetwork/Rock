@@ -123,6 +123,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_SPIRITUAL_GIFTS_LAST_SAVE_DATE = "3668547C-3DC4-450B-B92D-4B98A693A371";
         public const string PERSON_SUPPORTIVE_GIFTS = "0499E359-3A7B-4138-A3EE-44CBF9750E33";
         public const string PERSON_TWITTER = "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F";
+        public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
     }
 
     /// <summary>
@@ -140,6 +141,7 @@ namespace Rock.Client.SystemGuid
         public const string LOCATION_IMAGE = "DAB74416-3272-4411-BA69-70944B549A4B";
         public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
+        public const string MOBILE_APP_BUNDLE = "ED456BF6-78F4-4954-9043-CA6849DA2D7E";
         public const string PERSON_IMAGE = "03BD8476-8A9F-4078-B628-5B538F967AFC";
         public const string SIGNED_DOCUMENT_FILE_TYPE = "8C9C5A97-005A-46E5-AF7B-AC2F359B738A";
     }
@@ -518,6 +520,7 @@ namespace Rock.Client.SystemGuid
         public const string SERVICE_JOB = "52766196-A72F-4F60-997A-78E19508843D";
         public const string SIGNAL_TYPE = "0BA03B9B-E974-4526-9B21-5037424B6D16";
         public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
+        public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";

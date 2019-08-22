@@ -50,7 +50,7 @@ namespace Rock.Transactions
         /// <param name="entry">The entry.</param>
         protected override void OnCaptureEntityChangeParameters( DbEntityEntry entry )
         {
-            var entity = (Step)entry.Entity;
+            var entity = ( Step ) entry.Entity;
 
             // Store a reference to the Step Type so we can get the relevant triggers for this Step more easily.
             this.StepTypeId = entity.StepTypeId;
@@ -80,8 +80,9 @@ namespace Rock.Transactions
         /// <returns></returns>
         protected override List<StepWorkflowTrigger> GetEntityChangeTriggers( RockContext dataContext, Guid entityGuid )
         {
-            // Get the triggers associated with this Step, as defined by the Step Type.
-            // Use the StepTypeId we stored earlier to streamline this process.
+            // Get the triggers associated with the Step Type to which this Step is related.
+            var triggers = new List<StepWorkflowTrigger>();
+
             var stepTypeService = new StepTypeService( dataContext );
 
             var stepType = stepTypeService.Queryable()
@@ -95,9 +96,33 @@ namespace Rock.Transactions
                 return null;
             }
 
-            var triggers = stepType.StepWorkflowTriggers
+            var stepTypeTriggers = stepType.StepWorkflowTriggers
                     .Where( w => w.TriggerType != StepWorkflowTrigger.WorkflowTriggerCondition.Manual )
                     .ToList();
+
+            triggers.AddRange( stepTypeTriggers );
+
+            var stepProgramId = stepType.StepProgramId;
+
+            // Get the triggers associated with the Step Program to which this Step is related.
+            var stepProgramService = new StepProgramService( dataContext );
+
+            var stepProgram = stepProgramService.Queryable()
+                .AsNoTracking()
+                .Include( x => x.StepWorkflowTriggers )
+                .FirstOrDefault( x => x.Id == stepProgramId );
+
+            if ( stepProgram == null )
+            {
+                ExceptionLogService.LogException( $"StepChangeTransaction failed. Step Program does not exist [StepProgramId={ stepProgramId }]." );
+                return null;
+            }
+
+            var stepProgramTriggers = stepProgram.StepWorkflowTriggers
+                    .Where( w => w.TriggerType != StepWorkflowTrigger.WorkflowTriggerCondition.Manual )
+                    .ToList();
+
+            triggers.AddRange( stepProgramTriggers );
 
             return triggers;
         }
@@ -115,13 +140,14 @@ namespace Rock.Transactions
             if ( trigger.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged )
             {
                 // Determine if this Step has transitioned between statuses that match the "To" and "From" qualifiers for this trigger.
-                // Note that a new Step will trigger this transition if it has a matching "To" State and the "From" State is not specified.
+                // If the condition does not specify a status, any status will match.
+                // A new Step can only match this condition if it has a matching "To" State and a "From" State is not specified.
                 if ( entityState == EntityState.Added || entityState == EntityState.Modified )
                 {
                     var settings = new StepWorkflowTrigger.StatusChangeTriggerSettings( trigger.TypeQualifier );
 
-                    if ( PreviousStepStatusId.GetValueOrDefault( -1 ) == settings.FromStatusId.GetValueOrDefault( -1 )
-                         && CurrentStepStatusId.GetValueOrDefault( -1 ) == settings.ToStatusId.GetValueOrDefault( -1 ) )
+                    if ( ( settings.FromStatusId == null || settings.FromStatusId.Value == PreviousStepStatusId.GetValueOrDefault( -1 )  )
+                         && ( settings.ToStatusId == null || settings.ToStatusId.Value == CurrentStepStatusId.GetValueOrDefault( -1 ) ) )
                     {
                         return true;
                     }

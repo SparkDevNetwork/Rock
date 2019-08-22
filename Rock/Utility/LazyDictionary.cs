@@ -55,10 +55,10 @@ namespace Rock.Utility
         #region IDictionary
 
         /// <summary>
-        /// Gets or sets the <see cref="TValue"/> with the specified key.
+        /// Gets or sets the with the specified key.
         /// </summary>
         /// <param name="key">The key to use when getting or setting the value.</param>
-        /// <value>The <see cref="TValue"/> to be accessed.</value>
+        /// <value>The to be accessed.</value>
         /// <returns></returns>
         public TValue this[TKey key]
         {
