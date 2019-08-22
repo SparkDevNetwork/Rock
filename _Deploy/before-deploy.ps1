@@ -1,5 +1,6 @@
 Import-Module "$PSScriptRoot\lib\Util";
 Import-Module "$PSScriptRoot\lib\Rock";
+Import-Module IISAdministration;
 
 
 # Make sure we know where the app root is
@@ -13,6 +14,13 @@ if ( -not (Test-Path "Env:\APPLICATION_PATH" )) {
 
 $AppRoot = $env:APPLICATION_PATH;
 $NewBackupRoot = "$AppRoot.backup.new";
+
+
+# Stop the website
+# app_offline.htm is a giant messy lie and none of the many things I've tried
+# to do with it prevent random deploy errors, so we're just going to take the whole
+# site down while we deploy files.
+Stop-IISSite "Default Web Site" -Confirm:$false;
 
 
 # See if the new backup already exists (Indicates the previous deploy script failed to complete)

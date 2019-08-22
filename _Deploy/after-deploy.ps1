@@ -68,6 +68,9 @@ try {
 catch { }
 
 
+Start-IISSite "Default Web Site" -Confirm:$false;
+
+
 # Move the new backup
 
 Write-Host "Finishing up";
