@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Mobile
             try
             {
                 var xaml = XElement.Parse( page.Layout.LayoutMobilePhone );
-                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "RockZone" ) )
+                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "Zone" ) )
                 {
                     var zoneName = zoneNode.Attribute( XName.Get( "ZoneName" ) ).Value;
 
