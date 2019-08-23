@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -234,7 +234,10 @@ namespace RockWeb.Blocks.Mobile
             lSiteId.Text = site.Id.ToString();
             if ( site.LatestVersionDateTime.HasValue )
             {
-                lLastDeployDate.Text = string.Format( "<span class='label label-success'>{0}</span>", site.LatestVersionDateTime.Value.ToString( "dddd, dd MMMM yyyy h:mm tt" ));
+                var updateTimeSpan = RockDateTime.Now - site.LatestVersionDateTime.Value;
+                lLastDeployDate.Text = string.Format( "<span class='label label-success' data-toggle='tooltip' title='{0}'>Last Deploy: {1} ago</span>",
+                    site.LatestVersionDateTime.Value.ToString( "dddd MMMM, d M yyyy h:mm tt" ),
+                    updateTimeSpan.Humanize() );
             }
             else
             {
