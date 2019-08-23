@@ -98,6 +98,79 @@ namespace Rock.Tests.Integration.Reporting
             }
         }
 
+        /// <summary>
+        /// Verify the Report Builder returns an empty Attribute column if the user generating the report does not have View permission for the Attribute.
+        /// </summary>
+        [TestMethod]
+        [TestCategory( "Rock.Reporting.Tests" )]
+        [TestProperty( "Feature", TestFeatures.Reporting )]
+        public void UnauthorizedUserCannotViewAttributeColumnOutput()
+        {
+            var dataContext = new RockContext();
+
+            var personService = new PersonService( dataContext );
+
+            // Get Admin User (authorized) and Staff Member (unauthorized) as our Report Users.
+            var adminPerson = GetAdminPersonOrThrow( personService );
+            var unauthorizedPerson = GetStaffPersonOrThrow( personService );
+
+            // Create a basic query for the report.
+            var parameterExpression = personService.ParameterExpression;
+
+            var filterQuery = personService.Queryable();
+
+            var filterExpression = FilterExpressionExtractor.Extract<Person>( filterQuery, parameterExpression, "p" );
+
+            // Get a Person Attribute for which the unauthorized Person does not have View permission.
+            var person = new Person();
+
+            person.LoadAttributes();
+
+            var unauthorizedAttribute = person.Attributes
+                 .Select( x => x.Value ).FirstOrDefault( a => !a.IsAuthorized( global::Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
+
+            Assert.IsNotNull( unauthorizedAttribute, "Test User must have at least one unauthorized Attribute." );
+
+            // Create a report template containing the test Attribute.
+            var templateBuilder = new ReportTemplateBuilder( typeof( Person ) );
+
+            var attributeName = unauthorizedAttribute.Name;
+
+            var field = templateBuilder.AddAttributeField( unauthorizedAttribute.Guid, "AttributeValue" );
+
+            field.SortDirection = System.Web.UI.WebControls.SortDirection.Ascending;
+            field.SortOrder = 1;
+
+            var report = templateBuilder.Report;
+
+            // Build the output data for the Report by combining the report template with the filter.
+            var builder = new ReportOutputBuilder( report, dataContext );
+
+            // Build and verify the report output for the authorized user.
+            var results1 = builder.GetReportData( adminPerson,
+                filterExpression,
+                parameterExpression,
+                dataContext,
+                ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText );
+
+            var valueCount1 = results1.Data.Select( "[AttributeValue] > ''" ).Count();
+
+            Assert.IsTrue( valueCount1 > 0, "Attribute column must contain at least one value." );
+
+            // Build and verify the report output for the unauthorized user.
+            builder.OutputFieldMask = "@@@";
+
+            var results2 = builder.GetReportData( unauthorizedPerson,
+                filterExpression,
+                parameterExpression,
+                dataContext,
+                ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText );
+
+            var valueCount2 = results2.Data.Select( "[AttributeValue] <> '@@@'" ).Count();
+
+            Assert.IsTrue( ( valueCount2 == 0 ), "Attribute column contains unauthorized values." );
+        }
+
         #endregion
 
         #region Support Methods
@@ -117,6 +190,23 @@ namespace Rock.Tests.Integration.Reporting
             }
 
             return adminPerson;
+        }
+
+        /// <summary>
+        /// Get a known Person who has been assigned a security role of Staff Member.
+        /// </summary>
+        /// <param name="personService"></param>
+        /// <returns></returns>
+        private Person GetStaffPersonOrThrow( PersonService personService )
+        {
+            var staffPerson = personService.Queryable().FirstOrDefault( x => x.NickName == "Ted" && x.LastName == "Decker" );
+
+            if ( staffPerson == null )
+            {
+                throw new Exception( "Staff Person not found in test data set." );
+            }
+
+            return staffPerson;
         }
 
         #endregion
