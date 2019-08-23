@@ -31,6 +31,7 @@
                     <asp:Literal ID="ltAppName" runat="server" />
 
                     <div class="panel-labels">
+                        <asp:Literal ID="lLastDeployDate" runat="server" />
                         <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
                     </div>
                 </h3>
@@ -109,7 +110,7 @@
                         <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />
 
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-success" Text="Deploy" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');" />
+                            <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
                         </div>
                     </div>
                 </asp:Panel>

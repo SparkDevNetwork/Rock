@@ -232,6 +232,15 @@ namespace RockWeb.Blocks.Mobile
             ltAppName.Text = site.Name.EncodeHtml();
             ltDescription.Text = site.Description.EncodeHtml();
             lSiteId.Text = site.Id.ToString();
+            if ( site.LatestVersionDateTime.HasValue )
+            {
+                lLastDeployDate.Text = string.Format( "<span class='label label-success'>{0}</span>", site.LatestVersionDateTime.Value.ToString( "dddd, dd MMMM yyyy h:mm tt" ));
+            }
+            else
+            {
+                lLastDeployDate.Text = "<span class='label label-warning'>Not Deployed</span>";
+            }
+            
 
             //
             // Set the UI fields for the images.
@@ -884,6 +893,7 @@ namespace RockWeb.Blocks.Mobile
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
                 additionalSettings.LastDeploymentDate = RockDateTime.Now;
                 site.AdditionalSettings = additionalSettings.ToJson();
+                site.LatestVersionDateTime = RockDateTime.Now;
 
                 rockContext.SaveChanges();
 
