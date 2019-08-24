@@ -63,6 +63,14 @@ namespace Rock.Rest
                 } );
 
             config.Routes.MapHttpRoute(
+               name: "FollowedItemsApi",
+               routeTemplate: "api/{controller}/FollowedItems",
+               defaults: new
+               {
+                   action = "FollowedItems"
+               } );
+
+            config.Routes.MapHttpRoute(
                 name: "InDataViewApi",
                 routeTemplate: "api/{controller}/InDataView/{dataViewId}/{entityId}",
                 defaults: new
@@ -152,7 +160,7 @@ namespace Rock.Rest
             {
                 try
                 {
-                    var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
+                    var controller = ( Rock.Rest.IHasCustomRoutes ) Activator.CreateInstance( type.Value );
                     if ( controller != null )
                     {
                         controller.AddRoutes( RouteTable.Routes );
@@ -274,7 +282,7 @@ namespace Rock.Rest
             foreach ( var entityType in entityTypeList )
             {
                 var entityTypeConfig = builder.AddEntity( entityType );
-                
+
                 var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
                 string name;
                 if ( tableAttribute != null )

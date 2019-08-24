@@ -483,6 +483,33 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets a query of the items that are followed by a specific.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "FollowedItems" )]
+        [EnableQuery]
+        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        {
+            if ( !personId.HasValue )
+            {
+                if ( personAliasId.HasValue )
+                {
+                    personId = new PersonAliasService( this.Service.Context as RockContext ).GetPersonId( personAliasId.Value );
+                }
+            }
+
+            if ( personId.HasValue )
+            {
+                return Service.GetFollowed( personId.Value );
+            }
+
+            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified"  } );
+        }
+
+        /// <summary>
         /// DELETE to delete the specified attribute value for the record
         /// </summary>
         /// <param name="id">The identifier.</param>
