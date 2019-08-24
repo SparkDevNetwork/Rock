@@ -1625,9 +1625,9 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Get chart data and set visibility of related elements.
-            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
 
-            var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
+            var chartFactory = this.GetChartJsFactory( reportPeriod );
 
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
@@ -1655,7 +1655,7 @@ namespace RockWeb.Blocks.Steps
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( TimePeriod reportPeriod )
         {
             var dataContext = GetDataContext();
 
@@ -1667,6 +1667,11 @@ namespace RockWeb.Blocks.Steps
 
             var stepsCompletedQuery = stepService.Queryable()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
+
+            var dateRange = reportPeriod.GetDateRange();
+
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
 
             if ( startDate != null )
             {
@@ -1710,9 +1715,17 @@ namespace RockWeb.Blocks.Steps
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
+            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
+            }
+            else
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
+            }
+
             factory.StartDateTime = startDate;
             factory.EndDateTime = endDate;
-            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
             // Add Dataset for Steps Started.
