@@ -136,6 +136,30 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Financial Non-Cash Asset Type
+
+        /// <summary>
+        /// Non-Cash Asset Type: Property.
+        /// </summary>
+        public const string NONCASH_ASSET_PROPERTY = "FF4E8D66-CFF2-4A96-AA30-19721884C373";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Stocks and Bonds.
+        /// </summary>
+        public const string NONCASH_ASSET_STOCKSANDBONDS = "B29D7D89-357F-47F9-BE7B-52AFF3892007";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Vehicles.
+        /// </summary>
+        public const string NONCASH_ASSET_VEHICLES = "C1DCBE74-88FE-4876-8943-5783499CBBE0";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Other.
+        /// </summary>
+        public const string NONCASH_ASSET_OTHER = "3086AF9A-108B-47C8-B299-CECF53B9D1DF";
+
+        #endregion
+
         #region Financial Transaction Type
 
         /// <summary>
