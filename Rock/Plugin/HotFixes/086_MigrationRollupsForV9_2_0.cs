@@ -28,6 +28,7 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             UpdateGroupTypeForGroupConnections();
+            AddNonCashAssetTypes();
         }
 
         /// <summary>
@@ -48,6 +49,42 @@ namespace Rock.Plugin.HotFixes
                 SET [AllowSpecificGroupMemberAttributes] = 1
                 WHERE [Guid] = '3981CF6D-7D15-4B57-AACE-C0E25D28BD49'
                     AND [AllowSpecificGroupMemberAttributes] = 0" );
+        }
+
+        /// <summary>
+        /// SC: Pushpay Plugin v6.0/Non-Cash Giving Project.
+        /// </summary>
+        private void AddNonCashAssetTypes()
+        {
+            RockMigrationHelper.AddDefinedType(
+                category: "Financial",
+                name: "Non-Cash Asset Types",
+                description: "Asset types that describe various kinds of Non-Cash transactions.",
+                guid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE );
+
+            RockMigrationHelper.AddDefinedValue(
+                definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
+                value: "Property",
+                description: "Non-Cash Asset Type: Property.",
+                guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_PROPERTY );
+
+            RockMigrationHelper.AddDefinedValue(
+                definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
+                value: "Stocks And Bonds",
+                description: "Non-Cash Asset Type: Stocks And Bonds.",
+                guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_STOCKSANDBONDS );
+
+            RockMigrationHelper.AddDefinedValue(
+                definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
+                value: "Vehicles",
+                description: "Non-Cash Asset Type: Vehicles.",
+                guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_VEHICLES );
+
+            RockMigrationHelper.AddDefinedValue(
+                definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
+                value: "Other",
+                description: "Non-Cash Asset Type: Other.",
+                guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_OTHER );
         }
     }
 }
