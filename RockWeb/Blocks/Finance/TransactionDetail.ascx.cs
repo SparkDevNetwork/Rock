@@ -552,6 +552,7 @@ namespace RockWeb.Blocks.Finance
                 Session["NewTxnDefault_BatchId"] = txn.BatchId;
                 Session["NewTxnDefault_TransactionDateTime"] = txn.TransactionDateTime;
                 Session["NewTxnDefault_TransactionType"] = txn.TransactionTypeValueId;
+                Session["NewTxnDefault_NonCashAssetType"] = txn.NonCashAssetTypeValueId;
                 Session["NewTxnDefault_SourceType"] = txn.SourceTypeValueId;
                 Session["NewTxnDefault_CurrencyType"] = txn.FinancialPaymentDetail.CurrencyTypeValueId;
                 Session["NewTxnDefault_CreditCardType"] = txn.FinancialPaymentDetail.CreditCardTypeValueId;
@@ -1068,7 +1069,7 @@ namespace RockWeb.Blocks.Finance
         {
             rockContext = rockContext ?? new RockContext();
             var txn = new FinancialTransactionService( rockContext )
-                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,SourceTypeValue,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,NonCashAssetTypeValue,SourceTypeValue,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
@@ -1131,6 +1132,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     txn.TransactionDateTime = Session["NewTxnDefault_TransactionDateTime"] as DateTime?;
                     txn.TransactionTypeValueId = Session["NewTxnDefault_TransactionType"] as int? ?? 0;
+                    txn.NonCashAssetTypeValueId = Session["NewTxnDefault_NonCashAssetType"] as int?;
                     txn.SourceTypeValueId = Session["NewTxnDefault_SourceType"] as int?;
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = Session["NewTxnDefault_CurrencyType"] as int?;
                     txn.FinancialPaymentDetail.CreditCardTypeValueId = Session["NewTxnDefault_CreditCardType"] as int?;
@@ -1235,6 +1237,7 @@ namespace RockWeb.Blocks.Finance
                         txn.Batch.Name );
                 }
 
+                detailsLeft.Add( "Non-Cash Asset Type", txn.NonCashAssetTypeValue != null ? txn.NonCashAssetTypeValue.Value : string.Empty );
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
                 detailsLeft.Add( "Transaction Code", txn.TransactionCode );
 
