@@ -38,7 +38,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="valStepTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-
+                <asp:CustomValidator ID="cvStepType" runat="server" Display="None" />
                 <div id="pnlViewDetails" runat="server">
                     <div class="row">
                         <div class="col-md-12">

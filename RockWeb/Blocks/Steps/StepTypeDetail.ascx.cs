@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Steps
             stepType.HasEndDate = cbHasDuration.Checked;
             stepType.AllowMultiple = cbAllowMultiple.Checked;
 
-            // Update Pre-requisites
+            // Update Prerequisites
             var uiPrerequisiteStepTypeIds = cblPrerequsities.SelectedValuesAsInt;
 
             var stepTypes = stepTypeService.Queryable().ToList();
@@ -492,6 +492,25 @@ namespace RockWeb.Blocks.Steps
                 newPrerequisite.PrerequisiteStepTypeId = prerequisiteStepTypeId;
 
                 stepType.StepTypePrerequisites.Add( newPrerequisite );
+            }
+
+            // Validate Prerequisites.
+            // This is necessary because other Step Types may have been modified after this record edit was started.
+            if ( _stepTypeId > 0 )
+            {
+                var eligibleStepTypeIdList = stepTypeService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).Select(x => x.Id).ToList();
+
+                foreach ( var prerequisite in stepType.StepTypePrerequisites )
+                {
+                    if ( !eligibleStepTypeIdList.Contains( prerequisite.PrerequisiteStepTypeId ) )
+                    {
+                        var prerequisiteStepType = stepTypeService.Get( prerequisite.PrerequisiteStepTypeId );
+
+                        cvStepType.IsValid = false;
+                        cvStepType.ErrorMessage = string.Format( "This Step Type cannot have prerequisite \"{0}\" because it is already a prerequisite of that Step Type.", prerequisiteStepType.Name );
+                        return 0;
+                    }
+                }
             }
 
             // Update Advanced Settings
@@ -1244,7 +1263,7 @@ namespace RockWeb.Blocks.Steps
         {
             var dataContext = GetDataContext();
 
-            // Load available Prerequisite Steps, being any other Step Types in this Step Program that are active.
+            // Load available Prerequisite Steps.
             var stepType = GetStepType();
 
             int programId = 0;
@@ -1261,10 +1280,16 @@ namespace RockWeb.Blocks.Steps
 
             var stepsService = new StepTypeService( dataContext );
 
-            var prerequisiteStepTypes = stepsService.Queryable()
-                .Include( x => x.StepProgram )
-                .Where( x => x.StepProgramId == programId && x.Id != _stepTypeId && x.IsActive )
-                .ToList();
+            List<StepType> prerequisiteStepTypes;
+
+            if ( _stepTypeId == 0 )
+            {
+                prerequisiteStepTypes = stepsService.Queryable().Where( x => x.StepProgramId == programId && x.IsActive ).ToList();
+            }
+            else
+            {
+                prerequisiteStepTypes = stepsService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).ToList();
+            }
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
             cblPrerequsities.DataBind();
