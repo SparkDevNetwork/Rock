@@ -53,5 +53,11 @@ steps:
     includeRootFolder: false
     archiveFile: '$(Build.ArtifactStagingDirectory)/RockWeb.zip'
 
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/_Deploy'
+    includeRootFolder: false
+    archiveFile: '$(Build.ArtifactStagingDirectory)/RockDeploy.zip'
+
 - publish: $(build.artifactStagingDirectory)
   artifact: RockWeb
