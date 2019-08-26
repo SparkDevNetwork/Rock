@@ -197,7 +197,7 @@
                                 <Rock:RockCheckBox ID="cbAllowEdit"
                                     runat="server"
                                     SourceTypeName="Rock.Model.StepType, Rock"
-                                    PropertyName="AllowManualEdit"
+                                    PropertyName="AllowManualEditing"
                                     Label="Allow Manual Edit"
                                     Help="Can the details of this step achievement be modified by the participant?"
                                     Checked="false"
