@@ -117,6 +117,58 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets records that have a particular attribute value.
+        /// Example: api/People/GetByAttributeValue?attributeKey=FirstVisit&amp;value=2012-12-15
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="caseSensitive">if set to <c>true</c> [case sensitive].</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByAttributeValue" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByAttributeValue( [FromUri]int? attributeId = null, [FromUri]string attributeKey = null, [FromUri]string value = null, [FromUri]bool caseSensitive = false )
+        {
+            // Value is always required
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The value param is required" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Either key or id is required, but not both
+            var queryByKey = !attributeKey.IsNullOrWhiteSpace();
+            var queryById = attributeId.HasValue;
+
+            if ( queryByKey == queryById )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Either attributeKey or attributeId must be specified, but not both" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Query for the models that have the value for the attribute
+            var rockContext = Service.Context as RockContext;
+            var query = Service.Queryable().AsNoTracking();
+            var valueComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if ( queryById )
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.AttributeId == attributeId && a.Value.Equals( value, valueComparison ) );
+            }
+            else
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
+            }
+
+            return query;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>
