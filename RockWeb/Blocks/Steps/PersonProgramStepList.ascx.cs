@@ -441,10 +441,14 @@ namespace RockWeb.Blocks.Steps
             if ( hasMetPrerequisites )
             {
                 var steps = GetPersonStepsOfType( stepTypeId );
+                var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
+                var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
 
                 var data = steps.Select( s => new CardStepViewModel
                 {
                     StepId = s.Id,
+                    CanEdit = canEdit,
+                    CanDelete = canDelete,
                     StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
                         s.StepStatus != null ? s.StepStatus.Name : string.Empty,
                         s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
@@ -462,6 +466,26 @@ namespace RockWeb.Blocks.Steps
                 rPrereqs.DataSource = prereqs;
                 rPrereqs.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSteps control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rSteps_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
+            {
+                return;
+            }
+
+            var cardStepViewModel = e.Item.DataItem as CardStepViewModel;
+            var tdEdit = e.Item.FindControl( "tdEdit" ) as HtmlTableCell;
+            var tdDelete = e.Item.FindControl( "tdDelete" ) as HtmlTableCell;
+
+            tdEdit.Visible = cardStepViewModel.CanEdit;
+            tdDelete.Visible = cardStepViewModel.CanDelete;
         }
 
         #endregion Events
@@ -761,6 +785,11 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
+            if ( !stepType.AllowManualEditing && !UserCanEdit )
+            {
+                return false;
+            }
+
             if ( !stepType.IsActive || !HasMetPrerequisites( stepType.Id ) )
             {
                 return false;
@@ -1331,6 +1360,22 @@ namespace RockWeb.Blocks.Steps
             /// The status HTML.
             /// </value>
             public string StatusHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can edit.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanEdit { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can delete.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can delete; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanDelete { get; set; }
         }
 
         #endregion View Models

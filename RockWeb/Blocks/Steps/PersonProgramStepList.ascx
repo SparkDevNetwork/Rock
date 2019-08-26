@@ -83,16 +83,16 @@
                                                 </asp:LinkButton>
                                                 <div class="step-records-table-container">
                                                     <table class="step-records-table">
-                                                        <asp:repeater id="rSteps" runat="server">
+                                                        <asp:repeater id="rSteps" runat="server" OnItemDataBound="rSteps_ItemDataBound">
                                                             <itemtemplate>
                                                                 <tr>
                                                                     <td class="steps-status"><%# Eval("StatusHtml") %></td>
-                                                                    <td>
+                                                                    <td runat="server" id="tdEdit">
                                                                         <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
                                                                             <i class="fa fa-pencil"></i>
                                                                         </asp:LinkButton>
                                                                     </td>
-                                                                    <td>
+                                                                    <td runat="server" id="tdDelete">
                                                                         <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
                                                                             <i class="fa fa-times"></i>
                                                                         </asp:LinkButton>
