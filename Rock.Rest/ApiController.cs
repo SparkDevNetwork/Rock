@@ -483,7 +483,9 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets a query of the items that are followed by a specific.
+        /// Gets a query of the items that are followed by a specific person. For example, ~/api/Groups/FollowedItems
+        /// would return a list of groups that the person is following. Either ?personId= or ?personAliasId= can be
+        /// specified to indicate what person you want to see the followed items for.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
