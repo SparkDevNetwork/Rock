@@ -40,11 +40,11 @@ Remove-Item -Path "$AppRoot\App_Data\Files" -Force -Recurse -ErrorAction Silentl
 Remove-Item -Path "$AppRoot\App_Data\RockShop" -Force -Recurse -ErrorAction SilentlyContinue; ;
 Remove-Item -Path "$AppRoot\App_Data\InstalledStorePackages.json" -Force -Recurse -ErrorAction SilentlyContinue; ;
 
-New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "Content"                     -Target "\\newpointe.file.core.windows.net\rock-content-files\Content";
-New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "wp-content"                  -Target "\\newpointe.file.core.windows.net\rock-content-files\wp-content";
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "Files"                       -Target "\\newpointe.file.core.windows.net\rock-content-files\Files";
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "RockShop"                    -Target "\\newpointe.file.core.windows.net\rock-content-files\RockShop";
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "InstalledStorePackages.json" -Target "\\newpointe.file.core.windows.net\rock-content-files\InstalledStorePackages.json";
+New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "Content"                     -Target "\\newpointe.file.core.windows.net\rock-content-files\Content"                     | Out-Null;
+New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "wp-content"                  -Target "\\newpointe.file.core.windows.net\rock-content-files\wp-content"                  | Out-Null;
+New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "Files"                       -Target "\\newpointe.file.core.windows.net\rock-content-files\Files"                       | Out-Null;
+New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "RockShop"                    -Target "\\newpointe.file.core.windows.net\rock-content-files\RockShop"                    | Out-Null;
+New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "InstalledStorePackages.json" -Target "\\newpointe.file.core.windows.net\rock-content-files\InstalledStorePackages.json" | Out-Null;
 
 
 # Re-install plugins
@@ -68,7 +68,7 @@ try {
 catch { }
 
 
-Start-IISSite "Default Web Site" -Confirm:$false;
+Start-IISSite "Default Web Site";
 
 
 # Move the new backup
