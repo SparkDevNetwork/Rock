@@ -1,0 +1,10 @@
+[
+  {
+    "relation": [ "delegate_permission/common.handle_all_urls" ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "cc.newspring.newspringapp",
+      "sha256_cert_fingerprints": [ "CB:E8:C4:9D:A3:EF:84:F7:DE:5B:62:BE:79:41:BF:94:6F:3C:F8:CE:9E:9D:E5:C5:49:9F:ED:1D:4A:36:91:74" ]
+    }
+  }
+]
