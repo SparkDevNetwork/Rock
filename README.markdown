@@ -4,9 +4,12 @@ Rock RMS (NewPointe Edition)
 
 ![NewPointe + Rock RMS](https://newpointe.blob.core.windows.net/newpointe-webassets/Default/940fb09cf280462f997d556af951a608_np_rock_small.png)
 
-[![Website][website-badge]][website-link]
 [![Build][build-badge]][build-link]
 [![Tests][tests-badge]][tests-link]
+
+[![Beta Deployment][beta-deploy-badge]][beta-deploy-link]
+[![Production Deployment][production-deploy-badge]][production-deploy-link]
+[![Website][website-badge]][website-link]
 
 ![Campuses][campuses-badge]
 ![attendance][attendance-badge]
@@ -27,15 +30,15 @@ Note: remind me to make a pre-built VM image for this sometime.
 
 - A Windows PC or Windows Virtual Machine.
 
-  Rock is built on a Windows Server stack, and uses Windows tools for development. If you don't have a Windows machine available, don't worry! There are tools like VirtualBox (free) or VMWare ($$) that you can use to run Windows in a Virtual Machine. If you have a Mac you can also use solutions like Bootcamp or Parallels. Recommended specs: An SSD with at least 50GB of free space, a quad core processor, and 8gb of RAM.
+  Rock is built on a Windows Server stack, and uses Windows tools for development. If you don't have a Windows machine available, don't worry! There are tools like VirtualBox (free) or VMWare ($$) that you can use to run Windows in a Virtual Machine. If you have a Mac you can also use solutions like Bootcamp or Parallels. Recommended specs: a quad core processor, 8gb of RAM, and SSD with at least 50GB of free space.
 
-- [Visual Studio Community 2017 or later][download-visual-studio]
+- [Visual Studio Community 2019 or later][download-visual-studio]
 
   Most internal development is done in Visual Studio. Make sure to select the "ASP.NET and web development" workload when installing it.
 
 - [SQL Server 2017 Developer or later][download-sql-server]
 
-  You'll want some kind of database for testing and debugging. If you already have SQL Server installed somewhere you can use that. If not, you should download and install the free developer edition. Note: SQL Server 2017 and later also have a Linux version available if you want to mess with it - my brief testing shows that it will work with Rock (and might even be a bit faster) but it has not been thoroughly stress tested so I can't give you any guarantees.
+  You'll want some kind of database for testing and debugging. If you already have SQL Server installed somewhere you can use that. If not, you should download and install the free developer edition. Note: SQL Server 2017 and later also have a Linux version available if you want to mess with it - my brief testing shows that it will work with Rock (and might even be a bit faster) but it has not been thoroughly stress tested so I can't give you any guarantees. You can also use Azure SQL if you want a cloud solution.
 
 - [SQL Server Management Studio][download-sql-server-management-studio] OR [Azure Data Studio (formerly known as SQL Operations Studio)][download-azure-data-studio]
 
@@ -94,7 +97,7 @@ At this point you should be able to go to the Debug menu and click Start Debuggi
 
 ## Building and Deployment
 
-All commits are automatically built and tested by [AppVeyor][build-link]. New changes are deployed in two stages: First, all changes are merged into the `np-beta` branch. Once AppVeyor has built that branch and verified that tests pass, you can use an AppVeyor deployment to deploy the build on the Beta server. Then, once you have thoroughly tested it on the Beta server, you can merge it into the protected `np-production` branch. Once AppVeyor has built the production branch you can wait for the next maintenance window and deploy it to the Production server.
+All commits are automatically built, tested, and deployed using [Azure Pipelines][build-link]. New changes are deployed in two stages: First, all changes are merged into the `np-beta` branch. Azure Pipelines will build, test, and then deploy the build on the Beta server. Once the changes have been thoroughly tested on the Beta server, they can be merged into the protected `np-production` branch. Azure Pipelines will run a final build/test and then wait for approval to deploy to the Production server.
 
 ## Rock Developer Resources
 
@@ -117,11 +120,17 @@ A community of developers led by the [Spark Development Network](http://www.spar
 [website-badge]: https://img.shields.io/website-up-down-green-red/https/newpointe.org.svg?label=newpointe.org
 [website-link]: https://newpointe.org
 
-[build-badge]: https://img.shields.io/appveyor/ci/NewPointe/Rock.svg
-[build-link]: https://ci.appveyor.com/project/NewPointe/Rock
+[build-badge]: https://img.shields.io/azure-devops/build/NewPointeIT/8c520f92-b456-4f5f-b37f-480eddc46f73/2/np-develop
+[build-link]: https://dev.azure.com/NewPointeIT/Rock/_build/latest?definitionId=2&branchName=np-develop
 
-[tests-badge]: https://img.shields.io/appveyor/tests/NewPointe/Rock.svg
-[tests-link]: https://ci.appveyor.com/project/NewPointe/Rock
+[tests-badge]: https://img.shields.io/azure-devops/tests/NewPointeIT/8c520f92-b456-4f5f-b37f-480eddc46f73/2/np-develop
+[tests-link]: https://dev.azure.com/NewPointeIT/Rock/_build/latest?definitionId=2&branchName=np-develop
+
+[production-deploy-badge]: https://img.shields.io/azure-devops/release/NewPointeIT/8c520f92-b456-4f5f-b37f-480eddc46f73/2/2?label=deployment%20%28production%29
+[production-deploy-link]: https://dev.azure.com/NewPointeIT/Rock/_release?view=mine&definitionId=2&_a=deployments
+
+[beta-deploy-badge]: https://img.shields.io/azure-devops/release/NewPointeIT/8c520f92-b456-4f5f-b37f-480eddc46f73/1/1?label=deployment%20%28beta%29
+[beta-deploy-link]: https://dev.azure.com/NewPointeIT/Rock/_release?view=mine&definitionId=1&_a=deployments
 
 [campuses-badge]: https://img.shields.io/badge/dynamic/json.svg?label=campuses&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.campusCount&colorB=lightgrey
 [era-badge]: https://img.shields.io/badge/dynamic/json.svg?label=rock%20ERAs&url=https://newpointe.org/Webhooks/Lava.ashx/gh/stats&query=$.eraCount&colorB=lightgrey
