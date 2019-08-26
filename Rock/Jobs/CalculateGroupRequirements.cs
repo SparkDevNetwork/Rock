@@ -108,7 +108,7 @@ namespace Rock.Jobs
 
                         if ( groupRequirement.GroupId.HasValue )
                         {
-                            groupMemberQry = groupMemberQry.Where( g => g.Id == groupRequirement.GroupId );
+                            groupMemberQry = groupMemberQry.Where( g => g.GroupId== groupRequirement.GroupId );
                         }
                         else if ( groupRequirement.GroupTypeId.HasValue )
                         {
