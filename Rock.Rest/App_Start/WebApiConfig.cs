@@ -178,6 +178,19 @@ namespace Rock.Rest
             //// have a default route for each method so that other actions do not match the default (i.e. DataViews).
             //// Also, this will make controller routes case-insensitive (vs the odata routing)
             config.Routes.MapHttpRoute(
+                name: "DefaultApiGetByAttributeValue",
+                routeTemplate: "api/{controller}/GetByAttributeValue",
+                defaults: new
+                {
+                    action = "GetByAttributeValue"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
+                    controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
+                } );
+
+            config.Routes.MapHttpRoute(
                 name: "DefaultApiGetById",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new
