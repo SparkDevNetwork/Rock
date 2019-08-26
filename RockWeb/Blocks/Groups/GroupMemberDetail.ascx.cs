@@ -188,6 +188,23 @@ namespace RockWeb.Blocks.Groups
                     NavigateToParentPage( qryString );
                 }
             }
+
+            if ( !cvGroupMember.IsValid )
+            {
+                nbRestoreError.Text = cvGroupMember.ErrorMessage;
+                nbRestoreError.Visible = true;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelRestore control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelRestore_Click( object sender, EventArgs e )
+        {
+            mdRestoreArchivedPrompt.Hide();
         }
 
         /// <summary>
@@ -309,6 +326,19 @@ namespace RockWeb.Blocks.Groups
                     GroupMember archivedGroupMember;
                     if ( groupService.ExistsAsArchived( group, personId.Value, role.Id, out archivedGroupMember ) )
                     {
+                        // if the archived groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+                        // So, make sure a message is displayed in the validation summary
+
+                        // set the IsArchived fields to false to see if the person would valid if they choose to restore/add this member
+                        groupMemberService.Restore( archivedGroupMember );
+                        cvGroupMember.IsValid = archivedGroupMember.IsValidGroupMember( rockContext );
+
+                        if ( !cvGroupMember.IsValid )
+                        {
+                            cvGroupMember.ErrorMessage = archivedGroupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
+
                         // matching archived person found, so prompt
                         mdRestoreArchivedPrompt.Show();
                         nbRestoreError.Visible = false;
