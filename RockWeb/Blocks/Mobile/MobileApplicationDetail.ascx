@@ -138,6 +138,15 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlEditLockPhoneOrientation" runat="server" Label="Lock Phone Orientation" Help="Setting this value will lock the orientation on phones to the specified orientation." />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlEditLockTabletOrientation" runat="server" Label="Lock Tablet Orientation" Help="Setting this value will lock the orientation on tablets to the specified orientation." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:PagePicker ID="ppEditLoginPage" runat="server" Label="Login Page" />
                         </div>
 
