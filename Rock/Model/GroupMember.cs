@@ -743,7 +743,7 @@ namespace Rock.Model
                     if ( requirementStatusesRequiredForAdd.Any() )
                     {
                         // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
-                        errorMessage = "This person must meet the following requirements before they are added to this group: "
+                        errorMessage = "This person must meet the following requirements before they are added or made an active member in this group: "
                             + requirementStatusesRequiredForAdd
                             .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
                             .ToList().AsDelimited( ", " );
@@ -820,7 +820,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database or if person is restored from archived
+        /// Determines whether this is a new group member (just added), if either Person or Role is different than what is stored in the database, if person is restored from archived, or their status is getting changed to Active
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -836,15 +836,25 @@ namespace Rock.Model
                 var groupMemberService = new GroupMemberService( rockContext );
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
-                // existing groupmember record, but person or role was changed
-                var hasChanged = this.PersonId != databaseGroupMemberRecord.PersonId || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId || ( databaseGroupMemberRecord.IsArchived && databaseGroupMemberRecord.IsArchived != this.IsArchived );
+                // existing groupmember record, but person or role or archive status was changed, or active status is getting changed to true
+                var hasChanged = this.PersonId != databaseGroupMemberRecord.PersonId
+                    || this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId
+                    || ( databaseGroupMemberRecord.IsArchived && databaseGroupMemberRecord.IsArchived != this.IsArchived )
+                    || ( databaseGroupMemberRecord.GroupMemberStatus != GroupMemberStatus.Active && this.GroupMemberStatus == GroupMemberStatus.Active );
 
                 if ( !hasChanged )
                 {
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() );
+                        var originalActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
+                        var newActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
+
+                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
+                        || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
+                        || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
+                        || ( rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true && !rockContext.Entry( this ).Property( "GroupMemberStatus" ).ToStringSafe().AsBoolean() )
+                        || originalActiveStatus != GroupMemberStatus.Active && newActiveStatus == GroupMemberStatus.Active;
                     }
                 }
 
