@@ -403,12 +403,20 @@ namespace RockWeb.Blocks.Finance
                 txn.ShowAsAnonymous = cbShowAsAnonymous.Checked;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = dvpTransactionType.SelectedValue.AsInteger();
-                txn.NonCashAssetTypeValueId = dvpNonCashAssetType.SelectedValue.AsIntegerOrNull();
                 txn.SourceTypeValueId = dvpSourceType.SelectedValueAsInt();
                 // DO NOT ALLOW changing a payment gateway once it's already saved.
                 //txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 txn.TransactionCode = tbTransactionCode.Text;
                 txn.FinancialPaymentDetail.CurrencyTypeValueId = dvpCurrencyType.SelectedValueAsInt();
+                if ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) )
+                {
+                    txn.NonCashAssetTypeValueId = dvpNonCashAssetType.SelectedValue.AsIntegerOrNull();
+                }
+                else
+                {
+                    txn.NonCashAssetTypeValueId = null;
+                }
+
                 txn.FinancialPaymentDetail.CreditCardTypeValueId = dvpCreditCardType.SelectedValueAsInt();
 
                 txn.Summary = tbSummary.Text;
@@ -700,6 +708,7 @@ namespace RockWeb.Blocks.Finance
         protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetCreditCardVisibility();
+            SetNonCashAssetTypeVisibility();
             _focusControl = dvpCurrencyType;
         }
 
@@ -1132,9 +1141,12 @@ namespace RockWeb.Blocks.Finance
                 {
                     txn.TransactionDateTime = Session["NewTxnDefault_TransactionDateTime"] as DateTime?;
                     txn.TransactionTypeValueId = Session["NewTxnDefault_TransactionType"] as int? ?? 0;
-                    txn.NonCashAssetTypeValueId = Session["NewTxnDefault_NonCashAssetType"] as int?;
                     txn.SourceTypeValueId = Session["NewTxnDefault_SourceType"] as int?;
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = Session["NewTxnDefault_CurrencyType"] as int?;
+                    if ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) )
+                    {
+                        txn.NonCashAssetTypeValueId = Session["NewTxnDefault_NonCashAssetType"] as int?;
+                    }
                     txn.FinancialPaymentDetail.CreditCardTypeValueId = Session["NewTxnDefault_CreditCardType"] as int?;
                     if ( this.GetAttributeValue( "CarryOverAccount" ).AsBoolean() )
                     {
@@ -1206,6 +1218,17 @@ namespace RockWeb.Blocks.Finance
             lbSave.Visible = !readOnly;
         }
 
+        private bool IsNonCashTransaction( int? CurrencyTypeId )
+        {
+            if ( CurrencyTypeId == null )
+            {
+                return false;
+            }
+
+            var nonCashCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH );
+            return ( CurrencyTypeId == nonCashCurrencyType.Id );
+        }
+
         /// <summary>
         /// Shows the read only details.
         /// </summary>
@@ -1237,7 +1260,11 @@ namespace RockWeb.Blocks.Finance
                         txn.Batch.Name );
                 }
 
-                detailsLeft.Add( "Non-Cash Asset Type", txn.NonCashAssetTypeValue != null ? txn.NonCashAssetTypeValue.Value : string.Empty );
+                if ( txn.NonCashAssetTypeValue != null )
+                {
+                    detailsLeft.Add( "Non-Cash Asset Type", txn.NonCashAssetTypeValue != null ? txn.NonCashAssetTypeValue.Value : string.Empty );
+                }
+
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
                 detailsLeft.Add( "Transaction Code", txn.TransactionCode );
 
@@ -1588,12 +1615,18 @@ namespace RockWeb.Blocks.Finance
                 cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 dvpTransactionType.SetValue( txn.TransactionTypeValueId );
-                dvpNonCashAssetType.SetValue( txn.NonCashAssetTypeValueId );
                 dvpSourceType.Required = this.GetAttributeValue( "TransactionSourceRequired" ).AsBoolean();
                 dvpSourceType.SetValue( txn.SourceTypeValueId );
                 gpPaymentGateway.SetValue( txn.FinancialGatewayId );
                 tbTransactionCode.Text = txn.TransactionCode;
                 dvpCurrencyType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CurrencyTypeValueId : ( int? ) null );
+
+                if ( ( txn.FinancialPaymentDetail != null ) && ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) ) )
+                {
+                    dvpNonCashAssetType.SetValue( txn.NonCashAssetTypeValueId );
+                }
+                SetNonCashAssetTypeVisibility();
+
                 dvpCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : ( int? ) null );
                 SetCreditCardVisibility();
 
@@ -1711,6 +1744,15 @@ namespace RockWeb.Blocks.Finance
             int? currencyType = dvpCurrencyType.SelectedValueAsInt();
             var creditCardCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
             dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
+        }
+
+        /// <summary>
+        /// Sets the credit card visibility.
+        /// </summary>
+        private void SetNonCashAssetTypeVisibility()
+        {
+            int? currencyType = dvpCurrencyType.SelectedValueAsInt();
+            dvpCreditCardType.Visible = IsNonCashTransaction( currencyType );
         }
 
         /// <summary>
