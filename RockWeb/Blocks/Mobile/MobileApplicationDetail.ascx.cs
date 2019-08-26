@@ -22,7 +22,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
+
 using Humanizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -172,6 +174,16 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         private void ConfigureControls()
         {
+            ddlEditLockPhoneOrientation.Items.Clear();
+            ddlEditLockPhoneOrientation.Items.Add( Rock.Constants.None.ListItem );
+            ddlEditLockPhoneOrientation.Items.Add( new ListItem( "Portrait", ( ( int ) DeviceOrientation.Portrait ).ToString() ) );
+            ddlEditLockPhoneOrientation.Items.Add( new ListItem( "Landscape", ( ( int ) DeviceOrientation.Landscape ).ToString() ) );
+
+            ddlEditLockTabletOrientation.Items.Clear();
+            ddlEditLockTabletOrientation.Items.Add( Rock.Constants.None.ListItem );
+            ddlEditLockTabletOrientation.Items.Add( new ListItem( "Portrait", ( ( int ) DeviceOrientation.Portrait ).ToString() ) );
+            ddlEditLockTabletOrientation.Items.Add( new ListItem( "Landscape", ( ( int ) DeviceOrientation.Landscape ).ToString() ) );
+
             imgEditHeaderImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             imgEditPreviewThumbnail.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
@@ -407,6 +419,8 @@ namespace RockWeb.Blocks.Mobile
 
             rblEditApplicationType.SetValue( ( int? ) additionalSettings.ShellType ?? ( int ) ShellType.Flyout );
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
+            ddlEditLockPhoneOrientation.SetValue( ( int ) additionalSettings.LockedPhoneOrientation );
+            ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
             ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
@@ -697,6 +711,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
             additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
+            additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
+            additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
 
             //
             // Save the images.

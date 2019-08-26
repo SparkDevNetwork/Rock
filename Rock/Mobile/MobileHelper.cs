@@ -259,6 +259,8 @@ namespace Rock.Mobile
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
+            package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
+            package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
 
             if ( site.FavIconBinaryFileId.HasValue )
             {

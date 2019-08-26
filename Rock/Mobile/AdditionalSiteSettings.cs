@@ -139,5 +139,21 @@ namespace Rock.Mobile
         /// The xaml to use for the flyout shell menu.
         /// </value>
         public string FlyoutXaml { get; set; } = _defaultFlyoutXaml;
+
+        /// <summary>
+        /// Gets or sets the locked phone orientation.
+        /// </summary>
+        /// <value>
+        /// The locked phone orientation.
+        /// </value>
+        public DeviceOrientation LockedPhoneOrientation { get; set; } = DeviceOrientation.Portrait;
+
+        /// <summary>
+        /// Gets or sets the locked tablet orientation.
+        /// </summary>
+        /// <value>
+        /// The locked tablet orientation.
+        /// </value>
+        public DeviceOrientation LockedTabletOrientation { get; set; } = DeviceOrientation.Unknown;
     }
 }
