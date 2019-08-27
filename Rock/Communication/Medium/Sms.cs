@@ -155,6 +155,10 @@ namespace Rock.Communication.Medium
                                 CreateCommunication( fromPerson, fromPhone, fromPerson.PrimaryAliasId.Value, warningMessage, plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage );
                             }
                         }
+                        else
+                        {
+                            errorMessage = "There was no response code (e.g., @321) found in the message and the from/to person were the same.";
+                        }
                     }
                     else // response from someone other than the medium recipient
                     {
