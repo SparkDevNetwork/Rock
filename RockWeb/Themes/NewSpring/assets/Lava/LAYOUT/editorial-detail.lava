@@ -11,26 +11,36 @@
     {% endif %}
 {% endif %}
 
-<!-- Set Parent Variables-->
-{% if Item.ParentItems %}
-    {% for parent in Item.ParentItems %}
-        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
-            {% for parent in parents %}
-                {% assign parentTitle = parent.Title %}
-                {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
-                {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-                {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                    {% assign backgroundColor = baseBackgroundColor %}
-                    <style>
-                        .brand-bg {
-                            background-color: {{ backgroundColor | Darken:'10%' }};
-                        }
-                    </style>
-                {% endif %}
+{%- comment -%}Get number of parent items{%- endcomment -%}
+{% assign parentCount = Item.ParentItems | Size %}
 
-            {% endfor %}
-        {% endcontentchannelitem %}
+{%- comment -%}Get Id of primary parent channel attribute so we know which item to pull image/slug from when there are more than one parent{%- endcomment -%}
+{% contentchannel id:'{{ Item.ContentChannelId }}' iterator:'channels' %}
+    {% for channel in channels %}
+        {% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
     {% endfor %}
+{% endcontentchannel %}
+
+{%- comment -%}Get Ids of parent items for this item{%- endcomment -%}
+{% capture parentids %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+
+{%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
+{% if parentCount > 0 %}
+    {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
+        {% for parent in parents %}
+            {% assign parentTitle = parent.Title %}
+            {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+            {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
+            {% if baseBackgroundColor and baseBackgroundColor != empty %}
+                {% assign backgroundColor = baseBackgroundColor %}
+                <style>
+                    .brand-bg {
+                        background-color: {{ backgroundColor | Darken:'10%' }};
+                    }
+                </style>
+            {% endif %}
+        {% endfor %}
+    {% endcontentchannelitem %}
 {% endif %}
 
 <!-- Set Page/Browser Titles -->
@@ -86,7 +96,7 @@
 
             {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
             {% assign collectiontext = collectiontext | Trim %}
-            {% capture collectionurl %}{{ Item.ContentChannel.ChannelUrl }}/{[ getParentSlugFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
+            {% capture collectionurl %}{[ getPermalink cciid:'{{ Item.Id }}' ]}{% endcapture %}
             {% if collectiontext and collectiontext != empty %}
                 <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
             {% endif %}

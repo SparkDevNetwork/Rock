@@ -24,7 +24,7 @@
         {% capture id %}{{ item.Id }}{% endcapture %}
         {% capture cciid %}{{ item.Id }}{% endcapture %}
         {% capture title %}{{ item.Title | Replace:"'","’" }}{% endcapture %}
-        {% capture titlesize %}h3{% endcapture %}
+        {% capture titlesize %}h4{% endcapture %}
         {% assign summary = item | Attribute:'Summary' %}
         {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Truncate:150,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
         {% capture textalignment %}{{ item | Attribute:'TextAlignment' }}{% endcapture %}
@@ -61,7 +61,7 @@
         {% capture trimcopy %}{{ item | Attribute:'TrimCopy' }}{% endcapture %}
         {% capture linkcolor %}{{ item | Attribute:'ForegroundColor' }}{% endcapture %}
         {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
-        {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}{% if parentCount > 0 %}/{[ getParentSlugFromChildId id:'{{ item.Id }}' ]}{% endif %}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+        {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
         {% capture linktext %}{% if channelItemsName == 'Sermons' %}Watch{% else %}Read{% endif %} {{ channelItemsName | Singularize }}{% endcapture %}
         {% capture hideforegroundelements %}{{ item | Attribute:'HideForegroundElements' }}{% endcapture %}
         
