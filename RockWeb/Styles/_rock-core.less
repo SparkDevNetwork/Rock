@@ -8,32 +8,12 @@
 */
 
 :root {
-  --text-color: @text-color;
-  --link-color: @link-color;
-  --link-color-hover: @link-hover-color;
-  --body-background: @body-bg;
-  --brand-primary: @brand-primary;
-  --brand-success: @brand-success;
-  --brand-info: @brand-info;
-  --brand-warning: @brand-warning;
-  --brand-danger: @brand-danger;
-
-  --input-bg: @input-bg;
-  --input-color: @input-color;
-  --input-color-placeholder: @input-color-placeholder;
-  --input-border: 1px solid @input-border;
-  --input-border-radius: @input-border-radius;
-  --input-focus-transition: @input-focus-transition;
-
   --focus-state-border: 1px solid @input-border-focus;
   --focus-state-shadow: @input-focus-box-shadow;
-
-  --font-family-sans-serif: @font-family-sans-serif;
 }
 
 // 1. Imports
 //--------------------------------
-@import (reference) "./Bootstrap/bootstrap.less";
 @import "_rock-mixins.less";
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
@@ -44,7 +24,7 @@
 @import "./chosen/bootstrap-chosen.less";
 
 .fa-font-face( @fa-theme-weight-name, @fa-edition );
-.fa-font-face( 'brands' );
+.fa-font-face( "brands" );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -100,8 +80,8 @@ iframe {
   }
 
   .form-control-group & {
-    margin-left: 0;
     margin-right: 0;
+    margin-left: 0;
   }
 }
 
@@ -620,8 +600,8 @@ th[align="right"] {
 
   .analytics-details {
     > .grid-filter {
-      margin: -15px -15px 15px -15px;
       padding: 15px;
+      margin: -15px -15px 15px -15px;
     }
   }
 
@@ -662,6 +642,29 @@ th[align="right"] {
 
   i {
     float: right;
+  }
+}
+
+.panel-badges {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: end;
+  align-items: center;
+  justify-content: flex-end;
+  height: 32px;
+  border-bottom: 1px solid @panel-border;
+
+  &:empty {
+    display: none;
+  }
+
+  .badge {
+    background-color: inherit;
+  }
+
+  .badge-icon {
+    font-size: 20px;
   }
 }
 

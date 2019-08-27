@@ -1406,8 +1406,18 @@ namespace RockWeb.Blocks.Event
                 RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
 
                 CreateDynamicControls( true );
+
+                // If the registration was previously saved then save it again to update the discount
+                if ( RegistrationState.RegistrationId != null || RegistrationState.RegistrationId != 0 )
+                {
+                    // This should be false, but it is possible to fill this in before clicking the disount button
+                    bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
+                    SaveRegistration( new RockContext(), hasPayment );
+                }
             }
         }
+
+
 
         #endregion
 
@@ -2776,7 +2786,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 dbFee = new RegistrationRegistrantFee();
                                 dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                                var registrationTemplateFeeItem = registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId );
+                                var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
                                 if ( registrationTemplateFeeItem != null )
                                 {
                                     dbFee.Option = registrationTemplateFeeItem.Name;
@@ -3561,6 +3571,12 @@ namespace RockWeb.Blocks.Event
 
         private bool ShowInstructions()
         {
+            // This can happen if the user logs out while viewing a registrations, even if it was completed.
+            if ( RegistrationTemplate == null )
+            {
+                return false;
+            }
+
             string instructions = string.IsNullOrEmpty( RegistrationInstanceState.RegistrationInstructions ) ?
                 RegistrationTemplate.RegistrationInstructions :
                 RegistrationInstanceState.RegistrationInstructions;
@@ -3578,6 +3594,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowStart()
         {
+            // This can happen if the user logs out while viewing a registrations, even if it was completed.
+            if ( RegistrationTemplate == null )
+            {
+                return;
+            }
+
             lRegistrantTerm.Text = RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
@@ -5029,10 +5051,8 @@ namespace RockWeb.Blocks.Event
                     lUpdateEmailWarning.Visible = true;
                 }
 
-                // Build Discount info if template has discounts and this is a new registration
-                if ( RegistrationTemplate != null
-                    && RegistrationTemplate.Discounts.Any()
-                    && !RegistrationState.RegistrationId.HasValue )
+                // Build Discount info
+                if ( ShowDiscountCode() )
                 {
                     divDiscountCode.Visible = true;
 
@@ -5048,6 +5068,16 @@ namespace RockWeb.Blocks.Event
                             nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
                             nbDiscountCode.Visible = true;
                         }
+                    }
+
+                    if ( !AllowDiscountCodeEntry() )
+                    {
+                        tbDiscountCode.Enabled = false;
+                        tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
+
+                        // If we cannot edit and there is no existing value then just hide the discount div.
+                        divDiscountCode.Visible = tbDiscountCode.Text.IsNotNullOrWhiteSpace();
+                        lbDiscountApply.Visible = false;
                     }
                 }
                 else
@@ -5383,6 +5413,47 @@ namespace RockWeb.Blocks.Event
                     pnlPaymentInfo.Visible = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if a discount code can be entered.
+        /// </summary>
+        /// <returns></returns>
+        private bool AllowDiscountCodeEntry()
+        {
+            // Check if a discount code has already been applied and return false if true
+            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registratin and the cost has not been calculated yet.
+            decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+            if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if the discount code should be displayed.
+        /// </summary>
+        /// <returns></returns>
+        private bool ShowDiscountCode()
+        {
+            if ( RegistrationTemplate == null )
+            {
+                return false;
+            }
+
+            if ( !RegistrationTemplate.Discounts.Any() )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

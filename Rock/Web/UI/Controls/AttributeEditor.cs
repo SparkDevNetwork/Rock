@@ -102,6 +102,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbShowInGrid;
 
         /// <summary>
+        /// Show on bulk control
+        /// </summary>
+        protected RockCheckBox _cbShowOnBulk;
+
+        /// <summary>
         /// Allow search control
         /// </summary>
         protected RockCheckBox _cbAllowSearch;
@@ -696,6 +701,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether Show on Bulk option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show on Bulk option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsShowOnBulkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the excluded field types.
         /// </summary>
         /// <value>
@@ -756,6 +781,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbShowInGrid.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show on bulk].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on bulk]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnBulk
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Checked = value;
             }
         }
 
@@ -1353,6 +1398,13 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
 
+            _cbShowOnBulk = new RockCheckBox();
+            _cbShowOnBulk.ID = "cbShowOnBulk";
+            _cbShowOnBulk.Label = "Show on Bulk";
+            _cbShowOnBulk.Text = "Yes";
+            _cbShowOnBulk.Help = "If selected, this attribute will be shown with bulk update attributes.";
+            Controls.Add( _cbShowOnBulk );
+
             _lFieldType = new RockLiteral();
             _lFieldType.Label = "Field Type";
             _lFieldType.ID = "_lFieldType";
@@ -1530,6 +1582,7 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
+            _cbShowOnBulk.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
             _cbIsIndexingEnabled.ValidationGroup = validationGroup;
             _cbIsAnalytic.ValidationGroup = validationGroup;
@@ -1652,6 +1705,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbShowInGrid.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbShowOnBulk.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -1778,6 +1836,7 @@ namespace Rock.Web.UI.Controls
                 this.Description = attribute.Description;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+                this.ShowOnBulk = attribute.ShowOnBulk;
                 this.AllowSearch = attribute.AllowSearch;
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
                 this.IsAnalytic = attribute.IsAnalytic;
@@ -1847,6 +1906,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
+                attribute.ShowOnBulk = this.ShowOnBulk;
                 attribute.AllowSearch = this.AllowSearch;
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
                 attribute.IsAnalytic = this.IsAnalytic;

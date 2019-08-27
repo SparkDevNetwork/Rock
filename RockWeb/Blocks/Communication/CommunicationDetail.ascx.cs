@@ -15,47 +15,109 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Caching;
+using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
-using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// Used for displaying details of an existing communication that has already been created.
+    /// Displays details and analytics for an existing communication.
     /// </summary>
     [DisplayName( "Communication Detail" )]
     [Category( "Communication" )]
     [Description( "Used for displaying details of an existing communication that has already been created." )]
-
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [BooleanField( "Enable Personal Templates", "Should support for personal templates be enabled? These are templates that a user can create and are personal to them. If enabled, they will be able to create a new template based on the current communication.", false, "", 0 )]
+    #region Block Attributes
+
+    [BooleanField
+        ( "Enable Personal Templates",
+          Key = AttributeKey.EnablePersonalTemplates,
+          Description = "Should support for personal templates be enabled ? These are templates that a user can create and are personal to them.If enabled, they will be able to create a new template based on the current communication.",
+          DefaultValue = "false",
+          Order = 0 )]
+    [TextField
+        ( "Series Colors",
+          Key = AttributeKey.SeriesColors,
+          Description = "A comma-delimited list of colors that the Clients chart will use.",
+          DefaultValue = SeriesColorsDefaultValue,
+          Order = 1 )]
+
+    #endregion Block Attributes
 
     public partial class CommunicationDetail : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class AttributeKey
+        {
+            public const string SeriesColors = "SeriesColors";
+            public const string EnablePersonalTemplates = "EnablePersonalTemplates";
+        }
+
+        #endregion
+
+        #region Attribute Default Values
+
+        private const string SeriesColorsDefaultValue = "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766";
+
+        #endregion
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        protected static class PageParameterKey
+        {
+            public const string CommunicationId = "CommunicationId";
+            public const string Edit = "Edit";
+        }
+
+        #endregion
+
+        #region User Preference Keys
+
+        /// <summary>
+        /// Keys to use for User Preferences
+        /// </summary>
+        protected static class UserPreferenceKey
+        {
+            public const string RecipientListSettings = "RecipientListSettings";
+        }
+
+        #endregion
+
         #region Fields
 
-        private bool _editingApproved = false;
+        private bool _EditingApproved = false;
+        private string _ActiveView = CommunicationDetailPanels.Analytics;
+        private List<CommunicationDetailReportColumnInfo> _Columns;
+        private Rock.Model.Communication _Communication = null;
+        private List<InteractionInfo> _Interactions = null;
+        private Dictionary<string, string> _PanelControlToTabNameMap = null;
+        private RockContext _DataContext = null;
 
         #endregion
 
@@ -67,65 +129,106 @@ namespace RockWeb.Blocks.Communication
             set { ViewState["CommunicationId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the line chart data labels json.
+        /// </summary>
+        /// <value>
+        /// The line chart data labels json.
+        /// </value>
+        public string LineChartDataLabelsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data opens json.
+        /// </summary>
+        /// <value>
+        /// The line chart data opens json.
+        /// </value>
+        public string LineChartDataOpensJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data clicks json.
+        /// </summary>
+        /// <value>
+        /// The line chart data clicks json.
+        /// </value>
+        public string LineChartDataClicksJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data un opened json.
+        /// </summary>
+        /// <value>
+        /// The line chart data un opened json.
+        /// </value>
+        public string LineChartDataUnOpenedJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart time format. see http://momentjs.com/docs/#/displaying/format/
+        /// </summary>
+        /// <value>
+        /// The line chart time format.
+        /// </value>
+        public string LineChartTimeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data open clicks json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data open clicks json.
+        /// </value>
+        public string PieChartDataOpenClicksJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data client labels json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data client labels json.
+        /// </value>
+        public string PieChartDataClientLabelsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data client counts json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data client counts json.
+        /// </value>
+        public string PieChartDataClientCountsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series colors.
+        /// </summary>
+        /// <value>
+        /// The series colors.
+        /// </value>
+        public string SeriesColorsJSON { get; set; }
+
         #endregion
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.OnInit" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            gPending.DataKeyNames = new string[] { "Id" };
-            gDelivered.DataKeyNames = new string[] { "Id" };
-            gFailed.DataKeyNames = new string[] { "Id" };
-            gCancelled.DataKeyNames = new string[] { "Id" };
-            gOpened.DataKeyNames = new string[] { "Id" };
+            InitializeChartScripts();
 
-            gPending.GridRebind += gRecipients_GridRebind;
-            gDelivered.GridRebind += gRecipients_GridRebind;
-            gFailed.GridRebind += gRecipients_GridRebind;
-            gCancelled.GridRebind += gRecipients_GridRebind;
-            gOpened.GridRebind += gRecipients_GridRebind;
+            InitializeInteractionsList();
+            InitializeRecipientsList();
 
-            gInteractions.DataKeyNames = new string[] { "Id" };
-            gInteractions.GridRebind += gInteractions_GridRebind;
+            InitializeRecipientsFilter();
 
-            string script = string.Format( @"
-    function showRecipients( recipientDiv, show )
-    {{
-        var $hf = $('#{0}');
-        $('.js-communication-recipients').slideUp('slow');
-        if ( $hf.val() != recipientDiv ) {{
-            $('#' + recipientDiv).slideDown('slow');
-            $hf.val(recipientDiv);
-        }} else {{
-            $hf.val('');
-        }}
-    }}
+            _EditingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
-    $('#{1}').click( function() {{ showRecipients('{2}'); }});
-    $('#{3}').click( function() {{ showRecipients('{4}'); }});
-    $('#{5}').click( function() {{ showRecipients('{6}'); }});
-    $('#{7}').click( function() {{ showRecipients('{8}'); }});
-    $('#{9}').click( function() {{ showRecipients('{10}'); }});
-",
-    hfActiveRecipient.ClientID,
-    aPending.ClientID, sPending.ClientID,
-    aDelivered.ClientID, sDelivered.ClientID,
-    aFailed.ClientID, sFailed.ClientID,
-    aCancelled.ClientID, sCancelled.ClientID,
-    aOpened.ClientID, sOpened.ClientID );
-
-            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "recipient-toggle-" + this.BlockId.ToString(), script, true );
-
-            _editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
-
-            if ( GetAttributeValue( "EnablePersonalTemplates" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnablePersonalTemplates ).AsBoolean() )
             {
                 btnTemplate.Visible = true;
                 mdCreateTemplate.SaveClick += mdSaveTemplate_Click;
             }
 
+            InitializeBlockConfigurationChangeHandler( upPanel );
         }
 
         /// <summary>
@@ -138,63 +241,89 @@ namespace RockWeb.Blocks.Communication
 
             nbTemplateCreated.Visible = false;
 
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
             {
-                // Check if CommunicationDetail has already loaded existing communication
-                var communication = RockPage.GetSharedItem( "Communication" ) as Rock.Model.Communication;
-                if ( communication == null )
+                // Set the tab page to the parent of the postback control.
+                var targetControl = GetPostBackControl();
+
+                if ( targetControl != null )
                 {
-                    CommunicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
-                    if ( CommunicationId.HasValue )
+                    var parentTab = targetControl.FindFirstParentWhere( x => ( x is WebControl ) && ( ( WebControl ) x ).CssClass == "tab-panel" ) as WebControl;
+
+                    if ( parentTab != null )
                     {
-                        communication = new CommunicationService( new RockContext() )
-                            .Queryable( "CreatedByPersonAlias.Person" )
-                            .Where( c => c.Id == CommunicationId.Value )
-                            .FirstOrDefault();
+                        var panelToTabMap = this.GetPanelControlToTabNameMap();
+
+                        if ( _PanelControlToTabNameMap.ContainsKey( parentTab.UniqueID ) )
+                        {
+                            var panelName = _PanelControlToTabNameMap[parentTab.UniqueID];
+
+                            SetActivePanel( panelName );
+                        }
                     }
                 }
-                else
-                {
-                    CommunicationId = communication.Id;
-                }
 
-                // If not valid for this block, hide contents and return
-                if ( communication == null ||
-                    communication.Status == CommunicationStatus.Transient ||
-                    communication.Status == CommunicationStatus.Draft ||
-                    communication.Status == CommunicationStatus.Denied ||
-                    ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                ShowDialog();
+            }
+            else
+            {
+                InitializePageFromParameters();
+
+                InitializeActiveCommunication();
+
+                if ( _Communication == null ||
+                     _Communication.Status == CommunicationStatus.Transient ||
+                     _Communication.Status == CommunicationStatus.Draft ||
+                     _Communication.Status == CommunicationStatus.Denied ||
+                     ( _Communication.Status == CommunicationStatus.PendingApproval && _EditingApproved ) )
                 {
-                    // If viewing a new, transient or draft communication, hide this block and use NewCommunication block
+                    // If viewing a new, transient or draft communication, hide this block and show the New Communication block.
                     this.Visible = false;
                 }
                 else
                 {
-                    // if they somehow got here and aren't authorized to View, hide everything
-                    if ( !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    // If user is not authorized to View, hide all content.
+                    if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
                         this.Visible = false;
                     }
                     else
                     {
-                        ShowDetail( communication );
+                        ShowDetail( _Communication );
                     }
                 }
             }
-            else
-            {
-                ShowDialog();
-            }
-
         }
 
-        protected override void OnPreRender( EventArgs e )
+        /// <summary>
+        /// Store settings for the Recipient List.
+        /// </summary>
+        private void SaveRecipientListPreferences()
         {
-            sPending.Style["display"] = hfActiveRecipient.Value == sPending.ClientID ? "block" : "none";
-            sDelivered.Style["display"] = hfActiveRecipient.Value == sDelivered.ClientID ? "block" : "none";
-            sFailed.Style["display"] = hfActiveRecipient.Value == sFailed.ClientID ? "block" : "none";
-            sCancelled.Style["display"] = hfActiveRecipient.Value == sCancelled.ClientID ? "block" : "none";
-            sOpened.Style["display"] = hfActiveRecipient.Value == sOpened.ClientID ? "block" : "none";
+            // Save Recipients List column selection.
+            var settings = new RecipientListPreferences();
+
+            settings.SelectedProperties = cblProperties.SelectedValues;
+            settings.SelectedAttributes = lbAttributes.SelectedValues;
+
+            this.SetBlockUserPreference( UserPreferenceKey.RecipientListSettings, settings.ToJson(), true );
+        }
+
+        /// <summary>
+        /// Load settings for the Recipient List.
+        /// </summary>
+        private void LoadRecipientListPreferences()
+        {
+            // Load Recipients List column selection.
+            var settings = this.GetBlockUserPreference( UserPreferenceKey.RecipientListSettings ).FromJsonOrNull<RecipientListPreferences>();
+
+            if ( settings == null )
+            {
+                return;
+            }
+
+            cblProperties.SetValues( settings.SelectedProperties );
+            lbAttributes.SetValues( settings.SelectedAttributes );
         }
 
         /// <summary>
@@ -209,13 +338,16 @@ namespace RockWeb.Blocks.Communication
         public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
+            var pageTitle = "New Communication";
 
-            string pageTitle = "New Communication";
+            var commId = PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
 
-            int? commId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
             if ( commId.HasValue )
             {
-                var communication = new CommunicationService( new RockContext() ).Get( commId.Value );
+                var dataContext = this.GetDataContext();
+
+                var communication = new CommunicationService( dataContext ).Get( commId.Value );
+
                 if ( communication != null )
                 {
                     RockPage.SaveSharedItem( "communication", communication );
@@ -248,25 +380,18 @@ namespace RockWeb.Blocks.Communication
 
         #region Events
 
+        #region Message Panel Events
+
         /// <summary>
-        /// Handles the GridRebind event of the Recipient grid controls.
+        /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gRecipients_GridRebind( object sender, EventArgs e )
-        {
-            BindRecipients();
-        }
-
-        void gInteractions_GridRebind( object sender, EventArgs e )
-        {
-            BindInteractions();
-        }
-
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var service = new CommunicationService( rockContext );
+            var dataContext = this.GetDataContext();
+
+            var service = new CommunicationService( dataContext );
             var communication = service.Get( CommunicationId.Value );
             if ( communication != null &&
                 communication.Status == CommunicationStatus.PendingApproval &&
@@ -289,8 +414,9 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid && CommunicationId.HasValue )
             {
-                var rockContext = new RockContext();
-                var service = new CommunicationService( rockContext );
+                var dataContext = this.GetDataContext();
+
+                var service = new CommunicationService( dataContext );
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
@@ -303,7 +429,7 @@ namespace RockWeb.Blocks.Communication
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
-                            rockContext.SaveChanges();
+                            dataContext.SaveChanges();
 
                             // TODO: Send notice to sender that communication was approved
 
@@ -333,8 +459,9 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid && CommunicationId.HasValue )
             {
-                var rockContext = new RockContext();
-                var service = new CommunicationService( rockContext );
+                var dataContext = this.GetDataContext();
+
+                var service = new CommunicationService( dataContext );
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
@@ -346,7 +473,7 @@ namespace RockWeb.Blocks.Communication
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
-                            rockContext.SaveChanges();
+                            dataContext.SaveChanges();
 
                             // TODO: Send notice to sender that communication was denied
 
@@ -375,8 +502,9 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid && CommunicationId.HasValue )
             {
-                var rockContext = new RockContext();
-                var service = new CommunicationService( rockContext );
+                var dataContext = this.GetDataContext();
+
+                var service = new CommunicationService( dataContext );
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
@@ -387,7 +515,7 @@ namespace RockWeb.Blocks.Communication
                             .Any() )
                         {
                             communication.Status = CommunicationStatus.Draft;
-                            rockContext.SaveChanges();
+                            dataContext.SaveChanges();
 
                             ShowResult( "This communication has successfully been cancelled without any recipients receiving communication!", communication, NotificationBoxType.Success );
                         }
@@ -397,7 +525,7 @@ namespace RockWeb.Blocks.Communication
                                 .Where( r => r.Status == CommunicationRecipientStatus.Pending )
                                 .ToList()
                                 .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
-                            rockContext.SaveChanges();
+                            dataContext.SaveChanges();
 
                             int delivered = communication.Recipients.Count( r => r.Status == CommunicationRecipientStatus.Delivered );
                             ShowResult( string.Format( "This communication has been cancelled, however the communication was delivered to {0} recipients!", delivered )
@@ -422,8 +550,9 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid && CommunicationId.HasValue )
             {
-                var rockContext = new RockContext();
-                var service = new CommunicationService( rockContext );
+                var dataContext = this.GetDataContext();
+
+                var service = new CommunicationService( dataContext );
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
@@ -462,16 +591,16 @@ namespace RockWeb.Blocks.Communication
                     }
 
                     service.Add( newCommunication );
-                    rockContext.SaveChanges();
+                    dataContext.SaveChanges();
 
                     // Redirect to new communication
-                    if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
+                    if ( CurrentPageReference.Parameters.ContainsKey( PageParameterKey.CommunicationId ) )
                     {
-                        CurrentPageReference.Parameters["CommunicationId"] = newCommunication.Id.ToString();
+                        CurrentPageReference.Parameters[PageParameterKey.CommunicationId] = newCommunication.Id.ToString();
                     }
                     else
                     {
-                        CurrentPageReference.Parameters.Add( "CommunicationId", newCommunication.Id.ToString() );
+                        CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, newCommunication.Id.ToString() );
                     }
 
                     Response.Redirect( CurrentPageReference.BuildUrl() );
@@ -487,12 +616,14 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnTemplate_Click( object sender, EventArgs e )
         {
-            if ( !CommunicationId.HasValue ) return;
+            if ( !CommunicationId.HasValue )
+                return;
 
-            using ( var rockContext = new RockContext() )
+            using ( var dataContext = new RockContext() )
             {
-                var communication = new CommunicationService( rockContext ).Get( CommunicationId.Value );
-                if ( communication == null ) return;
+                var communication = new CommunicationService( dataContext ).Get( CommunicationId.Value );
+                if ( communication == null )
+                    return;
 
                 tbTemplateName.Text = communication.Name;
                 cpTemplateCategory.SetValue( communication.CommunicationTemplate != null
@@ -511,12 +642,14 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdSaveTemplate_Click( object sender, EventArgs e )
         {
-            if ( !Page.IsValid || !CommunicationId.HasValue ) return;
+            if ( !Page.IsValid || !CommunicationId.HasValue )
+                return;
 
-            using ( var rockContext = new RockContext() )
+            using ( var dataContext = new RockContext() )
             {
-                var communication = new CommunicationService( rockContext ).Get( CommunicationId.Value );
-                if ( communication == null ) return;
+                var communication = new CommunicationService( dataContext ).Get( CommunicationId.Value );
+                if ( communication == null )
+                    return;
 
                 var template = new CommunicationTemplate
                 {
@@ -549,32 +682,32 @@ namespace RockWeb.Blocks.Communication
                     template.Attachments.Add( newAttachment );
                 }
 
-                var templateService = new CommunicationTemplateService( rockContext );
+                var templateService = new CommunicationTemplateService( dataContext );
                 templateService.Add( template );
-                rockContext.SaveChanges();
+                dataContext.SaveChanges();
 
-                template = templateService.Get(template.Id);
-                if (template != null)
+                template = templateService.Get( template.Id );
+                if ( template != null )
                 {
-                    template.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
-                    template.MakePrivate( Authorization.EDIT, CurrentPerson, rockContext );
-                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                    template.MakePrivate( Authorization.VIEW, CurrentPerson, dataContext );
+                    template.MakePrivate( Authorization.EDIT, CurrentPerson, dataContext );
+                    template.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson, dataContext );
 
-                    var groupService = new GroupService( rockContext );
+                    var groupService = new GroupService( dataContext );
                     var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
-                    if (communicationAdministrators != null)
+                    if ( communicationAdministrators != null )
                     {
-                        template.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, rockContext );
-                        template.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, rockContext );
-                        template.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, dataContext );
+                        template.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, dataContext );
+                        template.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, dataContext );
                     }
 
                     var rockAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
-                    if (rockAdministrators != null)
+                    if ( rockAdministrators != null )
                     {
-                        template.AllowSecurityRole( Authorization.VIEW, rockAdministrators, rockContext );
-                        template.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
-                        template.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
+                        template.AllowSecurityRole( Authorization.VIEW, rockAdministrators, dataContext );
+                        template.AllowSecurityRole( Authorization.EDIT, rockAdministrators, dataContext );
+                        template.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, dataContext );
                     }
 
                 }
@@ -587,50 +720,601 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        #region Private Methods
+        #region Interactions Grid Events
 
         /// <summary>
-        /// Shows the detail.
+        /// Handles the GridRebind event of the Interactions grid controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gInteractions_GridRebind( object sender, EventArgs e )
+        {
+            BindInteractions();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the Interactions grid controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gInteractions_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Interaction interaction = e.Row.DataItem as Interaction;
+            if ( interaction != null )
+            {
+                Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
+                if ( lActivityDetails != null )
+                {
+                    lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction );
+                }
+            }
+        }
+
+        #endregion
+
+        #region Analytics Tab Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // reload page if block settings where changed
+            this.NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptMostPopularLinks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs" /> instance containing the event data.</param>
+        protected void rptMostPopularLinks_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            TopLinksInfo topLinksInfo = e.Item.DataItem as TopLinksInfo;
+            if ( topLinksInfo != null )
+            {
+                Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
+                lUrl.Text = topLinksInfo.Url;
+
+                Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
+                lUrlProgressHTML.Text = string.Format(
+                    @"<div class='progress margin-b-none'>
+                        <div class='progress-bar progress-bar-link' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
+                            <span class='sr-only'>{0}%</span>
+                        </div>
+                    </div>",
+                    Math.Round( topLinksInfo.PercentOfTop, 2 ) );
+
+                Literal lUniquesCount = e.Item.FindControl( "lUniquesCount" ) as Literal;
+                lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
+
+                Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
+                HtmlGenericControl pnlCTRData = e.Item.FindControl( "pnlCTRData" ) as HtmlGenericControl;
+                pnlCTRData.Visible = topLinksInfo.CTRPercent.HasValue;
+                if ( topLinksInfo.CTRPercent.HasValue )
+                {
+                    lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent.Value, 2 ) + "%";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptClientApplicationUsage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptClientApplicationUsage_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            ApplicationUsageInfo applicationUsageInfo = e.Item.DataItem as ApplicationUsageInfo;
+            if ( applicationUsageInfo != null )
+            {
+                var lApplicationName = e.Item.FindControl( "lApplicationName" ) as Literal;
+                var lUsagePercent = e.Item.FindControl( "lUsagePercent" ) as Literal;
+                lApplicationName.Text = applicationUsageInfo.Application ?? "Unknown";
+                lUsagePercent.Text = Math.Round( applicationUsageInfo.UsagePercent, 2 ).ToString() + "%";
+            }
+        }
+
+        #endregion
+
+        #region Recipients Tab Events
+
+        /// <summary>
+        /// Handles the Click event of the btnUpdateRecipientsList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUpdateRecipientsList_Click( object sender, EventArgs e )
+        {
+            this.SetActivePanel( CommunicationDetailPanels.RecipientDetails );
+
+            SaveRecipientListPreferences();
+
+            BindRecipientsGrid();
+        }
+
+        #endregion
+
+        #region Recipients Grid Events
+
+        /// <summary>
+        /// Handles the GridRebind event of the Recipient grid controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gRecipients_GridRebind( object sender, EventArgs e )
+        {
+            BindRecipientsGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the Recipients grid controls.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Person p;
+
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var listItem = e.Row.DataItem as DataRowView;
+
+            if ( listItem == null )
+            {
+                return;
+            }
+
+            if ( !listItem[PersonPropertyColumn.IsActive].ToStringSafe().AsBoolean() )
+            {
+                e.Row.AddCssClass( "inactive" );
+            }
+
+            if ( listItem[PersonPropertyColumn.IsDeceased].ToStringSafe().AsBoolean() )
+            {
+                e.Row.AddCssClass( "deceased" );
+            }
+        }
+
+        #endregion
+
+        #region Recipient Grid Filter Events
+
+        /// <summary>
+        /// Keys to use for Filter Settings
+        /// </summary>
+        protected static class FilterSettingName
+        {
+            public const string FirstName = "First Name";
+            public const string LastName = "Last Name";
+            public const string OpenedStatus = "Opened Status";
+            public const string ClickedStatus = "Clicked Status";
+            public const string DeliveryStatus = "Delivery Status";
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            SaveRecipientsFilterSettings();
+
+            BindRecipientsGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+
+            BindRecipientsFilter();
+
+            BindRecipientsGrid();
+        }
+
+        /// <summary>
+        /// ts the filter display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        private void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            SaveRecipientsFilterSettings();
+
+            e.Value = GetRecipientsFilterValueDescription( e.Key );
+        }
+
+        /// <summary>
+        /// Binds data to the filter controls.
+        /// </summary>
+        private void BindRecipientsFilter()
+        {
+            // Get the key/value map with the current values.
+            var settings = GetRecipientsFilterSettings();
+
+            if ( settings == null )
+            {
+                return;
+            }
+
+            // Overwrite the map with the settings stored in the user preferences.
+            foreach ( var key in settings.Keys.ToList() )
+            {
+                settings[key] = rFilter.GetUserPreference( key );
+            }
+
+            // Apply the map to update the filter controls.
+            ApplyRecipientsFilterSettings( settings );
+        }
+
+        /// <summary>
+        /// Save the current filter settings.
+        /// </summary>
+        private void SaveRecipientsFilterSettings()
+        {
+            var settings = GetRecipientsFilterSettings();
+
+            if ( settings == null )
+            {
+                return;
+            }
+
+            foreach ( var kvp in settings )
+            {
+                rFilter.SaveUserPreference( kvp.Key, kvp.Value );
+            }
+        }
+
+        /// <summary>
+        /// Apply the filter settings to the filter controls.
+        /// </summary>
+        /// <param name="settingsKeyValueMap"></param>
+        private void ApplyRecipientsFilterSettings( Dictionary<string, string> settingsKeyValueMap )
+        {
+            txbFirstNameFilter.Text = settingsKeyValueMap[FilterSettingName.FirstName];
+            txbLastNameFilter.Text = settingsKeyValueMap[FilterSettingName.LastName];
+
+            cblOpenedStatus.SetValues( settingsKeyValueMap[FilterSettingName.OpenedStatus].SplitDelimitedValues( "," ) );
+            cblClickedStatus.SetValues( settingsKeyValueMap[FilterSettingName.ClickedStatus].SplitDelimitedValues( "," ) );
+            cblDeliveryStatus.SetValues( settingsKeyValueMap[FilterSettingName.DeliveryStatus].SplitDelimitedValues( "," ) );
+        }
+
+        /// <summary>
+        /// Get a key/value map of current filter settings to be saved.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetRecipientsFilterSettings()
+        {
+            var settings = new Dictionary<string, string>();
+
+            settings[FilterSettingName.FirstName] = txbFirstNameFilter.Text;
+            settings[FilterSettingName.LastName] = txbLastNameFilter.Text;
+
+            settings[FilterSettingName.OpenedStatus] = cblOpenedStatus.SelectedValues.AsDelimited( "," );
+            settings[FilterSettingName.ClickedStatus] = cblClickedStatus.SelectedValues.AsDelimited( "," );
+            settings[FilterSettingName.DeliveryStatus] = cblDeliveryStatus.SelectedValues.AsDelimited( "," );
+
+            return settings;
+        }
+
+        /// <summary>
+        /// Gets the user-friendly description for a filter field setting.
+        /// </summary>
+        /// <param name="filterSettingName"></param>
+        /// <returns></returns>
+        private string GetRecipientsFilterValueDescription( string filterSettingName )
+        {
+            if ( filterSettingName == FilterSettingName.FirstName )
+            {
+                return string.Format( "Starts With \"{0}\"", txbFirstNameFilter.Text );
+            }
+            else if ( filterSettingName == FilterSettingName.LastName )
+            {
+                return string.Format( "Starts With \"{0}\"", txbLastNameFilter.Text );
+            }
+            else if ( filterSettingName == FilterSettingName.OpenedStatus )
+            {
+                return cblOpenedStatus.SelectedNames.AsDelimited( ", " );
+            }
+            else if ( filterSettingName == FilterSettingName.ClickedStatus )
+            {
+                return cblClickedStatus.SelectedNames.AsDelimited( ", " );
+            }
+            else if ( filterSettingName == FilterSettingName.DeliveryStatus )
+            {
+                return cblDeliveryStatus.SelectedNames.AsDelimited( ", " );
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Modal Dialogs
+
+        /// <summary>
+        /// Show the specified modal dialog.
+        /// </summary>
+        /// <param name="dialog"></param>
+        /// <param name="setValues"></param>
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        /// <summary>
+        /// Show the current active modal dialog.
+        /// </summary>
+        /// <param name="dialog"></param>
+        /// <param name="setValues"></param>
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "TEMPLATE":
+                    mdCreateTemplate.Show();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Hide the current active modal dialog.
+        /// </summary>
+        /// <param name="dialog"></param>
+        /// <param name="setValues"></param>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+
+                case "TEMPLATE":
+                    mdCreateTemplate.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Retrieve a singleton data context for data operations in this block.
+        /// </summary>
+        /// <returns></returns>
+        private RockContext GetDataContext()
+        {
+            if ( _DataContext == null )
+            {
+                _DataContext = new RockContext();
+            }
+
+            return _DataContext;
+        }
+
+        /// <summary>
+        /// Initialize the filter for the Recipients grid.
+        /// </summary>
+        private void InitializeRecipientsFilter()
+        {
+            // If this is a full page load, initialize the filter control and load the filter values.
+            if ( !Page.IsPostBack )
+            {
+                BindRecipientsFilter();
+            }
+
+            // Hook up the filter event handlers.
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
+            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+        }
+
+        /// <summary>
+        /// Get page configuration settings from the query string.
+        /// </summary>
+        private void InitializePageFromParameters()
+        {
+            // Set the tab for the corresponding view.
+            var page = PageParameter( "view" ).ToLower();
+
+            if ( page == "activity" )
+            {
+                _ActiveView = CommunicationDetailPanels.Activity;
+            }
+            else if ( page == "message" || page == "details" )
+            {
+                _ActiveView = CommunicationDetailPanels.MessageDetails;
+            }
+            else if ( page == "recipients" )
+            {
+                _ActiveView = CommunicationDetailPanels.RecipientDetails;
+            }
+            else
+            {
+                _ActiveView = CommunicationDetailPanels.Analytics;
+            }
+        }
+
+        /// <summary>
+        /// Create aset of page query parameters to represent the current Page settings.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetQueryParamsFromSettings()
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if ( _ActiveView != CommunicationDetailPanels.Analytics )
+            {
+                queryParams.Add( "view", _ActiveView.ToString() );
+            }
+
+            return queryParams;
+        }
+
+        /// <summary>
+        /// Set the properties of the Recipients list control.
+        /// </summary>
+        private void InitializeRecipientsList()
+        {
+            gRecipients.DataKeyNames = new string[] { "Id" };
+            gRecipients.GridRebind += gRecipients_GridRebind;
+
+            gRecipients.RowClickEnabled = false;
+
+            gRecipients.RowDataBound += gRecipients_RowDataBound;
+        }
+
+        /// <summary>
+        /// Set the properties of the Activities list control.
+        /// </summary>
+        private void InitializeInteractionsList()
+        {
+            gInteractions.DataKeyNames = new string[] { "Id" };
+            gInteractions.GridRebind += gInteractions_GridRebind;
+        }
+
+        /// <summary>
+        /// Initialize the scripts required for Chart.js
+        /// </summary>
+        private void InitializeChartScripts()
+        {
+            // NOTE: moment.js needs to be loaded before chartjs
+            RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
+        }
+
+        /// <summary>
+        /// Load the list of Person properties that are available to show in the Recipients List.
+        /// </summary>
+        private void PopulatePersonPropertiesSelectionItems()
+        {
+            var availableColumns = this.GetReportColumns();
+
+            var columns = availableColumns.Where( x => x.ContentType == PersonDataSourceColumnSourceSpecifier.Property
+                                                  || x.ContentType == PersonDataSourceColumnSourceSpecifier.Calculated )
+                                          .OrderBy( x => x.Name )
+                                          .ToList();
+
+            foreach ( var column in columns )
+            {
+                cblProperties.Items.Add( new ListItem { Text = column.Name, Value = column.Key } );
+            }
+        }
+
+        /// <summary>
+        /// Load the list of Person Attributes that are available to show in the Recipients List.
+        /// </summary>
+        private void PopulatePersonAttributesSelectionItems()
+        {
+            var availableColumns = this.GetReportColumns();
+
+            var columns = availableColumns.Where( x => x.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
+                                          .OrderBy( x => x.Name )
+                                          .ToList();
+
+            foreach ( var column in columns )
+            {
+                lbAttributes.Items.Add( new ListItem( column.Name, column.Key ) );
+            }
+        }
+
+        /// <summary>
+        /// Show the block detail.
         /// </summary>
         private void ShowDetail( Rock.Model.Communication communication )
         {
+            ShowAnalyticsPanel();
+
             ShowStatus( communication );
+
             // lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
-            lTitle.Text = (string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name).FormatAsHtmlTitle();
+            lTitle.Text = ( string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name ).FormatAsHtmlTitle();
             pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
-            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
-            SetPersonDateValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );
+            PopulatePersonPropertiesSelectionItems();
+            PopulatePersonAttributesSelectionItems();
+
+            LoadRecipientListPreferences();
+
+            ShowMessageDetails( communication );
+
+            BindRecipientsGrid();
+
+            PopulateRecipientFilterSelectionLists();
+
+            BindInteractions();
+
+            ShowActions( communication );
+
+            SetActivePanel( _ActiveView );
+        }
+
+        /// <summary>
+        /// Show the message panel.
+        /// </summary>
+        /// <param name="communication"></param>
+        private void ShowMessageDetails( Rock.Model.Communication communication )
+        {
+            SetCommunicationAuditDisplayControlValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
+            SetCommunicationAuditDisplayControlValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );
 
             if ( communication.FutureSendDateTime.HasValue && communication.FutureSendDateTime.Value > RockDateTime.Now )
             {
                 lFutureSend.Text = String.Format( "<div class='alert alert-success'><strong>Future Send</strong> This communication is scheduled to be sent {0} <small>({1})</small>.</div>", communication.FutureSendDateTime.Value.ToRelativeDateString(), communication.FutureSendDateTime.Value.ToString() );
             }
 
-            pnlOpened.Visible = false;
+            var details = GetMediumData( communication );
 
-            lDetails.Text = GetMediumData( communication );
-            if ( communication.UrlReferrer.IsNotNullOrWhiteSpace() )
+            if ( string.IsNullOrWhiteSpace( details ) )
             {
-                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
+                details = "<div class='alert alert-warning'>No message details are available for this communication</div>";
             }
 
-            BindRecipients();
+            if ( communication.UrlReferrer.IsNotNullOrWhiteSpace() )
+            {
+                details += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
+            }
 
-            BindInteractions();
-
-            ShowActions( communication );
+            lDetails.Text = details;
         }
 
-        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText )
+        /// <summary>
+        /// Sets the value of a control that displays audit information for a communication.
+        /// </summary>
+        /// <param name="literal"></param>
+        /// <param name="personAlias"></param>
+        /// <param name="datetime"></param>
+        /// <param name="labelText"></param>
+        private void SetCommunicationAuditDisplayControlValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText )
         {
-
             if ( personAlias != null )
             {
                 SetPersonDateValue( literal, personAlias.Person, datetime, labelText );
             }
         }
 
+        /// <summary>
+        /// Sets the value of a control that displays audit information for a communication.
+        /// </summary>
+        /// <param name="literal"></param>
+        /// <param name="person"></param>
+        /// <param name="datetime"></param>
+        /// <param name="labelText"></param>
         private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime, string labelText )
         {
             if ( person != null )
@@ -644,73 +1328,228 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        private void BindRecipients()
+        /// <summary>
+        /// Build a Report template that contains the columns selected for the Recipients List grid.
+        /// </summary>
+        /// <returns></returns>
+        private Report BuildRecipientsListReportTemplate()
         {
-            if ( CommunicationId.HasValue )
+            var availableColumns = this.GetReportColumns();
+
+            var reportBuilder = new ReportTemplateBuilder( typeof( Rock.Model.Person ) );
+
+            // Add default fields.
+            var connectionStatusField = reportBuilder.AddPropertyField( "ConnectionStatusValueId", "ConnectionStatusValue" );
+
+            connectionStatusField.ShowInGrid = false;
+
+            var isDeceasedField = reportBuilder.AddPropertyField( "IsDeceased" );
+
+            isDeceasedField.ShowInGrid = false;
+
+            dynamic settings = new { ShowAsLink = true, DisplayOrder = 0 };
+
+            reportBuilder.AddDataSelectField( "Rock.Reporting.DataSelect.Person.PersonLinkSelect", settings, "Name" );
+
+            // Add user-selected Properties.
+            var selectedProperties = cblProperties.SelectedValues;
+
+            foreach ( var propertyName in selectedProperties )
             {
-                var rockContext = new RockContext();
-                var recipients = new CommunicationRecipientService( rockContext )
-                    .Queryable( "PersonAlias.Person" )
-                    .Where( r => r.CommunicationId == CommunicationId.Value );
+                var columnInfo = availableColumns.FirstOrDefault( x => x.Key == propertyName );
 
-                SetRecipients( pnlPending, aPending, lPending, gPending,
-                    recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ) );
-                SetRecipients( pnlDelivered, aDelivered, lDelivered, gDelivered,
-                    recipients.Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened ) );
-                SetRecipients( pnlFailed, aFailed, lFailed, gFailed,
-                    recipients.Where( r => r.Status == CommunicationRecipientStatus.Failed ) );
-                SetRecipients( pnlCancelled, aCancelled, lCancelled, gCancelled,
-                    recipients.Where( r => r.Status == CommunicationRecipientStatus.Cancelled ) );
-
-                if ( pnlOpened.Visible )
+                if ( columnInfo == null )
                 {
-                    SetRecipients( pnlOpened, aOpened, lOpened, gOpened,
-                        recipients.Where( r => r.Status == CommunicationRecipientStatus.Opened ) );
+                    continue;
+                }
+
+                if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Property )
+                {
+                    reportBuilder.AddPropertyField( propertyName );
+                }
+                else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Calculated )
+                {
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
+                }
+                else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
+                {
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
                 }
             }
+
+            // Add user-selected Attributes.
+            var selectedAttributes = lbAttributes.SelectedValues;
+
+            foreach ( var attributeGuid in selectedAttributes )
+            {
+                var columnInfo = availableColumns.FirstOrDefault( x => x.Key == attributeGuid );
+
+                if ( columnInfo == null )
+                {
+                    continue;
+                }
+
+                reportBuilder.AddAttributeField( attributeGuid, columnInfo.Name );
+            }
+
+            var report = reportBuilder.Report;
+
+            // Set the sort column.
+            DataControlField gridSortColumn = GetGridSortColumn( gRecipients );
+
+            if ( gridSortColumn != null )
+            {
+                var sortField = report.ReportFields.FirstOrDefault( x => x.ColumnHeaderText == gridSortColumn.HeaderText );
+
+                if ( sortField != null )
+                {
+                    sortField.SortOrder = 1;
+                    sortField.SortDirection = gRecipients.SortProperty.Direction;
+                }
+            }
+
+            return report;
         }
 
-        private void SetRecipients( Panel pnl, HtmlAnchor htmlAnchor, Literal literalControl,
-            Grid grid, IQueryable<CommunicationRecipient> qryRecipients )
+        /// <summary>
+        /// Returns the first column of the grid corresponding to the current sort settings.
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        private DataControlField GetGridSortColumn( Grid grid )
         {
-            pnl.CssClass = pnlOpened.Visible ? "col-md-2-10 margin-b-md" : "col-md-3 margin-b-md";
-
-            int count = qryRecipients.Count();
-
-            if ( count <= 0 )
+            if ( grid.SortProperty != null )
             {
-                htmlAnchor.Attributes["disabled"] = "disabled";
-            }
-            else
-            {
-                htmlAnchor.Attributes.Remove( "disabled" );
-            }
+                var sortProperty = grid.SortProperty.Property;
 
-            literalControl.Text = count.ToString( "N0" );
-
-
-            var sortProperty = grid.SortProperty;
-            if ( sortProperty != null )
-            {
-                qryRecipients = qryRecipients.AsQueryable().Sort( sortProperty );
-
-            }
-            else
-            {
-                qryRecipients = qryRecipients.OrderBy( r => r.PersonAlias.Person.LastName ).ThenBy( r => r.PersonAlias.Person.NickName );
+                foreach ( DataControlField field in grid.Columns )
+                {
+                    if ( field.SortExpression == sortProperty )
+                    {
+                        return field;
+                    }
+                }
             }
 
-            grid.SetLinqDataSource( qryRecipients );
-            grid.DataBind();
+            return null;
         }
 
+        /// <summary>
+        /// Create the data source for the Recipients List and bind it to the grid.
+        /// </summary>
+        /// <remarks>
+        /// Given that the Recipients list can include user-selected columns representing either Person Properties or Attributes,
+        /// the strategy adopted here is to use a Person Report to generate as much of the content as possible.
+        /// After generating the report output, we add some custom fields specifically related to the person as a Communication Recipient.
+        /// </remarks>
+        private void BindRecipientsGrid()
+        {
+            if ( !CommunicationId.HasValue )
+            {
+                return;
+            }
+
+            Report report = null;
+            DataTable dataTable = null;
+
+            var dataContext = new RockContext();
+
+            try
+            {
+                // Construct a filter expression to select people who are recipients of the communication
+                // and match the selected grid filter options for delivery status and interactions.
+                var personService = new PersonService( dataContext );
+
+                var parameterExpression = personService.ParameterExpression;
+
+                var whereExpression = GetRecipientFilterExpression( dataContext, personService, parameterExpression );
+
+                // Create a Person Report template containing the user-selected Properties and Attributes.
+                report = BuildRecipientsListReportTemplate();
+
+                // Build the output data for the Report by combining the report template with the filter.
+                var builder = new ReportOutputBuilder( report, dataContext );
+
+                var results = builder.GetReportData( this.CurrentPerson,
+                    whereExpression,
+                    parameterExpression,
+                    dataContext,
+                    ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue );
+
+                dataTable = results.Data;
+
+                AddStandardRecipientFieldsToDataSource( dataContext, dataTable, builder );
+
+                // Add report columns to the grid.
+                bool preserveExistingColumns = !this.IsPostBack;
+
+                builder.ConfigureReportOutputGrid( gRecipients,
+                    this.CurrentPerson,
+                    false,
+                    dataContext,
+                    results.ReportFieldToDataColumnMap,
+                    preserveExistingColumns,
+                    addSelectionColumn: true );
+
+                // Add communication-specific columns to the grid.
+                AddStandardRecipientColumns();
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( "An unexpected error occurred while building the Recipients List.", ex );
+            }
+
+            // If the grid is sorted by a communication-specific column, apply the sort now.
+            var dataView = dataTable.AsDataView();
+
+            try
+            {
+                var gridSortColumn = GetGridSortColumn( gRecipients );
+
+                if ( gridSortColumn != null )
+                {
+                    var reportColumn = report.ReportFields.FirstOrDefault( x => x.ColumnHeaderText == gridSortColumn.HeaderText );
+
+                    if ( reportColumn == null )
+                    {
+                        try
+                        {
+                            var sortProperty = gRecipients.SortProperty;
+
+                            dataView.Sort = sortProperty.Property + ( sortProperty.Direction == SortDirection.Descending ? " DESC" : string.Empty );
+                        }
+                        catch ( ArgumentException )
+                        {
+                            // If the sort property is invalid, return the unsorted list.
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // If the sort fails, log the error and continue.
+                ExceptionLogService.LogException( ex );
+            }
+
+            // Show the data set in the grid.
+            gRecipients.DataSource = dataView;
+
+            gRecipients.DataBind();
+        }
+
+        /// <summary>
+        /// Create the data source for the Recipients List and bind it to the grid.
+        /// </summary>
+        /// <remarks>
         private void BindInteractions()
         {
             if ( CommunicationId.HasValue )
             {
-                var rockContext = new RockContext();
-                Guid interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
-                var interactions = new InteractionService( rockContext )
+                var dataContext = this.GetDataContext();
+
+                var interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+
+                var interactions = new InteractionService( dataContext )
                     .Queryable()
                     .Include( a => a.PersonAlias.Person )
                     .Where( r => r.InteractionComponent.Channel.Guid == interactionChannelGuid && r.InteractionComponent.EntityId == CommunicationId.Value );
@@ -730,6 +1569,10 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Display the status label for the current Communication.
+        /// </summary>
+        /// <param name="communication"></param>
         private void ShowStatus( Rock.Model.Communication communication )
         {
             var status = communication != null ? communication.Status : CommunicationStatus.Draft;
@@ -750,8 +1593,8 @@ namespace RockWeb.Blocks.Communication
                     }
                 case CommunicationStatus.Approved:
                     {
-                        wpEvents.Expanded = false;
-                        wpEvents.Expanded = true;
+                        //wpEvents.Expanded = false;
+                        //wpEvents.Expanded = true;
 
                         hlStatus.Text = "Approved";
                         hlStatus.LabelType = LabelType.Success;
@@ -806,7 +1649,9 @@ namespace RockWeb.Blocks.Communication
                     case CommunicationStatus.Approved:
                         {
                             // If there are still any pending recipients, allow canceling of send
-                            var hasPendingRecipients = new CommunicationRecipientService( new RockContext() ).Queryable()
+                            var dataContext = this.GetDataContext();
+
+                            var hasPendingRecipients = new CommunicationRecipientService( dataContext ).Queryable()
                             .Where( r => r.CommunicationId == communication.Id ).Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
 
 
@@ -829,18 +1674,18 @@ namespace RockWeb.Blocks.Communication
         {
             ShowStatus( communication );
 
-            pnlDetails.Visible = false;
+            pnlAnalyticsDeliveryStatusSummary.Visible = false;
 
             nbResult.Text = message;
             nbResult.NotificationBoxType = notificationType;
 
-            if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
+            if ( CurrentPageReference.Parameters.ContainsKey( PageParameterKey.CommunicationId ) )
             {
-                CurrentPageReference.Parameters["CommunicationId"] = communication.Id.ToString();
+                CurrentPageReference.Parameters[PageParameterKey.CommunicationId] = communication.Id.ToString();
             }
             else
             {
-                CurrentPageReference.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
             }
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
@@ -848,6 +1693,11 @@ namespace RockWeb.Blocks.Communication
 
         }
 
+        /// <summary>
+        /// Get descriptive information about the current Communication.
+        /// </summary>
+        /// <param name="communication"></param>
+        /// <returns></returns>
         private string GetMediumData( Rock.Model.Communication communication )
         {
             StringBuilder sb = new StringBuilder();
@@ -855,6 +1705,7 @@ namespace RockWeb.Blocks.Communication
             switch ( communication.CommunicationType )
             {
                 case CommunicationType.Email:
+                case CommunicationType.RecipientPreference:
                     {
                         sb.AppendLine( "<div class='row'>" );
                         sb.AppendLine( "<div class='col-md-6'>" );
@@ -922,6 +1773,12 @@ namespace RockWeb.Blocks.Communication
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Add a value to the Communication description summary.
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
         private void AppendMediumData( StringBuilder sb, string key, string value )
         {
             if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
@@ -930,48 +1787,1180 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        private void ShowDialog( string dialog, bool setValues = false )
+        /// <summary>
+        /// Set the active state of the tabs and associated controls.
+        /// </summary>
+        /// <param name="panelName"></param>
+        private void SetActivePanel( string panelName )
         {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog( setValues );
+            bool showTabAnalytics = false;
+            bool showTabMessageDetails = false;
+            bool showTabActivity = false;
+            bool showTabRecipientDetails = false;
+
+            if ( panelName == CommunicationDetailPanels.Analytics )
+            {
+                showTabAnalytics = true;
+            }
+            else if ( panelName == CommunicationDetailPanels.MessageDetails )
+            {
+                showTabMessageDetails = true;
+            }
+            else if ( panelName == CommunicationDetailPanels.Activity )
+            {
+                showTabActivity = true;
+            }
+            else if ( panelName == CommunicationDetailPanels.RecipientDetails )
+            {
+                showTabRecipientDetails = true;
+            }
+
+            _ActiveView = panelName;
+
+            hfActiveView.Value = panelName;
+
+            lnkTabAnalytics.Attributes["href"] = "#" + tabPaneAnalytics.ClientID;
+
+            if ( showTabAnalytics )
+            {
+                tabAnalytics.AddCssClass( "active" );
+                tabPaneAnalytics.AddCssClass( "active" );
+            }
+            else
+            {
+                tabAnalytics.RemoveCssClass( "active" );
+                tabPaneAnalytics.RemoveCssClass( "active" );
+            }
+
+            lnkTabMessageDetails.Attributes["href"] = "#" + tabPaneMessageDetails.ClientID;
+
+            if ( showTabMessageDetails )
+            {
+                tabMessageDetails.AddCssClass( "active" );
+                tabPaneMessageDetails.AddCssClass( "active" );
+            }
+            else
+            {
+                tabMessageDetails.RemoveCssClass( "active" );
+                tabPaneMessageDetails.RemoveCssClass( "active" );
+            }
+
+            lnkTabActivity.Attributes["href"] = "#" + tabPaneActivity.ClientID;
+
+            if ( showTabActivity )
+            {
+                tabActivity.AddCssClass( "active" );
+                tabPaneActivity.AddCssClass( "active" );
+            }
+            else
+            {
+                tabActivity.RemoveCssClass( "active" );
+                tabPaneActivity.RemoveCssClass( "active" );
+            }
+
+            lnkTabRecipientDetails.Attributes["href"] = "#" + tabPaneRecipientDetails.ClientID;
+
+            if ( showTabRecipientDetails )
+            {
+                tabRecipientDetails.AddCssClass( "active" );
+                tabPaneRecipientDetails.AddCssClass( "active" );
+            }
+            else
+            {
+                tabRecipientDetails.RemoveCssClass( "active" );
+                tabPaneRecipientDetails.RemoveCssClass( "active" );
+            }
+
         }
 
-        private void ShowDialog( bool setValues = false )
+        /// <summary>
+        /// Shows the content of the Analytics panel.
+        /// </summary>
+        private void ShowAnalyticsPanel()
         {
-            switch ( hfActiveDialog.Value )
+            var dataContext = this.GetDataContext();
+
+            bool showAnalytics = false;
+
+            // Initialize the Communications data.
+            hfCommunicationId.Value = this.PageParameter( PageParameterKey.CommunicationId );
+
+            int? communicationId = hfCommunicationId.Value.AsIntegerOrNull();
+            string noDataMessageName = string.Empty;
+
+            if ( communicationId.HasValue )
             {
-                case "TEMPLATE":
-                    mdCreateTemplate.Show();
-                    break;
+                // specific communication specified
+                var communication = new CommunicationService( dataContext ).Get( communicationId.Value );
+
+                if ( communication != null )
+                {
+                    if ( communication.CommunicationType == CommunicationType.Email
+                         || communication.CommunicationType == CommunicationType.RecipientPreference )
+                    {
+                        showAnalytics = true;
+                    }
+                    else
+                    {
+                        lTitle.Text = "Email Analytics: " + ( communication.Name ?? communication.Subject );
+                        noDataMessageName = communication.Name ?? communication.Subject;
+                    }
+                }
+                else
+                {
+                    // Invalid Communication specified
+                    nbCommunicationorCommunicationListFound.Visible = true;
+                    nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
+                }
+            }
+
+            // Show Communication Status Summary
+            int? pendingRecipientCount = null;
+            int? deliveredRecipientCount = null;
+            int? failedRecipientCount = null;
+            int? cancelledRecipientCount = null;
+
+            if ( communicationId != null )
+            {
+                var recipientService = new CommunicationRecipientService( dataContext );
+
+                var sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
+
+                var recipientQuery = recipientService.Queryable().Where( a => a.CommunicationId == communicationId ).ToList();
+
+                pendingRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Pending );
+                deliveredRecipientCount = recipientQuery.Count( a => sentStatus.Contains( a.Status ) );
+                failedRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Failed );
+                cancelledRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Cancelled );
+            }
+
+            string actionsStatFormatNumber = "<div class='js-actions-statistic' title='{0}'>{1:#,##0}</div>";
+
+            lPending.Text = string.Format( actionsStatFormatNumber, "The number of recipients that have not yet received the communication", pendingRecipientCount );
+            lDelivered.Text = string.Format( actionsStatFormatNumber, "The number of recipients that the communication was successfully delivered to", deliveredRecipientCount );
+            lFailed.Text = string.Format( actionsStatFormatNumber, "The number of recipients to whom the communication could not be sent", failedRecipientCount );
+            lCancelled.Text = string.Format( actionsStatFormatNumber, "The number of recipients for whom the communication was cancelled", cancelledRecipientCount );
+
+            if ( !showAnalytics )
+            {
+                upAnalytics.Visible = false;
+                nbAnalyticsNotAvailable.Visible = true;
+                return;
+            }
+
+            nbAnalyticsNotAvailable.Visible = false;
+            upAnalytics.Visible = true;
+
+            var interactionsList = this.GetCommunicationInteractionsSummaryInfo( dataContext, communicationId );
+
+            this.ShowAnalyticsPanelActionsSummary( dataContext, interactionsList, noDataMessageName, deliveredRecipientCount );
+
+            int interactionCount = interactionsList.Count();
+
+            var interactionsQuery = this.GetCommunicationInteractionsQuery( dataContext, communicationId );
+
+            this.ShowClientsInUseData( interactionsQuery, interactionCount, noDataMessageName );
+
+            this.ShowMostPopularLinksData( interactionsList, deliveredRecipientCount.GetValueOrDefault( 0 ) );
+
+            // Store the list of interactions to use for Recipient filtering.
+            _Interactions = interactionsList;
+        }
+
+        /// <summary>
+        /// Get a query that returns the set of Interactions related to a specific Communication.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="communicationId"></param>
+        /// <returns></returns>
+        private IQueryable<Interaction> GetCommunicationInteractionsQuery( RockContext dataContext, int? communicationId )
+        {
+            var channelService = new InteractionChannelService( dataContext );
+            var interactionService = new InteractionService( dataContext );
+
+            var interactionChannelCommunication = channelService.Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+
+            var interactionQuery = interactionService.Queryable()
+                                    .AsNoTracking()
+                                    .Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id
+                                    && a.InteractionComponent.EntityId.Value == communicationId );
+
+            return interactionQuery;
+        }
+
+        /// <summary>
+        /// Get summary entries for the set of Interactions related to a specific Communication.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="communicationId"></param>
+        /// <returns></returns>
+        private List<InteractionInfo> GetCommunicationInteractionsSummaryInfo( RockContext dataContext, int? communicationId )
+        {
+            if ( _Interactions == null )
+            {
+                if ( communicationId.HasValue )
+                {
+                    var interactionQuery = this.GetCommunicationInteractionsQuery( dataContext, communicationId );
+
+                    var recipientService = new CommunicationRecipientService( dataContext );
+
+                    var recipientQuery = recipientService.Queryable()
+                        .AsNoTracking()
+                        .Where( x => x.CommunicationId == communicationId );
+
+                    // Get Unique Interations per Person
+                    _Interactions = interactionQuery
+                        .OrderBy( x => x.PersonAlias.PersonId )
+                        .ThenByDescending( x => x.InteractionDateTime )
+                        .Select( pi => new InteractionInfo
+                        {
+                            InteractionDateTime = pi.InteractionDateTime,
+                            Operation = pi.Operation,
+                            InteractionData = pi.InteractionData,
+                            CommunicationRecipientId = pi.EntityId,
+                            PersonId = recipientQuery.Where( x => x.Id == pi.EntityId ).Select( x => x.PersonAlias.PersonId ).FirstOrDefault()
+                        } )
+                        .ToList();
+                }
+                else
+                {
+                    _Interactions = new List<InteractionInfo>();
+                }
+            }
+
+            return _Interactions;
+        }
+
+        /// <summary>
+        /// Show details for Analytics: Most Popular Links
+        /// </summary>
+        /// <param name="interactionsList"></param>
+        /// <param name="deliveredRecipientCount"></param>
+        private void ShowMostPopularLinksData( List<InteractionInfo> interactionsList, int? deliveredRecipientCount )
+        {
+            /* Most Popular Links from Clicks*/
+            var topClicks = interactionsList
+                                .Where( a =>
+                                    a.Operation == "Click"
+                                    && !string.IsNullOrEmpty( a.InteractionData )
+                                    && !a.InteractionData.Contains( "/Unsubscribe/" ) )
+                                .GroupBy( a => a.InteractionData )
+                                .Select( a => new
+                                {
+                                    LinkUrl = a.Key,
+                                    UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
+                                } )
+                                .OrderByDescending( a => a.UniqueClickCount )
+                                .Take( 100 )
+                                .ToList();
+
+            if ( topClicks.Any() )
+            {
+                int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
+
+                var mostPopularLinksData = topClicks.Select( a => new TopLinksInfo
+                {
+                    PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
+                    Url = a.LinkUrl,
+                    UniquesCount = a.UniqueClickCount,
+                    CTRPercent = deliveredRecipientCount.GetValueOrDefault( 0 ) > 0 ? a.UniqueClickCount * 100.00M / deliveredRecipientCount : 0
+                } ).ToList();
+
+                pnlCTRHeader.Visible = true;
+
+                rptMostPopularLinks.DataSource = mostPopularLinksData;
+                rptMostPopularLinks.DataBind();
+                pnlMostPopularLinks.Visible = true;
+            }
+            else
+            {
+                pnlMostPopularLinks.Visible = false;
             }
         }
 
-        private void HideDialog()
+        /// <summary>
+        /// Show details for Analytics: Clients
+        /// </summary>
+        /// <param name="interactionQuery"></param>
+        /// <param name="totalInteractionCount"></param>
+        /// <param name="noDataMessageName"></param>
+        private void ShowClientsInUseData( IQueryable<Interaction> interactionQuery, int totalInteractionCount, string noDataMessageName )
         {
-            switch ( hfActiveDialog.Value )
-            {
+            /* Clients-In-Use (Client Type) Pie Chart*/
+            var clientsUsageByClientType = interactionQuery
+                .GroupBy( a => ( a.InteractionSession.DeviceType.ClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.Key,
+                    UsagePercent = a.Count() * 100.00M / totalInteractionCount
+                } ).OrderByDescending( a => a.UsagePercent ).ToList()
+                .Where( a => !a.ClientType.Equals( "Robot", StringComparison.OrdinalIgnoreCase ) ) // no robots
+                .Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.ClientType,
+                    UsagePercent = Math.Round( a.UsagePercent, 2 )
+                } ).ToList();
 
-                case "TEMPLATE":
-                    mdCreateTemplate.Hide();
-                    break;
+            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
+            this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
+
+            var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
+            clientsDoughnutChartCanvas.Style[HtmlTextWriterStyle.Display] = clientUsageHasData ? string.Empty : "none";
+            nbClientsDoughnutChartMessage.Visible = !clientUsageHasData;
+            nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+
+            /* Clients-In-Use (Application) Grid */
+            var clientsUsageByApplication = interactionQuery
+            .GroupBy( a => a.InteractionSession.DeviceType.Application ).Select( a => new ApplicationUsageInfo
+            {
+                Application = a.Key,
+                UsagePercent = ( a.Count() * 100.00M / totalInteractionCount )
+            } ).OrderByDescending( a => a.UsagePercent ).ToList();
+
+            pnlClientApplicationUsage.Visible = clientsUsageByApplication.Any();
+            rptClientApplicationUsage.DataSource = clientsUsageByApplication;
+            rptClientApplicationUsage.DataBind();
+        }
+
+        /// <summary>
+        /// Show details for Analytics: Actions Summary.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="interactionsList"></param>
+        /// <param name="noDataMessageName"></param>
+        /// <param name="deliveredRecipientCount"></param>
+        private void ShowAnalyticsPanelActionsSummary( RockContext dataContext, List<InteractionInfo> interactionsList, string noDataMessageName, int? deliveredRecipientCount )
+        {
+            TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
+
+            var colors = this.GetAttributeValue( AttributeKey.SeriesColors );
+
+            if ( string.IsNullOrEmpty( colors ) )
+            {
+                colors = SeriesColorsDefaultValue;
             }
 
-            hfActiveDialog.Value = string.Empty;
+            this.SeriesColorsJSON = colors.SplitDelimitedValues().ToArray().ToJson();
+
+            this.LineChartTimeFormat = "LL";
+
+            if ( interactionsList.Any() )
+            {
+                var firstDateTime = interactionsList.Min( a => a.InteractionDateTime );
+                var lastDateTime = interactionsList.Max( a => a.InteractionDateTime );
+                var weeksCount = ( lastDateTime - firstDateTime ).TotalDays / 7;
+
+                if ( weeksCount > 26 )
+                {
+                    // if there is more than 26 weeks worth, summarize by week
+                    roundTimeSpan = TimeSpan.FromDays( 7 );
+                }
+                else if ( weeksCount > 3 )
+                {
+                    // if there is more than 3 weeks worth, summarize by day
+                    roundTimeSpan = TimeSpan.FromDays( 1 );
+                }
+                else
+                {
+                    // if there is less than 3 weeks worth, summarize by hour
+                    roundTimeSpan = TimeSpan.FromHours( 1 );
+                    this.LineChartTimeFormat = "LLLL";
+                }
+            }
+
+            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
+            interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
+                .Select( a => new
+                {
+                    InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
+                    a.Key.CommunicationRecipientId,
+                    a.Key.Operation
+                } )
+                .GroupBy( a => a.InteractionSummaryDateTime )
+                .Select( x => new SummaryInfo
+                {
+                    SummaryDateTime = x.Key,
+                    ClickCounts = x.Count( xx => xx.Operation == "Click" ),
+                    OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                } ).OrderBy( a => a.SummaryDateTime ).ToList();
+
+            var lineChartHasData = interactionsSummary.Any();
+            openClicksLineChartCanvas.Style[HtmlTextWriterStyle.Display] = lineChartHasData ? string.Empty : "none";
+            nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
+            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+
+            this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
+
+            List<int> cumulativeClicksList = new List<int>();
+            List<int> clickCountsList = interactionsSummary.Select( a => a.ClickCounts ).ToList();
+            int clickCountsSoFar = 0;
+            foreach ( var clickCounts in clickCountsList )
+            {
+                clickCountsSoFar += clickCounts;
+                cumulativeClicksList.Add( clickCountsSoFar );
+            }
+
+            this.LineChartDataClicksJSON = cumulativeClicksList.ToJson();
+
+            List<int> cumulativeOpensList = new List<int>();
+            List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
+            int openCountsSoFar = 0;
+            foreach ( var openCounts in openCountsList )
+            {
+                openCountsSoFar += openCounts;
+                cumulativeOpensList.Add( openCountsSoFar );
+            }
+
+            this.LineChartDataOpensJSON = cumulativeOpensList.ToJson();
+
+            List<int> unopenedCountsList = new List<int>();
+            if ( deliveredRecipientCount.HasValue )
+            {
+                int unopenedRemaining = deliveredRecipientCount.Value;
+                foreach ( var openCounts in openCountsList )
+                {
+                    unopenedRemaining = unopenedRemaining - openCounts;
+
+                    // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
+                    unopenedCountsList.Add( Math.Max( unopenedRemaining, 0 ) );
+                }
+
+                this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+            }
+            else
+            {
+                this.LineChartDataUnOpenedJSON = "null";
+            }
+
+            /* Actions Pie Chart and Stats */
+            int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
+            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
+
+            // Unique Opens is the number of times a Recipient opened at least once
+            int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+
+            // Unique Clicks is the number of times a Recipient clicked at least once in an email
+            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+
+            decimal percentOpened = 0;
+
+            if ( deliveredRecipientCount.HasValue )
+            {
+                percentOpened = ( deliveredRecipientCount.Value > 0 ? ( decimal ) uniqueOpens / deliveredRecipientCount.Value : 0 );
+
+                // just in case there are more opens then delivered, don't let it go negative
+                var unopenedCount = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
+            }
+
+            decimal ctr = 0;
+
+            if ( uniqueOpens > 0 )
+            {
+                ctr = ( decimal ) uniqueClicks / uniqueOpens;
+            }
+
+            string actionsStatFormatNumber = "<div class='js-actions-statistic' title='{0}'>{1:#,##0}</div>";
+            string actionsStatFormatPercent = "<div class='js-actions-statistic' title='{0}'>{1:P2}</div>";
+
+            lUniqueOpens.Text = string.Format( actionsStatFormatNumber, "The number of emails that were opened at least once", uniqueOpens );
+            lTotalOpens.Text = string.Format( actionsStatFormatNumber, "The total number of times the emails were opened, including ones that were already opened once", totalOpens );
+            lPercentOpened.Text = string.Format( actionsStatFormatPercent, "The percent of the delivered emails that were opened at least once", percentOpened );
+
+            lUniqueClicks.Text = string.Format( actionsStatFormatNumber, "The number of times a recipient clicked on a link at least once in any of the opened emails", uniqueClicks );
+            lTotalClicks.Text = string.Format( actionsStatFormatNumber, "The total number of times a link was clicked in any of the opened emails", totalClicks );
+            lClickThroughRate.Text = string.Format( actionsStatFormatPercent, "The percent of emails that had at least one click", ctr );
+
+            // action stats is [opens,clicks,unopened];
+            var actionsStats = new int?[3];
+
+            // "Opens" would be unique number that Clicked Or Opened, so subtract clicks so they aren't counted twice
+            actionsStats[0] = uniqueOpens - uniqueClicks;
+            actionsStats[1] = uniqueClicks;
+
+            if ( deliveredRecipientCount.HasValue )
+            {
+                // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
+                actionsStats[2] = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
+            }
+            else
+            {
+                actionsStats[2] = null;
+            }
+
+            this.PieChartDataOpenClicksJSON = actionsStats.ToJson();
+
+            var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
+            opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
+            nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
+            nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+        }
+
+        #region Recipients List
+
+        /// <summary>
+        /// Get the collection of columns for the Recipients List.
+        /// </summary>
+        /// <returns></returns>
+        private List<CommunicationDetailReportColumnInfo> GetReportColumns()
+        {
+            if ( _Columns == null )
+            {
+                _Columns = new List<CommunicationDetailReportColumnInfo>();
+
+                AddPropertyColumn( _Columns, PersonPropertyColumn.Gender );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.ConnectionStatus, "Connection Status" );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.RecordStatus, "Record Status" );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.IsDeceased, "Is Deceased" );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.Email, "Email" );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.AgeClassification, "Age Classification" );
+                AddPropertyColumn( _Columns, PersonPropertyColumn.Birthdate, "Birthdate" );
+
+                AddCalculatedColumn( _Columns, PersonPropertyColumn.Age, "Rock.Reporting.DataSelect.Person.AgeSelect" );
+                AddCalculatedColumn( _Columns, PersonPropertyColumn.Grade, "Rock.Reporting.DataSelect.Person.GradeSelect" );
+
+                // Add Attributes
+                var person = new Person();
+
+                person.LoadAttributes();
+
+                foreach ( var attribute in person.Attributes )
+                {
+                    AddAttributeColumn( _Columns, attribute.Value.Guid.ToString(), attribute.Value.Name );
+                }
+            }
+
+            return _Columns;
+        }
+
+        /// <summary>
+        /// Add a Person Property to the column selection for the Recipients List. 
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="name"></param>
+        private void AddPropertyColumn( List<CommunicationDetailReportColumnInfo> columns, string propertyName, string name = null )
+        {
+            var info = new CommunicationDetailReportColumnInfo();
+
+            info.Key = propertyName;
+            info.Name = name ?? propertyName;
+
+            info.ContentType = PersonDataSourceColumnSourceSpecifier.Property;
+            info.ColumnSourceIdentifier = propertyName;
+
+            columns.Add( info );
+        }
+
+        /// <summary>
+        /// Add a calculated column to the column selection for the Recipients List. 
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <param name="name"></param>
+        /// <param name="dataSelectName"></param>
+        /// <param name="settings"></param>
+        private void AddCalculatedColumn( List<CommunicationDetailReportColumnInfo> columns, string name, string dataSelectName, object settings = null )
+        {
+            var info = new CommunicationDetailReportColumnInfo();
+
+            info.Key = dataSelectName;
+            info.Name = name;
+
+            info.ContentType = PersonDataSourceColumnSourceSpecifier.Calculated;
+            info.ColumnSourceIdentifier = dataSelectName;
+
+            if ( settings != null )
+            {
+                info.Settings = settings.ToJson();
+            }
+
+            columns.Add( info );
+        }
+
+        /// <summary>
+        /// Add a Person Attribute to the column selection for the Recipients List. 
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <param name="attributeGuid"></param>
+        /// <param name="name"></param>
+        private void AddAttributeColumn( List<CommunicationDetailReportColumnInfo> columns, string attributeGuid, string name )
+        {
+            var info = new CommunicationDetailReportColumnInfo();
+
+            info.Key = attributeGuid;
+            info.Name = name;
+
+            info.ContentType = PersonDataSourceColumnSourceSpecifier.Attribute;
+            info.ColumnSourceIdentifier = attributeGuid;
+
+            columns.Add( info );
+        }
+
+        /// <summary>
+        /// Add the required columns to the grid.
+        /// </summary>
+        /// <param name="skipCount"></param>
+        /// <param name="takeCount"></param>
+        /// <returns></returns>
+        private void AddStandardRecipientColumns()
+        {
+            // Add the standard columns to the grid, inserted after the Name column.
+            var nameField = gRecipients.GetColumnByHeaderText( "Name" );
+
+            var insertAtIndex = gRecipients.GetColumnIndex( nameField ) + 1;
+
+            var statusField = new BoundField();
+            statusField.HeaderText = "Status";
+            statusField.DataField = "DeliveryStatus";
+            statusField.SortExpression = "DeliveryStatus";
+
+            gRecipients.Columns.Insert( insertAtIndex, statusField );
+            insertAtIndex++;
+
+            var openedField = new CheckBoxField();
+            openedField.HeaderText = "Opened";
+            openedField.DataField = "HasOpened";
+            openedField.SortExpression = "HasOpened";
+
+            gRecipients.Columns.Insert( insertAtIndex, openedField );
+            insertAtIndex++;
+
+            var clickedField = new CheckBoxField();
+            clickedField.HeaderText = "Clicked";
+            clickedField.DataField = "HasClicked";
+            clickedField.SortExpression = "HasClicked";
+
+            gRecipients.Columns.Insert( insertAtIndex, clickedField );
+            insertAtIndex++;
+        }
+
+        /// <summary>
+        /// Get the query that uniquely identifies the subset records that match the current filter.
+        /// At a minimum, this query must return a unique identifier for each record that can be used to retrieve additional details about the item.
+        /// Additional information may also be retrieved and cached here if it is 
+        /// </summary>
+        /// <param name="skipCount"></param>
+        /// <param name="takeCount"></param>
+        /// <returns></returns>
+        private void AddStandardRecipientFieldsToDataSource( RockContext dataContext, DataTable dataTable, ReportOutputBuilder builder ) //, int skipCount, int takeCount )
+        {
+            // Add the standard data to the data source.
+            dataTable.Columns.Add( "IsActive", typeof( bool ) );
+            dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );
+            dataTable.Columns.Add( "HasOpened", typeof( bool ) );
+            dataTable.Columns.Add( "HasClicked", typeof( bool ) );
+
+            var query = GetRecipientInfoQuery( dataContext );
+
+            var recipients = query.ToDictionary( k => k.PersonId, v => v );
+
+            builder.FillDataColumnValues( dataTable, recipients );
+        }
+
+        /// <summary>
+        /// Get a query containing basic information about the Recipients of the communication.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <returns></returns>
+        private IQueryable<RecipientInfo> GetRecipientInfoQuery( RockContext dataContext )
+        {
+            var inactiveStatusId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+
+            // Get the set of Click interactions for this Communication, using only the most recent interaction for a Person who is listed as a recipient multiple times.
+            var interactions = GetCommunicationInteractionsSummaryInfo( dataContext, this.CommunicationId );
+
+            var clickRecipientsIdList = interactions
+                .Where( x => x.PersonId != null && x.Operation == "Click" )
+                .OrderByDescending( x => x.InteractionDateTime )
+                .GroupBy( k => k.PersonId )
+                .Select( kv => kv.FirstOrDefault().PersonId );
+
+            // Get the recipient information.
+            // Translate the Message Status to a Delivery Status by converting "Opened" to "Delivered" and "Sending" to "Pending".
+            // For each Person, return only the most-recently updated Recipient record.
+            var recipientService = new CommunicationRecipientService( dataContext );
+
+            var recipientQuery = recipientService.Queryable()
+                    .AsNoTracking()
+                    .Where( x => x.CommunicationId == CommunicationId.Value )
+                    .OrderByDescending( x => x.ModifiedDateTime )
+                    .Select( x => new RecipientInfo
+                    {
+                        PersonId = x.PersonAlias.PersonId,
+                        IsActive = ( x.PersonAlias.Person.RecordStatusValueId != inactiveStatusId ),
+                        IsDeceased = x.PersonAlias.Person.IsDeceased,
+                        DeliveryStatus = ( x.Status == CommunicationRecipientStatus.Opened ? "Delivered" : ( x.Status == CommunicationRecipientStatus.Sending ? "Pending" : x.Status.ToString() ) ),
+                        HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
+                        HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId )
+                    }
+                    ).GroupBy( k => k.PersonId, v => v )
+                    .Select( x => x.FirstOrDefault() );
+
+            return recipientQuery;
+        }
+
+        /// <summary>
+        /// Populate the selection lists for the Recipient Grid filter.
+        /// </summary>
+        private void PopulateRecipientFilterSelectionLists()
+        {
+            cblDeliveryStatus.BindToEnum( ignoreTypes: new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Sending, CommunicationRecipientStatus.Opened } );
+
+            cblOpenedStatus.Items.Clear();
+
+            cblOpenedStatus.Items.Add( new ListItem { Text = "Opened", Value = "Opened" } );
+            cblOpenedStatus.Items.Add( new ListItem { Text = "Not Opened", Value = "NotOpened" } );
+
+            cblClickedStatus.Items.Clear();
+
+            cblClickedStatus.Items.Add( new ListItem { Text = "Clicked", Value = "Clicked" } );
+            cblClickedStatus.Items.Add( new ListItem { Text = "Not Clicked", Value = "NotClicked" } );
+        }
+
+        /// <summary>
+        /// Get a Linq Expression that represents a predicate suitable for use in the Where clause of an IQueryable<Person>.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="personService"></param>
+        /// <param name="parameterExpression"></param>
+        /// <returns></returns>
+        private Expression GetRecipientFilterExpression( RockContext dataContext, PersonService personService, ParameterExpression parameterExpression )
+        {
+            // Get the Person query for the recipients of this communication.
+            var filterSettingsKeyValueMap = GetRecipientsFilterSettings();
+
+            //
+            // Get a filtered list of Communication Recipients.
+            //
+            var recipientQuery = new CommunicationRecipientService( dataContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( x => x.CommunicationId == CommunicationId.Value );
+
+            // If a person has received the communication more than once, select the most recently updated recipient record.
+            recipientQuery = recipientQuery.OrderByDescending( x => x.ModifiedDateTime )
+                .GroupBy( k => k.PersonAlias.PersonId )
+                .Select( g => g.FirstOrDefault() );
+
+            // Filter by: Delivery Status
+            var deliveryStatusList = filterSettingsKeyValueMap[FilterSettingName.DeliveryStatus].SplitDelimitedValues( "," ).AsIntegerList();
+
+            if ( deliveryStatusList.Any() )
+            {
+                // If Status includes "Delivered", "Opened" should also be included.
+                if ( deliveryStatusList.Contains( ( int ) CommunicationRecipientStatus.Delivered ) )
+                {
+                    deliveryStatusList.Add( ( int ) CommunicationRecipientStatus.Opened );
+                }
+
+                recipientQuery = recipientQuery.Where( x => deliveryStatusList.Contains( ( int ) x.Status ) );
+            }
+
+            // Filter by: Has Opened
+            var openedStatusList = filterSettingsKeyValueMap[FilterSettingName.OpenedStatus].SplitDelimitedValues( "," );
+
+            if ( openedStatusList.Contains( "Opened" )
+                && openedStatusList.Contains( "NotOpened" ) )
+            {
+                // Ignore
+            }
+            else if ( openedStatusList.Contains( "Opened" ) )
+            {
+                recipientQuery = recipientQuery.Where( x => x.Status == CommunicationRecipientStatus.Opened );
+            }
+            else if ( openedStatusList.Contains( "NotOpened" ) )
+            {
+                recipientQuery = recipientQuery.Where( x => x.Status != CommunicationRecipientStatus.Opened );
+            }
+
+            // Filter by: Has Clicked
+            var clickStatusList = filterSettingsKeyValueMap[FilterSettingName.ClickedStatus].SplitDelimitedValues( "," );
+
+            if ( clickStatusList.Contains( "Clicked" )
+                && clickStatusList.Contains( "NotClicked" ) )
+            {
+                // Ignore
+            }
+            else if ( clickStatusList.Contains( "Clicked" ) )
+            {
+                var interactions = this.GetCommunicationInteractionsSummaryInfo( dataContext, this.CommunicationId );
+
+                var clickRecipientIdList = interactions.Where( x => x.Operation == "Click" )
+                    .Select( x => x.CommunicationRecipientId );
+
+                recipientQuery = recipientQuery.Where( x => clickRecipientIdList.Contains( x.Id ) );
+            }
+            else if ( clickStatusList.Contains( "NotClicked" ) )
+            {
+                var interactions = this.GetCommunicationInteractionsSummaryInfo( dataContext, this.CommunicationId );
+
+                var clickRecipientIdList = _Interactions.Where( x => x.Operation == "Click" )
+                    .Select( x => x.CommunicationRecipientId );
+
+                recipientQuery = recipientQuery.Where( x => !clickRecipientIdList.Contains( x.Id ) );
+            }
+
+            //
+            // Get a filtered list of People.
+            //
+            var personFilterQuery = personService.Queryable().AsNoTracking();
+
+            // Filter for Communication Recipients
+            var recipientIdQuery = recipientQuery.Select( x => x.PersonAlias.PersonId );
+
+            personFilterQuery = personFilterQuery.Where( x => recipientIdQuery.Contains( x.Id ) );
+
+            // Filter by: First Name
+            var firstName = filterSettingsKeyValueMap[FilterSettingName.FirstName].ToStringSafe();
+
+            if ( !string.IsNullOrWhiteSpace( firstName ) )
+            {
+                personFilterQuery = personFilterQuery.Where( x => x.FirstName.StartsWith( firstName )
+                    || x.NickName.StartsWith( firstName ) );
+            }
+
+            // Filter by: Last Name
+            var lastName = filterSettingsKeyValueMap[FilterSettingName.LastName].ToStringSafe();
+
+            if ( !string.IsNullOrWhiteSpace( lastName ) )
+            {
+                personFilterQuery = personFilterQuery.Where( p => p.LastName.StartsWith( lastName ) );
+            }
+
+            // Combine the Recipient Query and the Person Query to create the filter.
+            var personIdFilterQuery = personFilterQuery.Select( p => p.Id );
+
+            var filterQuery = personService.Queryable().Where( p => personIdFilterQuery.Contains( p.Id ) );
+
+            var filterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( filterQuery, parameterExpression, "p" );
+
+            return filterExpression;
         }
 
         #endregion
 
-        protected void gInteractions_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Gets the ID of the control which trigged a postback.
+        /// </summary>
+        /// <param name = "page">The page.</param>
+        /// <returns></returns>
+        private Control GetPostBackControl()
         {
-            Interaction interaction = e.Row.DataItem as Interaction;
-            if ( interaction != null )
+            var page = this.Page;
+
+            if ( !page.IsPostBack )
             {
-                Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
-                if ( lActivityDetails != null )
+                return null;
+            }
+
+            Control control = null;
+
+            // first we will check the "__EVENTTARGET" because if post back made by the controls
+            // which used "_doPostBack" function also available in Request.Form collection.
+            string controlName = page.Request.Params["__EVENTTARGET"];
+
+            if ( !string.IsNullOrEmpty( controlName ) )
+            {
+                control = page.FindControl( controlName );
+            }
+            else
+            {
+                // if __EVENTTARGET is null, the control is a button type and we need to
+                // iterate over the form collection to find it
+                string controlId;
+                Control foundControl;
+
+                foreach ( string ctl in page.Request.Form )
                 {
-                    lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction );
+                    if ( ctl == null )
+                    {
+                        continue;
+                    }
+
+                    // Handle ImageButton as a special case, because the control Id contains an identifier for the (x,y) coordinates of the click event.
+                    if ( ctl.EndsWith( ".x" ) || ctl.EndsWith( ".y" ) )
+                    {
+                        controlId = ctl.Substring( 0, ctl.Length - 2 );
+                        foundControl = page.FindControl( controlId );
+                    }
+                    else
+                    {
+                        foundControl = page.FindControl( ctl );
+                    }
+
+                    if ( !( foundControl is IButtonControl ) )
+                        continue;
+
+                    control = foundControl;
+                    break;
                 }
             }
+
+            return control;
         }
+
+        /// <summary>
+        /// Initialize handlers for block configuration change events.
+        /// </summary>
+        private void InitializeBlockConfigurationChangeHandler( UpdatePanel panelMain )
+        {
+            // Handle the Block Settings change notification.
+            this.BlockUpdated += Block_BlockUpdated;
+
+            AddConfigurationUpdateTrigger( panelMain );
+        }
+
+        /// <summary>
+        /// Load the active Communication object, either from cache or the data store.
+        /// </summary>
+        private void InitializeActiveCommunication()
+        {
+            // Check if CommunicationDetail has already loaded existing communication
+            _Communication = RockPage.GetSharedItem( "Communication" ) as Rock.Model.Communication;
+
+            if ( _Communication == null )
+            {
+                CommunicationId = PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
+                if ( CommunicationId.HasValue )
+                {
+                    var dataContext = this.GetDataContext();
+
+                    _Communication = new CommunicationService( dataContext )
+                        .Queryable( "CreatedByPersonAlias.Person" )
+                        .Where( c => c.Id == CommunicationId.Value )
+                        .FirstOrDefault();
+                }
+            }
+            else
+            {
+                CommunicationId = _Communication.Id;
+            }
+        }
+
+        /// <summary>
+        /// Get a lookup table of Panel control names mapped to tab names.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetPanelControlToTabNameMap()
+        {
+            if ( _PanelControlToTabNameMap == null )
+            {
+                _PanelControlToTabNameMap = new Dictionary<string, string>();
+
+                _PanelControlToTabNameMap.Add( pnlAnalyticsTab.UniqueID, "Analytics" );
+                _PanelControlToTabNameMap.Add( pnlRecipients.UniqueID, "Recipients" );
+                _PanelControlToTabNameMap.Add( pnlMessage.UniqueID, "Message" );
+                _PanelControlToTabNameMap.Add( pnlActivity.UniqueID, "Activity" );
+            }
+
+            return _PanelControlToTabNameMap;
+        }
+
+        #endregion
+
+        #region Support Classes and Enumerations
+
+        public static class CommunicationDetailPanels
+        {
+            public static string Analytics = "Analytics";
+            public static string MessageDetails = "Message";
+            public static string Activity = "Activity";
+            public static string RecipientDetails = "Recipients";
+        }
+
+        #endregion
+
+        #region Block specific classes
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class SummaryInfo
+        {
+            /// <summary>
+            /// Gets or sets the summary date time.
+            /// </summary>
+            /// <value>
+            /// The summary date time.
+            /// </value>
+            public DateTime SummaryDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the click counts.
+            /// </summary>
+            /// <value>
+            /// The click counts.
+            /// </value>
+            public int ClickCounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the open counts.
+            /// </summary>
+            /// <value>
+            /// The open counts.
+            /// </value>
+            public int OpenCounts { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class TopLinksInfo
+        {
+            /// <summary>
+            /// Gets or sets the percent of top.
+            /// </summary>
+            /// <value>
+            /// The percent of top.
+            /// </value>
+            public decimal PercentOfTop { get; set; }
+
+            /// <summary>
+            /// Gets or sets the URL.
+            /// </summary>
+            /// <value>
+            /// The URL.
+            /// </value>
+            public string Url { get; set; }
+
+            /// <summary>
+            /// Gets or sets the uniques count.
+            /// </summary>
+            /// <value>
+            /// The uniques count.
+            /// </value>
+            public int UniquesCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the CTR percent.
+            /// </summary>
+            /// <value>
+            /// The CTR percent.
+            /// </value>
+            public decimal? CTRPercent { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ClientTypeUsageInfo
+        {
+            /// <summary>
+            /// Gets or sets the type of the client.
+            /// </summary>
+            /// <value>
+            /// The type of the client.
+            /// </value>
+            public string ClientType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the usage percent.
+            /// </summary>
+            /// <value>
+            /// The usage percent.
+            /// </value>
+            public decimal UsagePercent { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ApplicationUsageInfo
+        {
+            /// <summary>
+            /// Gets or sets the application.
+            /// </summary>
+            /// <value>
+            /// The application.
+            /// </value>
+            public string Application { get; set; }
+
+            /// <summary>
+            /// Gets or sets the usage percent.
+            /// </summary>
+            /// <value>
+            /// The usage percent.
+            /// </value>
+            public decimal UsagePercent { get; set; }
+        }
+
+        private class CommunicationDetailReportColumnInfo
+        {
+            public string Key { get; set; }
+            public string Name { get; set; }
+            public PersonDataSourceColumnSourceSpecifier ContentType { get; set; }
+
+            /// <summary>
+            /// A unique identifier for the column source, evaluated in the context of the ContentType.
+            /// ContentType=Property: the value is the property name.
+            /// ContentType=Attribute: the value is the Attribute Guid.
+            /// ContentType=Calculated: the value is the fully-qualified name of a DataSelect component.
+            /// </summary>
+            public string ColumnSourceIdentifier { get; set; }
+
+            /// <summary>
+            /// A JSON representation of a settings object for the selected column.
+            /// The structure of the settings object is determined by the ContentType.
+            /// </summary>
+            public string Settings { get; set; }
+        }
+
+        private enum PersonDataSourceColumnSourceSpecifier
+        {
+            Property = 0,
+            Attribute = 1,
+            Calculated = 2
+        }
+
+        /// <summary>
+        /// The set of properties available for display in the Recipients list.
+        /// </summary>
+        private static class PersonPropertyColumn
+        {
+            public static string Gender = "Gender";
+            public static string ConnectionStatus = "ConnectionStatusValueId";
+            public static string RecordStatus = "RecordStatusValueId";
+            public static string IsDeceased = "IsDeceased";
+            public static string Age = "Age";
+            public static string Email = "Email";
+            public static string AgeClassification = "AgeClassification";
+            public static string Birthdate = "BirthDate";
+            public static string Grade = "Grade";
+            public static string IsActive = "IsActive";
+        }
+
+        /// <summary>
+        /// Data structure used to store the result of a communication recipient query.
+        /// </summary>
+        private class RecipientInfo
+        {
+            public int PersonId { get; set; }
+            public bool IsActive { get; set; }
+            public bool IsDeceased { get; set; }
+            public bool HasOpened { get; set; }
+            public bool HasClicked { get; set; }
+            public string DeliveryStatus { get; set; }
+        }
+
+        /// <summary>
+        /// Data structure used to store the results of an Interaction query.
+        /// </summary>
+        private class InteractionInfo
+        {
+            public DateTime InteractionDateTime;
+            public string Operation;
+            public string InteractionData;
+            public int? CommunicationRecipientId;
+            public int? PersonId;
+        }
+
+        /// <summary>
+        /// Data structure used to store settings for the Recipients List.
+        /// </summary>
+        private class RecipientListPreferences
+        {
+            public List<string> SelectedProperties = new List<string>();
+            public List<string> SelectedAttributes = new List<string>();
+        }
+
+        #endregion
     }
 }

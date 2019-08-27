@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
     [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
+    [SecurityAction( "EditSMS", "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
     [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField( "Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0 )]
@@ -72,6 +73,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         false, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        protected static class SecurityActionKey
+        {
+            public const string EditSMS = "EditSMS";
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Can the current user edit the SMS Enabled property?
+        /// </summary>
+        public bool CanEditSmsStatus { get; set; }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -96,6 +118,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+
+            this.CanEditSmsStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditSMS );
 
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
