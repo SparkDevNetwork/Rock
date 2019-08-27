@@ -1,5 +1,5 @@
 {%- comment -%}Determine if this item's channel has a primary parent channel{%- endcomment -%}
-{% capture parentTitle %}
+{% capture permalink %}
 {% sql %}
     SELECT pcc.Id
     FROM Attribute a
@@ -18,16 +18,31 @@
 {% if pccid and pccid != empty %}
     {%- comment -%}Item has a primary parent channel{%- endcomment -%}
     {% sql %}
-        SELECT pcci.Title
+        SELECT cc.ChannelUrl + '/' + pccis.Slug + '/' + ccis.Slug 'permalink'
         FROM ContentChannelItem cci
         JOIN ContentChannel cc
         ON cci.ContentChannelId = cc.Id
+        JOIN ContentChannelItemSlug ccis
+        ON cci.Id = ccis.ContentChannelItemId
         JOIN ContentChannelItemAssociation ccia
-        ON cci.Id = ccia.ChildContentChannelItemId
+        ON ccia.ChildContentChannelItemId = cci.Id
         JOIN ContentChannelItem pcci
         ON ccia.ContentChannelItemId = pcci.Id
+        JOIN ContentChannelItemSlug pccis
+        ON pccis.ContentChannelItemId = pcci.Id
         WHERE cci.Id = {{ cciid }}
         AND pcci.ContentChannelId = {{ pccid }}
-    {% endsql %}{% for result in results %}{{ result.Title }}{% endfor %}
+    {% endsql %}{% for result in results %}{{ result.permalink }}{% endfor %}
+{% else %}
+    {%- comment -%}Item has no primary parent channel{%- endcomment -%}
+    {% sql %}
+        SELECT cc.ChannelUrl + '/' + ccis.Slug 'permalink'
+        FROM ContentChannelItem cci
+        JOIN ContentChannel cc
+        ON cci.ContentChannelId = cc.Id
+        JOIN ContentChannelItemSlug ccis
+        ON cci.Id = ccis.ContentChannelItemId
+        WHERE cci.Id = {{ cciid }}
+    {% endsql %}{% for result in results %}{{ result.permalink }}{% endfor %}
 {% endif %}
-{% endcapture %}{{ parentTitle | Trim }}
+{% endcapture %}{{ permalink | Trim }}
