@@ -169,6 +169,10 @@
     <Compile Include="Migrations\201908192242102_PersonAddEditSMSAuth.Designer.cs">
       <DependentUpon>201908192242102_PersonAddEditSMSAuth.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908282023479_JWT.cs" />
+    <Compile Include="Migrations\201908282023479_JWT.Designer.cs">
+      <DependentUpon>201908282023479_JWT.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -855,6 +859,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908192242102_PersonAddEditSMSAuth.resx">
       <DependentUpon>201908192242102_PersonAddEditSMSAuth.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908282023479_JWT.resx">
+      <DependentUpon>201908282023479_JWT.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
