@@ -31,12 +31,13 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Jwt
 {
     /// <summary>
-    /// Methods and constants used to work with JWTs
+    /// Methods used to work with JWTs
     /// </summary>
     public static class JwtHelper
     {
         /// <summary>
-        /// If the token is valid, the person claimed by that token will be returned
+        /// If the JWT is valid, the person claimed by that token will be returned. This method uses the configured validation parameters from the
+        /// JSON Web Token Configuration Defined Type.
         /// </summary>
         /// <param name="jwtString"></param>
         /// <returns></returns>
@@ -47,6 +48,7 @@ namespace Rock.Rest.Jwt
                 return null;
             }
 
+            // Get the configs from the JSON Web Token Configuration defined values
             var configs = GetJwtConfigs();
 
             if ( configs == null )
@@ -54,12 +56,18 @@ namespace Rock.Rest.Jwt
                 return null;
             }
 
+            // The configs are required to specify a person search key type. The subject of the JWT should match a search key value so that we know
+            // which Person the sender of the token claims to be.
             var rockContext = new RockContext();
             var personSearchKeyService = new PersonSearchKeyService( rockContext );
             var query = personSearchKeyService.Queryable().AsNoTracking();
 
+            // Try each config in order, which are pre-ordered. The SearchTypeValueId is required (if null we couldn't match a person even if the
+            // token validates)
             foreach ( var config in configs.Where( c => c.SearchTypeValueId.HasValue ) )
             {
+                // If the token is valid, this method will return it as an object that we can pull subject from. Even if the token is valid,
+                // if the subject is not set, we cannot match it to a person search key
                 var jwt = await ValidateToken( config, jwtString );
 
                 if ( jwt == null || jwt.Subject.IsNullOrWhiteSpace() )
@@ -67,78 +75,84 @@ namespace Rock.Rest.Jwt
                     continue;
                 }
 
+                // Get all the people (it is possible to get more than one) that have the matching search key
                 var people = query
                     .Where( psk => psk.SearchTypeValueId == config.SearchTypeValueId.Value && psk.SearchValue == jwt.Subject )
                     .Select( psk => psk.PersonAlias.Person )
                     .ToList();
 
+                // If there are more than one match, then the Rock admin needs to take action and fix the data as this could be a security hole and we
+                // cannot tell which person is the bearer of the JWT
                 if ( people.Count > 1 )
                 {
                     ExceptionLogService.LogException( $"{people.Count} people matched the JWT subject '{jwt.Subject}' for search value id '{config.SearchTypeValueId.Value}'" );
                     continue;
                 }
 
+                // If there is a single match, then this method is done and there is no need to check more configurations
                 if ( people.Count == 1 )
                 {
                     return people.Single();
                 }
             }
 
+            // None of the configurations was able to validate the token and find a matching person
             return null;
         }
 
         /// <summary>
-        /// Get the JWT configurations for validating tokens
+        /// Get the ordered JWT configurations for validating tokens
         /// </summary>
         /// <returns></returns>
         private static List<JwtConfig> GetJwtConfigs()
         {
-            var definedTypeCache = DefinedTypeCache.Get( SystemGuid.DefinedType.OPEN_ID_CONFIGURATION_URL );
+            // JWT configs are stored as defined values. The value is the OpenID configuration URL
+            var definedTypeCache = DefinedTypeCache.Get( SystemGuid.DefinedType.JWT_CONFIGURATION );
 
             if ( definedTypeCache == null || !definedTypeCache.IsActive || definedTypeCache.DefinedValues == null )
             {
                 return null;
             }
 
-            var configs = new List<JwtConfig>( definedTypeCache.DefinedValues.Count );
+            // Additional JWT configuration properties are stored as attributes of the defined value
             var issuerAttributeCache = AttributeCache.Get( SystemGuid.Attribute.DEFINED_VALUE_JWT_ISSUER );
             var audienceAttributeCache = AttributeCache.Get( SystemGuid.Attribute.DEFINED_VALUE_JWT_AUDIENCE );
             var searchKeyAttributeCache = AttributeCache.Get( SystemGuid.Attribute.DEFINED_VALUE_JWT_SEARCH_KEY );
 
-            foreach ( var definedValueCache in definedTypeCache.DefinedValues.OrderBy( dv => dv.Order ).ThenBy( dv => dv.Id ) )
+            // The configs should be ordered since they will be attempted in the order given here. The Rock admin may want them
+            // tried in a specific order.
+            return definedTypeCache.DefinedValues.OrderBy( dv => dv.Order ).ThenBy( dv => dv.Id ).Select( dv =>
             {
                 var config = new JwtConfig
                 {
-                    JwksJsonFileUrl = definedValueCache.Value
+                    OpenIdConfigurationUrl = dv.Value
                 };
 
-                if ( definedValueCache.AttributeValues != null )
+                if ( dv.AttributeValues != null )
                 {
-                    if ( issuerAttributeCache != null && definedValueCache.AttributeValues.ContainsKey( issuerAttributeCache.Key ) )
+                    if ( issuerAttributeCache != null && dv.AttributeValues.ContainsKey( issuerAttributeCache.Key ) )
                     {
-                        config.Issuer = definedValueCache.AttributeValues[issuerAttributeCache.Key]?.Value;
+                        config.Issuer = dv.AttributeValues[issuerAttributeCache.Key]?.Value;
                     }
 
-                    if ( audienceAttributeCache != null && definedValueCache.AttributeValues.ContainsKey( audienceAttributeCache.Key ) )
+                    if ( audienceAttributeCache != null && dv.AttributeValues.ContainsKey( audienceAttributeCache.Key ) )
                     {
-                        config.Audience = definedValueCache.AttributeValues[audienceAttributeCache.Key]?.Value;
+                        config.Audience = dv.AttributeValues[audienceAttributeCache.Key]?.Value;
                     }
 
-                    if ( searchKeyAttributeCache != null && definedValueCache.AttributeValues.ContainsKey( searchKeyAttributeCache.Key ) )
+                    if ( searchKeyAttributeCache != null && dv.AttributeValues.ContainsKey( searchKeyAttributeCache.Key ) )
                     {
-                        var searchKeyGuid = definedValueCache.AttributeValues[searchKeyAttributeCache.Key]?.Value;
+                        var searchKeyGuid = dv.AttributeValues[searchKeyAttributeCache.Key]?.Value;
                         config.SearchTypeValueId = DefinedValueCache.Get( searchKeyGuid )?.Id;
                     }
                 }
 
-                configs.Add( config );
-            }
-
-            return configs;
+                return config;
+            } ).ToList();
         }
 
         /// <summary>
-        /// The lifetime validation method for the JWT
+        /// The lifetime validation method for the JWT. The method confirms that the token is not expired and allowed to be used at this moment.
         /// </summary>
         /// <param name="notBefore"></param>
         /// <param name="expires"></param>
@@ -153,7 +167,7 @@ namespace Rock.Rest.Jwt
         }
 
         /// <summary>
-        /// Validates the JWT and returns the parsed token
+        /// Validates the JWT using the provided configuration and returns the parsed token if valid
         /// </summary>
         /// <param name="jwtString">The token.</param>
         /// <param name="jwtConfig">The configuration on how to validate the token</param>
@@ -165,30 +179,36 @@ namespace Rock.Rest.Jwt
                 return null;
             }
 
-            if ( jwtString.StartsWith( HeaderTokens.JwtPrefix ) )
-            {
-                jwtString = jwtString.Substring( HeaderTokens.JwtPrefix.Length );
-            }
-
             if ( jwtConfig == null )
             {
                 return null;
             }
 
-            var configurationManager = GetConfigurationManager( jwtConfig.JwksJsonFileUrl );
+            // It is standard to prefix JWTs with "Bearer ", but JwtSecurityTokenHandler.ValidateToken will
+            // say the token is malformed if the prefix is not removed
+            if ( jwtString.StartsWith( HeaderTokens.JwtPrefix ) )
+            {
+                jwtString = jwtString.Substring( HeaderTokens.JwtPrefix.Length );
+            }
+
+            // Retrieve the configuration manager, which is cached according to the jwtConfig.JwksJsonFileUrl
+            var configurationManager = GetConfigurationManager( jwtConfig.OpenIdConfigurationUrl );
 
             if ( configurationManager == null )
             {
                 return null;
             }
 
-            var discoveryDocument = await configurationManager.GetConfigurationAsync();
+            // The configuration manager handles caching the configuration documents and keys, which are from another
+            // server or provider like Auth0.
+            var openIdConnectConfiguration = await configurationManager.GetConfigurationAsync();
 
-            if ( discoveryDocument == null || discoveryDocument.SigningKeys == null || !discoveryDocument.SigningKeys.Any() )
+            if ( openIdConnectConfiguration == null || openIdConnectConfiguration.SigningKeys == null || !openIdConnectConfiguration.SigningKeys.Any() )
             {
                 return null;
             }
 
+            // Validate the items that are configured to be validated
             var validateAudience = !jwtConfig.Audience.IsNullOrWhiteSpace();
             var validateIssuer = !jwtConfig.Issuer.IsNullOrWhiteSpace();
 
@@ -196,20 +216,21 @@ namespace Rock.Rest.Jwt
             {
                 ValidateAudience = validateAudience,
                 ValidAudience = validateAudience ? jwtConfig.Audience : null,
-                RequireExpirationTime = true,
-                RequireSignedTokens = true,
                 ValidateIssuer = validateIssuer,
                 ValidIssuer = validateIssuer ? jwtConfig.Issuer : null,
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKeys = discoveryDocument.SigningKeys,
+                IssuerSigningKeys = openIdConnectConfiguration.SigningKeys,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes( 1 )
+                ClockSkew = TimeSpan.FromMinutes( 1 ) // Allow a minute of play in server times since we're dealing with a third party key provider
             };
 
             try
             {
                 var principal = new JwtSecurityTokenHandler().ValidateToken( jwtString, validationParameters, out var validatedToken );
 
+                // If the principal identity is null, we should not accept this as a validated token
                 if ( principal == null || principal.Identity == null )
                 {
                     return null;
@@ -220,29 +241,30 @@ namespace Rock.Rest.Jwt
             }
             catch
             {
+                // The JWT was not well formed or did not validate in some other way
                 return null;
             }
         }
 
         /// <summary>
-        /// Gets the configuration manager for the configured JWKS endpoint.
+        /// Gets the configuration manager for the configured JWKS endpoint. This is cached in memory since it shouldn't change often
         /// </summary>
         /// <param name="jwksJsonFileUrl">The JWKS JSON file URL.</param>
         /// <returns></returns>
         private static ConfigurationManager<OpenIdConnectConfiguration> GetConfigurationManager( string jwksJsonFileUrl )
         {
-            if ( !_configurationManagers.ContainsKey( jwksJsonFileUrl ) )
+            if ( !_configurationManagerCache.ContainsKey( jwksJsonFileUrl ) )
             {
                 var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                     jwksJsonFileUrl,
                     new OpenIdConnectConfigurationRetriever(),
                     new HttpDocumentRetriever() );
 
-                _configurationManagers[jwksJsonFileUrl] = configurationManager;
+                _configurationManagerCache[jwksJsonFileUrl] = configurationManager;
             }
 
-            return _configurationManagers[jwksJsonFileUrl];
+            return _configurationManagerCache[jwksJsonFileUrl];
         }
-        private static Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _configurationManagers = new Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>();
+        private static Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _configurationManagerCache = new Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>();
     }
 }

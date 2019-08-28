@@ -77,7 +77,7 @@ namespace Rock.Rest.Filters
             {
                 Person person = null;
 
-                // We need to wait for the GetPerson method rather than using the await keyword. The await keyword
+                // We need to wait for the JwtHelper.GetPerson method rather than using the await keyword. The await keyword
                 // forces this entire method to be async causing the Secured attribute to process before everything
                 // is finished here
                 Task.Run( async () =>
