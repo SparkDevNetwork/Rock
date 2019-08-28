@@ -220,6 +220,11 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
 
         /// <summary>
+        /// Guid for the open identifier configuration URLs
+        /// </summary>
+        public const string OPEN_ID_CONFIGURATION_URL = "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7";
+
+        /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
         public const string PERSON_RECORD_TYPE =  "26be73a6-a9c5-4e94-ae00-3afdcf8c9275";
