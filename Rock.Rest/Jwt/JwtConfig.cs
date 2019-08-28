@@ -1,12 +1,14 @@
-﻿namespace Rock.Rest.Jwt
+﻿using Rock.Model;
+
+namespace Rock.Rest.Jwt
 {
     /// <summary>
-    /// Represents a JSON Web Token Configuration
+    /// Represents a JSON Web Token Configuration. These records are persisted as JSON Web Token Configuration DefinedValues
     /// </summary>
     public class JwtConfig
     {
         /// <summary>
-        /// Gets or sets the audience.
+        /// Gets or sets the audience. If not set, Rock will not require Audience validation.
         /// </summary>
         /// <value>
         /// The audience.
@@ -14,7 +16,7 @@
         public string Audience { get; set; }
 
         /// <summary>
-        /// Gets or sets the issuer.
+        /// Gets or sets the issuer. If not set, Rock will not require Issuer validation.
         /// </summary>
         /// <value>
         /// The issuer.
@@ -22,15 +24,18 @@
         public string Issuer { get; set; }
 
         /// <summary>
-        /// Gets or sets the JWKS json file URL.
+        /// Gets or sets the OpenId configuration URL.
+        /// This is required for JWT validation.
+        /// Looks like: https://xxxxx.auth0.com/.well-known/openid-configuration
         /// </summary>
         /// <value>
-        /// The JWKS json file URL.
+        /// The open identifier configuration URL.
         /// </value>
-        public string JwksJsonFileUrl { get; set; }
+        public string OpenIdConfigurationUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the search type value identifier. This is a defined value referenced in the <see cref="Rock.Model.PersonSearchKey"/>
+        /// Gets or sets the search type value identifier. This is a defined value that correlates to <see cref="PersonSearchKey.SearchTypeValueId"/>.
+        /// This is required for JWT validation.
         /// </summary>
         /// <value>
         /// The search type value identifier.
