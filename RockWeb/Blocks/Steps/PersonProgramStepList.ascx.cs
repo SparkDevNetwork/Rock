@@ -428,37 +428,34 @@ namespace RockWeb.Blocks.Steps
 
             var cardData = e.Item.DataItem as CardViewModel;
             var stepTypeId = cardData.StepType.Id;
-            var hasMetPrerequisites = HasMetPrerequisites( stepTypeId );
 
-            var pnlStepRecords = e.Item.FindControl( "pnlStepRecords" ) as Panel;
             var pnlPrereqs = e.Item.FindControl( "pnlPrereqs" ) as Panel;
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlStepRecords.Visible = hasMetPrerequisites;
-            pnlPrereqs.Visible = !hasMetPrerequisites;
+            pnlPrereqs.Visible = !cardData.HasMetPrerequisites;
 
-            if ( hasMetPrerequisites )
+            // Existing step records panel
+            var steps = GetPersonStepsOfType( stepTypeId );
+            var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
+            var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
+
+            var data = steps.Select( s => new CardStepViewModel
             {
-                var steps = GetPersonStepsOfType( stepTypeId );
-                var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
-                var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
+                StepId = s.Id,
+                CanEdit = canEdit,
+                CanDelete = canDelete,
+                StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
+                    s.StepStatus != null ? s.StepStatus.Name : string.Empty,
+                    s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
+            } );
 
-                var data = steps.Select( s => new CardStepViewModel
-                {
-                    StepId = s.Id,
-                    CanEdit = canEdit,
-                    CanDelete = canDelete,
-                    StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
-                        s.StepStatus != null ? s.StepStatus.Name : string.Empty,
-                        s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
-                } );
+            var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
+            rSteps.DataSource = data;
+            rSteps.DataBind();
 
-                var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
-                rSteps.DataSource = data;
-                rSteps.DataBind();
-            }
-            else
+            // Prereqs panel
+            if ( !cardData.HasMetPrerequisites )
             {
                 var prereqs = GetPrerequisiteStepTypes( stepTypeId );
 
@@ -1000,7 +997,8 @@ namespace RockWeb.Blocks.Steps
                     RenderedLava = rendered,
                     StepTerm = stepTerm,
                     CardCssClass = cardCssClasses.JoinStrings( " " ),
-                    CanAddStep = canAddStep
+                    CanAddStep = canAddStep,
+                    HasMetPrerequisites = hasMetPrerequisites
                 } );
             }
 
@@ -1338,6 +1336,14 @@ namespace RockWeb.Blocks.Steps
             ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
             /// </value>
             public bool CanAddStep { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance has met prerequisites.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance has met prerequisites; otherwise, <c>false</c>.
+            /// </value>
+            public bool HasMetPrerequisites { get; set; }
         }
 
         /// <summary>
