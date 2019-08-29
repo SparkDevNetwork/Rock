@@ -280,9 +280,16 @@ namespace Rock.Model
             {
                 // if requirement set on GroupType, this.Group is null
                 var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
+                var personQryIdList = personQry.Select( a => a.Id ).ToList();
+                Person personMergeField = null;
+                if ( personQryIdList.Count == 1 )
+                {
+                    var personId = personQryIdList[0];
+                    personMergeField = new PersonService( rockContext ).GetNoTracking( personId );
+                }
 
-                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
-                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
+                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
+                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
                 try
                 {
                     var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
@@ -301,7 +308,7 @@ namespace Rock.Model
                             }
                         }
 
-                        var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
+                        var result = personQryIdList.Select( a => new PersonGroupRequirementStatus
                         {
                             PersonId = a,
                             GroupRequirement = this,
@@ -325,7 +332,8 @@ namespace Rock.Model
                     {
                         PersonId = a,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = MeetsGroupRequirement.Error
+                        MeetsGroupRequirement = MeetsGroupRequirement.Error,
+                        CalculationException = ex
                     } );
 
                     return result;
@@ -532,7 +540,7 @@ namespace Rock.Model
         NotApplicable,
 
         /// <summary>
-        /// The Requirement calculation resulted in an exception
+        /// The Requirement calculation resulted in an exception <see cref="GroupRequirementStatus.CalculationException."/>
         /// </summary>
         Error
     }
@@ -591,6 +599,14 @@ namespace Rock.Model
         /// The last requirement check date time.
         /// </value>
         public DateTime? LastRequirementCheckDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calculation exception.
+        /// </summary>
+        /// <value>
+        /// The calculation exception.
+        /// </value>
+        public Exception CalculationException { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
