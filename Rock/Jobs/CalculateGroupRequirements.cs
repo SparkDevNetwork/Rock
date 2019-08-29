@@ -108,7 +108,7 @@ namespace Rock.Jobs
 
                         if ( groupRequirement.GroupId.HasValue )
                         {
-                            groupMemberQry = groupMemberQry.Where( g => g.GroupId== groupRequirement.GroupId );
+                            groupMemberQry = groupMemberQry.Where( g => g.GroupId == groupRequirement.GroupId );
                         }
                         else if ( groupRequirement.GroupTypeId.HasValue )
                         {
@@ -123,17 +123,24 @@ namespace Rock.Jobs
 
                         var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
-                        
+
                         var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, group.Id, groupRequirement.GroupRoleId ).ToList();
-                        
+
                         groupRequirementsCalculatedPersonIds.AddRange( results.Select( a => a.PersonId ).Distinct() );
                         foreach ( var result in results )
                         {
-                            // use a fresh rockContext per result so that ChangeTracker doesn't get bogged down
-                            using ( var rockContextUpdate = new RockContext() )
+                            try
                             {
-                                groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
-                                rockContextUpdate.SaveChanges();
+                                // use a fresh rockContext per result so that ChangeTracker doesn't get bogged down
+                                using ( var rockContextUpdate = new RockContext() )
+                                {
+                                    groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
+                                    rockContextUpdate.SaveChanges();
+                                }
+                            }
+                            catch ( Exception ex )
+                            {
+                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id { result.PersonId }" , ex ) );
                             }
                         }
                     }
@@ -141,7 +148,6 @@ namespace Rock.Jobs
                     {
                         calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
                     }
-
                 }
             }
 
