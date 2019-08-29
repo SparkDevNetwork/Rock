@@ -39,7 +39,7 @@ namespace Rock.Workflow.Action
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 2, "Message",
+    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", false, "", "", 2, "Message",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute( "Attachment", "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", false, "", "", 3, null,
         new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
@@ -209,7 +209,7 @@ namespace Rock.Workflow.Action
             var binaryFile = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
 
             // Send the message
-            if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
+            if ( recipients.Any() && ( !string.IsNullOrWhiteSpace( message ) || binaryFile != null) )
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );
@@ -218,7 +218,7 @@ namespace Rock.Workflow.Action
                 smsMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
                 smsMessage.communicationName = action.ActionTypeCache.Name;
 
-                    if ( binaryFile != null )
+                if ( binaryFile != null )
                 {
                     smsMessage.Attachments.Add( binaryFile );
                 }

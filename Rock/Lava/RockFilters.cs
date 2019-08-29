@@ -3168,7 +3168,7 @@ namespace Rock.Lava
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
-                        m.Group.IsActive && !m.Group.IsArchived );
+                        !m.Group.IsArchived );
 
                 if ( groupStatus != "All" )
                 {

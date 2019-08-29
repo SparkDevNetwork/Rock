@@ -140,6 +140,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
+        /// Defined Type of Non-Cash Assets (used with FinancialTransaction.NonCashAssetTypeValueId.
+        /// </summary>
+        public const string FINANCIAL_NONCASH_ASSET_TYPE = "6B19C65E-FF8F-4ADD-9DA0-48E53FC074A6";
+
+        /// <summary>
         /// Guid for Financial Source Type
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
