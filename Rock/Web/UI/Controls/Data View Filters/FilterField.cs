@@ -262,6 +262,24 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [hide filter criteria]; otherwise, <c>false</c>.
         /// </value>
+        public bool HideDescription
+        {
+            get
+            {
+                return ViewState["HideDescription"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["HideDescription"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide filter criteria].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide filter criteria]; otherwise, <c>false</c>.
+        /// </value>
         public bool HideFilterCriteria
         {
             get
@@ -687,10 +705,10 @@ namespace Rock.Web.UI.Controls
 
             if ( component != null && !HideFilterCriteria )
             {
-                if ( !string.IsNullOrEmpty( component.Description ) )
+                if ( !string.IsNullOrEmpty( component.Description ) && !HideDescription )
                 {
                     nbComponentDescription.Text = component.Description;
-                    nbComponentDescription.CssClass = "filter-field-descripion";
+                    nbComponentDescription.CssClass = "filter-field-description";
                     nbComponentDescription.RenderControl( writer );
                 }
 
