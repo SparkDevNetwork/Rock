@@ -261,17 +261,35 @@ namespace Rock.Jobs
                                 using ( var groupMemberContext = new RockContext() )
                                 {
                                     var groupMemberService = new GroupMemberService( groupMemberContext );
+                                    var groupService = new GroupService( groupMemberContext );
 
                                     // If this person is currently archived...
                                     if ( archivedTargetPersonIds.Contains( personId ) )
                                     {
                                         // ...then we'll just restore them;
+                                        GroupMember archivedGroupMember = groupService.GetArchivedGroupMember( sync.Group, personId, sync.GroupTypeRoleId );
 
-                                        // NOTE: AddOrRestoreGroupMember will find the exact group member record and
-                                        // sets their IsArchived back to false. 
-                                        var newGroupMember = groupMemberService.AddOrRestoreGroupMember( sync.Group, personId, sync.GroupTypeRoleId );
-                                        newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                        groupMemberContext.SaveChanges();
+                                        if ( archivedGroupMember == null )
+                                        {
+                                            // shouldn't happen, but just in case
+                                            continue;
+                                        }
+
+                                        archivedGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                        if ( archivedGroupMember.IsValidGroupMember( groupMemberContext ) )
+                                        {
+                                            addedCount++;
+                                            groupMemberService.Restore( archivedGroupMember );
+                                            groupMemberContext.SaveChanges();
+                                        }
+                                        else
+                                        {
+                                            notAddedCount++;
+                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                            var ex = new GroupMemberValidationException( string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            ExceptionLogService.LogException( ex );
+                                            continue;
+                                        }
                                     }
                                     else
                                     {
