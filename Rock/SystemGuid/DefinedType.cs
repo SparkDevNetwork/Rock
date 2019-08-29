@@ -180,6 +180,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
 
         /// <summary>
+        /// Guid for the JSON Web Token Configuration
+        /// </summary>
+        public const string JWT_CONFIGURATION = "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7";
+
+        /// <summary>
         /// Guid for Default link list
         /// </summary>
         public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";

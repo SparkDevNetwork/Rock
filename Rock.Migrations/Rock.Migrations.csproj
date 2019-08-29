@@ -177,6 +177,10 @@
     <Compile Include="Migrations\201908202115162_Rollup_0820.Designer.cs">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908291322025_JWT.cs" />
+    <Compile Include="Migrations\201908291322025_JWT.Designer.cs">
+      <DependentUpon>201908291322025_JWT.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -869,6 +873,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908202115162_Rollup_0820.resx">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908291322025_JWT.resx">
+      <DependentUpon>201908291322025_JWT.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
