@@ -579,7 +579,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( recipientPerson == null )
             {
-                //TODO???
+                //TODO???  
             }
             else
             {
@@ -682,183 +682,58 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdLinkToPerson_SaveClick( object sender, EventArgs e )
         {
-            // #TODO# Test This, and maybe make it a shared method since we'll also need to do this in the NamelessPersonList block
-
-
             // Do some validation on entering a new person/family first
             if ( pnlLinkToNewPerson.Visible )
             {
-                var validationMessages = new List<string>();
-                bool isValid = true;
-
-                DateTime? birthdate = newPersonEditor.PersonBirthDate;
-                if ( !newPersonEditor.PersonBirthDateIsValid )
+                if (!newPersonEditor.IsValid())
                 {
-                    validationMessages.Add( "Birthdate is not valid." );
-                    isValid = false;
-                }
-
-                if ( !isValid )
-                {
-                    if ( validationMessages.Any() )
-                    {
-                        nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
-                        nbAddPerson.Visible = true;
-                    }
-
+                    nbAddPerson.Text = "<ul><li>" + newPersonEditor.ValidationResults.ToList().AsDelimited( "</li><li>" ) + "</li></lu>";
+                    nbAddPerson.Visible = true;
                     return;
                 }
             }
 
             using ( var rockContext = new RockContext() )
             {
-                // Get the Person Record from the selected conversation. (It should be a 'NamelessPerson' record type)
-                int? selectedRecipientPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsIntegerOrNull();
-                Person selectedRecipient = null;
-                Person person;
                 var personAliasService = new PersonAliasService( rockContext );
                 var personService = new PersonService( rockContext );
+
+                // Get the Person Record from the selected conversation. (It should be a 'NamelessPerson' record type)
+                int namelessPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsInteger();
                 var phoneNumberService = new PhoneNumberService( rockContext );
+                Person namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
 
-                if ( selectedRecipientPersonAliasId.HasValue )
+                if ( namelessPerson == null )
                 {
-                    selectedRecipient = personAliasService.GetPerson( selectedRecipientPersonAliasId.Value );
+                    // shouldn't happen, but just in case
+                    return;
                 }
-
-                int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-                PhoneNumber mobilePhoneNumber;
 
                 if ( pnlLinkToExistingPerson.Visible )
                 {
-                    if ( !ppPerson.PersonId.HasValue )
+                    var existingPersonId = ppPerson.PersonId;
+                    if ( !existingPersonId.HasValue )
                     {
                         return;
                     }
 
-                    // All we need to do here is add/edit the SMS enabled phone number and save
-                    person = personService.Get( ppPerson.PersonId.Value );
-                    mobilePhoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
+                    var existingPerson = personService.Get( existingPersonId.Value );
 
-                    if ( mobilePhoneNumber == null )
-                    {
-                        // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
-                        mobilePhoneNumber = new PhoneNumber
-                        {
-                            NumberTypeValueId = mobilePhoneTypeId,
-                            IsMessagingEnabled = true,
-                            Number = hfSelectedMessageKey.Value
-                        };
-
-                        person.PhoneNumbers.Add( mobilePhoneNumber );
-                    }
-                    else
-                    {
-                        // A person should only have one Mobile Phone Number, and no more than one phone with Messaging enabled. (Rock enforces that in the Person Profile UI)
-                        // So, if they already have a Messaging Enabled Mobile Number, change it to the new linked number
-                        mobilePhoneNumber.Number = hfSelectedMessageKey.Value;
-                        mobilePhoneNumber.IsMessagingEnabled = true;
-                    }
-
-                    // ensure they only have one SMS Number
-                    var otherSMSPhones = person.PhoneNumbers.Where( a => a != mobilePhoneNumber && a.IsMessagingEnabled == true ).ToList();
-                    foreach ( var otherSMSPhone in otherSMSPhones )
-                    {
-                        otherSMSPhone.IsMessagingEnabled = false;
-                    }
+                    personService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
 
                     rockContext.SaveChanges();
-                    hfSelectedRecipientPersonAliasId.Value = person.PrimaryAliasId.ToString();
+                    hfSelectedRecipientPersonAliasId.Value = existingPerson.PrimaryAliasId.ToString();
                 }
                 else
                 {
                     // new Person and new family
-                    person = new Person();
+                    var newPerson = new Person();
 
-                    person.TitleValueId = newPersonEditor.PersonTitleValueId;
-                    person.FirstName = newPersonEditor.FirstName;
-                    person.NickName = newPersonEditor.FirstName;
-                    person.LastName = newPersonEditor.LastName;
-                    person.SuffixValueId = newPersonEditor.PersonSuffixValueId;
-                    person.Gender = newPersonEditor.PersonGender;
-                    person.MaritalStatusValueId = newPersonEditor.PersonMaritalStatusValueId;
-
-                    person.PhoneNumbers = new List<PhoneNumber>();
-                    mobilePhoneNumber = new PhoneNumber
-                    {
-                        NumberTypeValueId = mobilePhoneTypeId,
-                        IsMessagingEnabled = true,
-                        Number = hfSelectedMessageKey.Value
-                    };
-
-                    person.PhoneNumbers.Add( mobilePhoneNumber );
-
-                    var birthMonth = person.BirthMonth;
-                    var birthDay = person.BirthDay;
-                    var birthYear = person.BirthYear;
-
-                    var birthday = newPersonEditor.PersonBirthDate;
-                    if ( birthday.HasValue )
-                    {
-                        person.BirthMonth = birthday.Value.Month;
-                        person.BirthDay = birthday.Value.Day;
-                        if ( birthday.Value.Year != DateTime.MinValue.Year )
-                        {
-                            person.BirthYear = birthday.Value.Year;
-                        }
-                        else
-                        {
-                            person.BirthYear = null;
-                        }
-                    }
-                    else
-                    {
-                        person.SetBirthDate( null );
-                    }
-
-                    person.GradeOffset = newPersonEditor.PersonGradeOffset;
-                    person.ConnectionStatusValueId = newPersonEditor.PersonConnectionStatusValueId;
-
-                    var groupMember = new GroupMember();
-                    groupMember.GroupRoleId = newPersonEditor.PersonGroupRoleId;
-                    groupMember.Person = person;
-
-                    var groupMembers = new List<GroupMember>();
-                    groupMembers.Add( groupMember );
-
-                    Group group = GroupService.SaveNewFamily( rockContext, groupMembers, null, true );
-                    hfSelectedRecipientPersonAliasId.Value = person.PrimaryAliasId.ToString();
-                }
-
-                //new CommunicationResponseService( rockContext ).UpdatePersonAliasByMessageKey( hfSelectedRecipientPersonAliasId.ValueAsInt(), hfSelectedMessageKey.Value, PersonAliasType.FromPersonAlias );
-
-                // now that we've linked to a new person, get rid of the NameLess Person record
-                if ( selectedRecipient != null )
-                {
-                    var selectedConversationPhoneNumber = selectedRecipient.PhoneNumbers.Where( a => a.Number == mobilePhoneNumber.Number ).FirstOrDefault();
-                    if ( selectedConversationPhoneNumber != null )
-                    {
-                        phoneNumberService.Delete( selectedConversationPhoneNumber );
-                    }
-                    
-                    var recordTypeIdNameLessPerson =  DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
-
-                    if ( selectedRecipient.RecordTypeValueId == recordTypeIdNameLessPerson )
-                    {
-                        // point any personAliases for the nameless person to the linked person
-                        foreach ( var alias in selectedRecipient.Aliases.ToList() )
-                        {
-                            selectedRecipient.Aliases.Remove(alias);
-                            person.Aliases.Add(alias);
-
-                            alias.PersonId = person.Id;
-                            alias.AliasPersonId = selectedRecipient.Id;
-                            alias.AliasPersonGuid = selectedRecipient.Guid;
-                        }
-
-                        personService.Delete( selectedRecipient );
-                    }
-
+                    newPersonEditor.UpdatePerson( newPerson );
+                    personService.MergeNamelessPersonToNewPerson( namelessPerson, newPersonEditor.PersonGroupRoleId, newPerson );
                     rockContext.SaveChanges();
+
+                    hfSelectedRecipientPersonAliasId.Value = newPerson.PrimaryAliasId.ToString();
                 }
             }
 
