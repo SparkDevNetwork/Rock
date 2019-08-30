@@ -25,10 +25,115 @@ namespace Rock.Web.UI.Controls
         private DatePicker _dpPersonBirthDate;
         private GradePicker _ddlGradePicker;
         private DefinedValuePicker _dvpPersonMaritalStatus;
+        private EmailBox _ebPersonEmail;
 
         #endregion Controls
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show title]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTitle
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dvpPersonTitle.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _dvpPersonTitle.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show suffix].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show suffix]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSuffix
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dvpPersonSuffix.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _dvpPersonSuffix.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show grade].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show grade]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowGrade
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ddlGradePicker.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _ddlGradePicker.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require birthdate].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require birthdate]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireBirthdate
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dpPersonBirthDate.Required;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _dpPersonBirthDate.Required = value;
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether [show email].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show email]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowEmail
+        {
+            get
+            {
+                EnsureChildControls();
+                return _ebPersonEmail.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _ebPersonEmail.Visible = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the first name.
@@ -146,13 +251,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlGradePicker.SelectedValue.AsIntegerOrNull();
+                return _ddlGradePicker.SelectedGradeOffset;
             }
 
             set
             {
                 EnsureChildControls();
-                _ddlGradePicker.SetValue( value );
+                _ddlGradePicker.SelectedGradeOffset = value;
             }
         }
 
@@ -411,6 +516,15 @@ namespace Rock.Web.UI.Controls
 
             pnlCol3.Controls.Add( _dvpPersonMaritalStatus );
 
+            _ebPersonEmail = new EmailBox
+            {
+                ID = "dbPersonEmail",
+                Label = "Email",
+                ValidationGroup = ValidationGroup
+            };
+
+            pnlCol3.Controls.Add( _ebPersonEmail );
+
             var groupType = GroupTypeCache.GetFamilyGroupType();
             _rblPersonRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
             _rblPersonRole.DataBind();
@@ -445,6 +559,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="person">The person.</param>
         public void SetFromPerson( Person person )
         {
+            // if a null person is specified, use whatever the defaults are for a new Person object
+            person = person ?? new Person();
             this.PersonTitleValueId = person.TitleValueId;
             this.FirstName = person.FirstName;
             this.FirstName = person.NickName;

@@ -2311,12 +2311,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Merges the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/>) to new person (and new Family) and saves changes to the database
+        /// Merges the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS" />) to new person (and new Family) and saves changes to the database
         /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
         /// <param name="newPerson">The new person.</param>
         /// <param name="newPersonGroupRoleId">The new person group role identifier.</param>
-        /// <param name="namelessPerson">The nameless person.</param>
-        public void MergeNamelessPersonToNewPerson( Person newPerson, int newPersonGroupRoleId, Person namelessPerson )
+        public void MergeNamelessPersonToNewPerson( Person namelessPerson, Person newPerson, int newPersonGroupRoleId )
         {
             int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
