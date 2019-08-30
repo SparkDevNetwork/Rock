@@ -43,7 +43,7 @@ namespace Rock.Model
         public string SMSMessage { get; set; }
 
         public bool IsRead { get; set; }
-        public int PersonId { get; internal set; }
+        public int? PersonId { get; internal set; }
     }
 
     public partial class CommunicationResponseService
@@ -105,8 +105,8 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = mostRecentCommunicationResponse.CreatedDateTime,
-                    PersonId = mostRecentCommunicationResponse.FromPersonAlias.PersonId,
-                    FullName = mostRecentCommunicationResponse.FromPersonAlias.Person.FullName,
+                    PersonId = mostRecentCommunicationResponse?.FromPersonAlias.PersonId,
+                    FullName = mostRecentCommunicationResponse?.FromPersonAlias.Person.FullName,
                     IsRead = mostRecentCommunicationResponse.IsRead,
                     MessageKey = mostRecentCommunicationResponse.MessageKey,
                     RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
@@ -129,8 +129,8 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = mostRecentCommunicationRecipient.CreatedDateTime,
-                    PersonId = mostRecentCommunicationRecipient.Person.Id,
-                    FullName = mostRecentCommunicationRecipient.Person.FullName,
+                    PersonId = mostRecentCommunicationRecipient?.Person.Id,
+                    FullName = mostRecentCommunicationRecipient?.Person.FullName,
                     IsRead = true,
                     MessageKey =  "Is this needed?", // mostRecentCommunicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,

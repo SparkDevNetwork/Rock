@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Model;
@@ -417,6 +419,73 @@ namespace Rock.Web.UI.Controls
             _rblPersonGender.Items.Add( new ListItem( Gender.Male.ConvertToString(), Gender.Male.ConvertToInt().ToString() ) );
             _rblPersonGender.Items.Add( new ListItem( Gender.Female.ConvertToString(), Gender.Female.ConvertToInt().ToString() ) );
             _rblPersonGender.Items.Add( new ListItem( Gender.Unknown.ConvertToString(), Gender.Unknown.ConvertToInt().ToString() ) );
+        }
+
+        /// <summary>
+        /// Updates the person fields based on what the values in the PersonBasicEditor are
+        /// </summary>
+        /// <param name="person">The new person.</param>
+        public void UpdatePerson( Person person )
+        {
+            person.TitleValueId = this.PersonTitleValueId;
+            person.FirstName = this.FirstName;
+            person.NickName = this.FirstName;
+            person.LastName = this.LastName;
+            person.SuffixValueId = this.PersonSuffixValueId;
+            person.Gender = this.PersonGender;
+            person.MaritalStatusValueId = this.PersonMaritalStatusValueId;
+            person.SetBirthDate( this.PersonBirthDate );
+            person.GradeOffset = this.PersonGradeOffset;
+            person.ConnectionStatusValueId = this.PersonConnectionStatusValueId;
+        }
+
+        /// <summary>
+        /// Updates the PersonEditor values based on the specified person
+        /// </summary>
+        /// <param name="person">The person.</param>
+        public void SetFromPerson( Person person )
+        {
+            this.PersonTitleValueId = person.TitleValueId;
+            this.FirstName = person.FirstName;
+            this.FirstName = person.NickName;
+            this.LastName = person.LastName;
+            this.PersonSuffixValueId = person.SuffixValueId;
+            this.PersonGender = person.Gender;
+            this.PersonMaritalStatusValueId = person.MaritalStatusValueId;
+            this.PersonBirthDate = person.BirthDate;
+            this.PersonGradeOffset = person.GradeOffset;
+            this.PersonConnectionStatusValueId = person.ConnectionStatusValueId;
+        }
+
+        /// <summary>
+        /// Gets the validation results.
+        /// </summary>
+        /// <value>
+        /// The validation results.
+        /// </value>
+        public ValidationResult[] ValidationResults { get; private set; } = new ValidationResult[0];
+
+        /// <summary>
+        /// Returns true if the edited values are valid, otherwise returns false and populates <see cref="ValidationResults"/>
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValid()
+        {
+            var validationResults = new List<ValidationResult>();
+            bool isValid = true;
+
+            DateTime? birthdate = this.PersonBirthDate;
+            if ( !this.PersonBirthDateIsValid )
+            {
+                validationResults.Add( new ValidationResult("Birth date is not valid.") );
+                isValid = false;
+            }
+
+            this.ValidationResults = validationResults.ToArray();
+
+            return isValid;
         }
 
         #endregion Events

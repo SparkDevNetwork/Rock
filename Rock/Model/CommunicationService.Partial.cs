@@ -250,7 +250,7 @@ namespace Rock.Model
             communication.SMSMessage = message;
             communication.SMSFromDefinedValueId = fromPhone.Id;
 
-            // TODO. Create "Nameless Person" if a person
+              // TODO. Create "Nameless Person" if a person ??
 
 
             if ( toPersonAliasId != null )

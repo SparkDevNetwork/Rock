@@ -1,8 +1,8 @@
-SET NOCOUNT OFF
+SET NOCOUNT ON
 
 ----------------------------------------------
 -- README
--- Adds 250,000 sample communications
+-- Adds 250,000 sample communications (takes a long time, 20+ minutes)
 ----------------------------------------------
 DECLARE @recipientPersonAliasId INT
 	,@senderPersonAliasId INT
@@ -25,6 +25,14 @@ DECLARE @recipientPersonAliasId INT
 	,@yearsBack INT = 4
 	,@isbulk BIT
 	,@communicationStatus INT = 0
+
+   	,@smsNumbersDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '611BDE1F-7405-4D16-8626-CCFEDB0E62BE')
+
+declare
+    @relatedSmsFromDefinedValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @smsNumbersDefinedTypeId)
+	,@relatedTransportEntityTypeId int = (select top 1 Id from EntityType where [Guid]= 'CF9FD146-8623-4D9A-98E6-4BD710F071A4')
+	,@relatedMediumEntityTypeId int = (select top 1 Id from EntityType where [Guid] = '4BC02764-512A-4A10-ACDE-586F71D8A8BD')
+
 DECLARE @daysBack INT = @yearsBack * 366
 
 BEGIN
@@ -240,9 +248,9 @@ BEGIN
 			,null -- @recipientPersonAliasId
 			,@senderPersonAliasId
 			,0
-			,780
-			,163
-			,38
+			,@relatedSmsFromDefinedValueId
+			,@relatedTransportEntityTypeId
+			,@relatedMediumEntityTypeId
 			,CONCAT (
 				'Some Message'
 				,rand()

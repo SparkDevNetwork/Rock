@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
@@ -2240,7 +2241,9 @@ namespace Rock.Model
                 .ThenBy( pn => pn.PersonId )
                 .Select( a => a.Person )
                 .FirstOrDefault();
-            
+
+            // cleanup phone
+            phoneNumber = PhoneNumber.CleanNumber( phoneNumber );
 
             if ( createNamelessPersonIfNotFound && person == null )
             {
@@ -2259,10 +2262,118 @@ namespace Rock.Model
 
                     person = this.Get( person.Id );
                 }
-
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Merges the nameless person <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/> to existing person and saves changes to the database
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="existingPerson">The existing person.</param>
+        public void MergeNamelessPersonToExistingPerson( Person namelessPerson, Person existingPerson )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            var existingPersonMobilePhoneNumber = existingPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
+            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+
+            if ( existingPersonMobilePhoneNumber == null )
+            {
+                // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+                existingPersonMobilePhoneNumber = new PhoneNumber
+                {
+                    NumberTypeValueId = mobilePhoneTypeId,
+                    IsMessagingEnabled = true,
+                    Number = namelessPersonMobilePhoneNumberNumber
+                };
+
+                existingPerson.PhoneNumbers.Add( existingPersonMobilePhoneNumber );
+            }
+            else
+            {
+                // A person should only have one Mobile Phone Number, and no more than one phone with Messaging enabled. (Rock enforces that in the Person Profile UI)
+                // So, if they already have a Messaging Enabled Mobile Number, change it to the new linked number
+                existingPersonMobilePhoneNumber.Number = namelessPersonMobilePhoneNumberNumber;
+                existingPersonMobilePhoneNumber.IsMessagingEnabled = true;
+            }
+
+            // ensure they only have one SMS Number
+            var otherSMSPhones = existingPerson.PhoneNumbers.Where( a => a != existingPersonMobilePhoneNumber && a.IsMessagingEnabled == true ).ToList();
+            foreach ( var otherSMSPhone in otherSMSPhones )
+            {
+                otherSMSPhone.IsMessagingEnabled = false;
+            }
+
+            this.Context.SaveChanges();
+
+            DoNamelessPersonToOtherPersonMerge( namelessPerson, existingPerson );
+        }
+
+        /// <summary>
+        /// Merges the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/>) to new person (and new Family) and saves changes to the database
+        /// </summary>
+        /// <param name="newPerson">The new person.</param>
+        /// <param name="newPersonGroupRoleId">The new person group role identifier.</param>
+        /// <param name="namelessPerson">The nameless person.</param>
+        public void MergeNamelessPersonToNewPerson( Person newPerson, int newPersonGroupRoleId, Person namelessPerson )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            newPerson.PhoneNumbers = new List<PhoneNumber>();
+
+            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+
+            // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+            var newPersonMobilePhoneNumber = new PhoneNumber
+            {
+                NumberTypeValueId = mobilePhoneTypeId,
+                IsMessagingEnabled = true,
+                Number = namelessPersonMobilePhoneNumberNumber
+            };
+
+            newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+
+            var groupMember = new GroupMember();
+            groupMember.GroupRoleId = newPersonGroupRoleId;
+            groupMember.Person = newPerson;
+
+            var groupMembers = new List<GroupMember>();
+            groupMembers.Add( groupMember );
+
+            var rockContext = this.Context as RockContext;
+
+            Group group = GroupService.SaveNewFamily( rockContext, groupMembers, null, true );
+
+            DoNamelessPersonToOtherPersonMerge( namelessPerson, newPerson );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Does the actual merge of the nameless person (see <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/>) to a target person.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="targetPerson">The target person.</param>
+        private void DoNamelessPersonToOtherPersonMerge( Person namelessPerson, Person targetPerson )
+        {
+            int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            var namelessPersonMobilePhoneNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
+            var phoneNumberService = new PhoneNumberService( this.Context as RockContext );
+
+            if ( namelessPersonMobilePhoneNumber != null )
+            {
+                phoneNumberService.Delete( namelessPersonMobilePhoneNumber );
+            }
+
+            this.Context.SaveChanges();
+
+            // Run merge proc to merge all associated data
+            var parms = new Dictionary<string, object>();
+            parms.Add( "OldId", namelessPerson.Id );
+            parms.Add( "NewId", targetPerson.Id );
+            DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
         }
 
         #endregion
@@ -3769,10 +3880,8 @@ FROM (
             ,gm.GroupId
         ) pf
     WHERE (
-            p.PrimaryFamilyId IS NULL
-            OR p.PrimaryCampusId IS NULL
-            OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
-            OR (p.PrimaryCampusId != pf.CalculatedPrimaryCampusId)
+            (ISNULL(p.PrimaryFamilyId, 0) != ISNULL(pf.CalculatedPrimaryFamilyId, 0))
+            OR (ISNULL(p.PrimaryCampusId, 0) != ISNULL(pf.CalculatedPrimaryCampusId, 0))
             )" );
 
             if ( personId.HasValue )
