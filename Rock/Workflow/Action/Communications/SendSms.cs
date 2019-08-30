@@ -188,25 +188,10 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            // Get the message
-            string message = GetAttributeValue( action, "Message" );
-            Guid? messageGuid = message.AsGuidOrNull();
-            if ( messageGuid.HasValue )
-            {
-                var attribute = AttributeCache.Get( messageGuid.Value, rockContext );
-                if ( attribute != null )
-                {
-                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid.Value );
-                    if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
-                    {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
-                            attribute.FieldType.Class == "Rock.Field.Types.MemoFieldType" )
-                        {
-                            message = messageAttributeValue;
-                        }
-                    }
-                }
-            }
+            // Get the message from the Message attribute.
+            // NOTE: Passing 'true' as the checkWorkflowAttributeValue will also check the workflow AttributeValue
+            // which allows us to remove the unneeded code.
+            string message = GetAttributeValue( action, "Message", checkWorkflowAttributeValue: true );
 
             // Add the attachment (if one was specified)
             var binaryFile = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
@@ -227,6 +212,10 @@ namespace Rock.Workflow.Action
                 }
 
                 smsMessage.Send();
+            }
+            else
+            {
+                action.AddLogEntry( "Warning: No text or attachment was supplied so nothing was sent.", true );
             }
 
             return true;
