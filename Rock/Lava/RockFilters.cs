@@ -3991,7 +3991,7 @@ namespace Rock.Lava
 
             // Append following information
             var currentPerson = GetCurrentPerson( context );
-            if ( appendFollowing == true && persistedDataset.EntityTypeId.HasValue && currentPerson != null )
+            if ( appendFollowing == true && persistedDataset.EntityTypeId.HasValue )
             {
                 List<int> entityIdList = new List<int>();
                 if ( isCollection )
@@ -4010,16 +4010,29 @@ namespace Rock.Lava
                     }
                 }
 
-                var rockContext = new RockContext();
-                var followedEntityIds = new FollowingService( rockContext ).Queryable()
+                List<int> followedEntityIds;
+
+                if ( currentPerson != null )
+                {
+                    var rockContext = new RockContext();
+                    followedEntityIds = new FollowingService( rockContext ).Queryable()
                                             .Where( a => a.PersonAlias.PersonId == currentPerson.Id
                                                 && a.EntityTypeId == persistedDataset.EntityTypeId.Value
                                                 && entityIdList.Contains( a.EntityId ) )
                                             .Select( a => a.EntityId ).ToList();
+                }
+                else
+                {
+                    followedEntityIds = new List<int>();
+                }
 
                 // Append new following properties if collection
                 if ( isCollection )
                 {
+                    resultDataObject = ( ( IEnumerable ) resultDataObject ).Cast<System.Dynamic.ExpandoObject>()
+                        .Select( a => a.ShallowCopy() )
+                        .ToList();
+
                     foreach ( dynamic result in ( IEnumerable ) resultDataObject )
                     {
                         int? entityId = (int?) result.Id;
@@ -4034,6 +4047,7 @@ namespace Rock.Lava
                 }
                 else
                 {
+                    resultDataObject = ( ( System.Dynamic.ExpandoObject ) resultDataObject ).ShallowCopy();
                     int? entityId = ( int? ) resultDataObject.Id;
 
                     if ( entityId.HasValue )

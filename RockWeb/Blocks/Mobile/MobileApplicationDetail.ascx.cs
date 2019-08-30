@@ -784,7 +784,12 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
+                //
+                // Save the API Key.
+                //
+                additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, tbEditApiKey.Text, string.Format( "mobile_application_{0}", site.Id ), rockContext );
                 site.AdditionalSettings = additionalSettings.ToJson();
+
                 rockContext.SaveChanges();
             }
 
