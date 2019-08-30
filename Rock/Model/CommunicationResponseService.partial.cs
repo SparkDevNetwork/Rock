@@ -76,17 +76,23 @@ namespace Rock.Model
             var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
 
             IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
-                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime );
+                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime && r.FromPersonAliasId.HasValue );
 
             if ( !showReadMessages )
             {
                 communicationResponseQuery = communicationResponseQuery.Where( r => r.IsRead == false );
             }
 
-            IQueryable<CommunicationResponse> mostRecentCommunicationResponseQuery = communicationResponseQuery
-                .GroupBy( r => r.FromPersonAlias.PersonId )
-                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.CreatedDateTime );
+            var personAliasQuery = new PersonAliasService( this.Context as RockContext ).Queryable();
+
+            var communicationResponseJoinQuery = from cr in communicationResponseQuery
+                                                 join pa in personAliasQuery on cr.FromPersonAliasId equals pa.Id
+                                                 select new { cr, pa };
+
+            IQueryable<CommunicationResponse> mostRecentCommunicationResponseQuery = communicationResponseJoinQuery
+                .GroupBy( r => r.pa.PersonId )
+                .Select( a => a.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
 
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime );
@@ -96,11 +102,11 @@ namespace Rock.Model
                 .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
                 .OrderByDescending( a => a.CreatedDateTime );
 
-            var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.AsNoTracking().Take( maxCount ).ToList();
+            var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.Include( a => a.FromPersonAlias.Person ).AsNoTracking().Take( maxCount ).ToList();
 
             List<CommunicationRecipientResponse> communicationRecipientResponseList = new List<CommunicationRecipientResponse>();
 
-            foreach (var mostRecentCommunicationResponse in mostRecentCommunicationResponseList )
+            foreach ( var mostRecentCommunicationResponse in mostRecentCommunicationResponseList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
@@ -116,7 +122,7 @@ namespace Rock.Model
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount).Select( a => new
+            var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).Select( a => new
             {
                 a.CreatedDateTime,
                 a.PersonAlias.Person,
@@ -132,7 +138,7 @@ namespace Rock.Model
                     PersonId = mostRecentCommunicationRecipient?.Person.Id,
                     FullName = mostRecentCommunicationRecipient?.Person.FullName,
                     IsRead = true,
-                    MessageKey =  "Is this needed?", // mostRecentCommunicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
+                    MessageKey = "Is this needed?", // mostRecentCommunicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
                     SMSMessage = mostRecentCommunicationRecipient.SentMessage
                 };
@@ -143,7 +149,7 @@ namespace Rock.Model
             communicationRecipientResponseList = communicationRecipientResponseList
                 .GroupBy( r => r.PersonId )
                 .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.CreatedDateTime ).Take( maxCount). ToList();
+                .OrderByDescending( a => a.CreatedDateTime ).Take( maxCount ).ToList();
 
 
             return communicationRecipientResponseList;
@@ -180,7 +186,7 @@ namespace Rock.Model
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.PersonAliasId == personAliasId );
 
-            var communicationRecipientList = communicationRecipientQuery.Include(a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
+            var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
             {
                 a.CreatedDateTime,
                 a.PersonAlias.Person,
@@ -196,7 +202,7 @@ namespace Rock.Model
                     PersonId = communicationRecipient.Person.Id,
                     FullName = communicationRecipient.Person.FullName,
                     IsRead = true,
-                    MessageKey = communicationRecipient?.Person.PhoneNumbers.FirstOrDefault(a => a.IsMessagingEnabled)?.Number,
+                    MessageKey = communicationRecipient?.Person.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled )?.Number,
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage
                 };
@@ -219,7 +225,7 @@ namespace Rock.Model
             this.Context.BulkUpdate( communicationResponsesToUpdate, a => new CommunicationResponse { IsRead = true } );
         }
 
-        [Obsolete("ToDo")]
+        [Obsolete( "ToDo" )]
         public IQueryable<CommunicationResponse> GetCommunicationResponseConversation( int personAliasId, int relatedSmsFromDefinedValueId )
         {
             return null;
@@ -311,7 +317,7 @@ namespace Rock.Model
             return set;
         }
 
-        
+
 
         /// <summary>
         /// Updates the IsRead property of SMS Responses sent from the provided MessageKey to the SMSPhone number stored in SmsFromDefinedValue.

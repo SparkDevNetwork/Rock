@@ -92,6 +92,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            newPersonEditor.ShowEmail = false;
+
             HtmlMeta preventPhoneMetaTag = new HtmlMeta
             {
                 Name = "format-detection",
@@ -446,6 +448,8 @@ namespace RockWeb.Blocks.Communication
         protected void lbLinkConversation_Click( object sender, EventArgs e )
         {
             mdLinkToPerson.Title = string.Format("Link Phone Number {0} to Person ", PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), hfSelectedMessageKey.Value, false) );
+            ppPerson.SetValue( null );
+            newPersonEditor.SetFromPerson( null );
             mdLinkToPerson.Show();
         }
 
@@ -682,17 +686,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdLinkToPerson_SaveClick( object sender, EventArgs e )
         {
-            // Do some validation on entering a new person/family first
-            if ( pnlLinkToNewPerson.Visible )
-            {
-                if (!newPersonEditor.IsValid())
-                {
-                    nbAddPerson.Text = "<ul><li>" + newPersonEditor.ValidationResults.ToList().AsDelimited( "</li><li>" ) + "</li></lu>";
-                    nbAddPerson.Visible = true;
-                    return;
-                }
-            }
-
             using ( var rockContext = new RockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
@@ -730,7 +723,7 @@ namespace RockWeb.Blocks.Communication
                     var newPerson = new Person();
 
                     newPersonEditor.UpdatePerson( newPerson );
-                    personService.MergeNamelessPersonToNewPerson( namelessPerson, newPersonEditor.PersonGroupRoleId, newPerson );
+                    personService.MergeNamelessPersonToNewPerson( namelessPerson, newPerson, newPersonEditor.PersonGroupRoleId );
                     rockContext.SaveChanges();
 
                     hfSelectedRecipientPersonAliasId.Value = newPerson.PrimaryAliasId.ToString();

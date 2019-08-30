@@ -46,7 +46,7 @@ namespace Rock.Workflow.Action
     [BooleanField( name: "Save Communication History", description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.", defaultValue: false, category: "", order: 4, key: "SaveCommunicationHistory" )]
     public class SendSms : ActionComponent
     {
-        /// <summary>
+        /// <summary> 
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
