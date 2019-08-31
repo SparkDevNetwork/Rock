@@ -21,7 +21,9 @@ DECLARE @recipientPersonAliasId INT
 	,@futureSendDateTime DATETIME
 	,@communicationSubject NVARCHAR(max)
 	,@communicationId INT
-	,@mediumId INT
+	,@mediumEntityTypeId INT
+    ,@mediumEntityTypeName NVARCHAR(max)
+    ,@transportEntityTypeId int
 	,@yearsBack INT = 4
 	,@isbulk BIT
 	,@communicationStatus INT = 0
@@ -30,8 +32,6 @@ DECLARE @recipientPersonAliasId INT
 
 declare
     @relatedSmsFromDefinedValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @smsNumbersDefinedTypeId)
-	,@relatedTransportEntityTypeId int = (select top 1 Id from EntityType where [Guid]= 'CF9FD146-8623-4D9A-98E6-4BD710F071A4')
-	,@relatedMediumEntityTypeId int = (select top 1 Id from EntityType where [Guid] = '4BC02764-512A-4A10-ACDE-586F71D8A8BD')
 
 DECLARE @daysBack INT = @yearsBack * 366
 
@@ -41,7 +41,9 @@ BEGIN
  delete [CommunicationRecipient]
  delete [Communication]
 */
-	SET @communicationDateTime = DATEADD(DAY, - @daysBack, SYSDATETIME())
+	
+    
+    SET @communicationDateTime = DATEADD(DAY, - @daysBack, SYSDATETIME())
 
 	WHILE @communicationCounter < @maxCommunicationCount
 	BEGIN
@@ -91,10 +93,22 @@ BEGIN
 
 		SET @communicationStatus = ROUND(5 * RAND(), 0)
 
-		SELECT TOP 1 @mediumId = id
-		FROM EntityType
+		SELECT TOP 1 @mediumEntityTypeId = id, @mediumEntityTypeName = et.Name
+		FROM EntityType et
 		WHERE Name LIKE 'Rock.Communication.Medium%'
 		ORDER BY newid()
+
+        if (@mediumEntityTypeName like '%.Sms') begin
+            SELECT TOP 1 @transportEntityTypeId = id
+		    FROM EntityType
+		    WHERE Name LIKE 'Rock.Communication.Transport.Twilio'
+		    ORDER BY newid()
+        end else begin
+            SELECT TOP 1 @transportEntityTypeId = id
+		    FROM EntityType
+		    WHERE Name LIKE 'Rock.Communication.Transport%'
+		    ORDER BY newid()
+        end
 
 		-- generate a bulk about 1/20th of the time
 		SELECT @isbulk = CASE CAST(ROUND(RAND() * 20, 0) AS BIT)
@@ -120,6 +134,7 @@ BEGIN
 			,[SenderPersonAliasId]
 			,[ReviewerPersonAliasId]
 			,[MediumDataJson]
+            ,[SMSFromDefinedValueId]
 			)
 		VALUES (
 			@communicationSubject
@@ -138,6 +153,7 @@ BEGIN
 			,@senderPersonAliasId
 			,NULL
 			,NULL
+            ,@relatedSmsFromDefinedValueId
 			)
 
 		SET @communicationId = SCOPE_IDENTITY()
@@ -161,6 +177,7 @@ BEGIN
 				,[UniqueMessageId]
 				,[ResponseCode]
 				,[PersonAliasId]
+                ,[MediumEntityTypeId]
 				)
 			VALUES (
 				@communicationId
@@ -179,6 +196,7 @@ BEGIN
 				,NULL
 				,NULL
 				,@recipientPersonAliasId
+                ,@mediumEntityTypeId
 				)
 		END
 		ELSE
@@ -249,8 +267,8 @@ BEGIN
 			,@senderPersonAliasId
 			,0
 			,@relatedSmsFromDefinedValueId
-			,@relatedTransportEntityTypeId
-			,@relatedMediumEntityTypeId
+			,@transportEntityTypeId
+			,@mediumEntityTypeId
 			,CONCAT (
 				'Some Message'
 				,rand()
