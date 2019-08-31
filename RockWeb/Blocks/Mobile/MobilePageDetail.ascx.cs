@@ -614,7 +614,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
 
             //
             // Set the basic fields of the page.
@@ -672,7 +672,7 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
 
             page.InternalName = tbInternalName.Text;
@@ -681,7 +681,7 @@ namespace RockWeb.Blocks.Mobile
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
-            page.HeaderContent = additionalSettings.ToJson();
+            page.AdditionalSettings = additionalSettings.ToJson();
             int? oldIconId = null;
             if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
             {
