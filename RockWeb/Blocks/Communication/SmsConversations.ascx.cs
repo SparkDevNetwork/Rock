@@ -35,53 +35,76 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "SMS Conversations" )]
     [Category( "Communication" )]
     [Description( "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
-    [DefinedValueField( definedTypeGuid: Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
-        name: "Allowed SMS Numbers",
-        description: "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
-        required: false,
-        allowMultiple: true,
-        order: 1,
-        key: "AllowedSMSNumbers" )]
-    [BooleanField( "Show only personal SMS number",
-        description: "Only SMS Numbers tied to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
-        defaultValue: false,
-        order: 2,
-        key: "ShowOnlyPersonalSmsNumber" )]
-    [BooleanField( "Hide personal SMS numbers",
-        description: "Only SMS Numbers that are not associated with a person. The numbers without a 'ResponseRecipient' attribute value.",
-        defaultValue: false,
-        order: 3,
-        key: "HidePersonalSmsNumbers" )]
-    [BooleanField( "Enable SMS Send",
-        description: "Allow SMS messages to be sent from the block.",
-        defaultValue: true,
-        order: 4,
-        key: "EnableSmsSend" )]
-    [IntegerField( name: "Show Conversations From Months Ago",
-        description: "Limits the conversations shown in the left pane to those of X months ago or newer. This does not affect the actual messages shown on the right.",
-        defaultValue: 6,
-        order: 5,
-        key: "ShowConversationsFromMonthsAgo" )]
+    [DefinedValueField( "Allowed SMS Numbers",
+        Key = AttributeKey.AllowedSMSNumbers,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
+        Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 1 )]
 
-    [IntegerField( name: "Max Conversations",
-        description: "Limits the number of conversations shown in the left pane. This does not affect the actual messages shown on the right.",
-        defaultValue: 100,
-        order: 5,
-        key: "MaxConversations" )]
+    [BooleanField( "Show only personal SMS number",
+        Key = AttributeKey.ShowOnlyPersonalSmsNumber,
+        Description = "Only SMS Numbers tied to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
+        DefaultBooleanValue = false,
+        Order = 2
+         )]
+    [BooleanField( "Hide personal SMS numbers",
+        Key = AttributeKey.HidePersonalSmsNumbers,
+        Description = "Only SMS Numbers that are not associated with a person. The numbers without a 'ResponseRecipient' attribute value.",
+        DefaultBooleanValue = false,
+        Order = 3
+         )]
+    [BooleanField( "Enable SMS Send",
+        Key = AttributeKey.EnableSmsSend,
+        Description = "Allow SMS messages to be sent from the block.",
+        DefaultBooleanValue = true,
+        Order = 4
+         )]
+
+    [IntegerField( "Show Conversations From Months Ago",
+        Key = AttributeKey.ShowConversationsFromMonthsAgo,
+        Description = "Limits the conversations shown in the left pane to those of X months ago or newer. This does not affect the actual messages shown on the right.",
+        DefaultIntegerValue = 6,
+        Order = 5
+         )]
+
+    [IntegerField( "Max Conversations",
+        Key = AttributeKey.MaxConversations,
+        Description = "Limits the number of conversations shown in the left pane. This does not affect the actual messages shown on the right.",
+        DefaultIntegerValue = 100,
+        Order = 5
+         )]
 
     [CodeEditorField( "Person Info Lava Template",
-        description: "A Lava template to display person information about the selected Communication Recipient.",
-        defaultValue: "{{ Person.FullName }}",
-        mode: CodeEditorMode.Lava,
-        theme: CodeEditorTheme.Rock,
-        height: 300,
-        required: false,
-        order: 6,
-        key: "PersonInfoLavaTemplate" )]
+        Key = AttributeKey.PersonInfoLavaTemplate,
+        Description = "A Lava template to display person information about the selected Communication Recipient.",
+        DefaultValue = "{{ Person.FullName }}",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 6
+         )]
 
     // Start here to build the person description lit field after selecting recipient.
     public partial class SmsConversations : RockBlock
     {
+
+        #region Attribute Keys
+        protected static class AttributeKey
+        {
+            public const string AllowedSMSNumbers = "AllowedSMSNumbers";
+            public const string ShowOnlyPersonalSmsNumber = "ShowOnlyPersonalSmsNumber";
+            public const string HidePersonalSmsNumbers = "HidePersonalSmsNumbers";
+            public const string EnableSmsSend = "EnableSmsSend";
+            public const string ShowConversationsFromMonthsAgo = "ShowConversationsFromMonthsAgo";
+            public const string MaxConversations = "MaxConversations";
+            public const string PersonInfoLavaTemplate = "PersonInfoLavaTemplate";
+        }
+
+        #endregion Attribute Keys
+
         #region Control Overrides
 
         /// <summary>
@@ -104,7 +127,7 @@ namespace RockWeb.Blocks.Communication
 
             this.BlockUpdated += Block_BlockUpdated;
 
-            btnCreateNewMessage.Visible = this.GetAttributeValue( "EnableSmsSend" ).AsBoolean();
+            btnCreateNewMessage.Visible = this.GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean();
         }
 
         /// <summary>
@@ -148,20 +171,20 @@ namespace RockWeb.Blocks.Communication
             // First load up all of the available numbers
             var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues;
 
-            var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )
             {
                 smsNumbers = smsNumbers.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
             }
 
             // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
-            if ( GetAttributeValue( "HidePersonalSmsNumbers" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
             {
                 smsNumbers = smsNumbers.Where( v => v.GetAttributeValue( "ResponseRecipient" ).IsNullOrWhiteSpace() ).ToList();
             }
 
             // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
-            if ( GetAttributeValue( "ShowOnlyPersonalSmsNumber" ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 smsNumbers = smsNumbers.Where( v => CurrentPerson.Aliases.Any( a => a.Guid == v.GetAttributeValue( "ResponseRecipient" ).AsGuid() ) ).ToList();
             }
@@ -235,12 +258,12 @@ namespace RockWeb.Blocks.Communication
             {
                 var communicationResponseService = new CommunicationResponseService( rockContext );
 
-                int months = GetAttributeValue( "ShowConversationsFromMonthsAgo" ).AsInteger();
+                int months = GetAttributeValue( AttributeKey.ShowConversationsFromMonthsAgo ).AsInteger();
 
                 var startDateTime = RockDateTime.Now.AddMonths( -months );
                 bool showRead = tglShowRead.Checked;
 
-                var maxConversations = this.GetAttributeValue( "MaxConversations" ).AsIntegerOrNull() ?? 1000;
+                var maxConversations = this.GetAttributeValue( AttributeKey.MaxConversations ).AsIntegerOrNull() ?? 1000;
 
                 var responseListItems = communicationResponseService.GetCommunicationResponseRecipients( smsPhoneDefinedValueId.Value, startDateTime, showRead, maxConversations );
 
@@ -325,7 +348,7 @@ namespace RockWeb.Blocks.Communication
             var lblName = ( Label ) e.Row.FindControl( "lblName" );
             string html = lblName.Text;
             string unknownPerson = " (Unknown Person)";
-            var lava = GetAttributeValue( "PersonInfoLavaTemplate" );
+            var lava = GetAttributeValue( AttributeKey.PersonInfoLavaTemplate );
 
             if ( !recipientPersonAliasId.HasValue || recipientPersonAliasId.Value == -1 )
             {
@@ -447,7 +470,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLinkConversation_Click( object sender, EventArgs e )
         {
-            mdLinkToPerson.Title = string.Format("Link Phone Number {0} to Person ", PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), hfSelectedMessageKey.Value, false) );
+            mdLinkToPerson.Title = string.Format( "Link Phone Number {0} to Person ", PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), hfSelectedMessageKey.Value, false ) );
             ppPerson.SetValue( null );
             newPersonEditor.SetFromPerson( null );
             mdLinkToPerson.Show();
@@ -645,7 +668,15 @@ namespace RockWeb.Blocks.Communication
             var responseListItem = e.Row.DataItem as CommunicationRecipientResponse;
             hfRecipientPersonAliasId.Value = responseListItem.RecipientPersonAliasId.ToString();
             hfMessageKey.Value = responseListItem.MessageKey;
-            lblName.Text = string.Format( "{0} ({1})", responseListItem.FullName, responseListItem.MessageKey );
+            if ( responseListItem.IsNamelessPerson )
+            {
+                lblName.Text = PhoneNumber.FormattedNumber( null, responseListItem.MessageKey );
+            }
+            else
+            {
+                lblName.Text = responseListItem.FullName;
+            }
+
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
             litMessagePart.Text = responseListItem.SMSMessage;
 
