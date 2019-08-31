@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
@@ -88,8 +89,15 @@ namespace RockWeb.Blocks.Mobile
             if ( !IsPostBack )
             {
                 int pageId = PageParameter( "Page" ).AsInteger();
+                int siteId = PageParameter( "SiteId" ).AsInteger();
 
                 BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+
+                // Load page picker
+                if ( siteId != 0 )
+                {
+                    LoadPagePicker( siteId );
+                }
 
                 if ( pageId != 0 )
                 {
@@ -462,6 +470,23 @@ namespace RockWeb.Blocks.Mobile
             return true;
         }
 
+        private void LoadPagePicker( int siteId )
+        {
+            var pageList = PageCache.All().Where( p => p.SiteId == siteId )
+                            .OrderBy( p => p.ParentPageId )
+                            .ThenBy( p => p.Order )
+                            .Select( p => new
+                            {
+                                p.Id,
+                                Name = p.InternalName
+                            });
+
+            ddlPageList.DataSource = pageList;
+            ddlPageList.DataValueField = "Id";
+            ddlPageList.DataTextField = "Name";
+            ddlPageList.DataBind();
+        }
+
         /// <summary>
         /// Shows the detail information on the page.
         /// </summary>
@@ -486,11 +511,25 @@ namespace RockWeb.Blocks.Mobile
             }
 
             //
+            // Configure Copy Page Guid
+            //
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format( @"
+    new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+
+            btnCopyToClipboard.Attributes["data-clipboard-text"] = page.Guid.ToString();
+
+            ddlPageList.SelectedValue = page.Id.ToString();
+
+            //
             // Ensure user has access to view this page.
             //
             if ( !page.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlDetails.Visible = false;
                 pnlBlocks.Visible = false;
@@ -503,7 +542,6 @@ namespace RockWeb.Blocks.Mobile
             //
             hfPageId.Value = page.Id.ToString();
             lPageName.Text = page.InternalName;
-            lPageGuid.Text = "Page Guid: " + page.Guid.ToString();
 
             var fields = new List<KeyValuePair<string, string>>();
 
@@ -596,7 +634,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( page == null )
             {
-                page = new Page
+                page = new Rock.Model.Page
                 {
                     DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
                 };
@@ -607,7 +645,7 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( !page.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlEditPage.Visible = false;
 
@@ -661,7 +699,7 @@ namespace RockWeb.Blocks.Mobile
             var page = pageService.Get( PageParameter( "Page" ).AsInteger() );
             if ( page == null )
             {
-                page = new Page();
+                page = new Rock.Model.Page();
                 pageService.Add( page );
 
                 var order = pageService.GetByParentPageId( parentPageId )
@@ -944,6 +982,15 @@ namespace RockWeb.Blocks.Mobile
         protected void ddlBlockTypeCategory_SelectedIndexChanged( object sender, EventArgs e )
         {
             BindBlockTypeRepeater();
+        }
+
+        protected void ddlPageList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var queryString = new Dictionary<string, string>();
+            queryString.Add( "SiteId", PageParameter( "SiteId" ) );
+            queryString.Add( "Page", ddlPageList.SelectedValue );
+
+            NavigateToCurrentPage( queryString );
         }
 
         #endregion
