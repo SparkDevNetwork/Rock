@@ -31,8 +31,8 @@
                     <asp:Literal ID="ltAppName" runat="server" />
 
                     <div class="panel-labels">
-                        <asp:Literal ID="lLastDeployDate" runat="server" />
                         <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
+                        <asp:Literal ID="lLastDeployDate" runat="server" />
                     </div>
                 </h3>
             </div>
