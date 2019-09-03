@@ -541,6 +541,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Email Analytics page guid
         /// </summary>
+        [RockObsolete("1.10")]
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
