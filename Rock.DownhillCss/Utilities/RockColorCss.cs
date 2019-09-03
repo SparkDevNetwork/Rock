@@ -26,7 +26,7 @@ using System.Text.RegularExpressions;
 // in the v1.x.x code. Once we move to v2.x.x we should remove this class and rely instead on the color class
 // in Rock.Common. There is a temporary set of extension methods that are needed for this class. These too should be removed.
 
-namespace Rock.Utility
+namespace Rock.DownhillCss.Utility
 {
     /// <summary>
     /// A utility class for color manipulations
@@ -319,10 +319,10 @@ namespace Rock.Utility
                 var parts = color.Split( ',' );
                 if ( parts.Length == 4 )
                 {
-                    this.R = parts[0].Trim().AsDouble();
-                    this.G = parts[1].Trim().AsDouble();
-                    this.B = parts[2].Trim().AsDouble();
-                    this.Alpha = parts[3].Trim().AsDouble();
+                    this.R = parts[0].Trim().AsDoubleForColor();
+                    this.G = parts[1].Trim().AsDoubleForColor();
+                    this.B = parts[2].Trim().AsDoubleForColor();
+                    this.Alpha = parts[3].Trim().AsDoubleForColor();
                 }
             }
 
@@ -334,9 +334,9 @@ namespace Rock.Utility
                 var parts = color.Split( ',' );
                 if ( parts.Length == 3 )
                 {
-                    this.R = parts[0].Trim().AsDouble();
-                    this.G = parts[1].Trim().AsDouble();
-                    this.B = parts[2].Trim().AsDouble();
+                    this.R = parts[0].Trim().AsDoubleForColor();
+                    this.G = parts[1].Trim().AsDoubleForColor();
+                    this.B = parts[2].Trim().AsDoubleForColor();
                 }
             }
 
@@ -946,7 +946,7 @@ namespace Rock.Utility
         /// <returns></returns>
         private string GetHexString( IEnumerable<int> rgb )
         {
-            return '#' + rgb.Select( i => i.ToString( "x2" ) ).JoinStrings( "" );
+            return '#' + rgb.Select( i => i.ToString( "x2" ) ).JoinStringsForColor( "" );
         }
 
         /// <summary>
@@ -1038,9 +1038,9 @@ namespace Rock.Utility
     // These extension methods are needed by RockColor and are duplicated here until we can provide a dependency to Rock.Common
     public static partial class TempExtensionMethods
     {
-        public static double AsDouble( this string str )
+        public static double AsDoubleForColor( this string str )
         {
-            return str.AsDoubleOrNull() ?? 0;
+            return str.AsDoubleOrNullForColor() ?? 0;
         }
 
         /// <summary>
@@ -1048,7 +1048,7 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static double? AsDoubleOrNull( this string str )
+        public static double? AsDoubleOrNullForColor( this string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -1067,7 +1067,7 @@ namespace Rock.Utility
             }
         }
 
-        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        public static string JoinStringsForColor( this IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
         }
