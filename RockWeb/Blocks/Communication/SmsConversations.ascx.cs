@@ -313,29 +313,6 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Humanizes the date time to relative if not on the same day and short time if it is.
-        /// </summary>
-        /// <param name="dateTime">The date time.</param>
-        /// <returns></returns>
-        private string HumanizeDateTime( DateTime? dateTime )
-        {
-            if ( dateTime == null )
-            {
-                return string.Empty;
-            }
-
-            DateTime dtCompare = RockDateTime.Now;
-
-            if ( dtCompare.Date == dateTime.Value.Date )
-            {
-                return dateTime.Value.ToShortTimeString();
-            }
-
-            // Method Name "Truncate" collision between Humanizer and Rock ExtensionMethods so have to call as a static with full name.
-            return Humanizer.DateHumanizeExtensions.Humanize( dateTime, true, dtCompare, null );
-        }
-
-        /// <summary>
         /// Populates the person lava.
         /// </summary>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
@@ -694,14 +671,36 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptConversation_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            CommunicationRecipientResponse communicationRecipientResponse = e.Item.DataItem as CommunicationRecipientResponse;
+
+            if ( communicationRecipientResponse != null )
             {
-                var messageKey = ( HiddenFieldWithClass ) e.Item.FindControl( "hfCommunicationMessageKey" );
-                if ( messageKey.Value != string.Empty )
+                var hfCommunicationRecipientId = ( HiddenFieldWithClass ) e.Item.FindControl( "hfCommunicationRecipientId" );
+                hfCommunicationRecipientId.Value = communicationRecipientResponse.RecipientPersonAliasId.ToString();
+
+                var hfCommunicationMessageKey = ( HiddenFieldWithClass ) e.Item.FindControl( "hfCommunicationMessageKey" );
+                hfCommunicationMessageKey.Value = communicationRecipientResponse.MessageKey;
+
+                var lSMSMessage = ( Literal ) e.Item.FindControl( "lSMSMessage" );
+                lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
+
+                var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
+                lSenderName.Text = communicationRecipientResponse.FullName;
+
+                var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
+                lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
+                lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
+                var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
+
+                if ( communicationRecipientResponse.MessageKey.IsNotNullOrWhiteSpace() )
                 {
-                    var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
                     divCommunication.RemoveCssClass( "outbound" );
                     divCommunication.AddCssClass( "inbound" );
+                }
+                else
+                {
+                    divCommunication.RemoveCssClass( "inbound" );
+                    divCommunication.AddCssClass( "outbound" );
                 }
             }
         }
