@@ -3991,7 +3991,7 @@ namespace Rock.Lava
 
             // Append following information
             var currentPerson = GetCurrentPerson( context );
-            if ( appendFollowing == true && persistedDataset.EntityTypeId.HasValue && currentPerson != null )
+            if ( appendFollowing == true && persistedDataset.EntityTypeId.HasValue )
             {
                 List<int> entityIdList = new List<int>();
                 if ( isCollection )
