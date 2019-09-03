@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Rock.Utility;
+using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {
