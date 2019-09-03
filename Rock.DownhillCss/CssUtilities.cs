@@ -116,9 +116,21 @@ namespace Rock.DownhillCss
                 // Text
                 cssStyles = cssStyles.Replace( $"?color-{colorProperty.Name.ToLower()}-text", MixThemeColor( value, 6 ) );
 
-
                 var selector = $"?color-{colorProperty.Name.ToLower()}";
                 cssStyles = cssStyles.Replace( selector, value );
+
+                // If warning then also make a set for validation
+                if ( colorProperty.Name == "Warning" )
+                {
+                    // Background
+                    cssStyles = cssStyles.Replace( $"?color-validation-background", MixThemeColor( value, -10 ) );
+
+                    // Border
+                    cssStyles = cssStyles.Replace( $"?color-validation-border", MixThemeColor( value, -9 ) );
+
+                    // Text
+                    cssStyles = cssStyles.Replace( $"?color-validation-text", MixThemeColor( value, 6 ) );
+                }
             }
 
             // Replace palatte colors
