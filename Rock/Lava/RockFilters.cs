@@ -3691,6 +3691,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Xamls the wrap.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string XamlWrap( string input )
+        {
+            if ( input.IsNullOrWhiteSpace() )
+            {
+                return input;
+            }
+
+            return string.Format( "<![CDATA[{0}]]", input );
+        }
+
+        /// <summary>
         /// Redirects the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
