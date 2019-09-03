@@ -40,12 +40,16 @@
             <div class="panel-body">
                 <asp:Panel ID="pnlContent" runat="server">
                     <asp:HiddenField ID="hfSiteId" runat="server" />
+                    <asp:HiddenField ID="hfCurrentTab" runat="server" />
 
                     <div class="row">
                         <div class="col-md-6 col-lg-8">
                             <ul class="nav nav-tabs margin-b-lg">
                                 <li id="liTabApplication" runat="server">
                                     <asp:LinkButton ID="lbTabApplication" runat="server" OnClick="lbTabApplication_Click">Application</asp:LinkButton>
+                                </li>
+                                <li id="liTabStyles" runat="server">
+                                    <asp:LinkButton ID="lbTabStyles" runat="server" OnClick="lbTabStyles_Click">Styles</asp:LinkButton>
                                 </li>
                                 <li id="liTabLayouts" runat="server">
                                     <asp:LinkButton ID="lbTabLayouts" runat="server" OnClick="lbTabLayouts_Click">Layouts</asp:LinkButton>
@@ -68,7 +72,88 @@
                                 <div class="actions margin-t-md">
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" AccessKey="m" ToolTip="Alt+m" />
                                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />
+                                    <div class="pull-right">
+                                        <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
+                                    </div>
                                 </div>
+                            </asp:Panel>
+
+                            <asp:Panel ID="pnlStyles" runat="server">
+                                <asp:HiddenField ID="hfShowAdditionalStylesFields" runat="server" />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." Enabled="false"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." Enabled="false"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." Enabled="false" />
+                                    </div>
+                                </div>
+
+                                <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        </div>
+                                    </div>
+                                </Rock:RockControlWrapper>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help="" Enabled="false"></Rock:NumberBox>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." Enabled="false" />
+                                    </div>
+                                </div>
+
+                                <div class="pull-right">
+                                    <a href="#" class="btn btn-xs btn-link js-show-additional-style-fields" >Show Additional Fields</a>
+                                </div>
+
+                                <asp:Panel ID="pnlStylesAdditionalFields" runat="server" CssClass="js-additional-style-fields" style="display:none">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base" Enabled="false"></Rock:NumberBox>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Enabled="false"></Rock:NumberBox>
+                                        </div>
+                                    </div>
+                                </asp:Panel>
+
+                                <div class="actions margin-t-md">
+                                    <asp:LinkButton ID="lbStylesEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbStylesEdit_Click" />
+                                    <asp:LinkButton ID="lbStylesEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbStylesEditSave_Click" Visible="false" />
+                                    <asp:LinkButton ID="lbStylesEditCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbStylesEditCancel_Click" CausesValidation="false" Visible="false" />
+                                </div>
+
                             </asp:Panel>
 
                             <asp:Panel ID="pnlLayouts" runat="server">
@@ -106,15 +191,6 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="actions margin-t-md">
-                        <%--<asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" AccessKey="m" ToolTip="Alt+m" />
-                        <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />--%>
-
-                        <div class="pull-right">
-                            <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
                         </div>
                     </div>
                 </asp:Panel>
@@ -174,21 +250,9 @@
                     <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout Xaml" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 
                     <div class="row">
-                        <div class="col-md-4">
-                            <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." />
-                        </div>
-                        <div class="col-md-4">
-                            <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
+                        <%--<div class="col-md-4">
                             <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
-                        </div>
+                        </div>--%>
 
                         <div class="col-md-4">
                             <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
@@ -202,5 +266,23 @@
                 </asp:Panel>
             </div>
         </asp:Panel>
+
+        <script type="text/javascript">
+            Sys.Application.add_load(function () {
+                $('.js-show-additional-style-fields').off('click').on('click', function () {
+                    var isVisible = !$('.js-additional-style-fields').is(':visible');
+                    $('#<%=hfShowAdditionalStylesFields.ClientID %>').val(isVisible);
+                    $('.js-show-additional-style-fields').text(isVisible ? 'Hide Additional Fields' : 'Show Additional Fields');
+                    $('.js-additional-style-fields').slideToggle();
+                    return false;
+                });
+
+                if ($('#<%=hfShowAdditionalStylesFields.ClientID %>').val() == "true") {
+                    $('.js-additional-style-fields').show();
+                    $('.js-show-additional-style-fields').text('Hide Additional Fields');
+                }
+            });
+
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
