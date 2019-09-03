@@ -91,35 +91,21 @@ namespace Rock.Communication.Medium
 
             using ( var rockContext = new RockContext() )
             {
+                // the person associated with the SMS Phone Defined Value
                 Person toPerson = null;
 
                 var mobilePhoneNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
                 fromPhone = fromPhone.Replace( "+", "" );
                 toPhone = toPhone.Replace( "+", "" );
 
-                // CountryCode can be NULL so we have to try and match without it
-                string fromPhoneNoCountryCode = fromPhone;
-                if ( fromPhone.Length > 10 )
-                {
-                    fromPhoneNoCountryCode = fromPhone.Right( 10 );
-                }
-
-                // Get the person who sent the message. Filter to any matching phone number, regardless
-                // of type. Then order by those with a matching number and SMS enabled; then further order
-                // by matching number with type == mobile; finally order by person Id to get the oldest
-                // person to get the oldest person in the case of duplicate records.
-                var fromPerson = new PersonService( rockContext ).Queryable(new PersonService.PersonQueryOptions { IncludeNameless = true } )
-                    .Where( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode ) )
-                    .OrderByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.IsMessagingEnabled ) )
-                    .ThenByDescending( p => p.PhoneNumbers.Any( n => ( n.Number ) == fromPhoneNoCountryCode && n.NumberTypeValueId == mobilePhoneNumberValueId ) )
-                    .ThenBy( p => p.Id )
-                    .AsNoTracking()
-                    .FirstOrDefault();
+                // Get the person who sent the message. This will always return a Person record since we want to get a nameless Person record if there isn't a regular person record found
+                var fromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( fromPhone, true );
 
                 // get recipient from defined value
                 var rockSmsFromPhoneDv = FindRockSMSPhoneDefinedValue( toPhone );
                 if ( rockSmsFromPhoneDv != null )
                 {
+                    // NOTE: As of 9.0 the SMS from number DefinedValue no longer has to have a person (toPersonAliasGuid) assigned to it.
                     var toPersonAliasGuid = rockSmsFromPhoneDv.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
                     if ( toPersonAliasGuid.HasValue )
                     {
@@ -130,12 +116,14 @@ namespace Rock.Communication.Medium
                     }
                 }
 
-                // As of 9.0 the sms from number DefinedValue no longer has to have a person (toPersonAliasGuid) assigned to it.
                 if ( rockSmsFromPhoneDv != null )
                 {
                     string plainMessage = message;
-                    if ( toPerson != null && fromPerson != null && toPerson.Id == fromPerson.Id ) // message from the medium recipient
+
+                    if ( toPerson != null && fromPerson != null && toPerson.Id == fromPerson.Id )
                     {
+                        // From and To person are the same person. For example, in an SMS Conversation, the SMS DefinedValue person replies to the conversation
+
                         // look for response code in the message
                         Match match = Regex.Match( message, @"@\d{3,5}" );
                         if ( match.Success )
@@ -157,21 +145,16 @@ namespace Rock.Communication.Medium
                             }
                         }
                     }
-                    else // response from someone other than the medium recipient
+                    else
                     {
+                        // From and To person are not same person. For example, a person sent a message to the SMS PhoneNumber (DefinedValue). 
                         string messageId = GenerateResponseCode( rockContext );
                         int? toPersonPrimaryAliasId = toPerson?.PrimaryAliasId;
 
-                        if ( fromPerson != null && fromPerson.PrimaryAliasId.HasValue )
-                        {
-                            message = $"-{fromPerson.FullName}-\n{message}\n( {messageId} )";
-                            CreateCommunication( fromPerson, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
-                        }
-                        else
-                        {
-                            message = $"-Unknown Person-\n{message}\n( {messageId} )";
-                            CreateCommunication( null, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
-                        }
+                        // NOTE: fromPerson will never be null since we would have created a Nameless Person record if there wasn't a regular person found
+                        message = $"-{fromPerson.FullName}-\n{message}\n( {messageId} )";
+                        CreateCommunication( fromPerson, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
+
                     }
                 }
                 else
@@ -215,12 +198,13 @@ namespace Rock.Communication.Medium
             // See if this should go to a phone or to the DB. Default is to the phone so if for some reason we get a null here then just send it to the phone.
             var enableResponseRecipientForwarding = rockSmsFromPhoneDv.GetAttributeValue( "EnableResponseRecipientForwarding" ).AsBooleanOrNull() ?? true;
 
+            // NOTE: FromPerson should never be null
+
             if ( enableResponseRecipientForwarding )
             {
                 CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext );
             }
 
-            // To and from person can be null and the response linked to a person later.
             CreateCommunicationResponse( fromPerson, messageKey, toPersonAliasId, plainMessage, rockSmsFromPhoneDv, responseCode, rockContext );
         }
 
@@ -231,7 +215,7 @@ namespace Rock.Communication.Medium
         /// <param name="fromPhone">From phone.</param>
         /// <param name="message">The message.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
-        /// <param name="rockSmsFromPhoneDv">The rock SMS from phone dv.</param>
+        /// <param name="rockSmsFromPhoneDv">The rock SMS from phone DefinedValue.</param>
         private void LaunchWorkflow( int? fromPersonAliasId, string fromPhone, string message, int? toPersonAliasId, DefinedValueCache rockSmsFromPhoneDv )
         {
             var workflowTypeGuid = rockSmsFromPhoneDv.GetAttributeValue( "LaunchWorkflowOnResponseReceived" );
@@ -346,7 +330,7 @@ namespace Rock.Communication.Medium
         }
 
         /// <summary>
-        /// Creates the communication to the recipent's mobile device.
+        /// Creates the communication to the recipient's mobile device.
         /// </summary>
         /// <param name="fromPerson">From person.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
@@ -356,7 +340,9 @@ namespace Rock.Communication.Medium
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCommunicationMobile( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext )
         {
+            // NOTE: fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
             string communicationName = fromPerson != null ? string.Format( "From: {0}", fromPerson.FullName ) : "From: unknown person";
+
             var communicationService = new CommunicationService( rockContext );
             var communication = communicationService.CreateSMSCommunication( fromPerson, toPersonAliasId, message, fromPhone, responseCode, communicationName );
             rockContext.SaveChanges();
@@ -391,7 +377,7 @@ namespace Rock.Communication.Medium
 
             //
             // Starting at code 100, try to generate a list of available codes in small chunks until
-            // we have a list with atleast 1 available code.
+            // we have a list with at least 1 available code.
             //
             for ( int startValue = 100; startValue < RESPONSE_CODE_MAX - chunkSize; startValue += chunkSize )
             {
@@ -466,7 +452,7 @@ namespace Rock.Communication.Medium
             var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if ( definedType != null )
             {
-                if ( definedType.DefinedValues?.Any() == true  )
+                if ( definedType.DefinedValues?.Any() == true )
                 {
                     return definedType
                         .DefinedValues

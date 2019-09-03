@@ -84,17 +84,17 @@
                                 <asp:Repeater ID="rptConversation" runat="server" OnItemDataBound="rptConversation_ItemDataBound" Visible="false">
                                     <ItemTemplate>
                                         <div class="message outbound" id="divCommunication" runat="server">
-                                            <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" Value='<%# Eval("RecipientPersonAliasId") %>' />
-                                            <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" Value='<%# Eval("MessageKey") %>' />
-                                            <div class="bubble" id="divCommunicationBody" runat="server"><%# Eval("SMSMessage") %></div>
+                                            <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
+                                            <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
                                             <div class="message-meta">
-                                                <span class="sender-name"><%# Eval("FullName") %></span>
-                                                <span class="date" title="<%# Eval("CreatedDateTime")%>"><%# Eval("HumanizedCreatedDateTime") %></span>
+                                                <span class="sender-name"><asp:Literal ID="lSenderName" runat="server" /></span>
+                                                <asp:Label ID="lblMessageDateTime" runat="server" CssClass="date" />
                                             </div>
                                         </div>
                                     </ItemTemplate>
                                     <FooterTemplate>
-                                        <asp:Label ID="lbNoConversationsFound" runat="server" Visible='<%# rptConversation.Items.Count == 0 %>' Text="<tr><td>No conversations found.</td></tr>" CssClass="text-muted" />
+                                        <asp:Label ID="lblNoConversationsFound" runat="server" Visible='<%# rptConversation.Items.Count == 0 %>' Text="<tr><td>No conversations found.</td></tr>" CssClass="text-muted" />
                                     </FooterTemplate>
                                 </asp:Repeater>
                             </div>

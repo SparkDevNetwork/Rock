@@ -112,7 +112,9 @@ namespace Rock.Communication.Transport
                             {
                                 var recipientPersonAliasId = recipient.PersonAliasId;
                                 var communicationService = new CommunicationService( rockContext );
+
                                 Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPersonAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+
                                 rockContext.SaveChanges();
                                 Send( communication, mediumEntityTypeId, mediumAttributes );
                                 continue;
