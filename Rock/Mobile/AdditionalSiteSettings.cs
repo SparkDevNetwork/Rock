@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using Rock.DownhillCss;
 using Rock.Mobile.Common.Enums;
 
 namespace Rock.Mobile
@@ -155,5 +155,13 @@ namespace Rock.Mobile
         /// The locked tablet orientation.
         /// </value>
         public DeviceOrientation LockedTabletOrientation { get; set; } = DeviceOrientation.Unknown;
+
+        /// <summary>
+        /// Gets or sets the downhill settings.
+        /// </summary>
+        /// <value>
+        /// The downhill settings.
+        /// </value>
+        public DownhillSettings DownhillSettings { get; set; } = new DownhillSettings();
     }
 }
