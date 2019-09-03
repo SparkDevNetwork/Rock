@@ -43,7 +43,7 @@
                     <asp:HiddenField ID="hfCurrentTab" runat="server" />
 
                     <div class="row">
-                        <div class="col-md-6 col-lg-8">
+                        <div class="col-md-8 col-lg-8">
                             <ul class="nav nav-tabs margin-b-lg">
                                 <li id="liTabApplication" runat="server">
                                     <asp:LinkButton ID="lbTabApplication" runat="server" OnClick="lbTabApplication_Click">Application</asp:LinkButton>
@@ -79,7 +79,7 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlStyles" runat="server">
-                                <asp:HiddenField ID="hfShowAdditionalStylesFields" runat="server" />
+                                <asp:HiddenField ID="hfShowAdvancedStylesFields" runat="server" />
                                 <div class="row">
                                     <div class="col-md-4">
                                         <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." Enabled="false"/>
@@ -92,6 +92,8 @@
                                     </div>
                                 </div>
 
+                                <hr />
+
                                 <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
                                     <div class="row">
                                         <div class="col-md-4">
@@ -103,9 +105,7 @@
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." Enabled="false"/>
                                         </div>
-                                    </div>
 
-                                    <div class="row">
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." Enabled="false"/>
                                         </div>
@@ -115,9 +115,7 @@
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." Enabled="false"/>
                                         </div>
-                                    </div>
 
-                                    <div class="row">
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." Enabled="false"/>
                                         </div>
@@ -133,11 +131,13 @@
                                     </div>
                                 </div>
 
-                                <div class="pull-right">
-                                    <a href="#" class="btn btn-xs btn-link js-show-additional-style-fields" >Show Additional Fields</a>
+                                <div class="clearfix">
+                                    <div class="pull-right">
+                                        <a href="#" class="btn btn-xs btn-link js-show-advanced-style-fields" >Show Advanced Fields</a>
+                                    </div>
                                 </div>
 
-                                <asp:Panel ID="pnlStylesAdditionalFields" runat="server" CssClass="js-additional-style-fields" style="display:none">
+                                <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base" Enabled="false"></Rock:NumberBox>
@@ -179,7 +179,7 @@
                             </asp:Panel>
                         </div>
 
-                        <div class="col-md-6 col-lg-4 hidden-sm hidden-xs">
+                        <div class="col-md-4 hidden-sm hidden-xs">
                             <div class="row">
                                 <div class="col-sm-4">
                                     <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
@@ -269,17 +269,17 @@
 
         <script type="text/javascript">
             Sys.Application.add_load(function () {
-                $('.js-show-additional-style-fields').off('click').on('click', function () {
-                    var isVisible = !$('.js-additional-style-fields').is(':visible');
-                    $('#<%=hfShowAdditionalStylesFields.ClientID %>').val(isVisible);
-                    $('.js-show-additional-style-fields').text(isVisible ? 'Hide Additional Fields' : 'Show Additional Fields');
-                    $('.js-additional-style-fields').slideToggle();
+                $('.js-show-advanced-style-fields').off('click').on('click', function () {
+                    var isVisible = !$('.js-advanced-style-fields').is(':visible');
+                    $('#<%=hfShowAdvancedStylesFields.ClientID %>').val(isVisible);
+                    $('.js-show-advanced-style-fields').text(isVisible ? 'Hide Advanced Fields' : 'Show Advanced Fields');
+                    $('.js-advanced-style-fields').slideToggle();
                     return false;
                 });
 
-                if ($('#<%=hfShowAdditionalStylesFields.ClientID %>').val() == "true") {
-                    $('.js-additional-style-fields').show();
-                    $('.js-show-additional-style-fields').text('Hide Additional Fields');
+                if ($('#<%=hfShowAdvancedStylesFields.ClientID %>').val() == "true") {
+                    $('.js-advanced-style-fields').show();
+                    $('.js-show-advanced-style-fields').text('Hide Additional Fields');
                 }
             });
 
