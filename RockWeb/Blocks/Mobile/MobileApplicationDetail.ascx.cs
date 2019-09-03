@@ -17,22 +17,26 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
+using Rock.Mobile.Common.Enums;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Mobile.Common.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Security;
-using System.Text;
-using System.Text.RegularExpressions;
-using Rock.Web;
 
 namespace RockWeb.Blocks.Mobile
 {
@@ -64,15 +68,13 @@ namespace RockWeb.Blocks.Mobile
         private const string _defaultLayoutXaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 <ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms""
-             xmlns:RockBlock=""clr-namespace:Rock.Mobile.Blocks"">
-    <ContentPage.Content>
-        <ScrollView>
-            <StackLayout>
-                <Rock:RockZone ZoneName=""Main""></Rock:RockZone>
-            </StackLayout>
-        </ScrollView>
-    </ContentPage.Content>
+             xmlns:Rock=""clr-namespace:Rock.Mobile.Cms;assembly=Rock.Mobile""
+             xmlns:Common=""clr-namespace:Rock.Mobile.Common;assembly=Rock.Mobile.Common"">
+    <ScrollView>
+        <StackLayout>
+            <Rock:Zone ZoneName=""Main"" />
+        </StackLayout>
+    </ScrollView>
 </ContentPage>";
 
         #endregion
@@ -236,8 +238,8 @@ namespace RockWeb.Blocks.Mobile
             //
             imgAppIcon.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.SiteLogoBinaryFileId );
             imgAppIcon.Visible = site.SiteLogoBinaryFileId.HasValue;
-            imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailFileId );
-            pnlPreviewImage.Visible = site.ThumbnailFileId.HasValue;
+            imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
+            pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 
             //
             // Set the UI fields for the additional details.
@@ -252,6 +254,11 @@ namespace RockWeb.Blocks.Mobile
 
             var apiKeyLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId ?? 0 );
             fields.Add( new KeyValuePair<string, string>( "API Key", apiKeyLogin != null ? apiKeyLogin.ApiKey : string.Empty ) );
+
+            if ( additionalSettings.LastDeploymentDate.HasValue )
+            {
+                fields.Add( new KeyValuePair<string, string>( "Last Deployed", additionalSettings.LastDeploymentDate.Value.ToShortDateTimeString() ) );
+            }
 
             var selectedCategories = CategoryCache.All( rockContext )
                 .Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) )
@@ -411,7 +418,7 @@ namespace RockWeb.Blocks.Mobile
             // Set image UI fields.
             //
             imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
-            imgEditPreviewThumbnail.BinaryFileId = site.ThumbnailFileId;
+            imgEditPreviewThumbnail.BinaryFileId = site.ThumbnailBinaryFileId;
 
             pnlContent.Visible = false;
             pnlEdit.Visible = true;
@@ -683,7 +690,7 @@ namespace RockWeb.Blocks.Mobile
             // Save the images.
             //
             site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
-            site.ThumbnailFileId = imgEditPreviewThumbnail.BinaryFileId;
+            site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
 
             //
             // Ensure the images are persisted.
@@ -696,9 +703,9 @@ namespace RockWeb.Blocks.Mobile
             {
                 binaryFileService.Get( site.SiteLogoBinaryFileId.Value ).IsTemporary = false;
             }
-            if ( site.ThumbnailFileId.HasValue )
+            if ( site.ThumbnailBinaryFileId.HasValue )
             {
-                binaryFileService.Get( site.ThumbnailFileId.Value ).IsTemporary = false;
+                binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
             }
 
             if ( site.Id == 0 )
@@ -797,6 +804,91 @@ namespace RockWeb.Blocks.Mobile
         protected void lbTabPages_Click( object sender, EventArgs e )
         {
             ShowPagesTab();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDeploy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeploy_Click( object sender, EventArgs e )
+        {
+            var applicationId = PageParameter( "SiteId" ).AsInteger();
+
+            //
+            // Generate the packages and then encode to JSON.
+            //
+            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone );
+            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet );
+            var phoneJson = phonePackage.ToJson();
+            var tabletJson = tabletPackage.ToJson();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var site = new SiteService( rockContext ).Get( applicationId );
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
+
+                //
+                // Prepare the phone configuration file.
+                //
+                var phoneFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = phoneJson.Length,
+                    FileName = "phone.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                };
+                binaryFileService.Add( phoneFile );
+
+                //
+                // Prepare the tablet configuration file.
+                //
+                var tabletFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileType.Id,
+                    MimeType = "application/json",
+                    FileSize = tabletJson.Length,
+                    FileName = "tablet.json",
+                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                };
+                binaryFileService.Add( tabletFile );
+
+                rockContext.SaveChanges();
+
+                //
+                // Remove old configuration files.
+                //
+                if ( site.ConfigurationMobilePhoneBinaryFile != null )
+                {
+                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
+                }
+
+                if ( site.ConfigurationMobileTabletBinaryFile != null )
+                {
+                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
+                }
+
+                //
+                // Set new configuration file references.
+                //
+                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
+                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
+
+                //
+                // Update the last deployment date.
+                //
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+                additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                site.AdditionalSettings = additionalSettings.ToJson();
+
+                rockContext.SaveChanges();
+
+                ShowDetail( applicationId );
+            }
         }
 
         #endregion

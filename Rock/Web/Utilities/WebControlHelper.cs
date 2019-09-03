@@ -141,8 +141,8 @@ namespace Rock.Web.Utilities
             {
                 if ( control is TControl )
                 {
-                    if ( control.ID.Equals( id, StringComparison.OrdinalIgnoreCase )
-                        || control.ID.EndsWith( "_" + id ) )
+                    if ( control.ID != null
+                         && ( control.ID.Equals( id, StringComparison.OrdinalIgnoreCase ) || control.ID.EndsWith( "_" + id ) ) )
                     {
                         resultCollection.Add( control );
                     }
@@ -152,6 +152,93 @@ namespace Rock.Web.Utilities
                     var childControls = control.Controls.Cast<Control>().ToList();
 
                     GetByNameRecursive<TControl>( childControls, id, resultCollection );
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Retrieves a control from the specified collection by Name.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="controlName">
+        ///     The name of the control which distinguishes it from other controls in the supplied
+        ///     collection. The parent name prefix is not required if the controls in the collection have the same parent.
+        /// </param>
+        /// <returns></returns>
+        public static System.Web.UI.Control GetByName( this ControlCollection controls, string controlName )
+        {
+            var controlsList = new List<Control>();
+
+            foreach ( var c in controls )
+            {
+                controlsList.Add( c as Control );
+            }
+
+            return GetByName( controlsList.ToArray(), controlName );
+        }
+
+        /// <summary>
+        ///     Retrieves a control from the specified collection by Name.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="controlName">
+        ///     The name of the control which distinguishes it from other controls in the supplied
+        ///     collection. The parent name prefix is not required if the controls in the collection have the same parent.
+        /// </param>
+        /// <param name="searchDepth">The depth of search to perform.</param>
+        /// <returns></returns>
+        public static System.Web.UI.Control GetByName( this IEnumerable<Control> controls, string controlName, SearchDepthSpecifier searchDepth = SearchDepthSpecifier.IncludeChildControls )
+        {
+            List<Control> matchingControls;
+
+            if ( searchDepth == SearchDepthSpecifier.IncludeChildControls )
+            {
+                matchingControls = new List<Control>();
+
+                GetByNameRecursive( controls, controlName, matchingControls );
+            }
+            else
+            {
+                matchingControls = controls.ToList();
+            }
+
+            matchingControls = matchingControls.Where( x => x.ID.Equals( controlName ) || x.ID.EndsWith( "_" + controlName ) ).ToList();
+
+            if ( matchingControls.Count == 0 )
+            {
+                throw new Exception( string.Format( "Control Name \"{0}\" could not be found.", controlName ) );
+            }
+            if ( matchingControls.Count > 1 )
+            {
+                throw new Exception( string.Format( "Control Name \"{0}\" is not unique in this collection.", controlName ) );
+            }
+
+            var control = matchingControls.First() as System.Web.UI.Control;
+
+            return control;
+        }
+
+        /// <summary>
+        /// Gets all controls in a container having the specified Id.
+        /// </summary>
+        /// <param name="controls">The control collection.</param>
+        /// <param name="id">The id of the control to find.</param>
+        /// <param name="resultCollection">The result collection.</param>
+        private static void GetByNameRecursive( IEnumerable<System.Web.UI.Control> controls, string id, List<System.Web.UI.Control> resultCollection )
+        {
+            foreach ( System.Web.UI.Control control in controls )
+            {
+                if ( control.ID != null
+                        && ( control.ID.Equals( id, StringComparison.OrdinalIgnoreCase ) || control.ID.EndsWith( "_" + id ) ) )
+                {
+                    resultCollection.Add( control );
+                }
+
+                if ( control.HasControls() )
+                {
+                    var childControls = control.Controls.Cast<Control>().ToList();
+
+                    GetByNameRecursive( childControls, id, resultCollection );
                 }
             }
         }

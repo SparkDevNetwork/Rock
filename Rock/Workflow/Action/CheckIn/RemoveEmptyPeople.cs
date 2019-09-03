@@ -49,6 +49,10 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 foreach ( var family in checkInState.CheckIn.Families.ToList() )
                 {
+                    // Make a copy of the original set of people because we may need them
+                    // if they are checking-out (not checking-in).
+                    family.OriginalPeople = new List<Rock.CheckIn.CheckInPerson>( family.People );
+
                     foreach ( var person in family.People.ToList() )
                     {
                         if ( person.GroupTypes.Count == 0 )

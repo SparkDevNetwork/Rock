@@ -28,17 +28,22 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Entity Type" Required="false" IncludeGlobalOption="true" EnhanceForLongLists="true" />
+                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Entity Type" Required="false" IncludeGlobalOption="true" EnhanceForLongLists="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" />
                     </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:BadgeComponentPicker ID="compBadgeType" runat="server" ContainerType="Rock.Badge.BadgeContainer, Rock" Label="Badge Type" Required="true" OnSelectedIndexChanged="compBadgeType_SelectedIndexChanged" AutoPostBack="true"/>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="rtbQualifierColumn" runat="server" Label="Qualifier Column" Required="false" fi />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="rtbQualifierValue" runat="server" Label="Qualifier Value" Required="false" />
                     </div>
-                    <div class="col-md-6">
-                        <Rock:ComponentPicker ID="compBadgeType" runat="server" ContainerType="Rock.PersonProfile.BadgeContainer, Rock" Label="Badge Type" Required="true" OnSelectedIndexChanged="compBadgeType_SelectedIndexChanged" AutoPostBack="true"/>
-                    </div>
+                    
                     <div class="col-md-6">
                         <div class="attributes">
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />

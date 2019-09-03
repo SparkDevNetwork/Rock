@@ -28,8 +28,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <summary>
     /// Allows the user to edit their account on a mobile application.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Profile Details" )]
     [Category( "Mobile" )]
@@ -150,7 +149,7 @@ namespace Rock.Blocks.Types.Mobile
 
     #endregion
 
-    public class ProfileDetails: RockBlockType, IRockMobileBlockType
+    public class ProfileDetails: RockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileProfileDetails block.
@@ -226,7 +225,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The required mobile application binary interface version required to render this block.
         /// </value>
-        int IRockMobileBlockType.RequiredMobileAbiVersion => 1;
+        public override int RequiredMobileAbiVersion => 1;
 
         /// <summary>
         /// Gets the class name of the mobile block to use during rendering on the device.
@@ -234,7 +233,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
-        string IRockMobileBlockType.MobileBlockType => "Rock.Mobile.Blocks.ProfileDetails";
+        public override string MobileBlockType => "Rock.Mobile.Blocks.ProfileDetails";
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -242,7 +241,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        object IRockMobileBlockType.GetMobileConfigurationValues()
+        public override object GetMobileConfigurationValues()
         {
             return new
             {

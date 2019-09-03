@@ -73,7 +73,7 @@
                         });
                     </script>
 
-                    <div class="grid">
+                    <div class="grid grid-panel">
                         <Rock:Grid ID="gChanges" runat="server" EmptyDataText="No Connection Status Changes Found" AllowSorting="true" OnRowSelected="gEvents_OnRowSelected">
                             <Columns>
                                 <Rock:SelectField />

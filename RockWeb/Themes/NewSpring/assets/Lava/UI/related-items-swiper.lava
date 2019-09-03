@@ -4,10 +4,11 @@
 
     {[ swiper title:'{{ title }}' ]}
     
-    {% contentchannelitem ids:'{{ relatedIds }}' iterator:'items' %}
+    {% contentchannelitem dataview:'3552' ids:'{{ relatedIds }}' iterator:'items' %}
     
         {% for item in items %}[[ item ]]
-            {% capture slug %}{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+
+            {% capture slug %}{{ item.PrimarySlug }}{% endcapture %}
             {% capture id %}{{ item.Id }}{% endcapture %}
             {% capture cciid %}{{ item.Id }}{% endcapture %}
             {% capture guid %}{{ item.Guid }}{% endcapture %}
@@ -39,17 +40,34 @@
             {% capture foregroundcolor %}{{ item | Attribute:'ForegroundColor' }}{% endcapture %}
             {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
             {% assign parentCount = item.ParentItems | Size %}
-            {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}{% if parentCount > 0 %}/{[ getParentSlugFromChildId id:'{{ item.Id }}' ]}{% endif %}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+            {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
             {% capture linktext %}{% if type == 'Sermon' or type == 'Series' %}Watch {% else %}Read {% endif %}{{ type }}{% endcapture %}
-            
-            {% assign parentsCount = item.ParentItems | Size %}
-    	    {% if parentsCount > 0 %}
+
+            {%- comment -%}Get number of parent items{%- endcomment -%}
+            {% assign parentCount = item.ParentItems | Size %}
+
+            {%- comment -%}Get Id of primary parent channel attribute so we know which item to pull image/slug from when there are more than one parent{%- endcomment -%}
+            {% contentchannel id:'{{ item.ContentChannelId }}' iterator:'channels' %}
+                {% for channel in channels %}
+                    {% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
+                {% endfor %}
+            {% endcontentchannel %}
+
+            {%- comment -%}Get Ids of parent items for this item{%- endcomment -%}
+            {% capture parentids %}{% for parent in item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+
+            {%- comment -%}Reset collection text/url so it doesn't show the previous item's values{%- endcomment -%}
+            {% assign collectiontext = '' %}
+            {% assign collectionurl = '' %}
+
+            {%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
+            {% if parentCount > 0 %}
         	    {% for parent in item.ParentItems %}
-        	        {% contentchannelitem id:'{{ parent.ContentChannelItemId }}' iterator:'parents' %}
+        	        {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
         	            {% for parentItem in parents %}
         	                {% assign collectiontext = parentItem.Title %}
-        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}{% endcapture %}
-        	                {% capture linkurl %}{{ item.ContentChannel.ChannelUrl }}/{[ getSlugFromId id:'{{ parentItem.Id }}' ]}/{[ getSlugFromId id:'{{ item.Id }}' ]}{% endcapture %}
+        	                {% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
+        	                {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
         	                {% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
         	            {% endfor %}
         	        {% endcontentchannelitem %}

@@ -39,31 +39,59 @@ namespace Rock
             this.SetToUnboundedDateRange();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="delimitedSettingsString">The delimited settings string.</param>
         public TimePeriod( string delimitedSettingsString )
         {
             this.FromDelimitedString( delimitedSettingsString );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="delimitedSettingsString">The delimited settings string.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public TimePeriod( string delimitedSettingsString, string delimiter )
         {
             this.FromDelimitedString( delimitedSettingsString, delimiter );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
         public TimePeriod( DateTime? startDate, DateTime? endDate )
         {
             this.SetToSpecificDateRange( startDate, endDate );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="dateRange">The date range.</param>
         public TimePeriod( DateRange dateRange )
         {
             this.SetSpecificDateRange( dateRange );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="range">The range.</param>
+        /// <param name="unit">The unit.</param>
+        /// <param name="numberOfTimeUnits">The number of time units.</param>
         public TimePeriod( TimePeriodRangeSpecifier range, TimePeriodUnitSpecifier unit, int numberOfTimeUnits )
         {
             this.SetToRelativePeriod( range, unit, numberOfTimeUnits );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimePeriod"/> class.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
         public TimePeriod( TimePeriodUnitSpecifier unit )
         {
             this.SetToCurrentPeriod( unit );
@@ -177,7 +205,8 @@ namespace Rock
         /// Parse a delimited string and set the time period properties.
         /// The delimited string uses an identical format to the SlidingDateRangePicker.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The value.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public void FromDelimitedString( string value, string delimiter = "|" )
         {
             string[] splitValues = ( value ?? string.Empty ).SplitDelimitedValues( delimiter );
@@ -235,7 +264,8 @@ namespace Rock
         /// Returns a delimited string representing the time period properties.
         /// The delimited string uses an identical format to the SlidingDateRangePicker.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <returns></returns>
         public string ToDelimitedString( string delimiter = "|" )
         {
             var delimitedString = string.Format(
@@ -254,7 +284,7 @@ namespace Rock
         /// <summary>
         /// Returns a DateRange object that represents the start and end dates of the time period.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="boundary">The boundary.</param>
         /// <returns></returns>
         public DateRange GetDateRange( TimePeriodDateRangeBoundarySpecifier boundary = TimePeriodDateRangeBoundarySpecifier.Inclusive )
         {
@@ -443,7 +473,6 @@ namespace Rock
         /// Get a friendly description of the time period.
         /// For example: "Last 14 Days"
         /// </summary>
-        /// <param name="value">The value.</param>
         /// <returns></returns>
         public string GetDescription()
         {
@@ -487,6 +516,13 @@ namespace Rock
 
         #region Equality Implementation
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="other">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals( object other )
         {
             var otherPeriod = other as TimePeriod;
@@ -602,6 +638,12 @@ namespace Rock
             return true;
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             int hash = 27;

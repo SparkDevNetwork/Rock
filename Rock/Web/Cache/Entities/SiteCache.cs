@@ -515,16 +515,16 @@ namespace Rock.Web.Cache
         /// The configuration mobile phone file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobilePhoneFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration tablet file identifier.
+        /// Gets or sets the configuration tablet binary file identifier.
         /// </summary>
         /// <value>
-        /// The configuration tablet file identifier.
+        /// The configuration tablet binary file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobileTabletFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the thumbnail file identifier.
@@ -533,7 +533,7 @@ namespace Rock.Web.Cache
         /// The thumbnail file identifier.
         /// </value>
         [DataMember]
-        public int? ThumbnailFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the latest version date time.
@@ -617,11 +617,11 @@ namespace Rock.Web.Cache
             DefaultDomainUri = site.DefaultDomainUri;
             SiteType = site.SiteType;
             AdditionalSettings = site.AdditionalSettings;
-            ConfigurationMobilePhoneFileId = site.ConfigurationMobilePhoneFileId;
-            ConfigurationMobileTabletFileId = site.ConfigurationMobileTabletFileId;
+            ConfigurationMobilePhoneBinaryFileId = site.ConfigurationMobilePhoneBinaryFileId;
+            ConfigurationMobileTabletBinaryFileId = site.ConfigurationMobileTabletBinaryFileId;
             ConfigurationMobilePhoneFileUrl = site.ConfigurationMobilePhoneFileUrl;
             ConfigurationMobileTabletFileUrl = site.ConfigurationTabletFileUrl;
-            ThumbnailFileId = site.ThumbnailFileId;
+            ThumbnailBinaryFileId = site.ThumbnailBinaryFileId;
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
 

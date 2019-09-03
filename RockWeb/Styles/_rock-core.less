@@ -24,7 +24,7 @@
 @import "./chosen/bootstrap-chosen.less";
 
 .fa-font-face( @fa-theme-weight-name, @fa-edition );
-.fa-font-face( 'brands' );
+.fa-font-face( "brands" );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -80,8 +80,8 @@ iframe {
   }
 
   .form-control-group & {
-    margin-left: 0;
     margin-right: 0;
+    margin-left: 0;
   }
 }
 
@@ -600,8 +600,8 @@ th[align="right"] {
 
   .analytics-details {
     > .grid-filter {
-      margin: -15px -15px 15px -15px;
       padding: 15px;
+      margin: -15px -15px 15px -15px;
     }
   }
 
@@ -642,6 +642,29 @@ th[align="right"] {
 
   i {
     float: right;
+  }
+}
+
+.panel-badges {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: end;
+  align-items: center;
+  justify-content: flex-end;
+  height: 32px;
+  border-bottom: 1px solid @panel-border;
+
+  &:empty {
+    display: none;
+  }
+
+  .badge {
+    background-color: inherit;
+  }
+
+  .badge-icon {
+    font-size: 20px;
   }
 }
 

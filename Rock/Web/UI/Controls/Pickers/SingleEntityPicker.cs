@@ -190,7 +190,14 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public enum SingleEntityPickerKeySpecifier
     {
+        /// <summary>
+        /// Key Specifier Id
+        /// </summary>
         Id = 0,
+
+        /// <summary>
+        /// Key Specifier Guid
+        /// </summary>
         Guid = 1
     }
 

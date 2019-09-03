@@ -37,6 +37,11 @@ namespace Rock.Crm.ConnectionStatusChangeReport
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionStatusChangeReportBuilder"/> class.
+        /// </summary>
+        /// <param name="dataContext">The data context.</param>
+        /// <param name="settings">The settings.</param>
         public ConnectionStatusChangeReportBuilder( RockContext dataContext, ConnectionStatusChangeReportSettings settings )
         {
             _DataContext = dataContext;
@@ -133,9 +138,12 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         #endregion
 
         /// <summary>
-        /// Create a set of change events for new people added during the reporting period. 
+        /// Create a set of change events for new people added during the reporting period.
         /// </summary>
-        /// <param name="campus"></param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="reportStartDate">The report start date.</param>
+        /// <param name="reportEndDate">The report end date.</param>
+        /// <param name="toConnectionStatusId">To connection status identifier.</param>
         /// <returns></returns>
         private List<ConnectionStatusChangeEventInfo> GetChangeEventsForNewPeople( int? campusId, DateTime? reportStartDate, DateTime? reportEndDate, int? toConnectionStatusId )
         {
@@ -210,10 +218,12 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         }
 
         /// <summary>
-        ///  Get a History query related to Person.ConnectionStatus property change.
+        /// Get a History query related to Person.ConnectionStatus property change.
         /// </summary>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="originalConnectionStatusId">The original connection status identifier.</param>
+        /// <param name="updatedConnectionStatusId">The updated connection status identifier.</param>
         /// <returns></returns>
         private IQueryable<History> GetHistoryQueryBase( DateTime? startDate, DateTime? endDate, int? originalConnectionStatusId, int? updatedConnectionStatusId )
         {
@@ -269,11 +279,13 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         }
 
         /// <summary>
-        /// Create campus membership events for a specified period of time. 
+        /// Create campus membership events for a specified period of time.
         /// </summary>
-        /// <param name="campus"></param>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="fromConnectionStatusId">From connection status identifier.</param>
+        /// <param name="toConnectionStatusId">To connection status identifier.</param>
         /// <returns></returns>
         private List<ConnectionStatusChangeEventInfo> GetChangeEventsForPeriod( int? campusId, DateTime? startDate, DateTime? endDate, int? fromConnectionStatusId, int? toConnectionStatusId )
         {

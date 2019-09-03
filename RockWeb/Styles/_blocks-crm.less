@@ -270,11 +270,13 @@
 // 3. Badge Bar
 // -------------------------
 @badge-icon-height: 45px;
+@badge-count-width: 18px;
 
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
   padding-bottom: 0;
+  font-size: 0; // Fixes Inconsistent Spacing
   color: @persondetails-badge-color;
   background-color: @persondetails-badge-bg;
   border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
@@ -285,8 +287,13 @@
 
     .badge {
       display: inline-block; // fixes issue in default browser on Android
-      padding: 3px 7px 0;
+      padding: 3px 0 0;
+      margin: 0 4px;
       background-color: inherit;
+
+      &:empty {
+        display: none;
+      }
 
       .tooltip-inner {
         max-width: 300px;
@@ -303,25 +310,10 @@
     }
 
     .badge-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      width: @badge-grid-width;
-      height: @badge-icon-height;
-      margin-top: -12px;
+      font-size: 0;
 
       .badge {
-        display: flex;
-        flex-basis: 33.3%;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        margin-bottom: .5%;
-
-        &:nth-last-child(n+6),
-        &:nth-last-child(n+6) ~ & {
-          flex-basis: 20%;
-        }
+        padding: 0 2px 2px;
 
         .fa-stack {
           width: 24px;
@@ -340,6 +332,32 @@
       }
     }
   }
+}
+
+.badge.badge-step {
+  position: relative;
+  width: @badge-icon-height + 1;
+  height: @badge-icon-height + 1;
+  padding: 0 !important;
+  text-align: center;
+  border-radius: 5px;
+}
+
+.badge.badge-step > .badge-icon {
+  font-size: 26px;
+  line-height: @badge-icon-height+1;
+}
+
+.badge > .badge-count {
+  position: absolute;
+  top: -(@badge-count-width/3);
+  right: -(@badge-count-width/3);
+  width: @badge-count-width;
+  height: @badge-count-width;
+  padding-top: 3px;
+  font-weight: normal;
+  background-color: @brand-danger;
+  border-radius: 50%;
 }
 
 .badge-baptism {
@@ -573,8 +591,8 @@
     .metric-value {
       position: absolute;
       top: 14px;
-      left: 14px;
-      width: 30px;
+      right: 0;
+      left: 0;
       font-size: 20px;
       font-weight: @font-weight-bold;
       line-height: 12px;
