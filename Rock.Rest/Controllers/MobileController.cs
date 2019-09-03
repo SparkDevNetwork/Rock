@@ -57,14 +57,24 @@ namespace Rock.Rest.Controllers
                 return NotFound();
             }
 
-            int binaryFileId = deviceData.DeviceType == DeviceType.Phone ? site.ConfigurationMobilePhoneBinaryFileId.Value : site.ConfigurationMobileTabletBinaryFileId.Value;
-
             var launchPacket = new LaunchPackage
             {
                 LatestVersionId = ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
-                LatestVersionSettingsUrl = $"{baseUrl}GetFile.ashx?Id={binaryFileId}",
                 IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
+
+            if ( deviceData.DeviceType == DeviceType.Phone )
+            {
+                launchPacket.LatestVersionSettingsUrl = additionalSettings.PhoneUpdatePackageUrl;
+            }
+            else if ( deviceData.DeviceType == DeviceType.Tablet )
+            {
+                launchPacket.LatestVersionSettingsUrl = additionalSettings.TabletUpdatePackageUrl;
+            }
+            else
+            {
+                return NotFound();
+            }
 
             if ( person != null )
             {
@@ -75,20 +85,6 @@ namespace Rock.Rest.Controllers
             }
 
             return launchPacket;
-        }
-
-        /// <summary>
-        /// Gets the latest version of an application. This is temporary and should probably go away at some point.
-        /// </summary>
-        /// <param name="applicationId">The application identifier.</param>
-        /// <param name="platform">The platform.</param>
-        /// <returns></returns>
-        [Route( "api/mobile/GetLatestVersion" )]
-        [HttpGet]
-        [Authenticate]
-        public object GetLatestVersion( int applicationId, DeviceType platform )
-        {
-            return MobileHelper.BuildMobilePackage( applicationId, platform );
         }
 
         /// <summary>

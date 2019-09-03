@@ -621,6 +621,29 @@ namespace RockWeb.Blocks.Mobile
             gPages.DataBind();
         }
 
+        /// <summary>
+        /// Gets the file path.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
+        private string GetFilePath( BinaryFile file )
+        {
+            string url = file.Url;
+
+            //
+            // FileSystem provider currently returns a bad URL.
+            //
+            if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
+            {
+                url = System.Web.VirtualPathUtility.ToAbsolute( string.Format( "~/GetFile.ashx?Id={0}", file.Id ) );
+                var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
+
+                url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
+            }
+
+            return url;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -916,6 +939,8 @@ namespace RockWeb.Blocks.Mobile
                 //
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
                 additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
+                additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
                 site.AdditionalSettings = additionalSettings.ToJson();
                 site.LatestVersionDateTime = RockDateTime.Now;
 

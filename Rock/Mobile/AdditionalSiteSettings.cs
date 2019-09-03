@@ -41,7 +41,7 @@ namespace Rock.Mobile
         <DataTemplate>
             <ViewCell>
                 <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
-                    <Rock:Image ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
+                    <Rock:Image Source=""{Binding IconUrl}"" WidthRequest=""20"" />
                     <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
                 </StackLayout>
             </ViewCell>
@@ -59,6 +59,22 @@ namespace Rock.Mobile
         /// The last deployment date.
         /// </value>
         public DateTime? LastDeploymentDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone update package URL.
+        /// </summary>
+        /// <value>
+        /// The phone update package URL.
+        /// </value>
+        public string PhoneUpdatePackageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tablet update package URL.
+        /// </summary>
+        /// <value>
+        /// The tablet update package URL.
+        /// </value>
+        public string TabletUpdatePackageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the shell.
