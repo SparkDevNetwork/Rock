@@ -633,6 +633,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Nameless
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is nameless; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsNameless()
+        {
+            int recordTypeValueIdNameless = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
+            return  this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
         /// <value>
