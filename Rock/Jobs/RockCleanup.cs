@@ -59,7 +59,7 @@ namespace Rock.Jobs
         private Dictionary<string, int> _databaseRowsCleanedUp = new Dictionary<string, int>();
         List<Exception> _rockCleanupExceptions = new List<Exception>();
         private IJobExecutionContext jobContext;
-        
+
         /// <summary>
         /// Job that executes routine Rock cleanup tasks
         /// Called by the <see cref="IScheduler" /> when a
@@ -121,6 +121,8 @@ namespace Rock.Jobs
             RunCleanupTask( "Calendar EffectiveStart and EffectiveEnd dates Cleanup", () => EnsureScheduleEffectiveStartEndDates() );
 
             RunCleanupTask( "Nameless person for SMS Responses Cleanup", () => EnsureNamelessPersonForSMSResponses() );
+
+            RunCleanupTask( "Match nameless person records", () => MatchNamelessPersonToRegularPerson() );
 
             // ***********************
             //  Final count and report
@@ -1353,6 +1355,79 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                     rowsUpdated += rockContext.BulkUpdate( communicationsResponsesToUpdate, a => new CommunicationResponse { FromPersonAliasId = fromPersonAliasId } );
                 }
             }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Matches the nameless person to regular person.
+        /// </summary>
+        /// <returns></returns>
+        private int MatchNamelessPersonToRegularPerson()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var phoneNumberService = new PhoneNumberService( rockContext );
+
+                var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+                int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+                var namelessPersonPhoneNumberQry = phoneNumberService.Queryable()
+                    .Where( pn => pn.Person.RecordTypeValueId == namelessPersonRecordTypeId )
+                    .AsNoTracking();
+
+                var personPhoneNumberQry = phoneNumberService.Queryable()
+                    .Where( a => a.Person.RecordTypeValueId != namelessPersonRecordTypeId );
+
+
+                // match nameless person records to regular person records by comparing phone numbers.
+                // order so that the non-nameless person phones with an SMS number with messaging enabled are listed first
+                // then sort by the oldest person record in case there are multiple people with the same number
+                var matchedPhoneNumbersJoinQry = namelessPersonPhoneNumberQry.Join( personPhoneNumberQry,
+                    np => np.Number,
+                    pp => pp.Number,
+                    ( np, pp ) => new
+                    {
+                        NamelessPersonPhoneNumber = np,
+                        PersonPhoneNumber = pp
+                    } )
+                    .Where( j => j.PersonPhoneNumber.CountryCode == j.NamelessPersonPhoneNumber.CountryCode || string.IsNullOrEmpty( j.PersonPhoneNumber.CountryCode ) )
+                    .OrderByDescending( j => j.PersonPhoneNumber.IsMessagingEnabled )
+                    .ThenByDescending( j => j.PersonPhoneNumber.NumberTypeValueId == numberTypeMobileValueId )
+                    .ThenByDescending( j => j.PersonPhoneNumber.Person.RecordTypeValueId != namelessPersonRecordTypeId )
+                    .ThenBy( j => j.PersonPhoneNumber.PersonId );
+
+                var matchedPhoneNumberList = matchedPhoneNumbersJoinQry
+                    //.Include( a => a.NamelessPersonPhoneNumber.Person )
+                    //.Include( a => a.PersonPhoneNumber.Person )
+                    .ToList();
+
+                HashSet<int> mergedNamelessPersonIds = new HashSet<int>();
+
+
+                foreach ( var matchedPhoneNumber in matchedPhoneNumberList.ToList() )
+                {
+                    var namelessPersonId = matchedPhoneNumber.NamelessPersonPhoneNumber.PersonId;
+                    if ( !mergedNamelessPersonIds.Contains( namelessPersonId ) )
+                    {
+                        var existingPersonId = matchedPhoneNumber.PersonPhoneNumber.PersonId;
+                        using ( var mergeContext = new RockContext() )
+                        {
+                            var mergePersonService = new PersonService( mergeContext );
+                            var namelessPerson = mergePersonService.Get( namelessPersonId );
+                            var existingPerson = mergePersonService.Get( existingPersonId );
+                            mergePersonService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
+                            mergeContext.SaveChanges();
+                            mergedNamelessPersonIds.Add( namelessPersonId );
+                            rowsUpdated++;
+                        }
+                    }
+                }
+            }
+
 
             return rowsUpdated;
         }
