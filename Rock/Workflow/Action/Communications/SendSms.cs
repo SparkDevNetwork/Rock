@@ -46,7 +46,7 @@ namespace Rock.Workflow.Action
     [BooleanField( name: "Save Communication History", description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.", defaultValue: false, category: "", order: 4, key: "SaveCommunicationHistory" )]
     public class SendSms : ActionComponent
     {
-        /// <summary>
+        /// <summary> 
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -88,7 +88,8 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( RockSMSMessageRecipient.CreateAnonymous( toAttributeValue, mergeFields ) );
+                                    var smsNumber = toAttributeValue;
+                                    recipients.Add( RockSMSMessageRecipient.CreateAnonymous( smsNumber, mergeFields ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -118,7 +119,7 @@ namespace Rock.Workflow.Action
 
                                             var recipient = new RockSMSMessageRecipient( person, smsNumber, mergeFields );
                                             recipients.Add( recipient );
-                                            recipient.MergeFields.Add( "Person", person );
+                                            recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                         }
                                     }
                                     break;
@@ -167,7 +168,7 @@ namespace Rock.Workflow.Action
                                                 var recipientMergeFields = new Dictionary<string, object>( mergeFields );
                                                 var recipient = new RockSMSMessageRecipient( person, smsNumber, recipientMergeFields );
                                                 recipients.Add( recipient );
-                                                recipient.MergeFields.Add( "Person", person );
+                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
                                         }
                                     }
@@ -191,7 +192,13 @@ namespace Rock.Workflow.Action
             string message = GetAttributeValue( action, "Message", checkWorkflowAttributeValue: true );
 
             // Add the attachment (if one was specified)
-            var binaryFile = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
+            var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment", true ).AsGuidOrNull();
+            BinaryFile binaryFile = null;
+
+            if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
+            {
+                binaryFile = new BinaryFileService( rockContext ).Get( attachmentBinaryFileGuid.Value );
+            }
 
             // Send the message
             if ( recipients.Any() && ( !string.IsNullOrWhiteSpace( message ) || binaryFile != null) )
