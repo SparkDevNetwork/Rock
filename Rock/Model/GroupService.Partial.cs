@@ -756,7 +756,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new family.
+        /// Saves the new family to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="familyMembers">The family members.</param>
@@ -771,7 +771,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new group.
+        /// Saves the new group to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupTypeId">The group type identifier.</param>

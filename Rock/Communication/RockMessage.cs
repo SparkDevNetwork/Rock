@@ -61,7 +61,7 @@ namespace Rock.Communication
         public string ThemeRoot { get; set; }
 
         /// <summary>
-        /// Gets or sets the current person.
+        /// Gets or sets the person that was logged in when this message was created
         /// </summary>
         /// <value>
         /// The current person.

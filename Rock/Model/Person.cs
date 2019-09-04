@@ -607,6 +607,12 @@ namespace Rock.Model
             get {
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+                var recordTypeValueIdUnnamedPerson = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+                if (this.RecordTypeValueId == recordTypeValueIdUnnamedPerson )
+                {
+                    return "(Unknown Person)";
+                }
+
                 return FormatFullName( NickName, LastName, SuffixValueId );
             }
 
@@ -624,6 +630,18 @@ namespace Rock.Model
         public bool IsBusiness()
         {
             return IsBusiness( this.RecordTypeValueId );
+        }
+
+        /// <summary>
+        /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Nameless
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is nameless; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsNameless()
+        {
+            int recordTypeValueIdNameless = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
+            return  this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
         }
 
         /// <summary>

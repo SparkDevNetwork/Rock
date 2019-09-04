@@ -467,6 +467,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
 
+        /// <summary>
+        /// NamelessPerson Record Type
+        /// </summary>
+        public const string PERSON_RECORD_TYPE_NAMELESS = "721300ED-1267-4DA0-B4F2-6C6B5B17B1C5";
+
         #endregion
 
         #region Person Connection Status

@@ -196,7 +196,7 @@ class TwilioSmsResponseAsync : IAsyncResult
 
         if ( !string.IsNullOrWhiteSpace( message.ToNumber ) && !string.IsNullOrWhiteSpace( message.FromNumber ) )
         {
-            message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Replace( "+", "" ) );
+            message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
             var outcomes = SmsActionService.ProcessIncomingMessage( message );
             var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
