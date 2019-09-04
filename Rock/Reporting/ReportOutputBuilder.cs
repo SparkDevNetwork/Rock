@@ -630,8 +630,9 @@ namespace Rock.Reporting
         /// <summary>
         /// Add a field representing an Entity Attribute to the report output.
         /// </summary>
-        /// <param name="reportField"></param>
-        /// <param name="columnIndex"></param>
+        /// <param name="reportField">The report field.</param>
+        /// <param name="columnIndex">Index of the column.</param>
+        /// <param name="currentPerson">The current person.</param>
         private void AddAttributeField( ReportField reportField, int columnIndex, Person currentPerson )
         {
             var attributeGuid = reportField.Selection.AsGuidOrNull();

@@ -1251,7 +1251,7 @@ namespace Rock.Model
 
         /// <summary>
         /// If there is an Archived Member of the group for the specified personId and groupRoleId, returns the archived group member record, otherwise returns null
-        /// (if there are multiple, this will return the most recently archived record</param>
+        /// (if there are multiple, this will return the most recently archived record)
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="personId">The person identifier.</param>
