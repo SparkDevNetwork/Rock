@@ -23,11 +23,29 @@ namespace Rock.SystemGuid
     {
         #region Campus
 
+        /// <summary>
+        /// The campus status pending
+        /// </summary>
         public const string CAMPUS_STATUS_PENDING = "008209F5-144E-4282-92C3-944A4AC78700";
+
+        /// <summary>
+        /// The campus status open
+        /// </summary>
         public const string CAMPUS_STATUS_OPEN = "10696FD8-D0C7-486F-B736-5FB3F5D69F1A";
+
+        /// <summary>
+        /// The campus status closed
+        /// </summary>
         public const string CAMPUS_STATUS_CLOSED = "99D2C9CB-B6DC-49C1-B626-B76BD398B63A";
 
+        /// <summary>
+        /// The campus type physical
+        /// </summary>
         public const string CAMPUS_TYPE_PHYSICAL = "5A61507B-79CB-4DA2-AF43-6F82260203B3";
+
+        /// <summary>
+        /// The campus type online
+        /// </summary>
         public const string CAMPUS_TYPE_ONLINE = "10101010-2DB4-4C95-B07D-C400E412289B";
 
         #endregion Campus
@@ -144,6 +162,30 @@ namespace Rock.SystemGuid
         /// Android Pay Currency Type
         /// </summary>
         public const string CURRENCY_TYPE_ANDROID_PAY = "6151F6E0-3223-46BA-A59E-E091BE4AF75C";
+
+        #endregion
+
+        #region Financial Non-Cash Asset Type
+
+        /// <summary>
+        /// Non-Cash Asset Type: Property.
+        /// </summary>
+        public const string NONCASH_ASSET_PROPERTY = "FF4E8D66-CFF2-4A96-AA30-19721884C373";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Stocks and Bonds.
+        /// </summary>
+        public const string NONCASH_ASSET_STOCKSANDBONDS = "B29D7D89-357F-47F9-BE7B-52AFF3892007";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Vehicles.
+        /// </summary>
+        public const string NONCASH_ASSET_VEHICLES = "C1DCBE74-88FE-4876-8943-5783499CBBE0";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Other.
+        /// </summary>
+        public const string NONCASH_ASSET_OTHER = "3086AF9A-108B-47C8-B299-CECF53B9D1DF";
 
         #endregion
 

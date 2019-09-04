@@ -364,7 +364,8 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spAnalytics_ETL_Campus", resourceCulture);
             }
         }
-        
+
+#pragma warning disable CS1570, CS1587
         /// <summary>
         ///   Looks up a localized string similar to 
         ////*
@@ -383,6 +384,7 @@ namespace Rock.Plugin.HotFixes {
         /// &lt;code&gt;
         ///   [rest of string was truncated]&quot;;.
         /// </summary>
+#pragma warning restore CS1570, CS1587
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
                 return ResourceManager.GetString("_050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder", resourceCulture);

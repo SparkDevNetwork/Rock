@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Keys for the block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// Key for the SMS Link Page

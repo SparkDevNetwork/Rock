@@ -1502,5 +1502,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201907082136571_Rollup0708_SegmentedChartUpdate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @BadgeGuid UNIQUEIDENTIFIER = &apos;132F9C2A-0AF4-4AD9-87EF-7730B284E10E&apos;;
+        ///DECLARE @Lava NVARCHAR(MAX) = 
+        ///N&apos;{% assign groupHasRequirements = Entity.GroupType.GroupRequirements | Size | AsBoolean %}
+        ///{% assign typeHasRequirements = Entity.GroupRequirements | Size | AsBoolean %}
+        ///
+        ///{% if groupHasRequirements or typeHasRequirements -%}
+        ///    &lt;div class=&quot;badge&quot; data-toggle=&quot;tooltip&quot; data-original-title=&quot;Group has requirements.&quot; style=&quot;color:var(--brand-success);&quot;&gt;
+        ///        &lt;i class=&quot;badge-icon fa fa-tasks&quot;&gt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201908202115162_Rollup_0820_GroupRequirementsBadge {
+            get {
+                return ResourceManager.GetString("_201908202115162_Rollup_0820_GroupRequirementsBadge", resourceCulture);
+            }
+        }
     }
 }

@@ -955,7 +955,7 @@ namespace Rock.Model
         ///  * Current time: 8/8/2019 1:00:00 AM - returns true
         ///  * Current time: 8/8/2019 2:01:00 AM - returns false
         ///
-        /// Note: Add any other test cases you want to test to the <seealso cref="Rock.Tests.Rock.Model.ScheduleCheckInTests"/> project.
+        /// Note: Add any other test cases you want to test to the "Rock.Tests.Rock.Model.ScheduleCheckInTests" project.
         /// </example>
         /// <param name="time">The time.</param>
         /// <returns>

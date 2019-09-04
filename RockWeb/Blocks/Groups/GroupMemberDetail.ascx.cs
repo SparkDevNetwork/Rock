@@ -188,6 +188,23 @@ namespace RockWeb.Blocks.Groups
                     NavigateToParentPage( qryString );
                 }
             }
+
+            if ( !cvGroupMember.IsValid )
+            {
+                nbRestoreError.Text = cvGroupMember.ErrorMessage;
+                nbRestoreError.Visible = true;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelRestore control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelRestore_Click( object sender, EventArgs e )
+        {
+            mdRestoreArchivedPrompt.Hide();
         }
 
         /// <summary>
@@ -309,6 +326,19 @@ namespace RockWeb.Blocks.Groups
                     GroupMember archivedGroupMember;
                     if ( groupService.ExistsAsArchived( group, personId.Value, role.Id, out archivedGroupMember ) )
                     {
+                        // if the archived groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+                        // So, make sure a message is displayed in the validation summary
+
+                        // set the IsArchived fields to false to see if the person would valid if they choose to restore/add this member
+                        groupMemberService.Restore( archivedGroupMember );
+                        cvGroupMember.IsValid = archivedGroupMember.IsValidGroupMember( rockContext );
+
+                        if ( !cvGroupMember.IsValid )
+                        {
+                            cvGroupMember.ErrorMessage = archivedGroupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
+
                         // matching archived person found, so prompt
                         mdRestoreArchivedPrompt.Show();
                         nbRestoreError.Visible = false;
@@ -796,7 +826,7 @@ namespace RockWeb.Blocks.Groups
             pnlRequirements.Visible = groupHasRequirements;
             btnReCheckRequirements.Visible = groupHasRequirements;
 
-            ShowGroupRequirementsStatuses();
+            ShowGroupRequirementsStatuses( false );
         }
 
         private void ShowRequiredDocumentStatus( RockContext rockContext, GroupMember groupMember, Group group )
@@ -840,7 +870,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the group requirements statuses.
         /// </summary>
-        private void ShowGroupRequirementsStatuses()
+        private void ShowGroupRequirementsStatuses( bool forceRecheckRequirements )
         {
             if ( !pnlRequirements.Visible )
             {
@@ -891,7 +921,7 @@ namespace RockWeb.Blocks.Groups
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
-            if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
+            if ( forceRecheckRequirements || groupMember.IsNewOrChangedGroupMember( rockContext ) )
             {
                 requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
             }
@@ -965,10 +995,12 @@ namespace RockWeb.Blocks.Groups
             var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
             if ( requirementsWithErrors.Any() )
             {
+                nbRequirementsErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                 nbRequirementsErrors.Visible = true;
                 nbRequirementsErrors.Text = string.Format(
-                    "An error occurred in one or more of the requirement calculations: <br /> {0}",
-                    requirementsWithErrors.AsDelimited( "<br />" ) );
+                    "An error occurred in one or more of the requirement calculations" );
+
+                nbRequirementsErrors.Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine );
             }
             else
             {
@@ -1060,7 +1092,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnReCheckRequirements_Click( object sender, EventArgs e )
         {
-            CalculateRequirements();
+            CalculateRequirements( true );
             nbRecheckedNotification.Text = "Successfully re-checked requirements.";
             nbRecheckedNotification.Visible = true;
         }
@@ -1068,7 +1100,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Calculates (or re-calculates) the requirements, then updates the results on the UI
         /// </summary>
-        private void CalculateRequirements()
+        private void CalculateRequirements( bool forceRecheckRequirements )
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
@@ -1078,7 +1110,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember.CalculateRequirements( rockContext, true );
             }
 
-            ShowGroupRequirementsStatuses();
+            ShowGroupRequirementsStatuses( forceRecheckRequirements );
         }
 
         /// <summary>
@@ -1088,7 +1120,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupRole_SelectedIndexChanged( object sender, EventArgs e )
         {
-            CalculateRequirements();
+            CalculateRequirements( false );
         }
 
         /// <summary>
@@ -1098,7 +1130,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppGroupMemberPerson_SelectPerson( object sender, EventArgs e )
         {
-            CalculateRequirements();
+            CalculateRequirements( false );
         }
 
         #endregion

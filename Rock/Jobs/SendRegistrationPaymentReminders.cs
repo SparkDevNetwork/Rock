@@ -81,6 +81,7 @@ namespace Rock.Jobs
                 var currentDate = RockDateTime.Today;
                 var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
+                // Do not filter registrations by template or instance cost, it will miss $0 registrations that have optional fees.
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>
                                                          r.RegistrationInstance.RegistrationTemplate.IsActive
@@ -89,7 +90,6 @@ namespace Rock.Jobs
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.Length > 0
-                                                         && (r.RegistrationInstance.RegistrationTemplate.Cost != 0 || (r.RegistrationInstance.Cost != null && r.RegistrationInstance.Cost != 0))
                                                          && (r.RegistrationInstance.EndDateTime == null || currentDate <= System.Data.Entity.SqlServer.SqlFunctions.DateAdd("day", cutoffDays,  r.RegistrationInstance.EndDateTime) ) )
                                                  .ToList();
 

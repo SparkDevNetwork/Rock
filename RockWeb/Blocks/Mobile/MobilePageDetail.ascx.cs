@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
@@ -88,8 +89,15 @@ namespace RockWeb.Blocks.Mobile
             if ( !IsPostBack )
             {
                 int pageId = PageParameter( "Page" ).AsInteger();
+                int siteId = PageParameter( "SiteId" ).AsInteger();
 
                 BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+
+                // Load page picker
+                if ( siteId != 0 )
+                {
+                    LoadPagePicker( siteId );
+                }
 
                 if ( pageId != 0 )
                 {
@@ -286,7 +294,7 @@ namespace RockWeb.Blocks.Mobile
             try
             {
                 var xaml = XElement.Parse( page.Layout.LayoutMobilePhone );
-                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "RockZone" ) )
+                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "Zone" ) )
                 {
                     var zoneName = zoneNode.Attribute( XName.Get( "ZoneName" ) ).Value;
 
@@ -462,6 +470,23 @@ namespace RockWeb.Blocks.Mobile
             return true;
         }
 
+        private void LoadPagePicker( int siteId )
+        {
+            var pageList = PageCache.All().Where( p => p.SiteId == siteId )
+                            .OrderBy( p => p.ParentPageId )
+                            .ThenBy( p => p.Order )
+                            .Select( p => new
+                            {
+                                p.Id,
+                                Name = p.InternalName
+                            });
+
+            ddlPageList.DataSource = pageList;
+            ddlPageList.DataValueField = "Id";
+            ddlPageList.DataTextField = "Name";
+            ddlPageList.DataBind();
+        }
+
         /// <summary>
         /// Shows the detail information on the page.
         /// </summary>
@@ -486,11 +511,25 @@ namespace RockWeb.Blocks.Mobile
             }
 
             //
+            // Configure Copy Page Guid
+            //
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format( @"
+    new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+
+            btnCopyToClipboard.Attributes["data-clipboard-text"] = page.Guid.ToString();
+
+            ddlPageList.SelectedValue = page.Id.ToString();
+
+            //
             // Ensure user has access to view this page.
             //
             if ( !page.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlDetails.Visible = false;
                 pnlBlocks.Visible = false;
@@ -503,13 +542,16 @@ namespace RockWeb.Blocks.Mobile
             //
             hfPageId.Value = page.Id.ToString();
             lPageName.Text = page.InternalName;
-            lPageGuid.Text = "Page Guid: " + page.Guid.ToString();
 
             var fields = new List<KeyValuePair<string, string>>();
 
             fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
             fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
             fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed ? "<i class='fa fa-check'></i>" : string.Empty ) );
+            if ( page.IconBinaryFileId.HasValue )
+            {
+                fields.Add( new KeyValuePair<string, string>( "Icon", GetImageTag( page.IconBinaryFileId, 200, 200, isThumbnail: true ) ) );
+            }
 
             // TODO: I'm pretty sure something like this already exists in Rock, but I can never find it. - dh
             ltDetails.Text = string.Join( "", fields.Select( f => string.Format( "<div class=\"col-md-6\"><dl><dt>{0}</dt><dd>{1}</dd></dl></div>", f.Key, f.Value ) ) );
@@ -592,7 +634,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( page == null )
             {
-                page = new Page
+                page = new Rock.Model.Page
                 {
                     DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
                 };
@@ -603,14 +645,14 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( !page.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlEditPage.Visible = false;
 
                 return;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
 
             //
             // Set the basic fields of the page.
@@ -620,6 +662,7 @@ namespace RockWeb.Blocks.Mobile
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
+            imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             //
             // Configure the layout options.
@@ -656,7 +699,7 @@ namespace RockWeb.Blocks.Mobile
             var page = pageService.Get( PageParameter( "Page" ).AsInteger() );
             if ( page == null )
             {
-                page = new Page();
+                page = new Rock.Model.Page();
                 pageService.Add( page );
 
                 var order = pageService.GetByParentPageId( parentPageId )
@@ -667,7 +710,7 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
 
             page.InternalName = tbInternalName.Text;
@@ -676,9 +719,44 @@ namespace RockWeb.Blocks.Mobile
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
-            page.HeaderContent = additionalSettings.ToJson();
+            page.AdditionalSettings = additionalSettings.ToJson();
+            int? oldIconId = null;
+            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
+            {
+                oldIconId = page.IconBinaryFileId;
+                page.IconBinaryFileId = imgPageIcon.BinaryFileId;
+            }
 
-            rockContext.SaveChanges();
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+
+                if ( oldIconId.HasValue || page.IconBinaryFileId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    if ( oldIconId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( oldIconId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
+
+                    if ( page.IconBinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( page.IconBinaryFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = false;
+                            rockContext.SaveChanges();
+                        }
+                    }
+                }
+            } );
 
             NavigateToCurrentPage( new Dictionary<string, string>
             {
@@ -904,6 +982,15 @@ namespace RockWeb.Blocks.Mobile
         protected void ddlBlockTypeCategory_SelectedIndexChanged( object sender, EventArgs e )
         {
             BindBlockTypeRepeater();
+        }
+
+        protected void ddlPageList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var queryString = new Dictionary<string, string>();
+            queryString.Add( "SiteId", PageParameter( "SiteId" ) );
+            queryString.Add( "Page", ddlPageList.SelectedValue );
+
+            NavigateToCurrentPage( queryString );
         }
 
         #endregion

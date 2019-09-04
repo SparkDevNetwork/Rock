@@ -7,12 +7,25 @@
 
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
 
+        <div class="row">
+            <div class="col-md-3 col-md-offset-9">
+                <div class="form-horizontal label-sm">
+                    <Rock:RockDropDownList ID="ddlPageList" EnhanceForLongLists="true" runat="server" Label="Page" AutoPostBack="true" OnSelectedIndexChanged="ddlPageList_SelectedIndexChanged" />
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
-                    <span class="label label-default"><asp:Literal ID="lPageGuid" runat="server" /></span>
+                    <button id="btnCopyToClipboard" runat="server" 
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
+                        class="btn btn-info btn-xs btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
                 </div>
             </div>
 
@@ -55,7 +68,7 @@
                 </div>
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
-
+                <Rock:ImageUploader ID="imgPageIcon" runat="server" Help="This image is used as a icon for your page." Label="Icon" />
                 <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                 <div class="actions margin-t-md">

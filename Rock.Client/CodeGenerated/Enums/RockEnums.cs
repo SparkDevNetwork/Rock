@@ -478,6 +478,20 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum PersistedDatasetDataFormat
+    {
+        JSON = 0x0,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersistedDatasetScriptType
+    {
+        Lava = 0x0,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersonAliasType
     {
         FromPersonAlias = 0x0,

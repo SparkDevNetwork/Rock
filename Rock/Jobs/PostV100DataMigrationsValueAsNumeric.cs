@@ -40,14 +40,8 @@ namespace Rock.Jobs
         DefaultIntegerValue = 60 * 60 )]
     public class PostV100DataMigrationsValueAsNumeric : IJob
     {
-        /// <summary>
-        /// Attribute Keys
-        /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
-            /// <summary>
-            /// The command timeout key
-            /// </summary>
             public const string CommandTimeout = "CommandTimeout";
         }
 
