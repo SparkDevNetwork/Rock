@@ -2269,6 +2269,7 @@ The first registrant's information will be used to complete the registrar inform
             DiscountState = null;
             FeeState = null;
 
+            pdAuditDetails.Visible = true;
             pdAuditDetails.SetEntity( registrationTemplate, ResolveRockUrl( "~" ) );
 
             lReadOnlyTitle.Text = registrationTemplate.Name.FormatAsHtmlTitle();

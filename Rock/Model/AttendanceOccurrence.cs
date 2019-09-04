@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Attendance
+        /// Gets or sets the date of the Attendance. Only the date is used.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
@@ -76,7 +76,19 @@ namespace Rock.Model
         [DataMember]
         [Column( TypeName = "Date" )]
         [Index( "IX_OccurrenceDate" )]
-        public DateTime OccurrenceDate { get; set; }
+        public DateTime OccurrenceDate
+        {
+            get
+            {
+                return _occurrenceDate.Date;
+            }
+            set
+            {
+                _occurrenceDate = value.Date;
+            }
+        }
+
+        private DateTime _occurrenceDate;
 
         /// <summary>
         /// Gets or sets the did not occur.

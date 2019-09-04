@@ -255,6 +255,7 @@ namespace Rock.Model
 
             if ( startDate.HasValue )
             {
+                startDate = startDate.Value.Date;
                 qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value );
             }
 

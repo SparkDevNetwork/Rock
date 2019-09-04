@@ -21,21 +21,25 @@ namespace Rock.SystemGuid
     /// <summary>
     /// Guids for System Settings. NOTE: Some of these are referenced in Migrations to avoid string-typos.
     /// </summary>
+    [Obsolete("This functionality is no longer used.")]
     public static class SystemSetting
     {
         /// <summary>
         /// Do Not Disturb Start Setting
         /// </summary>
+        [Obsolete("This functionality is no longer used.")]
         public const string DO_NOT_DISTURB_START = "4A558666-32C7-4490-B860-0F41358E14CA";
 
         /// <summary>
         /// Do Not Disturb End Setting
         /// </summary>
+        [Obsolete("This functionality is no longer used.")]
         public const string DO_NOT_DISTURB_END = "661802FC-E636-4CE2-B75A-4AC05595A347";
 
         /// <summary>
         /// Do Not Disturb Active Setting
         /// </summary>
+        [Obsolete("This functionality is no longer used.")]
         public const string DO_NOT_DISTURB_ACTIVE = "1BE30413-5C90-4B78-B324-BD31AA83C002";
     }
 }

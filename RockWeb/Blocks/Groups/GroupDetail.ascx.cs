@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Groups
 
                 parentGroupId = group.ParentGroupId;
                 string errorMessage;
-                if ( !groupService.CanDelete( group, out errorMessage ) )
+                if ( !groupService.CanDelete( group, out errorMessage, true ) )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
@@ -1528,14 +1528,17 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupType != null )
                 {
-                    dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
-                    if ( groupType.GroupStatusDefinedType != null )
+                    if ( setValues )
                     {
-                        dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
-                    }
+                        dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
+                        if ( groupType.GroupStatusDefinedType != null )
+                        {
+                            dvpGroupStatus.Label = groupType.GroupStatusDefinedType.ToString();
+                        }
 
-                    dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
-                    dvpGroupStatus.SetValue( group.StatusValueId );
+                        dvpGroupStatus.Visible = groupType.GroupStatusDefinedTypeId.HasValue;
+                        dvpGroupStatus.SetValue( group.StatusValueId );
+                    }
                 }
                 else
                 {

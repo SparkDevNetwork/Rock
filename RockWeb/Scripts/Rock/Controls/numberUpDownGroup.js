@@ -9,13 +9,13 @@
     var exports = {
       clientValidate: function (validator, args)
       {
-        var $numberUpDownGroup = $(validator).closest('.number-up-down-group');
+        var $numberUpDownGroup = $(validator).closest('.js-number-up-down-group');
         var isValid = true;
 
         if ($numberUpDownGroup.hasClass('required') == true) {
             isValid = false;
 
-            $numberUpDownGroup.find('.numberincrement-value').each(function (i) {
+            $numberUpDownGroup.find('.js-number-up-down-lbl').each(function (i) {
                 if (parseInt(this.outerText, 10) > 0) {
                     isValid = true;
                 }
