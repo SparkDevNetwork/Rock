@@ -29,6 +29,10 @@ namespace Rock.Attribute
         private const string FIELDTYPE = "fieldtype";
         private const string ENUM_SOURCE_TYPE_KEY = "enumSourceTypeKey";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
         public EnumFieldAttribute( string name )
             : base( name )
         {

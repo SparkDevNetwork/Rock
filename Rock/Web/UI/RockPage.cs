@@ -2732,7 +2732,7 @@ Sys.Application.add_load(function () {
         /// <summary>
         /// Adds a new Html link Literal that will be added to the page header prior to the page being rendered.
         /// NOTE: This method differs from the other AddHtmlLink because a literal whose Mode
-        /// is set to PassThrough will not have its parameters/attributes encoded (& -> &amp;).
+        /// is set to PassThrough will not have its parameters/attributes encoded (the ampersande char changed to &amp;).
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="htmlLink">The <see cref="System.Web.UI.WebControls.Literal"/> to add to the page.</param>

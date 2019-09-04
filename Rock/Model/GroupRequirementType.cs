@@ -202,6 +202,7 @@ namespace Rock.Model
         /// Gets the merge objects that can be used in the SQL Expression. Set the person parameter if checking a specific person, otherwise pass person as null.
         /// </summary>
         /// <param name="group">The group.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
         public Dictionary<string, object> GetMergeObjects( Group group, Person person )
         {
