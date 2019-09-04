@@ -72,7 +72,7 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( ENUM_SOURCE_TYPE_KEY, new Field.ConfigurationValue( value.FullName ) );
 
                 var list = new List<string>();
-                foreach ( var enumValue in Enum.GetValues( EnumSourceType ) )
+                foreach ( var enumValue in Enum.GetValues( value ) )
                 {
                     list.Add( string.Format( "{0}^{1}", ( int ) enumValue, enumValue.ToString().SplitCase() ) );
                 }
