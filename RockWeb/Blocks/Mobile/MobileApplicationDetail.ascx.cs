@@ -696,35 +696,6 @@ namespace RockWeb.Blocks.Mobile
             return url;
         }
 
-		/// <summary>
-        /// Sets the edit mode on the styles tab. True will enabled controls for edit, false will disable controls for edit.
-        /// </summary>
-        /// <param name="showEdit">if set to <c>true</c> [show edit].</param>
-        private void StyleEditMode( bool showEdit )
-        {
-            lbStylesEdit.Visible = !showEdit;
-            lbStylesEditSave.Visible = showEdit;
-            lbStylesEditCancel.Visible = showEdit;
-
-            cpEditBarBackgroundColor.Enabled = showEdit;
-            cpEditMenuButtonColor.Enabled = showEdit;
-            cpEditActivityIndicatorColor.Enabled = showEdit;
-
-            cpPrimary.Enabled = showEdit;
-            cpSecondary.Enabled = showEdit;
-            cpSuccess.Enabled = showEdit;
-            cpDanger.Enabled = showEdit;
-            cpWarning.Enabled = showEdit;
-            cpLight.Enabled = showEdit;
-            cpDark.Enabled = showEdit;
-
-            nbRadiusBase.Enabled = showEdit;
-            imgEditHeaderImage.Enabled = showEdit;
-
-            nbSpacingBase.Enabled = showEdit;
-            nbFontSizeDefault.Enabled = showEdit;
-        }
-
         #endregion
 
         #region Event Handlers
@@ -897,17 +868,6 @@ namespace RockWeb.Blocks.Mobile
         }
 
         /// <summary>
-        /// Handles the Click event of the lbStylesEdit control.
-        /// Enable the controls and show the save and cancel buttons
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbStylesEdit_Click( object sender, EventArgs e )
-        {
-            StyleEditMode( true );
-        }
-
-        /// <summary>
         /// Handles the Click event of the lbStylesEditSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -952,18 +912,6 @@ namespace RockWeb.Blocks.Mobile
 
                 rockContext.SaveChanges();
             }
-
-            StyleEditMode( false );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbStylesEditCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbStylesEditCancel_Click( object sender, EventArgs e )
-        {
-            StyleEditMode( false );
         }
 
         /// <summary>

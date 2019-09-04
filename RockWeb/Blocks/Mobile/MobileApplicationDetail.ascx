@@ -43,7 +43,7 @@
                     <asp:HiddenField ID="hfCurrentTab" runat="server" />
 
                     <div class="row">
-                        <div class="col-md-8 col-lg-8">
+                        <div class="col-md-12 col-lg-12">
                             <ul class="nav nav-tabs margin-b-lg">
                                 <li id="liTabApplication" runat="server">
                                     <asp:LinkButton ID="lbTabApplication" runat="server" OnClick="lbTabApplication_Click">Application</asp:LinkButton>
@@ -60,15 +60,33 @@
                             </ul>
 
                             <asp:Panel ID="pnlApplication" runat="server">
-                                <fielset>
-                                    <p>
-                                        <asp:Literal ID="ltDescription" runat="server" />
-                                    </p>
+                                <div class="row">
+                                    <div class="col-md-8 col-lg-8">
+                                        <fieldset>
+                                            <p>
+                                                <asp:Literal ID="ltDescription" runat="server" />
+                                            </p>
 
-                                    <div>
-                                        <asp:Literal ID="ltAppDetails" runat="server" />
+                                            <div>
+                                                <asp:Literal ID="ltAppDetails" runat="server" />
+                                            </div>
+                                        </fieldset>
                                     </div>
-                                </fielset>
+                                    <div class="col-md-4 hidden-sm hidden-xs">
+                                        <div class="row">
+                                            <div class="col-sm-4">
+                                                <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
+                                            </div>
+
+                                            <div class="col-sm-8">
+                                                <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
+                                                    <asp:Image ID="imgAppPreview" runat="server" />
+                                                </asp:Panel>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="actions margin-t-md">
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" AccessKey="m" ToolTip="Alt+m" />
                                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />
@@ -76,16 +94,17 @@
                                         <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
                                     </div>
                                 </div>
+
                             </asp:Panel>
 
                             <asp:Panel ID="pnlStyles" runat="server">
                                 <asp:HiddenField ID="hfShowAdvancedStylesFields" runat="server" />
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." Enabled="false"/>
+                                        <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
                                     </div>
                                     <div class="col-md-4">
-                                        <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." Enabled="false"/>
+                                        <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar."/>
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." Enabled="false" />
@@ -96,38 +115,38 @@
 
                                 <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
                                     <div class="row">
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="Override the default color provided by the mobile OS." />
                                         </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Override the default color provided by the mobile OS." />
                                         </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." Enabled="false"/>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." Enabled="false"/>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Override the default color provided by the mobile OS." Enabled="false"/>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." />
                                         </div>
 
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." Enabled="false"/>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." />
+                                        </div>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Override the default color provided by the mobile OS." />
+                                        </div>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." />
                                         </div>
                                     </div>
                                 </Rock:RockControlWrapper>
 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help="" Enabled="false"></Rock:NumberBox>
+                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help="" ></Rock:NumberBox>
                                     </div>
                                     <div class="col-md-4">
-                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." Enabled="false" />
+                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
                                     </div>
                                 </div>
 
@@ -140,18 +159,20 @@
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base" Enabled="false"></Rock:NumberBox>
+                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base"></Rock:NumberBox>
                                         </div>
                                         <div class="col-md-4">
-                                            <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Enabled="false"></Rock:NumberBox>
+                                            <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default"></Rock:NumberBox>
                                         </div>
                                     </div>
                                 </asp:Panel>
 
                                 <div class="actions margin-t-md">
-                                    <asp:LinkButton ID="lbStylesEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbStylesEdit_Click" />
-                                    <asp:LinkButton ID="lbStylesEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbStylesEditSave_Click" Visible="false" />
-                                    <asp:LinkButton ID="lbStylesEditCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbStylesEditCancel_Click" CausesValidation="false" Visible="false" />
+                                    <Rock:BootstrapButton ID="lbStylesEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbStylesEditSave_Click"
+                                        DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                        CompletedText="Saved"
+                                        CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>"
+                                        CompletedDuration="5"></Rock:BootstrapButton>
                                 </div>
 
                             </asp:Panel>
@@ -177,20 +198,6 @@
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
-                        </div>
-
-                        <div class="col-md-4 hidden-sm hidden-xs">
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
-                                </div>
-
-                                <div class="col-sm-8">
-                                    <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
-                                        <asp:Image ID="imgAppPreview" runat="server" />
-                                    </asp:Panel>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </asp:Panel>
