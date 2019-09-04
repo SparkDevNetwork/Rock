@@ -8,6 +8,15 @@
     
         {% for item in items %}[[ item ]]
 
+            {% capture showDate %}
+                {% contentchannel where:'Id == "{{ item.ContentChannel.Id }}"' iterator:'channels' %}
+                    {% for channel in channels %}
+                        {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                    {% endfor %}
+                {% endcontentchannel %}
+            {% endcapture %}
+            {% assign showDate = showDate | Trim %}
+
             {% capture slug %}{{ item.PrimarySlug }}{% endcapture %}
             {% capture id %}{{ item.Id }}{% endcapture %}
             {% capture cciid %}{{ item.Id }}{% endcapture %}
@@ -23,7 +32,21 @@
     	    {% endif %}
             {% capture textalignment %}{{ item | Attribute:'TextAlignment' }}{% endcapture %}
             {% capture label %}{{ item | Attribute:'Label' }}{% endcapture %}
-            {% capture subtitle %}{% endcapture %}
+            
+            {% assign dates = item | Attribute:'Dates','RawValue' %}
+			{% assign dateParts = dates | Split:',' %}
+            {% capture subtitle %}
+				{%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
+				{% if showDate == 'True' %}
+					{%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
+					{% if dates != empty %}
+						{[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
+					{% else %}
+						{[ formatDate date:'{{ item.StartDateTime | Date:'MMM d, yyyy' }}' ]}
+					{% endif %}
+				{% endif %}
+			{% endcapture %}
+
             {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
     	    {% if imageurl == empty %}
     	        {% assign imageurl = 'Global' | Attribute:'ImageLandscape','Url' %}
