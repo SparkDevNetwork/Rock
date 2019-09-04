@@ -106,11 +106,11 @@ namespace Rock.Communication.Transport
                             }
 
                             string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipient.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                            Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
 
-                            // Create the communication record and send using that.
-                            if ( rockMessage.CreateCommunicationRecord )
+                            // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
+                            if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
                             {
-                                Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
                                 var communicationService = new CommunicationService( rockContext );
                                 Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
 
