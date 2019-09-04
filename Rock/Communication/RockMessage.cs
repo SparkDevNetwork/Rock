@@ -140,7 +140,7 @@ namespace Rock.Communication
         [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the AddRecipient that takes RockMessageRecipient as a parameter" )]
         public void AddRecipient( RecipientData recipient )
         {
-            Recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient.To, null ) );
+            Recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient.To, recipient.MergeFields ) );
         }
 
         /// <summary>

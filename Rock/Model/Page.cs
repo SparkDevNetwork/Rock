@@ -351,6 +351,24 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string BodyCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -363,6 +381,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Page ParentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon binary file.
+        /// </summary>
+        /// <value>
+        /// The icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -614,6 +641,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

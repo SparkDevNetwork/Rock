@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     {
         #region Attribute Keys
 
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ManagerPage = "ManagerPage";
             public const string ShowRelatedPeople = "ShowRelatedPeople";

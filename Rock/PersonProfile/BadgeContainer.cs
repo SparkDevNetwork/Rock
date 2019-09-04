@@ -15,86 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-
-using Rock.Data;
-using Rock.Extension;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.PersonProfile
 {
     /// <summary>
-    /// MEF Container class for Person Badge Components
+    /// MEF Container class for Badge Components
     /// </summary>
-    public class BadgeContainer : Container<BadgeComponent, IComponentData>
+    [RockObsolete( "1.10" )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    public class BadgeContainer : Rock.Badge.BadgeContainer
     {
-        /// <summary>
-        /// Singleton instance
-        /// </summary>
-        private static readonly Lazy<BadgeContainer> instance =
-            new Lazy<BadgeContainer>( () => new BadgeContainer() );
-
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>
-        /// The instance.
-        /// </value>
-        public static BadgeContainer Instance
-        {
-            get { return instance.Value; }
-        }
-
-        /// <summary>
-        /// Refreshes this instance.
-        /// </summary>
-        public override void Refresh()
-        {
-            base.Refresh();
-
-            // Create any attributes that need to be created
-            int badgeEntityTypeId = EntityTypeCache.Get( typeof( Model.Badge ) ).Id;
-            using ( var rockContext = new RockContext() )
-            {
-                foreach ( var badge in this.Components )
-                {
-                    Type badgeType = badge.Value.Value.GetType();
-                    int badgeComponentEntityTypeId = EntityTypeCache.Get( badgeType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( badgeType, badgeEntityTypeId, "BadgeComponentEntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the component with the matching Entity Type Name.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
-        public static BadgeComponent GetComponent( string entityType )
-        {
-            return Instance.GetComponentByEntity( entityType );
-        }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
-        public static string GetComponentName( string entityType )
-        {
-            return Instance.GetComponentNameByEntity( entityType );
-        }
-
-        /// <summary>
-        /// Gets or sets the MEF components.
-        /// </summary>
-        /// <value>
-        /// The MEF components.
-        /// </value>
-        [ImportMany( typeof( BadgeComponent ) )]
-        protected override IEnumerable<Lazy<BadgeComponent, IComponentData>> MEFComponents { get; set; }
-
     }
 }

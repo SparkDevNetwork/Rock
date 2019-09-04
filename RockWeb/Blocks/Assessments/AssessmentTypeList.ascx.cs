@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
         }
@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Keys to use for Block Attribute Categories
         /// </summary>
-        protected static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string LinkedPages = "Linked Pages";
         }
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string AssessmentTypeId = "AssessmentTypeId";
         }
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Keys to use for Filter Settings
         /// </summary>
-        protected static class FilterSettingName
+        private static class FilterSettingName
         {
             public const string Title = "Title";
             public const string RequiresRequest = "Requires Request";

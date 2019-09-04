@@ -39,7 +39,7 @@ namespace Rock.Field.Types
         /// <summary>
         /// The keys for configuration
         /// </summary>
-        protected static class ConfigurationKey
+        private static class ConfigurationKey
         {
             /// <summary>
             /// The configuration JSON key

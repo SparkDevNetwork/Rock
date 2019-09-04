@@ -136,7 +136,7 @@ namespace Rock.Apps.StatementGenerator
 
                 if ( max > 0 )
                 {
-                    if ( (string)lblReportProgress.Content != progressMessage )
+                    if ( lblReportProgress.Content.ToString() != progressMessage )
                     {
                         lblReportProgress.Content = progressMessage;
                     }

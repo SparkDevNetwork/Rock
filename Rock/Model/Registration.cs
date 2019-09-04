@@ -1592,7 +1592,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <value>
         /// The registration template fee item identifier.
         /// </value>
-        public int RegistrationTemplateFeeItemId { get; set; }
+        public int? RegistrationTemplateFeeItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the quantity.
@@ -1699,14 +1699,13 @@ Registration By: {0} Total Cost/Fees:{1}
         public FeeInfo( RegistrationRegistrantFee fee )
             : this()
         {
-            FeeLabel = fee.RegistrationTemplateFeeItem.Name;
-            RegistrationTemplateFeeItemId = fee.RegistrationTemplateFeeItemId.Value;
+            FeeLabel = fee.RegistrationTemplateFeeItem?.Name;
+            RegistrationTemplateFeeItemId = fee.RegistrationTemplateFeeItemId;
             Quantity = fee.Quantity;
             Cost = fee.Cost;
             PreviousCost = fee.Cost;
             DiscountApplies = fee.RegistrationTemplateFee != null && fee.RegistrationTemplateFee.DiscountApplies;
         }
-
     }
 
     /// <summary>

@@ -115,6 +115,16 @@ namespace Rock.Communication.Transport
 
                                 Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPersonAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
 
+                                // Since we just created a new communication record, we need to move any attachments from the rockMessage
+                                // to the communication's attachments since the Send method below will be handling the delivery.
+                                if ( attachmentMediaUrls.Any() )
+                                {
+                                    foreach ( var attachment in rockMessage.Attachments.AsQueryable() )
+                                    {
+                                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachment.Id }, CommunicationType.SMS );
+                                    }
+                                }
+
                                 rockContext.SaveChanges();
                                 Send( communication, mediumEntityTypeId, mediumAttributes );
                                 continue;

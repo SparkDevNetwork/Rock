@@ -101,6 +101,11 @@ namespace Rock.Tests.Integration.Utility
                 indexes.Add( i );
             }
 
+            if ( maximumItems > totalItemCount )
+            {
+                maximumItems = totalItemCount;
+            }
+
             // Select a random sequence of index numbers and the items they represent to a new collection.
             var itemsRemaining = totalItemCount;
 
@@ -124,6 +129,5 @@ namespace Rock.Tests.Integration.Utility
         }
 
         #endregion
-
     }
 }

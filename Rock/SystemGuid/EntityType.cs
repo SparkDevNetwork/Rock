@@ -276,5 +276,10 @@ namespace Rock.SystemGuid
         /// The guid for the Step entity type
         /// </summary>
         public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
+
+        /// <summary>
+        /// The guid for the Step program entity
+        /// </summary>
+        public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
     }
 }

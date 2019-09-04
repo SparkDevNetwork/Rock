@@ -124,11 +124,32 @@ namespace RockWeb.Blocks.Groups
             cbCanExpire.Checked = groupRequirementType.CanExpire;
             nbExpireInDays.Text = groupRequirementType.ExpireInDays.ToString();
 
-            ceSqlExpression.Text = groupRequirementType.SqlExpression;
-            ceSqlExpression.Help = @"A SQL expression that returns a list of Person Ids that meet the criteria. Example: <pre>SELECT [Id] FROM [Person] WHERE [LastName] = 'Decker'</pre>
-The SQL can include Lava merge fields:";
+            nbSQLHelp.InnerHtml = @"A SQL expression that returns a list of Person Ids that meet the criteria. Example:
+<pre>
+SELECT [Id] FROM [Person]
+WHERE [LastName] = 'Decker'</pre>
+</pre>
+The SQL can include Lava merge fields:
 
-            ceSqlExpression.Help += groupRequirementType.GetMergeObjects( new Group() ).lavaDebugInfo();
+<ul>
+   <li>Group</i>
+   <li>GroupRequirementType</i>
+</ul>
+
+TIP: When calculating for a specific Person, a <strong>Person</strong> merge field will also be included. This can improve performance in cases when the system is checking requirements for a specific person. Example:
+
+<pre>
+    SELECT [Id] FROM [Person]
+        WHERE [LastName] = 'Decker'
+    {% if Person != empty %}
+        AND [Id] = {{ Person.Id }}
+    {% endif &}
+</pre>
+";
+
+            nbSQLHelp.InnerHtml += groupRequirementType.GetMergeObjects( new Group(), this.CurrentPerson ).lavaDebugInfo();
+
+            ceSqlExpression.Text = groupRequirementType.SqlExpression; 
 
             ceWarningSqlExpression.Text = groupRequirementType.WarningSqlExpression;
 

@@ -283,6 +283,7 @@ namespace RockWeb.Blocks.Reporting
                     filterControl.Expanded = true;
 
                     filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
+                    filterControl.HideDescription = true;
 
                     var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
                     var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();

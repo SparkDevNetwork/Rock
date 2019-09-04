@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The detail page
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step type identifier
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Filters
         /// </summary>
-        protected static class FilterKey
+        private static class FilterKey
         {
             public const string FirstName = "FirstName";
             public const string LastName = "LastName";
@@ -232,11 +232,11 @@ namespace RockWeb.Blocks.Steps
             {
                 if ( step.IsCompleted )
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-success'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-success'>{0}</div>", step.StepStatusName );
                 }
                 else
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-info'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-info'>{0}</div>", step.StepStatusName );
                 }
             }
 

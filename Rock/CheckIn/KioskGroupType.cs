@@ -63,6 +63,20 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a value indicating whether check-out is active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckOutActive
+        {
+            get
+            {
+                return KioskGroups != null && KioskGroups.Any( s => s.IsCheckOutActive );
+            }
+        }
+
+        /// <summary>
         /// Next time that a location/group/schedule will be active for
         /// this group type.  If the group type has locations, this time
         /// will be in the past, if there are no locations, this time would

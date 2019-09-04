@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        internal static void LoadDropDownItems( IStepProgramPicker picker, bool includeEmptyOption )
+        public static void LoadDropDownItems( IStepProgramPicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )

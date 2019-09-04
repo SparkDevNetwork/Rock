@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class AttendanceAnalytics : RockBlock
     {
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string GroupTypes = "GroupTypes";
             public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";

@@ -42,6 +42,12 @@ namespace Rock.Lava.Blocks
 
         string _markup = string.Empty;
 
+        /// <summary>
+        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int StartupOrder { get { return 0; } }
 
         /// <summary>

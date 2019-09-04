@@ -1723,18 +1723,6 @@ namespace Rock.Web.UI
             if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                double hitPercent = 0D;
-
-                if ( Context.Items.Contains( "Cache_Hits" ) )
-                {
-                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
-                    if ( cacheHits != null )
-                    {
-                        int hits = cacheHits.Where( c => c.Value ).Count();
-                        int total = cacheHits.Count();
-                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
-                    }
-                }
 
                 var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
 
@@ -1745,8 +1733,7 @@ namespace Rock.Web.UI
                     this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
-                phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-md'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                phLoadStats.Controls.Add( new LiteralControl( $"<span>Page Load Time: {tsDuration.TotalSeconds:N2}s </span><span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>" ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
@@ -1853,6 +1840,15 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Adds a new Html literal link that will be added to the page header prior to the page being rendered.
+        /// </summary>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.WebControls.Literal"/>.</param>
+        private void AddHtmlLink( Literal htmlLink )
+        {
+            RockPage.AddHtmlLink( this, htmlLink );
+        }
+
+        /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered.
         /// </summary>
         /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/>.</param>
@@ -1911,13 +1907,13 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public void AddIconLink( int binaryFileId, int size, string rel = "apple-touch-icon-precomposed" )
         {
-            HtmlLink favIcon = new HtmlLink();
-            favIcon.Attributes.Add( "rel", rel );
-            favIcon.Attributes.Add( "sizes", $"{size}x{size}" );
-            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" ) );
+            Literal favIcon = new Literal();
+            favIcon.Mode = LiteralMode.PassThrough;
+            var url = ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" );
+            favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
+
             AddHtmlLink( favIcon );
         }
-
 
         #endregion
 
@@ -2745,7 +2741,52 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Adds a new Html link that will be added to the page header prior to the page being rendered
+        /// Adds a new Html link Literal that will be added to the page header prior to the page being rendered.
+        /// NOTE: This method differs from the other AddHtmlLink because a literal whose Mode
+        /// is set to PassThrough will not have its parameters/attributes encoded (& -> &amp;).
+        /// </summary>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.WebControls.Literal"/> to add to the page.</param>
+        /// <param name="contentPlaceHolderId">A <see cref="System.String"/> representing the Id of the content placeholder to add the link to.</param>
+        private static void AddHtmlLink( Page page, Literal htmlLink, string contentPlaceHolderId = "" )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                if ( !HtmlLinkExists( header, htmlLink ) )
+                {
+                    bool inserted = false;
+
+                    if ( !string.IsNullOrWhiteSpace( contentPlaceHolderId ) )
+                    {
+                        for ( int i = 0; i < header.Controls.Count; i++ )
+                        {
+                            if ( header.Controls[i] is ContentPlaceHolder )
+                            {
+                                var ph = ( ContentPlaceHolder ) header.Controls[i];
+                                if ( ph.ID == contentPlaceHolderId )
+                                {
+                                    ph.Controls.Add( new LiteralControl( "\n\t" ) );
+                                    ph.Controls.Add( htmlLink );
+
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ( !inserted )
+                    {
+                        header.Controls.Add( new LiteralControl( "\n\t" ) );
+                        header.Controls.Add( htmlLink );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a new Html link that will be added to the page header prior to the page being rendered.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to add to the page.</param>
@@ -2783,9 +2824,46 @@ Sys.Application.add_load(function () {
                         header.Controls.Add( new LiteralControl( "\n\t" ) );
                         header.Controls.Add( htmlLink );
                     }
-
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.Boolean"/> flag indicating if a specified parent control contains the specified HtmlLink literal.
+        /// </summary>
+        /// <param name="parentControl">The <see cref="System.Web.UI.Control"/> to search for the HtmlLink.</param>
+        /// <param name="newLink">The <see cref="System.Web.UI.WebControls.Literal"/> to search for.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
+        private static bool HtmlLinkExists( Control parentControl, Literal newLink )
+        {
+            bool existsAlready = false;
+
+            if ( parentControl != null )
+            {
+                foreach ( Control control in parentControl.Controls )
+                {
+                    if ( control is ContentPlaceHolder )
+                    {
+                        if ( HtmlLinkExists( control, newLink ) )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                    else if ( control is Literal )
+                    {
+                        Literal existingLink = ( Literal ) control;
+
+                        if ( newLink.Text == existingLink.Text )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return existsAlready;
         }
 
         /// <summary>
@@ -2793,7 +2871,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <param name="parentControl">The <see cref="System.Web.UI.Control"/> to search for the HtmlLink.</param>
         /// <param name="newLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to search for.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
         private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
         {
             bool existsAlready = false;
