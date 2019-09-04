@@ -146,7 +146,15 @@ namespace Rock.DownhillCss
             }
 
             // Run a few other replaces across the CSS
-            cssStyles = cssStyles.Replace( "?radius-base", settings.RadiusBase.ToString() );
+            if ( settings.Platform == DownhillPlatform.Mobile )
+            {
+                // Most Xamarin.Forms controls only support integer values for border-radius.
+                cssStyles = cssStyles.Replace( "?radius-base", ( ( int ) Math.Floor( settings.RadiusBase ) ).ToString() );
+            }
+            else
+            {
+                cssStyles = cssStyles.Replace( "?radius-base", settings.RadiusBase.ToString() );
+            }
             cssStyles = cssStyles.Replace( "?spacing-base", settings.SpacingBase.ToString() );
             cssStyles = cssStyles.Replace( "?font-size-default", settings.FontSizeDefault.ToString() );
 
