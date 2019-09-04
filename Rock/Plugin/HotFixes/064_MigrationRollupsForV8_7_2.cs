@@ -146,17 +146,15 @@ The {{ Group.Name }} group did not meet.
         {
             Sql( @"
 DECLARE @BlockTypeId int, @AttributeId int
+
 SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '63659EBE-C5AF-4157-804A-55C7D565110E')
 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Key]='DetailPage' AND [EntityTypeQualifierColumn]='BlockTypeId' AND [EntityTypeQualifierValue]=@BlockTypeId)
-UPDATE
-	[A]
-SET 
-	[Value] = [B].[Guid]
-FROM
-	[AttributeValue] A
-INNER JOIN
-	[Page] B ON A.[Value]=B.[Id]
-WHERE [AttributeId]=@AttributeId
+
+UPDATE [AttributeValue]
+SET [AttributeValue].[Value] = [Page].[Guid]
+FROM [AttributeValue]
+INNER JOIN [Page] ON [AttributeValue].[Value] = CONVERT(nvarchar(10), [Page].[Id])
+WHERE [AttributeValue].[AttributeId] = @AttributeId
 " );
         }
 

@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Event
 
                 var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
-                ShowOccurranceAttributes( eventItemOccurrence );
+                ShowOccurranceAttributes( eventItemOccurrence, false );
             }
         }
 
@@ -880,7 +880,7 @@ namespace RockWeb.Blocks.Event
             else
             {
                 lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
-               
+
                 var registration = eventItemOccurrence.Linkages.FirstOrDefault();
                 if ( registration != null )
                 {
@@ -915,14 +915,14 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            ShowOccurranceAttributes( eventItemOccurrence );
+            ShowOccurranceAttributes( eventItemOccurrence, true );
 
             htmlOccurrenceNote.Text = eventItemOccurrence.Note;
 
             DisplayRegistration();
         }
 
-        private void ShowOccurranceAttributes(EventItemOccurrence eventItemOccurrence )
+        private void ShowOccurranceAttributes(EventItemOccurrence eventItemOccurrence, bool setValues )
         {
             wpAttributes.Visible = false;
             phAttributeEdits.Controls.Clear();
@@ -932,7 +932,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItemOccurrence.Attributes.Count > 0 )
             {
                 wpAttributes.Visible = true;
-                Helper.AddEditControls( eventItemOccurrence, phAttributeEdits, true, BlockValidationGroup );
+                Helper.AddEditControls( eventItemOccurrence, phAttributeEdits, setValues, BlockValidationGroup );
             }
         }
 
@@ -1062,7 +1062,7 @@ namespace RockWeb.Blocks.Event
                         LinkageState.RegistrationInstance.RegistrationTemplate.CopyPropertiesFrom( registrationTemplate );
                     }
                 }
-                
+
                 foreach ( var template in new RegistrationTemplateService( rockContext )
                     .Queryable().AsNoTracking().OrderBy(t => t.Name ))
                 {
@@ -1138,7 +1138,7 @@ namespace RockWeb.Blocks.Event
         private void ShowExistingLinkageDialog()
         {
             ddlExistingLinkageTemplate.Items.Clear();
-            
+
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var template in new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ) )

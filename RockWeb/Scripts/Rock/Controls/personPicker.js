@@ -213,7 +213,7 @@
                 function () {
 
                     // only show the X if there there is something picked
-                    if ($('#' + controlId + '_hfPersonId').val() || '0' !== '0') {
+                    if (($('#' + controlId + '_hfPersonId').val() || '0') !== '0') {
                         $('#' + controlId + '_btnSelectNone').stop().show();
                     }
                 },

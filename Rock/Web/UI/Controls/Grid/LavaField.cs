@@ -38,8 +38,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            LavaFieldTemplate LavaFieldTemplate = new LavaFieldTemplate();
-            this.ItemTemplate = LavaFieldTemplate;
+            LavaFieldTemplate lavaFieldTemplate = new LavaFieldTemplate();
+            this.ItemTemplate = lavaFieldTemplate;
             this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }

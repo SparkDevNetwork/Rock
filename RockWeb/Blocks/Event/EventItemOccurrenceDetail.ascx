@@ -79,7 +79,7 @@
                     <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
                 
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
-                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server"></Rock:DynamicPlaceholder>
                     </Rock:PanelWidget>
 
                     <div class="actions">
