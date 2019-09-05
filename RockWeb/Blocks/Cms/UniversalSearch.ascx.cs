@@ -288,7 +288,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            Response.Redirect( BuildUrl( 0, false ) );
+            string url = BuildUrl( 0, false );
+            Response.Redirect( url, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
