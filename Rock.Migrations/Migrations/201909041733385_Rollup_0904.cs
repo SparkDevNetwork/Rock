@@ -346,25 +346,25 @@ namespace Rock.Migrations
                 description: "Asset types that describe various kinds of Non-Cash transactions.",
                 guid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE );
 
-            RockMigrationHelper.AddDefinedValue(
+            RockMigrationHelper.UpdateDefinedValue(
                 definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
                 value: "Property",
                 description: "Non-Cash Asset Type: Property.",
                 guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_PROPERTY );
 
-            RockMigrationHelper.AddDefinedValue(
+            RockMigrationHelper.UpdateDefinedValue(
                 definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
                 value: "Stocks And Bonds",
                 description: "Non-Cash Asset Type: Stocks And Bonds.",
                 guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_STOCKSANDBONDS );
 
-            RockMigrationHelper.AddDefinedValue(
+            RockMigrationHelper.UpdateDefinedValue(
                 definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
                 value: "Vehicles",
                 description: "Non-Cash Asset Type: Vehicles.",
                 guid: Rock.SystemGuid.DefinedValue.NONCASH_ASSET_VEHICLES );
 
-            RockMigrationHelper.AddDefinedValue(
+            RockMigrationHelper.UpdateDefinedValue(
                 definedTypeGuid: Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE,
                 value: "Other",
                 description: "Non-Cash Asset Type: Other.",
