@@ -161,6 +161,7 @@ namespace Rock.DownhillCss
             // Text and heading colors
             cssStyles = cssStyles.Replace( "?color-text", settings.TextColor );
             cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
+            cssStyles = cssStyles.Replace( "?color-background", settings.BackgroundColor );
 
             return cssStyles;
         }
@@ -587,17 +588,76 @@ namespace Rock.DownhillCss
 
 .btn.btn-secondary {
     color: #ffffff;
-    border-color: ?color-secondary;
+    background-color: ?color-secondary;
 }
 
 .btn.btn-default {
-    color: #ffffff;
-    border-color: ?color-secondary;
+    color: ?text-color;
+    border-color: ?text-color;
 }
 
 .btn.btn-link {
     color: ?color-primary;
     border-width: 0;
+}
+
+.btn.btn-outline-primary {
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
+}
+
+.btn.btn-outline-secondary {
+    color: ?color-secondary;
+    border-color: ?color-secondary;
+    border-width: 1;
+}
+
+.btn.btn-outline-success {
+    color: ?color-success;
+    border-color: ?color-success;
+    border-width: 1;
+}
+
+.btn.btn-outline-danger {
+    color: ?color-danger;
+    border-color: ?color-danger;
+    border-width: 1;
+}
+
+.btn.btn-outline-warning {
+    color: ?color-warning;
+    border-color: ?color-warning;
+    border-width: 1;
+}
+
+.btn.btn-outline-info {
+    color: ?color-info;
+    border-color: ?color-info;
+    border-width: 1;
+}
+
+.btn.btn-outline-light {
+    color: ?color-light;
+    border-color: ?color-light;
+    border-width: 1;
+}
+
+.btn.btn-outline-dark {
+    color: ?color-dark;
+    border-color: ?color-dark;
+    border-width: 1;
+}
+
+/* Button Sizes */
+.btn.btn-lg {
+    font-size: large;
+    padding: 5;
+}
+
+.btn.btn-sm {
+    font-size: micro;
+    padding: 0;
 }
 
 /* Text Weights */

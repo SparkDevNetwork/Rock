@@ -117,6 +117,9 @@
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpHeadingColor" runat="server" Label="Heading Color" Help="The default color to use for headings in the application." />
                                         </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpBackgroundColor" runat="server" Label="Background Color" Help="The background color for the application." />
+                                        </div>
                                     </div>
                                 </Rock:RockControlWrapper>
 
@@ -168,12 +171,14 @@
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base"></Rock:NumberBox>
+                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base" Help="The default value to use for margins and padding."></Rock:NumberBox>
                                         </div>
                                         <div class="col-md-4">
-                                            <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default"></Rock:NumberBox>
+                                            <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>
                                     </div>
+
+                                    <Rock:CodeEditor ID="ceEditCssStyles" runat="server" Label="CSS Styles" Help="CSS Styles to apply to UI elements." EditorMode="Css" EditorHeight="600" />
                                 </asp:Panel>
 
                                 <div class="actions margin-t-md">
@@ -260,8 +265,6 @@
                             <Rock:CategoryPicker ID="cpEditPersonAttributeCategories" runat="server" Label="Person Attribute Categories" Help="All attributes in selected categories will be sent to the client and made available remotely."  AllowMultiSelect="true" />
                         </div>
                     </div>
-
-                    <Rock:CodeEditor ID="ceEditCssStyles" runat="server" Label="CSS Styles" Help="CSS Styles to apply to UI elements." EditorMode="Css" />
 
                     <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout Xaml" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 
