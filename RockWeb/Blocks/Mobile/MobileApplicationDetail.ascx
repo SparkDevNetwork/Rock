@@ -99,17 +99,26 @@
 
                             <asp:Panel ID="pnlStyles" runat="server">
                                 <asp:HiddenField ID="hfShowAdvancedStylesFields" runat="server" />
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
+
+                                <Rock:RockControlWrapper ID="rcwInterfaceColors" runat="server" Label="Interface Colors">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar."/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpTextColor" runat="server" Label="Text Color" Help="The default color to use for text in the application." />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpHeadingColor" runat="server" Label="Heading Color" Help="The default color to use for headings in the application." />
+                                        </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar."/>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." Enabled="false" />
-                                    </div>
-                                </div>
+                                </Rock:RockControlWrapper>
 
                                 <hr />
 
