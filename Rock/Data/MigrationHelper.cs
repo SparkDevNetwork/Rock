@@ -838,6 +838,13 @@ namespace Rock.Data
             Migration.Sql( sql );
         }
 
+        public void DeletePageRoute( string pageRouteGuid )
+        {
+            string sql = $@"
+                DELETE FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}';
+            ";
+        }
+
         /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>

@@ -1600,6 +1600,60 @@ namespace Rock.Model
         }
 
         #endregion GroupScheduling Related
+
+        #region RSVP Related
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        public void RegisterRSVPRecipients( int occurrenceId, string personIds )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
+
+            // Get Occurrence.
+            var occurrence = new AttendanceOccurrenceService( rockContext ).Queryable().AsNoTracking()
+                .Where( o => o.Id == occurrenceId ).FirstOrDefault();
+            DateTime startDateTime = occurrence.Schedule != null && occurrence.Schedule.HasSchedule() ? occurrence.OccurrenceDate.Date.Add( occurrence.Schedule.StartTimeOfDay ) : occurrence.OccurrenceDate;
+
+            // Get PersonAliasIDs from PersonIDs
+            var people = new PersonService( rockContext ).Queryable().AsNoTracking()
+                .Where( p => personIdList.Contains( p.Id ) )
+                .ToList();
+            var personAliasIds = people.Select( p => p.PrimaryAliasId ).ToList();
+
+            // Check for existing records.
+            var attendanceService = new AttendanceService( rockContext );
+            var existingAttendanceRecords = attendanceService.Queryable().AsNoTracking()
+                .Where( a => personAliasIds.Contains( a.PersonAliasId ) )
+                .Where( a => a.OccurrenceId == occurrenceId )
+                .ToList();
+
+            var newAttendanceRecords = new List<Attendance>();
+            foreach ( int personAliasId in personAliasIds )
+            {
+                // If record doesn't exist, create a new attendance record and set RSVP to "Unknown".
+                if ( !existingAttendanceRecords.Where( a => a.PersonAliasId == personAliasId ).Any() )
+                {
+                    newAttendanceRecords.Add(
+                        new Attendance()
+                        {
+                            OccurrenceId = occurrenceId,
+                            PersonAliasId = personAliasId,
+                            StartDateTime = startDateTime,
+                            RSVP = Rock.Model.RSVP.Unknown
+                        });
+                }
+            }
+
+            attendanceService.AddRange( newAttendanceRecords );
+            rockContext.SaveChanges();
+        }
+
+        #endregion RSVP Related
     }
 
     #region Group Scheduling related classes and types

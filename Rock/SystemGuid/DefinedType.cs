@@ -375,5 +375,10 @@ namespace Rock.SystemGuid
         /// Used to store various liquid templates for features in Rock.
         /// </summary>
         public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
+
+        /// <summary>
+        /// The group RSVP decline reason.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON = "1E339D24-3DF3-4628-91C3-DA9300D21ACE";
     }
 }

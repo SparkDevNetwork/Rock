@@ -53,6 +53,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
         /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <param name="limitToSchedulingEnabled">if set to <c>true</c> only includes groups that have SchedulingEnabled (or has a child group that has SchedulingEnabled).</param>
+        /// <param name="limitToRSVPEnabled">if set to <c>true</c> only includes groups that have RSVPEnabled (or has a child group that has RSVPEnabled).</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
@@ -67,7 +68,8 @@ namespace Rock.Rest.Controllers
             int campusId = 0,
             bool includeNoCampus = false,
             bool limitToPublic  = false,
-            bool limitToSchedulingEnabled = false)
+            bool limitToSchedulingEnabled = false,
+            bool limitToRSVPEnabled = false)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -94,25 +96,44 @@ namespace Rock.Rest.Controllers
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
-                    bool includeGroup = true;
+
+                    bool includeGroup_Scheduling = true;
                     if ( limitToSchedulingEnabled )
                     {
-                        includeGroup = false;
+                        includeGroup_Scheduling = false;
                         if ( groupType?.IsSchedulingEnabled == true )
                         {
-                            includeGroup = true;
+                            includeGroup_Scheduling = true;
                         }
                         else
                         {
                             bool hasChildScheduledEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.IsSchedulingEnabled == true );
                             if ( hasChildScheduledEnabledGroups )
                             {
-                                includeGroup = true;
+                                includeGroup_Scheduling = true;
                             }
                         }
                     }
 
-                    if ( includeGroup )
+                    bool includeGroup_RSVP = true;
+                    if ( limitToRSVPEnabled )
+                    {
+                        includeGroup_RSVP = false;
+                        if ( groupType?.EnableRSVP == true )
+                        {
+                            includeGroup_RSVP = true;
+                        }
+                        else
+                        {
+                            bool hasChildRSVPEnabledGroups = groupService.GetAllDescendentsGroupTypes( group.Id, includeInactiveGroups ).Any( a => a.EnableRSVP == true );
+                            if ( hasChildRSVPEnabledGroups )
+                            {
+                                includeGroup_RSVP = true;
+                            }
+                        }
+                    }
+
+                    if ( includeGroup_Scheduling && includeGroup_RSVP )
                     {
                         groupList.Add( group );
                         var treeViewItem = new TreeViewItem();
