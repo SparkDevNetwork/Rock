@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Mobile
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
             ddlEditLockPhoneOrientation.SetValue( ( int ) additionalSettings.LockedPhoneOrientation );
             ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
-            ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
+            
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
@@ -486,6 +486,9 @@ namespace RockWeb.Blocks.Mobile
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
                 cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
                 cpHeadingColor.Value = additionalSettings.DownhillSettings.HeadingColor;
+                cpBackgroundColor.Value = additionalSettings.DownhillSettings.BackgroundColor;
+
+                ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
 
                 cpPrimary.Value = additionalSettings.DownhillSettings.ApplicationColors.Primary;
                 cpSecondary.Value = additionalSettings.DownhillSettings.ApplicationColors.Secondary;
@@ -781,7 +784,7 @@ namespace RockWeb.Blocks.Mobile
             //
             additionalSettings.ShellType = rblEditApplicationType.SelectedValueAsEnum<ShellType>();
             additionalSettings.TabLocation = rblEditAndroidTabLocation.SelectedValueAsEnum<TabLocation>();
-            additionalSettings.CssStyle = ceEditCssStyles.Text;
+            
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
@@ -892,6 +895,7 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
                 additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
                 additionalSettings.DownhillSettings.HeadingColor = ParseColor( cpHeadingColor.Value );
+                additionalSettings.DownhillSettings.BackgroundColor = ParseColor( cpBackgroundColor.Value );
 
                 additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );
@@ -906,6 +910,9 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.DownhillSettings.SpacingBase = nbSpacingBase.Text.AsDecimal();
                 additionalSettings.DownhillSettings.FontSizeDefault = nbFontSizeDefault.Text.AsDecimal();
                 additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
+
+                additionalSettings.CssStyle = ceEditCssStyles.Text;
+
                 site.AdditionalSettings = additionalSettings.ToJson();
 
                 // Ensure the images are persisted.
