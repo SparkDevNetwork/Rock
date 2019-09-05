@@ -96,9 +96,21 @@
 
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
+     
     <body runat="server" id="body">
 
         <form id="form1" runat="server">
+
+            <Rock:Lava ID="IsAdmin" runat="server">
+                {% assign pageId = 'Global' | Page:'Id' %}
+                {% assign hasRights = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+
+                {% if hasRights == 'True' %}
+                    <script>
+                        $('body').addClass('is-admin');
+                    </script>
+                {% endif %}
+            </Rock:Lava>
 
             <div id="navigation">
                 <Rock:Zone Name="Login" runat="server" />
