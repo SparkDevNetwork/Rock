@@ -17,13 +17,10 @@
             $('#<%= pnlProcessing.ClientID %> .js-processing-spinner').slideUp();
         };
 
-        proxy.client.bulkUpdateStatus = function (status, success) {
-            if (success) {
-                $('#<%= pnlProcessing.ClientID %> .js-results').addClass('alert-success').removeClass('alert-danger');
-            }
-            else {
-                $('#<%= pnlProcessing.ClientID %> .js-results').addClass('alert-danger').removeClass('alert-success');
-            }
+        proxy.client.bulkUpdateStatus = function (status, alertClass) {
+            var $jsResults = $('#<%= pnlProcessing.ClientID %> .js-results');
+            $jsResults.removeClass('alert-danger').removeClass('alert-success').removeClass('alert-warning');
+            $jsResults.AddClass(alertClass);
 
             $('#<%= pnlProcessing.ClientID %> .js-results').html(status).slideDown();
             $('#<%= pnlProcessing.ClientID %> .js-progress-div').slideUp();

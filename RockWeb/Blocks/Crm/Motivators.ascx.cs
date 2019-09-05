@@ -88,7 +88,7 @@ namespace Rockweb.Blocks.Crm
     public partial class Motivators : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string Instructions = "Instructions";
             public const string SetPageTitle = "SetPageTitle";
@@ -104,7 +104,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// A defined list of page parameter keys used by this block.
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The assessment identifier

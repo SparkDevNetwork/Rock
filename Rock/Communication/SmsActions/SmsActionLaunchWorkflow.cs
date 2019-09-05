@@ -31,12 +31,57 @@ namespace Rock.Communication.SmsActions
     [Description( "Launches a workflow to process a message." )]
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "Reply" )]
-    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: AttributeCategories.Filters )]
-    [WorkflowTypeField( "Workflow Type", "The type of workflow to launch.", false, true, order: 2, category: AttributeCategories.Workflow )]
-    [TextField( "Workflow Name Template", "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", order: 3, category: AttributeCategories.Workflow )]
-    [KeyValueListField( "Workflow Attributes", "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>", false, "", "Attribute Key", "Merge Template", order: 4, category: AttributeCategories.Workflow )]
+
+    [WorkflowTypeField( "Workflow Type",
+        Key = AttributeKey.WorkflowType,
+        Category = AttributeCategories.Workflow,
+        Description = "The type of workflow to launch.",
+        AllowMultiple = false,
+        IsRequired = true,
+        Order = 2 )]
+
+    [BooleanField( "Pass Nameless Person",
+        Key = AttributeKey.PassNamelessPerson,
+        Category = AttributeCategories.Workflow,
+        Description = "Specify 'No' to set the workflow initiator to blank if the incoming message is from a Nameless person.",
+        DefaultBooleanValue = true,
+        Order = 3 )]
+
+    [TextField( "Workflow Name Template",
+        Key = AttributeKey.WorkflowNameTemplate,
+        Category = AttributeCategories.Workflow,
+        Description = "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 4 )]
+
+    [KeyValueListField( "Workflow Attributes",
+        Key = AttributeKey.WorkflowAttributes,
+        Category = AttributeCategories.Workflow,
+        Description = "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "",
+        KeyPrompt = "Attribute Key",
+        ValuePrompt = "Merge Template",
+        Order = 5 )]
+
     public class SmsActionLaunchWorkflow : SmsActionComponent
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string WorkflowType = "WorkflowType";
+            public const string PassNamelessPerson = "PassNamelessPerson";
+            public const string WorkflowNameTemplate = "WorkflowNameTemplate";
+            public const string WorkflowAttributes = "WorkflowAttributes";
+        }
+
+
+        #endregion Attribute Keys
+
         /// <summary>
         /// Categories for the attributes
         /// </summary>
@@ -102,7 +147,7 @@ namespace Rock.Communication.SmsActions
             //
             // Check if we have a valid workflow type.
             //
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( action, "WorkflowType" ).AsGuid() );
+            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( action, AttributeKey.WorkflowType ).AsGuid() );
             if ( workflowType == null )
             {
                 return false;
@@ -142,20 +187,32 @@ namespace Rock.Communication.SmsActions
                 if ( workflowAttributes.FieldType.Field is KeyValueListFieldType keyValueField )
                 {
                     workflowAttributesSettings = keyValueField.GetValuesFromString( null,
-                        GetAttributeValue( action, "WorkflowAttributes" ),
+                        GetAttributeValue( action, AttributeKey.WorkflowAttributes ),
                         workflowAttributes.QualifierValues,
                         false );
                 }
             }
 
-            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( action, "WorkflowType" ).AsGuid() );
+            var workflowType = WorkflowTypeCache.Get( GetAttributeValue( action, AttributeKey.WorkflowType ).AsGuid() );
+
+            Rock.Model.Person fromPerson;
+
+            var passNamelessPerson = GetAttributeValue( action, AttributeKey.PassNamelessPerson ).AsBooleanOrNull() ?? false;
+            if ( message.FromPerson != null && message.FromPerson.IsNameless() && passNamelessPerson == false )
+            {
+                fromPerson = null;
+            }
+            else
+            {
+                fromPerson = message.FromPerson;
+            }
 
             //
             // Launch the workflow.
             //
             Rock.Utility.TextToWorkflow.LaunchWorkflow( workflowType,
-                GetAttributeValue( action, "WorkflowNameTemplate" ),
-                message.FromPerson,
+                GetAttributeValue( action, AttributeKey.WorkflowNameTemplate ),
+                fromPerson,
                 message.FromNumber.Replace( "+", "" ),
                 message.ToNumber.Replace( "+", "" ),
                 message.Message,

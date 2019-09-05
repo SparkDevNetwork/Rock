@@ -209,8 +209,11 @@ namespace Rock.Model
                 {
                     CountryCode = PhoneNumber.DefaultCountryCode();
                 }
-                
+
+                // Clean up the number so that the Formatted number looks like (555) 123-4567 (without country code prefix)
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+
+                // then use the NumberFormatted to set the cleaned up 'Number' value, so it would be 5551234567
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
@@ -356,7 +359,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Formats a provided string of numbers .
+        /// Formats the PhoneNumber in the format defined for the COMMUNICATION_PHONE_COUNTRY_CODE defined value(s).
+        /// For example, for formatted number would look something like '(555) 555-1212'.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">A <see cref="System.String" /> containing the number to format.</param>

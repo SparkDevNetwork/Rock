@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Field.Types;
 
 namespace Rock.Attribute
@@ -73,7 +74,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the name of the entity type
+        /// Gets or sets the name of the entity type <seealso cref="EntityType"/>
         /// </summary>
         public string EntityTypeName
         {
@@ -85,6 +86,26 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Sets the type of the entity
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public Type EntityType
+        {
+            get
+            {
+                string entityTypeName = FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY ) ?? string.Empty;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( value.FullName ) );
             }
         }
 

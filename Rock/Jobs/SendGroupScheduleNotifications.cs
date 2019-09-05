@@ -47,7 +47,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Keys to use for Job Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The root group

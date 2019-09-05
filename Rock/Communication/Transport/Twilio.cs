@@ -106,13 +106,26 @@ namespace Rock.Communication.Transport
                             }
 
                             string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipient.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                            Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
 
-                            // Create the communication record and send using that.
-                            if ( rockMessage.CreateCommunicationRecord )
+                            // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
+                            if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
                             {
-                                Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
+                                var recipientPersonAliasId = recipient.PersonAliasId;
                                 var communicationService = new CommunicationService( rockContext );
-                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPersonAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+
+                                // Since we just created a new communication record, we need to move any attachments from the rockMessage
+                                // to the communication's attachments since the Send method below will be handling the delivery.
+                                if ( attachmentMediaUrls.Any() )
+                                {
+                                    foreach ( var attachment in rockMessage.Attachments.AsQueryable() )
+                                    {
+                                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachment.Id }, CommunicationType.SMS );
+                                    }
+                                }
+
                                 rockContext.SaveChanges();
                                 Send( communication, mediumEntityTypeId, mediumAttributes );
                                 continue;

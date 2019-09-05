@@ -46,7 +46,6 @@ namespace Rock.Reporting
         private Dictionary<int, EntityField> _SelectedEntityFields;
         private Dictionary<int, AttributeCache> _SelectedAttributes;
         private Dictionary<int, ReportField> _SelectedComponents;
-        private Dictionary<Guid, string> _SortExpressions;
         private List<ReportFieldMap> _ReportFieldMaps;
         private DataTable _DataTable;
         private List<string> _ErrorMessages;
@@ -65,6 +64,8 @@ namespace Rock.Reporting
             _Report = report;
 
             _DataContext = dataContext;
+
+            this.OutputFieldMask = "***";
         }
 
         #endregion
@@ -88,6 +89,11 @@ namespace Rock.Reporting
         /// If true, the result output will include a field containing a reference to the recipient of a communication if a IRecipientDataSelect column is present.
         /// </summary>
         public bool AddCommunicationRecipientField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value used to mask the content of a field if the user does not have permission to view it.
+        /// </summary>
+        public string OutputFieldMask { get; set; }
 
         /// <summary>
         /// Gets the output of the report.
@@ -127,7 +133,7 @@ namespace Rock.Reporting
                 }
                 else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                 {
-                    AddAttributeField( reportField, columnIndex );
+                    AddAttributeField( reportField, columnIndex, currentPerson );
                 }
                 else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -145,10 +151,17 @@ namespace Rock.Reporting
 
             foreach ( var reportField in sortedFields )
             {
-                if ( _SortExpressions.ContainsKey( reportField.Guid ) )
+                var fieldMap = _ReportFieldMaps.FirstOrDefault( x => x.ReportFieldGuid == reportField.Guid );
+
+                if ( fieldMap == null )
                 {
-                    var sortFields = _SortExpressions[reportField.Guid].Split( ',' );
-                    
+                    continue;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( fieldMap.QuerySortExpression ) )
+                {
+                    var sortFields = fieldMap.QuerySortExpression.Split( ',' );
+
                     foreach ( var sortExpression in sortFields )
                     {
                         var sortField = sortExpression
@@ -599,20 +612,28 @@ namespace Rock.Reporting
             var rawValueType = entityField.PropertyType;
 
             var column = AddDataTableColumn( _DataTable, propertyName, typeof( string ) );
-            
+
             var boundField = entityField.GetBoundFieldType() as RockBoundField;
 
-            _ReportFieldMaps.Add( new ReportFieldMap { ReportFieldGuid = reportField.Guid, QueryColumnName = queryFieldName, TableColumnName = column.ColumnName, TableColumnIsNullable = column.AllowDBNull, BoundField = boundField } );
-
-            _SortExpressions.AddOrReplace( reportField.Guid, column.ColumnName );
+            _ReportFieldMaps.Add( new ReportFieldMap
+            {
+                ReportFieldGuid = reportField.Guid,
+                QueryColumnName = queryFieldName,
+                TableColumnName = column.ColumnName,
+                TableColumnIsNullable = column.AllowDBNull,
+                BoundField = boundField,
+                QuerySortExpression = column.ColumnName,
+                UserHasViewPermission = true
+            } );
         }
 
         /// <summary>
         /// Add a field representing an Entity Attribute to the report output.
         /// </summary>
-        /// <param name="reportField"></param>
-        /// <param name="columnIndex"></param>
-        private void AddAttributeField( ReportField reportField, int columnIndex )
+        /// <param name="reportField">The report field.</param>
+        /// <param name="columnIndex">Index of the column.</param>
+        /// <param name="currentPerson">The current person.</param>
+        private void AddAttributeField( ReportField reportField, int columnIndex, Person currentPerson )
         {
             var attributeGuid = reportField.Selection.AsGuidOrNull();
 
@@ -631,15 +652,26 @@ namespace Rock.Reporting
             _SelectedAttributes.Add( columnIndex, attribute );
 
             // Add column for Attribute.
-            var columnName = attribute.Name;
-            var queryFieldName = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-            var valueType = attribute.DefaultValueAsType.GetType();
+            var fieldMap = new ReportFieldMap();
+
+            fieldMap.ReportFieldGuid = reportField.Guid;
+
+            var columnName = reportField.ColumnHeaderText;
+
+            if ( string.IsNullOrEmpty( columnName ) )
+            {
+                columnName = attribute.Name;
+            }
 
             var column = AddDataTableColumn( _DataTable, columnName, typeof( string ) );
 
-            _ReportFieldMaps.Add( new ReportFieldMap { ReportFieldGuid = reportField.Guid, QueryColumnName = queryFieldName, TableColumnName = column.ColumnName } );
+            fieldMap.TableColumnName = column.ColumnName;
 
-            _SortExpressions.AddOrReplace( reportField.Guid, queryFieldName );
+            fieldMap.QueryColumnName = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
+            fieldMap.QuerySortExpression = fieldMap.QueryColumnName;
+            fieldMap.UserHasViewPermission = attribute.IsAuthorized( global::Rock.Security.Authorization.VIEW, currentPerson );
+
+            _ReportFieldMaps.Add( fieldMap );
         }
 
         /// <summary>
@@ -685,7 +717,14 @@ namespace Rock.Reporting
 
                 var column = AddDataTableColumn( _DataTable, columnName, rawValueType );
 
-                var fieldMap = new ReportFieldMap { ReportFieldGuid = reportField.Guid, QueryColumnName = queryFieldName, TableColumnName = column.ColumnName, BoundField = boundField };
+                var fieldMap = new ReportFieldMap
+                {
+                    ReportFieldGuid = reportField.Guid,
+                    QueryColumnName = queryFieldName,
+                    TableColumnName = column.ColumnName,
+                    BoundField = boundField,
+                    UserHasViewPermission = true
+                };
 
                 fieldMap.RawValueType = rawValueType;
 
@@ -722,7 +761,7 @@ namespace Rock.Reporting
 
                 if ( !string.IsNullOrEmpty( sortExpression ) )
                 {
-                    _SortExpressions.AddOrReplace( reportField.Guid, sortExpression );
+                    fieldMap.QuerySortExpression = sortExpression;
                 }
             }
             catch ( Exception ex )
@@ -759,7 +798,6 @@ namespace Rock.Reporting
             _SelectedEntityFields = new Dictionary<int, EntityField>();
             _SelectedAttributes = new Dictionary<int, AttributeCache>();
             _SelectedComponents = new Dictionary<int, ReportField>();
-            _SortExpressions = new Dictionary<Guid, string>();
             _ReportFieldMaps = new List<ReportFieldMap>();
 
             _ErrorMessages = new List<string>();
@@ -892,7 +930,9 @@ namespace Rock.Reporting
         /// <param name="reportFieldMaps">The report field maps.</param>
         private void AddDataTableRowsFromList<T>( DataTable dataTable, IEnumerable<T> items, List<ReportFieldMap> reportFieldMaps )
         {
-            var listNameToColumnNameMap = reportFieldMaps.ToDictionary( k => k.QueryColumnName, v => v.TableColumnName );
+            var listNameToColumnNameMap = reportFieldMaps.Where( x => !string.IsNullOrWhiteSpace( x.QueryColumnName )
+                                                                      && x.UserHasViewPermission )
+                                                         .ToDictionary( k => k.QueryColumnName, v => v.TableColumnName );
 
             // Build dictionary of property getters for the items in the list
             var listItemType = typeof( T );
@@ -947,6 +987,23 @@ namespace Rock.Reporting
                 }
 
                 dataTable.Rows.Add( row );
+            }
+
+            // Apply an output field mask to fields which the user does not have permission to view.
+            if ( !string.IsNullOrWhiteSpace( this.OutputFieldMask ) )
+            {
+                var restrictedColumnNames = reportFieldMaps.Where( x => !x.UserHasViewPermission ).Select( x => x.TableColumnName ).ToList();
+
+                if ( restrictedColumnNames.Any() )
+                {
+                    foreach ( DataRow row in dataTable.Rows )
+                    {
+                        foreach ( var columnName in restrictedColumnNames )
+                        {
+                            row[columnName] = this.OutputFieldMask;
+                        }
+                    }
+                }
             }
         }
 
@@ -1279,7 +1336,7 @@ namespace Rock.Reporting
             public Guid ReportFieldGuid { get; set; }
 
             /// <summary>
-            /// The temporary column name  generated for this field in the query used to retrieve the report data.
+            /// The temporary column name generated for this field in the query used to retrieve the report data.
             /// </summary>
             public string QueryColumnName { get; set; }
 
@@ -1303,6 +1360,16 @@ namespace Rock.Reporting
             /// Specifies the value type of this field prior to formatting.
             /// </summary>
             public Type RawValueType { get; set; }
+
+            /// <summary>
+            /// Gets or sets a flag to indicate if the current user has permission to view the content of this field.
+            /// </summary>
+            public bool UserHasViewPermission { get; set; }
+
+            /// <summary>
+            /// Specifies the sort expression for this field in the query used to retrieve the report data.
+            /// </summary>
+            public string QuerySortExpression { get; set; }
 
             public override string ToString()
             {
