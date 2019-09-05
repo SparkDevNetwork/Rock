@@ -196,6 +196,14 @@ namespace Rock.DownhillCss
         /// The color of the heading.
         /// </value>
         public string HeadingColor { get; set; } = "#333333";
+
+        /// <summary>
+        /// Gets or sets the color of the background.
+        /// </summary>
+        /// <value>
+        /// The color of the background.
+        /// </value>
+        public string BackgroundColor { get; set; } = "#ffffff";
     }
 
     public enum DownhillPlatform
