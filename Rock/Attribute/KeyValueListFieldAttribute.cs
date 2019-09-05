@@ -58,5 +58,24 @@ namespace Rock.Attribute
             var displayValueFirstConfigValue = new Field.ConfigurationValue( displayValueFirst.ToString() );
             FieldConfigurationValues.Add( DISPLAY_VALUE_FIRST, displayValueFirstConfigValue );
         }
+
+        /// <summary>
+        /// Gets or sets the key prompt.
+        /// </summary>
+        /// <value>
+        /// The key prompt.
+        /// </value>
+        public string KeyPrompt
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( KEY_PROMPT_KEY );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( KEY_PROMPT_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
     }
 }

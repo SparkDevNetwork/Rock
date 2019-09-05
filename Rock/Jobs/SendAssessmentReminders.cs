@@ -69,7 +69,7 @@ namespace Rock.Jobs
         /// <summary>
         /// 
         /// </summary>
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             /// <summary>
             /// The reminder every days

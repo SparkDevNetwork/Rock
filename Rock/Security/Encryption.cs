@@ -65,15 +65,6 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Get a Symmetric Security Key
-        /// </summary>
-        /// <returns></returns>
-        public static SymmetricSecurityKey GetSymmetricSecurityKey()
-        {
-            return new SymmetricSecurityKey( Encoding.Default.GetBytes( GetDataEncryptionKey() ) );
-        }
-
-        /// <summary>
         /// Gets the data encryption key.
         /// </summary>
         /// <returns></returns>

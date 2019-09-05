@@ -142,12 +142,24 @@ namespace Rock.Model
             get
             {
                 // since this will get called on every save, don't spend time attempting to convert a large string to a decimal
-                if ( this.Value.IsNull() || this.Value.Length > 100 )
+                // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
+                // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
+                if ( this.Value.IsNull() || this.Value.Length > 24 )
                 {
-                    return null;
+                    _valueAsNumeric = null;
+                    return _valueAsNumeric;
                 }
 
                 _valueAsNumeric = this.Value.AsDecimalOrNull();
+
+                // If this is true then we are probably dealing with a comma delimited list and not a number.
+                // In either case it won't save to the DB and needs to be handled.  Don't do the
+                // rounding trick since nonnumeric attribute values should be null here.
+                if ( _valueAsNumeric != null && _valueAsNumeric > ( decimal ) 9999999999999999.99 )
+                {
+                    _valueAsNumeric = null;
+                }
+
                 return _valueAsNumeric;
             }
 

@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The detail page
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step type identifier
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Filters
         /// </summary>
-        protected static class FilterKey
+        private static class FilterKey
         {
             public const string FirstName = "FirstName";
             public const string LastName = "LastName";

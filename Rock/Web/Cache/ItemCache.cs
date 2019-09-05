@@ -104,8 +104,6 @@ namespace Rock.Web.Cache
 
             var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
 
-            RockCache.UpdateCacheHitMiss( key, value != null );
-
             if ( value != null )
             {
                 return value;
