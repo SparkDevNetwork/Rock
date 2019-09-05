@@ -484,6 +484,8 @@ namespace RockWeb.Blocks.Mobile
                 cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
+                cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
+                cpHeadingColor.Value = additionalSettings.DownhillSettings.HeadingColor;
 
                 cpPrimary.Value = additionalSettings.DownhillSettings.ApplicationColors.Primary;
                 cpSecondary.Value = additionalSettings.DownhillSettings.ApplicationColors.Secondary;
@@ -888,6 +890,8 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
                 additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
                 additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
+                additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
+                additionalSettings.DownhillSettings.HeadingColor = ParseColor( cpHeadingColor.Value );
 
                 additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
                 additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );

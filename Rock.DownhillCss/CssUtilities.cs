@@ -158,6 +158,10 @@ namespace Rock.DownhillCss
             cssStyles = cssStyles.Replace( "?spacing-base", settings.SpacingBase.ToString() );
             cssStyles = cssStyles.Replace( "?font-size-default", settings.FontSizeDefault.ToString() );
 
+            // Text and heading colors
+            cssStyles = cssStyles.Replace( "?color-text", settings.TextColor );
+            cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
+
             return cssStyles;
         }
 

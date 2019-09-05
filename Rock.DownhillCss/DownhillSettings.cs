@@ -180,6 +180,22 @@ namespace Rock.DownhillCss
         /// The base radius.
         /// </value>
         public decimal RadiusBase { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the color of the text.
+        /// </summary>
+        /// <value>
+        /// The color of the text.
+        /// </value>
+        public string TextColor { get; set; } = "#676767";
+
+        /// <summary>
+        /// Gets or sets the color of the heading.
+        /// </summary>
+        /// <value>
+        /// The color of the heading.
+        /// </value>
+        public string HeadingColor { get; set; } = "#333333";
     }
 
     public enum DownhillPlatform
