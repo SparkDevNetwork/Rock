@@ -160,21 +160,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the EntityStringValue for a list of location IDs.
-        /// </summary>
-        /// <param name="locationIds">A (comma, semi-colon or pipe) delimited list of location IDs.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route("api/locations/GetLocationTitles")]
-        public Dictionary<int, string> GetLocationTitles( string locationIds )
-        {
-            List<int> locationIdList = locationIds.SplitDelimitedValues().Select( int.Parse ).ToList();
-            var locationNames = Get().Where( l => locationIdList.Contains( l.Id ) ).ToDictionary( l => l.Id, l => l.EntityStringValue );
-            return locationNames;
-        }
-
-        /// <summary>
         /// Gets the children, excluding inactive items.
         /// </summary>
         /// <param name="id">The unique identifier.</param>

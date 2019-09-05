@@ -37,27 +37,22 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AttendanceOccurrences/GetFutureGroupOccurrences" )]
-        public List<AttendanceOccurrence> GetFutureGroupOccurrences( int groupId, DateTime? toDateTime = null, string locationIds = null, string scheduleIds = null )
+        public List<GroupOccurrenceResponse> GetFutureGroupOccurrences( int groupId, DateTime? toDateTime = null, string locationIds = null, string scheduleIds = null )
         {
-            var locationIdList = new List<int>();
-            if ( !string.IsNullOrWhiteSpace( locationIds ) )
-            {
-                locationIdList = locationIds.Split( ',' ).Select( int.Parse ).ToList();
-            }
-
-            var scheduleIdList = new List<int>();
-            if ( !string.IsNullOrWhiteSpace( scheduleIds ) )
-            {
-                scheduleIdList = scheduleIds.Split( ',' ).Select( int.Parse ).ToList();
-            }
-
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Configuration.ProxyCreationEnabled = false;
                 var group = new GroupService( rockContext ).Get( groupId );
 
-                return new AttendanceOccurrenceService( rockContext )
-                    .GetFutureGroupOccurrences( group, toDateTime, locationIdList, scheduleIdList );
+                var occurrences = new AttendanceOccurrenceService( rockContext )
+                    .GetFutureGroupOccurrences( group, toDateTime, locationIds, scheduleIds);
+
+                var response = new List<GroupOccurrenceResponse>(); 
+                foreach ( var occurrence in occurrences )
+                {
+                    response.Add( new GroupOccurrenceResponse( occurrence ) );
+                }
+                return response;
             }
         }
 
@@ -69,35 +64,77 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route("api/AttendanceOccurrences/CreateGroupOccurrence")]
         public AttendanceOccurrence CreateGroupOccurrence( int groupId, DateTime occurrenceDate, int? scheduleId = null, int? locationId = null )
         {
-            using ( var rockContext = new RockContext() )
+            return new AttendanceOccurrenceService( new RockContext () ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
+        }
+
+        /// <summary>
+        /// Object used by GetFutureGroupOccurrences to return a formatted title along with the AttendanceOccurrence record.
+        /// </summary>
+        public class GroupOccurrenceResponse
+        {
+            /// <summary>
+            /// The AttendaneOccurrence.
+            /// </summary>
+            public AttendanceOccurrence Occurrence;
+
+            /// <summary>
+            /// A formatted title for public display.
+            /// </summary>
+            public string DisplayTitle;
+
+            /// <summary>
+            /// Sets the DisplayTitle.
+            /// </summary>
+            private void GetOccurrenceTitle()
             {
-                var group = new GroupService(rockContext).Get(groupId);
-                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
-
-                //If this occurrence has already been created, just return the existing one.
-                var existingOccurrences = attendanceOccurrenceService.Queryable()
-                    .Where( o => o.GroupId == groupId )
-                    .Where( o => o.OccurrenceDate == occurrenceDate )
-                    .Where( o => o.ScheduleId == scheduleId )
-                    .Where( o => o.LocationId == locationId )
-                    .ToList();
-
-                if ( existingOccurrences.Any() )
+                bool hasSchedule = ( Occurrence.Schedule != null );
+                DDay.iCal.Event calendarEvent = null;
+                if ( hasSchedule )
                 {
-                    return existingOccurrences.FirstOrDefault();
+                    calendarEvent = Occurrence.Schedule.GetCalendarEvent();
+                    if ( calendarEvent == null )
+                    {
+                        hasSchedule = false;
+                    }
                 }
 
-                //Create new occurrence.
-                var attendanceOccurrence = new AttendanceOccurrence();
-                attendanceOccurrence.GroupId = groupId;
-                attendanceOccurrence.LocationId = locationId;
-                attendanceOccurrence.ScheduleId = scheduleId;
-                attendanceOccurrence.OccurrenceDate = occurrenceDate;
+                // Format date and time.
+                if ( hasSchedule )
+                {
+                    DisplayTitle = string.Format(
+                        "{0} - {1}, {2}",
+                        Occurrence.Group.Name,
+                        Occurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" ),
+                        Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString() );
+                }
+                else
+                {
+                    DisplayTitle = string.Format(
+                        "{0} - {1}",
+                        Occurrence.Group.Name,
+                        Occurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" ) );
+                }
 
-                attendanceOccurrenceService.Add( attendanceOccurrence );
-                rockContext.SaveChanges();
-                return attendanceOccurrence;
+                // Add Location title.
+                if ( Occurrence.Location != null )
+                {
+                    DisplayTitle = string.Format(
+                        "{0} - {1}",
+                        DisplayTitle,
+                        Occurrence.Location.EntityStringValue );
+                }
             }
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="occurrence"></param>
+            public GroupOccurrenceResponse( AttendanceOccurrence occurrence )
+            {
+                Occurrence = occurrence;
+                GetOccurrenceTitle();
+            }
+
         }
 
     }
