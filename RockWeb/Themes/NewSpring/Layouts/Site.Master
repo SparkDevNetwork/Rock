@@ -110,7 +110,7 @@
                 <Rock:Lava ID="PageTitle" runat="server">
                     {% if CurrentPage.PageDisplayTitle == 'True' %}
                         <div class="{% if CurrentPage.MenuDisplayChildPages == 'True' %}hidden-md hidden-lg{% endif %}">
-                            {[ pageHeader title:'{{ 'Global' | Page:'Title' }}' ]}
+                            {[ pageHeader title:'{{ 'Global' | Page:'Title' | Replace:"'","’" }}' ]}
                         </div>
                     {% endif %}         
                 </Rock:Lava>
