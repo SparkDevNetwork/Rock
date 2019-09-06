@@ -310,11 +310,7 @@ namespace RockWeb.Blocks.Mobile
             }
             
 
-            //
-            // Set the UI fields for the images.
-            //
-            imgAppIcon.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.SiteLogoBinaryFileId );
-            imgAppIcon.Visible = site.SiteLogoBinaryFileId.HasValue;
+            // Set the UI fields for the preview thumbnail.
             imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
             pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 

@@ -73,17 +73,9 @@
                                         </fieldset>
                                     </div>
                                     <div class="col-md-4 hidden-sm hidden-xs">
-                                        <div class="row">
-                                            <div class="col-sm-4">
-                                                <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
-                                            </div>
-
-                                            <div class="col-sm-8">
-                                                <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
-                                                    <asp:Image ID="imgAppPreview" runat="server" />
-                                                </asp:Panel>
-                                            </div>
-                                        </div>
+                                        <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
+                                            <asp:Image ID="imgAppPreview" runat="server" />
+                                        </asp:Panel>
                                     </div>
                                 </div>
 
