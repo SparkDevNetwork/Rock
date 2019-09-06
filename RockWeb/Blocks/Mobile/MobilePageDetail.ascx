@@ -117,17 +117,29 @@
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
                                                     <div class="panel panel-widget">
-                                                        <div class="panel-heading js-block" data-block-id="<%# Eval( "Id" ) %>">
-                                                            <span>
+                                                        <div class="panel-heading js-block clearfix" data-block-id="<%# Eval( "Id" ) %>">
+
+                                                            <div class="pull-left">
                                                                 <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                                                <%# Eval( "Name" ) %> (<%# Eval( "Type" ) %>)
-                                                            </span>
+                                                            </div>
+                                                                
+                                                            <div class="pull-left margin-l-md leading-snug">
+                                                                <span><%# Eval( "Name" ) %></span> <br /><small class="margin-t-none"><%# Eval( "Type" ) %></small>
+                                                            </div>
+
                                                             <div class="pull-right">
+
                                                                 <a class="btn btn-default btn-sm btn-link panel-widget-reorder">
                                                                     <i class="fa fa-bars js-reorder"></i>
                                                                 </a>
+
                                                                 <asp:PlaceHolder ID="phAdminButtons" runat="server" />
                                                             </div>
+
+                                                            <div class="pull-right padding-t-sm margin-r-lg">
+                                                                <asp:PlaceHolder ID="phSettings" runat="server" />
+                                                            </div>
+                                                            
                                                         </div>
                                                     </div>
                                                 </ItemTemplate>
