@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
@@ -26,6 +27,7 @@ using System.Xml.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -857,10 +859,88 @@ namespace RockWeb.Blocks.Mobile
                 if ( block != null )
                 {
                     var phAdminButtons = e.Item.FindControl( "phAdminButtons" ) as PlaceHolder;
+                    var phSettings = e.Item.FindControl( "phSettings" ) as PlaceHolder;
 
                     AddAdminControls( block, phAdminButtons );
+                    AddSettingsControls( block, phSettings );
+
                 }
             }
+        }
+
+        private void AddSettingsControls( BlockCache block, PlaceHolder pnlLayoutItem )
+        {
+            var additionalSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+
+            var markup = new StringBuilder();
+
+            // The following item will be moved to additional settings soon and will need to be updated.
+            var lavaLocation = block.GetAttributeValue( "LavaRenderLocation" );
+            if ( lavaLocation.IsNotNullOrWhiteSpace() )
+            {
+                switch ( lavaLocation )
+                {
+                    case "On Device":
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                            break;
+                        }
+                    case "On Server":
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                            break;
+                        }
+                    default:
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
+                            break;
+                        }
+                }
+            }
+            
+
+            // The following item will be moved to additional settings soon and will need to be updated.
+            var cacheDuration = block.GetAttributeValue( "CacheDuration" ).AsIntegerOrNull();
+            if ( cacheDuration.HasValue && cacheDuration != 0  )
+            {
+                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", cacheDuration ) );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-memory margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
+            }
+
+            // Show on phone
+            if ( additionalSettings.ShowOnPhone )
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
+            }
+
+            // Show on tablet
+            if ( additionalSettings.ShowOnTablet )
+            {
+                markup.Append( "<i class='fa fa-tablet-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
+            }
+
+            // Requires internet
+            if ( additionalSettings.RequiresNetwork )
+            {
+                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
+            }
+
+            pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } ) ;
         }
 
         /// <summary>
