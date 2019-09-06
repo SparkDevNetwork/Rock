@@ -31,6 +31,12 @@ namespace Rock.Field.Types
     /// </summary>
     public class BooleanFieldType : FieldType
     {
+        public static class ConfigurationKey
+        {
+            public const string TrueText = "truetext";
+            public const string FalseText = "falsetext";
+            public const string BooleanControlType = "BooleanControlType";
+        }
 
         #region Configuration
 
@@ -41,8 +47,9 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add( "truetext" );
-            configKeys.Add( "falsetext" );
+            configKeys.Add( ConfigurationKey.TrueText );
+            configKeys.Add( ConfigurationKey.FalseText );
+            configKeys.Add( ConfigurationKey.BooleanControlType );
             return configKeys;
         }
 
@@ -54,21 +61,30 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            RockTextBox tbTrue = new RockTextBox();
-            controls.Add( tbTrue );
-            tbTrue.AutoPostBack = true;
-            tbTrue.TextChanged += OnQualifierUpdated;
-            tbTrue.Label = "True Text";
-            tbTrue.Text = "Yes";
-            tbTrue.Help = "The text to display when value is true.";
+            RockTextBox tbTrueText = new RockTextBox();
+            controls.Add( tbTrueText );
+            tbTrueText.AutoPostBack = true;
+            tbTrueText.TextChanged += OnQualifierUpdated;
+            tbTrueText.Label = "True Text";
+            tbTrueText.Text = "Yes";
+            tbTrueText.Help = "The text to display when value is true.";
 
-            RockTextBox tbFalse = new RockTextBox();
-            controls.Add( tbFalse );
-            tbFalse.AutoPostBack = true;
-            tbFalse.TextChanged += OnQualifierUpdated;
-            tbFalse.Label = "False Text";
-            tbFalse.Text = "No";
-            tbFalse.Help = "The text to display when value is false.";
+            RockTextBox tbFalseText = new RockTextBox();
+            controls.Add( tbFalseText );
+            tbFalseText.AutoPostBack = true;
+            tbFalseText.TextChanged += OnQualifierUpdated;
+            tbFalseText.Label = "False Text";
+            tbFalseText.Text = "No";
+            tbFalseText.Help = "The text to display when value is false.";
+
+            RockDropDownList ddlBooleanControlType = new RockDropDownList();
+            controls.Add( ddlBooleanControlType );
+            ddlBooleanControlType.BindToEnum<BooleanControlType>();
+            ddlBooleanControlType.Label = "Control Type";
+            ddlBooleanControlType.Help = "The type of control to use when editing the value";
+            ddlBooleanControlType.AutoPostBack = true;
+            ddlBooleanControlType.SelectedIndexChanged += OnQualifierUpdated;
+
             return controls;
         }
 
@@ -80,18 +96,22 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "truetext", new ConfigurationValue( "True Text",
+            configurationValues.Add( ConfigurationKey.TrueText, new ConfigurationValue( "True Text",
                 "The text to display when value is true (default is 'Yes').", "Yes" ) );
-            configurationValues.Add( "falsetext", new ConfigurationValue( "False Text",
+            configurationValues.Add( ConfigurationKey.FalseText, new ConfigurationValue( "False Text",
                 "The text to display when value is false (default is 'No').", "No" ) );
 
-            if ( controls != null && controls.Count == 2 )
-            {
-                if ( controls[0] != null && controls[0] is TextBox )
-                    configurationValues["truetext"].Value = ( (TextBox)controls[0] ).Text;
+            configurationValues.Add( ConfigurationKey.BooleanControlType, new ConfigurationValue( "Control Type",
+                "The type of control to use when editing the value", BooleanControlType.DropDown.ConvertToString( false ) ) );
 
-                if ( controls[1] != null && controls[1] is TextBox )
-                    configurationValues["falsetext"].Value = ( (TextBox)controls[1] ).Text;
+            if ( controls != null && controls.Count == 3 )
+            {
+                var tbTrueText = controls[0] as TextBox;
+                var tbFalseText = controls[1] as TextBox;
+                var ddlBooleanControlType = controls[2] as RockDropDownList;
+                configurationValues[ConfigurationKey.TrueText].Value = tbTrueText?.Text;
+                configurationValues[ConfigurationKey.FalseText].Value = tbFalseText?.Text;
+                configurationValues[ConfigurationKey.BooleanControlType].Value = ddlBooleanControlType?.SelectedValue;
             }
 
             return configurationValues;
@@ -104,13 +124,25 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            if ( controls != null && controls.Count == 3 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "truetext" ) )
-                    ( (TextBox)controls[0] ).Text = configurationValues["truetext"].Value;
+                var tbTrueText = controls[0] as TextBox;
+                var tbFalseText = controls[1] as TextBox;
+                var ddlBooleanControlType = controls[2] as RockDropDownList;
+                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
+                {
+                    tbTrueText.Text = configurationValues[ConfigurationKey.TrueText].Value;
+                }
 
-                if ( controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey( "falsetext" ) )
-                    ( (TextBox)controls[1] ).Text = configurationValues["falsetext"].Value;
+                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
+                {
+                    tbFalseText.Text = configurationValues[ConfigurationKey.FalseText].Value;
+                }
+
+                if ( configurationValues.ContainsKey( ConfigurationKey.BooleanControlType ) )
+                {
+                    ddlBooleanControlType.SetValue( configurationValues[ConfigurationKey.BooleanControlType].Value );
+                }
             }
         }
 
@@ -141,9 +173,9 @@ namespace Rock.Field.Types
                     }
                     else
                     {
-                        if ( configurationValues.ContainsKey( "truetext" ) )
+                        if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                         {
-                            formattedValue = configurationValues["truetext"].Value;
+                            formattedValue = configurationValues[ConfigurationKey.TrueText].Value;
                         }
                         else
                         {
@@ -159,9 +191,9 @@ namespace Rock.Field.Types
                     }
                     else
                     {
-                        if ( configurationValues.ContainsKey( "falsetext" ) )
+                        if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                         {
-                            formattedValue = configurationValues["falsetext"].Value;
+                            formattedValue = configurationValues[ConfigurationKey.FalseText].Value;
                         }
                         else
                         {
@@ -215,28 +247,90 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
+            var booleanControlType = configurationValues.GetValueOrNull( ConfigurationKey.BooleanControlType )?.ConvertToEnum<BooleanControlType>() ?? BooleanControlType.DropDown;
+
+            return CreateBooleanEditControl( configurationValues, id, booleanControlType );
+        }
+
+        /// <summary>
+        /// Creates the boolean edit control using the specified control type
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="booleanControlType">Type of the boolean control.</param>
+        /// <returns></returns>
+        private Control CreateBooleanEditControl( Dictionary<string, ConfigurationValue> configurationValues, string id, BooleanControlType booleanControlType )
+        {
 
             string yesText = "Yes";
             string noText = "No";
 
             if ( configurationValues != null )
             {
-                if ( configurationValues.ContainsKey( "truetext" ) )
-                {
-                    yesText = configurationValues["truetext"].Value;
-                }
-                if ( configurationValues.ContainsKey( "falsetext" ) )
-                {
-                    noText = configurationValues["falsetext"].Value;
-                }
+                yesText = configurationValues.GetValueOrNull( ConfigurationKey.TrueText );
+                noText = configurationValues.GetValueOrNull( ConfigurationKey.FalseText );
             }
 
-            editControl.Items.Add( new ListItem() );
-            editControl.Items.Add( new ListItem( noText, "False" ) );
-            editControl.Items.Add( new ListItem( yesText, "True" ) );
+            if ( yesText.IsNullOrWhiteSpace() )
+            {
+                yesText = "Yes";
+            }
+
+            if ( noText.IsNullOrWhiteSpace() )
+            {
+                noText = "No";
+            }
+
+            Control editControl;
+
+            if ( booleanControlType == BooleanControlType.Checkbox )
+            {
+                var checkboxEditControl = new RockCheckBox { ID = id };
+                editControl = checkboxEditControl;
+            }
+            else if ( booleanControlType == BooleanControlType.Toggle )
+            {
+                var toggleEditControl = new Toggle
+                {
+                    ID = id,
+                    OnText = yesText,
+                    OffText = noText,
+                };
+
+                editControl = toggleEditControl;
+            }
+            else
+            {
+                var dropDownEditControl = new RockDropDownList { ID = id };
+                dropDownEditControl.Items.Add( new ListItem() );
+                dropDownEditControl.Items.Add( new ListItem( noText, "False" ) );
+                dropDownEditControl.Items.Add( new ListItem( yesText, "True" ) );
+
+                editControl = dropDownEditControl;
+            }
 
             return editControl;
+        }
+
+        /// <summary>
+        /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to use to edit the value
+        /// </summary>
+        public enum BooleanControlType
+        {
+            /// <summary>
+            /// Use a RockDropDown with TrueText and FalseTest as the options
+            /// </summary>
+            DropDown,
+
+            /// <summary>
+            /// Use a RockCheckBox
+            /// </summary>
+            Checkbox,
+
+            /// <summary>
+            /// Use a Rock:Toggle with TrueText and FalseTest as the buttons text
+            /// </summary>
+            Toggle
         }
 
         /// <summary>
@@ -247,9 +341,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockDropDownList )
+            var editControlAsDropDownList = control as RockDropDownList;
+            var editControlAsCheckbox = control as RockCheckBox;
+            var editControlAsToggle = control as Toggle;
+
+            if ( editControlAsDropDownList != null )
             {
-                return ( (RockDropDownList)control ).SelectedValue ?? string.Empty;
+                return editControlAsDropDownList.SelectedValue;
+            }
+
+            if ( editControlAsCheckbox != null )
+            {
+                return editControlAsCheckbox.Checked.ToTrueFalse();
+            }
+
+            if ( editControlAsToggle != null )
+            {
+                return editControlAsToggle.Checked.ToTrueFalse();
             }
 
             return null;
@@ -263,13 +371,21 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var editControlAsDropDownList = control as RockDropDownList;
+            var editControlAsCheckbox = control as RockCheckBox;
+            var editControlAsToggle = control as Toggle;
+
+            if ( editControlAsDropDownList != null )
             {
-                if ( control != null && control is RockDropDownList )
-                {
-                    bool? booleanValue = value.AsBooleanOrNull();
-                    ( (RockDropDownList)control ).SetValue( booleanValue.HasValue ? booleanValue.ToString() : "" );
-                }
+                editControlAsDropDownList.SetValue( value.AsBooleanOrNull()?.ToString() ?? string.Empty );
+            }
+            else if ( editControlAsCheckbox != null )
+            {
+                editControlAsCheckbox.Checked = value.AsBoolean();
+            }
+            else if ( editControlAsToggle != null )
+            {
+                editControlAsToggle.Checked = value.AsBoolean();
             }
         }
 
@@ -313,16 +429,17 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null )
             {
-                if ( configurationValues.ContainsKey( "truetext" ) )
+                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                 {
-                    yesText = configurationValues["truetext"].Value;
+                    yesText = configurationValues[ConfigurationKey.TrueText].Value;
                 }
-                if ( configurationValues.ContainsKey( "falsetext" ) )
+                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                 {
-                    noText = configurationValues["falsetext"].Value;
+                    noText = configurationValues[ConfigurationKey.FalseText].Value;
                 }
             }
 
+            // NOTE: Use the RockDropDown for the filter control even if the ControlType of the EditControl is set to something else
             ListControl filterValueControl = new RockDropDownList();
 
             filterValueControl.ID = string.Format( "{0}_ctlCompareValue", id );
@@ -332,6 +449,7 @@ namespace Rock.Field.Types
             {
                 filterValueControl.Items.Add( new ListItem() );
             }
+
             filterValueControl.Items.Add( new ListItem( yesText, "True" ) );
             filterValueControl.Items.Add( new ListItem( noText, "False" ) );
             return filterValueControl;
@@ -361,7 +479,7 @@ namespace Rock.Field.Types
                 return base.FilterCompareControl( configurationValues, id, required, filterMode );
             }
         }
-    
+
         /// <summary>
         /// Determines whether this filter has a filter control
         /// </summary>
@@ -417,7 +535,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
-            if (filterMode == FilterMode.SimpleFilter)
+            if ( filterMode == FilterMode.SimpleFilter )
             {
                 var values = new List<string>();
 
@@ -491,7 +609,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwards compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
                 ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
@@ -528,7 +646,7 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
-                // NOTE: this is for backwords compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
+                // NOTE: this is for backwards compatibility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 ConstantExpression constantExpression = Expression.Constant( filterValues[0] );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
@@ -538,7 +656,7 @@ namespace Rock.Field.Types
             {
                 return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
             }
-            
+
         }
 
         /// <summary>
