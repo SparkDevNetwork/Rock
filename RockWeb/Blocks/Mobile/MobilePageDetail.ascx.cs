@@ -887,7 +887,7 @@ namespace RockWeb.Blocks.Mobile
                         }
                     case "On Server":
                         {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
                             break;
                         }
                     default:
