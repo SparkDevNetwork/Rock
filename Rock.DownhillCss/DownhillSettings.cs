@@ -22,8 +22,9 @@ namespace Rock.DownhillCss
         /// </value>
         public decimal SpacingBase
         {
-            get {
-                if (_spacingBase != 0 )
+            get
+            {
+                if ( _spacingBase != 0 )
                 {
                     return _spacingBase;
                 }
@@ -39,7 +40,8 @@ namespace Rock.DownhillCss
 
                 return _spacingBase;
             }
-            set {
+            set
+            {
                 _spacingBase = value;
             }
         }
@@ -60,7 +62,7 @@ namespace Rock.DownhillCss
                     return _spacingUnits;
                 }
 
-                if (this.Platform == DownhillPlatform.Mobile )
+                if ( this.Platform == DownhillPlatform.Mobile )
                 {
                     _spacingUnits = string.Empty;
                 }
