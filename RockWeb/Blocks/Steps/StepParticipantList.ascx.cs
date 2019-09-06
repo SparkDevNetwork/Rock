@@ -676,7 +676,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.Visible = true;
             gSteps.Visible = true;
 
-            lHeading.Text = string.Format( "{0} Step Participants", _stepType.Name );
+            lHeading.Text = string.Format( "{0} Steps", _stepType.Name );
 
             _fullNameField = gSteps.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gSteps.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lNameWithHtml" ).FirstOrDefault();
