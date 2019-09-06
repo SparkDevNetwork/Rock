@@ -15,7 +15,7 @@ namespace Rock.DownhillCss
         // The spacer values are used to adjust the differences in the padding and margin amounts. They
         // will be multipled by a default spacing value (mobile = 10) to determine the actual value for
         // each. The values below are roughly mapped from the Bootstrap 4 values.
-        private static decimal[] spacingValues = { 0,.25m,.5m,1,2,3 };
+        private static decimal[] spacingValues = { 0, .25m, .5m, 1, 2, 3 };
 
         // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16} 
         // https://tailwindcss.com/docs/customizing-spacing#default-spacing-scale
@@ -525,6 +525,11 @@ namespace Rock.DownhillCss
 
         private static string baseStylesMobile = @"
 /* Resets */
+#Label {
+    line-height: 1.25;
+    font-size: ?font-size-default;
+    color: ?color-text;
+}
 
 .link{
     color: ?color-primary;
@@ -578,12 +583,12 @@ namespace Rock.DownhillCss
 
 .btn.btn-dark {
     color: #ffffff;
-    border-color: ?color-dark;
+    background-color: ?color-dark;
 }
 
 .btn.btn-light {
-    color: #000000;
-    border-color: ?color-light;
+    color: ?color-text;
+    background-color: ?color-light;
 }
 
 .btn.btn-secondary {
@@ -599,65 +604,74 @@ namespace Rock.DownhillCss
 .btn.btn-link {
     color: ?color-primary;
     border-width: 0;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-primary {
     color: ?color-primary;
     border-color: ?color-primary;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-secondary {
     color: ?color-secondary;
     border-color: ?color-secondary;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-success {
     color: ?color-success;
     border-color: ?color-success;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-danger {
     color: ?color-danger;
     border-color: ?color-danger;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-warning {
     color: ?color-warning;
     border-color: ?color-warning;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-info {
     color: ?color-info;
     border-color: ?color-info;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-light {
-    color: ?color-light;
+    color: ?color-text;
     border-color: ?color-light;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 .btn.btn-outline-dark {
     color: ?color-dark;
     border-color: ?color-dark;
     border-width: 1;
+    background-color: ?color-background;
 }
 
 /* Button Sizes */
 .btn.btn-lg {
     font-size: large;
-    padding: 5;
+    padding: 20;
 }
 
 .btn.btn-sm {
     font-size: micro;
-    padding: 0;
+    height: 35;
 }
 
 /* Text Weights */
