@@ -23,7 +23,7 @@
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
                             <i class="fa fa-users"></i>
-                            <asp:Literal ID="lHeading" runat="server" Text="Group Members" />
+                            <asp:Literal ID="lHeading" runat="server" Text="Steps" />
                         </h1>
                     </div>
 
