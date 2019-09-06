@@ -2790,6 +2790,8 @@ TransactionAccountDetails: [
                 changeSummary.AppendLine();
             }
 
+            scheduledTransaction.Summary = changeSummary.ToString();
+
             var transactionService = new FinancialScheduledTransactionService( rockContext );
             transactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
