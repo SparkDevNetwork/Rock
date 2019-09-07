@@ -44,6 +44,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Workflow,
         Description = "Specify 'No' to set the workflow initiator to blank if the incoming message is from a Nameless person.",
+        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 3 )]
 
