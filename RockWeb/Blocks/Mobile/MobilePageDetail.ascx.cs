@@ -523,6 +523,7 @@ namespace RockWeb.Blocks.Mobile
             ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
 
             btnCopyToClipboard.Attributes["data-clipboard-text"] = page.Guid.ToString();
+            btnCopyToClipboard.Attributes["title"] = string.Format( "Copy the Guid {0} to the clipboard.", page.Guid.ToString() );
 
             ddlPageList.SelectedValue = page.Id.ToString();
 
