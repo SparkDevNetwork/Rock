@@ -111,10 +111,9 @@ namespace Rock.Communication.Transport
                             // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
                             if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
                             {
-                                var recipientPersonAliasId = recipient.PersonAliasId;
                                 var communicationService = new CommunicationService( rockContext );
 
-                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPersonAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
 
                                 // Since we just created a new communication record, we need to move any attachments from the rockMessage
                                 // to the communication's attachments since the Send method below will be handling the delivery.
