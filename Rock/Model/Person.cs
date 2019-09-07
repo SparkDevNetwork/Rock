@@ -607,13 +607,7 @@ namespace Rock.Model
             get {
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-                var recordTypeValueIdUnnamedPerson = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
-                if (this.RecordTypeValueId == recordTypeValueIdUnnamedPerson )
-                {
-                    return "(Unknown Person)";
-                }
-
-                return FormatFullName( NickName, LastName, SuffixValueId );
+                return FormatFullName( NickName, LastName, SuffixValueId, this.RecordTypeValueId );
             }
 
             private set {
@@ -633,6 +627,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating the specified recordTypeValueId is the record type of a <see cref="SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS" /> record type
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </value>
+        private static bool IsBusiness( int? recordTypeValueId )
+        {
+            if ( recordTypeValueId.HasValue )
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                return recordTypeValueId.Value == recordTypeValueIdBusiness;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Nameless
         /// </summary>
         /// <returns>
@@ -645,16 +658,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is business.
+        /// Gets a value indicating the specified recordTypeValueId is the record type of a <see cref="SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/> record type
         /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
-        /// </value>
-        private static bool IsBusiness( int? recordTypeValueId )
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified record type value identifier is nameless; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNameless( int? recordTypeValueId )
         {
             if ( recordTypeValueId.HasValue )
             {
-                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
                 return recordTypeValueId.Value == recordTypeValueIdBusiness;
             }
             else
@@ -2756,6 +2770,11 @@ namespace Rock.Model
         /// <returns></returns>
         public static string FormatFullName( string nickName, string lastName, int? suffixValueId, int? recordTypeValueId = null )
         {
+            if ( IsNameless( recordTypeValueId ) )
+            {
+                return "Nameless Person";
+            }
+
             if ( IsBusiness( recordTypeValueId ) )
             {
                 return lastName;

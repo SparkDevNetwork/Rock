@@ -265,13 +265,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             pnlFollow.Visible = GetAttributeValue( AttributeKey.AllowFollowing ).AsBoolean();
 
             // Record Type - this is always "business". it will never change.
-            if ( Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+            if ( Person.IsBusiness() )
             {
                 var parms = new Dictionary<string, string>();
                 parms.Add( PageParameterKey.BusinessId, Person.Id.ToString() );
                 NavigateToLinkedPage( AttributeKey.BusinessDetailPage, parms );
             }
-            else if ( Person.RecordStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id )
+            else if ( Person.IsNameless() )
             {
                 var parms = new Dictionary<string, string>();
                 parms.Add( PageParameterKey.NamelessPersonId, Person.Id.ToString() );
