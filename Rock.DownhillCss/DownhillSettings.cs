@@ -151,7 +151,7 @@ namespace Rock.DownhillCss
 
                 if ( this.Platform == DownhillPlatform.Mobile )
                 {
-                    _fontSizeDefault = 14;
+                    _fontSizeDefault = 16;
                 }
                 else
                 {
