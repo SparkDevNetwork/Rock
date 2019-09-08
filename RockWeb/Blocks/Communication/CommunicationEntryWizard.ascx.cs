@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ImageBinaryFileType = "ImageBinaryFileType";
             public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Communication
 
         #region PageParameterKeys
 
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";

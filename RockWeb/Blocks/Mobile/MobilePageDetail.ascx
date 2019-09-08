@@ -7,12 +7,25 @@
 
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
 
+        <div class="row">
+            <div class="col-md-3 col-md-offset-9">
+                <div class="form-horizontal label-sm">
+                    <Rock:RockDropDownList ID="ddlPageList" EnhanceForLongLists="true" runat="server" Label="Page" AutoPostBack="true" OnSelectedIndexChanged="ddlPageList_SelectedIndexChanged" />
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
-                    <span class="label label-default"><asp:Literal ID="lPageGuid" runat="server" /></span>
+                    <button id="btnCopyToClipboard" runat="server" 
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
+                        class="btn btn-info btn-xs btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
                 </div>
             </div>
 
@@ -104,17 +117,29 @@
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
                                                     <div class="panel panel-widget">
-                                                        <div class="panel-heading js-block" data-block-id="<%# Eval( "Id" ) %>">
-                                                            <span>
+                                                        <div class="panel-heading js-block clearfix" data-block-id="<%# Eval( "Id" ) %>">
+
+                                                            <div class="pull-left">
                                                                 <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                                                <%# Eval( "Name" ) %> (<%# Eval( "Type" ) %>)
-                                                            </span>
+                                                            </div>
+                                                                
+                                                            <div class="pull-left margin-l-md leading-snug">
+                                                                <span><%# Eval( "Name" ) %></span> <br /><small class="margin-t-none"><%# Eval( "Type" ) %></small>
+                                                            </div>
+
                                                             <div class="pull-right">
+
                                                                 <a class="btn btn-default btn-sm btn-link panel-widget-reorder">
                                                                     <i class="fa fa-bars js-reorder"></i>
                                                                 </a>
+
                                                                 <asp:PlaceHolder ID="phAdminButtons" runat="server" />
                                                             </div>
+
+                                                            <div class="pull-right padding-t-sm margin-r-lg">
+                                                                <asp:PlaceHolder ID="phSettings" runat="server" />
+                                                            </div>
+                                                            
                                                         </div>
                                                     </div>
                                                 </ItemTemplate>

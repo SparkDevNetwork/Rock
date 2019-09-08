@@ -36,6 +36,7 @@ namespace Rock.Chart
     {
 
         private const string DateFormatStringMonthYear = "MMM yyyy";
+        private const string DateFormatStringDayMonthYear = "d";
 
         private List<ChartJsTimeSeriesDataset> _Datasets = new List<ChartJsTimeSeriesDataset>();
 
@@ -466,7 +467,21 @@ namespace Rock.Chart
 
             var categoryDataPoints = new List<ChartJsCategoryValuesDataPoint>();
 
-            if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
+            if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                // To test for the last date of the reporting period, get the next day.
+                var lastDateNextDay = endDate.AddDays( 1 );
+
+                while ( thisDate < lastDateNextDay )
+                {
+                    var categoryDataPoint = new ChartJsCategoryValuesDataPoint() { Category = thisDate.ToString( DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+
+                    categoryDataPoints.Add( categoryDataPoint );
+
+                    thisDate = thisDate.AddDays( 1 );
+                }
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
             {
                 // To test for the last date of the reporting period, get the first day of the following month.
                 var lastDateNextDay = new DateTime( endDate.Year, endDate.Month, 1 ).AddMonths( 1 );
@@ -549,7 +564,22 @@ namespace Rock.Chart
                 datasetQuantized.BorderColor = dataset.BorderColor;
                 datasetQuantized.FillColor = dataset.FillColor;
 
-                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
+                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+                {
+                    var quantizedDataPoints = datapoints
+                        .GroupBy( x => new { Day = x.DateTime } )
+                        .Select( x => new ChartJsCategoryValuesDataPoint
+                        {
+                            Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
+                            Value = x.Sum( y => y.Value ),
+                            SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
+                        } )
+                        .OrderBy( x => x.SortKey )
+                        .ToList();
+
+                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategoryValuesDataPoint>().ToList();
+                }
+                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
                 {
                     var quantizedDataPoints = datapoints
                         .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
@@ -788,7 +818,11 @@ namespace Rock.Chart
         /// </summary>
         Auto = 0,
 
-        //Day = 1,
+        /// <summary>
+        /// Day time scale
+        /// </summary>
+        Day = 1,
+
         //Week = 2,
 
         /// <summary>

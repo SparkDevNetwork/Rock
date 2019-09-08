@@ -140,10 +140,29 @@ namespace Rock.Reporting
         /// <returns></returns>
         public ReportField AddAttributeField( string attributeGuid, string columnName = null )
         {
+            var guid = attributeGuid.AsGuidOrNull();
+
+            if ( guid == null )
+            {
+                throw new ArgumentException( "Invalid Attribute Guid." );
+            }
+
+            return AddAttributeField( guid.Value, columnName );
+        }
+
+        /// <summary>
+        /// Add a custom Attribute of the reporting entity as a report field.
+        /// </summary>
+        /// <param name="attributeGuid"></param>
+        /// <param name="columnName">The display name for the column.</param>
+        /// <returns></returns>
+        public ReportField AddAttributeField( Guid attributeGuid, string columnName = null )
+        {
             var reportField = new ReportField();
 
             reportField.ReportFieldType = ReportFieldType.Attribute;
-            reportField.Selection = attributeGuid;
+            reportField.Selection = attributeGuid.ToString();
+
             reportField.ShowInGrid = true;
 
             if ( columnName != null )
