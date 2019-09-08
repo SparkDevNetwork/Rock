@@ -488,6 +488,7 @@ namespace Rock.CheckIn.Registration
                     personService.Add( person );
                     saveResult.NewPersonList.Add( person );
                     person.RecordTypeValueId = recordTypePersonId;
+                    person.FirstName = familyPersonState.FirstName;
                 }
                 else
                 {

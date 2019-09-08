@@ -90,6 +90,7 @@
     <Compile Include="Rock\Reporting\DataFilter\DataFilterTestBase.cs" />
     <Compile Include="Rock\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="Rock\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
+    <Compile Include="Rock\Reporting\ReportBuilder\ReportBuilderTests.cs" />
     <Compile Include="Rock\TestInitializer.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />

@@ -49,5 +49,6 @@ namespace Rock.Plugin.HotFixes
                 WHERE [Guid] = '3981CF6D-7D15-4B57-AACE-C0E25D28BD49'
                     AND [AllowSpecificGroupMemberAttributes] = 0" );
         }
+
     }
 }

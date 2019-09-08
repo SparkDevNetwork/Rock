@@ -9,7 +9,7 @@
 
                 Sys.Application.add_load(function () {
                     var cssFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelementplayer.min.css';
-                    var jsFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelementplayer.min.js';
+                    var jsFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelement-and-player.js';
 
                     // ensure that css for mediaelementplayers is added to page
                     if (!$('#mediaElementCss').length) {

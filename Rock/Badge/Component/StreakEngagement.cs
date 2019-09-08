@@ -70,7 +70,7 @@ namespace Rock.Badge.Component
         /// <summary>
         /// Keys to use for the attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The streak type attribute key
@@ -101,7 +101,7 @@ namespace Rock.Badge.Component
         /// <summary>
         /// Default values for the attributes
         /// </summary>
-        protected static class AttributeDefault
+        private static class AttributeDefault
         {
             /// <summary>
             /// The bar count attribute default

@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Microsoft.IdentityModel.Tokens;
 using Rock.Model;
-using Rock.Security;
+using Rock.Rest.Jwt;
 
 namespace Rock.Rest.Filters
 {
@@ -75,44 +73,24 @@ namespace Rock.Rest.Filters
             }
 
             // If still not successful, check for a JSON Web Token
-            if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwt ) )
+            if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
             {
-                var securityKey = Encryption.GetSymmetricSecurityKey();
-                var handler = new JwtSecurityTokenHandler();
+                Person person = null;
 
-                var validationParameters = new TokenValidationParameters
+                // We need to wait for the JwtHelper.GetPerson method rather than using the await keyword. The await keyword
+                // forces this entire method to be async causing the Secured attribute to process before everything
+                // is finished here
+                Task.Run( async () =>
                 {
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    LifetimeValidator = JwtLifetimeValidator,
-                    IssuerSigningKey = securityKey,
-                    ValidAudience = JwtConstants.Audience,
-                    ValidIssuer = JwtConstants.Issuer,
-                };
+                    person = await JwtHelper.GetPerson( jwtString );
+                } ).Wait();
 
-                try
+                if ( person != null )
                 {
-                    principal = handler.ValidateToken( jwt, validationParameters, out var securityToken );
-                    actionContext.Request.SetUserPrincipal( principal );
-                }
-                catch
-                {
-                    // The JWT is not valid
+                    actionContext.Request.Properties.Add( "Person", person );
+                    return;
                 }
             }
-        }
-
-        /// <summary>
-        /// The lifetime validation method for the JWT
-        /// </summary>
-        /// <param name="notBefore"></param>
-        /// <param name="expires"></param>
-        /// <param name="securityToken"></param>
-        /// <param name="validationParameters"></param>
-        /// <returns></returns>
-        private bool JwtLifetimeValidator( DateTime? notBefore, DateTime? expires, SecurityToken securityToken, TokenValidationParameters validationParameters )
-        {
-            return expires != null && RockDateTime.Now < expires;
         }
 
         /// <summary>

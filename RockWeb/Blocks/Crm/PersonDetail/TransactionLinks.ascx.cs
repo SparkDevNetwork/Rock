@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The add transaction page
