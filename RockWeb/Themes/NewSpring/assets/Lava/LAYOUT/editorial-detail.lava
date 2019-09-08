@@ -25,10 +25,11 @@
 {% capture parentids %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
 
 {%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
-{% if parentCount > 0 %}
+{% if parentCount > 0 and parentccid and parentccid != empty %}
     {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
         {% for parent in parents %}
             {% assign parentTitle = parent.Title %}
+            {% capture parentPermalink %}{[ getPermalink cciid:'{{ parent.Id }}' ]}{% endcapture %}
             {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
             {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
             {% if baseBackgroundColor and baseBackgroundColor != empty %}
@@ -94,11 +95,8 @@
             
             <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
 
-            {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
-            {% assign collectiontext = collectiontext | Trim %}
-            {% capture collectionurl %}{[ getPermalink cciid:'{{ Item.Id }}' ]}{% endcapture %}
-            {% if collectiontext and collectiontext != empty %}
-                <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+            {% if parentTitle and parentTitle != empty %}
+                <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if parentPermalink != empty %}<a href="{{ parentPermalink }}">{% endif %}{{ parentTitle }}{% if parentPermalink != empty %}</a>{% endif %}</small>
             {% endif %}
             
             {% if subtitle != empty %}
