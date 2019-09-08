@@ -1,0 +1,19 @@
+{%- assign wrapperId = uniqueid -%}
+
+<div class="panel-group text-left" id="accordion-{{ wrapperId }}" role="tablist" aria-multiselectable="true">
+
+    {%- for item in items -%}
+
+        <div class="panel panel-primary">
+            <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="panel-heading display-block sans-serif strong text-decoration-none text-white">
+                {{ item.title }}
+            </a>
+            <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
+                <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">
+                    {{ item.content | Replace:"'","’" | Trim }}
+                </div>
+            </div>
+        </div>
+    {%- endfor -%}
+
+</div>

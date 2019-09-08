@@ -1,0 +1,1 @@
+<small class="display-block soft-sides xs-soft-half-sides soft-bottom xs-soft-half-bottom text-center sans-serif stronger letter-spacing-condensed text-uppercase">&copy; {{ 'Now' | Date:'yyyy' }} {{ 'Global' | Attribute:'OrganizationName' }}</small>

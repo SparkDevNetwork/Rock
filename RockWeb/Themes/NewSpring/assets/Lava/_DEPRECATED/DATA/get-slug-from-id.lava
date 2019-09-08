@@ -1,0 +1,7 @@
+{% capture slug %}
+{% contentchannelitemslug where:'ContentChannelItemId == {{ id }}' iterator:'slugs' limit:'1' %}
+    {% for slug in slugs %}
+        {{ slug.Slug }}
+    {% endfor %}
+{% endcontentchannelitemslug %}
+{% endcapture %}{{ slug | Trim }}

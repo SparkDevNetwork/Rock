@@ -1,0 +1,41 @@
+{% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
+{% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
+
+{% if CurrentPerson and CurrentPerson != empty %}
+    {% assign orgCampus = CurrentPerson | Campus %}
+    {% assign orgStreet = orgCampus.Location.Street1 %}
+{% endif %}
+
+{% if orgStreet and orgStreet != empty %}
+    {% assign orgAddress = orgCampus.Location %}
+{% endif %}
+
+{% if orgCampus.PhoneNumber and orgCampus.PhoneNumber != empty %}
+    {% assign orgPhone = orgCampus.PhoneNumber %}
+    {% capture orgPhone %}({{ orgPhone | Slice:0,3 }}) {{ orgPhone | Slice:4,9 }}{% endcapture %}
+{% endif %}
+
+<footer class="shell soft bg-gray-dark rounded shadowed">
+    <div class="row sans-serif strong text-decoration-none">
+        <div class="col-xs-12 col-sm-12 col-md-3 text-left sm-text-center xs-text-center sm-push-half-bottom xs-push-half-bottom">
+            <span class="text-white"><small>&copy; {{ 'Now' | Date:'yyyy' }} NewSpring Church</small></span>
+        </div><div class="col-xs-12 col-sm-12 col-md-6 text-center">
+            <small class="sans-serif strong text-decoration-none text-center flush">
+                <a href="/privacy" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Privacy Policy</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/terms" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Terms of Use</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/reprinting-and-reposting" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Reprinting &amp; Reposting Terms</a>
+                <span class="text-white hidden-sm hidden-xs">&middot;</span>
+                <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Report Website Issue</a>
+    	        <br>
+                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">{{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} {{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</span>
+                <span class="text-white hidden-sm hidden-xs"> &middot; </span>
+                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom"><a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></span>
+                
+            </small>
+        </div><div class="col-xs-12 col-sm-12 col-md-3 text-right sm-text-center xs-text-center">
+            <small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a></small>
+        </div>
+    </div>
+</footer>

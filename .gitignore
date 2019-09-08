@@ -19,6 +19,7 @@ pageviews.csv
 RockLogster.csv
 Quartz.xml
 StyleCop.Cache
+.vscode
 
 #specific folders
 [Oo]bj/
@@ -30,7 +31,8 @@ RockWeb/App_Data/MobileAppBundles
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
-
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/cc_newspring
 Packages/*
 
 # javascript deps
