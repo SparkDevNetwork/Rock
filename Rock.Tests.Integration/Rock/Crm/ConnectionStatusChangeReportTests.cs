@@ -37,29 +37,22 @@ namespace Rock.Tests.Integration.Crm
         #region Test Data
 
         private const string _TestDataSourceOfChange = "ConnectionStatusChangeReportTest";
-        private const int _HistoryTestMaxPeople = 100;
-        private readonly DateTime _HistoryTestEndDate = RockDateTime.Now;
+        private const int _BulkHistoryMaxPeople = 5000;
+        private const int _BulkHistoryMinChangesPerPerson = 1000;
+        private const int _BulkHistoryMaxChangesPerPerson = 1000;
+        private readonly DateTime _BulkHistoryEndDate = RockDateTime.Now;
+        private const int _BulkHistoryMaxPeriodInDays = 365;
+
         private readonly int _InvalidCampusId = 99;
         private readonly int _MainCampusId = 1;
-
-        /// <summary>
-        /// Adds the required test data to the current database.
-        /// </summary>
-        [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Setup" )]
-        public void AddTestDataToCurrentDatabase()
-        {
-            this.RemoveTestDataFromCurrentDatabase();
-
-            this.AddTestDataConnectionStatusChangeHistory();
-        }
 
         /// <summary>
         /// Removes the test data from the current database.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Setup" )]
-        public void RemoveTestDataFromCurrentDatabase()
+        [TestCategory( TestCategories.RemoveData )]
+        [TestProperty( "Feature", TestFeatures.DataMaintenance )]
+        public void RemoveConnectionStatusChangeHistoryTestData()
         {
             var dataContext = new RockContext();
 
@@ -73,9 +66,12 @@ namespace Rock.Tests.Integration.Crm
         /// Adds a predictable set of Connection Status changes to the test database that are used for integration testing.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Setup.Maintenance" )]
-        public void AddTestDataConnectionStatusChangeHistory()
+        [TestCategory( TestCategories.AddData )]
+        [TestProperty( "Feature", TestFeatures.DataSetup )]
+        public void AddConnectionStatusChangeHistoryTestData()
         {
+            this.RemoveConnectionStatusChangeHistoryTestData();
+
             var dataContext = new RockContext();
 
             this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
@@ -90,10 +86,10 @@ namespace Rock.Tests.Integration.Crm
             var personList = personService.Queryable()
                 .AsNoTracking()
                 .Where( x => !x.IsSystem )
-                .Take( _HistoryTestMaxPeople )
+                .Take( _BulkHistoryMaxPeople )
                 .ToList();
 
-            var currentDate = _HistoryTestEndDate;
+            var currentDate = _BulkHistoryEndDate;
 
             var rng = new Random();
 
@@ -112,7 +108,7 @@ namespace Rock.Tests.Integration.Crm
                 if ( person.ConnectionStatusValueId == memberConnectionStatusId )
                 {
                     // For each Person who has a Connection Status of Member, add prior change events for Visitor --> Attendee --> Member.
-                    
+
                     // Add a change for Attendee --> Member.
                     dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
 
@@ -120,7 +116,8 @@ namespace Rock.Tests.Integration.Crm
                         .SetOldValue( "Attendee" )
                         .SetNewValue( "Member" )
                         .SetRawValues( attenderConnectionStatusId.ToString(), memberConnectionStatusId.ToString() )
-                        .SetDateOfChange( dateOfChange );
+                        .SetDateOfChange( dateOfChange )
+                        .SetSourceOfChange( _TestDataSourceOfChange );
 
                     // Add a change for Visitor --> Attendee.
                     // This change record has only the OldValue and NewValue, compatible with records created prior to Rock v1.8
@@ -129,7 +126,8 @@ namespace Rock.Tests.Integration.Crm
                     historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
                         .SetOldValue( "Visitor" )
                         .SetNewValue( "Attendee" )
-                        .SetDateOfChange( dateOfChange );
+                        .SetDateOfChange( dateOfChange )
+                        .SetSourceOfChange( _TestDataSourceOfChange );
 
                     entriesAdded += 2;
                 }
@@ -142,7 +140,8 @@ namespace Rock.Tests.Integration.Crm
                         .SetOldValue( "Web Prospect" )
                         .SetNewValue( "Visitor" )
                         .SetRawValues( prospectConnectionStatusId.ToString(), visitorConnectionStatusId.ToString() )
-                        .SetDateOfChange( dateOfChange );
+                        .SetDateOfChange( dateOfChange )
+                        .SetSourceOfChange( _TestDataSourceOfChange );
 
                     entriesAdded += 1;
                 }
@@ -162,18 +161,21 @@ namespace Rock.Tests.Integration.Crm
         /// This is only required for performance testing.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Setup.Maintenance" )]
-        public void AddTestDataConnectionStatusChangeHistoryRandom()
+        [TestCategory( TestCategories.AddData )]
+        [TestProperty( "Feature", TestFeatures.DataSetupBulk )]
+        public void AddConnectionStatusChangeHistoryBulkTestData()
         {
             var dataContext = new RockContext();
 
-            this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
+            //this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
 
             // Add Connection Status Change History Entries.
             var personService = new PersonService( dataContext );
 
-            var personQuery = personService.Queryable().AsNoTracking().Where( x => !x.IsSystem )
-                .Take( 100 ).ToList();
+            var personQuery = personService.Queryable()
+                .AsNoTracking()
+                .Where( x => !x.IsSystem )
+                .Take( _BulkHistoryMaxPeople ).ToList();
 
             var statusType = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS );
 
@@ -181,8 +183,6 @@ namespace Rock.Tests.Integration.Crm
 
             int? toStatusId;
             int? fromStatusId;
-
-            var currentDate = _HistoryTestEndDate;
 
             var rng = new Random();
 
@@ -195,18 +195,29 @@ namespace Rock.Tests.Integration.Crm
             {
                 var historyChanges = new History.HistoryChangeList();
 
-                var numberOfChanges = rng.Next( 0, 3 );
+                var numberOfChanges = rng.Next( _BulkHistoryMinChangesPerPerson, _BulkHistoryMaxChangesPerPerson + 1 );
 
-                var dateOfChange = currentDate;
+                // Distribute the changes evenly throughout a random period of days.
+                var changePeriodInDays = rng.Next( 1, _BulkHistoryMaxPeriodInDays + 1 );
+
+                //var firstDate = lastDate.AddDays( changePeriodInDays  * -1 );
+
+                decimal dayIncrement = Decimal.Divide( changePeriodInDays, numberOfChanges );
+                decimal dayOffset = 0;
+
+                DateTime dateOfChange; // = _HistoryTestEndDate;
 
                 // Set the initial value to the current status.
                 fromStatusId = person.ConnectionStatusValueId;
 
                 for ( int i = 1; i <= numberOfChanges; i++ )
                 {
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
+                    dateOfChange = _BulkHistoryEndDate.AddDays( ( int ) dayOffset * -1 );
+
+                    dayOffset = dayOffset + dayIncrement;
 
                     // Set the target status for this change to be the status prior to the most recent status change.
+                    // This is to ensure that the status changes form a logical sequence.
                     toStatusId = fromStatusId;
 
                     do
@@ -219,12 +230,15 @@ namespace Rock.Tests.Integration.Crm
                         .SetNewValue( toStatusId.ToStringSafe() )
                         .SetOldValue( fromStatusId.ToStringSafe() )
                         .SetRawValues( fromStatusId.ToStringSafe(), toStatusId.ToStringSafe() )
-                        .SetDateOfChange( dateOfChange );
-
-                    Debug.Print( $"Added History Entry [PersonId={person.Id}, Date={dateOfChange}, OldValue={fromStatusId}, NewValue={toStatusId}" );
+                        .SetDateOfChange( dateOfChange )
+                        .SetSourceOfChange( _TestDataSourceOfChange );
 
                     entriesAdded++;
+
+                    Debug.Print( $"Added History Entry [Entry#={entriesAdded}, PersonId={person.Id}, Date={dateOfChange}, OldValue={fromStatusId}, NewValue={toStatusId}" );
                 }
+
+                dataContext = new RockContext();
 
                 HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
@@ -266,7 +280,7 @@ namespace Rock.Tests.Integration.Crm
 
             int hasCampusCount = reportBase.ChangeEvents.Count( x => x.CampusId != null );
 
-            Assert.IsTrue( (hasCampusCount > 0), "Person.CampusId field is not populated. To calculate this value, run the \"Rock Cleanup\" Job for the current database." );
+            Assert.IsTrue( ( hasCampusCount > 0 ), "Person.CampusId field is not populated. To calculate this value, run the \"Rock Cleanup\" Job for the current database." );
         }
 
         /// <summary>
@@ -435,6 +449,49 @@ namespace Rock.Tests.Integration.Crm
 
             // The report should include events for new people, represented by a change from (null) --> (some status).
             Assert.IsTrue( report.ChangeEvents.Any( x => string.IsNullOrEmpty( x.OldConnectionStatusName ) ), "Status expected but not found. [OldStatus=(empty)]" );
+        }
+
+        /// <summary>
+        /// Verify the correct result when a Status Filter is set for Original Value only.
+        /// </summary>
+        [TestMethod]
+        [TestProperty( "Purpose", TestPurposes.Performance )]
+        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
+        public void ReportFromLargeHistoryDatasetShouldNotTimeout()
+        {
+            int monthsToInclude = 2;
+
+            var periodStart = new DateTime( RockDateTime.Now.Year, RockDateTime.Now.Month, 1 );
+
+            for ( int i = 1; i <= 12; i++ )
+            {
+                var dataContext = new RockContext();
+
+                periodStart = periodStart.AddMonths( monthsToInclude * -1 );
+
+                var nextPeriodEnd = periodStart.AddMonths( monthsToInclude ).AddDays( -1 );
+
+                var settings = new ConnectionStatusChangeReportSettings();
+
+                settings.ReportPeriod.SetToSpecificDateRange( periodStart, nextPeriodEnd );
+
+                ConnectionStatusChangeReportBuilder reportBuilder;
+                ConnectionStatusChangeReportData report;
+
+                // Get an unfiltered report.
+                // The unfiltered data should contain at least one record that is a transition from Visitor.
+                reportBuilder = new ConnectionStatusChangeReportBuilder( dataContext, settings );
+
+                var watch = new Stopwatch();
+
+                watch.Start();
+
+                report = reportBuilder.CreateReport();
+
+                watch.Stop();
+
+                Debug.Print( $"Pass {i:00}: Period={report.StartDate:dd-MMM-yy} - {report.EndDate:dd-MMM-yy}, Events={report.ChangeEvents.Count}, Execution Time={watch.Elapsed.TotalSeconds}s" );
+            }
         }
 
         #endregion

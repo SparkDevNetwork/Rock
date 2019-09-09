@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys to use for Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// Key for the Map Editor Page
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// Key for the streak type Id

@@ -14,22 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Field.Types;
 
-namespace Rock.Rest
+namespace Rock.Attribute
 {
     /// <summary>
-    /// Constant values used for JSON Web Token creation and validation
+    /// Stored as PersistedDataset.Guid
     /// </summary>
-    public static class JwtConstants
+    public class PersistedDatasetFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// The Audience
+        /// Initializes a new instance of the <see cref="PersistedDatasetFieldAttribute"/> class.
         /// </summary>
-        public const string Audience = "Rock-Audience";
-
-        /// <summary>
-        /// The Issuer
-        /// </summary>
-        public const string Issuer = "Rock-Issuer";
+        /// <param name="name">The name.</param>
+        public PersistedDatasetFieldAttribute( string name ) : base( name )
+        {
+            FieldTypeClass = typeof( PersistedDatasetFieldType ).FullName;
+        }
     }
 }
