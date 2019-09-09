@@ -21,6 +21,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.DownhillCss;
 using Rock.Mobile.Common;
 using Rock.Mobile.Common.Enums;
 using Rock.Model;
@@ -240,13 +241,26 @@ namespace Rock.Mobile
                 .ToList();
 
             //
+            // Build CSS Styles
+            //
+            var settings = additionalSettings.DownhillSettings;
+            settings.Platform = DownhillPlatform.Mobile; // ensure the settings are set to mobile
+
+            var cssStyles = CssUtilities.BuildFramework( settings ); // append custom css but parse it for downhill variables
+
+            if ( additionalSettings.CssStyle.IsNotNullOrWhiteSpace() )
+            {
+                cssStyles += CssUtilities.ParseCss( additionalSettings.CssStyle, settings );
+            }
+
+            //
             // Initialize the base update package settings.
             //
             var package = new UpdatePackage
             {
                 ApplicationType = additionalSettings.ShellType ?? ShellType.Blank,
                 ApplicationVersionId = ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ),
-                CssStyles = additionalSettings?.CssStyle ?? string.Empty,
+                CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats
@@ -259,6 +273,8 @@ namespace Rock.Mobile
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
+            package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
+            package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
 
             if ( site.FavIconBinaryFileId.HasValue )
             {

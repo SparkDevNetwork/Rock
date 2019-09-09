@@ -177,6 +177,18 @@
     <Compile Include="Migrations\201908202115162_Rollup_0820.Designer.cs">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201908291322025_JWT.cs" />
+    <Compile Include="Migrations\201908291322025_JWT.Designer.cs">
+      <DependentUpon>201908291322025_JWT.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909041733385_Rollup_0904.cs" />
+    <Compile Include="Migrations\201909041733385_Rollup_0904.Designer.cs">
+      <DependentUpon>201909041733385_Rollup_0904.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909042004344_NamelessPerson.cs" />
+    <Compile Include="Migrations\201909042004344_NamelessPerson.Designer.cs">
+      <DependentUpon>201909042004344_NamelessPerson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -869,6 +881,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201908202115162_Rollup_0820.resx">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201908291322025_JWT.resx">
+      <DependentUpon>201908291322025_JWT.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909041733385_Rollup_0904.resx">
+      <DependentUpon>201909041733385_Rollup_0904.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909042004344_NamelessPerson.resx">
+      <DependentUpon>201909042004344_NamelessPerson.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

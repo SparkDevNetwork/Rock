@@ -30,6 +30,11 @@ namespace Rock.Rest
         /// <summary>
         /// The JSON Web Token
         /// </summary>
-        public const string JWT = "JWT";
+        public const string JWT = "Authorization";
+
+        /// <summary>
+        /// The JSON Web Token Prefix
+        /// </summary>
+        public const string JwtPrefix = "Bearer ";
     }
 }
