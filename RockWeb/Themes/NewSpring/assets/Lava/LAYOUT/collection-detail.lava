@@ -21,7 +21,7 @@
 
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
     {% assign baseBackgroundColor = Item | Attribute:'BackgroundColor' %}
     {% if baseBackgroundColor and baseBackgroundColor != empty %}
@@ -43,9 +43,12 @@
     {% capture textalignment %}{% endcapture %}
     {% capture type %}{% endcapture %}
     {% capture label %}{{ type }}{% endcapture %}
-    {% assign dateparts = Item | Attribute:'Dates','RawValue' | Split:',' %}
-    {% if dateparts[0] != '' %}
-        {% capture subtitle %}{{ dateparts[0] | Date:'M/d/yyyy' }}{% if dateparts[1] != dateparts[0] %} - {{ dateparts[1] | Date:'M/d/yyyy' }}{% endif %}{% endcapture %}
+    {% assign dates = Item | Attribute:'Dates','RawValue' %}
+    {% assign dateparts = dates | Split:',' %}
+    {% assign datePart1 = dateparts[0] | Date:'yyyyMMdd' %}
+    {% assign datePart2 = dateparts[1] | Date:'yyyyMMdd' %}
+    {% if dates != empty %}
+        {% capture subtitle %}{[ formatDate date:'{{ dateparts[0] }}' ]}{% if datePart1 != datePart2 %} - {[ formatDate date:'{{ dateparts[1] }}' ]}{% endif %}{% endcapture %}
     {% endif %}
     {% capture imageurl %}{{ Item | Attribute:'ImageSquare','Url' }}{% endcapture %}
     {% capture imageoverlayurl %}{% endcapture %}
