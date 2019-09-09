@@ -390,6 +390,12 @@ namespace RockWeb.Blocks.Event
 
         #region Main Form Events
 
+        private void AddDynamicControls( bool setValues )
+        {
+            RegistrationsTabAddDynamicControls( setValues );
+            RegistrantsTabAddDynamicControls( setValues );
+        }
+
         /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
@@ -521,7 +527,10 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
+                        instance.RegistrationTemplate.Cost > 0 ||
+                        instance.RegistrationTemplate.Fees.Count > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -2672,7 +2681,10 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) || registrationInstance.RegistrationTemplate.Cost > 0 ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) ||
+                    registrationInstance.RegistrationTemplate.Cost > 0 ||
+                    registrationInstance.RegistrationTemplate.Fees.Count > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -3201,7 +3213,67 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Add all of the columns to the Registrations grid after the Registrants column.
+        /// The Column.Insert method does not play well with buttons.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void RegistrationsTabAddDynamicControls( bool setValues )
+        {
+            var registrantsField = gRegistrations.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Registrants" );
+            int registrantsFieldIndex = gRegistrations.Columns.IndexOf( registrantsField );
+
+            // Remove all columns to the right of Registrants
+            for ( int i = registrantsFieldIndex + 2; i < gRegistrations.Columns.Count; i++ )
+            {
+                gRegistrations.Columns.RemoveAt( i );
+            }
+
+            // Add Attribute columns if necessary
+            if ( AvailableRegistrationAttributesForGrid != null )
+            {
+                foreach ( var attributeCache in AvailableRegistrationAttributesForGrid )
+                {
+                    bool columnExists = gRegistrations.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attributeCache.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attributeCache.Key;
+                        boundField.AttributeId = attributeCache.Id;
+                        boundField.HeaderText = attributeCache.Name;
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        gRegistrations.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add the rest of the columns
+            var dtWhen = new DateTimeField { DataField = "CreatedDateTime", HeaderText = "When", SortExpression = "CreatedDateTime" };
+            dtWhen.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            dtWhen.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( dtWhen );
+
+            var lDiscount = new RockLiteralField { ID = "lDiscount", HeaderText = "Discount Code", SortExpression = "DiscountCode", Visible = false };
+            lDiscount.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            lDiscount.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( lDiscount );
+
+            var lRegistrationCost = new RockLiteralField { ID = "lRegistrationCost", HeaderText = "Total Cost", SortExpression = "TotalCost" };
+            lRegistrationCost.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lRegistrationCost.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lRegistrationCost );
+
+            var lBalance = new RockLiteralField { ID = "lBalance", HeaderText = "Balance Due", SortExpression = "BalanceDue" };
+            lBalance.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lBalance.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lBalance );
+
+            DeleteField deleteField = new DeleteField();
+            deleteField.Click += gRegistrations_Delete;
+            gRegistrations.Columns.Add( deleteField );
+        }
+
+        #endregion Registrations Tab
 
         #region Registrants Tab
 
@@ -3858,7 +3930,7 @@ namespace RockWeb.Blocks.Event
         /// Adds the filter controls and grid columns for all of the registration template's form fields
         /// that were configured to 'Show on Grid'
         /// </summary>
-        private void AddDynamicControls( bool setValues )
+        private void RegistrantsTabAddDynamicControls( bool setValues )
         {
             phRegistrantsRegistrantFormFieldFilters.Controls.Clear();
             phGroupPlacementsFormFieldFilters.Controls.Clear();
@@ -4605,31 +4677,6 @@ namespace RockWeb.Blocks.Event
             groupPickerField.HeaderText = "Group";
             groupPickerField.RootGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             gGroupPlacements.Columns.Add( groupPickerField );
-
-            // Remove attribute columns
-            foreach ( var column in gRegistrations.Columns.OfType<AttributeField>().ToList() )
-            {
-                gRegistrations.Columns.Remove( column );
-            }
-
-            if ( AvailableRegistrationAttributesForGrid != null )
-            {
-                var registrantsField = gRegistrations.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Registrants" );
-                int columnInsertIndex = gRegistrations.Columns.IndexOf( registrantsField ) + 1;
-                foreach ( var attributeCache in AvailableRegistrationAttributesForGrid )
-                {
-                    bool columnExists = gRegistrations.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attributeCache.Id ) != null;
-                    if ( !columnExists )
-                    {
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = attributeCache.Key;
-                        boundField.AttributeId = attributeCache.Id;
-                        boundField.HeaderText = attributeCache.Name;
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        gRegistrations.Columns.Insert( columnInsertIndex++, boundField );
-                    }
-                }
-            }
         }
 
         #endregion

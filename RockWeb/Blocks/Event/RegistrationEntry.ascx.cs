@@ -596,7 +596,7 @@ namespace RockWeb.Blocks.Event
             // Change the display when family members are allowed
             rblFamilyOptions.Label = RegistrantTerm + " is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
             rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
-            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = pnlFamilyMembers.Visible && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
 
             if ( !Page.IsPostBack )
             {

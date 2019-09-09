@@ -874,7 +874,7 @@ namespace Rock.Financial
 
             using ( var sha256Hash = SHA256.Create() )
             {
-                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHH" )}_{_automatedPaymentArgs.ToJson()}";
+                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHHmm" )}_{_automatedPaymentArgs.ToJson()}";
                 var bytes = sha256Hash.ComputeHash( Encoding.UTF8.GetBytes( inputString ) );
                 var builder = new StringBuilder();
 

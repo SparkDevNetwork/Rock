@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The show chart
@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step type identifier
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Steps
             stepType.HasEndDate = cbHasDuration.Checked;
             stepType.AllowMultiple = cbAllowMultiple.Checked;
 
-            // Update Pre-requisites
+            // Update Prerequisites
             var uiPrerequisiteStepTypeIds = cblPrerequsities.SelectedValuesAsInt;
 
             var stepTypes = stepTypeService.Queryable().ToList();
@@ -492,6 +492,25 @@ namespace RockWeb.Blocks.Steps
                 newPrerequisite.PrerequisiteStepTypeId = prerequisiteStepTypeId;
 
                 stepType.StepTypePrerequisites.Add( newPrerequisite );
+            }
+
+            // Validate Prerequisites.
+            // This is necessary because other Step Types may have been modified after this record edit was started.
+            if ( _stepTypeId > 0 )
+            {
+                var eligibleStepTypeIdList = stepTypeService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).Select(x => x.Id).ToList();
+
+                foreach ( var prerequisite in stepType.StepTypePrerequisites )
+                {
+                    if ( !eligibleStepTypeIdList.Contains( prerequisite.PrerequisiteStepTypeId ) )
+                    {
+                        var prerequisiteStepType = stepTypeService.Get( prerequisite.PrerequisiteStepTypeId );
+
+                        cvStepType.IsValid = false;
+                        cvStepType.ErrorMessage = string.Format( "This Step Type cannot have prerequisite \"{0}\" because it is already a prerequisite of that Step Type.", prerequisiteStepType.Name );
+                        return 0;
+                    }
+                }
             }
 
             // Update Advanced Settings
@@ -1244,7 +1263,7 @@ namespace RockWeb.Blocks.Steps
         {
             var dataContext = GetDataContext();
 
-            // Load available Prerequisite Steps, being any other Step Types in this Step Program that are active.
+            // Load available Prerequisite Steps.
             var stepType = GetStepType();
 
             int programId = 0;
@@ -1261,10 +1280,16 @@ namespace RockWeb.Blocks.Steps
 
             var stepsService = new StepTypeService( dataContext );
 
-            var prerequisiteStepTypes = stepsService.Queryable()
-                .Include( x => x.StepProgram )
-                .Where( x => x.StepProgramId == programId && x.Id != _stepTypeId && x.IsActive )
-                .ToList();
+            List<StepType> prerequisiteStepTypes;
+
+            if ( _stepTypeId == 0 )
+            {
+                prerequisiteStepTypes = stepsService.Queryable().Where( x => x.StepProgramId == programId && x.IsActive ).ToList();
+            }
+            else
+            {
+                prerequisiteStepTypes = stepsService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).ToList();
+            }
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
             cblPrerequsities.DataBind();
@@ -1625,9 +1650,9 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Get chart data and set visibility of related elements.
-            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
 
-            var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
+            var chartFactory = this.GetChartJsFactory( reportPeriod );
 
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
@@ -1655,7 +1680,7 @@ namespace RockWeb.Blocks.Steps
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( TimePeriod reportPeriod )
         {
             var dataContext = GetDataContext();
 
@@ -1667,6 +1692,11 @@ namespace RockWeb.Blocks.Steps
 
             var stepsCompletedQuery = stepService.Queryable()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
+
+            var dateRange = reportPeriod.GetDateRange();
+
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
 
             if ( startDate != null )
             {
@@ -1710,9 +1740,17 @@ namespace RockWeb.Blocks.Steps
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
+            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
+            }
+            else
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
+            }
+
             factory.StartDateTime = startDate;
             factory.EndDateTime = endDate;
-            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
             // Add Dataset for Steps Started.

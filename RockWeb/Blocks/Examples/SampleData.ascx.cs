@@ -1459,7 +1459,7 @@ namespace RockWeb.Blocks.Examples
 
             // Create person alias records for each person manually since we set disablePrePostProcessing=true on save
             PersonService personService = new PersonService( rockContext );
-            foreach ( var person in personService.Queryable( "Aliases", true )
+            foreach ( var person in personService.Queryable( true ).Include(a => a.Aliases )
                 .Where( p =>
                     _peopleDictionary.Keys.Contains( p.Guid ) &&
                     !p.Aliases.Any() ) )

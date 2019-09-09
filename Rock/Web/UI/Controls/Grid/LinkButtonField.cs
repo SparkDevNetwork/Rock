@@ -231,7 +231,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void linkButton_DataBinding( object sender, EventArgs e )
         {
-            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).DataItemContainer;
             RowEventArgs args = new RowEventArgs( row );
             LinkButtonField.HandleOnDataBound( sender, args );
         }
@@ -253,7 +253,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( LinkButtonClick != null )
             {
-                GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+                GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).DataItemContainer;
                 RowEventArgs args = new RowEventArgs( row );
                 LinkButtonClick( sender, args );
             }

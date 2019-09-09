@@ -220,7 +220,7 @@
                 <div id="divDiscountCode" runat="server" class="form-group pull-right">
                     <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
                     <div class="input-group">
-                        <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
+                        <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></Rock:RockTextBox>
                         <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
                 </div>

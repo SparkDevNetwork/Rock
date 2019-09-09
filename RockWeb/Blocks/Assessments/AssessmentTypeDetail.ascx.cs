@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Assessments
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string EntityId = "AssessmentTypeId";
         }
