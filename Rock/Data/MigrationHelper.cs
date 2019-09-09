@@ -2708,6 +2708,41 @@ WHERE [Guid] = '{pageGuid}';";
         }
 
         /// <summary>
+        /// Adds the attribute qualifier.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="definedTypeGuid">The defined type guid.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddDefinedTypeAttributeQualifier( string attributeGuid, string definedTypeGuid, string guid )
+        {
+            var key = "definedtype";
+
+            Migration.Sql( $@"
+                DECLARE @definedTypeId INT = (SELECT Id FROM DefinedType WHERE Guid = '{definedTypeGuid}');
+
+                IF @definedTypeId IS NOT NULL
+                BEGIN
+                    DECLARE @AttributeId int
+                    SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                    IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
+                    BEGIN
+                        INSERT INTO [AttributeQualifier] (
+                            [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                        VALUES(
+                            1,@AttributeId,'{key}',@definedTypeId,'{guid}')
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE [AttributeQualifier] SET
+                            [Key] = '{key}',
+                            [Value] = @definedTypeId
+                        WHERE [Guid] = '{guid}'
+                    END
+                END" );
+        }
+
+        /// <summary>
         /// Updates the attribute qualifier.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>

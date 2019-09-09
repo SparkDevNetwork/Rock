@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step type
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for the page parameters
         /// </summary>
-        protected static class ParameterKey
+        private static class ParameterKey
         {
             /// <summary>
             /// The step type identifier
@@ -127,6 +127,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !IsPostBack && !ValidateRequiredModels() )
             {
+                pnlEditDetails.Visible = false;
                 return;
             }
 
@@ -441,20 +442,17 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private bool ValidateRequiredModels()
         {
-            var step = GetStep();
-
-            if ( step != null )
-            {
-                // Edit only requires the step
-                return true;
-            }
-
-            // Add requires step type            
             var stepType = GetStepType();
 
             if ( stepType == null )
             {
                 ShowError( "A step type is required to add a step" );
+                return false;
+            }
+
+            if ( !stepType.AllowManualEditing && !UserCanEdit )
+            {
+                ShowError( "You are not authorized to add or edit a step of this type" );
                 return false;
             }
 

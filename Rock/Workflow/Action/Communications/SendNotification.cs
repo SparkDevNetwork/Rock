@@ -96,7 +96,7 @@ namespace Rock.Workflow.Action
                                             recipients.Add( recipient );
                                             if ( person != null )
                                             {
-                                                recipient.MergeFields.Add( "Person", person );
+                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey , person );
                                             }
                                         }
                                     }
@@ -143,7 +143,7 @@ namespace Rock.Workflow.Action
                                             {
                                                 var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
                                                 recipients.Add( recipient );
-                                                recipient.MergeFields.Add( "Person", person );
+                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
                                         }
                                     }

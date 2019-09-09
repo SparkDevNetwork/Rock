@@ -21,7 +21,8 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Advance Info control
+    /// Presents a List of <seealso cref="NewGroupAdvanceInfoRow"/> rows, that contain any advanced info to collect about a new group member during the NewFamily/NewGroup process
+    /// (The only thing it does is prompt for AlternateID for each new group member)
     /// </summary>
     [ToolboxData( "<{0}:NewGroupAdvanceInfo runat=server></{0}:NewGroupAdvanceInfo>" )]
     public class NewGroupAdvanceInfo : CompositeControl, INamingContainer

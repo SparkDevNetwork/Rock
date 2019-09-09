@@ -117,6 +117,58 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets records that have a particular attribute value.
+        /// Example: api/People/GetByAttributeValue?attributeKey=FirstVisit&amp;value=2012-12-15
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="caseSensitive">if set to <c>true</c> [case sensitive].</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByAttributeValue" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByAttributeValue( [FromUri]int? attributeId = null, [FromUri]string attributeKey = null, [FromUri]string value = null, [FromUri]bool caseSensitive = false )
+        {
+            // Value is always required
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The value param is required" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Either key or id is required, but not both
+            var queryByKey = !attributeKey.IsNullOrWhiteSpace();
+            var queryById = attributeId.HasValue;
+
+            if ( queryByKey == queryById )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Either attributeKey or attributeId must be specified, but not both" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Query for the models that have the value for the attribute
+            var rockContext = Service.Context as RockContext;
+            var query = Service.Queryable().AsNoTracking();
+            var valueComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if ( queryById )
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.AttributeId == attributeId && a.Value.Equals( value, valueComparison ) );
+            }
+            else
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
+            }
+
+            return query;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>
@@ -480,6 +532,35 @@ namespace Rock.Rest
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+        }
+
+        /// <summary>
+        /// Gets a query of the items that are followed by a specific person. For example, ~/api/Groups/FollowedItems
+        /// would return a list of groups that the person is following. Either ?personId= or ?personAliasId= can be
+        /// specified to indicate what person you want to see the followed items for.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "FollowedItems" )]
+        [EnableQuery]
+        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        {
+            if ( !personId.HasValue )
+            {
+                if ( personAliasId.HasValue )
+                {
+                    personId = new PersonAliasService( this.Service.Context as RockContext ).GetPersonId( personAliasId.Value );
+                }
+            }
+
+            if ( personId.HasValue )
+            {
+                return Service.GetFollowed( personId.Value );
+            }
+
+            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified"  } );
         }
 
         /// <summary>

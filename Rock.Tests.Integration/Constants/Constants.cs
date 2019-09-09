@@ -31,12 +31,25 @@ namespace Rock.Tests.Integration
     public static class TestFeatures
     {
         // Tests having this property relate to data setup for integration tests.
-        public const string DataSetup = "Data Setup";
+        public const string DataSetup = "Data Setup (Basic)";
+        public const string DataSetupBulk = "Data Setup (Bulk)";
+
         // Tests having this property relate to data maintenance that may be needed during the development process.
         public const string DataMaintenance = "Data Maintenance";
 
+        // Tests having this property relate to the Reporting feature of Rock.
+        public const string Reporting = "Reporting";
+
         // Tests having this property relate to the Steps feature of Rock.
         public const string Steps = "Steps";
+    }
+
+    public static class TestPurposes
+    {
+        // Tests having this purpose are intended to measure the performance of the function being tested.
+        public const string Performance = "Performance";
+        // Tests having this purpose are intended to validate the function being tested.
+        public const string Validation = "Validation";
     }
 
     public static  class TestPeople

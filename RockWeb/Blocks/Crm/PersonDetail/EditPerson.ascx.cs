@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class SecurityActionKey
+        private static class SecurityActionKey
         {
             public const string EditSMS = "EditSMS";
         }

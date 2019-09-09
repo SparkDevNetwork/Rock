@@ -73,36 +73,13 @@
                                             <%# Eval( "RenderedLava" ) %>
                                         </div>
                                         <div class="step-card-hover">
-                                            <asp:Panel ID="pnlStepRecords" runat="server">
-                                                <asp:LinkButton runat="server" id="lbCardAddStep" OnCommand="AddStep" CommandArgument='<%# Eval("StepType.Id") %>' CssClass="card-add-step-button">
-                                                    <span>
-                                                    <i class="fa fa-plus-circle fa-2x"></i>
-                                                    <br />
-                                                    Add a <%# Eval("StepTerm") %>
-                                                    </span>
-                                                </asp:LinkButton>
-                                                <div class="step-records-table-container">
-                                                    <table class="step-records-table">
-                                                        <asp:repeater id="rSteps" runat="server">
-                                                            <itemtemplate>
-                                                                <tr>
-                                                                    <td class="steps-status"><%# Eval("StatusHtml") %></td>
-                                                                    <td>
-                                                                        <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
-                                                                            <i class="fa fa-pencil"></i>
-                                                                        </asp:LinkButton>
-                                                                    </td>
-                                                                    <td>
-                                                                        <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
-                                                                            <i class="fa fa-times"></i>
-                                                                        </asp:LinkButton>
-                                                                    </td>
-                                                                </tr>
-                                                            </itemtemplate>
-                                                        </asp:repeater>
-                                                    </table>
-                                                </div>
-                                            </asp:Panel>
+                                            <asp:LinkButton runat="server" id="lbCardAddStep" OnCommand="AddStep" CommandArgument='<%# Eval("StepType.Id") %>' CssClass="card-add-step-button">
+                                                <span>
+                                                <i class="fa fa-plus-circle fa-2x"></i>
+                                                <br />
+                                                Add a <%# Eval("StepTerm") %>
+                                                </span>
+                                            </asp:LinkButton>
                                             <asp:Panel ID="pnlPrereqs" runat="server">
                                                 <p class="prereq-list-info">This <%# Eval("StepTerm") %> requires the following prerequisites:</p>
                                                 <ul class="list-unstyled">
@@ -113,6 +90,27 @@
                                                     </asp:repeater>
                                                 </ul>
                                             </asp:Panel>
+                                            <div class="step-records-table-container">
+                                                <table class="step-records-table">
+                                                    <asp:repeater id="rSteps" runat="server" OnItemDataBound="rSteps_ItemDataBound">
+                                                        <itemtemplate>
+                                                            <tr>
+                                                                <td class="steps-status"><%# Eval("StatusHtml") %></td>
+                                                                <td runat="server" id="tdEdit">
+                                                                    <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
+                                                                        <i class="fa fa-pencil"></i>
+                                                                    </asp:LinkButton>
+                                                                </td>
+                                                                <td runat="server" id="tdDelete">
+                                                                    <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
+                                                                        <i class="fa fa-times"></i>
+                                                                    </asp:LinkButton>
+                                                                </td>
+                                                            </tr>
+                                                        </itemtemplate>
+                                                    </asp:repeater>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div><!-- col -->
