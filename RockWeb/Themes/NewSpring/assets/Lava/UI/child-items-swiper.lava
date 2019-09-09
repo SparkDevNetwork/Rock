@@ -2,8 +2,6 @@
     {% contentchannelitem id:'{{ cciid }}' iterator:'Items' %}
         {% for Item in Items %}
             
-        
-
             {% capture childIdsConditional %}
                 {% for childItem in Item.ChildItems %}
                     {% if forloop.first %}
@@ -16,81 +14,81 @@
                     Id == {{ childItem.ChildContentChannelItem.Id }}{% if forloop.last != true %} || {% endif %}
                 {% endfor %}
             {% endcapture %}
-
             {% if childIdsConditional and childIdsConditional != empty %}
             {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
                 {% contentchannelitem where:'{{ childIdsConditional }}' sort:'{{ sort }}' iterator:'childItems' %}
-
-                {[ swiper id:'entries' ]}
-                    {% for child in childItems %}[[ item data:'' ]]
-                        {% assign childChannelId = child.ContentChannel.Id %}
-                        {% capture showDate %}
-                            {% contentchannel where:'Id == {{ childChannelId | AsInteger }}' iterator:'channels' %}
-                                {% for channel in channels %}
-                                    {{ channel | Attribute:'IsDateVisible','RawValue' }}
-                                {% endfor %}
-                            {% endcontentchannel %}
-                        {% endcapture %}
-                        {% assign showDate = showDate | Trim %}
-
-                        {% capture guid %}{{ child.Guid }}{% endcapture %}
-                        {% capture id %}{{ child.Id }}{% endcapture %}
-                        {% capture cciid %}{{ child.Id }}{% endcapture %}
-                        {% capture type %}{{ childType | Singularize }}{% endcapture %}
-                        {% capture title %}{{ child.Title | Replace:"'","’" }}{% endcapture %}
-                        {% capture titlesize %}h4{% endcapture %}
-                        {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
-                        {% capture textalignment %}{% endcapture %}
-                        {% capture label %}{% if childType contains "Devotional" %}Session {{ forloop.index }}{% endif %}{% endcapture %}
-                        
-                        {% assign actualDate = child | Attribute:'ActualDate','RawValue' %}
-                        {% assign dates = child | Attribute:'Dates','RawValue' %}
-                        {% assign dateParts = dates | Split:',' %}
-                        {% capture subtitle %}
-                            {%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
-                            {% if showDate == 'True' %}
-                                {%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
-                                {% if dates != empty %}
-                                    {[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
-                                {% elseif actualDate != empty %}
-                                    {[ formatDate date:'{{ actualDate }}' ]}
-                                {% else %}
-                                    {[ formatDate date:'{{ child.StartDateTime }}' ]}
+                    {% assign slug = 'Global' | PageParameter:'Slug' %}
+                    {% for child in childItems %}
+                        {% if slug == child.PrimarySlug %}
+                            {% assign initialslide = child.Order %}
+                        {% endif %}
+                    {% endfor %}
+                    {[ swiper id:'entries' initialslide:'{{ initialslide }}' ]}
+                        {% for child in childItems %}[[ item data:'' ]]
+                            {% assign childChannelId = child.ContentChannel.Id %}
+                            {% capture showDate %}
+                                {% contentchannel where:'Id == {{ childChannelId | AsInteger }}' iterator:'channels' %}
+                                    {% for channel in channels %}
+                                        {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                                    {% endfor %}
+                                {% endcontentchannel %}
+                            {% endcapture %}
+                            {% assign showDate = showDate | Trim %}
+                            {% capture guid %}{{ child.Guid }}{% endcapture %}
+                            {% capture id %}{{ child.Id }}{% endcapture %}
+                            {% capture cciid %}{{ child.Id }}{% endcapture %}
+                            {% capture type %}{{ childType | Singularize }}{% endcapture %}
+                            {% capture title %}{{ child.Title | Replace:"'","’" }}{% endcapture %}
+                            {% capture titlesize %}h4{% endcapture %}
+                            {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
+                            {% capture textalignment %}{% endcapture %}
+                            {% capture label %}{% if childType contains "Devotional" %}Session {{ forloop.index }}{% endif %}{% endcapture %}
+                            
+                            {% assign actualDate = child | Attribute:'ActualDate','RawValue' %}
+                            {% assign dates = child | Attribute:'Dates','RawValue' %}
+                            {% assign dateParts = dates | Split:',' %}
+                            {% capture subtitle %}
+                                {%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
+                                {% if showDate == 'True' %}
+                                    {%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
+                                    {% if dates != empty %}
+                                        {[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
+                                    {% elseif actualDate != empty %}
+                                        {[ formatDate date:'{{ actualDate }}' ]}
+                                    {% else %}
+                                        {[ formatDate date:'{{ child.StartDateTime }}' ]}
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        {% endcapture %}
-
-                        {% capture video %}{{ child | Attribute:'Video','RawValue' }}{% endcapture %}
-                        {% capture childimage %}{{ child | Attribute:'ImageLandscape','Url' }}{% endcapture %}
-                        {% capture imageurl %}
-                            {% if childType != "Devotionals" %}
-                                {% if childimage and childimage != empty %}
-                                    {{ childimage }}
-                                {% elseif video and video != empty %}
-                                    {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                            {% endcapture %}
+                            {% capture video %}{{ child | Attribute:'Video','RawValue' }}{% endcapture %}
+                            {% capture childimage %}{{ child | Attribute:'ImageLandscape','Url' }}{% endcapture %}
+                            {% capture imageurl %}
+                                {% if childType != "Devotionals" %}
+                                    {% if childimage and childimage != empty %}
+                                        {{ childimage }}
+                                    {% elseif video and video != empty %}
+                                        {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        {% endcapture %}
-                        {% assign imageurl = imageurl | Trim %}
-                        {% capture imageoverlayurl %}{% endcapture %}
-                        {% capture imagealignment %}{% endcapture %}
-                        {% capture imageopacity %}{% endcapture %}
-                        {% capture grayscale %}{% endcapture %}
-                        {% capture backgroundvideourl %}{% endcapture %}
-                        {% capture lava %}{% endcapture %}
-                        {% capture ratio %}{% endcapture %}
-                        {% capture trimcopy %}{% endcapture %}
-                        {% capture linkcolor %}{% endcapture %}
-                        {% capture backgroundcolor %}{% endcapture %}
-
-                        {% capture linkurl %}{[ getPermalink cciid:'{{ child.Id }}' ]}{% endcapture %}
-                        {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
-                        
-                        {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
-                        
-                    [[ enditem ]]{% endfor %}
-                {[ endswiper ]}
-
+                            {% endcapture %}
+                            {% assign imageurl = imageurl | Trim %}
+                            {% capture imageoverlayurl %}{% endcapture %}
+                            {% capture imagealignment %}{% endcapture %}
+                            {% capture imageopacity %}{% endcapture %}
+                            {% capture grayscale %}{% endcapture %}
+                            {% capture backgroundvideourl %}{% endcapture %}
+                            {% capture lava %}{% endcapture %}
+                            {% capture ratio %}{% endcapture %}
+                            {% capture trimcopy %}{% endcapture %}
+                            {% capture linkcolor %}{% endcapture %}
+                            {% capture backgroundcolor %}{% endcapture %}
+                            {% capture linkurl %}{[ getPermalink cciid:'{{ child.Id }}' ]}{% endcapture %}
+                            {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
+                            
+                            {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+                            
+                        [[ enditem ]]{% endfor %}
+                    {[ endswiper ]}
                 {% endcontentchannelitem %}
             {% endif %}
         {% endfor %}
