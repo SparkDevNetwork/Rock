@@ -1,5 +1,5 @@
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture linkurl %}
