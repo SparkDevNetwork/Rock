@@ -1,5 +1,5 @@
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
 {% if linkurl != empty or linkedpageid != empty %}
     {% capture linkurl %}
@@ -51,24 +51,28 @@ overflow-hidden
 
     {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-        <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top {% if hideforegroundelements == 'Yes' %}hidden{% endif %}" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
+        <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
 
             {% if imageoverlayurl != null and imageoverlayurl != '' %}
                 <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 750px;">
+                <br>
             {% endif %}
 
+            {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
 
-            {% if title != null and title != '' %}
-                <h1 {% if imageoverlayurl and imageoverlayurl != empty %}class="hidden"{% endif %}>{{ title }}</h1>
-            {% endif %}
+                {% if title != null and title != '' %}
+                    <h1 {% if imageoverlayurl and imageoverlayurl != empty %}class="hidden"{% endif %}>{{ title }}</h1>
+                {% endif %}
 
-            {{ content }}
+                {{ content }}
 
-            {% if linkurl and linkurl != empty %}
-                <p>
-                    {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
-                </p>
-            {% endif %}
+                {% if linkurl and linkurl != empty %}
+                    <p>
+                        {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
+                    </p>
+                {% endif %}
+
+            {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
 
             {% if video != null and video != '' %}
                 <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">

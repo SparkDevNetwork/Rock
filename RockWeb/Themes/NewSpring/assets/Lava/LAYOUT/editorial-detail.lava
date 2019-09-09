@@ -80,14 +80,14 @@
 
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
     {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
     {% assign cciid = Item.Id %}
     {% assign subtitle = Item | Attribute:'Subtitle' %}
     {% assign summary = Item | Attribute:'Summary' %}
     {% assign video = Item | Attribute:'Video','RawValue' %}
-    {% assign date = Item.StartDateTime | Date:'MMMM d, yyyy' %}
+    {% capture date %}{[ formatDate date:'{{ Item.StartDateTime }}' ]}{% endcapture %}
     {% assign itemimageurl = Item | Attribute:'ImageLandscape','Url' %}
 
     {% capture imageurl %}
@@ -206,11 +206,11 @@
             {% assign tags = tags | Trim %}
 
             {% capture isDateVisible %}
-            {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
-                {% for channel in channels %}
-                    {{ channel | Attribute:'IsDateVisible','RawValue' }}
-                {% endfor %}
-            {% endcontentchannel %}
+                {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
+                    {% for channel in channels %}
+                        {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                    {% endfor %}
+                {% endcontentchannel %}
             {% endcapture %}
             {% assign isDateVisible = isDateVisible | Trim %}
             
