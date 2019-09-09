@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
 	function calculateLayout() {
+		var isAdmin = $('body').hasClass('is-admin');
 		// Get window width to determine if nav will be fixed to top/bottom
 		var windowWidth = window.innerWidth;
 
@@ -30,8 +31,13 @@ document.addEventListener("DOMContentLoaded", function() {
 			content.style.marginBottom = navigationHeight + "px";
 
 			if(navigationSecondary) {
-				navigationSecondary.style.marginTop = 0;
-				content.style.marginTop = navigationSecondaryHeight + "px";
+				if(isAdmin) {
+					navigationSecondary.style.marginTop = 36 + "px";
+					content.style.marginTop = navigationSecondaryHeight + 36 + "px";
+				} else {
+					navigationSecondary.style.marginTop = 0;
+					content.style.marginTop = navigationSecondaryHeight + "px";
+				}
 			} else {
 				content.style.marginTop = 0;
 			}
