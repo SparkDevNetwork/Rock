@@ -569,15 +569,14 @@ Update Family Status: {updateFamilyStatus}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                        var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
-                                m.EntityTypeId == personEntityTypeId &&
-                                m.RelatedEntityId.HasValue &&
+                                m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.RelatedEntityId.Value )
+                            .Select( a => a.EntityId )
                             .ToList()
                             .Distinct();
 

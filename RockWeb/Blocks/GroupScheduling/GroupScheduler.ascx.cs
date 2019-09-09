@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         /// 
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string GroupId = "GroupId";
         }

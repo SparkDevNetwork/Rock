@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Communication;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -339,10 +340,10 @@ namespace RockWeb.Blocks.Crm
             var selectedConnectionStatuses = dvpConnectionStatus.SelectedValuesAsInt;
             var ageBirthDate = RockDateTime.Now.AddYears( -nbAge.Text.AsInteger() );
             var photoUpdatedDate = RockDateTime.Now.AddYears( - nbUpdatedLessThan.Text.AsInteger() );
-            var people = personService.Queryable("Members", false, false);
+            var people = personService.Queryable( false, false ).Include( p => p.Members );
 
             // people opted out (or pending)
-            var peopleOptedOut = personService.Queryable( "Members", false, false )
+            var peopleOptedOut = personService.Queryable( false, false ).Include( p => p.Members )
                 .Where
                 (
                      p => p.Members.Where( gm => gm.Group.Guid == photoRequestGroup
