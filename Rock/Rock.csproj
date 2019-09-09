@@ -452,7 +452,6 @@
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Content.cs" />
     <Compile Include="Blocks\Types\Mobile\DynamicContent.cs" />
-    <Compile Include="Blocks\Types\Mobile\Image.cs" />
     <Compile Include="Blocks\Types\Mobile\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Register.cs" />
