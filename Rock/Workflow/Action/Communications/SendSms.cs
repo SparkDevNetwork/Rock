@@ -39,14 +39,14 @@ namespace Rock.Workflow.Action
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 2, "Message",
+    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", false, "", "", 2, "Message",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute( "Attachment", "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", false, "", "", 3, null,
         new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
     [BooleanField( name: "Save Communication History", description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.", defaultValue: false, category: "", order: 4, key: "SaveCommunicationHistory" )]
     public class SendSms : ActionComponent
     {
-        /// <summary>
+        /// <summary> 
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -88,7 +88,8 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( RockSMSMessageRecipient.CreateAnonymous( toAttributeValue, mergeFields ) );
+                                    var smsNumber = toAttributeValue;
+                                    recipients.Add( RockSMSMessageRecipient.CreateAnonymous( smsNumber, mergeFields ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -118,7 +119,7 @@ namespace Rock.Workflow.Action
 
                                             var recipient = new RockSMSMessageRecipient( person, smsNumber, mergeFields );
                                             recipients.Add( recipient );
-                                            recipient.MergeFields.Add( "Person", person );
+                                            recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                         }
                                     }
                                     break;
@@ -167,7 +168,7 @@ namespace Rock.Workflow.Action
                                                 var recipientMergeFields = new Dictionary<string, object>( mergeFields );
                                                 var recipient = new RockSMSMessageRecipient( person, smsNumber, recipientMergeFields );
                                                 recipients.Add( recipient );
-                                                recipient.MergeFields.Add( "Person", person );
+                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
                                         }
                                     }
@@ -185,31 +186,22 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            // Get the message
-            string message = GetAttributeValue( action, "Message" );
-            Guid? messageGuid = message.AsGuidOrNull();
-            if ( messageGuid.HasValue )
-            {
-                var attribute = AttributeCache.Get( messageGuid.Value, rockContext );
-                if ( attribute != null )
-                {
-                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid.Value );
-                    if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
-                    {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
-                            attribute.FieldType.Class == "Rock.Field.Types.MemoFieldType" )
-                        {
-                            message = messageAttributeValue;
-                        }
-                    }
-                }
-            }
+            // Get the message from the Message attribute.
+            // NOTE: Passing 'true' as the checkWorkflowAttributeValue will also check the workflow AttributeValue
+            // which allows us to remove the unneeded code.
+            string message = GetAttributeValue( action, "Message", checkWorkflowAttributeValue: true );
 
             // Add the attachment (if one was specified)
-            var binaryFile = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
+            var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment", true ).AsGuidOrNull();
+            BinaryFile binaryFile = null;
+
+            if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
+            {
+                binaryFile = new BinaryFileService( rockContext ).Get( attachmentBinaryFileGuid.Value );
+            }
 
             // Send the message
-            if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
+            if ( recipients.Any() && ( !string.IsNullOrWhiteSpace( message ) || binaryFile != null) )
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );
@@ -218,12 +210,16 @@ namespace Rock.Workflow.Action
                 smsMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
                 smsMessage.communicationName = action.ActionTypeCache.Name;
 
-                    if ( binaryFile != null )
+                if ( binaryFile != null )
                 {
                     smsMessage.Attachments.Add( binaryFile );
                 }
 
                 smsMessage.Send();
+            }
+            else
+            {
+                action.AddLogEntry( "Warning: No text or attachment was supplied so nothing was sent.", true );
             }
 
             return true;

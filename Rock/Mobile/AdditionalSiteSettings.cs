@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using Rock.DownhillCss;
 using Rock.Mobile.Common.Enums;
 
 namespace Rock.Mobile
@@ -41,7 +41,7 @@ namespace Rock.Mobile
         <DataTemplate>
             <ViewCell>
                 <StackLayout VerticalOptions=""FillAndExpand"" Orientation=""Horizontal"" Padding=""20,10,0,10"" Spacing=""20"">
-                    <Rock:Image ImageUrl=""{Binding IconUrl}"" WidthRequest=""20"" />
+                    <Rock:Image Source=""{Binding IconUrl}"" WidthRequest=""20"" />
                     <Label Text=""{Binding Title}"" FontSize=""Medium"" VerticalOptions=""Center"" TextColor=""Black"" />
                 </StackLayout>
             </ViewCell>
@@ -59,6 +59,22 @@ namespace Rock.Mobile
         /// The last deployment date.
         /// </value>
         public DateTime? LastDeploymentDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone update package URL.
+        /// </summary>
+        /// <value>
+        /// The phone update package URL.
+        /// </value>
+        public string PhoneUpdatePackageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tablet update package URL.
+        /// </summary>
+        /// <value>
+        /// The tablet update package URL.
+        /// </value>
+        public string TabletUpdatePackageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the shell.
@@ -139,5 +155,29 @@ namespace Rock.Mobile
         /// The xaml to use for the flyout shell menu.
         /// </value>
         public string FlyoutXaml { get; set; } = _defaultFlyoutXaml;
+
+        /// <summary>
+        /// Gets or sets the locked phone orientation.
+        /// </summary>
+        /// <value>
+        /// The locked phone orientation.
+        /// </value>
+        public DeviceOrientation LockedPhoneOrientation { get; set; } = DeviceOrientation.Portrait;
+
+        /// <summary>
+        /// Gets or sets the locked tablet orientation.
+        /// </summary>
+        /// <value>
+        /// The locked tablet orientation.
+        /// </value>
+        public DeviceOrientation LockedTabletOrientation { get; set; } = DeviceOrientation.Unknown;
+
+        /// <summary>
+        /// Gets or sets the downhill settings.
+        /// </summary>
+        /// <value>
+        /// The downhill settings.
+        /// </value>
+        public DownhillSettings DownhillSettings { get; set; } = new DownhillSettings();
     }
 }

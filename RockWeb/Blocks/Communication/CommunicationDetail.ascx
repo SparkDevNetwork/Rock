@@ -6,6 +6,17 @@
     }
 </script>
 
+<style>
+.chart-banner
+{
+    width: 100%;
+}
+.chart-banner canvas
+{
+    height: 350px;
+}
+</style>
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
@@ -37,7 +48,7 @@
                                 <%-- Actions Summary --%>
                                 <div class="recipient-status row">
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-pending">
+                                        <div class="metric-tile metric-pending js-actions-statistic" title="The number of recipients that have not yet received the communication">
                                             <div class="metric-icon"><i class="fa fa-clock"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lPending" runat="server"></asp:Literal>
@@ -46,7 +57,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-delivered">
+                                        <div class="metric-tile metric-delivered js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
                                             <div class="metric-icon"><i class="fa fa-inbox"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lDelivered" runat="server"></asp:Literal>
@@ -55,7 +66,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-failed">
+                                        <div class="metric-tile metric-failed js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
                                             <div class="metric-icon"><i class="fa fa-comment-slash"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lFailed" runat="server"></asp:Literal>
@@ -64,7 +75,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-3">
-                                        <div class="metric-tile metric-cancelled">
+                                        <div class="metric-tile metric-cancelled js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
                                             <div class="metric-icon"><i class="fa fa-ban"></i></div>
                                             <div class="value">
                                                 <asp:Literal ID="lCancelled" runat="server"></asp:Literal>
@@ -89,8 +100,8 @@
                                             <div class="col-md-12">
                                                 <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
                                                 <%-- Main Opens/Clicks Line Chart --%>
-                                                <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
-                                                <div class="chart-container" style="height:350px;">
+                                                <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" Visible="false" />
+                                                <div class="chart-container chart-banner">
                                                     <canvas id="openClicksLineChartCanvas" runat="server" class="js-chart-canvas-main" />
                                                 </div>
                                             </div>
@@ -101,7 +112,7 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <%-- Opens/Clicks PieChart --%>
-                                                <Rock:NotificationBox ID="nbOpenClicksPieChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
+                                                <Rock:NotificationBox ID="nbOpenClicksPieChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" Visible="false" />
                                                 <div class="chart-container">
                                                     <canvas id="opensClicksPieChartCanvas" runat="server" class="js-chart-canvas-opens" />
                                                 </div>
@@ -170,7 +181,7 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <%-- Clients Doughnut Chart --%>
-                                                <Rock:NotificationBox ID="nbClientsDoughnutChartMessage" runat="server" NotificationBoxType="Info" Text="No Client Communication Activity" />
+                                                <Rock:NotificationBox ID="nbClientsDoughnutChartMessage" runat="server" NotificationBoxType="Info" Text="No Client Communication Activity" Visible="false" />
                                                 <div class="chart-container">
                                                     <canvas id="clientsDoughnutChartCanvas" runat="server" class="js-chart-canvas-clients" />
                                                 </div>

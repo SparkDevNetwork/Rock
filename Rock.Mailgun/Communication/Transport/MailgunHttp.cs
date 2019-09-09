@@ -106,15 +106,6 @@ namespace Rock.Communication.Transport
 
             var globalAttributes = GlobalAttributesCache.Get();
 
-            string fromAddress = emailMessage.FromEmail.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : emailMessage.FromEmail;
-            string fromName = emailMessage.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : emailMessage.FromName;
-
-            if ( fromAddress.IsNullOrWhiteSpace() )
-            {
-                errorMessages.Add( "A From address was not provided." );
-                return false;
-            }
-
             // Common Merge Field
             var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
             foreach ( var mergeField in rockMessage.AdditionalMergeFields )
@@ -123,8 +114,18 @@ namespace Rock.Communication.Transport
             }
 
             // Resolve any possible merge fields in the from address
-            fromAddress = fromAddress.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
-            fromName = fromName.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+            string fromAddress = emailMessage.FromEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+            string fromName = emailMessage.FromName.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+
+            // Replace blank values with organizational defaults
+            fromAddress = fromAddress.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : fromAddress;
+            fromName = fromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : fromName;
+
+            if ( !fromAddress.IsValidEmail() )
+            {
+                errorMessages.Add( "A From address was not provided." );
+                return false;
+            }
 
             RestRequest restRequest = null;
             foreach ( var rockMessageRecipient in rockMessage.GetRecipients() )
@@ -227,7 +228,7 @@ namespace Rock.Communication.Transport
                     // Create the communication record
                     if ( emailMessage.CreateCommunicationRecord )
                     {
-                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, emailMessage.FromName, emailMessage.FromName, subject, body );
+                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, emailMessage.FromName, emailMessage.FromEmail, subject, body );
                         transaction.RecipientGuid = recipientGuid;
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }

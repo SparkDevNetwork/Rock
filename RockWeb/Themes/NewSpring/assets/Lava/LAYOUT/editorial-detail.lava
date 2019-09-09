@@ -57,7 +57,7 @@
 
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
     {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
     {% assign cciid = Item.Id %}

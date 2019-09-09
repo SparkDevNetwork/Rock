@@ -19,12 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -88,8 +91,15 @@ namespace RockWeb.Blocks.Mobile
             if ( !IsPostBack )
             {
                 int pageId = PageParameter( "Page" ).AsInteger();
+                int siteId = PageParameter( "SiteId" ).AsInteger();
 
                 BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+
+                // Load page picker
+                if ( siteId != 0 )
+                {
+                    LoadPagePicker( siteId );
+                }
 
                 if ( pageId != 0 )
                 {
@@ -286,7 +296,7 @@ namespace RockWeb.Blocks.Mobile
             try
             {
                 var xaml = XElement.Parse( page.Layout.LayoutMobilePhone );
-                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "RockZone" ) )
+                foreach ( var zoneNode in xaml.Descendants().Where( e => e.Name.LocalName == "Zone" ) )
                 {
                     var zoneName = zoneNode.Attribute( XName.Get( "ZoneName" ) ).Value;
 
@@ -462,6 +472,23 @@ namespace RockWeb.Blocks.Mobile
             return true;
         }
 
+        private void LoadPagePicker( int siteId )
+        {
+            var pageList = PageCache.All().Where( p => p.SiteId == siteId )
+                            .OrderBy( p => p.ParentPageId )
+                            .ThenBy( p => p.Order )
+                            .Select( p => new
+                            {
+                                p.Id,
+                                Name = p.InternalName
+                            });
+
+            ddlPageList.DataSource = pageList;
+            ddlPageList.DataValueField = "Id";
+            ddlPageList.DataTextField = "Name";
+            ddlPageList.DataBind();
+        }
+
         /// <summary>
         /// Shows the detail information on the page.
         /// </summary>
@@ -486,11 +513,26 @@ namespace RockWeb.Blocks.Mobile
             }
 
             //
+            // Configure Copy Page Guid
+            //
+            RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+            string script = string.Format( @"
+    new ClipboardJS('#{0}');
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+
+            btnCopyToClipboard.Attributes["data-clipboard-text"] = page.Guid.ToString();
+            btnCopyToClipboard.Attributes["title"] = string.Format( "Copy the Guid {0} to the clipboard.", page.Guid.ToString() );
+
+            ddlPageList.SelectedValue = page.Id.ToString();
+
+            //
             // Ensure user has access to view this page.
             //
             if ( !page.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlDetails.Visible = false;
                 pnlBlocks.Visible = false;
@@ -503,7 +545,6 @@ namespace RockWeb.Blocks.Mobile
             //
             hfPageId.Value = page.Id.ToString();
             lPageName.Text = page.InternalName;
-            lPageGuid.Text = "Page Guid: " + page.Guid.ToString();
 
             var fields = new List<KeyValuePair<string, string>>();
 
@@ -596,7 +637,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( page == null )
             {
-                page = new Page
+                page = new Rock.Model.Page
                 {
                     DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
                 };
@@ -607,14 +648,14 @@ namespace RockWeb.Blocks.Mobile
             //
             if ( !page.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Page ).GetFriendlyTypeName() );
+                nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
 
                 pnlEditPage.Visible = false;
 
                 return;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
 
             //
             // Set the basic fields of the page.
@@ -661,7 +702,7 @@ namespace RockWeb.Blocks.Mobile
             var page = pageService.Get( PageParameter( "Page" ).AsInteger() );
             if ( page == null )
             {
-                page = new Page();
+                page = new Rock.Model.Page();
                 pageService.Add( page );
 
                 var order = pageService.GetByParentPageId( parentPageId )
@@ -672,7 +713,7 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            var additionalSettings = page.HeaderContent.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
 
             page.InternalName = tbInternalName.Text;
@@ -681,7 +722,7 @@ namespace RockWeb.Blocks.Mobile
             page.Description = tbDescription.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = cbDisplayInNavigation.Checked ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
-            page.HeaderContent = additionalSettings.ToJson();
+            page.AdditionalSettings = additionalSettings.ToJson();
             int? oldIconId = null;
             if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
             {
@@ -819,10 +860,88 @@ namespace RockWeb.Blocks.Mobile
                 if ( block != null )
                 {
                     var phAdminButtons = e.Item.FindControl( "phAdminButtons" ) as PlaceHolder;
+                    var phSettings = e.Item.FindControl( "phSettings" ) as PlaceHolder;
 
                     AddAdminControls( block, phAdminButtons );
+                    AddSettingsControls( block, phSettings );
+
                 }
             }
+        }
+
+        private void AddSettingsControls( BlockCache block, PlaceHolder pnlLayoutItem )
+        {
+            var additionalSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+
+            var markup = new StringBuilder();
+
+            // The following item will be moved to additional settings soon and will need to be updated.
+            var lavaLocation = block.GetAttributeValue( "LavaRenderLocation" );
+            if ( lavaLocation.IsNotNullOrWhiteSpace() )
+            {
+                switch ( lavaLocation )
+                {
+                    case "On Device":
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                            break;
+                        }
+                    case "On Server":
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+                            break;
+                        }
+                    default:
+                        {
+                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
+                            break;
+                        }
+                }
+            }
+            
+
+            // The following item will be moved to additional settings soon and will need to be updated.
+            var cacheDuration = block.GetAttributeValue( "CacheDuration" ).AsIntegerOrNull();
+            if ( cacheDuration.HasValue && cacheDuration != 0  )
+            {
+                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", cacheDuration ) );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-memory margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
+            }
+
+            // Show on phone
+            if ( additionalSettings.ShowOnPhone )
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
+            }
+
+            // Show on tablet
+            if ( additionalSettings.ShowOnTablet )
+            {
+                markup.Append( "<i class='fa fa-tablet-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
+            }
+
+            // Requires internet
+            if ( additionalSettings.RequiresNetwork )
+            {
+                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
+            }
+
+            pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } ) ;
         }
 
         /// <summary>
@@ -944,6 +1063,15 @@ namespace RockWeb.Blocks.Mobile
         protected void ddlBlockTypeCategory_SelectedIndexChanged( object sender, EventArgs e )
         {
             BindBlockTypeRepeater();
+        }
+
+        protected void ddlPageList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var queryString = new Dictionary<string, string>();
+            queryString.Add( "SiteId", PageParameter( "SiteId" ) );
+            queryString.Add( "Page", ddlPageList.SelectedValue );
+
+            NavigateToCurrentPage( queryString );
         }
 
         #endregion

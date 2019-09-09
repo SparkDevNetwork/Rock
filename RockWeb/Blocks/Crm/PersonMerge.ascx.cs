@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -201,7 +202,7 @@ validity of the request before completing this merge." :
                     }
 
                     // Get the people selected
-                    var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
+                    var people = new PersonService( new RockContext() ).Queryable( true ).Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.Users )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
 

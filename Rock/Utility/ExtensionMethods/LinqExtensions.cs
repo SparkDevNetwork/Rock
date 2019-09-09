@@ -446,7 +446,7 @@ namespace Rock
         /// <example>
         /// var test = new PersonService( rockContext ).Queryable().Where( a =&gt; a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
         ///   </example>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Entity<T>, new()
         {
             int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
@@ -469,7 +469,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <param name="predicate">The predicate.</param>
         /// <returns></returns>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Rock.Data.Model<T>, new()
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Entity<T>, new()
         {
             /*
               Example: 
