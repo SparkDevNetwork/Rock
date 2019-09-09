@@ -22,26 +22,50 @@
 {% endcontentchannel %}
 
 {%- comment -%}Get Ids of parent items for this item{%- endcomment -%}
-{% capture parentids %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+{% assign parentids = Item.ParentItems | Select:'ContentChannelItemId' | Join:',' %}
+{% assign itemIndex = '' %}
 
 {%- comment -%}If this item has parents, get the one from the primary content channel and then set variables for use later{%- endcomment -%}
-{% if parentCount > 0 %}
+{% if parentCount > 0 and parentccid and parentccid != empty %}
     {% contentchannelitem ids:'{{ parentids }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
         {% for parent in parents %}
+            {% assign totalChildren = parent.ChildItems | Size %}
+
+            {% capture childrenPermalinks %}[
+                    {% for child in parent.ChildItems %}{
+                        "order": "{{ child.ChildContentChannelItem.Order }}",
+                        "url": "{[ getPermalink cciid:'{{ child.ChildContentChannelItem.Id }}' ]}"
+
+                        {% if child.ChildContentChannelItem.Title == Item.Title %}
+                            {% assign itemIndex = child.ChildContentChannelItem.Order | Plus:1 %}
+                        {% endif %}
+                    }{% if forloop.last != true %},{% endif %}{% endfor %}
+            ]{% endcapture %}
+            {% assign childrenPermalinks = childrenPermalinks | Trim | FromJSON %}
+
             {% assign parentTitle = parent.Title %}
+            {% capture parentPermalink %}{[ getPermalink cciid:'{{ parent.Id }}' ]}{% endcapture %}
             {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
             {% assign baseBackgroundColor = parent | Attribute:'BackgroundColor' %}
-            {% if baseBackgroundColor and baseBackgroundColor != empty %}
-                {% assign backgroundColor = baseBackgroundColor %}
-                <style>
-                    .brand-bg {
-                        background-color: {{ backgroundColor | Darken:'10%' }};
-                    }
-                </style>
-            {% endif %}
+            
         {% endfor %}
     {% endcontentchannelitem %}
 {% endif %}
+
+{% if baseBackgroundColor and baseBackgroundColor != empty %}
+    {% assign backgroundColor = baseBackgroundColor %}
+    <style>
+        .brand-bg {
+            background-color: {{ backgroundColor | Darken:'10%' }};
+        }
+    </style>
+{% endif %}
+
+{% assign label = '' %}
+{% if itemIndex and itemIndex != empty %}
+    {% capture label %}Session {{ itemIndex }}{% endcapture %}
+{% endif %}
+
 
 <!-- Set Page/Browser Titles -->
 {% assign pagePath = 'Global' | Page:'Path' %}
@@ -56,14 +80,14 @@
 
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
 
     {% capture type %}{% assign typeParts = Item.ContentChannel.Name | Split:' - ' %}{{ typeParts[1] }}{% endcapture %}
     {% assign cciid = Item.Id %}
     {% assign subtitle = Item | Attribute:'Subtitle' %}
     {% assign summary = Item | Attribute:'Summary' %}
     {% assign video = Item | Attribute:'Video','RawValue' %}
-    {% assign date = Item.StartDateTime | Date:'MMMM d, yyyy' %}
+    {% capture date %}{[ formatDate date:'{{ Item.StartDateTime }}' ]}{% endcapture %}
     {% assign itemimageurl = Item | Attribute:'ImageLandscape','Url' %}
 
     {% capture imageurl %}
@@ -78,7 +102,6 @@
 
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
         <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom">
-
             {% if cciid and cciid != empty %}
                 {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
                 {% if hasRights == 'true' %}
@@ -89,16 +112,13 @@
             {% endif %}
 
             {% if label and label != empty %}
-                <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                <p><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
             {% endif %}
             
-            <h1 class="h2 xs-h3 push-half-top push-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
+            <h1 class="h2 xs-h3 push-half-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
 
-            {% capture collectiontext %}{[ getParentTitleFromChildId id:'{{ Item.Id }}' ]}{% endcapture %}
-            {% assign collectiontext = collectiontext | Trim %}
-            {% capture collectionurl %}{[ getPermalink cciid:'{{ Item.Id }}' ]}{% endcapture %}
-            {% if collectiontext and collectiontext != empty %}
-                <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+            {% if parentTitle and parentTitle != empty %}
+                <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if parentPermalink != empty %}<a href="{{ parentPermalink }}">{% endif %}{{ parentTitle }}{% if parentPermalink != empty %}</a>{% endif %}</small>
             {% endif %}
             
             {% if subtitle != empty %}
@@ -149,6 +169,20 @@
                     </div>
                 </div>
             </div>
+
+            {% if itemIndex and itemIndex != empty %}
+                {% assign prevLinkIndex = itemIndex | Minus:2 %}
+                {% assign nextLinkIndex = itemIndex %}
+                <div class="row flush">
+                    <div class="col-xs-4 col-sm-4 col-md-4 hard">
+                        {% if itemIndex and itemIndex != 1 %}<a href="{{ childrenPermalinks | Index:prevLinkIndex | Property:'url' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
+                        <p class="text-gray-light flush"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
+                    </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">
+                        {% if itemIndex and itemIndex != totalChildren %}<a href="{{ childrenPermalinks | Index:nextLinkIndex | Property:'url' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom">Next <i class="fas fa-angle-right"></i></a>{% endif %}
+                    </div>
+                </div>
+            {% endif %}
             
             {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
             {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
@@ -165,33 +199,45 @@
                 {% endif %}
             {%- endcapture -%}
             {% assign sharehashtag = '' %}
+
             
             {[ modalShare ]}
             {% capture tags %}{[ tags guid:'{{ Item.Guid }}']}{% endcapture %}
+            {% assign tags = tags | Trim %}
 
             {% capture isDateVisible %}
-            {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
-                {% for channel in channels %}
-                    {{ channel | Attribute:'IsDateVisible','RawValue' }}
-                {% endfor %}
-            {% endcontentchannel %}
+                {% contentchannel where:'Id == "{{ Item.ContentChannel.Id }}"' iterator:'channels' %}
+                    {% for channel in channels %}
+                        {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                    {% endfor %}
+                {% endcontentchannel %}
             {% endcapture %}
             {% assign isDateVisible = isDateVisible | Trim %}
             
             {% if isDateVisible == 'True' %}
-                <div class="row">
-                    <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
-                        {{ tags }}
-                    </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
-                        <p class="flush"><small><b>{{ date }}</b></small></p>
+                {% if tags and tags != empty %}
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                            {{ tags }}
+                        </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                            <p class="flush"><small><b>{{ date }}</b></small></p>
+                        </div>
                     </div>
-                </div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center xs-text-center">
+                            <p class="flush"><small><b>{{ date }}</b></small></p>
+                        </div>
+                    </div>
+                {% endif %}
             {% else %}
+                {% if tags and tags != empty %}
                 <div class="row">
                     <div class="col-xs-12 text-center">
                         {{ tags }}
                     </div>
                 </div>
+                {% endif %}
             {% endif %}
 
         </div>
@@ -245,9 +291,18 @@
 
 
 <!-- Set Meta Tags -->
+{% assign metaTitle = Item | Attribute:'MetaTitle' %}
+{% assign metaDescription = Item | Attribute:'MetaDescription' %}
 {% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
 {% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
 {% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
 {% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
 
-{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ Item.Title | TitleCase | Replace:"New Spring","NewSpring" }}' description:'{% if summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}' image:'{{ imageurl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
+{%- comment -%}If meta title is present, use it, otherwise use this item's title{%- endcomment -%}
+{% capture title %}{% if metaTitle and metaTitle != empty %}{{ metaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}
+
+{%- comment -%}If meta description is present, use it, otherwise if this item has a summary, use it, otherwise, use this item's content{%- endcomment -%}
+{% capture description %}{% if metaDescription and metaDescription != empty %}{{ metaDescription }}{% elseif summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}{% endcapture %}
+
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ title | Replace:"'","’" | Replace:"New Spring","NewSpring" }}' description:'{{ description | Replace:"'","’" }}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}

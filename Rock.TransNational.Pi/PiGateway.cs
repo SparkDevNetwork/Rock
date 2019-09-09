@@ -76,7 +76,7 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Keys to use for Component Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The private API key

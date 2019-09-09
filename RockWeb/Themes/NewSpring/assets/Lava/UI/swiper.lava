@@ -1,5 +1,4 @@
 {%- assign swiperid = uniqueid -%}
-
 <section id="{{ id }}" class="shell bg-gray-dark hard-sides rounded shadowed flush-sides">
     <div class="soft-sides xs-soft-half-sides text-center">
         <h2 class="text-white push-half-bottom">{{ title }}</h2>
@@ -71,5 +70,8 @@
           },
         }
       }
+      {% if initialslide and initialslide != empty %},
+        initialSlide: {{ initialslide }}
+      {% endif %}
   });
 </script>

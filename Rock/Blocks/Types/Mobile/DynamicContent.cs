@@ -125,7 +125,7 @@ namespace Rock.Blocks.Types.Mobile
             var content = GetAttributeValue( AttributeKeys.Content );
 
             var mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Action", string.Empty );
+            mergeFields.Add( "Command", string.Empty );
             mergeFields.Add( "Parameters", new Dictionary<string, object>() );
 
             return content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
@@ -134,16 +134,16 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the dynamic XAML content that should be rendered based upon the request.
         /// </summary>
-        /// <param name="action">The action.</param>
+        /// <param name="command">The command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [BlockAction]
-        public string GetDynamicContent( string action, Dictionary<string, object> parameters )
+        public string GetDynamicContent( string command, Dictionary<string, object> parameters )
         {
             var content = GetAttributeValue( AttributeKeys.Content );
 
             var mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Command", command );
             mergeFields.Add( "Parameters", parameters );
 
             return content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );

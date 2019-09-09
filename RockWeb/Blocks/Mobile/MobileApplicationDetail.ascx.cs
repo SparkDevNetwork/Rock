@@ -23,6 +23,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
+using Humanizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -50,7 +52,7 @@ namespace RockWeb.Blocks.Mobile
         /// <summary>
         /// Keys to use for block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// Key for Layout Detail
@@ -77,6 +79,13 @@ namespace RockWeb.Blocks.Mobile
     </ScrollView>
 </ContentPage>";
 
+        private enum Tabs
+        {
+            Application,
+            Styles,
+            Layouts,
+            Pages
+        }
         #endregion
 
         #region Base Method Overrides
@@ -115,6 +124,7 @@ namespace RockWeb.Blocks.Mobile
                 ConfigureControls();
 
                 var siteId = PageParameter( "SiteId" ).AsInteger();
+                hfCurrentTab.Value = PageParameter( "Tab" ) ?? Tabs.Application.ConvertToString();
 
                 if ( siteId != 0 )
                 {
@@ -168,10 +178,65 @@ namespace RockWeb.Blocks.Mobile
         #region Methods
 
         /// <summary>
+        /// Shows the provided tab and hides the others.
+        /// </summary>
+        /// <param name="showTab">The show tab.</param>
+        private void ShowTab( Tabs showTab )
+        {
+            liTabApplication.RemoveCssClass( "active" );
+            liTabStyles.RemoveCssClass( "active" );
+            liTabLayouts.RemoveCssClass( "active" );
+            liTabPages.RemoveCssClass( "active" );
+
+            string tabName = showTab.ConvertToString();
+            hfCurrentTab.Value = tabName;
+
+            pnlApplication.Visible = tabName == Tabs.Application.ConvertToString();
+            pnlStyles.Visible = tabName == Tabs.Styles.ConvertToString();
+            pnlLayouts.Visible = tabName == Tabs.Layouts.ConvertToString();
+            pnlPages.Visible = tabName == Tabs.Pages.ConvertToString();
+            
+            switch ( showTab )
+            {
+                case Tabs.Application:
+                    liTabApplication.AddCssClass( "active" );
+                    break;
+
+                case Tabs.Styles:
+                    liTabStyles.AddCssClass( "active" );
+                    break;
+
+                case Tabs.Layouts:
+                    liTabLayouts.AddCssClass( "active" );
+                    break;
+
+                case Tabs.Pages:
+                    liTabPages.AddCssClass( "active" );
+                    break;
+
+                default:
+                    liTabApplication.AddCssClass( "active" );
+                    pnlApplication.Visible = true;
+                    hfCurrentTab.Value = Tabs.Application.ConvertToString();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Configures the controls.
         /// </summary>
         private void ConfigureControls()
         {
+            ddlEditLockPhoneOrientation.Items.Clear();
+            ddlEditLockPhoneOrientation.Items.Add( Rock.Constants.None.ListItem );
+            ddlEditLockPhoneOrientation.Items.Add( new ListItem( "Portrait", ( ( int ) DeviceOrientation.Portrait ).ToString() ) );
+            ddlEditLockPhoneOrientation.Items.Add( new ListItem( "Landscape", ( ( int ) DeviceOrientation.Landscape ).ToString() ) );
+
+            ddlEditLockTabletOrientation.Items.Clear();
+            ddlEditLockTabletOrientation.Items.Add( Rock.Constants.None.ListItem );
+            ddlEditLockTabletOrientation.Items.Add( new ListItem( "Portrait", ( ( int ) DeviceOrientation.Portrait ).ToString() ) );
+            ddlEditLockTabletOrientation.Items.Add( new ListItem( "Landscape", ( ( int ) DeviceOrientation.Landscape ).ToString() ) );
+
             imgEditHeaderImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             imgEditPreviewThumbnail.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
@@ -232,6 +297,18 @@ namespace RockWeb.Blocks.Mobile
             ltAppName.Text = site.Name.EncodeHtml();
             ltDescription.Text = site.Description.EncodeHtml();
             lSiteId.Text = site.Id.ToString();
+            if ( site.LatestVersionDateTime.HasValue )
+            {
+                var updateTimeSpan = RockDateTime.Now - site.LatestVersionDateTime.Value;
+                lLastDeployDate.Text = string.Format( "<span class='label label-success' data-toggle='tooltip' title='{0}'>Last Deploy: {1} ago</span>",
+                    site.LatestVersionDateTime.Value.ToString( "dddd MMMM, d M yyyy h:mm tt" ),
+                    updateTimeSpan.Humanize() );
+            }
+            else
+            {
+                lLastDeployDate.Text = "<span class='label label-warning'>Not Deployed</span>";
+            }
+            
 
             //
             // Set the UI fields for the images.
@@ -270,7 +347,8 @@ namespace RockWeb.Blocks.Mobile
             }
 
             // TODO: I'm pretty sure something like this already exists in Rock, but I can never find it. - dh
-            ltAppDetails.Text = string.Join( "", fields.Select( f => string.Format( "<dl><dt>{0}</dt><dd>{1}</dd></dl>", f.Key, f.Value ) ) );
+            //ltAppDetails.Text = string.Join( "", fields.Select( f => string.Format( "<dl><dt>{0}</dt><dd>{1}</dd></dl>", f.Key, f.Value ) ) );
+            ltAppDetails.Text = fields.Select( f => string.Format( "<dl><dt>{0}</dt><dd>{1}</dd></dl>", f.Key, f.Value ) ).JoinStrings( string.Empty );
 
             //
             // Bind the grids.
@@ -278,71 +356,37 @@ namespace RockWeb.Blocks.Mobile
             BindLayouts( siteId );
             BindPages( siteId );
 
+            ShowStylesTabDetails( site );
+
             pnlContent.Visible = true;
             pnlOverview.Visible = true;
             pnlEdit.Visible = false;
 
             //
-            // If we are returning from a child page, make sure the correct tab is selected.
+            // If returning from a child page make sure the correct tab is selected.
             //
-            if ( PageParameter( "Tab" ) == "Layouts" )
+            switch ( hfCurrentTab.Value )
             {
-                ShowLayoutsTab();
+                case "Styles":
+                    ShowTab( Tabs.Styles );
+                    break;
+
+                case "Layouts":
+                    ShowTab( Tabs.Layouts );
+                    break;
+
+                case "Pages":
+                    ShowTab( Tabs.Pages );
+                    break;
+
+                default:
+                    ShowTab( Tabs.Application );
+                    break;
             }
-            else if (PageParameter( "Tab" ) == "Pages" )
-            {
-                ShowPagesTab();
-            }
-            else
-            {
-                ShowApplicationTab();
-            }
         }
 
         /// <summary>
-        /// Shows the application tab.
-        /// </summary>
-        private void ShowApplicationTab()
-        {
-            liTabApplication.AddCssClass( "active" );
-            liTabLayouts.RemoveCssClass( "active" );
-            liTabPages.RemoveCssClass( "active" );
-
-            pnlApplication.Visible = true;
-            pnlLayouts.Visible = false;
-            pnlPages.Visible = false;
-        }
-
-        /// <summary>
-        /// Shows the layouts tab.
-        /// </summary>
-        private void ShowLayoutsTab()
-        {
-            liTabApplication.RemoveCssClass( "active" );
-            liTabLayouts.AddCssClass( "active" );
-            liTabPages.RemoveCssClass( "active" );
-
-            pnlApplication.Visible = false;
-            pnlLayouts.Visible = true;
-            pnlPages.Visible = false;
-        }
-
-        /// <summary>
-        /// Shows the pages tab.
-        /// </summary>
-        private void ShowPagesTab()
-        {
-            liTabApplication.RemoveCssClass( "active" );
-            liTabLayouts.RemoveCssClass( "active" );
-            liTabPages.AddCssClass( "active" );
-
-            pnlApplication.Visible = false;
-            pnlLayouts.Visible = false;
-            pnlPages.Visible = true;
-        }
-
-        /// <summary>
-        /// Shows the edit.
+        /// Shows the edit for the application tab.
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
         private void ShowEdit( int siteId )
@@ -395,15 +439,13 @@ namespace RockWeb.Blocks.Mobile
 
             rblEditApplicationType.SetValue( ( int? ) additionalSettings.ShellType ?? ( int ) ShellType.Flyout );
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
-            ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
+            ddlEditLockPhoneOrientation.SetValue( ( int ) additionalSettings.LockedPhoneOrientation );
+            ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
+            
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
             rblEditAndroidTabLocation.Visible = rblEditApplicationType.SelectedValueAsInt() == ( int ) ShellType.Tabbed;
-
-            cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
-            cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
-            cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
 
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
@@ -415,13 +457,54 @@ namespace RockWeb.Blocks.Mobile
             tbEditApiKey.Text = apiKeyLogin != null ? apiKeyLogin.ApiKey : GenerateApiKey();
 
             //
-            // Set image UI fields.
+            // Set image UI field.
             //
-            imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
             imgEditPreviewThumbnail.BinaryFileId = site.ThumbnailBinaryFileId;
 
             pnlContent.Visible = false;
             pnlEdit.Visible = true;
+        }
+
+
+        private void ShowStylesTabDetails( Site site )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                AdditionalSiteSettings additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+
+                // Ensure user can edit the mobile site.
+                if ( !IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( "mobile application" );
+                    pnlOverview.Visible = false;
+
+                    return;
+                }
+
+                cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
+                cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
+                cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
+                cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
+                cpHeadingColor.Value = additionalSettings.DownhillSettings.HeadingColor;
+                cpBackgroundColor.Value = additionalSettings.DownhillSettings.BackgroundColor;
+
+                ceEditCssStyles.Text = additionalSettings.CssStyle ?? string.Empty;
+
+                cpPrimary.Value = additionalSettings.DownhillSettings.ApplicationColors.Primary;
+                cpSecondary.Value = additionalSettings.DownhillSettings.ApplicationColors.Secondary;
+                cpSuccess.Value = additionalSettings.DownhillSettings.ApplicationColors.Success;
+                cpDanger.Value = additionalSettings.DownhillSettings.ApplicationColors.Danger;
+                cpWarning.Value = additionalSettings.DownhillSettings.ApplicationColors.Warning;
+                cpLight.Value = additionalSettings.DownhillSettings.ApplicationColors.Light;
+                cpDark.Value = additionalSettings.DownhillSettings.ApplicationColors.Dark;
+
+                nbRadiusBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.RadiusBase ).ToStringSafe();
+
+                nbSpacingBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.SpacingBase ).ToStringSafe();
+                nbFontSizeDefault.Text = decimal.ToInt32( additionalSettings.DownhillSettings.FontSizeDefault ).ToStringSafe();
+
+                imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
+            }
         }
 
         /// <summary>
@@ -595,6 +678,29 @@ namespace RockWeb.Blocks.Mobile
             gPages.DataBind();
         }
 
+        /// <summary>
+        /// Gets the file path.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
+        private string GetFilePath( BinaryFile file )
+        {
+            string url = file.Url;
+
+            //
+            // FileSystem provider currently returns a bad URL.
+            //
+            if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
+            {
+                url = System.Web.VirtualPathUtility.ToAbsolute( string.Format( "~/GetFile.ashx?Id={0}", file.Id ) );
+                var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
+
+                url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
+            }
+
+            return url;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -678,27 +784,21 @@ namespace RockWeb.Blocks.Mobile
             //
             additionalSettings.ShellType = rblEditApplicationType.SelectedValueAsEnum<ShellType>();
             additionalSettings.TabLocation = rblEditAndroidTabLocation.SelectedValueAsEnum<TabLocation>();
-            additionalSettings.CssStyle = ceEditCssStyles.Text;
+            
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
-            additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
-            additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
-            additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
+            additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
+            additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
 
             //
-            // Save the images.
+            // Save the image.
             //
-            site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
             site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
 
             //
             // Ensure the images are persisted.
             //
-            if ( site.FavIconBinaryFileId.HasValue )
-            {
-                binaryFileService.Get( site.FavIconBinaryFileId.Value ).IsTemporary = false;
-            }
             if ( site.SiteLogoBinaryFileId.HasValue )
             {
                 binaryFileService.Get( site.SiteLogoBinaryFileId.Value ).IsTemporary = false;
@@ -756,7 +856,13 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
+                //
+                // Save the API Key.
+                //
+                additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, tbEditApiKey.Text, string.Format( "mobile_application_{0}", site.Id ), rockContext );
+                additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
                 site.AdditionalSettings = additionalSettings.ToJson();
+
                 rockContext.SaveChanges();
             }
 
@@ -764,6 +870,59 @@ namespace RockWeb.Blocks.Mobile
             {
                 { "SiteId", site.Id.ToString() }
             } );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbStylesEditSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbStylesEditSave_Click( object sender, EventArgs e )
+        {
+            // Perform the edit save here
+            using ( var rockContext = new RockContext() )
+            {
+                var siteService = new SiteService( rockContext );
+                var binaryFileService = new BinaryFileService( rockContext );
+
+                var site = siteService.Get( PageParameter( "SiteId" ).AsInteger() );
+                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+
+                site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
+
+                additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
+                additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
+                additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
+                additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
+                additionalSettings.DownhillSettings.HeadingColor = ParseColor( cpHeadingColor.Value );
+                additionalSettings.DownhillSettings.BackgroundColor = ParseColor( cpBackgroundColor.Value );
+
+                additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Success = ParseColor( cpSuccess.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Danger = ParseColor( cpDanger.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );
+                additionalSettings.DownhillSettings.ApplicationColors.Dark = ParseColor( cpDark.Value );
+
+                additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
+
+                additionalSettings.DownhillSettings.SpacingBase = nbSpacingBase.Text.AsDecimal();
+                additionalSettings.DownhillSettings.FontSizeDefault = nbFontSizeDefault.Text.AsDecimal();
+                additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
+
+                additionalSettings.CssStyle = ceEditCssStyles.Text;
+
+                site.AdditionalSettings = additionalSettings.ToJson();
+
+                // Ensure the images are persisted.
+                if ( site.FavIconBinaryFileId.HasValue )
+                {
+                    binaryFileService.Get( site.FavIconBinaryFileId.Value ).IsTemporary = false;
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -783,7 +942,17 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTabApplication_Click( object sender, EventArgs e )
         {
-            ShowApplicationTab();
+            ShowTab( Tabs.Application );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbTabStyles control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbTabStyles_Click( object sender, EventArgs e )
+        {
+            ShowTab( Tabs.Styles );
         }
 
         /// <summary>
@@ -793,7 +962,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTabLayouts_Click( object sender, EventArgs e )
         {
-            ShowLayoutsTab();
+            ShowTab( Tabs.Layouts );
         }
 
         /// <summary>
@@ -803,7 +972,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTabPages_Click( object sender, EventArgs e )
         {
-            ShowPagesTab();
+            ShowTab( Tabs.Pages );
         }
 
         /// <summary>
@@ -883,7 +1052,10 @@ namespace RockWeb.Blocks.Mobile
                 //
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
                 additionalSettings.LastDeploymentDate = RockDateTime.Now;
+                additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
+                additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
                 site.AdditionalSettings = additionalSettings.ToJson();
+                site.LatestVersionDateTime = RockDateTime.Now;
 
                 rockContext.SaveChanges();
 

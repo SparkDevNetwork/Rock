@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step program
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for page params
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step program identifier
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys for the View State
         /// </summary>
-        protected static class ViewStateKey
+        private static class ViewStateKey
         {
             /// <summary>
             /// The set index

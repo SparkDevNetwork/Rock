@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The is engagement exclusion map key
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys for user preferences
         /// </summary>
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
             /// <summary>
             /// The date range user preference key
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The streak type id page parameter key
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Keys to use for View State
         /// </summary>
-        protected static class ViewStateKey
+        private static class ViewStateKey
         {
             /// <summary>
             /// The map view state key

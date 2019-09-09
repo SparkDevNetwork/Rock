@@ -73,6 +73,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DefinedValuePicker ID="dvpTransactionType" runat="server" Label="Transaction Type" Required="true" />
+                            <Rock:DefinedValuePicker ID="dvpNonCashAssetType" runat="server" Label="Non-Cash Asset Type" />
                             <Rock:DefinedValuePicker ID="dvpSourceType" runat="server" Label="Source" />
                             <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
                             <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />

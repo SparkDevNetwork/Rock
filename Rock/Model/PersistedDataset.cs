@@ -45,7 +45,7 @@ namespace Rock.Model
         /// The access key.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         [HideFromReporting]
         [Index( IsUnique = true )]
         public string AccessKey { get; set; }
