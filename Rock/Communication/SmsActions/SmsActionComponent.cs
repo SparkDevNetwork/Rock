@@ -122,7 +122,7 @@ namespace Rock.Communication.SmsActions
         }
 
         /// <summary>
-        /// Gets the attribute value for the service check type
+        /// Gets the attribute value for the SMS action
         /// </summary>
         /// <param name="action">The SMS action.</param>
         /// <param name="key">The key.</param>

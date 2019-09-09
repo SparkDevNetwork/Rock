@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock;
 using Rock.Web.Cache;
 
 namespace Rock.Crm.ConnectionStatusChangeReport
@@ -152,7 +152,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
 
             var personQuery = personService.Queryable()
                                            .AsNoTracking()
-                                           .Where(x => !x.IsSystem );
+                                           .Where( x => !x.IsSystem );
 
             if ( campusId != null )
             {
@@ -183,12 +183,12 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                     LastName = x.LastName,
                     CampusId = x.PrimaryCampusId,
                     OldRawData = string.Empty,
-                    NewRawData = (x.ConnectionStatusValueId == null ? string.Empty : x.ConnectionStatusValueId.ToString() ),
+                    NewRawData = ( x.ConnectionStatusValueId == null ? string.Empty : x.ConnectionStatusValueId.ToString() ),
                     EventDate = x.CreatedDateTime ?? DateTime.MinValue,
                     CreatedBy = x.CreatedByPersonAlias.Name
                 } ).ToList();
 
-            
+
             SetCalculatedDataFields( eventsData );
 
             var events = eventsData.Cast<ConnectionStatusChangeEventInfo>().ToList();
@@ -206,10 +206,10 @@ namespace Rock.Crm.ConnectionStatusChangeReport
             // Get Person Query
             var personService = new PersonService( _DataContext );
 
-            var personQuery = personService.Queryable();
+            var personQuery = personService.Queryable().AsNoTracking();
 
             // Filter by Campus
-            if ( campusId.GetValueOrDefault(0) != 0 )
+            if ( campusId.GetValueOrDefault( 0 ) != 0 )
             {
                 personQuery = personQuery.Where( x => x.PrimaryCampusId != null && x.PrimaryCampusId == campusId );
             }
@@ -231,10 +231,13 @@ namespace Rock.Crm.ConnectionStatusChangeReport
 
             var personEntityTypeId = EntityTypeCache.GetId<Person>();
 
+            var categoryId = CategoryCache.GetId( SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() );
+
             // Get History records related to Person.ConnectionStatus property change.
             var historyEntriesBaseQuery = historyService.Queryable()
                 .AsNoTracking()
-                .Where( x => x.EntityTypeId == personEntityTypeId
+                .Where( x => x.CategoryId == categoryId
+                        && x.EntityTypeId == personEntityTypeId
                         && x.ChangeType == "Property"
                         && x.ValueName == "Connection Status" );
 
@@ -257,7 +260,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
             }
 
             // Filter by Original Connection Status.
-            if ( originalConnectionStatusId.GetValueOrDefault(0) != 0 )
+            if ( originalConnectionStatusId.GetValueOrDefault( 0 ) != 0 )
             {
                 // Attempt to find a match by StatusId in OldRawValue (Rock v1.9 or higher), or by name in OldValue (Rock v1.8 or lower).
                 var statusName = this.GetConnectionStatusNameOrDefault( originalConnectionStatusId.GetValueOrDefault( 0 ), string.Empty );
@@ -267,7 +270,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
             }
 
             // Filter by Updated Connection Status.
-            if ( updatedConnectionStatusId.GetValueOrDefault(0) != 0 )
+            if ( updatedConnectionStatusId.GetValueOrDefault( 0 ) != 0 )
             {
                 // Attempt to find a match by StatusId in OldRawValue (Rock v1.9 or higher), or by name in OldValue (Rock v1.8 or lower).
                 var statusName = this.GetConnectionStatusNameOrDefault( updatedConnectionStatusId.GetValueOrDefault( 0 ), string.Empty );
@@ -294,20 +297,24 @@ namespace Rock.Crm.ConnectionStatusChangeReport
             var personQuery = this.GetPersonQueryBase( campusId );
 
             // Get the set of events matching the filters.
-            var eventsQuery = historyEntriesBaseQuery.Join( personQuery, h => h.EntityId, p => p.Id, ( h, x ) => new ConnectionStatusChangeEventData
-            {
-                Id = h.Id,
-                PersonId = x.Id,
-                EventDate = h.CreatedDateTime ?? _DefaultDateCreated,
-                FirstName = x.FirstName == null || x.FirstName.Length == 0 ? "-" : x.FirstName,
-                LastName = x.LastName == null || x.LastName.Length == 0 ? "-" : x.LastName,
-                CampusId = x.PrimaryCampusId,
-                CreatedBy = h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName,
-                OldRawData = h.OldRawValue,
-                NewRawData = h.NewRawValue,
-                OldValue = h.OldValue,
-                NewValue = h.NewValue
-            } );
+            var eventsQuery = historyEntriesBaseQuery
+                .Join( personQuery,
+                        h => h.EntityId,
+                        p => p.Id,
+                        ( h, x ) => new ConnectionStatusChangeEventData
+                        {
+                            Id = h.Id,
+                            PersonId = x.Id,
+                            EventDate = h.CreatedDateTime ?? _DefaultDateCreated,
+                            FirstName = x.FirstName == null || x.FirstName.Length == 0 ? "-" : x.FirstName,
+                            LastName = x.LastName == null || x.LastName.Length == 0 ? "-" : x.LastName,
+                            CampusId = x.PrimaryCampusId,
+                            CreatedBy = h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName,
+                            OldRawData = h.OldRawValue,
+                            NewRawData = h.NewRawValue,
+                            OldValue = h.OldValue,
+                            NewValue = h.NewValue
+                        } );
 
             var eventsData = eventsQuery.ToList();
 

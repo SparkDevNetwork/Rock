@@ -582,21 +582,14 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
-            if ( entityType != null )
+            var entityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext )?.Id;
+            if ( !entityTypeId.HasValue )
             {
-                var ids = new Rock.Model.FollowingService( rockContext )
-                    .Queryable()
-                    .Where( f =>
-                        f.EntityTypeId == entityType.Id &&
-                        f.PersonAlias != null &&
-                        f.PersonAlias.PersonId == personId )
-                    .Select( f => f.PersonAlias.PersonId );
-
-                return Queryable().Where( t => ids.Contains( t.Id ) );
+                return null;
             }
 
-            return null;
+            var query = new Rock.Model.FollowingService( rockContext ).GetFollowedItems( entityTypeId.Value, personId ).Cast<T>();
+            return query;
         }
 
         #endregion

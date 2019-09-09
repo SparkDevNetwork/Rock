@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Cms
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string SiteType = "SiteType";
             public const string BlockTitle = "BlockTitle";

@@ -49,39 +49,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Use this to Login a user and return a JSON Web Token (JWT) which can be used in subsequent REST calls
-        /// </summary>
-        /// <param name="loginParameters">The login parameters.</param>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [HttpPost]
-        [System.Web.Http.Route( "api/Auth/JWT" )]
-        public HttpResponseMessage GetJsonWebToken( [FromBody]LoginParameters loginParameters )
-        {
-            if ( !IsLoginValid( loginParameters ) )
-            {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var claim = new Claim( ClaimTypes.Name, loginParameters.Username );
-            var claimsIdentity = new ClaimsIdentity( new[] { claim } );
-
-            var securityKey = Encryption.GetSymmetricSecurityKey();
-            var signingCredentials = new SigningCredentials( securityKey, SecurityAlgorithms.HmacSha256Signature );
-
-            var token = tokenHandler.CreateJwtSecurityToken(
-                issuer: JwtConstants.Issuer,
-                audience: JwtConstants.Audience,
-                subject: claimsIdentity,
-                notBefore: RockDateTime.Now,
-                expires: RockDateTime.Now.AddDays( 7 ),
-                signingCredentials: signingCredentials );
-            var tokenString = tokenHandler.WriteToken( token );
-
-            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, tokenString );
-        }
-
-        /// <summary>
         /// Check if the login parameters are valid
         /// </summary>
         /// <param name="loginParameters"></param>

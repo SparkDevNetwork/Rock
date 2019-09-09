@@ -38,6 +38,7 @@ namespace Rock.Tests.Integration.Communications
         {
             public static string TestCommunicationSingleEmail1Guid = "{BDCDD3ED-22FF-43E8-9860-65D26DBD5B9B}";
             public static string TestCommunicationBulkEmail1Guid = "{D3EA6513-372D-4192-8E8F-DCA2707AA572}";
+            public static string TestCommunicationBulkEmailNoInteractionsGuid = "{42AECB98-76BE-4CD5-A9FA-14FE2CC27887}";
             public static string TestCommunicationBulkSmsGuid = "{79E18AFD-DB14-485A-80D9-CDAC44CA1098}";
 
             public static string TestSmsSenderGuid = "{DB8CFE73-4209-4109-8FC5-3C5013AFC290}";
@@ -59,7 +60,6 @@ namespace Rock.Tests.Integration.Communications
 
         #region Add/Remove Test Data
 
-        //private List<Guid> _EmailCreatorPersonGuidList;
         private Random _Rng = new Random();
         private List<string> _ValidClientOsList = new List<string>() { "Windows 10", "Windows 8", "Windows 7", "Android", "OS X", "iOS", "Linux", "Chrome OS" };
         private List<string> _ValidClientTypeList = new List<string>() { "Mobile", "Tablet", "Crawler", "Outlook", "Desktop", "Browser", "None" };
@@ -76,7 +76,8 @@ namespace Rock.Tests.Integration.Communications
         {
             RemoveCommunicationModuleTestData();
 
-            AddTestDataForCommunications();
+            AddTestDataForEmailCommunications();
+            AddTestDataForSmsCommunications();
         }
 
         /// <summary>
@@ -87,6 +88,7 @@ namespace Rock.Tests.Integration.Communications
         [TestProperty( "Feature", TestFeatures.DataMaintenance )]
         public void RemoveCommunicationModuleTestData()
         {
+            // Remove all Communications
             var dataContext = new RockContext();
 
             var communicationService = new CommunicationService( dataContext );
@@ -100,15 +102,26 @@ namespace Rock.Tests.Integration.Communications
             var recordsAffected = dataContext.SaveChanges();
 
             Debug.Print( $"Deleted Communications. (Count={ recordsAffected })" );
+
+            // Remove SMS Sender
+            var definedValueService = new DefinedValueService( dataContext );
+
+            var smsSender = definedValueService.Get( Constants.TestSmsSenderGuid.AsGuid() );
+
+            definedValueService.Delete( smsSender );
+
+            dataContext.SaveChanges();
+
         }
 
         /// <summary>
         /// Adds a predictable set of Communications entries to the test database that can be used for integration testing.
         /// </summary>
-        private void AddTestDataForCommunications()
+        private void AddTestDataForEmailCommunications()
         {
             List<Guid> recipientGuidList;
             List<CommunicationRecipientStatus> availableStatusList;
+            Dictionary<Guid, int> personMap;
 
             var dataContext = new RockContext();
 
@@ -128,6 +141,24 @@ namespace Rock.Tests.Integration.Communications
             this.CreateCommunicationRecipients( dataContext, singleCommunication, recipientGuidList, availableStatusList );
             this.CreateCommunicationInteractions( dataContext, singleCommunication, 1 );
 
+            // Add bulk email to 50 recipients, all failed with no interactions.
+            var bulkCommunicationFailed = this.CreateEmailCommunication( dataContext,
+                Constants.TestCommunicationBulkEmailNoInteractionsGuid,
+                new DateTime( 2019, 1, 30 ),
+                "Bulk Email - Test - All Failed",
+                "This message has no successful recipients and no interactions.",
+                new DateTime( 2019, 1, 30 ),
+                TestPeople.AlishaMarblePersonGuid,
+                TestPeople.BillMarblePersonGuid,
+                isBulk: true );
+
+            personMap = this.GetPersonGuidToAliasIdMap( dataContext );
+
+            recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 50 );
+            availableStatusList = GetAvailableCommunicationStatusList( 0, 100, 0 );
+
+            this.CreateCommunicationRecipients( dataContext, bulkCommunicationFailed, recipientGuidList, availableStatusList );
+
             // Add bulk email to 225 recipients, with associated interactions.
             var bulkCommunication = this.CreateEmailCommunication( dataContext,
                 Constants.TestCommunicationBulkEmail1Guid,
@@ -139,13 +170,26 @@ namespace Rock.Tests.Integration.Communications
                 TestPeople.BillMarblePersonGuid,
                 isBulk: true );
 
-            var personMap = this.GetPersonGuidToAliasIdMap( dataContext );
+            personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
             recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 225 );
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 5 );
 
             this.CreateCommunicationRecipients( dataContext, bulkCommunication, recipientGuidList, availableStatusList );
             this.CreateCommunicationInteractions( dataContext, bulkCommunication, 0.5M );
+        }
+
+        /// <summary>
+        /// Adds a predictable set of Communications entries to the test database that can be used for integration testing.
+        /// </summary>
+        private void AddTestDataForSmsCommunications()
+        {
+            List<Guid> recipientGuidList;
+            List<CommunicationRecipientStatus> availableStatusList;
+
+            var dataContext = new RockContext();
+
+            var personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
             // Add an SMS Sender
             var definedValueService = new DefinedValueService( dataContext );
@@ -160,11 +204,12 @@ namespace Rock.Tests.Integration.Communications
 
             var smsSenderId = smsSender.Id;
 
-            // Add bulk SMS
+            // Add bulk SMS to 175 recipients.
             var bulkSms = this.CreateSmsCommunication( dataContext,
                 Constants.TestCommunicationBulkSmsGuid,
                 new DateTime( 2019, 1, 29 ),
-                "This is a test message....",
+                "SMS Test 1",
+                "This is a test SMS...",
                 new DateTime( 2019, 1, 29 ),
                 TestPeople.BillMarblePersonGuid,
                 TestPeople.AlishaMarblePersonGuid,
@@ -174,8 +219,8 @@ namespace Rock.Tests.Integration.Communications
             recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 175 );
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 0 );
 
-            this.CreateCommunicationRecipients( dataContext, bulkCommunication, recipientGuidList, availableStatusList );
-            this.CreateCommunicationInteractions( dataContext, bulkCommunication, 0M );
+            this.CreateCommunicationRecipients( dataContext, bulkSms, recipientGuidList, availableStatusList );
+            this.CreateCommunicationInteractions( dataContext, bulkSms, 0M );
 
         }
 
@@ -224,22 +269,21 @@ namespace Rock.Tests.Integration.Communications
             return newEmail;
         }
 
-            private List<int> _SmsSenderIdList = new List<int>();
-
         /// <summary>
         /// Create and persist a new SMS Communication instance.
         /// </summary>
         /// <param name="dataContext"></param>
         /// <param name="guid"></param>
         /// <param name="communicationDateTime"></param>
-        /// <param name="subject"></param>
+        /// <param name="title"></param>
         /// <param name="message"></param>
         /// <param name="openedDateTime"></param>
         /// <param name="senderPersonAliasGuid"></param>
         /// <param name="reviewerPersonAliasGuid"></param>
+        /// <param name="smsSenderId"></param>
         /// <param name="isBulk"></param>
         /// <returns></returns>
-        private global::Rock.Model.Communication CreateSmsCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, int smsSenderId, bool isBulk = false )
+        private global::Rock.Model.Communication CreateSmsCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string title, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, int smsSenderId, bool isBulk = false )
         {
             var personGuidToAliasIdMap = GetPersonGuidToAliasIdMap( dataContext );
 
@@ -249,6 +293,7 @@ namespace Rock.Tests.Integration.Communications
 
             newSms.Guid = guid.AsGuid();
             newSms.CommunicationType = CommunicationType.SMS;
+            newSms.Subject = title;
             newSms.Status = CommunicationStatus.Approved;
             newSms.ReviewedDateTime = communicationDateTime;
             newSms.ReviewerNote = "Read and approved by the Communications Manager.";
@@ -366,7 +411,7 @@ namespace Rock.Tests.Integration.Communications
 
                 DateTime interactionDateTime;
                 //= GetRandomTimeWithinDayWindow( communication.SendDateTime.Value, 7 );
-                
+
                 // Add an "Opened" interaction.
                 var openedDateTime = recipient.OpenedDateTime ?? communication.SendDateTime.GetValueOrDefault();
 
@@ -399,14 +444,14 @@ namespace Rock.Tests.Integration.Communications
 
                     string clickUrl = null;
                     bool changeUrl = true;
-                    
+
                     for ( int i = 0; i < totalClicks; i++ )
                     {
                         interactionDateTime = GetRandomTimeWithinDayWindow( openedDateTime, 7 );
 
                         if ( changeUrl )
                         {
-                            clickUrl = string.Format("https://communication/link/{0}", i );
+                            clickUrl = string.Format( "https://communication/link/{0}", i );
                         }
 
                         var clickInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Click", clickUrl, recipient.PersonAliasId, openedDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );

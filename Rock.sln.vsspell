@@ -16,11 +16,18 @@
     <Ignore>Admin</Ignore>
     <Ignore>api</Ignore>
     <Ignore>auth</Ignore>
+    <Ignore>deserialize</Ignore>
+    <Ignore>deserialized</Ignore>
     <Ignore>Queryable</Ignore>
     <Ignore>workflow</Ignore>
+    <Ignore>nullable</Ignore>
+    <Ignore>linq</Ignore>
+    <Ignore>birthdate</Ignore>
+    <Ignore>birthyear</Ignore>
+    <Ignore>texting</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
-    <FilePattern>*\CodeGenerated\*.cs</FilePattern>
     <FilePattern>*.Designer.cs</FilePattern>
+    <FilePattern>*\CodeGenerated\*.cs</FilePattern>
   </IgnoredFilePatterns>
 </SpellCheckerConfiguration>

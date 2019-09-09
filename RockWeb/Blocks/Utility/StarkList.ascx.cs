@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -123,11 +124,25 @@ namespace RockWeb.Blocks.Utility
             PersonService personService = new PersonService( rockContext );
             
             // sample query to display a few people
+            // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
             var qry = personService.Queryable()
                         .Where( p => p.Gender == Gender.Male)
+                        .AsNoTracking()
                         .Take(10);
 
-            gList.DataSource = qry.ToList();
+            // sort the query based on the column that was selected to be sorted
+            var sortProperty = gList.SortProperty;
+            if ( gList.AllowSorting && sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+            }
+
+            // set the datasource as a query. This allows the grid to only fetch the records that need to be shown based on the grid page and page size
+            gList.SetLinqDataSource( qry );
             gList.DataBind();
         }
 

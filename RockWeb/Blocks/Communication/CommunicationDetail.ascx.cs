@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string SeriesColors = "SeriesColors";
             public const string EnablePersonalTemplates = "EnablePersonalTemplates";
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for User Preferences
         /// </summary>
-        protected static class UserPreferenceKey
+        private static class UserPreferenceKey
         {
             public const string RecipientListSettings = "RecipientListSettings";
         }
@@ -856,8 +856,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            Person p;
-
             if ( e.Row.RowType != DataControlRowType.DataRow )
             {
                 return;
@@ -888,7 +886,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Filter Settings
         /// </summary>
-        protected static class FilterSettingName
+        private static class FilterSettingName
         {
             public const string FirstName = "First Name";
             public const string LastName = "Last Name";
@@ -1242,7 +1240,6 @@ namespace RockWeb.Blocks.Communication
 
             ShowStatus( communication );
 
-            // lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
             lTitle.Text = ( string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name ).FormatAsHtmlTitle();
             pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
@@ -1709,6 +1706,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         sb.AppendLine( "<div class='row'>" );
                         sb.AppendLine( "<div class='col-md-6'>" );
+                        sb.AppendLine( "<dl>" );
 
                         AppendMediumData( sb, "From Name", communication.FromName );
                         AppendMediumData( sb, "From Address", communication.FromEmail );
@@ -1731,13 +1729,16 @@ namespace RockWeb.Blocks.Communication
                             }
                             sb.Append( "</ul>" );
                         }
+
+                        sb.AppendLine( "</dl>" );
+
                         sb.AppendLine( "</div>" );
 
                         sb.AppendLine( "</div>" );
 
                         if ( communication.Message.IsNotNullOrWhiteSpace() )
                         {
-                            AppendMediumData( sb, "HtmlMessage", string.Format( @"
+                            AppendMediumData( sb, "HTML Message", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
                         <script id='email-body' type='text/template'>{0}</script>
                         <script type='text/javascript'>
@@ -1783,7 +1784,7 @@ namespace RockWeb.Blocks.Communication
         {
             if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
-                sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>", key, value );
+                sb.AppendFormat( "<dt>{0}</dt><dd>{1}</dd>", key, value );
             }
         }
 
@@ -1880,13 +1881,14 @@ namespace RockWeb.Blocks.Communication
         {
             var dataContext = this.GetDataContext();
 
-            bool showAnalytics = false;
+            bool communicationTypeHasAnalytics = false;
 
             // Initialize the Communications data.
             hfCommunicationId.Value = this.PageParameter( PageParameterKey.CommunicationId );
 
             int? communicationId = hfCommunicationId.Value.AsIntegerOrNull();
             string noDataMessageName = string.Empty;
+            var analyticsUnavailableMessage = string.Empty;
 
             if ( communicationId.HasValue )
             {
@@ -1898,7 +1900,7 @@ namespace RockWeb.Blocks.Communication
                     if ( communication.CommunicationType == CommunicationType.Email
                          || communication.CommunicationType == CommunicationType.RecipientPreference )
                     {
-                        showAnalytics = true;
+                        communicationTypeHasAnalytics = true;
                     }
                     else
                     {
@@ -1912,6 +1914,11 @@ namespace RockWeb.Blocks.Communication
                     nbCommunicationorCommunicationListFound.Visible = true;
                     nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
                 }
+            }
+
+            if ( !communicationTypeHasAnalytics )
+            {
+                analyticsUnavailableMessage = "Analytics not available for this communication type.";
             }
 
             // Show Communication Status Summary
@@ -1934,28 +1941,46 @@ namespace RockWeb.Blocks.Communication
                 cancelledRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Cancelled );
             }
 
-            string actionsStatFormatNumber = "<div class='js-actions-statistic' title='{0}'>{1:#,##0}</div>";
+            string actionsStatFormatNumber = "<div>{0:#,##0}</div>";
 
-            lPending.Text = string.Format( actionsStatFormatNumber, "The number of recipients that have not yet received the communication", pendingRecipientCount );
-            lDelivered.Text = string.Format( actionsStatFormatNumber, "The number of recipients that the communication was successfully delivered to", deliveredRecipientCount );
-            lFailed.Text = string.Format( actionsStatFormatNumber, "The number of recipients to whom the communication could not be sent", failedRecipientCount );
-            lCancelled.Text = string.Format( actionsStatFormatNumber, "The number of recipients for whom the communication was cancelled", cancelledRecipientCount );
+            lPending.Text = string.Format( actionsStatFormatNumber, pendingRecipientCount );
+            lDelivered.Text = string.Format( actionsStatFormatNumber, deliveredRecipientCount );
+            lFailed.Text = string.Format( actionsStatFormatNumber, failedRecipientCount );
+            lCancelled.Text = string.Format( actionsStatFormatNumber, cancelledRecipientCount );
 
-            if ( !showAnalytics )
+            // Get the set of Interactions for this communication.
+            var interactionsList = this.GetCommunicationInteractionsSummaryInfo( dataContext, communicationId );
+
+            int interactionCount = interactionsList.Count();
+
+            // If there are no interactions, analytics are not available.
+            if ( interactionCount == 0 )
             {
-                upAnalytics.Visible = false;
-                nbAnalyticsNotAvailable.Visible = true;
+                if ( string.IsNullOrEmpty( noDataMessageName ) )
+                {
+                    analyticsUnavailableMessage = "No activity found for this communication.";
+                }
+                else
+                {
+                    analyticsUnavailableMessage = string.Format( "No communications activity for {0}.", noDataMessageName );
+                }
+            }
+
+            var analyticsIsAvailable = string.IsNullOrEmpty( analyticsUnavailableMessage );
+
+            nbAnalyticsNotAvailable.Text = analyticsUnavailableMessage;
+            nbAnalyticsNotAvailable.Visible = !analyticsIsAvailable;
+
+            upAnalytics.Visible = analyticsIsAvailable;
+
+            // If analytics are unavailable, display a message and exit.
+            if ( !string.IsNullOrEmpty( analyticsUnavailableMessage ) )
+            {
+                nbAnalyticsNotAvailable.Text = analyticsUnavailableMessage;
                 return;
             }
 
-            nbAnalyticsNotAvailable.Visible = false;
-            upAnalytics.Visible = true;
-
-            var interactionsList = this.GetCommunicationInteractionsSummaryInfo( dataContext, communicationId );
-
             this.ShowAnalyticsPanelActionsSummary( dataContext, interactionsList, noDataMessageName, deliveredRecipientCount );
-
-            int interactionCount = interactionsList.Count();
 
             var interactionsQuery = this.GetCommunicationInteractionsQuery( dataContext, communicationId );
 
@@ -2132,16 +2157,8 @@ namespace RockWeb.Blocks.Communication
         {
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
-            var colors = this.GetAttributeValue( AttributeKey.SeriesColors );
-
-            if ( string.IsNullOrEmpty( colors ) )
-            {
-                colors = SeriesColorsDefaultValue;
-            }
-
-            this.SeriesColorsJSON = colors.SplitDelimitedValues().ToArray().ToJson();
-
-            this.LineChartTimeFormat = "LL";
+            // Get the interactions summary information
+            var interactionsSummary = new List<SummaryInfo>();
 
             if ( interactionsList.Any() )
             {
@@ -2165,29 +2182,36 @@ namespace RockWeb.Blocks.Communication
                     roundTimeSpan = TimeSpan.FromHours( 1 );
                     this.LineChartTimeFormat = "LLLL";
                 }
+
+                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
+                    .Select( a => new
+                    {
+                        InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
+                        a.Key.CommunicationRecipientId,
+                        a.Key.Operation
+                    } )
+                    .GroupBy( a => a.InteractionSummaryDateTime )
+                    .Select( x => new SummaryInfo
+                    {
+                        SummaryDateTime = x.Key,
+                        ClickCounts = x.Count( xx => xx.Operation == "Click" ),
+                        OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                    } ).OrderBy( a => a.SummaryDateTime ).ToList();
             }
 
-            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
-            interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
-                .Select( a => new
-                {
-                    InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
-                    a.Key.CommunicationRecipientId,
-                    a.Key.Operation
-                } )
-                .GroupBy( a => a.InteractionSummaryDateTime )
-                .Select( x => new SummaryInfo
-                {
-                    SummaryDateTime = x.Key,
-                    ClickCounts = x.Count( xx => xx.Operation == "Click" ),
-                    OpenCounts = x.Count( xx => xx.Operation == "Opened" )
-                } ).OrderBy( a => a.SummaryDateTime ).ToList();
+            var hasInteractions = interactionsSummary.Any();
 
-            var lineChartHasData = interactionsSummary.Any();
-            openClicksLineChartCanvas.Style[HtmlTextWriterStyle.Display] = lineChartHasData ? string.Empty : "none";
-            nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
-            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+            var colors = this.GetAttributeValue( AttributeKey.SeriesColors );
 
+            if ( string.IsNullOrEmpty( colors ) )
+            {
+                colors = SeriesColorsDefaultValue;
+            }
+
+            this.SeriesColorsJSON = colors.SplitDelimitedValues().ToArray().ToJson();
+
+            // Opens/Clicks Line Chart
+            this.LineChartTimeFormat = "LL";
             this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
 
             List<int> cumulativeClicksList = new List<int>();
@@ -2290,6 +2314,7 @@ namespace RockWeb.Blocks.Communication
 
             var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
+
             nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
             nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
         }
@@ -2317,12 +2342,14 @@ namespace RockWeb.Blocks.Communication
                 AddCalculatedColumn( _Columns, PersonPropertyColumn.Age, "Rock.Reporting.DataSelect.Person.AgeSelect" );
                 AddCalculatedColumn( _Columns, PersonPropertyColumn.Grade, "Rock.Reporting.DataSelect.Person.GradeSelect" );
 
-                // Add Attributes
+                // Add Person Attributes that the current user is authorized to View.
                 var person = new Person();
 
                 person.LoadAttributes();
 
-                foreach ( var attribute in person.Attributes )
+                var allowedAttributes = person.Attributes.Where( a => a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList();
+
+                foreach ( var attribute in allowedAttributes )
                 {
                     AddAttributeColumn( _Columns, attribute.Value.Guid.ToString(), attribute.Value.Name );
                 }
@@ -2332,7 +2359,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a Person Property to the column selection for the Recipients List. 
+        /// Add a Person Property to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="propertyName"></param>
@@ -2351,7 +2378,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a calculated column to the column selection for the Recipients List. 
+        /// Add a calculated column to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="name"></param>
@@ -2376,7 +2403,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a Person Attribute to the column selection for the Recipients List. 
+        /// Add a Person Attribute to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="attributeGuid"></param>
@@ -2415,7 +2442,7 @@ namespace RockWeb.Blocks.Communication
             gRecipients.Columns.Insert( insertAtIndex, statusField );
             insertAtIndex++;
 
-            var openedField = new CheckBoxField();
+            var openedField = new BoolField();
             openedField.HeaderText = "Opened";
             openedField.DataField = "HasOpened";
             openedField.SortExpression = "HasOpened";
@@ -2423,7 +2450,7 @@ namespace RockWeb.Blocks.Communication
             gRecipients.Columns.Insert( insertAtIndex, openedField );
             insertAtIndex++;
 
-            var clickedField = new CheckBoxField();
+            var clickedField = new BoolField();
             clickedField.HeaderText = "Clicked";
             clickedField.DataField = "HasClicked";
             clickedField.SortExpression = "HasClicked";
@@ -2435,7 +2462,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Get the query that uniquely identifies the subset records that match the current filter.
         /// At a minimum, this query must return a unique identifier for each record that can be used to retrieve additional details about the item.
-        /// Additional information may also be retrieved and cached here if it is 
+        /// Additional information may also be retrieved and cached here if it is
         /// </summary>
         /// <param name="skipCount"></param>
         /// <param name="takeCount"></param>
@@ -2771,7 +2798,7 @@ namespace RockWeb.Blocks.Communication
         #region Block specific classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class SummaryInfo
         {
@@ -2801,7 +2828,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class TopLinksInfo
         {
@@ -2839,7 +2866,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ClientTypeUsageInfo
         {
@@ -2861,7 +2888,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ApplicationUsageInfo
         {
@@ -2945,11 +2972,11 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private class InteractionInfo
         {
-            public DateTime InteractionDateTime;
-            public string Operation;
-            public string InteractionData;
-            public int? CommunicationRecipientId;
-            public int? PersonId;
+            public DateTime InteractionDateTime { get; set; }
+            public string Operation { get; set; }
+            public string InteractionData { get; set; }
+            public int? CommunicationRecipientId { get; set; }
+            public int? PersonId { get; set; }
         }
 
         /// <summary>
