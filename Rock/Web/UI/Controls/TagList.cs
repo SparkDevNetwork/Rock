@@ -251,47 +251,42 @@ Rock.controls.tagList.initialize({{
         /// <param name="currentPersonId">The current person identifier.</param>
         public void GetTagValues( int? currentPersonId )
         {
-            var sb = new StringBuilder();
+            var serializedTags = new List<string>();
 
             using ( var rockContext = new RockContext() )
             {
-                var service = new TaggedItemService( rockContext );
-                var qry = service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
-                    .Where( c => c.Tag.IsActive || ( ShowInActiveTags ) );
-
-                var itemList = qry
-                    .Select( a => a.Tag )
-                    .OrderBy( a => a.Name ).AsNoTracking().ToList();
+                var taggedItemService = new TaggedItemService( rockContext );
+                var itemList = taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
+                    .Where( ti => ShowInActiveTags || ti.Tag.IsActive )
+                    .Select( ti => ti.Tag )
+                    .Include( t => t.OwnerPersonAlias )
+                    .OrderBy( t => t.Name )
+                    .AsNoTracking()
+                    .ToList();
 
                 var person = GetCurrentPerson();
 
                 foreach ( var item in itemList )
                 {
-                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    if ( !item.IsAuthorized( Authorization.VIEW, person ) )
                     {
-                        if ( sb.Length > 0 )
-                        {
-                            sb.Append( ',' );
-                        }
-
-                        sb.Append( item.IconCssClass );
-                        sb.Append( "^" );
-                        sb.Append( item.BackgroundColor );
-                        sb.Append( "^" );
-                        sb.Append( item.Name );
-
-                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias?.PersonId == currentPersonId.Value )
-                        {
-                            sb.Append( "^personal" );
-                        }
+                        continue;
                     }
+
+                    var isPersonal = currentPersonId.HasValue && item.OwnerPersonAlias?.PersonId == currentPersonId.Value;
+                    var tagCssClass = isPersonal ? "personal" : string.Empty;
+                    var serializedTag = SerializeTag( item.Name, tagCssClass, item.IconCssClass, item.BackgroundColor );
+                    serializedTags.Add( serializedTag );
                 }
             }
 
-            this.Text = sb.ToString();
+            Text = serializedTags.JoinStrings( "," );
         }
 
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <returns></returns>
         private Person GetCurrentPerson()
         {
             var rockPage = this.Page as RockPage;
@@ -334,16 +329,18 @@ Rock.controls.tagList.initialize({{
 
                 // Get tag values after user edit
                 var currentTags = new List<Tag>();
-                foreach ( var value in this.Text.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( var serializedTag in Text.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
-                    string tagName = value;
-                    if ( tagName.Contains( '^' ) )
+                    var tagName = GetNameFromSerializedTag( serializedTag );
+
+                    if ( tagName.IsNullOrWhiteSpace() )
                     {
-                        tagName = tagName.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )[0];
+                        continue;
                     }
 
                     // Only if this is a new tag, create it
-                    Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
+                    var tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
+
                     if ( personAlias != null && tag == null )
                     {
                         tag = new Tag();
@@ -401,5 +398,41 @@ Rock.controls.tagList.initialize({{
         }
 
         #endregion
+
+        #region Tag Serialization
+
+        /// <summary>
+        /// Serializes the tag into a format that can be read by this control and in the jquery.tagsinput.js file.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="tagCssClass">The tag CSS class.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="backgroundColor">Color of the background.</param>
+        /// <returns></returns>
+        private string SerializeTag( string name, string tagCssClass, string iconCssClass, string backgroundColor )
+        {
+            // It is important that the name be the first value because older code had the name first and then maybe the tagCssClass
+            return $"{name}^{tagCssClass}^{iconCssClass}^{backgroundColor}";
+        }
+
+        /// <summary>
+        /// Gets the name from the serialized tag.
+        /// </summary>
+        /// <param name="serializedTag">The serialized tag.</param>
+        /// <returns></returns>
+        private string GetNameFromSerializedTag( string serializedTag )
+        {
+            if ( serializedTag.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var parts = serializedTag.Split( '^' );
+
+            // The name is the first value
+            return parts?.FirstOrDefault();
+        }
+
+        #endregion Tag Serialization
     }
 }
