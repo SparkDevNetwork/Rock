@@ -43,7 +43,7 @@ namespace Rock.Communication.SmsActions
     [BooleanField( "Pass Nameless Person",
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Workflow,
-        Description = "Specify 'No' to set the workflow initiator to blank if the incoming message is from a Nameless person.",
+        Description = "If a matching person is not found in the database should a nameless person record be passed to the workflow.",
         ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 3 )]
