@@ -136,11 +136,13 @@ namespace Rock.Model
         [DataMember]
         public bool IsDeceased
         {
-            get {
+            get
+            {
                 return _isDeceased;
             }
 
-            set {
+            set
+            {
                 _isDeceased = value;
             }
         }
@@ -314,14 +316,16 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public string GivingId
         {
-            get {
+            get
+            {
                 // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
                 return GivingGroupId.HasValue ?
                     string.Format( "G{0}", GivingGroupId.Value ) :
                     string.Format( "P{0}", Id );
             }
 
-            private set {
+            private set
+            {
                 // don't do anything here since EF uses this for loading
             }
         }
@@ -504,11 +508,13 @@ namespace Rock.Model
         [DataMember]
         public bool IsLockedAsChild
         {
-            get {
+            get
+            {
                 return _isLockedAsChild;
             }
 
-            set {
+            set
+            {
                 _isLockedAsChild = value;
             }
         }
@@ -563,7 +569,8 @@ namespace Rock.Model
         [LavaInclude]
         public virtual PersonAlias PrimaryAlias
         {
-            get {
+            get
+            {
                 return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
             }
         }
@@ -579,7 +586,8 @@ namespace Rock.Model
         [RockClientInclude( "The Primary PersonAliasId of the Person" )]
         public virtual int? PrimaryAliasId
         {
-            get {
+            get
+            {
                 var primaryAlias = PrimaryAlias;
                 if ( primaryAlias != null )
                 {
@@ -589,7 +597,8 @@ namespace Rock.Model
                 return null;
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -604,13 +613,15 @@ namespace Rock.Model
         [NotMapped]
         public virtual string FullName
         {
-            get {
+            get
+            {
                 // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
                 // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
                 return FormatFullName( NickName, LastName, SuffixValueId, this.RecordTypeValueId );
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -654,7 +665,7 @@ namespace Rock.Model
         public bool IsNameless()
         {
             int recordTypeValueIdNameless = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
-            return  this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
+            return this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
         }
 
         /// <summary>
@@ -686,7 +697,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual string FullNameReversed
         {
-            get {
+            get
+            {
                 return FormatFullNameReversed( this.LastName, this.NickName, this.SuffixValueId, this.RecordTypeValueId );
             }
         }
@@ -734,7 +746,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual string FullNameFormal
         {
-            get {
+            get
+            {
                 if ( IsBusiness( this.RecordTypeValueId ) )
                 {
                     return LastName;
@@ -762,7 +775,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual string FullNameFormalReversed
         {
-            get {
+            get
+            {
                 if ( IsBusiness( this.RecordTypeValueId ) )
                 {
                     return LastName;
@@ -791,7 +805,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual string BirthdayDayOfWeek
         {
-            get {
+            get
+            {
                 string birthdayDayOfWeek = string.Empty;
 
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
@@ -820,7 +835,8 @@ namespace Rock.Model
                 return birthdayDayOfWeek;
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -835,7 +851,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual string BirthdayDayOfWeekShort
         {
-            get {
+            get
+            {
                 string birthdayDayOfWeek = string.Empty;
 
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
@@ -864,7 +881,8 @@ namespace Rock.Model
                 return birthdayDayOfWeek;
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -879,11 +897,13 @@ namespace Rock.Model
         [NotMapped]
         public virtual string PhotoUrl
         {
-            get {
+            get
+            {
                 return Person.GetPersonPhotoUrl( this );
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -1083,7 +1103,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? BirthDate 
+        public DateTime? BirthDate
         {
             get
             {
@@ -1091,12 +1111,13 @@ namespace Rock.Model
                 return _birthDate;
             }
 
-            private set {
+            private set
+            {
                 _birthDate = value;
             }
         }
 
-        private DateTime? _birthDate ;
+        private DateTime? _birthDate;
 
         /// <summary>
         /// Calculates the birthdate from the BirthYear, BirthMonth, and BirthDay.
@@ -1106,10 +1127,10 @@ namespace Rock.Model
         /// <returns></returns>
         private DateTime? CalculateBirthDate()
         {
-             if ( BirthDay == null || BirthMonth == null )
-                {
-                    return null;
-                }
+            if ( BirthDay == null || BirthMonth == null )
+            {
+                return null;
+            }
             else
             {
                 if ( BirthMonth <= 12 )
@@ -1174,11 +1195,13 @@ namespace Rock.Model
         [NotMapped]
         public virtual int? Age
         {
-            get {
+            get
+            {
                 return Person.GetAge( this.BirthDate );
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -1206,7 +1229,6 @@ namespace Rock.Model
             return null;
         }
 
-
         /// <summary>
         /// Formats the age with unit (year, month, day) suffix depending on the age of the individual.
         /// </summary>
@@ -1221,6 +1243,7 @@ namespace Rock.Model
                 {
                     return age.ToString();
                 }
+
                 if ( age > 0 )
                 {
                     return age + ( age == 1 ? " yr" : " yrs" );
@@ -1239,10 +1262,12 @@ namespace Rock.Model
                 {
                     months = months + 12;
                 }
+
                 if ( BirthDay > today.Day )
                 {
                     months--;
                 }
+
                 if ( months > 0 )
                 {
                     return months + ( months == 1 ? " mo" : " mos" );
@@ -1258,8 +1283,10 @@ namespace Rock.Model
                     var birthMonth = new DateTime( BirthYear.Value, BirthMonth.Value, 1 );
                     days = days + birthMonth.AddMonths( 1 ).AddDays( -1 ).Day;
                 }
+
                 return days + ( days == 1 ? " day" : " days" );
             }
+
             return string.Empty;
         }
 
@@ -1273,7 +1300,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual DateTime? NextBirthDay
         {
-            get {
+            get
+            {
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
                 {
                     var today = RockDateTime.Today;
@@ -1288,10 +1316,11 @@ namespace Rock.Model
 
                 return null;
             }
-            private set {
+
+            private set
+            {
                 // intentionally blank
             }
-
         }
 
         /// <summary>
@@ -1306,7 +1335,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual int DaysToBirthday
         {
-            get {
+            get
+            {
                 if ( BirthDay.HasValue && BirthMonth.HasValue )
                 {
                     if ( BirthDay.Value >= 1 && BirthDay.Value <= 31 && BirthMonth.Value >= 1 && BirthMonth.Value <= 12 )
@@ -1337,7 +1367,8 @@ namespace Rock.Model
                 return int.MaxValue;
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -1352,7 +1383,8 @@ namespace Rock.Model
         [LavaInclude]
         public virtual double? AgePrecise
         {
-            get {
+            get
+            {
                 DateTime? bday = this.BirthDate;
                 if ( this.BirthYear.HasValue && bday.HasValue )
                 {
@@ -1391,7 +1423,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual int DaysToAnniversary
         {
-            get {
+            get
+            {
                 if ( AnniversaryDate.HasValue )
                 {
                     var today = RockDateTime.Today;
@@ -1418,10 +1451,11 @@ namespace Rock.Model
 
                 return int.MaxValue;
             }
-            private set {
+
+            private set
+            {
                 // intentionally blank
             }
-
         }
 
         /// <summary>
@@ -1434,7 +1468,8 @@ namespace Rock.Model
         [NotMapped]
         public virtual DateTime? NextAnniversary
         {
-            get {
+            get
+            {
                 if ( AnniversaryDate.HasValue )
                 {
                     var today = RockDateTime.Today;
@@ -1449,10 +1484,11 @@ namespace Rock.Model
 
                 return null;
             }
-            private set {
+
+            private set
+            {
                 // intentionally blank
             }
-
         }
 
         /// <summary>
@@ -1479,11 +1515,13 @@ namespace Rock.Model
         [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]" )]
         public virtual int? GradeOffset
         {
-            get {
+            get
+            {
                 return GradeOffsetFromGraduationYear( GraduationYear );
             }
 
-            set {
+            set
+            {
                 GraduationYear = GraduationYearFromGradeOffset( value );
             }
         }
@@ -1498,14 +1536,15 @@ namespace Rock.Model
         [DataMember]
         public virtual bool? HasGraduated
         {
-            get {
+            get
+            {
                 return HasGraduatedFromGradeOffset( GradeOffset );
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
-
         }
 
         /// <summary>
@@ -1518,11 +1557,13 @@ namespace Rock.Model
         [DataMember]
         public virtual string GradeFormatted
         {
-            get {
+            get
+            {
                 return GradeFormattedFromGradeOffset( GradeOffset );
             }
 
-            private set {
+            private set
+            {
                 // intentionally blank
             }
         }
@@ -1538,7 +1579,8 @@ namespace Rock.Model
         [LavaInclude]
         public virtual string ImpersonationParameter
         {
-            get {
+            get
+            {
                 return this.GetImpersonationParameter();
             }
         }
@@ -1554,7 +1596,8 @@ namespace Rock.Model
         [NotMapped]
         public override string EncryptedKey
         {
-            get {
+            get
+            {
                 // in the case of Person, use an encrypted PersonToken instead of the base.UrlEncodedKey
                 return this.GetImpersonationToken();
             }
@@ -1572,7 +1615,8 @@ namespace Rock.Model
         [LavaInclude]
         public override string UrlEncodedKey
         {
-            get {
+            get
+            {
                 // in the case of Person, use an encrypted PersonToken instead of the base.UrlEncodedKey
                 return this.GetImpersonationToken();
             }
@@ -1587,7 +1631,8 @@ namespace Rock.Model
         [NotMapped]
         public bool AllowsInteractiveBulkIndexing
         {
-            get {
+            get
+            {
                 return true;
             }
         }
@@ -1921,7 +1966,7 @@ namespace Rock.Model
                 {
                     var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
                     if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
-                    {   
+                    {
                         // If person was just inactivated, update the group member status for all their group memberships to be inactive
                         foreach ( var groupMember in new GroupMemberService( rockContext )
                             .Queryable()
@@ -2122,8 +2167,8 @@ namespace Rock.Model
                                         SearchTypeValueId = searchTypeValue.Id,
                                         SearchValue = currentEmail
                                     };
-                                    personSearchKeyService.Add( personSearchKey );
 
+                                    personSearchKeyService.Add( personSearchKey );
                                 }
                             }
                         }
@@ -2391,7 +2436,6 @@ namespace Rock.Model
                 }
 
                 return familySalutation;
-
             }
 
             return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
@@ -2406,7 +2450,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, person.AgeClassification, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2449,8 +2493,8 @@ namespace Rock.Model
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use other GetPersonPhotoUrl")]
-        public static string GetPersonPhotoUrl(int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
+        [Obsolete( "Use other GetPersonPhotoUrl" )]
+        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
             return GetPersonPhotoUrl( personId, photoId, age, gender, recordTypeValueGuid, null, maxWidth, maxHeight );
         }
@@ -2519,7 +2563,6 @@ namespace Rock.Model
                     {
                         // it's an adult
                         virtualPath = $"~/{GetPhotoPath( gender, true )}";
-
                     }
                 }
             }
@@ -2610,7 +2653,6 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-
             Person person = personAlias != null ? personAlias.Person : null;
             return GetPersonPhotoImageTag( person, maxWidth, maxHeight, altText, className );
         }
@@ -2693,7 +2735,7 @@ namespace Rock.Model
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
         }
-        
+
         /// <summary>
         /// Gets the HTML markup to use for displaying the top-most signal icon for this person.
         /// </summary>
@@ -3292,6 +3334,7 @@ namespace Rock.Model
                     }
                 }
             }
+
             return null;
         }
 
@@ -3339,6 +3382,7 @@ namespace Rock.Model
                     phoneObject.IsUnlisted = isUnlisted ?? phoneObject.IsUnlisted;
                 }
             }
+
             // they don't have a number of this type. If one is being added, we'll add it.
             // (otherwise we'll just do nothing, leaving it as it)
             else if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
