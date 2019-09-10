@@ -612,8 +612,9 @@ namespace Rock.DownhillCss
 }
 
 .btn.btn-default {
-    color: ?color-text;
-    border-color: ?color-text;
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
 }
 
 .btn.btn-link {

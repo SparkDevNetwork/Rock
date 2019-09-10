@@ -28,6 +28,7 @@ using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.DownhillCss;
 using Rock.Mobile;
 using Rock.Mobile.Common.Enums;
 using Rock.Model;
@@ -774,6 +775,13 @@ namespace RockWeb.Blocks.Mobile
             site.LoginPageId = ppEditLoginPage.PageId;
 
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+
+            // Ensure that the Downhill CSS platform is mobile
+            if ( additionalSettings.DownhillSettings == null )
+            {
+                additionalSettings.DownhillSettings = new DownhillSettings();
+            }
+            additionalSettings.DownhillSettings.Platform = DownhillPlatform.Mobile;
 
             //
             // Save the additional settings.
