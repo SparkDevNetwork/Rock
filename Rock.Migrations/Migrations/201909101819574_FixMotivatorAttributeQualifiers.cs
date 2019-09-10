@@ -49,7 +49,7 @@ namespace Rock.Migrations
                 DECLARE @ThemeAttributeId INT = (SELECT [Id] FROM [dbo].[Attribute] WHERE [Guid] = 'A20E6DB1-B830-4D41-9003-43A184E4C910')
                 DECLARE @MotivatorsThemeDefinedTypeId INT = (SELECT [ID] FROM [dbo].[DefinedType] WHERE [Guid] = '354715FA-564A-420A-8324-0411988AE7AB')
 
-                IF NOT EXISTS(SELECT * FROM [dbo].[AttributeQualifier] WHERE [Guid] = '6C084DB5-5EC0-4E73-BAE7-775AE429C852')
+                IF NOT EXISTS(SELECT * FROM [dbo].[AttributeQualifier] WHERE [Key] = 'definedtype' AND [AttributeId] = @ThemeAttributeId)
                 BEGIN
                     INSERT INTO [dbo].[AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
                     VALUES(1, @ThemeAttributeId, 'definedtype', @MotivatorsThemeDefinedTypeId, '6C084DB5-5EC0-4E73-BAE7-775AE429C852')
@@ -57,15 +57,15 @@ namespace Rock.Migrations
                 ELSE
                 BEGIN
                     UPDATE [dbo].[AttributeQualifier]
-	                SET [Key] = 'definedtype', [Value] = @MotivatorsThemeDefinedTypeId
-                    WHERE [Guid] = '6C084DB5-5EC0-4E73-BAE7-775AE429C852'
+	                SET [Value] = @MotivatorsThemeDefinedTypeId
+                    WHERE [Key] = 'definedtype' AND [AttributeId] = @ThemeAttributeId
                 END
 
                 -- Fix the Top 5 Motivators attribute qualifier for Motivator Defined Type (E3ADC996-626F-460B-9F20-635EE5FFF881)
-                DECLARE @TopFiveMotivatorsAttributeId int = (SELECT [Id] FROM [dbo].[Attribute] WHERE [Guid] = '402308F6-44BB-46CF-ADF9-6F62406C9923')
-                DECLARE @MotivatorTypeDefinedTypeId int = (SELECT [Id] FROM [dbo].[DefinedType] WHERE [Guid] = '1DFF1804-0055-491E-9559-54EA3F8F89D1')
+                DECLARE @TopFiveMotivatorsAttributeId INT = (SELECT [Id] FROM [dbo].[Attribute] WHERE [Guid] = '402308F6-44BB-46CF-ADF9-6F62406C9923')
+                DECLARE @MotivatorTypeDefinedTypeId INT = (SELECT [Id] FROM [dbo].[DefinedType] WHERE [Guid] = '1DFF1804-0055-491E-9559-54EA3F8F89D1')
 
-                IF NOT EXISTS(SELECT * FROM [dbo].[AttributeQualifier] WHERE [Guid] = 'E3ADC996-626F-460B-9F20-635EE5FFF881')
+                IF NOT EXISTS(SELECT * FROM [dbo].[AttributeQualifier] WHERE [Key] = 'definedtype' AND [AttributeId] = @TopFiveMotivatorsAttributeId )
                 BEGIN
                     INSERT INTO [dbo].[AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
                     VALUES(1, @TopFiveMotivatorsAttributeId, 'definedtype', @MotivatorTypeDefinedTypeId, 'E3ADC996-626F-460B-9F20-635EE5FFF881')
@@ -73,8 +73,8 @@ namespace Rock.Migrations
                 ELSE
                 BEGIN
                     UPDATE [dbo].[AttributeQualifier]
-	                SET [Key] = 'definedtype', [Value] = @MotivatorTypeDefinedTypeId
-                    WHERE [Guid] = 'E3ADC996-626F-460B-9F20-635EE5FFF881'
+	                SET [Value] = @MotivatorTypeDefinedTypeId
+                    WHERE [Key] = 'definedtype' AND [AttributeId] = @TopFiveMotivatorsAttributeId
                 END" );
         }
     }
