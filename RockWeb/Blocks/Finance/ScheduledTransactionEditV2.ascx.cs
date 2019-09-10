@@ -256,7 +256,7 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string EnableACH = "EnableACH";
 

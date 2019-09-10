@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Search.Person
 {
@@ -56,7 +57,14 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new PhoneNumberService( new RockContext() ).GetNumbersBySearchterm( searchterm );
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            var phoneNumberSearchQuery = new PhoneNumberService( new RockContext() ).GetBySearchterm( searchterm );
+
+            // exclude phone numbers associated with nameless person records
+            phoneNumberSearchQuery = phoneNumberSearchQuery.Where( a => a.Person.RecordTypeValueId != recordTypeValueIdNameless );
+
+            return phoneNumberSearchQuery.Select( a => a.Number ).Distinct();
         }
     }
 }

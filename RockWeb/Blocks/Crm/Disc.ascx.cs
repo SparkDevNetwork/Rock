@@ -93,7 +93,7 @@ namespace Rockweb.Blocks.Crm
         #endregion Attribute Default Values
 
         #region Attribute Keys
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             // Block Attributes
             public const string Instructions = "Instructions";
@@ -112,7 +112,7 @@ namespace Rockweb.Blocks.Crm
         /// <summary>
         /// A defined list of page parameter keys used by this block.
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The assessment identifier

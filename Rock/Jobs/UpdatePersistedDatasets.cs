@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 
 using Quartz;
-
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -59,6 +57,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             StringBuilder results = new StringBuilder();
             int updatedDatasetCount = 0;
+            int updatedDatasetTotalCount;
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
 
@@ -66,14 +65,20 @@ namespace Rock.Jobs
             {
                 var currentDateTime = RockDateTime.Now;
 
-                // get a list of all the data views that need to be refreshed
-                var expiredPersistedDataset = new PersistedDatasetService( rockContext ).Queryable()
+                var persistedDatasetQuery = new PersistedDatasetService( rockContext ).Queryable();
+                updatedDatasetTotalCount = persistedDatasetQuery.Count();
+
+                // exclude datasets that are no longer active
+                persistedDatasetQuery = persistedDatasetQuery.Where( a => a.IsActive && ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) );
+
+                // exclude datasets that are already up-to-date based on the Refresh Interval and LastRefreshTime
+                persistedDatasetQuery = persistedDatasetQuery
                     .Where( a =>
                         a.LastRefreshDateTime == null
-                        ||  ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.RefreshIntervalMinutes.Value, a.LastRefreshDateTime.Value ) < currentDateTime )                        );
+                        || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.RefreshIntervalMinutes.Value, a.LastRefreshDateTime.Value ) < currentDateTime ) );
 
-                var expiredPersistedDatasetList = expiredPersistedDataset.ToList();
-                foreach ( var persistedDataset in expiredPersistedDatasetList )
+                var expiredPersistedDatasetsList = persistedDatasetQuery.ToList();
+                foreach ( var persistedDataset in expiredPersistedDatasetsList )
                 {
                     var name = persistedDataset.Name;
                     try
@@ -97,8 +102,14 @@ namespace Rock.Jobs
                 }
             }
 
+            int notUpdatedCount = updatedDatasetTotalCount - updatedDatasetCount;
+
             // Format the result message
-            results.AppendLine( $"Updated {updatedDatasetCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )}" );
+            results.AppendLine( $"Updated {updatedDatasetCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )}." );
+            if (notUpdatedCount > 0)
+            {
+                results.AppendLine( $"Skipped {notUpdatedCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )} that are already up-to-date or inactive." );
+            }
             context.Result = results.ToString();
 
             if ( errors.Any() )

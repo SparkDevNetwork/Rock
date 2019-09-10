@@ -1,36 +1,36 @@
+{{ site_name | AddMetaTagToHead:'property','og:site_name' }}
+{% if url and url != empty %}{{ url | AddMetaTagToHead:'property','og:url' }}{% endif %}
+
 {% if title and title != empty %}
     {{ title | AddMetaTagToHead:'name','title' }}
+    {{ title | AddMetaTagToHead:'property','og:title' }}
+    {{ title | AddMetaTagToHead:'property','twitter:title' }}
 {% endif %}
 
 {% if description and description != empty %}
     {{ description | AddMetaTagToHead:'name','description' }}
-{% else %}
-    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'name','Description' }}
-{% endif %}
-
-<!-- Facebook Card -->
-{{ site_name | AddMetaTagToHead:'property','og:site_name' }}
-{% if url and url != empty %}{{ url | AddMetaTagToHead:'property','og:url' }}{% endif %}
-{% if title and title != empty %}{{ title | AddMetaTagToHead:'property','og:title' }}{% endif %}
-{% if description and description != empty %}
     {{ description | AddMetaTagToHead:'property','og:description' }}
-{% else %}
-    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'property','og:description' }}
-{% endif %}
-{% if image and image != empty %}{{ image | AddMetaTagToHead:'property','og:image' }}{% endif %}
-{% if article_published_time and article_published_time != empty %}{{ article_published_time | AddMetaTagToHead:'property','article:published_time' }}{% endif %}
-{{ article_author | AddMetaTagToHead:'property','article:author' }}
-
-<!-- Twitter Card -->
-{{ twitter_site | AddMetaTagToHead:'property','twitter:site' }} <!-- @newspring -->
-{{ twitter_creator | AddMetaTagToHead:'property','twitter:creator' }} <!-- @newspring -->
-{% if title and title != empty %}{{ title | AddMetaTagToHead:'property','twitter:title' }}{% endif %}
-{% if description and description != empty %}
     {{ description | AddMetaTagToHead:'property','twitter:description' }}
 {% else %}
+    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'name','Description' }}
+    {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'property','og:description' }}
     {{ 'Global' | Attribute:'OrganizationVision' | AddMetaTagToHead:'property','twitter:description' }}
 {% endif %}
-{% if image and image != empty %}{{ image | AddMetaTagToHead:'property','twitter:image' }}{% endif %}
+
+
+{% if image and image != empty %}
+    {{ image | AddMetaTagToHead:'property','og:image' }}
+    {{ image | AddMetaTagToHead:'property','twitter:image' }}
+{% endif %}
+
+
+{{ article_author | AddMetaTagToHead:'property','article:author' }}
+{{ twitter_site | AddMetaTagToHead:'property','twitter:site' }}
+{{ twitter_creator | AddMetaTagToHead:'property','twitter:creator' }}
+{% if article_published_time and article_published_time != empty %}
+    {{ article_published_time | AddMetaTagToHead:'property','article:published_time' }}
+{% endif %}
+
 
 {% if article_published_time and article_published_type != empty %}
     {{ 'article' | AddMetaTagToHead:'property','og:type' }}
@@ -47,13 +47,13 @@
 {% if video and video != empty %}
 
     <!-- Facebook Video Card -->
-    {{ video | AddMetaTagToHead:'property','og:video' }} <!-- URL to video -->
+    {{ video | AddMetaTagToHead:'property','og:video' }}
     {{ video_type | AddMetaTagToHead:'property','og:video:type' }}
     {{ video_width | AddMetaTagToHead:'property','og:video:width' }}
     {{ video_height | AddMetaTagToHead:'property','og:video:height' }}
     
     <!-- Twitter Video Card -->
-    {{ video | AddMetaTagToHead:'property','twitter:player' }} <!-- URL to video -->
+    {{ video | AddMetaTagToHead:'property','twitter:player' }}
     {{ video_width | AddMetaTagToHead:'property','twitter:player:width' }}
     {{ video_height | AddMetaTagToHead:'property','twitter:player:height' }}
     

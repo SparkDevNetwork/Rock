@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The detail page

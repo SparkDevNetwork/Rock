@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string GroupType = "GroupType";
             public const string DetectGroupsAlreadyAtTheAddress = "DetectGroupsAlreadyAtTheAddress";
@@ -1629,7 +1629,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string groupMembersHtml = string.Empty;
                 foreach ( var groupMember in sortedGroupMembers )
                 {
-                    groupMembersHtml += string.Format( "<li>{0}: {1}, {2}, {3}", groupMember.Person.FullName, groupMember.GroupRole, groupMember.Person.MaritalStatusValue.Value, groupMember.Person.Gender.ConvertToString() );
+                    string maritalStatusValue = "Unknown Martial Status";
+                    if ( groupMember.Person.MaritalStatusValue != null )
+                    {
+                        maritalStatusValue = groupMember.Person.MaritalStatusValue.Value;
+                    }
+
+                    groupMembersHtml += string.Format( "<li>{0}: {1}, {2}, {3}", groupMember.Person.FullName, groupMember.GroupRole, maritalStatusValue, groupMember.Person.Gender.ConvertToString() );
                     if ( groupMember.Person.Age.HasValue )
                     {
                         groupMembersHtml += ", Age " + groupMember.Person.Age.ToString();

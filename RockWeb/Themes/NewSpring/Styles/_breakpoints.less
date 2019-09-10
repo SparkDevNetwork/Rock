@@ -19,6 +19,11 @@
 	and (min-width: @screen-sm-min) 
 	and (max-width: @screen-sm-max) {
 
+	#cms-admin-footer {
+		bottom: 0;
+		top: auto;
+	}
+
 	.jumbo {
 		font-size: 46px;
 	}
@@ -175,6 +180,20 @@
 // XS Breakpoint
 @media only screen 
 	and (max-width: @screen-sm-min) {
+
+	#cms-admin-footer {
+		bottom: auto;
+		top: 0;
+
+		.btn {
+			color: @gray;
+		}
+	}
+	
+
+	body.is-admin {
+		margin-top: 36px;
+	}
 
 	// Font Size Adjustments
 	body {
