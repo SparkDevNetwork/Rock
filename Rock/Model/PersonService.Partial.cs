@@ -2782,6 +2782,7 @@ namespace Rock.Model
                 return null;
             }
             return GetFamilyMembers( family, person.Id, true )
+                .Where( m => ! m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
@@ -2806,6 +2807,7 @@ namespace Rock.Model
                 return null;
             }
             return GetFamilyMembers( family, person.Id, true )
+                .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
