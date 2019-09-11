@@ -19,7 +19,7 @@
     <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Church" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
     <div class="row sans-serif strong text-decoration-none">
         <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
-            <h2 class="h5 text-white push-half-bottom">NewSpring {{ orgCampus.Name }}</h2>
+            <h2 class="h5 text-white push-half-bottom">NewSpring {% if orgCampus and orgCampus != empty %}{{ orgCampus.Name }}{% else %}Church{% endif %}</h2>
             <span class="text-white">
                 <p class="flush">
                 {{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} <br>{{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</p>
