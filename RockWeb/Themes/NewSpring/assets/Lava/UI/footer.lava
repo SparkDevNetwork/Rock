@@ -15,27 +15,39 @@
     {% capture orgPhone %}({{ orgPhone | Slice:0,3 }}) {{ orgPhone | Slice:4,9 }}{% endcapture %}
 {% endif %}
 
-<footer class="shell soft bg-gray-dark rounded shadowed">
+<footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-dark rounded shadowed">
+    <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Church" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
     <div class="row sans-serif strong text-decoration-none">
-        <div class="col-xs-12 col-sm-12 col-md-3 text-left sm-text-center xs-text-center sm-push-half-bottom xs-push-half-bottom">
-            <span class="text-white"><small>&copy; {{ 'Now' | Date:'yyyy' }} NewSpring Church</small></span>
-        </div><div class="col-xs-12 col-sm-12 col-md-6 text-center">
-            <small class="sans-serif strong text-decoration-none text-center flush">
-                <a href="/privacy" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Privacy Policy</a>
-                <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                <a href="/terms" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Terms of Use</a>
-                <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                <a href="/reprinting-and-reposting" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Reprinting &amp; Reposting Terms</a>
-                <span class="text-white hidden-sm hidden-xs">&middot;</span>
-                <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2" class="text-hover-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">Report Website Issue</a>
-    	        <br>
-                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom">{{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} {{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</span>
-                <span class="text-white hidden-sm hidden-xs"> &middot; </span>
-                <span class="text-white sm-width-full sm-display-inline-block xs-width-full xs-display-inline-block sm-push-half-bottom xs-push-half-bottom"><a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></span>
-                
-            </small>
-        </div><div class="col-xs-12 col-sm-12 col-md-3 text-right sm-text-center xs-text-center">
-            <small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a></small>
+        <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white push-half-bottom">NewSpring {{ orgCampus.Name }}</h2>
+            <span class="text-white">
+                <p class="flush">
+                {{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} <br>{{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</p>
+                <p class="flush-bottom xs-push-half-bottom"><a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></p>
+            </span>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white xs-text-center push-half-bottom">About</h2>
+            <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                <li><a href="/about">About NewSpring</a></li>
+                <li><a href="/beliefs">What We Believe</a></li>
+                <li><a href="/family-values">Family Values</a></li>
+            </ul>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white xs-text-center push-half-bottom">Legal</h2>
+            <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                <li><a href="/privacy">Privacy Policy</a></li>
+                <li><a href="/terms">Terms of Use</a></li>
+                <li><a href="/reprinting-and-reposting">Reprinting &amp; Reposting</a></li>
+            </ul>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
+            <h2 class="h5 text-white push-half-bottom">Social</h2>
+            <p class="text-white flush">
+                <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-2x fa-facebook-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-2x fa-twitter-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-2x fa-instagram"></i></a>
+            </p>
+            
         </div>
     </div>
+    <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a> &middot; <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2">Report Website Issue</a></small></p>
 </footer>
