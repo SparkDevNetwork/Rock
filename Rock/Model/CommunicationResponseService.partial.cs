@@ -62,6 +62,14 @@ namespace Rock.Model
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the message was sent from Rock, vs a mobile device
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if outbound; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsOutbound { get; set; }
+
+        /// <summary>
         /// Humanizes the date time to relative if not on the same day and short time if it is.
         /// </summary>
         /// <value>
@@ -163,7 +171,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the communication response recipients.
+        /// Gets the communications and response recipients.
         /// </summary>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <param name="startDateTime">The start date time.</param>
@@ -216,6 +224,7 @@ namespace Rock.Model
                     FullName = mostRecentCommunicationResponse?.FromPersonAlias.Person.FullName,
                     IsRead = mostRecentCommunicationResponse.IsRead,
                     MessageKey = mostRecentCommunicationResponse.MessageKey,
+                    IsOutbound = false,
                     RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
                     SMSMessage = mostRecentCommunicationResponse.Response
                 };
@@ -240,15 +249,30 @@ namespace Rock.Model
                     PersonId = mostRecentCommunicationRecipient?.Person.Id,
                     RecordTypeValueId = mostRecentCommunicationRecipient?.Person.RecordTypeValueId,
                     FullName = mostRecentCommunicationRecipient?.Person.FullName,
+                    IsOutbound = true,
                     IsRead = true,
                     MessageKey = null, // communication recipients just need to show their name, not their number
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
                     SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.SMSMessage : mostRecentCommunicationRecipient.SentMessage
                 };
 
+                if ( mostRecentCommunicationRecipient?.Person.IsNameless() == true )
+                {
+                    // if the person is nameless, we'll need to know their number since we don't know their name
+                    communicationRecipientResponse.MessageKey = mostRecentCommunicationRecipient.Person.PhoneNumbers.FirstOrDefault()?.Number;
+                }
+                else
+                {
+                    // If the Person is not nameless, we just need to show their name, not their number
+                    communicationRecipientResponse.MessageKey = null;
+                }
+
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
+            // NOTE: We actually have up to twice the max count at this point, because we are combining results from
+            // CommunicationRecipient and CommunicationResponse, and we took the maxCount of each of those.
+            // Now, we see what that combination ends up looking like when we sort it by CreatedDateTime
             communicationRecipientResponseList = communicationRecipientResponseList
                 .GroupBy( r => r.PersonId )
                 .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
@@ -258,7 +282,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the communication conversation.
+        /// Gets the SMS conversation history for a person alias ID. Includes the communication sent by Rock that the person may be responding to.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
@@ -283,6 +307,7 @@ namespace Rock.Model
                     FullName = communicationResponse.FromPersonAlias.Person.FullName,
                     IsRead = communicationResponse.IsRead,
                     MessageKey = communicationResponse.MessageKey,
+                    IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
                     SMSMessage = communicationResponse.Response
                 };
@@ -296,8 +321,8 @@ namespace Rock.Model
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
             {
                 a.CreatedDateTime,
-                a.PersonAlias.Person,
-                a.PersonAliasId,
+                a.Communication.SenderPersonAlias.Person,
+                PersonAliasId = a.Communication.SenderPersonAliasId,
                 a.SentMessage
             } ).ToList();
 
@@ -309,10 +334,21 @@ namespace Rock.Model
                     PersonId = communicationRecipient.Person.Id,
                     FullName = communicationRecipient.Person.FullName,
                     IsRead = true,
-                    MessageKey = null, // communication recipients just need to show their name, not their number
+                    IsOutbound = true,
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage
                 };
+
+                if ( communicationRecipient.Person.IsNameless() )
+                {
+                    // if the person is nameless, we'll need to know their number since we don't know their name
+                    communicationRecipientResponse.MessageKey = communicationRecipient.Person.PhoneNumbers.FirstOrDefault()?.Number;
+                }
+                else
+                {
+                    // If the Person is not nameless, we just need to show their name, not their number
+                    communicationRecipientResponse.MessageKey = null;
+                }
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
@@ -340,7 +376,7 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
-        [RockObsolete("1.10")]
+        [RockObsolete( "1.10" )]
         [Obsolete( "Use GetCommunicationConversation instead" )]
         public DataSet GetConversation( int personAliasId, int relatedSmsFromDefinedValueId )
         {
