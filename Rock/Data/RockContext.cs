@@ -942,6 +942,22 @@ namespace Rock.Data
         public DbSet<Group> Groups { get; set; }
 
         /// <summary>
+        /// Gets or sets the group demographic types.
+        /// </summary>
+        /// <value>
+        /// The group demographic types.
+        /// </value>
+        public DbSet<GroupDemographicType> GroupDemographicTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic values.
+        /// </summary>
+        /// <value>
+        /// The group demographic values.
+        /// </value>
+        public DbSet<GroupDemographicValue> GroupDemographicValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the group historicals.
         /// </summary>
         /// <value>
