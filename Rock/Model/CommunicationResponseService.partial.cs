@@ -29,6 +29,21 @@ namespace Rock.Model
     /// </summary>
     public class CommunicationRecipientResponse
     {
+        #region Constructors
+
+        public CommunicationRecipientResponse()
+        {
+            //
+        }
+
+        public CommunicationRecipientResponse( int personId, int recordTypeValueId )
+        {
+            PersonId = personId;
+            RecordTypeValueId = recordTypeValueId;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets or sets the recipient person alias identifier.
         /// </summary>
