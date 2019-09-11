@@ -16,7 +16,9 @@
 {% endif %}
 
 <footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-dark rounded shadowed">
-    <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Church" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
+    <a href="#content" data-scroll title="Scroll to Top">
+        <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Church" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
+    </a>
     <div class="row sans-serif strong text-decoration-none">
         <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
             <h2 class="h5 text-white push-half-bottom">NewSpring {% if orgCampus and orgCampus != empty %}{{ orgCampus.Name }}{% else %}Church{% endif %}</h2>
