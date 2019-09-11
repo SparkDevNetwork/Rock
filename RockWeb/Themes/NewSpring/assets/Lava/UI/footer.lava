@@ -44,9 +44,9 @@
         </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
             <h2 class="h5 text-white push-half-bottom">Social</h2>
             <p class="text-white flush">
-                <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-2x fa-facebook-square"></i></a>&nbsp;
-                <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-2x fa-twitter-square"></i></a>&nbsp;
-                <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-2x fa-instagram"></i></a>
+                <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-lg fa-facebook-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-lg fa-twitter-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-lg fa-instagram"></i></a>
             </p>
             
         </div>
