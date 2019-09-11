@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using Rock.Web.Cache;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -665,6 +666,7 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
         {
@@ -697,6 +699,7 @@ namespace Rock.Model
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
@@ -720,6 +723,29 @@ namespace Rock.Model
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
+            List<History> historyRecordsToInsert = GetChanges( modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
+
+            var historyService = new HistoryService( rockContext );
+            historyService.AddRange( historyRecordsToInsert );
+        }
+
+        /// <summary>
+        /// Gets the changes.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="changes">The changes.</param>
+        /// <param name="caption">The caption.</param>
+        /// <param name="relatedModelType">Type of the related model.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        /// <param name="sourceOfChange">The source of change.</param>
+        /// <returns></returns>
+        internal static List<History> GetChanges( Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId, string sourceOfChange = null )
+        {
+            changes.ForEach( a => a.SourceOfChange = sourceOfChange );
+
             var entityType = EntityTypeCache.Get( modelType );
             var category = CategoryCache.Get( categoryGuid );
             var creationDate = RockDateTime.Now;
@@ -734,10 +760,10 @@ namespace Rock.Model
                 }
             }
 
+            List<History> historyRecordsToInsert = new List<History>();
+
             if ( entityType != null && category != null )
             {
-                var historyService = new HistoryService( rockContext );
-
                 foreach ( var historyChange in changes.Where( m => m != null ) )
                 {
                     var history = new History();
@@ -758,9 +784,12 @@ namespace Rock.Model
                     // Manually set creation date on these history items so that they will be grouped together
                     history.CreatedDateTime = creationDate;
 
-                    historyService.Add( history );
+                    historyRecordsToInsert.Add( history );
+
                 }
             }
+
+            return historyRecordsToInsert;
         }
 
         /// <summary>
@@ -773,6 +802,7 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
@@ -808,6 +838,7 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE )]
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {

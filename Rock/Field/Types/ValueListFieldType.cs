@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -174,8 +175,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string[] values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            
+            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
             {
                 int definedTypeId = 0;

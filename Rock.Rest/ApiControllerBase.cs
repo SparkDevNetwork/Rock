@@ -14,19 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Rest.Filters;
-using Rock.Security;
 
 namespace Rock.Rest
 {
@@ -117,6 +110,26 @@ namespace Rock.Rest
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the primary person alias ID of the currently logged in person
+        /// </summary>
+        /// <returns></returns>
+        protected virtual int? GetPersonAliasId()
+        {
+            return GetPersonAliasId( null );
+        }
+
+        /// <summary>
+        /// Gets the primary person alias ID of the currently logged in person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual int? GetPersonAliasId( RockContext rockContext )
+        {
+            var currentPersonAlias = GetPersonAlias( rockContext );
+            return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
         }
     }
 }

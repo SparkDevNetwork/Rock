@@ -20,7 +20,7 @@
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
-            <div class="panel-heading panel-follow clearfix">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -52,8 +52,8 @@
                                 <div id="divImage" runat="server" class="margin-b-sm">
                                     <asp:Literal ID="lImage" runat="server" />
                                 </div>
-                                    
-                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" /> 
+
+                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" />
                             </div>
                         </div>
 
@@ -100,20 +100,35 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
-                            <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" 
-                                Help="Calendars that this item should be added to (at least one is required)."
-                                OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
-                                RepeatDirection="Horizontal" Required="true" />
-                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
-                                Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
+                            <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" Help="Calendars that this item should be added to (at least one is required)."
+                                OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" Required="true" />
+                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                         </div>
                         <div class="col-md-6">
                             <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Event Attribute Values">
                         <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpEventOccurrenceAttributes" runat="server" Title="Event Occurrence Attributes">
+                        <div class="grid">
+                            <Rock:Grid ID="gEventOccurrenceAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Occurrence Attribute" ShowConfirmDeleteDialog="false">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:BoolField DataField="IsGridColumn" HeaderText="Show in Grid" />
+                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
+                                    <Rock:EditField OnClick="gEventOccurrenceAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gEventOccurrenceAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </Rock:PanelWidget>
 
                     <div class="actions">
@@ -131,6 +146,12 @@
             <Content>
                 <asp:ValidationSummary ID="vsAudience" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Audience" />
                 <Rock:RockDropDownList ID="ddlAudience" runat="server" Label="Select Audience" ValidationGroup="Audience" Required="true" DataValueField="Id" DataTextField="Value" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgEventOccurrenceAttribute" runat="server" Title="Event Occurrence Attribute" OnSaveClick="dlgEventOccurrenceAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="OccurrenceAttributes">
+            <Content>
+                <Rock:AttributeEditor ID="edtEventOccurrenceAttributes" runat="server" ShowActions="false" ValidationGroup="OccurrenceAttributes" />
             </Content>
         </Rock:ModalDialog>
 

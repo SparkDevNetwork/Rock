@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -200,9 +201,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
             {
                 if ( string.IsNullOrEmpty( CountryCode ) )
                 {
@@ -214,14 +215,14 @@ namespace Rock.Model
             }
 
 			// Check for duplicate
-			if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+			if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
 			{
 				var rockContext = ( RockContext ) dbContext;
 				var phoneNumberService = new PhoneNumberService( rockContext );
 				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
 
                 // Make sure this number isn't considered a duplicate
-                if ( entry.State == System.Data.Entity.EntityState.Modified )
+                if ( entry.State == EntityState.Modified )
                 {
                     duplicates = duplicates.Where( d => d.Id != Id );
                 }
@@ -235,7 +236,7 @@ namespace Rock.Model
 						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
 						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
 						{
-							entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
+							entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
 						}
 						else
 						{
@@ -250,7 +251,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
 
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
@@ -259,7 +260,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
@@ -279,7 +280,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
                         PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );

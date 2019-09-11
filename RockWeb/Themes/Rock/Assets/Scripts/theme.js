@@ -1,13 +1,3 @@
-function getScrollbarWidth() {
-  // thx d.walsh
-  var scrollDiv = document.createElement('div');
-  scrollDiv.className = 'modal-scrollbar-measure';
-  document.body.appendChild(scrollDiv);
-  var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-  document.body.removeChild(scrollDiv);
-  return scrollbarWidth;
-} // Static
-
 function BindNavEvents() {
   $(document).ready(function() {
     var bodyElement = $('body'),
@@ -32,9 +22,9 @@ function BindNavEvents() {
             $this.addClass('open');
             $('.navbar-static-side').addClass('open-secondary-nav');
             $('body')
-              .addClass('modal-open')
-              .css('padding-right', getScrollbarWidth());
-              $('.navbar-fixed-top').css('right', getScrollbarWidth());
+              .addClass('nav-open')
+              .css('padding-right', Rock.controls.util.getScrollbarWidth());
+              $('.navbar-fixed-top').css('right', Rock.controls.util.getScrollbarWidth());
             $this[0].navHoverTimeout = undefined;
           }, hoverDelay);
         }
@@ -52,7 +42,7 @@ function BindNavEvents() {
           if ($('.navbar-side').find('li.open').length < 1) {
             $('.navbar-static-side').removeClass('open-secondary-nav');
             $('body')
-              .removeClass('modal-open')
+              .removeClass('nav-open')
               .css('padding-right', '');
               $('.navbar-fixed-top').css('right', '');
           }
@@ -74,7 +64,7 @@ function BindNavEvents() {
 
 
     $('#content-wrapper').click(function() {
-      $('body').removeClass('modal-open');
+      $('body').removeClass('nav-open');
       $('.navbar-static-side').removeClass('open-secondary-nav');
       $('.navbar-side li').removeClass('open');
     });

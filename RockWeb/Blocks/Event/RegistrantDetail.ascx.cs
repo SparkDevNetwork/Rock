@@ -40,11 +40,11 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays interface for editing the registration attribute values and fees for a given registrant.
+    /// Displays interface for editing the registrant attribute values and fees for a given registrant.
     /// </summary>
     [DisplayName( "Registrant Detail" )]
     [Category( "Event" )]
-    [Description( "Displays interface for editing the registration attribute values and fees for a given registrant." )]
+    [Description( "Displays interface for editing the registrant attribute values and fees for a given registrant." )]
 
     public partial class RegistrantDetail : RockBlock
     {
@@ -175,13 +175,14 @@ namespace RockWeb.Blocks.Event
                 var registrantService = new RegistrationRegistrantService( rockContext );
                 var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
+                var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                 RegistrationRegistrant registrant = null;
                 if ( RegistrantState.Id > 0 )
                 {
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
-                var previousRegistrantPersonIds = registrantService.Queryable().Where( a => a.RegistrationId == RegistrantState.RegistrationId )
+                var previousRegistrantPersonIds = registrantService.Queryable().Where(a => a.RegistrationId == RegistrantState.RegistrationId)
                                 .Where( r => r.PersonAlias != null )
                                 .Select( r => r.PersonAlias.PersonId )
                                 .ToList();
@@ -242,13 +243,13 @@ namespace RockWeb.Blocks.Event
                         RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                         !RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId]
                             .Any( f =>
-                                f.Option == dbFee.Option &&
+                                f.RegistrationTemplateFeeItemId == dbFee.RegistrationTemplateFeeItemId &&
                                 f.Quantity > 0 ) )
                     {
                         var feeOldValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
                           dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
 
-                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( feeOldValue );
+                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee").SetOldValue( feeOldValue );
                         registrant.Fees.Remove( dbFee );
                         registrantFeeService.Delete( dbFee );
                     }
@@ -262,14 +263,20 @@ namespace RockWeb.Blocks.Event
                         var dbFee = registrant.Fees
                             .Where( f =>
                                 f.RegistrationTemplateFeeId == uiFee.Key &&
-                                f.Option == uiFeeOption.Option )
+                                f.RegistrationTemplateFeeItemId == uiFeeOption.RegistrationTemplateFeeItemId )
                             .FirstOrDefault();
 
                         if ( dbFee == null )
                         {
                             dbFee = new RegistrationRegistrantFee();
                             dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                            dbFee.Option = uiFeeOption.Option;
+                            var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
+                            if ( registrationTemplateFeeItem != null )
+                            {
+                                dbFee.Option = registrationTemplateFeeItem.Name;
+                            }
+
+                            dbFee.RegistrationTemplateFeeItemId = uiFeeOption.RegistrationTemplateFeeItemId;
                             registrant.Fees.Add( dbFee );
                         }
 
@@ -280,14 +287,14 @@ namespace RockWeb.Blocks.Event
                         }
 
                         string feeName = templateFee != null ? templateFee.Name : "Fee";
-                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
+                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.FeeLabel ) )
                         {
-                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
+                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.FeeLabel );
                         }
 
                         if ( dbFee.Id <= 0 )
                         {
-                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
+                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee").SetNewValue( feeName );
                         }
 
                         History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
@@ -369,10 +376,12 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
 
                     registrant.LoadAttributes();
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     foreach ( var field in TemplateState.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
                         var attribute = AttributeCache.Get( field.AttributeId.Value );
@@ -465,7 +474,7 @@ namespace RockWeb.Blocks.Event
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                             }
                         }
-                        if ( reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace() )
+                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace())
                         {
                             reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
                         }
@@ -483,7 +492,7 @@ namespace RockWeb.Blocks.Event
                     null,
                     null );
             }
-
+            
             NavigateToRegistration();
         }
 
@@ -506,8 +515,8 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            if ( pageCache != null &&
-                pageCache.ParentPage != null &&
+            if ( pageCache != null && 
+                pageCache.ParentPage != null && 
                 pageCache.ParentPage.ParentPage != null &&
                 pageCache.ParentPage.ParentPage.ParentPage != null )
             {
@@ -614,8 +623,8 @@ namespace RockWeb.Blocks.Event
                         registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         RegistrantState = new RegistrantInfo( registrant, rockContext );
-                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate;
-
+                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate; 
+                        
                         RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
 
                         lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
@@ -639,7 +648,7 @@ namespace RockWeb.Blocks.Event
                         registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         TemplateState = registration.RegistrationInstance.RegistrationTemplate;
-
+                        
                         RegistrationInstanceId = registration.RegistrationInstanceId;
 
                         lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;
@@ -775,7 +784,9 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
-                    if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
+                    if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                     {
                         if ( field.AttributeId.HasValue )
                         {
@@ -784,152 +795,52 @@ namespace RockWeb.Blocks.Event
 
                             var attribute = AttributeCache.Get( field.AttributeId.Value );
 
-                            if ( ( setValues && value == null ) || ( value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
+                            if ( ( setValues && value == null ) || (value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
                             {
                                 // If the value was not set already, or if it is required and currently empty then use the default
                                 // Intentionally leaving the possibility of saving an empty string as the value for non-required fields.
                                 value = attribute.DefaultValue;
                             }
 
-                            attribute.AddControl( phFields.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
+                            FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
+                            {
+                                ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
+                                RegistrationTemplateFormFieldId = field.Id,
+                                FieldVisibilityRules = field.FieldVisibilityRules
+                            };
+
+                            fieldVisibilityWrapper.EditValueUpdated += FieldVisibilityWrapper_EditValueUpdated;
+
+                            phFields.Controls.Add( fieldVisibilityWrapper );
+
+                            var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValues, true, field.IsRequired, null, field.Attribute.Description );
+                            fieldVisibilityWrapper.EditControl = editControl;
+
+                            bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
+
+                            if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
+                            {
+                                attribute.FieldType.Field.AddChangeHandler( editControl, () =>
+                                {
+                                    fieldVisibilityWrapper.TriggerEditValueUpdated( editControl, new FieldVisibilityWrapper.FieldEventArgs( attribute, editControl ) );
+                                } );
+                            }
                         }
                     }
                 }
             }
+
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
         }
 
         /// <summary>
-        /// Builds the checkbox control for single-option single-quantity fees.
+        /// Handles the EditValueUpdated event of the FieldVisibilityWrapper control.
         /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void BuildFeeSingleOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">The <see cref="FieldVisibilityWrapper.FieldEventArgs"/> instance containing the event data.</param>
+        private void FieldVisibilityWrapper_EditValueUpdated( object sender, FieldVisibilityWrapper.FieldEventArgs args )
         {
-            var feeValues = GetFeeValues( fee );
-            var cb = new RockCheckBox();
-            cb.ID = "fee_" + fee.Id.ToString();
-            cb.Label = CreateLabel( fee );
-            cb.SelectedIconCssClass = "fa fa-check-square-o fa-lg";
-            cb.UnSelectedIconCssClass = "fa fa-square-o fa-lg";
-            cb.Required = fee.IsRequired;
-
-            phFees.Controls.Add( cb );
-
-            if ( fee.IsRequired )
-            {
-                cb.Checked = true;
-                cb.Enabled = false;
-            }
-            else if ( setValues && feeValues != null && feeValues.Any() )
-            {
-                cb.Checked = feeValues.First().Quantity > 0;
-            }
-        }
-
-        /// <summary>
-        /// Builds the NumberUpDown control for single-option multi-quantity fees.
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void BuildFeeSingleOptionMultiQuantity( RegistrationTemplateFee fee, bool setValues )
-        {
-            var feeValues = GetFeeValues( fee );
-            var numUpDown = new NumberUpDown();
-            numUpDown.ID = "fee_" + fee.Id.ToString();
-            numUpDown.Label = CreateLabel( fee );
-            numUpDown.Minimum = fee.IsRequired == true ? 1 : 0;
-            numUpDown.Required = fee.IsRequired;
-
-            phFees.Controls.Add( numUpDown );
-
-            if ( setValues && feeValues != null && feeValues.Any() )
-            {
-                numUpDown.Value = feeValues.First().Quantity;
-            }
-        }
-
-        /// <summary>
-        /// Builds the DropDownList control for multi-option single-quantity fees.
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void BuildFeeMultiOptionSingleQuantity( RegistrationTemplateFee fee, bool setValues )
-        {
-            var feeValues = GetFeeValues( fee );
-            var ddl = new RockDropDownList();
-            ddl.ID = "fee_" + fee.Id.ToString();
-            ddl.AddCssClass( "input-width-md" );
-            ddl.Label = fee.Name;
-            ddl.DataValueField = "Key";
-            ddl.DataTextField = "Value";
-            ddl.Required = fee.IsRequired;
-            ddl.ValidationGroup = BlockValidationGroup;
-            ddl.DataSource = ParseOptions( fee );
-            ddl.DataBind();
-            ddl.Items.Insert( 0, string.Empty );
-            phFees.Controls.Add( ddl );
-
-            if ( setValues && feeValues != null && feeValues.Any() )
-            {
-                ddl.SetValue( feeValues
-                    .Where( f => f.Quantity > 0 )
-                    .Select( f => f.Option )
-                    .FirstOrDefault() );
-            }
-        }
-
-        /// <summary>
-        /// Builds the NumberUpDownGroup control for multi-option multi-quantity fees.
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void BuildFeeMultiOptionMultiQuantity( RegistrationTemplateFee fee, bool setValues )
-        {
-            var feeValues = GetFeeValues( fee );
-            Dictionary<string, string> options = ParseOptions( fee );
-
-            var numberUpDownGroup = new NumberUpDownGroup();
-            numberUpDownGroup.Label = fee.Name;
-            numberUpDownGroup.Required = fee.IsRequired;
-            numberUpDownGroup.ValidationGroup = BlockValidationGroup;
-
-            foreach ( var optionKeyVal in options )
-            {
-                var numUpDown = new NumberUpDown
-                {
-                    ID = string.Format( "fee_{0}_{1}", fee.Id, optionKeyVal.Key ),
-                    Label = string.Format( "{0}", optionKeyVal.Value ),
-                    Minimum = 0
-                };
-                numberUpDownGroup.Controls.Add( numUpDown );
-
-                if ( setValues && feeValues != null && feeValues.Any() )
-                {
-                    numUpDown.Value = feeValues
-                        .Where( f => f.Option == optionKeyVal.Key )
-                        .Select( f => f.Quantity )
-                        .FirstOrDefault();
-                }
-            }
-
-            phFees.Controls.Add( numberUpDownGroup );
-        }
-
-        /// <summary>
-        /// Creates the label.
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <returns></returns>
-        private string CreateLabel( RegistrationTemplateFee fee )
-        {
-            string label = fee.Name;
-            var cost = fee.CostValue.AsDecimalOrNull();
-            if ( cost.HasValue && cost.Value != 0.0M )
-            {
-                label = string.Format( "{0} ({1})", fee.Name, cost.Value.FormatAsCurrency() );
-            }
-
-            return label;
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
         }
 
         /// <summary>
@@ -949,38 +860,13 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Parse the CostValue string add it to a dictionary
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseOptions( RegistrationTemplateFee fee )
-        {
-            var options = new Dictionary<string, string>();
-            string[] nameValues = fee.CostValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            foreach ( string nameValue in nameValues )
-            {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                if ( nameAndValue.Length == 1 )
-                {
-                    options.AddOrIgnore( nameAndValue[0], nameAndValue[0] );
-                }
-
-                if ( nameAndValue.Length == 2 )
-                {
-                    options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
-                }
-            }
-
-            return options;
-        }
-
-        /// <summary>
         /// Builds the fees controls in the fee placeholder.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildFees( bool setValues )
         {
             phFees.Controls.Clear();
+            var registrationInstance = new RegistrationInstanceService( new RockContext() ).GetNoTracking( RegistrationInstanceId );
 
             if ( TemplateState.Fees != null && TemplateState.Fees.Any() )
             {
@@ -988,28 +874,8 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
                 {
-                    if ( fee.FeeType == RegistrationFeeType.Single )
-                    {
-                        if ( fee.AllowMultiple )
-                        {
-                            BuildFeeSingleOptionMultiQuantity( fee, setValues );
-                        }
-                        else
-                        {
-                            BuildFeeSingleOptionSingleQuantity( fee, setValues );
-                        }
-                    }
-                    else
-                    {
-                        if ( fee.AllowMultiple )
-                        {
-                            BuildFeeMultiOptionMultiQuantity( fee, setValues );
-                        }
-                        else
-                        {
-                            BuildFeeMultiOptionSingleQuantity( fee, setValues );
-                        }
-                    }
+                    var feeValues = GetFeeValues( fee );
+                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues, null );
                 }
             }
             else
@@ -1025,7 +891,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Parses the controls.
         /// </summary>
-        private void ParseControls()
+        private void ParseControls ()
         {
             if ( RegistrantState != null && TemplateState != null )
             {
@@ -1047,7 +913,9 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
-                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                            // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                            // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
+                            if ( field.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             {
                                 object value = null;
 
@@ -1087,107 +955,13 @@ namespace RockWeb.Blocks.Event
             {
                 foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
                 {
-                    List<FeeInfo> feeValues = ParseFee( fee );
+                    List<FeeInfo> feeValues = fee.GetFeeInfoFromControls( phFees );
                     if ( fee != null )
                     {
                         RegistrantState.FeeValues.AddOrReplace( fee.Id, feeValues );
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Create the control and assign the fee data.
-        /// </summary>
-        /// <param name="fee">The fee.</param>
-        /// <returns></returns>
-        private List<FeeInfo> ParseFee( RegistrationTemplateFee fee )
-        {
-            string fieldId = string.Format( "fee_{0}", fee.Id );
-
-            if ( fee.FeeType == RegistrationFeeType.Single )
-            {
-                if ( fee.AllowMultiple )
-                {
-                    // Single Option, Multi Quantity
-                    var numUpDown = phFees.FindControl( fieldId ) as NumberUpDown;
-                    if ( numUpDown != null && numUpDown.Value > 0 )
-                    {
-                        return new List<FeeInfo> { new FeeInfo( string.Empty, numUpDown.Value, fee.CostValue.AsDecimal() ) };
-                    }
-                }
-                else
-                {
-                    // Single Option, Single Quantity
-                    var cb = phFees.FindControl( fieldId ) as RockCheckBox;
-                    if ( cb != null && cb.Checked )
-                    {
-                        return new List<FeeInfo> { new FeeInfo( string.Empty, 1, fee.CostValue.AsDecimal() ) };
-                    }
-                }
-            }
-            else
-            {
-                // Parse the options to get name and cost for each
-                var options = new Dictionary<string, string>();
-                var optionCosts = new Dictionary<string, decimal>();
-
-                string[] nameValues = fee.CostValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                foreach ( string nameValue in nameValues )
-                {
-                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( nameAndValue.Length == 1 )
-                    {
-                        options.AddOrIgnore( nameAndValue[0], nameAndValue[0] );
-                        optionCosts.AddOrIgnore( nameAndValue[0], 0.0m );
-                    }
-
-                    if ( nameAndValue.Length == 2 )
-                    {
-                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
-                        optionCosts.AddOrIgnore( nameAndValue[0], nameAndValue[1].AsDecimal() );
-                    }
-                }
-
-                if ( fee.AllowMultiple )
-                {
-                    // Multi Option, Multi Quantity
-                    var result = new List<FeeInfo>();
-
-                    foreach ( var optionKeyVal in options )
-                    {
-                        string optionFieldId = string.Format( "{0}_{1}", fieldId, optionKeyVal.Key );
-                        var numUpDownGroups = phFees.ControlsOfTypeRecursive<NumberUpDownGroup>();
-
-                        foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
-                        {
-                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
-                            {
-                                if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
-                                {
-                                    result.Add( new FeeInfo( optionKeyVal.Key, numberUpDown.Value, optionCosts[optionKeyVal.Key] ) );
-                                }
-                            }
-                        }
-                    }
-
-                    if ( result.Any() )
-                    {
-                        return result;
-                    }
-                }
-                else
-                {
-                    // Multi Option, Single Quantity
-                    var ddl = phFees.FindControl( fieldId ) as RockDropDownList;
-                    if ( ddl != null && ddl.SelectedValue != string.Empty )
-                    {
-                        return new List<FeeInfo> { new FeeInfo( ddl.SelectedValue, 1, optionCosts[ddl.SelectedValue] ) };
-                    }
-                }
-            }
-
-            return null;
         }
 
         #endregion

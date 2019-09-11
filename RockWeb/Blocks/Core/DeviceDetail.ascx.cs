@@ -101,15 +101,6 @@ namespace RockWeb.Blocks.Core
             {
                 ShowDetail( PageParameter( "DeviceId" ).AsInteger() );
             }
-            else
-            {
-                var device = new Device();
-                device.Id = hfDeviceId.ValueAsInt();
-                device.DeviceTypeValueId = hfTypeId.ValueAsInt();
-                device.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( device, phAttributes, false, BlockValidationGroup );
-            }
 
             if ( hfAddLocationId.Value.AsIntegerOrNull().HasValue )
             {
@@ -178,10 +169,11 @@ namespace RockWeb.Blocks.Core
                 device.Name = tbName.Text;
                 device.Description = tbDescription.Text;
                 device.IPAddress = tbIpAddress.Text;
-                device.DeviceTypeValueId = ddlDeviceType.SelectedValueAsInt().Value;
+                device.DeviceTypeValueId = dvpDeviceType.SelectedValueAsInt().Value;
                 device.PrintToOverride = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
                 device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
                 device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
+                device.IsActive = cbIsActive.Checked;
 
                 if ( device.Location == null )
                 {
@@ -192,7 +184,7 @@ namespace RockWeb.Blocks.Core
                 device.Location.GeoFence = geopFence.SelectedValue;
 
                 device.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, device );
+                avcAttributes.GetEditValues( device );
 
                 if ( !device.IsValid || !Page.IsValid )
                 {
@@ -357,8 +349,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlDeviceType.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
-            ddlDeviceType.Items.Insert( 0, new ListItem() );
+            dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
             ddlPrintFrom.BindToEnum<PrintFrom>();
 
@@ -406,7 +397,8 @@ namespace RockWeb.Blocks.Core
             tbName.Text = device.Name;
             tbDescription.Text = device.Description;
             tbIpAddress.Text = device.IPAddress;
-            ddlDeviceType.SetValue( device.DeviceTypeValueId );
+            cbIsActive.Checked = device.IsActive;
+            dvpDeviceType.SetValue( device.DeviceTypeValueId );
             ddlPrintTo.SetValue( device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( device.PrinterDeviceId );
             ddlPrintFrom.SetValue( device.PrintFrom.ConvertToInt().ToString() );
@@ -472,10 +464,12 @@ namespace RockWeb.Blocks.Core
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             tbIpAddress.ReadOnly = readOnly;
-            ddlDeviceType.Enabled = !readOnly;
+            cbIsActive.Enabled = !readOnly;
+            dvpDeviceType.Enabled = !readOnly;
             ddlPrintTo.Enabled = !readOnly;
             ddlPrinter.Enabled = !readOnly;
             ddlPrintFrom.Enabled = !readOnly;
+            SetHighlightLabelVisibility( device, readOnly );
 
             btnSave.Visible = !readOnly;
         }
@@ -486,13 +480,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="device">The device.</param>
         private void AddAttributeControls( Device device )
         {
-            int typeId = ddlDeviceType.SelectedValueAsInt() ?? 0;
+            int typeId = dvpDeviceType.SelectedValueAsInt() ?? 0;
             hfTypeId.Value = typeId.ToString();
 
             device.DeviceTypeValueId = typeId;
             device.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( device, phAttributes, true, BlockValidationGroup );
+            avcAttributes.AddEditControls( device );
         }
 
         /// <summary>
@@ -511,7 +504,7 @@ namespace RockWeb.Blocks.Core
         {
             bool isValid = true;
             int currentDeviceId = int.Parse( hfDeviceId.Value );
-            int? deviceTypeId = ddlDeviceType.SelectedValueAsInt().Value;
+            int? deviceTypeId = dvpDeviceType.SelectedValueAsInt().Value;
             if ( !string.IsNullOrWhiteSpace( tbIpAddress.Text ) && deviceTypeId != null )
             {
                 var rockContext = new RockContext();
@@ -526,12 +519,35 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Sets the highlight label visibility.
+        /// </summary>
+        /// <param name="device">The group.</param>
+        private void SetHighlightLabelVisibility( Device device, bool readOnly )
+        {
+            if ( readOnly )
+            {
+                // if we are just showing readonly detail of the group, we don't have to worry about the highlight labels changing while editing on the client
+                hlInactive.Visible = !device.IsActive;
+            }
+            else
+            {
+                // in edit mode, the labels will have javascript handle if/when they are shown
+                hlInactive.Visible = true;
+            }
+
+            if ( device.IsActive )
+            {
+                hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+        }
+
+        /// <summary>
         /// Decide if the printer settings section should be hidden.
         /// </summary>
         private void SetPrinterSettingsVisibility()
         {
             var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() ).Id;
-            pnlPrinterSettings.Visible = ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId;
+            pnlPrinterSettings.Visible = dvpDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId;
         }
 
         /// <summary>

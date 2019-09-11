@@ -3,13 +3,16 @@
 <asp:UpdatePanel ID="upSites" runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        
+
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i> Site List</h1>
+                <h1 class="panel-title"><i class="fa fa-desktop"></i>Site List</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="rFilterSite" runat="server" OnApplyFilterClick="rFilterSite_ApplyFilterClick">
+                        <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Include Inactive" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gSites" runat="server" AllowSorting="true" OnRowSelected="gSites_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />

@@ -16,16 +16,14 @@
 //
 using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
 
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Data;
-using Rock.Model;
 using Rock.Jobs;
+using Rock.Model;
 
 namespace Rock.Transactions
 {
@@ -78,6 +76,24 @@ namespace Rock.Transactions
                             return;
                         }
 
+                        // Check if another scheduler is running this job
+                        try
+                        {
+                            var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers
+                                .Where( s => s.SchedulerName != runNowSchedulerName );
+
+                            foreach ( var scheduler in otherSchedulers )
+                            {
+                                if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == JobId.ToString() &&
+                                    j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+                                {
+                                    // A job with that Id is already running and ConcurrentExectionDisallowed is true 
+                                    return;
+                                }
+                            }
+                        }
+                        catch { }
+
                         // create the quartz job and trigger
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                         var jobTrigger = TriggerBuilder.Create()
@@ -95,7 +111,7 @@ namespace Rock.Transactions
                         sched.Start();
 
                         // Wait 10secs to give job chance to start
-                        Thread.Sleep( new TimeSpan( 0, 0, 10 ) );
+                        System.Threading.Tasks.Task.Delay( new TimeSpan( 0, 0, 10 ) ).Wait();
 
                         // stop the scheduler when done with job
                         sched.Shutdown( true );
@@ -108,6 +124,18 @@ namespace Rock.Transactions
                         string message = string.Format( "Error doing a 'Run Now' on job: {0}. \n\n{2}", job.Name, job.Assembly, ex.Message );
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
+                        rockContext.SaveChanges();
+
+                        var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                        var jobHistory = new ServiceJobHistory()
+                        {
+                            ServiceJobId = job.Id,
+                            StartDateTime = RockDateTime.Now,
+                            StopDateTime = RockDateTime.Now,
+                            Status = job.LastStatus,
+                            StatusMessage = job.LastStatusMessage
+                        };
+                        jobHistoryService.Add( jobHistory );
                         rockContext.SaveChanges();
                     }
                 }

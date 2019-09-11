@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,7 +65,15 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private List<int> _waitListOrder = null;
         private bool _isExporting = false;
-        
+
+        /// <summary>
+        /// Gets or sets the available registration attributes where IsGridColumn = true
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableRegistrationAttributesForGrid { get; set; }
+
         #endregion
 
         #region Properties
@@ -130,10 +138,12 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
+            AvailableRegistrationAttributesForGrid = ViewState["AvailableRegistrationAttributesForGrid"] as List<AttributeCache>;
+
             ActiveTab = ( ViewState["ActiveTab"] as string ) ?? string.Empty;
             RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
-            RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
             RegistrationTemplateId = ViewState["RegistrationTemplateId"] as int? ?? 0;
+
             // don't set the values if this is a postback from a grid 'ClearFilter'
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
             SetUserPreferencePrefix( RegistrationTemplateId.Value );
@@ -335,7 +345,9 @@ namespace RockWeb.Blocks.Event
         {
             ViewState["RegistrantFields"] = RegistrantFields;
             ViewState["ActiveTab"] = ActiveTab;
-            ViewState["RegistrationTemplateId"] = RegistrationTemplateId;
+			ViewState["RegistrationTemplateId"] = RegistrationTemplateId;
+            ViewState["AvailableRegistrationAttributesForGrid"] = AvailableRegistrationAttributesForGrid;
+
             return base.SaveViewState();
         }
 
@@ -377,6 +389,12 @@ namespace RockWeb.Blocks.Event
         #region Events
 
         #region Main Form Events
+
+        private void AddDynamicControls( bool setValues )
+        {
+            RegistrationsTabAddDynamicControls( setValues );
+            RegistrantsTabAddDynamicControls( setValues );
+        }
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -509,7 +527,10 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
+                        instance.RegistrationTemplate.Cost > 0 ||
+                        instance.RegistrationTemplate.Fees.Count > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -705,53 +726,45 @@ namespace RockWeb.Blocks.Event
                 bool hasPayments = payments.Any();
                 decimal totalPaid = hasPayments ? payments.Select( p => p.Amount ).DefaultIfEmpty().Sum() : 0.0m;
 
-                var hfHasPayments = e.Row.FindControl( "hfHasPayments" ) as HiddenFieldWithClass;
-                if ( hfHasPayments != null )
-                {
-                    hfHasPayments.Value = hasPayments.ToString();
-                }
-
                 // Set the Cost
                 decimal discountedCost = registration.DiscountedCost;
-                var lCost = e.Row.FindControl( "lCost" ) as Label;
-                if ( lCost != null )
+                var lRegistrationCost = e.Row.FindControl( "lRegistrationCost" ) as Literal;
+                if ( lRegistrationCost != null )
                 {
-                    lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lCost.Text = discountedCost.FormatAsCurrency();
+                    lRegistrationCost.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lRegistrationCost.Text = string.Format( "<span class='label label-info'>{0}</span>", discountedCost.FormatAsCurrency() );
                 }
 
                 var discountCode = registration.DiscountCode;
-                var lDiscount = e.Row.FindControl( "lDiscount" ) as Label;
+                var lDiscount = e.Row.FindControl( "lDiscount" ) as Literal;
                 if ( lDiscount != null )
                 {
                     lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
-                    lDiscount.Text = discountCode;
+                    lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", discountCode );
                 }
 
-                var lBalance = e.Row.FindControl( "lBalance" ) as Label;
+                var lBalance = e.Row.FindControl( "lBalance" ) as Literal;
                 if ( lBalance != null )
                 {
                     decimal balanceDue = registration.DiscountedCost - totalPaid;
                     lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lBalance.Text = balanceDue.FormatAsCurrency();
+                    string balanceCssClass;
                     if ( balanceDue > 0.0m )
                     {
-                        lBalance.AddCssClass( "label-danger" );
-                        lBalance.RemoveCssClass( "label-warning" );
-                        lBalance.RemoveCssClass( "label-success" );
+                        balanceCssClass = "label-danger";
                     }
                     else if ( balanceDue < 0.0m )
                     {
-                        lBalance.RemoveCssClass( "label-danger" );
-                        lBalance.AddCssClass( "label-warning" );
-                        lBalance.RemoveCssClass( "label-success" );
+                        balanceCssClass = "label-warning";
                     }
                     else
                     {
-                        lBalance.RemoveCssClass( "label-danger" );
-                        lBalance.RemoveCssClass( "label-warning" );
-                        lBalance.AddCssClass( "label-success" );
+                        balanceCssClass = "label-success";
                     }
+
+                    lBalance.Text = string.Format(
+    @"<span class='label {0}'>{1}</span>
+    <input type='hidden' class='js-has-payments' value='{2}' />", balanceCssClass, balanceDue.FormatAsCurrency(), hasPayments.ToTrueFalse() );
                 }
             }
         }
@@ -761,7 +774,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gRegistrations_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -916,10 +928,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Marital Status", ddlMaritalStatusFilter.SelectedValue );
+                                    fRegistrants.SaveUserPreference( "Marital Status", dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -955,9 +967,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fRegistrants.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -1054,10 +1064,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    ddlMaritalStatusFilter.SetValue( ( Guid? ) null );
+                                    dvpMaritalStatusFilter.SetValue( ( Guid? ) null );
                                 }
 
                                 break;
@@ -1111,9 +1121,7 @@ namespace RockWeb.Blocks.Event
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
 
@@ -1291,7 +1299,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if (_homeAddresses.Any() )
+                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     // break up addresses if exporting
@@ -1367,7 +1375,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         private void gRegistrants_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1783,7 +1790,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gLinkages_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "LinkagePage", "LinkageId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1876,10 +1882,7 @@ namespace RockWeb.Blocks.Event
                         item.EntityId = (int)key;
                         entitySet.Items.Add( item );
                     }
-                    catch
-                    {
-                        // ignore
-                    }
+                    catch { }
                 }
 
                 if ( entitySet.Items.Any() )
@@ -1902,7 +1905,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         private void gWaitList_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1987,10 +1989,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "dvpWaitlistMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "WL-Marital Status", "Marital Status", ddlMaritalStatusFilter.SelectedValue );
+                                    fWaitList.SaveUserPreference( "WL-Marital Status", "Marital Status", dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -2026,9 +2028,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fWaitList.SaveUserPreference( "WL-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -2125,10 +2125,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "dvpWaitlistMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    ddlMaritalStatusFilter.SetValue( ( Guid? ) null );
+                                    dvpMaritalStatusFilter.SetValue( ( Guid? ) null );
                                 }
 
                                 break;
@@ -2186,9 +2186,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
@@ -2336,12 +2334,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
-                if ( lAddress != null && _homeAddresses.Count() > 0 )
+                if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
-
 
                 var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
                 if ( mobileField != null )
@@ -2568,7 +2565,7 @@ namespace RockWeb.Blocks.Event
 
         public void ShowDetail( int itemId )
         {
-            throw new NotImplementedException();
+            ShowDetail();
         }
 
         /// <summary>
@@ -2613,6 +2610,19 @@ namespace RockWeb.Blocks.Event
                     registrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext )
                         .Get( registrationInstance.RegistrationTemplateId );
                 }
+
+                AvailableRegistrationAttributesForGrid = new List<AttributeCache>();
+
+                int entityTypeId = new Registration().TypeId;
+                foreach ( var attributeCache in new AttributeService( new RockContext() ).GetByEntityTypeQualifier( entityTypeId, "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString(), false )
+                    .Where( a => a.IsGridColumn )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToAttributeCacheList() )
+                {
+                    AvailableRegistrationAttributesForGrid.Add( attributeCache );
+                }
+
 
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
@@ -2671,7 +2681,10 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) || registrationInstance.RegistrationTemplate.Cost > 0 ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) ||
+                    registrationInstance.RegistrationTemplate.Cost > 0 ||
+                    registrationInstance.RegistrationTemplate.Fees.Count > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -2776,6 +2789,8 @@ namespace RockWeb.Blocks.Event
                 lCost.Text = registrationInstance.Cost.FormatAsCurrency();
                 lMinimumInitialPayment.Visible = registrationInstance.MinimumInitialPayment.HasValue;
                 lMinimumInitialPayment.Text = registrationInstance.MinimumInitialPayment.HasValue ? registrationInstance.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Visible = registrationInstance.DefaultPayment.HasValue;
+                lDefaultPaymentAmount.Text = registrationInstance.DefaultPayment.HasValue ? registrationInstance.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
             }
             else
             {
@@ -2786,8 +2801,10 @@ namespace RockWeb.Blocks.Event
             lAccount.Visible = registrationInstance.Account != null;
             lAccount.Text = registrationInstance.Account != null ? registrationInstance.Account.Name : string.Empty;
 
-            lMaxAttendees.Visible = registrationInstance.MaxAttendees > 0;
-            lMaxAttendees.Text = registrationInstance.MaxAttendees.ToString( "N0" );
+            lMaxAttendees.Visible = registrationInstance.MaxAttendees >= 0;
+            lMaxAttendees.Text = registrationInstance.MaxAttendees >= 0 ?
+                    registrationInstance.MaxAttendees.Value.ToString( "N0" ) :
+                    string.Empty;
             lWorkflowType.Text = registrationInstance.RegistrationWorkflowType != null ?
                 registrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
@@ -3138,6 +3155,23 @@ namespace RockWeb.Blocks.Event
                                 gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
                             }
                         }
+                        else if ( sortProperty.Property == "RegisteredBy" )
+                        {
+                            // Sort by the Person name if we have it, otherwise the provided first and last name.
+                            Func<Registration, string> sortBy = ( r ) =>
+                            {
+                                return r.PersonAlias != null && r.PersonAlias.Person != null ? r.PersonAlias.Person.FullNameReversed : string.Format( "{0}, {1}", r.LastName, r.FirstName );
+                            };
+
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( sortBy ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( sortBy ).AsQueryable() );
+                            }
+                        }
                         else
                         {
                             gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );
@@ -3179,7 +3213,67 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Add all of the columns to the Registrations grid after the Registrants column.
+        /// The Column.Insert method does not play well with buttons.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void RegistrationsTabAddDynamicControls( bool setValues )
+        {
+            var registrantsField = gRegistrations.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Registrants" );
+            int registrantsFieldIndex = gRegistrations.Columns.IndexOf( registrantsField );
+
+            // Remove all columns to the right of Registrants
+            for ( int i = registrantsFieldIndex + 2; i < gRegistrations.Columns.Count; i++ )
+            {
+                gRegistrations.Columns.RemoveAt( i );
+            }
+
+            // Add Attribute columns if necessary
+            if ( AvailableRegistrationAttributesForGrid != null )
+            {
+                foreach ( var attributeCache in AvailableRegistrationAttributesForGrid )
+                {
+                    bool columnExists = gRegistrations.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attributeCache.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attributeCache.Key;
+                        boundField.AttributeId = attributeCache.Id;
+                        boundField.HeaderText = attributeCache.Name;
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        gRegistrations.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add the rest of the columns
+            var dtWhen = new DateTimeField { DataField = "CreatedDateTime", HeaderText = "When", SortExpression = "CreatedDateTime" };
+            dtWhen.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            dtWhen.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( dtWhen );
+
+            var lDiscount = new RockLiteralField { ID = "lDiscount", HeaderText = "Discount Code", SortExpression = "DiscountCode", Visible = false };
+            lDiscount.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            lDiscount.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( lDiscount );
+
+            var lRegistrationCost = new RockLiteralField { ID = "lRegistrationCost", HeaderText = "Total Cost", SortExpression = "TotalCost" };
+            lRegistrationCost.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lRegistrationCost.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lRegistrationCost );
+
+            var lBalance = new RockLiteralField { ID = "lBalance", HeaderText = "Balance Due", SortExpression = "BalanceDue" };
+            lBalance.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lBalance.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lBalance );
+
+            DeleteField deleteField = new DeleteField();
+            deleteField.Click += gRegistrations_Delete;
+            gRegistrations.Columns.Add( deleteField );
+        }
+
+        #endregion Registrations Tab
 
         #region Registrants Tab
 
@@ -3429,10 +3523,10 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.MaritalStatus:
-                                    var ddlMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsMaritalStatusFilter" ) as RockDropDownList;
-                                    if ( ddlMaritalStatusFilter != null )
+                                    var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
+                                    if ( dvpMaritalStatusFilter != null )
                                     {
-                                        var maritalStatusId = ddlMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
+                                        var maritalStatusId = dvpMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
                                         if ( maritalStatusId.HasValue )
                                         {
                                             qry = qry.Where( r =>
@@ -3485,7 +3579,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -3836,7 +3930,7 @@ namespace RockWeb.Blocks.Event
         /// Adds the filter controls and grid columns for all of the registration template's form fields
         /// that were configured to 'Show on Grid'
         /// </summary>
-        private void AddDynamicControls( bool setValues )
+        private void RegistrantsTabAddDynamicControls( bool setValues )
         {
             phRegistrantsRegistrantFormFieldFilters.Controls.Clear();
             phGroupPlacementsFormFieldFilters.Controls.Clear();
@@ -4250,36 +4344,36 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlRegistrantsMaritalStatusFilter = new RockDropDownList();
-                                ddlRegistrantsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-                                ddlRegistrantsMaritalStatusFilter.ID = "ddlRegistrantsMaritalStatusFilter";
-                                ddlRegistrantsMaritalStatusFilter.Label = "Marital Status";
+                                var dvpRegistrantsMaritalStatusFilter = new DefinedValuePicker();
+                                dvpRegistrantsMaritalStatusFilter.ID = "dvpRegistrantsMaritalStatusFilter";
+                                dvpRegistrantsMaritalStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+                                dvpRegistrantsMaritalStatusFilter.Label = "Marital Status";
 
                                 if ( setValues )
                                 {
-                                    ddlRegistrantsMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "Marital Status" ) );
+                                    dvpRegistrantsMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "Marital Status" ) );
                                 }
 
-                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( ddlRegistrantsMaritalStatusFilter );
+                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( dvpRegistrantsMaritalStatusFilter );
 
-                                var ddlGroupPlacementsMaritalStatusFilter = new RockDropDownList();
-                                ddlGroupPlacementsMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-                                ddlGroupPlacementsMaritalStatusFilter.ID = "ddlGroupPlacementsMaritalStatusFilter";
-                                ddlGroupPlacementsMaritalStatusFilter.Label = "Marital Status";
+                                var dvpGroupPlacementsMaritalStatusFilter = new DefinedValuePicker();
+                                dvpGroupPlacementsMaritalStatusFilter.ID = "dvpGroupPlacementsMaritalStatusFilter";
+                                dvpGroupPlacementsMaritalStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+                                dvpGroupPlacementsMaritalStatusFilter.Label = "Marital Status";
 
                                 if ( setValues )
                                 {
-                                    ddlGroupPlacementsMaritalStatusFilter.SetValue( fGroupPlacements.GetUserPreference( "GroupPlacements-Marital Status" ) );
+                                    dvpGroupPlacementsMaritalStatusFilter.SetValue( fGroupPlacements.GetUserPreference( "GroupPlacements-Marital Status" ) );
                                 }
 
-                                phGroupPlacementsFormFieldFilters.Controls.Add( ddlGroupPlacementsMaritalStatusFilter );
+                                phGroupPlacementsFormFieldFilters.Controls.Add( dvpGroupPlacementsMaritalStatusFilter );
 
-                                var ddlWaitlistMaritalStatusFilter = new RockDropDownList();
-                                ddlWaitlistMaritalStatusFilter.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-                                ddlWaitlistMaritalStatusFilter.ID = "ddlWaitlistMaritalStatusFilter";
-                                ddlWaitlistMaritalStatusFilter.Label = "Marital Status";
-                                ddlWaitlistMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "WL-Marital Status" ) );
-                                phWaitListFormFieldFilters.Controls.Add( ddlWaitlistMaritalStatusFilter );
+                                var dvpWaitlistMaritalStatusFilter = new DefinedValuePicker();
+                                dvpWaitlistMaritalStatusFilter.ID = "dvpWaitlistMaritalStatusFilter";
+                                dvpWaitlistMaritalStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
+                                dvpWaitlistMaritalStatusFilter.Label = "Marital Status";
+                                dvpWaitlistMaritalStatusFilter.SetValue( fRegistrants.GetUserPreference( "WL-Marital Status" ) );
+                                phWaitListFormFieldFilters.Controls.Add( dvpWaitlistMaritalStatusFilter );
 
                                 dataFieldExpression = "PersonAlias.Person.MaritalStatusValue.Value";
                                 var maritalStatusField = new RockBoundField();
@@ -4723,7 +4817,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Fee Name
-            if (ddlFeeName.SelectedIndex > 0 )
+            if ( ddlFeeName.SelectedIndex > 0 )
             {
                 data = data.Where( r => r.FeeName == ddlFeeName.SelectedItem.Text );
             }
@@ -4731,7 +4825,7 @@ namespace RockWeb.Blocks.Event
             // Fee Options
             if ( cblFeeOptions.SelectedValues.Count > 0 )
             {
-                data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
+                data = data.Where( r => cblFeeOptions.SelectedValues.Any( v => v.Equals( r.FeeItem.Guid.ToString(), StringComparison.OrdinalIgnoreCase) ) );
             }
 
             SortProperty sortProperty = gFees.SortProperty;
@@ -4792,15 +4886,14 @@ namespace RockWeb.Blocks.Event
         {
             cblFeeOptions.Items.Clear();
 
-            string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhiteSpace() )
+            int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            if ( feeId.HasValue )
             {
-                var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
-                var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
+                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
 
-                foreach ( var fee in fees )
+                foreach ( var feeItem in feeItems )
                 {
-                    cblFeeOptions.Items.Add( new ListItem( fee, fee ) );
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToString() ) );
                 }
 
                 string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );
@@ -5132,10 +5225,10 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.MaritalStatus:
-                                    var ddlMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistMaritalStatusFilter" ) as RockDropDownList;
-                                    if ( ddlMaritalStatusFilter != null )
+                                    var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "dvpWaitlistMaritalStatusFilter" ) as DefinedValuePicker;
+                                    if ( dvpMaritalStatusFilter != null )
                                     {
-                                        var maritalStatusId = ddlMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
+                                        var maritalStatusId = dvpMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
                                         if ( maritalStatusId.HasValue )
                                         {
                                             qry = qry.Where( r =>
@@ -5190,7 +5283,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -5567,6 +5660,7 @@ namespace RockWeb.Blocks.Event
                     {
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
+
                     SetPhoneDictionary( rockContext, personIds );
 
                     bool preloadCampusValues = false;
@@ -5700,10 +5794,10 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.MaritalStatus:
-                                    var ddlMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "ddlGroupPlacementsMaritalStatusFilter" ) as RockDropDownList;
-                                    if ( ddlMaritalStatusFilter != null )
+                                    var dvpMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "dvpGroupPlacementsMaritalStatusFilter" ) as DefinedValuePicker;
+                                    if ( dvpMaritalStatusFilter != null )
                                     {
-                                        var maritalStatusId = ddlMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
+                                        var maritalStatusId = dvpMaritalStatusFilter.SelectedValueAsId();
                                         if ( maritalStatusId.HasValue )
                                         {
                                             qry = qry.Where( r =>
@@ -5758,7 +5852,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -6071,10 +6165,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "ddlGroupPlacementsMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "dvpGroupPlacementsMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-Marital Status", "Marital Status", ddlMaritalStatusFilter.SelectedValue );
+                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-Marital Status", "Marital Status", dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -6110,9 +6204,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fGroupPlacements.SaveUserPreference( "GroupPlacements-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -6212,10 +6304,10 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var ddlMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "ddlGroupPlacementsMaritalStatusFilter" ) as RockDropDownList;
-                                if ( ddlMaritalStatusFilter != null )
+                                var dvpMaritalStatusFilter = phGroupPlacementsFormFieldFilters.FindControl( "dvpGroupPlacementsMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
                                 {
-                                    ddlMaritalStatusFilter.SetValue( ( Guid? ) null );
+                                    dvpMaritalStatusFilter.SetValue( ( Guid? ) null );
                                 }
 
                                 break;
@@ -6273,9 +6365,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
@@ -6407,4 +6497,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
     }
+
 }

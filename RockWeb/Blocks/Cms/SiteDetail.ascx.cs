@@ -20,21 +20,19 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Site = Rock.Model.Site;
 using Attribute = Rock.Model.Attribute;
-using Newtonsoft.Json;
-using Rock.Attribute;
+using Site = Rock.Model.Site;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -44,10 +42,24 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a specific site." )]
-    [BinaryFileTypeField( "Default File Type", "The default file type to use while uploading Favicon", true,
-        Rock.SystemGuid.BinaryFiletype.DEFAULT, "", 0 )]
+
+    [BinaryFileTypeField( "Default File Type",
+        Key = AttributeKey.DefaultFileType,
+        Description = "The default file type to use while uploading Favicon",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category = "",
+        Order = 0 )]
+
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+        protected static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+        }
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -158,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gPageAttributes_ShowEdit( attributeGuid );
         }
 
@@ -209,7 +221,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             PageAttributesState.RemoveEntity( attributeGuid );
 
             BindPageAttributesGrid();
@@ -443,7 +455,7 @@ namespace RockWeb.Blocks.Cms
                 site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
-
+                site.IsActive = cbIsActive.Checked;
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
@@ -557,7 +569,7 @@ namespace RockWeb.Blocks.Cms
                 interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
-                
+
 
                 // Create the default page is this is a new site
                 if ( !site.DefaultPageId.HasValue && newSite )
@@ -735,7 +747,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            Guid fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuid();
+            Guid fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
             imgSiteIcon.BinaryFileTypeGuid = fileTypeGuid;
 
             // set theme compile button
@@ -818,6 +830,8 @@ namespace RockWeb.Blocks.Cms
 
             imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
             imgSiteLogo.BinaryFileId = site.SiteLogoBinaryFileId;
+
+            cbIsActive.Checked = site.IsActive;
 
             if ( site.DefaultPageRoute != null )
             {
@@ -906,7 +920,7 @@ namespace RockWeb.Blocks.Cms
                 cbEnableIndexing.Visible = false;
                 tbIndexStartingLocation.Visible = false;
             }
-            
+
             var attributeService = new AttributeService( new RockContext() );
             var siteIdQualifierValue = site.Id.ToString();
             PageAttributesState = attributeService.GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()

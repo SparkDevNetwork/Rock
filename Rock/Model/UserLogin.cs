@@ -40,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user will use.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.

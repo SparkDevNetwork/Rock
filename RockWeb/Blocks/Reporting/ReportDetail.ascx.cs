@@ -713,7 +713,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetReportId()
         {
-            int? reportId = PageParameter( "reportId" ).AsIntegerOrNull();
+            int? reportId = PageParameter( "ReportId" ).AsIntegerOrNull();
             var reportGuid = GetAttributeValue( "Report" ).AsGuidOrNull();
 
             if ( reportGuid.HasValue )
@@ -1100,13 +1100,15 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.Id == default( int ) )
             {
-                dataViewId = PageParameter( "dataViewId" ).AsIntegerOrNull();
-                if (dataViewId.HasValue)
+                dataViewId = PageParameter( "DataViewId" ).AsIntegerOrNull();
+                if ( dataViewId.HasValue )
                 {
                     var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
                         entityTypeId = dataView.EntityTypeId;
+                        tbName.Text = dataView.Name;
+                        tbDescription.Text = dataView.Description;
                     }
                 }
             }

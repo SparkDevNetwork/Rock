@@ -88,9 +88,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -472,7 +472,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( Person != null )
             {
-                Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ) );
+                Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ),false );
             }
         }
 
@@ -555,7 +555,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
-                        formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+                        phoneMarkup = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
                     }
                 }                
 

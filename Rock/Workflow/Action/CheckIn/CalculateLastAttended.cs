@@ -20,9 +20,10 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {

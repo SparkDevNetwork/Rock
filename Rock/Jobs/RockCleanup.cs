@@ -23,11 +23,12 @@ using System.Linq;
 using System.Reflection;
 
 using Quartz;
+
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -199,6 +200,50 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
             }
 
+            try
+            {
+                // Reduce the job history to max size
+                CleanupJobHistory();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupJobHistory", ex ) );
+            }
+
+            try
+            {
+                // Search for and delete group memberships duplicates (same person, group, and role)
+                var rowsDeleted = GroupMembershipCleanup();
+                databaseRowsCleanedUp.Add( "Group Membership", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in GroupMembershipCleanup", ex ) );
+            }
+
+            try
+            {
+                var rowsDeleted = AttendanceDataCleanup( dataMap );
+                databaseRowsCleanedUp.Add( "Attendance Data (old label data)", rowsDeleted );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in AttendanceDataCleanup", ex ) );
+            }
+
+            try
+            {
+                // Search for locations with no country and assign USA or Canada if it match any of the country's states
+                LocationCleanup( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
+            }
+
+            // ***********************
+            //  Final count and report
+            // ***********************
             if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
             {
                 context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
@@ -211,17 +256,6 @@ namespace Rock.Jobs
             if ( rockCleanupExceptions.Count > 0 )
             {
                 throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
-            }
-
-            try
-            {
-                // Search for locations with no country and assign USA or Canada if it match any of the country's states
-
-                LocationCleanup( dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
             }
         }
 
@@ -296,11 +330,24 @@ namespace Rock.Jobs
                 int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
             }
 
+            // Ensures the GivingLeaderId is correct for all person records in the database
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                personRockContext.Database.CommandTimeout = commandTimeout;
+                int primaryFamilyUpdates = PersonService.UpdateGivingLeaderIdAll( personRockContext );
+            }
+
             // update any updated or incorrect age classifications on persons
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
                 personRockContext.Database.CommandTimeout = commandTimeout;
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
+            }
+
+            // update the BirthDate with a computed value
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService.UpdateBirthDateAll( personRockContext );
             }
 
             //// Add any missing Implied/Known relationship groups
@@ -505,69 +552,93 @@ namespace Rock.Jobs
             int totalRowsDeleted = 0;
             var workflowContext = new RockContext();
             var workflowService = new WorkflowService( workflowContext );
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
 
-            var completedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && ( w.Status.Equals( "Completed" ) || w.CompletedDateTime.HasValue) )
+            var completedWorkflows = workflowService.Queryable().AsNoTracking()
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" )
+                && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
+
+            List<int> workflowIdsToDelete = new List<int>();
 
             foreach ( var workflow in completedWorkflows )
             {
-                var retentionPeriod = workflow.WorkflowType.CompletedWorkflowRetentionPeriod;
-                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) retentionPeriod ) )
+                if ( workflowService.CanDelete( workflow, out _ ) )
                 {
-                    string errorMessage;
-                    if ( workflowService.CanDelete( workflow, out errorMessage ) )
-                    {
-                        workflowService.Delete( workflow );
-                        workflowContext.SaveChanges();
-                        totalRowsDeleted++;
-                    }
+                    workflowIdsToDelete.Add( workflow.Id );
+                    totalRowsDeleted++;
                 }
+
+                // delete in batches
+                if ( workflowIdsToDelete.Count >= batchAmount )
+                {
+                    workflowContext.BulkDelete( workflowService.GetByIds( workflowIdsToDelete ) );
+                    workflowIdsToDelete = new List<int>();
+                }
+            }
+
+            // Delete any remaining items in the list
+            if ( workflowIdsToDelete.Count > 0 )
+            {
+                workflowContext.BulkDelete( workflowService.GetByIds( workflowIdsToDelete ) );
             }
 
             return totalRowsDeleted;
         }
 
         /// <summary>
-        /// Cleans up workflow logs by removing old logs in batches.
+        /// Cleans up workflow logs by removing logs in batches for workflows with a log retention period that has passed.
         /// see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses"
         /// </summary>
         private int CleanUpWorkflowLogs( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
+            // Limit the number of workflow logs to delete for this run (20M records will take about 20 minutes).
+            int maxRowDeleteLimit = 20000000;
             var workflowContext = new RockContext();
             var workflowService = new WorkflowService( workflowContext );
             int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
 
-            var workflowsWithExpirationPeriod = workflowService.Queryable()
-                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue )
+            var workflowsOlderThanLogRetentionPeriod = workflowService.Queryable()
+                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue
+                && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod ) )
+                .Select( w => w.Id )
                 .ToList();
 
-            foreach ( var workflow in workflowsWithExpirationPeriod )
+            foreach ( var workflowId in workflowsOlderThanLogRetentionPeriod )
             {
-                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * ( int ) workflow.WorkflowType.LogRetentionPeriod ) )
+                // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
+                bool keepDeleting = true;
+                while ( keepDeleting )
                 {
-                    // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
-                    bool keepDeleting = true;
-                    while ( keepDeleting )
+                    var dbTransaction = workflowContext.Database.BeginTransaction();
+                    try
                     {
-                        var dbTransaction = workflowContext.Database.BeginTransaction();
-                        try
-                        {
-                            string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
+                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
 
-                            int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
-                                new SqlParameter( "batchAmount", batchAmount ),
-                                new SqlParameter( "workflowId", workflow.Id )
-                            );
-                            keepDeleting = rowsDeleted > 0;
-                            totalRowsDeleted += rowsDeleted;
-                        }
-                        finally
+                        int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "workflowId", workflowId )
+                        );
+                        keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
+
+                        // If we hit the limit, short circuit and break out this while loop.
+                        if ( totalRowsDeleted >= maxRowDeleteLimit )
                         {
-                            dbTransaction.Commit();
+                            keepDeleting = false;
                         }
                     }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+
+                // If we hit the limit, short circuit and break out of this foreach loop.
+                if ( totalRowsDeleted >= maxRowDeleteLimit )
+                {
+                    break;
                 }
             }
 
@@ -844,13 +915,8 @@ WHERE ic.ChannelId = @channelId
                 var attributeValueService = new AttributeValueService( rockContext );
                 int? entityTypeId = EntityTypeCache.GetId<T>();
                 var entityIdsQuery = new Service<T>( rockContext ).Queryable().Select( a => a.Id );
-                var orphanedAttributeValues = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) ).ToList();
-                if ( orphanedAttributeValues.Any() )
-                {
-                    recordsDeleted += orphanedAttributeValues.Count;
-                    attributeValueService.DeleteRange( orphanedAttributeValues );
-                    rockContext.SaveChanges();
-                }
+                var orphanedAttributeValuesQuery = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) );
+                recordsDeleted += rockContext.BulkDelete( orphanedAttributeValuesQuery );
             }
 
             return recordsDeleted;
@@ -1009,8 +1075,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // if IO Exception thrown and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have thread sleep for 10 ms and retry delete
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteDirectory( directoryPath, true );
                 }
             }
@@ -1037,11 +1103,76 @@ WHERE ExpireDateTime IS NOT NULL
                 // If an IO exception has occurred and this is not a retry attempt
                 if ( !isRetryAttempt )
                 {
-                    // have the thread sleep for 10 ms and retry delete.
-                    System.Threading.Thread.Sleep( 10 );
+                    // wait for 10 ms and retry delete.
+                    System.Threading.Tasks.Task.Delay( 10 ).Wait();
                     DeleteFile( filePath, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Cleanups the job history
+        /// </summary>
+        private void CleanupJobHistory()
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                ServiceJobHistoryService serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
+                serviceJobHistoryService.DeleteMoreThanMax();
+            }
+        }
+
+        /// <summary>
+        /// Delete old attendance data (as of today, this is just label data) and
+        /// return the number of records deleted.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns>The number of records deleted</returns>
+        private int AttendanceDataCleanup( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                // 1 day (24 hrs) ago
+                DateTime olderThanDate = RockDateTime.Now.Add( new TimeSpan( -1, 0, 0, 0 ) );
+
+                var totalPossibleItemsToDelete = attendanceService.Queryable()
+                    .Where( a => a.CreatedDateTime <= olderThanDate && a.AttendanceData != null && a.AttendanceData.LabelData != null )
+                    .Take( batchAmount.Value )
+                    .Count();
+
+                if ( totalPossibleItemsToDelete > 0 )
+                {
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = rockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"
+DELETE TOP (@batchAmount)
+FROM ad
+FROM [AttendanceData] ad
+INNER JOIN [Attendance] a ON ad.[Id] = a.[Id]
+WHERE a.[CreatedDateTime] <= @olderThanDate
+";
+                            int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "olderThanDate", olderThanDate ) );
+                            keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>
@@ -1064,7 +1195,7 @@ WHERE ExpireDateTime IS NOT NULL
                 LocationService locationService = new LocationService( rockContext );
                 var locations = locationService
                     .Queryable()
-                    .Where( l => l.State != null && l.State != string.Empty && l.State.Length > 3)
+                    .Where( l => l.State != null && l.State != string.Empty && l.State.Length > 3 )
                     .ToList();
 
                 foreach ( var location in locations )
@@ -1109,6 +1240,48 @@ WHERE ExpireDateTime IS NOT NULL
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Delete group membership duplicates if they are not allowed by web.config and return the
+        /// number of records deleted.
+        /// </summary>
+        /// <returns>The number of records deleted</returns>
+        private int GroupMembershipCleanup()
+        {
+            // There is a web.config setting to allow duplicate memberships
+            // If that is set to allow, then don't cleanup duplicates
+            var allowDuplicates = GroupService.AllowsDuplicateMembers();
+
+            if ( allowDuplicates )
+            {
+                return 0;
+            }
+
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+
+            var duplicateQuery = groupMemberService.Queryable()
+                // Duplicates are the same person, group, and role occuring more than once
+                .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
+                // Filter out sets with only one occurrence because those are not duplicates
+                .Where( g => g.Count() > 1 )
+                // Leave the oldest membership and delete the others
+                .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
+
+            // Get the IDs to delete the history
+            var groupMemberIds = duplicateQuery.Select( d => d.Id );
+            var historyQuery = groupMemberHistoricalService.Queryable()
+                .Where( gmh => groupMemberIds.Contains( gmh.GroupMemberId ) );
+
+            // Delete the history and duplicate memberships
+            groupMemberHistoricalService.DeleteRange( historyQuery );
+            groupMemberService.DeleteRange( duplicateQuery );
+            rockContext.SaveChanges();
+
+            // Return the count of memberships deleted
+            return groupMemberIds.Count();
         }
     }
 }

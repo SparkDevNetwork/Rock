@@ -94,13 +94,54 @@ namespace Rock.Communication.Transport
                             recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                         }
 
-                        string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                        CommunicationRecipient communicationRecipient = null;
 
-                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
-
-                        if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                        using ( var rockContext = new RockContext() )
                         {
-                            errorMessages.Add( response.ErrorMessage );
+                            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+                            int? recipientId = recipientData.CommunicationRecipientId.AsIntegerOrNull();
+                            if ( recipientId != null )
+                            {
+                                communicationRecipient = communicationRecipientService.Get( recipientId.Value );
+                            }
+
+                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                            Person recipientPerson = ( Person ) recipientData.MergeFields.GetValueOrNull( "Person" );
+
+                            // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
+                            if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
+                            {
+                                var communicationService = new CommunicationService( rockContext );
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+
+                                // Since we just created a new communication record, we need to move any attachments from the rockMessage
+                                // to the communication's attachments since the Send method below will be handling the delivery.
+                                if ( attachmentMediaUrls.Any() )
+                                {
+                                    foreach ( var attachment in rockMessage.Attachments.AsQueryable() )
+                                    {
+                                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachment.Id }, CommunicationType.SMS );
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+                                Send( communication, mediumEntityTypeId, mediumAttributes );
+                                continue;
+                            }
+                            else
+                            {
+                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+
+                                if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                                {
+                                    errorMessages.Add( response.ErrorMessage );
+                                }
+
+                                if ( communicationRecipient != null )
+                                {
+                                    rockContext.SaveChanges();
+                                }
+                            }
                         }
                     }
                     catch ( Exception ex )
@@ -108,10 +149,10 @@ namespace Rock.Communication.Transport
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
                     }
-
+                    
                     if ( throttlingWaitTimeMS.HasValue )
                     {
-                        System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                        System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                     }
                 }
             }
@@ -212,7 +253,7 @@ namespace Rock.Communication.Transport
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, recipient, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             string twilioNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -267,7 +308,7 @@ namespace Rock.Communication.Transport
 
                                 if ( throttlingWaitTimeMS.HasValue )
                                 {
-                                    System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                                    System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
                                 }
                             }
                             else
@@ -403,7 +444,8 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead", true )]
         public override void Send( Model.Communication communication )
         {
             int mediumEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
@@ -418,7 +460,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             throw new NotImplementedException();
@@ -432,7 +475,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             var message = new RockSMSMessage();
@@ -456,7 +500,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
             var message = new RockSMSMessage();
@@ -488,7 +533,8 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
@@ -506,7 +552,8 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        [RockObsolete( "1.7" )]
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead", true )]
         public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             throw new NotImplementedException();

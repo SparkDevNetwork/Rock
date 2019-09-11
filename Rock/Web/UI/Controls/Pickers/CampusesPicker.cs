@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -185,7 +186,7 @@ namespace Rock.Web.UI.Controls
                 .Where( c =>
                     ( campusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
                     ( selectedValues != null && selectedValues.Contains( c.Id ) ) )
-                .OrderBy( c => c.Name )
+                .OrderBy( c => c.Order )
                 .ToList();
 
             foreach ( CampusCache campus in campuses )

@@ -16,17 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
-using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
 
-using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -77,7 +74,7 @@ namespace Rock.Rest
         [EnableQuery]
         public virtual IQueryable<T> Get()
         {
-            var result = Service.Queryable();
+            var result = Service.Queryable().AsNoTracking();
             return result;
         }
 

@@ -487,23 +487,24 @@ namespace RockWeb.Blocks.Communication
 
             var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.ToList();
             if ( selectedNumberGuids.Any() )
             {
-                ddlSMSFrom.SelectedIndex = -1;
-                ddlSMSFrom.DataSource = smsFromDefinedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
-                {
-                    v.Description,
-                    v.Id
-                } );
-                ddlSMSFrom.DataTextField = "Description";
-                ddlSMSFrom.DataValueField = "Id";
-                ddlSMSFrom.DataBind();
-                ddlSMSFrom.Items.Insert( 0, new ListItem() );
+                smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
             }
-            else
+
+            ddlSMSFrom.Items.Clear();
+            ddlSMSFrom.Items.Add( new ListItem() );
+            foreach ( var item in smsDefinedValues )
             {
-                ddlSMSFrom.BindToDefinedType( smsFromDefinedType, true, true );
+                var description = string.IsNullOrWhiteSpace( item.Description )
+                    ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
+                    : item.Description;
+
+                ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
+
+            ddlSMSFrom.SelectedIndex = -1;
         }
 
         /// <summary>
@@ -1181,8 +1182,8 @@ namespace RockWeb.Blocks.Communication
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
             //this change is being made explicitly as discussed in #3516
-            tbFromName.Text = communicationTemplate.FromName;
-            ebFromAddress.Text = communicationTemplate.FromEmail;
+            tbFromName.Text = communicationTemplate.FromName.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson ) );
+            ebFromAddress.Text = communicationTemplate.FromEmail.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson ) );
 
             // only set the ReplyToEmail, CCEMails, and BCCEmails if the template has one (just in case they already filled these in for this communication
             if ( communicationTemplate.ReplyToEmail.IsNotNullOrWhiteSpace() )

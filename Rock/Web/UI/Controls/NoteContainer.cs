@@ -59,6 +59,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The note types.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use SetNoteTypes instead" )]
         public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
         {
@@ -79,6 +80,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The term.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use NoteLabel instead" )]
         public string Term
         {
@@ -919,6 +921,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Clears the rows.
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Not Needed. Notes will be cleared and rebuilt automatically" )]
         public void ClearNotes()
         {
@@ -929,6 +932,7 @@ namespace Rock.Web.UI.Controls
         /// Rebuilds the notes.
         /// </summary>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Not Needed. Notes will be rebuilt automatically" )]
         public void RebuildNotes( bool setSelection )
         {

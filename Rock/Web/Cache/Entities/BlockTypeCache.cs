@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -75,13 +74,28 @@ namespace Rock.Web.Cache
         public string Name { get; private set; }
 
         /// <summary>
-        /// Gets or sets the description.
+        /// Gets or sets the user defined description of the BlockType.
         /// </summary>
         /// <value>
-        /// The description.
+        /// A <see cref="System.String"/> that represents the Description of the BlockType
         /// </value>
+        /// <example>
+        /// Provides ability to login to site.
+        /// </example>
         [DataMember]
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the category of the BlockType.  Blocks will be grouped by category when displayed to user
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the category of the BlockType.
+        /// </value>
+        /// <example>
+        /// Security
+        /// </example>
+        [DataMember]
+        public string Category { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the  attributes have been
@@ -150,6 +164,7 @@ namespace Rock.Web.Cache
             Path = blockType.Path;
             Name = blockType.Name;
             Description = blockType.Description;
+            Category = blockType.Category;
             IsInstancePropertiesVerified = false;
         }
 

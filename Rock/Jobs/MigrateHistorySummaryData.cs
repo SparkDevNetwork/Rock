@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -361,7 +362,6 @@ namespace Rock.Jobs
                         {
                             // some other type of history record. Set History.ChangeType so that we know that it has been migrated, but just leave Summary alone and the History UIs will use that as a fallback
                             historyChangeType = History.HistoryChangeType.Record;
-                            System.Diagnostics.Debug.WriteLine( $"Unexpected Summary:{historyRecord.Summary}" );
                         }
 
                         // just in case the ValueName is over 250, truncate it (it could be a really long attribute name)
@@ -376,17 +376,6 @@ namespace Rock.Jobs
                         }
 
                         var summaryHtml = historyRecord.SummaryHtml;
-                        if ( origSummary != summaryHtml )
-                        {
-                            if ( groupMemberStatusChangeMatch.Success || groupRoleChangeMatch.Success || addedPhotoMatch.Success || modifiedPhotoMatch.Success || deletedPhotoMatch.Success || createdGeneratedMatch.Success )
-                            {
-                                // group member status, role change, and photo changes are standardized to be consistent with other history change styles instead of leaving it the v7 way
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine( $"ORIG:{origSummary}\n NEW:{summaryHtml}" );
-                            }
-                        }
                     }
 
                     int numberMigrated = howManyToConvert - howManyLeft;

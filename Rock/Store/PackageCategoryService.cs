@@ -14,15 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using RestSharp;
-using System.Configuration;
-using System.IO;
 
 
 namespace Rock.Store

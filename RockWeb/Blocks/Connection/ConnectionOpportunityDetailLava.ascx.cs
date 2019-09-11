@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Connection
             if ( opportunityId != null )
             {
                 _connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
-                if ( _connectionOpportunity != null && _connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _connectionOpportunity != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( _connectionOpportunity.Name, pageReference ) );
                 }

@@ -94,12 +94,17 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this NoteType target, NoteType source )
         {
             target.Id = source.Id;
+            target.AllowsAttachments = source.AllowsAttachments;
             target.AllowsReplies = source.AllowsReplies;
             target.AllowsWatching = source.AllowsWatching;
             target.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
             target.AutoWatchAuthors = source.AutoWatchAuthors;
             target.BackgroundColor = source.BackgroundColor;
+            target.BinaryFileTypeId = source.BinaryFileTypeId;
             target.BorderColor = source.BorderColor;
+            #pragma warning disable 612, 618
+            target.CssClass = source.CssClass;
+            #pragma warning restore 612, 618
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

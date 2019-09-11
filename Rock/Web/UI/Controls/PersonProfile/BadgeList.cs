@@ -14,19 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
-using Rock.Model;
-using Rock.PersonProfile;
-using Rock.Web.Cache;
+
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
-{ 
+{
     /// <summary>
     /// class for controls used to render a Person Profile Badge
     /// </summary>

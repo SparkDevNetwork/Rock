@@ -24,10 +24,12 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
+using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Security;
-using Newtonsoft.Json;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -252,6 +254,15 @@ namespace Rock.Model
                 return viewableChildNotes;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the note attachments.
+        /// </summary>
+        /// <value>
+        /// The note attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<NoteAttachment> Attachments { get; set; } = new Collection<NoteAttachment>();
 
         /// <summary>
         /// Gets the created by person photo URL.

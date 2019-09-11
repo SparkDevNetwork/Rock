@@ -16,9 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -241,11 +241,24 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ConnectionOpportunity ?? base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
             var transaction = new Rock.Transactions.ConnectionRequestChangeTransaction( entry );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );

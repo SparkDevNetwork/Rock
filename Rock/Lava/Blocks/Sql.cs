@@ -18,12 +18,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
+
 using Rock.Data;
-using System.Dynamic;
 
 namespace Rock.Lava.Blocks
 {
@@ -85,13 +84,20 @@ namespace Rock.Lava.Blocks
 
                 if ( parms["statement"] == "select" )
                 {
-                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, null, null );
+                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), null );
 
                     context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                 }
                 else if (parms["statement"] == "command" )
                 {
-                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString() );
+                    var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+
+                    foreach ( var p in parms )
+                    {
+                        sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
+                    }
+
+                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 
                     context.Scopes.Last()[parms["return"]] = numOfRowEffected;
                 }

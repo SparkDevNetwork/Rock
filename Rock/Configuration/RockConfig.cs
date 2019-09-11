@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Configuration;
 
 namespace Rock.Configuration

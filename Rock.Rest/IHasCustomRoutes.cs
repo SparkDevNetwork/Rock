@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Rest
 {
     /// <summary>
     /// Interface for controllers that need to add additional routes beyond the default
     /// api/{controller}/{id} route.
     /// </summary>
+    [RockObsolete( "1.9" )]
+    [Obsolete( "Use IHasCustomHttpRoutes instead.", false )]
     public interface IHasCustomRoutes
     {
         /// <summary>

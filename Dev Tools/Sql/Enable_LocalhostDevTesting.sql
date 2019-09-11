@@ -139,3 +139,14 @@ BEGIN
            ,null
            ,null)
 END
+
+/*
+
+--
+-- If you're really paranoid, you can also run this to .test`ify everyone's emails.
+--
+UPDATE [Person] 
+SET [Email] = CONCAT([Email], '.test' )
+WHERE [Email] != '' AND IsSystem != 1
+
+*/

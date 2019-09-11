@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -94,7 +95,7 @@ namespace RockWeb.Blocks.CheckIn
         category: "",
         order: 5,
         key: AttributeKeys.CheckinDetailPage )]
-    
+
     [DefinedValueField(
         definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
         name: "Chart Style",
@@ -252,7 +253,7 @@ namespace RockWeb.Blocks.CheckIn
                 btnCopyToClipboard.Visible = true;
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -1121,7 +1122,7 @@ function(item) {
             string campusIds = GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
             var dataView = dvpDataView.SelectedValueAsInt();
             var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
-            
+
             var chartData = new AttendanceService( _rockContext ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
             return chartData;
@@ -1240,8 +1241,8 @@ function(item) {
             var allResults = new List<AttendeeResult>();
 
             // Collection of async queries to run before assembling data
-            var qryTasks = new List<Task>();
-            var taskInfos = new List<TaskInfo>();
+            var qryTasks = new ConcurrentBag<Task>();
+            var taskInfos = new ConcurrentBag<TaskInfo>();
 
             DataTable dtAttendeeLastAttendance = null;
             DataTable dtAttendees = null;
@@ -2257,7 +2258,7 @@ function(item) {
 
                     string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
                     int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
-                    
+
                     cblGroupTypeGroups.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
                     cblGroupTypeGroups.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
                     cblGroupTypeGroups.Label = groupType.Name;
@@ -2323,9 +2324,12 @@ function(item) {
                         checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
                     }
 
+                    bool showInactive = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+
                     if ( group.Groups != null )
                     {
                         foreach ( var childGroup in group.Groups
+                            .Where( a => a.IsActive || showInactive )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )
                             .ToList() )

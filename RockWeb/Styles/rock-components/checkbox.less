@@ -161,6 +161,11 @@
   .radio-inline,
   .checkbox-inline {
     padding-left: (@custom-control-gutter + @custom-control-indicator-size);
+
+    &.deselected {
+      opacity: .5;
+    }
+
     // Custom control indicators
     //
     // Build the custom controls out of psuedo-elements.

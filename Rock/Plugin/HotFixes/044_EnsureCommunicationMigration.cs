@@ -15,10 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -27,15 +23,18 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 44, "1.7.0" )]
+    [RockObsolete( "1.7" )]
+    [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10. So the plugin will be changed to do nothing starting in Rock 1.10" )]
     public class EnsureCommunicationMigration : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
+        
         public override void Up()
         {
             // There was a bug in one of the v7.0 Rock Updates that might have prevented UpdateCommunicationRecords, so make sure that UpdateCommunicationRecords ran.  
-            Rock.Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
+            //Rock.Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 50, null );
         }
 
         /// <summary>

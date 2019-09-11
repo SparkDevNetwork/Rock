@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;

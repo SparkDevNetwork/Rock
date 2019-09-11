@@ -330,6 +330,20 @@ namespace RockWeb.Blocks.Finance
 
                         break;
                     }
+                case "Contains Source Type":
+                    {
+                        var sourceTypeValueId = e.Value.AsIntegerOrNull();
+                        if ( sourceTypeValueId.HasValue )
+                        {
+                            e.Value = DefinedValueCache.GetValue( sourceTypeValueId.Value );
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -349,7 +363,8 @@ namespace RockWeb.Blocks.Finance
 
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
-            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", dvpTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", dvpSourceType.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -622,8 +637,8 @@ namespace RockWeb.Blocks.Finance
             ddlStatus.SetValue( statusFilter );
 
             var definedTypeTransactionTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() );
-            ddlTransactionType.BindToDefinedType( definedTypeTransactionTypes, true );
-            ddlTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
+            dvpTransactionType.DefinedTypeId = definedTypeTransactionTypes.Id;
+            dvpTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
 
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
@@ -631,6 +646,10 @@ namespace RockWeb.Blocks.Finance
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
 
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
+
+            var definedTypeSourceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            dvpSourceType.DefinedTypeId = definedTypeSourceTypes.Id;
+            dvpSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
 
             BindAttributes();
             AddDynamicControls();
@@ -644,6 +663,65 @@ namespace RockWeb.Blocks.Finance
         public string FormatValueAsCurrency( decimal value )
         {
             return value.FormatAsCurrency();
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lVarianceAmount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lVarianceAmount_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lVarianceAmount = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            if (batchRow.AmountVariance != 0.00M)
+            {
+                lVarianceAmount.Text = string.Format( "<span class='label label-danger'>{0}</span>", batchRow.AmountVariance.FormatAsCurrency() );
+            }
+            else
+            {
+                lVarianceAmount.Text = string.Format( "<span class=''>{0}</span>", batchRow.AmountVariance.FormatAsCurrency() );
+            }
+            
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lVarianceItemCount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lVarianceItemCount_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lVarianceItemCount = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            if ( batchRow.ItemCountVariance.HasValue )
+            {
+                if ( batchRow.ItemCountVariance != 0 )
+                {
+                    lVarianceItemCount.Text = string.Format( "<span class='label label-danger'>{0}</span>", batchRow.ItemCountVariance );
+                }
+                else
+                {
+                    lVarianceItemCount.Text = string.Format( "<span class=''>{0}</span>", batchRow.ItemCountVariance );
+                }
+            }
+            else
+            {
+                // doesn't apply
+                lVarianceItemCount.Text = "-";
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lBatchStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lBatchStatus_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lBatchStatus = sender as Literal;
+            BatchRow batchRow = e.Row.DataItem as BatchRow;
+            lBatchStatus.Text = string.Format( "<span class='{0}'>{1}</span>", batchRow.StatusLabelClass, batchRow.StatusText );
         }
 
         /// <summary>
@@ -687,6 +765,7 @@ namespace RockWeb.Blocks.Finance
                     AccountingSystemCode = b.AccountingSystemCode,
                     TransactionCount = b.Transactions.Count(),
                     ControlAmount = b.ControlAmount,
+                    ControlItemCount = b.ControlItemCount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
@@ -800,6 +879,13 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( b => b.CampusId == campus.Id );
             }
 
+            // filter by batches that contain transactions of the specified source type
+            var sourceTypeValueId = gfBatchFilter.GetUserPreference( "Contains Source Type" ).AsIntegerOrNull();
+            if ( sourceTypeValueId.HasValue )
+            {
+                qry = qry.Where( a => a.Transactions.Any( t => t.SourceTypeValueId == sourceTypeValueId.Value ) );
+            }
+
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
@@ -866,7 +952,7 @@ namespace RockWeb.Blocks.Finance
 
         #region Helper Class
 
-        public class BatchAccountSummary
+        public class BatchAccountSummary : DotLiquid.Drop
         {
             public int AccountId { get; set; }
             public int AccountOrder
@@ -893,7 +979,7 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        public class BatchRow
+        public class BatchRow : DotLiquid.Drop
         {
             public int Id { get; set; }
             public DateTime BatchStartDateTime { get; set; }
@@ -910,6 +996,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             public decimal ControlAmount { get; set; }
+
+            public int? ControlItemCount { get; set; }
+
             public List<BatchAccountSummary> AccountSummaryList
             {
                 get
@@ -928,11 +1017,38 @@ namespace RockWeb.Blocks.Finance
             public bool UnMatchedTxns { get; set; }
             public string BatchNote { get; set; }
 
-            public decimal Variance
+            /// <summary>
+            /// Gets the amount variance.
+            /// </summary>
+            /// <value>
+            /// The amount variance.
+            /// </value>
+            public decimal AmountVariance
             {
                 get
                 {
                     return TransactionAmount - ControlAmount;
+                }
+            }
+
+            /// <summary>
+            /// Gets the item count variance.
+            /// </summary>
+            /// <value>
+            /// The item count variance.
+            /// </value>
+            public int? ItemCountVariance
+            {
+                get
+                {
+                    if ( ControlItemCount.HasValue )
+                    {
+                        return TransactionCount - ControlItemCount;
+                    }
+                    else
+                    {
+                        return ( int? ) null;
+                    }
                 }
             }
 
@@ -963,7 +1079,6 @@ namespace RockWeb.Blocks.Finance
                     return Status.ConvertToString();
                 }
             }
-
 
             public string StatusLabelClass
             {

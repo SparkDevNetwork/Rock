@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -61,6 +60,25 @@ namespace Rock.Web.UI.Controls
         {
             this.Attributes["step"] = "0.01";
             base.RenderBaseControl( writer );
+        }
+
+        /// <summary>
+        /// Gets or sets the currency value
+        /// </summary>
+        /// <value>
+        /// The amount.
+        /// </value>
+        public decimal? Value
+        {
+            get
+            {
+                return this.Text.AsDecimalOrNull().FormatAsCurrency().AsDecimalOrNull();
+            }
+
+            set
+            {
+                this.Text = value?.ToString("F2");
+            }
         }
     }
 }

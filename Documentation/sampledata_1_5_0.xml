@@ -368,6 +368,104 @@
       </members>
     </family>
 
+    
+    <!-- Daniel Peak is well versed in the latest CSS and HTML frameworks, and enjoys
+         working on projects that push the edge of what is possible on the web.  
+         Daniel’s go-to tools of choice are WordPress and PHP.
+     -->
+    <family name="Peak Family" guid="32A292E2-504F-4960-B55D-5508BE1828D6" campus="main campus">
+      <addresses>
+        <address type="home" street1="12201 N 29th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5966911" long="-112.1207657" />
+      </addresses>
+
+      <members>
+        <person guid="C5E4C66A-B836-4A8B-AD02-43F841B94BE9"
+          firstName="Daniel" nickName="Daniel" lastName="Peak" birthDate="5/11/1987" gender="male"
+          email="daniel.peak@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/peak_daniel.jpg"
+          homePhone="" mobilePhone="6235557077" workPhone="" >
+          <attributes>
+            <attribute BaptismDate="2009-02-11"/>
+            <attribute FirstVisit="2008-12-24"/>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Director of Communications"/>
+            <attribute BackgroundCheckDate="12/4/2017"/>
+            <attribute BackgroundCheckResult="Pass"/>
+
+            <attribute AdaptiveD="13"/>
+            <attribute AdaptiveI="16"/>
+            <attribute AdaptiveS="45"/>
+            <attribute AdaptiveC="38"/>
+            <attribute NaturalD="16"/>
+            <attribute NaturalI="18"/>
+            <attribute NaturalS="38"/>
+            <attribute NaturalC="33"/>
+            <attribute LastSaveDate="5/6/2015"/>
+            <attribute PersonalityType="SC"/>
+
+          </attributes>
+          <logins>
+            <login userName="dpeak"/>
+          </logins>
+          <notes>
+            <note type="Personal Note" text="Called Daniel to see if he would be interested in joining our team as the Communications Director."
+                  date="5/6/2012 2:03 PM" byGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" />
+          </notes>
+        </person>
+      </members>
+    </family>
+
+
+    <!-- Sam Hanks loves to develop. He likes the feeling of accomplishment when creating something
+         from nothing. While a good developer, Sam doesn't spend a lot of time learning his
+         craft. Instead, he focuses on 'just enough to get the job done'. As a result he is
+         not up to speed on the latest development frameworks like MEF and Entity Framework.
+         He's not on staff, but is just waiting for someone to ask him to volunteer which could
+         help take the church to the next level.
+     -->
+    <family name="Hanks Family" guid="D94BC97D-197D-444D-9922-0D36F4C3F31A" campus="main campus">
+      <addresses>
+        <address type="home" street1="1901 W Eugie Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.6079559" long="-112.0999908" />
+      </addresses>
+
+      <members>
+        <person guid="1E6E66C7-A487-48E6-B064-7F9F4DDE6680"
+          firstName="Samuel" nickName="Sam" lastName="Hanks" birthDate="5/29/1995" gender="male"
+          email="sam.hanks@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/hanks_sam.jpg"
+          homePhone="" mobilePhone="6235557171" workPhone="" >
+          <attributes>
+            <attribute BaptismDate="2016-04-01"/>
+            <attribute FirstVisit="2016-12-24"/>
+            <attribute Employer="Honeywell"/>
+            <attribute Position="Developer"/>
+
+            <attribute AdaptiveD="25"/>
+            <attribute AdaptiveI="13"/>
+            <attribute AdaptiveS="37"/>
+            <attribute AdaptiveC="40"/>
+            <attribute NaturalD="23"/>
+            <attribute NaturalI="18"/>
+            <attribute NaturalS="35"/>
+            <attribute NaturalC="36"/>
+            <attribute LastSaveDate="7/4/2017"/>
+            <attribute PersonalityType="CS"/>
+
+          </attributes>
+          <logins>
+            <login userName="shanks"/>
+          </logins>
+          <notes>
+            <note type="Personal Note" text="Called Sam to see if he would be interested in volunteering on some development projects we're thinking about."
+                  date="8/3/2018 1:22 PM" byGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" />
+          </notes>
+        </person>
+      </members>
+    </family>
+
+
     <!-- Jenny Michaels is not on staff, but she helps coordinate the Annual Car Show so that’s why she has the Staff-Like User role.
     -->
     <family name="Michaels Family" guid="F53EC4A4-300B-4B5D-9A81-CB6198F3583F" campus="main campus">
@@ -962,7 +1060,7 @@
   </registrationTemplates>
 
   <registrationInstances>
-    <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2016"
+    <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2019"
       templateGuid="FF8AE77B-D5AF-490A-9ECE-B47039681C2E" 
       registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'yyyy-M-dd'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'yyyy-M-dd' }} 12:00AM"
       maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'yyyy-M-dd' }} 9:00AM"
@@ -985,6 +1083,7 @@
     <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >
       <members>
         <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Daniel Peak" guid="C5E4C66A-B836-4A8B-AD02-43F841B94BE9"/>
       </members>
     </group>
     <group name="Finance Administrators" guid="6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" >
@@ -1034,11 +1133,13 @@
         <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
         <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
         <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+        <person fullname="Daniel Peak" guid="C5E4C66A-B836-4A8B-AD02-43F841B94BE9"/>
       </members>
     </group>
     <group name="Website Administrators" guid="1918E74F-C00D-4DDD-94C4-2E7209CE12C3" >
       <members>
         <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Daniel Peak" guid="C5E4C66A-B836-4A8B-AD02-43F841B94BE9"/>
       </members>
     </group>
     <group name="Website Content Editors" guid="CDF68207-2795-42DE-B060-FE01C33BEAEA" >

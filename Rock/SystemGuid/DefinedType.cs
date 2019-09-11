@@ -49,6 +49,11 @@ namespace Rock.SystemGuid
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
 
         /// <summary>
+        /// The content component template
+        /// </summary>
+        public const string CONTENT_COMPONENT_TEMPLATE = "313B579F-F442-4247-ADBB-BBD25E255003";
+
+        /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>
         public const string COMMUNICATION_MEDIUM = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
@@ -85,6 +90,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Conflict Profile assessment.
+        /// </summary>
+        public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
+
+        /// <summary>
         /// Guid for the Domains Sharing Logins
         /// </summary>
         public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
@@ -118,6 +128,11 @@ namespace Rock.SystemGuid
         /// Guid for Financial Frequency 
         /// </summary>
         public const string FINANCIAL_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
+
+        /// <summary>
+        /// Defined Type of Non-Cash Assets (used with FinancialTransaction.NonCashAssetTypeValueId.
+        /// </summary>
+        public const string FINANCIAL_NONCASH_ASSET_TYPE = "6B19C65E-FF8F-4ADD-9DA0-48E53FC074A6";
 
         /// <summary>
         /// Guid for Financial Source Type
@@ -188,7 +203,17 @@ namespace Rock.SystemGuid
         /// Metric Source Type
         /// </summary>
         public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
-        
+
+        /// <summary>
+        /// Motivator Type
+        /// </summary>
+        public const string MOTIVATOR_TYPE = "1DFF1804-0055-491E-9559-54EA3F8F89D1";
+
+        /// <summary>
+        /// Motivator Theme Type
+        /// </summary>
+        public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
+
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
@@ -267,6 +292,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Protect My Ministry background package types
         /// </summary>
+        [RockObsolete( "1.8" )]
         [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
@@ -306,6 +332,11 @@ namespace Rock.SystemGuid
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
 
         /// <summary>
+		/// The Spiritual Gifts
+		/// </summary>
+		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
+
+        /// <summary>
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
@@ -319,5 +350,15 @@ namespace Rock.SystemGuid
         /// Used to manage the lava code that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
+
+        /// <summary>
+        /// The group schedule decline reason
+        /// </summary>
+        public const string GROUP_SCHEDULE_DECLINE_REASON = "70C9F9C4-20CC-43DD-888D-9243853A0E52";
+
+        /// <summary>
+        /// Used to store various liquid templates for features in Rock.
+        /// </summary>
+        public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
     }
 }

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;

@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;
             target.Cost = source.Cost;
+            target.DefaultPayment = source.DefaultPayment;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
             target.ForeignGuid = source.ForeignGuid;

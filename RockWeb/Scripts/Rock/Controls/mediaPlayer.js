@@ -22,7 +22,7 @@
                         $.ajaxSetup({ cache: true });
                         $('head').prepend("<script id='mediaElementJs' src='" + jsFile + "' />");
                     }
-                    
+
                     // ensure that mediaelementplayer is applied to all the the rock audio/video that was generated from a Rock Video/Audio FieldType (js-media-audio,js-media-video)
                     $('audio.js-media-audio,video.js-media-video').mediaelementplayer({ enableAutosize: true });
                 });

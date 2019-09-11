@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -124,7 +125,7 @@ namespace Rock.Model
         /// The start date time.
         /// </value>
         [DataMember]
-        public DateTime StartDateTime { get; set; }
+        public DateTime StartDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>
         /// Gets or sets the expire date time.
@@ -153,6 +154,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item global key.
+        /// </summary>
+        /// <value>
+        /// The item global key.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ItemGlobalKey { get; set; }
 
         #endregion
 
@@ -263,7 +274,7 @@ namespace Rock.Model
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
             }
         }
@@ -408,22 +419,58 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Assigns the item global key to the current instance if one does not exist.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void AssignItemGlobalKey( Data.DbContext dbContext )
+        {
+            if ( this.ItemGlobalKey.IsNullOrWhiteSpace() )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                this.ItemGlobalKey = contentChannelItemSlugService.GetUniqueContentSlug( this.Title, null );
+            }
+        }
+
         /// <summary>
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
             var channel = this.ContentChannel;
 
-            if ( state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Deleted )
             {
                 ChildItems.Clear();
                 ParentItems.Clear();
+
+                DeleteRelatedSlugs( dbContext );
+            }
+            else
+            {
+                AssignItemGlobalKey( dbContext );
             }
 
             base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
+        /// Delete any related slugs.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void DeleteRelatedSlugs( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
+            var slugsToDelete = contentChannelSlugSerivce.Queryable().Where( a => a.ContentChannelItemId == this.Id );
+            if ( slugsToDelete.Any() )
+            {
+                dbContext.BulkDelete( slugsToDelete );
+            }
         }
 
         /// <summary>

@@ -125,6 +125,9 @@ namespace Rock.Client
     public partial class GroupLocation : GroupLocationEntity
     {
         /// <summary />
+        public ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+
+        /// <summary />
         public DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary />

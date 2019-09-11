@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Finance
             account.PublicDescription = cePublicDescription.Text;
 
             account.ParentAccountId = apParentAccount.SelectedValueAsInt();
-            account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
+            account.AccountTypeValueId = dvpAccountType.SelectedValueAsInt();
             account.PublicName = tbPublicName.Text;
             account.Url = tbUrl.Text;
             account.CampusId = cpCampus.SelectedValueAsInt();
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Finance
             cePublicDescription.Text = account.PublicDescription;
 
             apParentAccount.SetValue( account.ParentAccount );
-            ddlAccountType.SetValue( account.AccountTypeValueId );
+            dvpAccountType.SetValue( account.AccountTypeValueId );
             tbPublicName.Text = account.PublicName;
             tbUrl.Text = account.Url;
             cpCampus.SelectedCampusId = account.CampusId;
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlAccountType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
+            dvpAccountType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ).Id;
 
             cpCampus.Campuses = CampusCache.All();
             cpCampus.Visible = cpCampus.Items.Count > 0;

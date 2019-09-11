@@ -76,7 +76,7 @@
             //  }
             //];
 
-            /** 
+            /**
             * Initializes the map viewport boundary coordinates.
             */
             this.initMinMaxLatLng = function () {
@@ -114,7 +114,7 @@
                 $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
 
                 obj.selectedShape = shape;
-                
+
                 if (type == "polygon") {
                     shape.setEditable(true);
                     var coordinates = new Array();
@@ -483,7 +483,7 @@
                 // Shrink to regular size
                 if ( isExpaned ) {
                     $myElement.data("fullscreen", false);
-                    
+
                     $(this).closest('.picker-menu').css({
                         position: 'absolute',
                         top: 0,
@@ -568,7 +568,7 @@
             }
 
             /**
-            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field. 
+            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
             $('#btnSelect_' + controlId).click(function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
@@ -659,7 +659,7 @@
 
             // If we have coordinates we should plot them here...
             self.plotPath(self.map);
-            
+
             // Set up the Drawing Manager for creating polygons, circles, etc.
             self.drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
@@ -676,7 +676,7 @@
                     icon: self.getMarkerImage()
                 }
             });
-            
+
             self.drawingManager.setMap(self.map);
 
             // but disable the drawing manager if we already have a point/polygon selected:

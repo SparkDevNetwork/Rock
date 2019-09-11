@@ -16,15 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
-    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
+    /// This field is used in various blocks and controls (such as the Grid) to 'select'
+    /// the item/row and hold and manage the 'selected' state of the item/row.
     /// </summary>
     public class SelectField : TemplateField, INotRowSelectedField
     {

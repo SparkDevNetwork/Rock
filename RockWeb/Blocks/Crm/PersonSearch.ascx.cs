@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
 
             base.OnInit( e );
 
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
@@ -411,6 +411,7 @@ namespace RockWeb.Blocks.Crm
                     ConnectionStatusValueId = p.ConnectionStatusValueId,
                     RecordStatusValueId = p.RecordStatusValueId,
                     RecordTypeValueId = p.RecordTypeValueId,
+                    AgeClassification = p.AgeClassification,
                     SuffixValueId = p.SuffixValueId,
                     IsDeceased = p.IsDeceased,
                     Email = p.Email,
@@ -432,7 +433,8 @@ namespace RockWeb.Blocks.Crm
                         .Select( n => new PersonSearchResultPhone
                         {
                             NumberTypeValueId = n.NumberTypeValueId.Value,
-                            Number = n.NumberFormatted
+                            Number = n.NumberFormatted,
+                            PhoneTypeName = n.NumberTypeValue.Value
                         } )
                         .ToList(),
                     TopSignalColor = p.TopSignalColor,
@@ -556,10 +558,11 @@ namespace RockWeb.Blocks.Crm
                     var recordType = DefinedValueCache.Get( RecordTypeValueId.Value );
                     if ( recordType != null )
                     {
-                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200 );
+                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, this.AgeClassification, 200, 200 );
                     }
                 }
-                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, 200, 200 );
+
+                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, this.AgeClassification, 200, 200 );
             }
             private set { }
         }
@@ -750,6 +753,14 @@ namespace RockWeb.Blocks.Crm
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets the age classification.
+        /// </summary>
+        /// <value>
+        /// The age classification.
+        /// </value>
+        public AgeClassification AgeClassification { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the spouse.
         /// </summary>
         /// <value>
@@ -796,6 +807,7 @@ namespace RockWeb.Blocks.Crm
         /// The top signal icon.
         /// </value>
         public string TopSignalIconCssClass { get; set; }
+        
     }
 
     /// <summary>
@@ -818,6 +830,20 @@ namespace RockWeb.Blocks.Crm
         /// The number.
         /// </value>
         public string Number { get; set; }
+
+        /// <summary>
+        /// The phone type name (Mobile, Home, etc.)
+        /// </summary>
+        public string PhoneTypeName { get; set; }
+
+        /// <summary>
+        /// Provides a reasonable string representation of a phone number.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} ({1})", Number, PhoneTypeName );
+        }
     }
 
     #endregion

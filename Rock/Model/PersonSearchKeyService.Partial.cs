@@ -15,10 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -30,6 +29,21 @@ namespace Rock.Model
     public partial class PersonSearchKeyService
     {
         private static readonly Object _obj = new object();
+
+        /// <summary>
+        /// Generates a random alternate Id search value for use in a
+        /// <see cref="Rock.Model.PersonSearchKey" />.  It is comprised of random alpha
+        /// numeric characters in the form ccccccc-ccccccc (7 random characters, a dash,
+        /// and 7 more random characters). Example "f5f3df2-40b8946".
+        /// </summary>
+        /// <param name="verifyUnique">if set to <c>true</c> the key will be verified as unique across all existing "Alternate Id" search values.</param>
+        /// <returns>
+        /// A random key string
+        /// </returns>
+        public static string GenerateRandomAlternateId( bool verifyUnique = true )
+        {
+            return GenerateRandomAlternateId( verifyUnique, null );
+        }
 
         /// <summary>
         /// Generates a random alternate Id search value for use in a

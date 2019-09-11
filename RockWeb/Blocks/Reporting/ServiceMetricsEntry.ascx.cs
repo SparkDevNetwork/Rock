@@ -424,6 +424,7 @@ namespace RockWeb.Blocks.Reporting
                     foreach ( var schedule in new ScheduleService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( s =>
+                            s.IsActive &&
                             s.CategoryId.HasValue &&
                             s.CategoryId.Value == scheduleCategory.Id )
                         .OrderBy( s => s.Name ) )

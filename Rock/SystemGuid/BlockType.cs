@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System;
 
 namespace Rock.SystemGuid
 {
@@ -59,6 +57,21 @@ namespace Rock.SystemGuid
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
 
         /// <summary>
+        /// Content Channel Item View Block Type Guid
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM_VIEW = "63659EBE-C5AF-4157-804A-55C7D565110E";
+
+        /// <summary>
+        /// Content Channel Navigation Block Type Guid
+        /// </summary>
+        public const string CONTENT_CHANNEL_NAVIGATION = "0E023AE3-BF08-48E0-93F8-08C32EB5CAFA";
+
+        /// <summary>
+        /// Content Component Block Type Guid
+        /// </summary>
+        public const string CONTENT_COMPONENT = "AD802CA1-842C-47F0-B5E9-739FE2B4A2BD";
+
+        /// <summary>
         /// The PowerBI Account Registration Block Type Guid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
@@ -76,5 +89,40 @@ namespace Rock.SystemGuid
         /// The bulk update block type guid
         /// </summary>
         public const string BULK_UPDATE = "A844886D-ED6F-4367-9C6F-667401201ED0";
+
+        #region Assessment Block Types
+
+        /// <summary>
+        /// The assessment list block type guid
+        /// </summary>
+        public const string ASSESSMENT_LIST = "0AD1D108-4ABF-4AED-B3B7-4AAEA16D10E4";
+
+        /// <summary>
+        /// The conflict profile block type guid
+        /// </summary>
+        public const string CONFLICT_PROFILE = "91473D2F-607D-4260-9C6A-DD3762FE472D";
+
+        /// <summary>
+        /// The disc block type guid
+        /// </summary>
+        public const string DISC = "A161D12D-FEA7-422F-B00E-A689629680E4";
+
+        /// <summary>
+        /// The eq inventory block type guid
+        /// </summary>
+        public const string EQ_INVENTORY = "040CFD6D-5155-4BC9-BAEE-A53219A7BECE";
+
+        /// <summary>
+        /// The gifts assessment block type guid
+        /// </summary>
+        public const string GIFTS_ASSESSMENT = "A7E86792-F0ED-46F2-988D-25EBFCD1DC96";
+
+        /// <summary>
+        /// The motivators block type guid
+        /// </summary>
+        public const string MOTIVATORS = "18CF8DA8-5DE0-49EC-A279-D5507CFA5713";
+
+        #endregion Assessment Block Types
+
     }
 }

@@ -20,7 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Model;
@@ -59,7 +58,10 @@ namespace Rock.Lava
                 CheckHtmlContent();
                 CheckAttributeValue();
                 CheckAttribute();
-                CheckCommunicationTemplate();
+
+                // Made Obsolete in 1.7, and will be removed in 1.10
+                // CheckCommunicationTemplate();
+
                 CheckSystemEmail();
                 CheckWorkflowActionFormAttribute();
                 CheckWorkflowActionForm();
@@ -405,6 +407,8 @@ namespace Rock.Lava
         /// Checks CommunicationTemplate model for legacy lava and outputs SQL to correct it.
         /// Fields evaluated: MediumDataJson Subject
         /// </summary>
+        [RockObsolete( "1.7" )]
+        [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10" )]
         public void CheckCommunicationTemplate()
         {
             #pragma warning disable 0618

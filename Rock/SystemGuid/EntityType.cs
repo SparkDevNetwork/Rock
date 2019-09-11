@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -148,6 +143,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
 
         /// <summary>
+        /// The guid for the Rock.Model.FinancialScheduledTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_SCHEDULED_TRANSACTION = "76824E8A-CCC4-4085-84D9-8AF8C0807E20";
+
+        /// <summary>
         /// The guid for the Rock.Model.FinancialTransaction entity.
         /// </summary>
         public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
@@ -211,6 +211,11 @@ namespace Rock.SystemGuid
         /// The protect my ministry provider
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Registration entity
+        /// </summary>
+        public const string REGISTRATION = "D2F294C6-E161-4A56-85C7-CD74D535F61A";
 
         /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity

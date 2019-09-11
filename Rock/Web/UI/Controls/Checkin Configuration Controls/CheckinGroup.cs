@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -300,7 +300,7 @@ namespace Rock.Web.UI.Controls
         {
             _gLocations = new Grid();
 
-            _gLocations.ID = this.ID + "_gCheckinLabels";
+            _gLocations.ID = this.ID + "_gLocations";
 
             _gLocations.DisplayType = GridDisplayType.Light;
             _gLocations.ShowActionRow = true;

@@ -18,10 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The CSS class.
         /// </value>
+        [RockObsolete( "1.8" )]
         [Obsolete( "No Longer Supported" )]
         [NotMapped]
         [LavaIgnore]
@@ -235,6 +238,24 @@ namespace Rock.Model
         [DataMember]
         public string ApprovalUrlTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether attachments are allowed for this note type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if attachments are allowed; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsAttachments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary file type identifier used when saving attachments.
+        /// </summary>
+        /// <value>
+        /// The binary file type identifier used when saving attachments.
+        /// </value>
+        [DataMember]
+        public int? BinaryFileTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -247,6 +268,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFileType"/> that will be used for attachments.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFileType"/> that will be used for attachments.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFileType BinaryFileType { get; set; }
 
         #endregion
 
@@ -294,7 +324,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             NoteTypeCache.UpdateCachedEntity( this.Id, entityState );
             NoteTypeCache.RemoveEntityNoteTypes();
@@ -317,6 +347,7 @@ namespace Rock.Model
         public NoteTypeConfiguration()
         {
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.BinaryFileType ).WithMany().HasForeignKey( p => p.BinaryFileTypeId ).WillCascadeOnDelete( false );
         }
     }
 
