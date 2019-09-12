@@ -1344,14 +1344,20 @@ namespace RockWeb.Blocks.Steps
                 return;
             }
 
-            // If the Program does not have any Step activity, hide the Activity Summary.
-            var dataContext = GetDataContext();
+            // Set the visibility of the Activity Summary chart.
+            bool showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
+            
+            if ( showActivitySummary )
+            {
+                // If the Program does not have any Step activity, hide the Activity Summary.
+                var dataContext = GetDataContext();
 
-            var hasStepData = GetStepsCompletedQuery( stepProgram.Id, dataContext ).Any();
+                showActivitySummary = GetStepsCompletedQuery( stepProgram.Id, dataContext ).Any();
+            }
 
-            pnlActivitySummary.Visible = hasStepData;
+            pnlActivitySummary.Visible = showActivitySummary;
 
-            if ( !hasStepData )
+            if ( !showActivitySummary )
             {
                 return;
             }
