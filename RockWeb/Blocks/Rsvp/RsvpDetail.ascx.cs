@@ -689,6 +689,18 @@ var dnutChart = new Chart(dnutCtx, {{
                         .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
                         .FirstOrDefault();
 
+                    var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == attendee.PersonId ).FirstOrDefault();
+                    if ( groupMember == null )
+                    {
+                        groupMember = new GroupMember();
+                        groupMember.PersonId = attendee.PersonId;
+                        groupMember.GroupId = occurrence.Group.Id;
+                        groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
+
+                        new GroupMemberService( rockContext ).Add( groupMember );
+                        rockContext.SaveChanges();
+                    }
+
                     if ( attendance == null )
                     {
                         int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
