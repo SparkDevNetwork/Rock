@@ -1714,30 +1714,7 @@ namespace RockWeb.Blocks.Steps
                 stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime < compareDate );
             }
 
-            var startedSeriesDataPoints = stepsStartedQuery.ToList()
-                .GroupBy( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) )
-                .Select( x => new ChartDatasetInfo
-                {
-                    DatasetName = "Started",
-                    DateTime = x.Key,
-                    Value = x.Count(),
-                    SortKey = "1"
-                } );
-
-            var completedSeriesDataPoints = stepsCompletedQuery.ToList()
-                .GroupBy( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) )
-                .Select( x => new ChartDatasetInfo
-                {
-                    DatasetName = "Completed",
-                    DateTime = x.Key,
-                    Value = x.Count(),
-                    SortKey = "2"
-                } );
-
-            var allDataPoints = startedSeriesDataPoints.Union( completedSeriesDataPoints ).OrderBy( x => x.SortKey ).ThenBy( x => x.DateTime );
-
-            var dataSetNames = allDataPoints.Select( x => x.DatasetName ).Distinct().ToList();
-
+            // Initialize a new Chart Factory.
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
             if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
@@ -1752,6 +1729,57 @@ namespace RockWeb.Blocks.Steps
             factory.StartDateTime = startDate;
             factory.EndDateTime = endDate;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+
+            // Determine the appropriate date grouping for the chart data points.
+            Func<Step, DateTime> groupKeySelector;
+
+            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                // Group Steps by Start Date.
+                groupKeySelector = ( x => x.StartDateTime.Value.Date );
+            }
+            else
+            {
+                // Group Steps by Start Date rounded to beginning of the month.
+                groupKeySelector = ( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) );
+            }
+
+            // Add data series for Steps started.
+            var startedSeriesDataPoints = stepsStartedQuery.ToList()
+                .GroupBy( groupKeySelector )
+                .Select( x => new ChartDatasetInfo
+                {
+                    DatasetName = "Started",
+                    DateTime = x.Key,
+                    Value = x.Count(),
+                    SortKey = "1"
+                } );
+
+            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                // Group Steps by Completed Date.
+                groupKeySelector = ( x => x.CompletedDateTime.Value.Date );
+            }
+            else
+            {
+                // Group Steps by Completed Date rounded to beginning of the month.
+                groupKeySelector = ( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) );
+            }
+
+            // Add data series for Steps completed.
+            var completedSeriesDataPoints = stepsCompletedQuery.ToList()
+                .GroupBy( groupKeySelector )
+                .Select( x => new ChartDatasetInfo
+                {
+                    DatasetName = "Completed",
+                    DateTime = x.Key,
+                    Value = x.Count(),
+                    SortKey = "2"
+                } );
+
+            var allDataPoints = startedSeriesDataPoints.Union( completedSeriesDataPoints ).OrderBy( x => x.SortKey ).ThenBy( x => x.DateTime );
+
+            var dataSetNames = allDataPoints.Select( x => x.DatasetName ).Distinct().ToList();
 
             // Add Dataset for Steps Started.
             var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
