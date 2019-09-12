@@ -574,6 +574,16 @@ $('input.rsvp-list-input').on('click', function (e) {
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.PersonId = person.Id;
+                    groupMember.GroupId = occurrence.Group.Id;
+                    groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
+
+                    new GroupMemberService( rockContext ).Add( groupMember );
+                    rockContext.SaveChanges();
+                }
                 var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
                 {
@@ -978,7 +988,12 @@ $('input.rsvp-list-input').on('click', function (e) {
         protected List<DefinedValue> GetDeclineReasons( string commaDelimitedDeclineReasons )
         {
             List<DefinedValue> values = new List<DefinedValue>();
-            var declineReasonIds = commaDelimitedDeclineReasons.Split( ',' ).Select( int.Parse ).ToList();
+            List<int> declineReasonIds = new List<int>();
+            if ( !string.IsNullOrWhiteSpace( commaDelimitedDeclineReasons ) )
+            {
+                declineReasonIds = commaDelimitedDeclineReasons.Split( ',' ).Select( int.Parse ).ToList();
+            }
+
             if ( !declineReasonIds.Any() )
             {
                 return values;
