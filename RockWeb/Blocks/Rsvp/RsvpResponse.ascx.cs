@@ -533,9 +533,6 @@ $('input.rsvp-list-input').on('click', function (e) {
                     groupMember.PersonId = person.Id;
                     groupMember.GroupId = occurrence.Group.Id;
                     groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
-
-                    new GroupMemberService( rockContext ).Add( groupMember );
-                    rockContext.SaveChanges();
                 }
 
                 bool displayForm = GetAttributeValue( AttributeKey.DisplayFormWhenSignedIn ).AsBoolean();
@@ -580,9 +577,6 @@ $('input.rsvp-list-input').on('click', function (e) {
                     groupMember.PersonId = person.Id;
                     groupMember.GroupId = occurrence.Group.Id;
                     groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
-
-                    new GroupMemberService( rockContext ).Add( groupMember );
-                    rockContext.SaveChanges();
                 }
                 var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
@@ -610,9 +604,6 @@ $('input.rsvp-list-input').on('click', function (e) {
                     groupMember.PersonId = person.Id;
                     groupMember.GroupId = occurrence.Group.Id;
                     groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
-
-                    new GroupMemberService( rockContext ).Add( groupMember );
-                    rockContext.SaveChanges();
                 }
 
                 groupMember.LoadAttributes();
@@ -699,7 +690,7 @@ $('input.rsvp-list-input').on('click', function (e) {
 
             // Note that GroupMember attributes are being set, here.  If this control saves multiple attendance records for a same group (e.g., the same group meets on multiple dates and the user RSVPs to
             // more than one) it will overwrite values.
-            if ( attributePlaceHolder != null )
+            if ( ( attributePlaceHolder != null ) && ( rsvpStatus == Rock.Model.RSVP.Yes ) )
             {
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
                 if ( groupMember == null )
@@ -850,9 +841,6 @@ $('input.rsvp-list-input').on('click', function (e) {
                         groupMember.PersonId = person.Id;
                         groupMember.GroupId = occurrence.Group.Id;
                         groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
-
-                        new GroupMemberService( rockContext ).Add( groupMember );
-                        rockContext.SaveChanges();
                     }
 
                     groupMember.LoadAttributes();
