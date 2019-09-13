@@ -151,9 +151,9 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Step Participant Attributes">
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Step Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gAttributes" runat="server" RowItemText="Step Participant Attribute" >
+                            <Rock:Grid ID="gAttributes" runat="server" RowItemText="Step Attribute" >
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
