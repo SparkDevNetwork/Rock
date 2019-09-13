@@ -40,10 +40,21 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
 
+    #region Block Attributes
+
     [BooleanField( "Reset Login Confirmation",
-        "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.",
-        true, "", 0 )]
-    [LinkedPage( "Person Detail Page", "The page to navigate to after the merge is completed.", true, "", "", 1 )]
+        Description = RESET_LOGIN_CONFIRMATION_DESCRIPTION,
+        DefaultBooleanValue = true,
+        Order = 0,
+        Key = AttributeKey.ResetLoginConfirmation )]
+
+    [LinkedPage( "Person Detail Page",
+        Description = "The page to navigate to after the merge is completed.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.PersonDetailPage )]
+
+    #endregion Block Attributes
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
         #region Constants
@@ -51,8 +62,19 @@ namespace RockWeb.Blocks.Crm
         private const string FAMILY_VALUES = "FamilyValues";
         private const string FAMILY_NAME = "FamilyName";
         private const string CAMPUS = "Campus";
+        private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.";
 
-        #endregion
+        #endregion Constants
+
+        #region Attribute Keys
+
+        private class AttributeKey
+        {
+            public const string ResetLoginConfirmation = "ResetLoginConfirmation";
+            public const string PersonDetailPage = "PersonDetailPage";
+        }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -99,7 +121,7 @@ namespace RockWeb.Blocks.Crm
 
             nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the
 records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account
-through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ?
+through the merge process. {0}", GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() ?
         @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the
 validity of the request before completing this merge." :
         @"Because of this, make sure to confirm the validity of the request before completing this merge." );
@@ -374,7 +396,7 @@ validity of the request before completing this merge." :
             }
 
             bool reconfirmRequired = (
-                GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() &&
+                GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() &&
                 MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 &&
                 MergeData.People.Where( p => p.HasLogins ).Any() );
 
@@ -703,7 +725,7 @@ validity of the request before completing this merge." :
                 return;
             }
 
-            NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );
+            NavigateToLinkedPage( AttributeKey.PersonDetailPage, "PersonId", primaryPersonId.Value );
         }
 
         /// <summary>
