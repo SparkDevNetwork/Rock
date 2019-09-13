@@ -772,9 +772,9 @@ namespace RockWeb.Blocks.Crm
 
                 newPersonAttributeMatrixGuid = newPersonAttributeMatrix.Guid;
             }
-            else
+            else if ( selectedAttributeMatrixGuidList.Count == 1 )
             {
-                newPersonAttributeMatrixGuid = selectedAttributeMatrixGuidList.FirstOrDefault();
+                newPersonAttributeMatrixGuid = selectedAttributeMatrixGuidList.First();
             }
 
             if ( primaryPersonAttributeMatrixGuid != newPersonAttributeMatrixGuid )
