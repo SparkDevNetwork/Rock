@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -119,13 +119,14 @@ namespace RockWeb.Blocks.Crm
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
 
-            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the
-records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account
-through the merge process. {0}", GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() ?
-        @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the
-validity of the request before completing this merge." :
-        @"Because of this, make sure to confirm the validity of the request before completing this merge." );
+            string resetConfirmation =
+                GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() ?
+                @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the validity of the request before completing this merge." :
+                @"Because of this, make sure to confirm the validity of the request before completing this merge.";
 
+            nbSecurityNotice.Text = string.Format(
+                @"Because there are two different emails associated with this merge, and at least one of the records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account through the merge process. {0}",
+                resetConfirmation );
         }
 
         /// <summary>
@@ -292,7 +293,6 @@ validity of the request before completing this merge." :
             }
 
             ppAdd.SetValue( null );
-
         }
 
         /// <summary>
@@ -395,10 +395,10 @@ validity of the request before completing this merge." :
                 return;
             }
 
-            bool reconfirmRequired = (
+            bool reconfirmRequired =
                 GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() &&
                 MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 &&
-                MergeData.People.Where( p => p.HasLogins ).Any() );
+                MergeData.People.Where( p => p.HasLogins ).Any();
 
             GetValuesSelection();
 
@@ -478,7 +478,6 @@ validity of the request before completing this merge." :
                             if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
                             {
                                 // New phone doesn't match old
-
                                 if ( !string.IsNullOrWhiteSpace( newValue ) )
                                 {
                                     // New value exists
@@ -531,7 +530,6 @@ validity of the request before completing this merge." :
                             }
                             else
                             {
-
                                 string oldValue = primaryPerson.GetAttributeValue( attribute.Key ) ?? string.Empty;
                                 string newValue = GetNewStringValue( property.Key ) ?? string.Empty;
 
@@ -569,7 +567,7 @@ validity of the request before completing this merge." :
                         foreach ( var photoValue in MergeData.Properties
                             .Where( p => p.Key == "Photo" )
                             .SelectMany( p => p.Values )
-                            .Where( v => v.Value != "" && v.Value != photoKeeper )
+                            .Where( v => v.Value != string.Empty && v.Value != photoKeeper )
                             .Select( v => v.Value ) )
                         {
                             int photoId = 0;
@@ -586,6 +584,7 @@ validity of the request before completing this merge." :
                                 }
                             }
                         }
+
                         rockContext.SaveChanges();
 
                         // If there was more than one email address and user has logins, then set any of the local
@@ -605,9 +604,10 @@ validity of the request before completing this merge." :
                                 }
                             }
                         }
+
                         rockContext.SaveChanges();
 
-                        //merge search keys on merge
+                        // Merge search keys on merge
                         var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                         var personSearchKeys = primaryPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id ).ToList();
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
@@ -702,7 +702,6 @@ validity of the request before completing this merge." :
                             entitySet.EntitySetPurposeValueId = null;
                             rockContext.SaveChanges();
                         }
-
                     }
                 } );
 
@@ -825,7 +824,7 @@ validity of the request before completing this merge." :
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "PropertyLabel";
-                //labelCol.HeaderStyle.CssClass = "grid-section-header";
+                ////labelCol.HeaderStyle.CssClass = "grid-section-header";
                 gValues.Columns.Add( labelCol );
 
                 var personService = new PersonService( new RockContext() );
@@ -844,8 +843,6 @@ validity of the request before completing this merge." :
                 }
             }
         }
-
-
 
         /// <summary>
         /// Gets the values column header.
@@ -887,16 +884,16 @@ validity of the request before completing this merge." :
                 bool showType = family.GroupLocations.Count() > 1;
                 foreach ( var loc in family.GroupLocations )
                 {
-                    sbHeaderData.AppendFormat( " <br><span>{0}{1}</span>",
+                    sbHeaderData.AppendFormat(
+                        " <br><span>{0}{1}</span>",
                         loc.Location.ToStringSafe(),
-                        ( showType ? " (" + loc.GroupLocationTypeValue.Value + ")" : "" ) );
+                        showType ? " (" + loc.GroupLocationTypeValue.Value + ")" : string.Empty );
                 }
 
                 sbHeaderData.Append( "</div>" );
             }
 
             return sbHeaderData.ToString();
-
         }
 
         /// <summary>
@@ -908,8 +905,8 @@ validity of the request before completing this merge." :
             {
                 // If the people have different email addresses and any logins, display security alert box
                 bool showAlert =
-                    ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "" ).Distinct( StringComparer.CurrentCultureIgnoreCase ).Count() > 1 &&
-                    MergeData.People.Where( p => p.HasLogins ).Any() );
+                    MergeData.People.Select( p => p.Email ).Where( e => e != null && e != string.Empty ).Distinct( StringComparer.CurrentCultureIgnoreCase ).Count() > 1 &&
+                    MergeData.People.Where( p => p.HasLogins ).Any();
 
                 nbSecurityNotice.Visible = showAlert;
 
@@ -1032,8 +1029,6 @@ validity of the request before completing this merge." :
         }
 
         #endregion
-
-
     }
 
     #region MergeData Class
@@ -1042,7 +1037,7 @@ validity of the request before completing this merge." :
     ///
     /// </summary>
     [Serializable]
-    class MergeData
+    internal class MergeData
     {
         #region Constants
 
@@ -1213,10 +1208,10 @@ validity of the request before completing this merge." :
             {
                 PersonPropertyValue value = null;
 
-                if ( personProperty.Values.Any( v => v.Value != null && v.Value != "" ) )
+                if ( personProperty.Values.Any( v => v.Value != null && v.Value != string.Empty ) )
                 {
                     // Find primary person's non-blank value
-                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.Value != null && v.Value != "" ).FirstOrDefault();
+                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.Value != null && v.Value != string.Empty ).FirstOrDefault();
                     if ( value == null )
                     {
                         // Find any other selected value
@@ -1224,7 +1219,7 @@ validity of the request before completing this merge." :
                         if ( value == null )
                         {
                             // Find first non-blank value
-                            value = personProperty.Values.Where( v => v.Value != "" ).FirstOrDefault();
+                            value = personProperty.Values.Where( v => v.Value != string.Empty ).FirstOrDefault();
                             if ( value == null )
                             {
                                 value = personProperty.Values.FirstOrDefault();
@@ -1267,6 +1262,7 @@ validity of the request before completing this merge." :
             {
                 return personProperty.Values.Where( v => v.Selected ).FirstOrDefault();
             }
+
             return null;
         }
 
@@ -1312,7 +1308,6 @@ validity of the request before completing this merge." :
 
                     valuesRowList.Add( valuesRow );
                 }
-
             }
 
             return valuesRowList;
@@ -1350,7 +1345,10 @@ validity of the request before completing this merge." :
             AddProperty( "EmailPreference", person.Id, person.EmailPreference );
             AddProperty( "InactiveReasonNote", person.Id, person.InactiveReasonNote );
             AddProperty( "SystemNote", person.Id, person.SystemNote );
-            AddProperty( "ContributionFinancialAccountId", "Contribution Financial Account", person.Id,
+            AddProperty(
+                "ContributionFinancialAccountId",
+                "Contribution Financial Account",
+                person.Id,
                 person.ContributionFinancialAccountId.ToStringSafe(),
                 person.ContributionFinancialAccount != null ? person.ContributionFinancialAccount.PublicName : string.Empty );
         }
@@ -1372,12 +1370,14 @@ validity of the request before completing this merge." :
             {
                 property.AttributeId = attribute.Id;
             }
+
             var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
             if ( propertyValue == null )
             {
                 propertyValue = new PersonPropertyValue { PersonId = personId };
                 property.Values.Add( propertyValue );
             }
+
             propertyValue.Value = value ?? string.Empty;
             propertyValue.FormattedValue = formattedValue ?? string.Empty;
             propertyValue.Selected = selected;
@@ -1397,6 +1397,7 @@ validity of the request before completing this merge." :
                 propertyValue = new PersonPropertyValue { PersonId = personId };
                 property.Values.Add( propertyValue );
             }
+
             propertyValue.Value = value != null ? value.Id.ToString() : string.Empty;
             propertyValue.FormattedValue = value != null ? value.Value : string.Empty;
             propertyValue.Selected = selected;
@@ -1437,7 +1438,6 @@ validity of the request before completing this merge." :
         #endregion
 
         #endregion
-
     }
 
     #endregion
@@ -1451,12 +1451,19 @@ validity of the request before completing this merge." :
     public class MergePerson
     {
         public int Id { get; set; }
+
         public string FullName { get; set; }
+
         public DateTime? ModifiedDateTime { get; set; }
+
         public DateTime? CreatedDateTime { get; set; }
+
         public string ModifiedBy { get; set; }
+
         public string Email { get; set; }
+
         public bool HasLogins { get; set; }
+
         public Guid Guid { get; set; }
 
         public MergePerson( Person person )
@@ -1488,8 +1495,11 @@ validity of the request before completing this merge." :
     public class PersonProperty
     {
         public string Key { get; set; }
+
         public string Label { get; set; }
+
         public int? AttributeId { get; set; }
+
         public List<PersonPropertyValue> Values { get; set; }
 
         public PersonProperty()
@@ -1533,16 +1543,35 @@ validity of the request before completing this merge." :
     public class PersonPropertyValue
     {
         public int PersonId { get; set; }
+
         public bool Selected { get; set; }
+
         public string Value { get; set; }
+
         public string FormattedValue { get; set; }
     }
 
     #endregion
 
+    /// <summary>
+    /// Holds a gridview data item for the Person Merge block.
+    /// </summary>
     public class ValuesRow
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is section heading.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is section heading; otherwise, <c>false</c>.
+        /// </value>
         public bool IsSectionHeading { get; set; }
+
+        /// <summary>
+        /// Gets the property key.
+        /// </summary>
+        /// <value>
+        /// The property key.
+        /// </value>
         public string PropertyKey
         {
             get
@@ -1551,6 +1580,12 @@ validity of the request before completing this merge." :
             }
         }
 
+        /// <summary>
+        /// Gets the property label.
+        /// </summary>
+        /// <value>
+        /// The property label.
+        /// </value>
         public string PropertyLabel
         {
             get
@@ -1559,16 +1594,50 @@ validity of the request before completing this merge." :
             }
         }
 
+        /// <summary>
+        /// Gets or sets the person person property list.
+        /// </summary>
+        /// <value>
+        /// The person person property list.
+        /// </value>
         public List<ValuesRowPersonPersonProperty> PersonPersonPropertyList { get; set; }
+
+        /// <summary>
+        /// Gets the person property.
+        /// </summary>
+        /// <value>
+        /// The person property.
+        /// </value>
         public PersonProperty PersonProperty { get; internal set; }
     }
 
+    /// <summary>
+    /// Holds values for the person merge info on the Person Merge block.
+    /// </summary>
     public class ValuesRowPersonPersonProperty
     {
+        /// <summary>
+        /// Gets or sets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
         public MergePerson Person { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person property.
+        /// </summary>
+        /// <value>
+        /// The person property.
+        /// </value>
         public PersonProperty PersonProperty { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person property value.
+        /// </summary>
+        /// <value>
+        /// The person property value.
+        /// </value>
         public PersonPropertyValue PersonPropertyValue { get; set; }
-
     }
-
 }
