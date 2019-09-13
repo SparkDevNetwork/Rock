@@ -201,6 +201,10 @@
     <Compile Include="Migrations\201909111943191_GroupDemographics.Designer.cs">
       <DependentUpon>201909111943191_GroupDemographics.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909130014181_AddNewContentChannelNavigationSetting.cs" />
+    <Compile Include="Migrations\201909130014181_AddNewContentChannelNavigationSetting.Designer.cs">
+      <DependentUpon>201909130014181_AddNewContentChannelNavigationSetting.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -911,6 +915,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909111943191_GroupDemographics.resx">
       <DependentUpon>201909111943191_GroupDemographics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909130014181_AddNewContentChannelNavigationSetting.resx">
+      <DependentUpon>201909130014181_AddNewContentChannelNavigationSetting.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

@@ -282,6 +282,7 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
@@ -405,6 +406,7 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
