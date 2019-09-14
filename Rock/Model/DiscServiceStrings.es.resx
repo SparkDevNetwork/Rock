@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="questionData" xml:space="preserve">
+    <value>{"StringArray":[["Sigue reglamentos","Disfruta los retos","Le gusta divertirse","Le incomoda los cambios","CDIS","CDIS"],["Intenta evitar cometer errores","No se mueve fácilmente","Convence a otros","Se deja llevar por el momento","CDIS","CDIS"],["Piensa bien en medio de problemas","Comparte rápidamente lo que piensa","Le cae bien a todos","Prefiere que no haya cambios","CDIS","CDIS"],["Calcula sus acciones","Toma desiciones de manera rápida","Disfruta hablar","Acciones son predecibles","CDIS","CDIS"],["Nota imperfecciones","Toma riesgos","Le gusta trabajar con personas","Evita los extremos","CDIS","CDIS"],["Tiene problema reconociendo habilidades en otros","Produce resultados","Influencia a otros","Sensitivo a los demás","CDIS","CDIS"],["Evita cometer errores","Toma el control","Lleno de energía","Disponible para otros","CDIS","CDIS"],["Se enfoca fácilmente","Comprometido de lleno a la meta","Bien motivado y animado","Prefiere permanecer callado","CDIS","CDIS"],["Presta atención a los detalles","Da direcciones","Entretiene a los demás","Consistente con otros","CDIS","CDIS"],["Bien exacto","Conquista obstáculos","Alienta a otros","Seguidor de otros","CDIS","CDIS"],["No se fija con facilidad en las habilidades de otros","Impulsado por metas","Es un optimista","Se preocupa por otros","CDIS","CDIS"],["Se asegura de que todo sea perfecto","Se vale por sí mismo","Convence a otros","Se preocupa por otros","CDIS","CDIS"],["Evita el peligro","Persigue metas","Las personas disfrutan su compañía","Empático con los demás","CDIS","CDIS"],["Prefiere la precisión","Comienza las cosas","Disfruta la vida","Sigue a otras personas","CDIS","CDIS"],["Piensa las cosas con detenimiento","Persevera ante obstáculos","Los demás lo consideran agradable","Prefiere las cosas tradicionales","CDIS","CDIS"],["Analiza todo","Toma riesgos","Posee encanto propio","Leal a los demás","CDIS","CDIS"],["Se expresa con detalles","No se mueve ante la oposición","Disfruta la compañía de otros","Escucha pacientemente","CDIS","CDIS"],["Trabaja sistemáticamente","Persigue algo obstinadamente","Lleno de energía","No reta a otros","CDIS","CDIS"],["Propenso a preocuparse","Supera las dificultades","Muestra sentimientos libremente","Consciente de los demás","CDIS","CDIS"],["Se preocupa por los hechos","Seguro de sus habilidades","Disfruta de las personas","Se preocupa profundamente por los demás","CDIS","CDIS"],["Hace las cosas de la manera correcta","Comprometido con la meta","Expresa sus pensamientos internos","Es generoso","CDIS","CDIS"],["Evalúa objetivamente","Asume el control","Actúa sin pensar","Le gustan las cosas tal y como están","CDIS","CDIS"],["Piensa en los problemas de forma sistemática","Muestra confianza","Dedica tiempo a los demás","Es misericordioso con las personas","CDIS","CDIS"],["Sigue instrucciones con precisión","Resistente a la oposición","Busca a los demás","Cómodo con su estatus actual","CDIS","CDIS"],["Puede pensar mediante los problemas ","Empuja a otros","Optimista sobre la vida","Colabora con otros","CDIS","CDIS"],["Cumple exactamente con un estándar","Expresa opiniones libremente","Disfruta divertirse con los demás","Es consistente","CDIS","CDIS"],["Evalúa cuidadosamente los riesgos","Persigue objetivos con fuerza","Da la bienvenida a otros","Considerado a los demás","CDIS","CDIS"],["Crítico de los demás","Alcanza las metas","Optimista hacia los demás","Preocupado por los demás","CDIS","CDIS"],["Intenta evitar errores","No muestra debilidad","Disfruta de los demás","Sigue a otros fácilmente","CDIS","CDIS"],["Sigue las reglas","Se destaca","Expresa sentimientos","Satisfecho con las circunstancias","CDIS","CDIS"]]}</value>
+  </data>
+</root>

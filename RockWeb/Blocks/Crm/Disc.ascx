@@ -115,31 +115,35 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server">
+        <asp:Panel ID="pnlAssessment" CssClass="panel panel-block assessment" runat="server" meta:resourcekey="pnlAssessmentResource1">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i runat="server" id="iIcon"></i>
-                    <asp:Literal ID="lTitle" runat="server" />
+                 <i runat="server" id="iIcon"></i>
+                    <asp:Literal ID="lTitle" runat="server" meta:resourcekey="lTitleResource1" />
                 </h1>
             </div>
             <div class="panel-body">
-
-                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbError" runat="server" Visible="False" NotificationBoxType="Danger" Dismissable="False" meta:resourcekey="nbErrorResource1" ></Rock:NotificationBox>
                 <asp:HiddenField ID="hfAssessmentId" runat="server" />
 
                 <%-- Instructions --%>
-                <asp:Panel ID="pnlInstructions" runat="server">
-                    <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
+                <asp:Panel ID="pnlInstructions" runat="server" meta:resourcekey="pnlInstructionsResource1">
+                    <Rock:RockDropDownList ID="ulLanguages" runat="server" class=" nav nav-actions action action-extended dropdown-menu-right" visible="false" AutoPostBack="True" OnSelectedIndexChanged="ulLanguages_SelectedIndexChanged">
+                        <asp:ListItem Value="en-US">English</asp:ListItem>
+                        <asp:ListItem Value="es">Español</asp:ListItem>
+                    </Rock:RockDropDownList>
+            
+                    <asp:Literal ID="lInstructions" runat="server" meta:resourcekey="lInstructionsResource2"></asp:Literal>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click" meta:resourcekey="btnStartResource1"><i class="fa fa-chevron-right"></i></asp:LinkButton>
                     </div>
                 </asp:Panel>
 
                 <%-- Questions --%>
-                <asp:Panel ID="pnlQuestion" runat="server">
+                <asp:Panel ID="pnlQuestion" runat="server" meta:resourcekey="pnlQuestionResource1">
                     <asp:HiddenField ID="hfPageNo" runat="server" />
-                    <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info">Select the statement that you identify with most and least for each group.</Rock:NotificationBox>
+                    <Rock:NotificationBox ID="nbInfo" runat="server" NotificationBoxType="Info" Dismissable="False" meta:resourcekey="nbInfoResource1" ></Rock:NotificationBox>
 
                     <div class="progress">
                         <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: <%=this.PercentComplete%>%;">
@@ -154,8 +158,8 @@
                                     <thead>
                                         <tr>
                                             <th class="disc-question"><asp:HiddenField ID="hfQuestionCode" runat="server" Value='<%# Eval( "QuestionNumber") %>' /></th>
-                                            <th class="disc-answer grid-select-field disc-more">Most</th>
-                                            <th class="disc-answer grid-select-field disc-less">Least</th>
+                                            <th class="disc-answer grid-select-field disc-more"><asp:Label runat="server" meta:resourcekey="rblMoreHeader"></asp:Label></th>
+                                            <th class="disc-answer grid-select-field disc-less"><asp:Label runat="server" meta:resourcekey="rblLessHeader"></asp:Label></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -197,17 +201,17 @@
                         </ItemTemplate>
                     </asp:Repeater>
                     <div style="display: none" class="alert alert-danger" id="divError">
-                        Please answer question(s) before proceeding further.
+                        <asp:Label runat="server" meta:resourcekey="divErrorResource1" ></asp:Label>
                     </div>
                     <div class="actions clearfix">
-                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();" />
-                        <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" Text="Next" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" CausesValidation="true" OnClick="btnNext_Click" />
+                        <asp:LinkButton ID="btnPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" CssClass="btn btn-default js-wizard-navigation" CausesValidation="False" OnClick="btnPrevious_Click" OnClientClick="scrollToTop();" meta:resourcekey="btnPreviousResource1" />
+                        <asp:LinkButton ID ="btnNext" runat="server" AccessKey="n" OnClientClick="if (!isComplete()) { return false; } scrollToTop();" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="btnNext_Click" meta:resourcekey="btnNextResource1" />
                     </div>
                 </asp:Panel>
 
-                <asp:Panel ID="pnlResult" runat="server">
-                    <asp:Literal ID="lPrintTip" runat="server" Text="<div class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>" Visible="false"></asp:Literal>
-                    <asp:Literal ID="lHeading" runat="server"></asp:Literal>
+                <asp:Panel ID="pnlResult" runat="server" meta:resourcekey="pnlResultResource1">
+                    <asp:Literal ID="lPrintTip" runat="server"  Visible="False" meta:resourcekey="lPrintTipResource1"></asp:Literal>
+                    <asp:Literal ID="lHeading" runat="server" meta:resourcekey="lHeadingResource1"></asp:Literal>
 
                     <ul class="discchart">
                         <li class="discchart-midpoint"></li>
@@ -226,17 +230,17 @@
                         </li>
                     </ul>
 
-                    <h3>Description</h3>
-                    <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                    <h3><asp:Label ID="lDescriptionHead" meta:resourcekey="lDescriptionHeadResource1" runat="server"></asp:Label></h3>
+                    <asp:Literal ID="lDescription" runat="server" ></asp:Literal>
 
-                    <h3>Strengths</h3>
+                    <h3><asp:Label ID="lStrengthsHead" meta:resourcekey="lStrengthsHeadResource1" runat="server"></asp:Label></h3>
                     <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
 
-                    <h3>Challenges</h3>
-                    <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
+                    <h3><asp:Label ID="lChallengesHead" meta:resourcekey="lChallengesHeadResource1" runat="server"></asp:Label></h3>
+                    <asp:Literal ID="lChallenges" runat="server" ></asp:Literal>
 
                     <div class="actions margin-t-lg margin-b-lg">
-                        <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+                        <asp:Button ID="btnRetakeTest" runat="server" Visible="False" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" meta:resourcekey="btnRetakeTestResource1" />
                     </div>
 
                 </asp:Panel>

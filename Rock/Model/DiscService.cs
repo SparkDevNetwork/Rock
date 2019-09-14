@@ -16,11 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Resources;
+using System.Threading;
+using Newtonsoft.Json;
+using Rock.Utility.Globalizaton;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+
     /// <summary>
     /// DISC Class for administering and scoring a DISC Assessment
     /// </summary>
@@ -29,39 +35,31 @@ namespace Rock.Model
         /// <summary>
         /// Raw question data.
         /// </summary>
-        private static String[,] questionData = {
-            {"Follows rules","Enjoys challenges","Enjoys having fun","Uncomfortable with change","CDIS","CDIS"},
-            {"Tries to avoid mistakes","Not easily moved","Convinces others ","Goes with the flow","CDIS","CDIS"},
-            {"Thinks through issues","Quickly shares thoughts","Liked by others","Prefers not to change","CDIS","CDIS"},
-            {"Calculates actions","Makes decisions quickly","Enjoys talking","Actions are predictable","CDIS","CDIS"},
-            {"Sees imperfections","Takes risks","People person","Avoids extremes","CDIS","CDIS"},
-            {"Struggles acknowledging abilities","Produces results","Influences others","Sensitive to others","CDIS","CDIS"},
-            {"Avoids mistakes","Takes control","Full of energy","Available to others","CDIS","CDIS"},
-            {"Easily focuses","Fully committed to the goal","High-spirited","Does not speak up","CDIS","CDIS"},
-            {"Pays attention to details","Gives direction","Is entertaining","Consistent with others","CDIS","CDIS"},
-            {"Very exact","Conquers challenges","Encourages others","Follows others","CDIS","CDIS"},
-            {"Plays down abilities","Driven by goals","Is an optimist","Concerned for others","CDIS","CDIS"},
-            {"Concerned for correctness","Is self sufficient","Persuades others","Concerned for others","CDIS","CDIS"},
-            {"Avoids danger","Pursues goals","Are enjoyed by People","Empathizes with others","CDIS","CDIS"},
-            {"Prefers precision","Starts things","Enjoys life fully","Follows others","CDIS","CDIS"},
-            {"Thinks things through","Perseveres obstacles","Liked by others","Sticks with the traditional way","CDIS","CDIS"},
-            {"Is analytical","Takes risks","Possesses charm ","Loyal to others","CDIS","CDIS"},
-            {"Share details","Unmovable in opposition","Enjoys others","Patient listener","CDIS","CDIS"},
-            {"Works systematically","Pursues doggedly","Full of energy","Doesn't challenge others","CDIS","CDIS"},
-            {"Prone to worrying","Overcomes difficulties","Freely shows feelings","Mindful of others","CDIS","CDIS"},
-            {"Is concerned about the facts","Secure in abilities","Enjoys people","Cares deeply about others","CDIS","CDIS"},
-            {"Does things the right way","Committed to the goal","Shares inner thoughts","Is generous","CDIS","CDIS"},
-            {"Evaluates objectively","Assumes control","Acts without thinking","Like things the way they are","CDIS","CDIS"},
-            {"Systematically thinks through issues","Displays confidence","Spends time with others","Gives grace to others","CDIS","CDIS"},
-            {"Follows instructions precisely","Resistant to opposition","Seeks out others","Comfortable with the status quo","CDIS","CDIS"},
-            {"Thinks through problems","Pushes others","Upbeat about life","Collaborates with others","CDIS","CDIS"},
-            {"Conforms exactly to a standard","Freely expresses opinions","Enjoys having fun with others","Is consistent","CDIS","CDIS"},
-            {"Carefully assesses risks","Forcefully pursues goals","Welcomes others","Considerate of others","CDIS","CDIS"},
-            {"Critical of others","Drives to complete the goal","Optimistic toward others","Concerned for others","CDIS","CDIS"},
-            {"Tries to avoid mistakes","Does not show weakness","Enjoys others","Readily follows others","CDIS","CDIS"},
-            {"Follows rules","Stands out","Expresses feelings","Satisfied with circumstances","CDIS","CDIS"}
-        };
+        ///
+        // member is accessed via get
+        private static String[,] m_questionData= null;
 
+        // since the data is class static we need to know the current thread culture and refresh if it does not match
+        // we track it here
+        private static CultureInfo  m_lastCulture;
+
+        // the data is now in a resource file for localication.  Currently the default and 'es' (Spanish)
+        private static String[,] questionData
+        {
+            
+            get {
+
+                if (m_questionData is null || (Thread.CurrentThread.CurrentCulture != m_lastCulture))
+                {
+                    m_lastCulture = Thread.CurrentThread.CurrentCulture;
+                    m_questionData = StringArrayResource.GetResourceStringArray("questionData", DiscServiceStrings.ResourceManager);
+                }
+                return m_questionData;
+            }
+        }
+
+
+        
 
         /// <summary>
         /// Raw question data with code as key.
@@ -374,7 +372,7 @@ namespace Rock.Model
         static public AssessmentResults LoadSavedAssessmentResults( Person person )
         {
             AssessmentResults savedScores = new AssessmentResults();
-
+            
             person.LoadAttributes();
 
             var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );

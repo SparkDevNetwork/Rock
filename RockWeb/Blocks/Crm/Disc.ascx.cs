@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -68,27 +71,23 @@ namespace Rockweb.Blocks.Crm
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 5,
-        Order = 3 )]
+        Order = 3)]
+    [BooleanField("Show Languages",
+        Key = AttributeKeys.ShowLanguages,
+        Description = "Display language choice dropdown while taking the test",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Order = 4)]
 
     #endregion Block Attributes
     public partial class Disc : Rock.Web.UI.RockBlock
     {
+        // Constants
+        // used to indicate the page language (if not set by browser)
+        private const string langAttrib = "PAGE_LANG";
+
         #region Attribute Default Values
-        private const string InstructionsDefaultValue = @"
-<h2>Welcome!</h2>
-<p>
-    {{ Person.NickName }}, our behaviors are influenced by our natural personality wiring. This assessment
-    evaluates your essential approach to the world around you and how that drives your behavior.
-</p>
-<p>
-    For best results with this assessment, picture a setting such as the workplace, at home or with friends,
-    and keep that same setting in mind as you answer all the questions. Your responses may be different in
-    different circumstances.
-</p>
-<p>
-    Don’t spend too much time thinking about your answer. Usually, your first responses is your most natural.
-    Since there are no right or wrong answers, just go with your instinct.
-</p>";
+        private const string InstructionsDefaultValue = "";// now set as resource string
 
         #endregion Attribute Default Values
 
@@ -104,6 +103,7 @@ namespace Rockweb.Blocks.Crm
             // Other Attributes
             public const string Strengths = "Strengths";
             public const string Challenges = "Challenges";
+            public const string ShowLanguages = "ShowLanguages";
         }
 
         #endregion Attribute Keys
@@ -206,7 +206,8 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
             SetPanelTitleAndIcon();
-
+            
+            SetLanguages();
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
             string personKey = PageParameter( PageParameterKey.Person );
 
@@ -232,11 +233,11 @@ namespace Rockweb.Blocks.Crm
             {
                 if ( _isQuerystringPersonKey )
                 {
-                    HidePanelsAndShowError( "There is an issue locating the person associated with the request." );
+                    HidePanelsAndShowError(GetLocalResourceObject("PersonNotFound").ToString());
                 }
                 else
                 {
-                    HidePanelsAndShowError( "You must be signed in to take the assessment." );
+                    HidePanelsAndShowError(GetLocalResourceObject("MustSignIn").ToString());
                 }
             }
         }
@@ -291,7 +292,7 @@ namespace Rockweb.Blocks.Crm
                         if ( _targetPerson.Id != CurrentPerson.Id )
                         {
                             // If the current person is not the target person and there are no results to show then show a not taken message.
-                            HidePanelsAndShowError( string.Format("{0} does not have results for the EQ Inventory Assessment.", _targetPerson.FullName ) );
+                            HidePanelsAndShowError( string.Format(GetLocalResourceObject("NoResults").ToString(), _targetPerson.FullName ) );
                         }
                         else
                         {
@@ -300,7 +301,7 @@ namespace Rockweb.Blocks.Crm
                     }
                     else
                     {
-                        HidePanelsAndShowError( "Sorry, this test requires a request from someone before it can be taken." );
+                        HidePanelsAndShowError(GetLocalResourceObject("SorryNotRequested").ToString());
                     }
                 }
             }
@@ -353,7 +354,7 @@ namespace Rockweb.Blocks.Crm
 
             var totalQuestion = pageNumber * QuestionCount;
             if ( ( _assessmentResponses.Count > totalQuestion && !_assessmentResponses.All( a => !string.IsNullOrEmpty( a.MostScore ) && !string.IsNullOrEmpty( a.LeastScore ) ) ) || "Next".Equals( commandArgument ) )
-            {
+            { 
                 BindRepeater( pageNumber );
             }
             else
@@ -417,8 +418,8 @@ namespace Rockweb.Blocks.Crm
                 catch ( Exception ex )
                 {
                     nbError.Visible = true;
-                    nbError.Title = "We're Sorry...";
-                    nbError.Text = "Something went wrong while trying to save your test results.";
+                    nbError.Title = GetLocalResourceObject("Sorry").ToString();
+                    nbError.Text = GetLocalResourceObject("ErrorSaving").ToString();
                     LogException( ex );
                 }
             }
@@ -461,7 +462,7 @@ namespace Rockweb.Blocks.Crm
 
                 RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
                 RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
-
+                //TODO, this needs to be localized.... Most Least
                 var assessment = ( AssessmentResponse ) e.Item.DataItem;
                 ListItem m1 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 0 ) );
                 ListItem m2 = new ListItem( "<span class='sr-only'>Most</span>", assessment.Questions.Keys.ElementAt( 1 ) );
@@ -594,6 +595,28 @@ namespace Rockweb.Blocks.Crm
         }
 
         /// <summary>
+        /// Sets the page Language options.
+        /// </summary>
+        private void SetLanguages()
+        {
+            if (Boolean.Parse(this.GetAttributeValue(AttributeKeys.ShowLanguages)))
+            {
+                ulLanguages.Visible = true;
+                // we rely on the url parameter to tell us to use a diffent language
+                if (PageParameter(langAttrib) != null)
+                {
+                    ulLanguages.SelectedValue = PageParameter(langAttrib);
+                }
+
+            }
+            else
+            {
+                ulLanguages.Visible = false;
+            }
+        }
+
+
+        /// <summary>
         /// Sets the page title and icon.
         /// </summary>
         private void SetPanelTitleAndIcon()
@@ -627,9 +650,16 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "Person", _targetPerson );
             }
 
-            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            if (GetAttributeValue( AttributeKeys.Instructions ).Length == 0)
+            {
+                //TODO - in future, for this and other attribute text, make it CurrentCulture aware!
+                lInstructions.Text = GetLocalResourceObject("InstructionsDefaultValue").ToString().ResolveMergeFields(mergeFields); 
+            }
+            else
+            {
+                lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            }
         }
-
         /// <summary>
         /// Shows the results of the assessment test.
         /// </summary>
@@ -645,7 +675,7 @@ namespace Rockweb.Blocks.Crm
                 lPrintTip.Visible = true;
             }
 
-            lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
+            lHeading.Text = string.Format(GetLocalResourceObject("PersonalityTypeHeader").ToString(), _targetPerson.FullName, savedScores.PersonalityType);
 
             double days = assessment.AssessmentType.MinimumDaysToRetake;
 
@@ -666,15 +696,81 @@ namespace Rockweb.Blocks.Crm
         /// <param name="personalityType">The one or two letter personality type.</param>
         private void ShowExplaination( string personalityType )
         {
-            var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
-            if ( personalityValue != null )
+
+            if (Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName != "es")
             {
-                lDescription.Text = personalityValue.Description;
-                lStrengths.Text = personalityValue.GetAttributeValue( AttributeKeys.Strengths );
-                lChallenges.Text = personalityValue.GetAttributeValue( AttributeKeys.Challenges );
+                var personalityValue = DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid()).DefinedValues.Where(v => v.Value == personalityType).FirstOrDefault();
+                if (personalityValue != null)
+                {
+                    lDescription.Text = personalityValue.Description;
+                    lStrengths.Text = personalityValue.GetAttributeValue(AttributeKeys.Strengths);
+                    lChallenges.Text = personalityValue.GetAttributeValue(AttributeKeys.Challenges);
+                }
             }
+            else // localized
+            {
+                lDescription.Text = GetLocalizedDiscValue(personalityType, "Description");
+                lStrengths.Text = GetLocalizedDiscValue(personalityType, "Strengths");
+                lChallenges.Text = GetLocalizedDiscValue(personalityType, "Challenges");
+            }
+
         }
 
+//C_DISC_Description
+//C_DISC_Strengths
+//C_DISC_Challenges
+//CD_DISC_Description
+//CD_DISC_Strengths
+//CD_DISC_Challenges
+//CI_DISC_Description
+//CI_DISC_Strengths
+//CI_DISC_Challenges
+//CS_DISC_Description
+//CS_DISC_Strengths
+//CS_DISC_Challenges
+//D_DISC_Description
+//D_DISC_Strengths
+//D_DISC_Challenges
+//DC_DISC_Description
+//DC_DISC_Strengths
+//DC_DISC_Challenges
+//DI_DISC_Description
+//DI_DISC_Strengths
+//DI_DISC_Challenges
+//DS_DISC_Description
+//DS_DISC_Strengths
+//DS_DISC_Challenges
+//I_DISC_Description
+//I_DISC_Strengths
+//I_DISC_Challenges
+//ID_DISC_Description
+//ID_DISC_Strengths
+//ID_DISC_Challenges
+//IC_DISC_Description
+//IC_DISC_Strengths
+//IC_DISC_Challenges
+//IS_DISC_Description
+//IS_DISC_Strengths
+//IS_DISC_Challenges
+//S_DISC_Description
+//S_DISC_Strengths
+//S_DISC_Challenges
+//SD_DISC_Description
+//SD_DISC_Strengths
+//SD_DISC_Challenges
+//SC_DISC_Description
+//SC_DISC_Strengths
+//SC_DISC_Challenges
+//SI_DISC_Description
+//SI_DISC_Strengths
+//SI_DISC_Challenges
+
+
+
+        private string GetLocalizedDiscValue(string personalityType, string attrib)
+        {
+            return GetLocalResourceObject( personalityType + "_DISC_" + attrib).ToString();
+        }
         /// <summary>
         /// Shows the questions.
         /// </summary>
@@ -727,12 +823,12 @@ namespace Rockweb.Blocks.Crm
             // set next button
             if ( questions.Count() > QuestionCount )
             {
-                btnNext.Text = "Next";
+                btnNext.Text = GetLocalResourceObject("btnNextResource1.Text").ToString();
                 btnNext.CommandArgument = "Next";
             }
             else
             {
-                btnNext.Text = "Finish";
+                btnNext.Text = GetLocalResourceObject("btnNextResourceFinish").ToString();
                 btnNext.CommandArgument = "Finish";
             }
 
@@ -835,5 +931,68 @@ namespace Rockweb.Blocks.Crm
         }
 
         #endregion
+        protected void ulLanguages_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string lang = (sender as DropDownList).SelectedValue;
+            Response.Redirect(ReplaceOrCreateParameter(Request.Url.LocalPath, Request.Url.Query, langAttrib, lang), true);
+        }
+
+        /// <summary>
+        /// Replace or Create an Parameter
+        /// </summary>
+        /// <returns> the fixed parameter string</returns>
+        static string ReplaceOrCreateParameter(string LocalPath, string urlQuery, string Parameter, string ParameterValue)
+        {
+            StringBuilder urlPath = new StringBuilder(LocalPath);
+
+            if (urlQuery.Length == 0) // no query string
+            {
+                urlPath.AppendFormat("?{0}={1}", Parameter, ParameterValue);
+            }
+            else// there is a query string
+            {
+                if (urlQuery.Contains(Parameter))
+                {
+                    int start = urlQuery.IndexOf(Parameter);
+                    int nextParam = urlQuery.IndexOf('&', start);
+                    if (nextParam == -1) // no trailing parameters
+                    {
+                        urlPath.Append(urlQuery.Remove(start));
+                        urlPath.AppendFormat("{0}={1}", Parameter, ParameterValue);
+                    }
+                    else // there are parameters after this one
+                    {
+                        string result = urlQuery.Substring(start, nextParam - start);
+                        urlPath.Append(urlQuery.Replace(result, string.Format("{0}={1}", Parameter, ParameterValue)));
+                    }
+                }
+                else // there are parameters but not this one!
+                {
+                    //append it
+                    urlPath.Append(urlQuery);
+                    urlPath.AppendFormat("&{0}={1}", Parameter, ParameterValue);
+                }
+
+
+            }
+
+            return urlPath.ToString();
+        }
+
+
+        protected override void FrameworkInitialize()
+        {
+            if (PageParameter(langAttrib) != null)
+            {
+                string language = PageParameter(langAttrib);
+                if (language != null && language.Length > 0)
+                {
+                    String selectedLanguage = language;
+                    Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(selectedLanguage);
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(selectedLanguage);
+                }
+            }
+            base.FrameworkInitialize();
+        }
     }
 }

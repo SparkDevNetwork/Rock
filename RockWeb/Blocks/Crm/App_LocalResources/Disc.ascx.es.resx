@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="btnNextResource1.Text" xml:space="preserve">
+    <value>Próximo</value>
+  </data>
+  <data name="btnPreviousResource1.Text" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="btnPreviousResource1.ToolTip" xml:space="preserve">
+    <value>Alt+p</value>
+  </data>
+  <data name="btnRetakeTestResource1.Text" xml:space="preserve">
+    <value>Prueba de repetición</value>
+  </data>
+  <data name="btnStartResource1.Text" xml:space="preserve">
+    <value>Empezar &lt;i class="fa fa-chevron-right"&gt;&lt;/i&gt;</value>
+  </data>
+  <data name="InstructionsDefaultValue" xml:space="preserve">
+    <value>&lt;h2&gt;¡Bienvenido!&lt;/h2&gt;
+&lt;p&gt;
+    {{ Person.NickName }}, nuestro comportamiento está influenciado por nuestra personalidad natural. Este examen, evalúa su enfoque esencial del mundo que lo rodea y cómo eso impulsa su comportamiento.
+&lt;/p&gt;
+&lt;p&gt;
+    Para obtener los mejores resultados con esta evaluación, imagínese un entorno como el lugar de trabajo, el hogar o con amigos, y tenga en cuenta ese mismo entorno al responder todas las preguntas. 
+&lt;/p&gt;
+&lt;p&gt;
+    No pases demasiado tiempo pensando en tu respuesta. Escoge la que más se parezca a usted. Por lo general, sus primeras respuestas son las más naturales. Como no hay respuestas correctas o incorrectas, solo sigue tu instinto.
+&lt;/p&gt;</value>
+  </data>
+  <data name="lPrintTipResource1.Text" xml:space="preserve">
+    <value>&lt;div class='alert alert-success' role='alert'&gt;Considere la posibilidad de imprimir esta página para futuras referencias.&lt;/div&gt;</value>
+  </data>
+  <data name="nbErrorResource1.Text" xml:space="preserve">
+    <value>Tienes que iniciar sesión para realizar la evaluación.</value>
+  </data>
+  <data name="nbInfoResource1.Text" xml:space="preserve">
+    <value>Seleccione la instrucción que identifique con más y menos para cada grupo.</value>
+  </data>
+  <data name="rblLessHeader.Text" xml:space="preserve">
+    <value>Menos</value>
+  </data>
+  <data name="rblMoreHeader.Text" xml:space="preserve">
+    <value>Más</value>
+  </data>
+  <data name="btnNextResourceFinish" xml:space="preserve">
+    <value>Terminar</value>
+  </data>
+  <data name="ErrorSaving" xml:space="preserve">
+    <value>Algo salió mal mientras intentábamos guardar los resultados de su examen</value>
+  </data>
+  <data name="MustSignIn" xml:space="preserve">
+    <value>Debes iniciar sesión para poder tomar este examen.</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>{0} no tiene resultados para el Examen de Inventario EQ.</value>
+  </data>
+  <data name="PersonalityTypeHeader" xml:space="preserve">
+    <value>&lt;div class='disc-heading'&gt;&lt;h1&gt;{0}&lt;/h1&gt;&lt;h4&gt;Tipo de Personalidad: {1}&lt;/h4&gt;&lt;/div&gt;</value>
+  </data>
+  <data name="PersonNotFound" xml:space="preserve">
+    <value>Hay un problema ubicando a la persona asociada a la solicitud.</value>
+  </data>
+  <data name="Sorry" xml:space="preserve">
+    <value>Lo sentimos…</value>
+  </data>
+  <data name="SorryNotRequested" xml:space="preserve">
+    <value>Lo sentimos, este examen requiere que sea solicitado por alguien antes de poder ser tomado.</value>
+  </data>
+  <data name="lDescriptionHeadResource1.Text" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="lStrengthsHeadResource1.Text" xml:space="preserve">
+    <value>Fortalezas</value>
+  </data>
+  <data name="lChallengesHeadResource1.Text" xml:space="preserve">
+    <value>Desafíos</value>
+  </data>
+  <data name="divErrorResource1.Text" xml:space="preserve">
+    <value>Por favor, responda la(s) pregunta(s) antes de continuar.</value>
+  </data>
+  <data name="C_DISC_Challenges" xml:space="preserve">
+    <value>Los C son perfeccionistas que pueden ser críticos, demasiado sensibles y reacios a probar algo nuevo. Los C inmaduros tienen poca gracia y flexibilidad, y se vuelven controladores y sujetos a procedimientos a expensas de las relaciones. Para madurar, los C necesitan aprender a ser adaptables y amigables concentrándose en las fortalezas de otras personalidades en lugar de sus defectos.</value>
+  </data>
+  <data name="C_DISC_Description" xml:space="preserve">
+    <value>Le gusta mantener altos estándares y seguir los procedimientos correctamente. Es posible que tenga dificultades para aceptar la falta de calidad en proyectos o personas a su alrededor.</value>
+  </data>
+  <data name="C_DISC_Strengths" xml:space="preserve">
+    <value>Como pensadores competentes y reservados, los C generalmente aplican estándares muy altos a sí mismos y a los demás. Son minuciosos y sistemáticos, a menudo prefieren trabajar detrás de escena. Analíticos y lógicos, los C pueden construir una imagen completa y organizada a partir de muchos detalles dispersos. Otros tipos de personalidad generalmente admiran a los C por su capacidad de crear patrones organizacionales claros, en resultado del caos.</value>
+  </data>
+  <data name="CD_DISC_Challenges" xml:space="preserve">
+    <value>Los CD están sujetos a procedimientos y métodos, y pueden ser perfeccionistas, cautelosos y reacios al riesgo. Los CD inmaduros tienen poca paciencia y flexibilidad, lo que genera problemas para delegar. Para madurar, los CD necesitan aprender a ser sensibles a las necesidades de los demás y crear entornos positivos desarrollando sus habilidades de escucha y valorando a las personas y los datos por igual.</value>
+  </data>
+  <data name="CD_DISC_Description" xml:space="preserve">
+    <value>Disfruta manteniendo altos estándares y siguiendo los procedimientos correctamente mientras realiza la tarea. Es posible que otros lo vean como que sólo se preocupa por lograr un objetivo, excluyendo a las personas en el proceso.</value>
+  </data>
+  <data name="CD_DISC_Strengths" xml:space="preserve">
+    <value>Como solucionadores de problemas sistemáticos, los CD son generalmente competitivos consigo mismos, evaluando detalles y estableciendo estándares. Valoran la exactitud y la precisión, y están dispuestos a defender lo que creen es correcto. Sociables y creativos, los CD pueden iniciar efectivamente el cambio. Otros tipos de personalidad generalmente admiran los CD por su originalidad y seguridad en sí mismos</value>
+  </data>
+  <data name="CI_DISC_Challenges" xml:space="preserve">
+    <value>Los CI pueden ser silenciosos, inseguros y rígidos. Los CI inmaduros son muy sensibles y se preocupan demasiado por lo que otros piensan de ellos, lo que dificulta la toma de decisiones. Para madurar, CI necesita aprender a ser más motivado y asertivo.</value>
+  </data>
+  <data name="CI_DISC_Description" xml:space="preserve">
+    <value>Disfruta manteniendo altos estándares y siguiendo los procedimientos correctamente mientras valora divertirse con las personas en el proceso. Puede sentirse frustrado porque es difícil mantener la excelencia mientras se divierte con la gente.</value>
+  </data>
+  <data name="CI_DISC_Strengths" xml:space="preserve">
+    <value>Como comunicadores alentadores, los CI generalmente son excelentes maestros. Proporcionan comentarios positivos, alientan a las personas a dominar nuevas habilidades y desarrollan confianza rápidamente. Flexibles y astutos, los CI son buenos jueces de carácter. Otros tipos de personalidad generalmente admiran los CI por su conducta llevadera y competencia.</value>
+  </data>
+  <data name="CS_DISC_Challenges" xml:space="preserve">
+    <value>Los CS son perfeccionistas sensibles que pueden ser reacios al riesgo, tímidos, pesimistas y tercos. Los CS inmaduros tienen poca flexibilidad y toma de decisión, lo que lleva a conflictos sin resolver. Para madurar, los CS necesitan salir de sus zonas de confort y trabajar para reconocer las fortalezas de otros tipos de personalidad.</value>
+  </data>
+  <data name="CS_DISC_Description" xml:space="preserve">
+    <value>Usted disfruta mantener altos estándares y seguir los procedimientos correctamente mientras mantiene un ritmo estable y constante. Puede tender a mantener altos estándares para usted, su trabajo y los que lo rodean; lo que puede hacer que otros no cumplan con sus expectativas.</value>
+  </data>
+  <data name="CS_DISC_Strengths" xml:space="preserve">
+    <value>Como pensadores sistemáticos, los CS generalmente influyen en las personas a través de los hechos. Les gusta hacer una cosa a la vez y hacerlo bien la primera vez. Amigables y cariñosos, los CS tienden a mantenerse solos y no suelen buscar atención. Otros tipos de personalidad generalmente admiran los CS por su competencia y estabilidad.</value>
+  </data>
+  <data name="DC_DISC_Challenges" xml:space="preserve">
+    <value>Los DC son perfeccionistas que pueden parecer indiferentes, agotados y agresivos. Los DC inmaduros tienen poca paciencia y consideración, lo que los lleva a descuidar las relaciones. A menudo, no son grandes tomadores de decisiones. Para madurar, DC necesita aprender a reconocer las necesidades de otras personas escuchando y disminuyendo la velocidad.</value>
+  </data>
+  <data name="DC_DISC_Description" xml:space="preserve">
+    <value>Disfruta de alcanzar el objetivo final, así como todos los pasos necesarios para lograr el objetivo. Tiene una excelente capacidad para ver el objetivo final y conocer los pasos específicos necesarios para lograrlo, lo que puede dificultar trabajar con usted en un equipo.</value>
+  </data>
+  <data name="DC_DISC_Strengths" xml:space="preserve">
+    <value>Como creadores decididos y trabajadores, los DC están constantemente iniciando nuevas actividades. A menudo son aprendices de por vida, adquiriendo conocimiento sobre cada tarea que ejecutan. Impulsados y competentes, a los DC les gusta estar a cargo y desafiar el status quo. Otros tipos de personalidad generalmente admiran a los DC por su capacidad para realizar una gran cantidad de trabajo en un corto período de tiempo.</value>
+  </data>
+  <data name="DI_DISC_Challenges" xml:space="preserve">
+    <value>Los DI son trabajadores independientes que pueden ser exigentes, fríos, contundentes e insensibles. Los DI inmaduros tienen poca paciencia y tacto, lo que lleva a grandes malentendidos. Para madurar, los DI necesitan aprender a reducir la velocidad pasando tiempo relajándose, escuchando a los demás y pensando en los proyectos.</value>
+  </data>
+  <data name="DI_DISC_Description" xml:space="preserve">
+    <value>Le gusta lograr el objetivo final y desea traer personas con usted para cumplir la tarea. Puede persuadir a las personas y reclutarlas, pero cuando ya no sean necesarias, puede seguir adelante sin ellas.</value>
+  </data>
+  <data name="DI_DISC_Strengths" xml:space="preserve">
+    <value>Como motivadores dinámicos e inspiradores, los DI tienen la habilidad de influir grandes multitudes. Las personas siguen naturalmente a los DI, que a menudo se enfocan en múltiples proyectos a la vez. Agradable y seguro, los DI se destacan por
+
+tomar una idea creativa y aplicarla a un propósito práctico. Otros tipos de personalidad generalmente admiran los DI por su energía y logros.</value>
+  </data>
+  <data name="DS_DISC_Challenges" xml:space="preserve">
+    <value>Los DS son directores objetivos que pueden parecer distantes e indiferentes. Los DS inmaduros tienen poca paciencia para los detalles y son demasiado testarudos. Para madurar, los DS necesitan aprender a dejar al lado sus frustraciones desarrollando flexibilidad y brindar prioridad a las relaciones.</value>
+  </data>
+  <data name="DS_DISC_Description" xml:space="preserve">
+    <value>Disfrutas lograr el objetivo final y quieres lograrlo sin aislar a las personas en el proceso. Puede tener dificultades entre lograr la tarea y mantener a las personas a bordo, la compensación a menudo es difícil para usted.</value>
+  </data>
+  <data name="DS_DISC_Strengths" xml:space="preserve">
+    <value>Como determinados, planificadores e independientes, los DS generalmente son motivados a lograr. Son visionarios que aman ayudar a otros a alcanzar sus propias metas. En una combinación de creatividad y análisis, los DS están especialmente preparados para avanzar tanto a las personas como las tareas. Otros tipos de personalidad generalmente admiran los DS por su determinación esforzada.</value>
+  </data>
+  <data name="D_DISC_Challenges" xml:space="preserve">
+    <value>Los D son personas de alto rendimiento que pueden ser insensibles, impacientes, impulsivos y egoístas. Los D inmaduros tienen poco autocontrol y autodisciplina, lo que genera conflictos con la autoridad. Para madurar, los D necesitan aprender a equilibrar su determinación agresiva desarrollando habilidades de escucha y evitando argumentos innecesarios.</value>
+  </data>
+  <data name="D_DISC_Description" xml:space="preserve">
+    <value>Le gusta lograr el objetivo final y está dispuesto a hacer lo que sea necesario para cumplir la tarea. Puede lastimar a las personas para lograr el objetivo, pero siente que el objetivo es más importante.</value>
+  </data>
+  <data name="D_DISC_Strengths" xml:space="preserve">
+    <value>Como líderes naturalmente poderosos y seguros, los D toman la iniciativa de perseguir objetivos a toda costa. No se ven intimidados por obstáculos o situaciones de alto riesgo. Altamente eficiente y decidido, el D sueña en grande y establece récords. Otros tipos de personalidad generalmente admiran a los D por su valentía dinámica, audacia y visión láser.</value>
+  </data>
+  <data name="IC_DISC_Challenges" xml:space="preserve">
+    <value>Los IC son persuasivos que pueden ser demasiado agresivos y centrarse en ganar. Los IC inmaduros pueden ser impacientes y críticos, insensibles y reacios al riesgo, lo que lleva a una mala toma de decisiones. Para madurar, los IC necesitan aprender a desarrollar paciencia y sensibilidad hacia los demás, y mantener una mente abierta hacia el cambio.</value>
+  </data>
+  <data name="IC_DISC_Description" xml:space="preserve">
+    <value>Disfruta llevar energía y vida a las personas con las que está, así como seguir las reglas y procedimientos. Porque tiene necesidades conductuales competitivas de disfrutar de las personas y centrarse en los detalles; puede encontrarse dividido entre satisfacer las necesidades de las personas y prestar atención a las reglas o procesos necesarios para realizar bien una tarea.</value>
+  </data>
+  <data name="IC_DISC_Strengths" xml:space="preserve">
+    <value>Como maestros competentes, a los IC generalmente les gusta seguir las reglas. Son hábiles para hacer que los extraños se sientan cómodos y, a menudo, son un excelente juez de carácter. Observador y amigable, los IC se comunican con cuidado y consideración. Otros tipos de personalidad generalmente admiran los IC por su manera fácil e informal de relacionarse con las personas y su capacidad para articular problemas complejos con claridad.</value>
+  </data>
+  <data name="ID_DISC_Challenges" xml:space="preserve">
+    <value>Los ID son líderes motivados que siempre están en el centro de algo. Las ID inmaduras tienden a ser inquietas, demasiado confiadas y exageradas, con una tendencia en asumir a las cosas sin pensarlas. Para madurar, las ID deben centrarse en ser más estudiosos e inmóviles; tomar decisiones con cuidado en lugar de seguir la opinión popular.</value>
+  </data>
+  <data name="ID_DISC_Description" xml:space="preserve">
+    <value>Usted disfruta llevando energía y vida a las personas con las que está y moviéndolas en una dirección para realizar una tarea. Es posible que no siempre realice la tarea, porque no desea herir los sentimientos de las personas.</value>
+  </data>
+  <data name="ID_DISC_Strengths" xml:space="preserve">
+    <value>Como motivadores positivos y amigables, los ID generalmente ganan respeto y admiración rápidamente. Son figuras inspiradoras que les agradan los grandes grupos de personas. Habladores e interesados, los ID tienen el deseo de entender a las personas. Otros tipos de personalidad generalmente admiran los ID por su liderazgo seguro y fácil.</value>
+  </data>
+  <data name="IS_DISC_Challenges" xml:space="preserve">
+    <value>Los IS son almas pacientes y empáticas que pueden ser demasiado tolerantes con las personas que no producen. Los IS inmaduros tienen poca objetividad y toman las críticas muy personalmente. Para madurar, los IS necesitan aprender a defenderse y desarrollar límites</value>
+  </data>
+  <data name="IS_DISC_Description" xml:space="preserve">
+    <value>Te gusta llevar energía y vida a las personas con las que estás y mantener a todos contentos y a bordo en las relaciones a largo plazo. Tendería a centrarse más en las personas que en la tarea en cuestión, lo que puede frustrar a las personas orientadas a la tarea.</value>
+  </data>
+  <data name="IS_DISC_Strengths" xml:space="preserve">
+    <value>Como oyentes cálidos y alentadores, los IS suelen tener excelentes destrezas sociales. Son eficientes y firmes en su trabajo. A los IS les gusta complacer y servir a las personas, y generalmente son muy apreciados. Otros tipos de personalidades generalmente admiran a los IS por su porte informal y amistades genuinas.</value>
+  </data>
+  <data name="I_DISC_Challenges" xml:space="preserve">
+    <value>Las Is tienen un don para lo dramático y pueden estar más preocupados por la popularidad que por los resultados. Los I inmaduros tienen poco enfoque y paciencia, lo que lleva a una toma de decisiones impulsiva. Para madurar, las Is deben aprender a reducir la velocidad y considerar las consecuencias antes de actuar o hablar. Pueden hacerlo desarrollando habilidades para escuchar y perfeccionando los hábitos de organización.</value>
+  </data>
+  <data name="I_DISC_Description" xml:space="preserve">
+    <value>Te gusta llevar energía y vida a las personas con las que estás. Es posible que no pueda concentrarse en la tarea, pero le gusta salir con la gente.</value>
+  </data>
+  <data name="I_DISC_Strengths" xml:space="preserve">
+    <value>Como artistas inspiradores y divertidos, normalmente los Is tienen habilidades de comunicación superiores a lo normal. Son muy activos socialmente y tienen un amplio círculo de amigos. De gran energía y optimista, pueden motivar fácilmente a otros a la acción. Otros tipos de personalidad generalmente admiran a los I por su simpatía y confianza naturales, especialmente en entornos nuevos.</value>
+  </data>
+  <data name="SC_DISC_Challenges" xml:space="preserve">
+    <value>Los SC son piensan con cautela y pueden ser críticos, tímidos, pesimistas y demasiado sensibles. Los SC inmaduros son indecisos y tercos. Tienen dificultades para adaptarse al cambio. Para madurar, los SC necesitan aprender a tomar decisiones, tomar la iniciativa y acordar probar nuevas ideas con objetividad.</value>
+  </data>
+  <data name="SC_DISC_Description" xml:space="preserve">
+    <value>Disfruta de un ritmo estable y constante con todos en armonía; manteniendo altos estándares y procedimientos precisos. Puede tender a mantener altos estándares para usted, su trabajo y los que lo rodean; lo que puede hacer que otros no cumplan con sus expectativas.</value>
+  </data>
+  <data name="SC_DISC_Strengths" xml:space="preserve">
+    <value>Como amigos leales, los SC suelen disfrutar de pequeños grupos de personas y son particularmente sensibles a las necesidades de los demás. Son pacificadores privados e independientes. Contemplativos y sistemáticos, a los SC les gusta evaluar cuidadosamente la evidencia y tomarse su tiempo para sacar conclusiones lógicas. Otros tipos de personalidad generalmente admiran los SC por su confiabilidad y paciencia.</value>
+  </data>
+  <data name="SD_DISC_Challenges" xml:space="preserve">
+    <value>Los SD son planificadores enfocados que se sienten intimidados por grandes multitudes e inestabilidad. Los SD inmaduros pueden parecer indiferentes y distantes cuando están en la zona, lo que lleva a relaciones dañadas. Para madurar, los SD necesitan aprender a valorar las relaciones sin dominarlas, incluso si eso significa desviarse del plan.</value>
+  </data>
+  <data name="SD_DISC_Description" xml:space="preserve">
+    <value>Usted disfruta de un ritmo estable y constante con todos en armonía mientras también desea lograr un objetivo y/o tarea. Puede tener dificultades para valorar cómo realizar la tarea, mientras intenta mantener las cosas consistentes y a todos en armonía.</value>
+  </data>
+  <data name="SD_DISC_Strengths" xml:space="preserve">
+    <value>Como amigos leales, los SD generalmente disfrutan de relaciones seguras. Están motivados por grandes desafíos que les permiten hacer grandes cosas. Estable y amable, los SD prefieren la estabilidad y los pequeños grupos de personas. Otros tipos de personalidad generalmente admiran los SD por su consistencia y determinación para tener éxito.</value>
+  </data>
+  <data name="SI_DISC_Challenges" xml:space="preserve">
+    <value>Los SI son oyentes empáticos que pueden ser muy sensibles, distraídos o descuidados, tolerando a los no artistas por mucho tiempo. Los SI inmaduros tienen dificultades para terminar su trabajo y escuchar las instrucciones, lo que genera una carga adicional para los miembros del equipo. Para madurar, los SI necesitan aprender a prestar atención a los detalles, mantener un trabajo hasta que esté completo y enfrentar las críticas de manera constructiva.</value>
+  </data>
+  <data name="SI_DISC_Description" xml:space="preserve">
+    <value>Usted disfruta de un ritmo estable y constante con todos en armonía, además de divertirse en el momento. Tendería a centrarse más en las personas que en la tarea en cuestión, lo que puede frustrar a las personas orientadas a la tarea.</value>
+  </data>
+  <data name="SI_DISC_Strengths" xml:space="preserve">
+    <value>Como influyentes inspiradores, los SI convencen fácilmente a otros para que los sigan. Son amables, considerados y habladores. Tolerantes e comprensivos, los SI tienen muchos amigos y parecen representar bien a los demás. Otros tipos de personalidad generalmente admiran a los SI por su confianza informal y calidez genuina.</value>
+  </data>
+  <data name="S_DISC_Challenges" xml:space="preserve">
+    <value>Los S son complacientes y a menudo les cuesta decir que no. Demasiado sacrificados y posesivos, pueden internalizar sus sentimientos de irritación y guardar rencor por largos períodos de tiempo. Los inmaduros buscarán la paz a toda costa, lo que dificultará el establecimiento de prioridades. Para madurar, S necesita aprender a establecer límites apropiados desarrollando su capacidad para resistir conflictos menores y rechazando educadamente algunas oportunidades.</value>
+  </data>
+  <data name="S_DISC_Description" xml:space="preserve">
+    <value>Disfruta de un ritmo estable y constante con todos en armonía. Es posible que tenga dificultades con el cambio porque generalmente implica un sentido a lo desconocido.</value>
+  </data>
+  <data name="S_DISC_Strengths" xml:space="preserve">
+    <value>Como jugadores de equipo discretos y sensibles, los S suelen sobresalir en escuchar, comprender y apoyar a sus amigos cercanos. Son cálidos y predecibles. Amigables pero tranquilos, los S a menudo buscan paz y procesos predecibles. Otros tipos de personalidades generalmente admiran a los S por su confiabilidad y capacidad para infundir a su entorno una sensación de calma.</value>
+  </data>
+</root>

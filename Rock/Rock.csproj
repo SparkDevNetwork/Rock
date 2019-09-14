@@ -402,9 +402,20 @@
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalSettings.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
+    <Compile Include="Model\DiscServiceStrings.es.Designer.cs">
+      <DependentUpon>DiscServiceStrings.es.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Model\DiscServiceStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DiscServiceStrings.resx</DependentUpon>
+    </Compile>
     <Compile Include="Model\StepService.Partial.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="Utility\Globalizaton\StringArrayResource.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
@@ -2577,6 +2588,14 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Model\DiscServiceStrings.es.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DiscServiceStrings.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Model\DiscServiceStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DiscServiceStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Plugin\HotFixes\HotFixMigrationResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
