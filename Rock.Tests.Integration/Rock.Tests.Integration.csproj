@@ -84,6 +84,7 @@
     <Compile Include="RockTests\Attendances\AttendanceBulkImportTest.cs" />
     <Compile Include="RockTests\Communications\CommunicationsModuleTestHelper.cs" />
     <Compile Include="RockTests\Communications\SmsTests.cs" />
+    <Compile Include="RockTests\Core\CoreModuleTestHelper.cs" />
     <Compile Include="RockTests\Crm\StepsTests.cs" />
     <Compile Include="RockTests\DatabaseTests.cs" />
     <Compile Include="RockTests\Migrations\MigrationTests.cs" />
@@ -92,7 +93,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockTests\Model\GroupTests.cs" />
     <Compile Include="RockTests\Model\PersonTests.cs" />
+    <Compile Include="RockTests\Reporting\DataFilter\TextPropertyFilterSettings.cs" />
+    <Compile Include="RockTests\Reporting\ReportingModuleTestHelper.cs" />
     <Compile Include="RockTests\Reporting\DataFilter\DataFilterTestBase.cs" />
+    <Compile Include="RockTests\Reporting\DataFilter\Group\GroupsModuleTestHelper.cs" />
+    <Compile Include="RockTests\Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
     <Compile Include="RockTests\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="RockTests\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
     <Compile Include="RockTests\Reporting\ReportBuilder\ReportBuilderTests.cs" />
