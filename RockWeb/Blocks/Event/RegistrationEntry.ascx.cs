@@ -5073,7 +5073,7 @@ namespace RockWeb.Blocks.Event
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach ( var registrant in RegistrationState.Registrants )
                 {
-                    if ( registrant.Cost > 0 )
+                    if ( registrant.TotalCost > 0 )
                     {
                         var costSummary = new RegistrationCostSummaryInfo();
                         costSummary.Type = RegistrationCostSummaryType.Cost;
