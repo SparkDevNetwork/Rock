@@ -44,6 +44,7 @@
                                         <Rock:RockCheckBoxList ID="cblStepStatus" runat="server" Label="Step Status" RepeatDirection="Horizontal" />
                                     </div>
                                 </div>
+                                <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gSteps" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gSteps_Edit" CssClass="js-grid-group-members" OnRowDataBound="gSteps_RowDataBound" ExportSource="ColumnOutput" >
                                 <Columns>
