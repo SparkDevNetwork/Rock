@@ -194,7 +194,7 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlPages" runat="server">
-                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder">
+                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder" OnRowDataBound="gPages_RowDataBound">
                                     <Columns>
                                         <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />
