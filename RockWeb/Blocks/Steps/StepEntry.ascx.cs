@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -115,6 +116,8 @@ namespace RockWeb.Blocks.Steps
             base.OnInit( e );
 
             this.InitializeWorkflowControls();
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Step.FriendlyTypeName );
         }
 
         /// <summary>
@@ -133,7 +136,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !IsPostBack )
             {
-                ShowEditDetails();
+                ShowDetails();
             }
             else
             {
@@ -221,7 +224,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( success )
             {
-                ShowEditDetails();
+                ShowReadonlyDetails();
             }
         }
 
@@ -271,7 +274,7 @@ namespace RockWeb.Blocks.Steps
             var processed = workflowService.Process( workflow, target, out workflowErrors );
 
             if ( processed )
-            {                
+            {
                 if ( workflow.HasActiveEntryForm( CurrentPerson ) )
                 {
                     // If the workflow has a user entry form that can be displayed for the current user, show it now.
@@ -279,7 +282,7 @@ namespace RockWeb.Blocks.Steps
                     var qryParam = new Dictionary<string, string>();
 
                     qryParam.Add( "WorkflowTypeId", workflowType.Id.ToString() );
-                    
+
                     if ( workflow.Id != 0 )
                     {
                         qryParam.Add( "WorkflowId", workflow.Id.ToString() );
@@ -430,12 +433,51 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            GoToSuccessPage( null );
+            if ( hfStepId.Value.Equals( "0" ) )
+            {
+                GoToSuccessPage( null );
+            }
+            else
+            {
+                ShowReadonlyDetails();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            ShowEditDetails();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            DeleteStep();
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
+
+            HideSecondaryBlocks( editable );
+        }
 
         /// <summary>
         /// Validate that the models required to add or to edit are present
@@ -470,6 +512,41 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Shows the detail panel containing the main content of the block.
+        /// </summary>
+        /// <param name="stepTypeId">The entity id of the item to be shown.</param>
+        public void ShowDetails()
+        {
+            pnlDetails.Visible = false;
+
+            // Get the Step data model
+            var step = GetStep();
+
+            int stepId = 0;
+
+            if ( step != null )
+            {
+                stepId = step.Id;
+            }
+
+            pnlDetails.Visible = true;
+
+            hfStepId.Value = stepId.ToString();
+
+            btnEdit.Visible = true;
+            btnDelete.Visible = true;
+
+            if ( stepId == 0 )
+            {
+                ShowEditDetails();
+            }
+            else
+            {
+                ShowReadonlyDetails();
+            }
+        }
+
+        /// <summary>
         /// Shows the edit details.
         /// </summary>
         private void ShowEditDetails()
@@ -480,6 +557,8 @@ namespace RockWeb.Blocks.Steps
             {
                 return;
             }
+
+            SetEditMode( true );
 
             rsspStatus.StepProgramId = stepType.StepProgramId;
 
@@ -500,7 +579,7 @@ namespace RockWeb.Blocks.Steps
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
             }
 
-            BuildDynamicControls();
+            BuildDynamicControls( true );
             InitializePersonPicker();
 
             InitializeWorkflowControls();
@@ -511,7 +590,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Build the dynamic controls based on the attributes
         /// </summary>
-        private void BuildDynamicControls()
+        private void BuildDynamicControls( bool editMode )
         {
             var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
             var excludedAttributes = AttributeCache.All()
@@ -523,7 +602,88 @@ namespace RockWeb.Blocks.Steps
             var step = GetStep() ?? new Step { StepTypeId = stepType.Id };
 
             step.LoadAttributes();
-            avcAttributes.AddEditControls( step );
+
+            if ( editMode )
+            {
+                avcAttributes.AddEditControls( step );
+            }
+            else
+            {
+                avcAttributesView.AddDisplayControls( step );
+            }
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="stepType">The entity instance to be displayed.</param>
+        private void ShowReadonlyDetails()
+        {
+            SetEditMode( false );
+
+            var step = GetStep();
+            var stepType = GetStepType();
+
+            lStepTypeTitle.Text = string.Format( "{0} {1}",
+                                                 stepType.IconCssClass.IsNotNullOrWhiteSpace() ?
+                                                 string.Format( @"<i class=""{0}""></i>", stepType.IconCssClass ) :
+                                                 string.Empty,
+                                                 stepType.Name );
+
+            // Create the read-only description text.
+            var descriptionListMain = new DescriptionList();
+
+            descriptionListMain.Add( "Person", step.PersonAlias.Person.FullName );
+
+            if ( stepType.HasEndDate )
+            {
+                descriptionListMain.Add( "Start Date", step.StartDateTime, "d" );
+                descriptionListMain.Add( "End Date", step.EndDateTime, "d" );
+                descriptionListMain.Add( "Completed Date", step.EndDateTime, "d" );
+            }
+            else
+            {
+                descriptionListMain.Add( "Date", step.StartDateTime, "d" );
+            }
+
+            descriptionListMain.Add( "Status", step.StepStatus.Name );
+
+            lStepDescription.Text = descriptionListMain.Html;
+
+            BuildDynamicControls( false );
+
+            BindWorkflows();
+        }
+
+        /// <summary>
+        /// Delete the current Step.
+        /// </summary>
+        private void DeleteStep()
+        {
+            var step = this.GetStep();
+
+            if ( step == null )
+            {
+                return;
+            }
+
+            var dataContext = GetRockContext();
+
+            var stepService = new StepService( dataContext );
+
+            string errorMessage;
+
+            if ( !stepService.CanDelete( step, out errorMessage ) )
+            {
+                mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
+
+            stepService.Delete( step );
+
+            dataContext.SaveChanges();
+
+            GoToSuccessPage( null );
         }
 
         #endregion
@@ -706,4 +866,3 @@ namespace RockWeb.Blocks.Steps
         #endregion Control Helpers
     }
 }
-

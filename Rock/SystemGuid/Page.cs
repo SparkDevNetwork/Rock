@@ -541,6 +541,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Email Analytics page guid
         /// </summary>
+        [RockObsolete("1.10")]
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
@@ -792,6 +793,24 @@ namespace Rock.SystemGuid
         /// ParentPage: Small Groups
         /// </summary>
         public const string GROUP_REGISTRATION = "7D24FE9A-710C-4B25-B1C7-76161ED78DB8";
+
+        /// <summary>
+        /// Gets the Group RSVP List page guid
+        /// ParentPage:  Group Viewer
+        /// </summary>
+        public const string GROUP_RSVP_LIST = "69285A6B-4DBB-43BB-8B0D-08DEBB860AEA";
+
+        /// <summary>
+        /// Gets the Group RSVP Detail page guid
+        /// ParentPage:  Group RSVP List
+        /// </summary>
+        public const string GROUP_RSVP_DETAIL = "40E60703-CF52-4742-BDA6-65FB0CF198CB";
+
+        /// <summary>
+        /// Gets the Group RSVP Response page guid
+        /// ParentPage:  Support Pages (External Site)
+        /// </summary>
+        public const string GROUP_RSVP_RESPONSE = "7DF75851-A397-4C3B-A46F-DC3824A7ADC4";
 
         /// <summary>
         /// Gets the Group Search Results page guid
@@ -1473,10 +1492,17 @@ namespace Rock.SystemGuid
         public const string SUCCESS = "E08230B8-35A4-40D6-A0BB-521418314DA9";
 
         /// <summary>
-        /// Gets the Support Pages page guid
+        /// Gets the Support Pages page guid (internal site)
         /// ParentPage: Internal Homepage
         /// </summary>
         public const string SUPPORT_PAGES_INTERNAL_HOMEPAGE = "936C90C4-29CF-4665-A489-7C687217F7B8";
+
+
+        /// <summary>
+        /// Gets the Support Pages page guid (external site)
+        /// ParentPage: External Site
+        /// </summary>
+        public const string SUPPORT_PAGES_EXTERNAL_SITE = "EBAA5140-4B8F-44B8-B1E8-C73B654E4B22";
 
         /// <summary>
         /// Gets the System Configuration page guid

@@ -264,6 +264,12 @@ namespace Rock.Communication.Medium
         private void CreateCommunicationResponse( Person fromPerson, string messageKey, int? toPersonAliasId, string message, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext )
         {
             var smsMedium = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS );
+
+            if ( this.Transport == null )
+            {
+                throw new Exception( "Configuration Error. No SMS Transport Component is currently active." );
+            }
+
             var smsTransport = this.Transport.EntityType.Id;
             int? communicationId = null;
 

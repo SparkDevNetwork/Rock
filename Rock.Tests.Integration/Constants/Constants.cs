@@ -42,6 +42,9 @@ namespace Rock.Tests.Integration
 
         // Tests having this property relate to the Steps feature of Rock.
         public const string Steps = "Steps";
+
+        public const string Communications = "Communications";
+
     }
 
     public static class TestPurposes

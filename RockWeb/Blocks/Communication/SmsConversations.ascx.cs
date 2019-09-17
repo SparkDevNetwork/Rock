@@ -482,6 +482,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateNewMessage_Click( object sender, EventArgs e )
         {
+            lblMdNewMessageSendingSMSNumber.Text = ddlSmsNumbers.SelectedItem.Text;
             mdNewMessage.Show();
         }
 
@@ -610,9 +611,7 @@ namespace RockWeb.Blocks.Communication
             e.Row.AddCssClass( "selected" );
             e.Row.RemoveCssClass( "unread" );
 
-            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
-
-            if ( recipientPerson == null || ( recipientPerson.RecordTypeValueId == recordTypeValueIdNameless ) )
+            if ( recipientPerson == null || ( recipientPerson.IsNameless() ) )
             {
                 lbLinkConversation.Visible = true;
             }
@@ -692,15 +691,15 @@ namespace RockWeb.Blocks.Communication
                 lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 
-                if ( communicationRecipientResponse.MessageKey.IsNotNullOrWhiteSpace() )
-                {
-                    divCommunication.RemoveCssClass( "outbound" );
-                    divCommunication.AddCssClass( "inbound" );
-                }
-                else
+                if ( communicationRecipientResponse.IsOutbound )
                 {
                     divCommunication.RemoveCssClass( "inbound" );
                     divCommunication.AddCssClass( "outbound" );
+                }
+                else
+                {
+                    divCommunication.RemoveCssClass( "outbound" );
+                    divCommunication.AddCssClass( "inbound" );
                 }
             }
         }

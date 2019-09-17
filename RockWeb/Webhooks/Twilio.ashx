@@ -153,19 +153,21 @@ class TwilioResponseAsync : IAsyncResult
             messageSid = request.Form["MessageSid"];
 
             // get communication from the message side
-            RockContext rockContext = new RockContext();
-            CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
+            using ( RockContext rockContext = new RockContext() )
+            {
+                CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
 
-            var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
-            if ( communicationRecipient != null )
-            {
-                communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
-                rockContext.SaveChanges();
-            }
-            else
-            {
-                WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
+                if ( communicationRecipient != null )
+                {
+                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                    communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                }
             }
         }
     }

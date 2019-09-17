@@ -31,8 +31,8 @@
                                 <div class="controls checkin-person-list">
                                     <asp:Repeater ID="rSelection" runat="server">
                                         <ItemTemplate>
-                                            <div class="row">
-                                                <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12">
+                                            <div class="row row-no-gutters row-eq-height row-checkin-item">
+                                                <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12 checkin-person">
                                                     <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %>">
                                                         <div class="row">
                                                             <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
@@ -45,8 +45,8 @@
                                                         </div>
                                                     </a>
                                                 </asp:Panel>
-                                                <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
-                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
+                                                <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-12 col-sm-3 col-md-2 checkin-change" Visible="false">
+                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block btn-checkin-change" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
                                                 </asp:Panel>
                                             </div>
                                         </ItemTemplate>

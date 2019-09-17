@@ -368,7 +368,7 @@ namespace Rock.Plugin.HotFixes {
 #pragma warning disable CS1570, CS1587
         /// <summary>
         ///   Looks up a localized string similar to 
-        ////*
+        /// /*
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]

@@ -32,6 +32,13 @@ namespace Rock.Communication.SmsActions
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "Reply" )]
 
+    [TextValueFilterField( "Message",
+        Key = AttributeKey.Message,
+        Description = "The message body content that will be filtered on.",
+        IsRequired = false,
+        Category = AttributeCategories.Filters,
+        Order = 1)]
+
     [WorkflowTypeField( "Workflow Type",
         Key = AttributeKey.WorkflowType,
         Category = AttributeCategories.Workflow,
@@ -43,7 +50,8 @@ namespace Rock.Communication.SmsActions
     [BooleanField( "Pass Nameless Person",
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Workflow,
-        Description = "Specify 'No' to set the workflow initiator to blank if the incoming message is from a Nameless person.",
+        Description = "If a matching person is not found in the database should a nameless person record be passed to the workflow.",
+        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 3 )]
 
@@ -60,7 +68,7 @@ namespace Rock.Communication.SmsActions
         Description = "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>",
         IsRequired = false,
         DefaultValue = "",
-        KeyPrompt = "Attribute Key",
+        KeyPrompt = "Attribute Key", 
         ValuePrompt = "Merge Template",
         Order = 5 )]
 
@@ -73,6 +81,7 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         private static class AttributeKey
         {
+            public const string Message = "Message";
             public const string WorkflowType = "WorkflowType";
             public const string PassNamelessPerson = "PassNamelessPerson";
             public const string WorkflowNameTemplate = "WorkflowNameTemplate";
@@ -156,14 +165,14 @@ namespace Rock.Communication.SmsActions
             //
             // Get the filter expression for the message body.
             //
-            var attribute = action.Attributes.ContainsKey( "Message" ) ? action.Attributes["Message"] : null;
-            var msg = GetAttributeValue( action, "Message" );
+            var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
+            var msg = GetAttributeValue( action, AttributeKey.Message );
             var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
 
             //
             // Evaluate the message against the filter and return the match state.
             //
-            return filter != null ? filter.Evaluate( message, "Message" ) : true;
+            return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;
         }
 
         /// <summary>

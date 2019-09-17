@@ -839,6 +839,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Deletes the page route.
+        /// </summary>
+        /// <param name="pageRouteGuid">The page route unique identifier.</param>
+        public void DeletePageRoute( string pageRouteGuid )
+        {
+            string sql = $@"
+                DELETE FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}';
+            ";
+        }
+
+        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>

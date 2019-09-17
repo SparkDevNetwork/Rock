@@ -133,7 +133,7 @@
                     selectedIds.push(node.id);
                     });
 
-                    $hfItemIds.val(selectedIds.join(','));
+                    $hfItemIds.val(selectedIds.join(',')).change(); // .change() is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val(selectedNames.join(','));
 
                     // have the X appear on hover. something is selected
@@ -161,7 +161,7 @@
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
-                    $hfItemIds.val('0');
+                    $hfItemIds.val('0').change(); // .change() is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected

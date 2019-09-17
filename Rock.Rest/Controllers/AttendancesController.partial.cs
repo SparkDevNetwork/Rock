@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -247,5 +248,25 @@ namespace Rock.Rest.Controllers
         }
 
         #endregion Group Scheduler Related
+
+        #region RSVP Related
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/RegisterRSVPRecipients" )]
+        [HttpPost]
+        public void RegisterRSVPRecipients( int occurrenceId, string personIds )
+        {
+            new AttendanceService( new RockContext() )
+                .RegisterRSVPRecipients( occurrenceId, personIds );
+        }
+
+
+        #endregion RSVP Related
+
     }
 }
