@@ -132,8 +132,7 @@ namespace Rock.Model
         /// Persists the workflow immediately. Do this if the next actions need a persisted workflow with Ids.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="entity">The entity.</param>
-        public void PersistImmediately( WorkflowAction action, object entity )
+        public void PersistImmediately( WorkflowAction action )
         {
             var rockContext = ( RockContext ) this.Context;
 
@@ -144,18 +143,6 @@ namespace Rock.Model
             if ( workflow.Id == 0 )
             {
                 Add( workflow );
-            }
-
-            // Set EntityId and EntityTypeId if they are not already set and the included entity object is appropriate.
-            if ( ( workflow.EntityId == null ) && ( workflow.EntityTypeId == null ) && ( entity != null ) )
-            {
-                var entityType = typeof( IEntity );
-                if ( entityType.IsInstanceOfType( entity ) )
-                {
-                    var typedEntity = entity as IEntity;
-                    workflow.EntityId = typedEntity.Id;
-                    workflow.EntityTypeId = typedEntity.TypeId;
-                }
             }
 
             rockContext.WrapTransaction( () =>
@@ -169,15 +156,6 @@ namespace Rock.Model
             } );
 
             action.AddLogEntry( "Workflow has been persisted!" );
-        }
-
-        /// <summary>
-        /// Persists the workflow immediately. Do this if the next actions need a persisted workflow with Ids.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        public void PersistImmediately( WorkflowAction action )
-        {
-            PersistImmediately( action, null );
         }
     }
 }
