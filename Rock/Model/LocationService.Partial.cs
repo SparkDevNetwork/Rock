@@ -68,8 +68,8 @@ namespace Rock.Model
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
             //// Make sure it's not an empty address
-            /// This will not be checked anymore to enable a location to save with whatever info is available. Sometimes the only info given or legible on the card is the city and state.
-            /// If there are any downstream effects of this change do not fix them by uncommenting this code without speaking to the architect first.
+            //// This will not be checked anymore to enable a location to save with whatever info is available. Sometimes the only info given or legible on the card is the city and state.
+            //// If there are any downstream effects of this change do not fix them by uncommenting this code without speaking to the architect first.
             //if ( string.IsNullOrWhiteSpace( street1 ) )
             //{
             //    return null;

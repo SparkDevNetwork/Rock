@@ -31,11 +31,19 @@ namespace Rock.Model
     {
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationRecipientResponse"/> class.
+        /// </summary>
         public CommunicationRecipientResponse()
         {
             //
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationRecipientResponse"/> class.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
         public CommunicationRecipientResponse( int personId, int recordTypeValueId )
         {
             PersonId = personId;

@@ -26,12 +26,12 @@ namespace Rock.Attribute
     public class ContentChannelsFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentChannelsFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="ContentChannelsFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultGuids">The default channel Guids.</param>
+        /// <param name="defaultChannelGuids">The default channel guids.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
