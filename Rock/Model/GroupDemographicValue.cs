@@ -36,6 +36,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// Stores the values for a group and demographic type
+    /// </summary>
     [RockDomain( "Group" )]
     [Table( "GroupDemographicValue" )]
     [DataContract]
@@ -208,12 +211,30 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
         [DataMember]
         public virtual Group Group { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the group demographic.
+        /// </summary>
+        /// <value>
+        /// The type of the group demographic.
+        /// </value>
         [DataMember]
         public virtual GroupDemographicType GroupDemographicType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the related entity.
+        /// </summary>
+        /// <value>
+        /// The type of the related entity.
+        /// </value>
         [DataMember]
         public virtual EntityType RelatedEntityType { get; set; }
 
@@ -221,8 +242,14 @@ namespace Rock.Model
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class GroupDemographicValueConfiguration : EntityTypeConfiguration<GroupDemographicValue>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupDemographicValueConfiguration"/> class.
+        /// </summary>
         public GroupDemographicValueConfiguration()
         {
             this.HasRequired( x => x.Group ).WithMany().HasForeignKey( x => x.GroupId ).WillCascadeOnDelete( true );
