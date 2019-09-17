@@ -43,7 +43,6 @@ namespace RockWeb.Blocks.Communication
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [LinkedPage( "Detail Page", order: 1 )]
-    [LinkedPage( "Email Analytics", defaultValue: Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         private bool canApprove = false;
@@ -221,18 +220,6 @@ namespace RockWeb.Blocks.Communication
                                 communicationItem.ReviewedDateTime.Value.ToShortDateString() );
                         }
                         lDetails.Text = details.ToString();
-                    }
-
-                    Literal lEmailAnalyticsLink = e.Row.FindControl( "lEmailAnalyticsLink" ) as Literal;
-                    if ( lEmailAnalyticsLink != null )
-                    {
-                        var qryParams = new Dictionary<string, string>();
-                        qryParams.Add( "CommunicationId", communicationItem.Id.ToString() );
-                        var emailAnalyticsUrl = new PageReference( this.GetAttributeValue( "EmailAnalytics" ), qryParams ).BuildUrl();
-                        if ( !string.IsNullOrEmpty( emailAnalyticsUrl ) )
-                        {
-                            lEmailAnalyticsLink.Text = string.Format( "<div class='text-center'><a href='{0}' class='btn btn-default btn-sm' title='Email Analytics'><i class='fa fa-line-chart'></i></a></div>", emailAnalyticsUrl );
-                        }
                     }
                 }
             }

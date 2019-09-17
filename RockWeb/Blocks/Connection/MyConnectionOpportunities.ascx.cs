@@ -421,6 +421,10 @@ namespace RockWeb.Blocks.Connection
                 {
                     e.Value = ResolveValues( e.Value, cblLastActivity );
                 }
+                else if ( e.Key == "LastActivityDateRange" )
+                {
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                }
                 else
                 {
                     e.Value = string.Empty;

@@ -117,14 +117,16 @@
                         tagTitle = value,
                         tag = "";
 
-				    // check for class name
+                    // Deserialize the tag properties
+                    // This logic needs to sync with C# code in TagList.SerializeTag:
+                    // $"{name}^{tagCssClass}^{iconCssClass}^{backgroundColor}";
                     var array = value.split("^");
-				    if (array.length > 1) {
-				        className = array[3];
-                        tagTitle = array[2];
-                        tagColor = array[1];
-                        iconClass = array[0];
-				    }
+                    if (array.length > 1) {
+                        tagTitle = array[0];
+                        className = array[1];
+                        iconClass = array[2];
+                        tagColor = array[3];
+                    }
 
                     tag = $('<span class="tag">').append(
                         $('<span>').text(tagTitle)
@@ -204,11 +206,16 @@
 
 				if (tags_callbacks[id] && tags_callbacks[id]['onRemoveTag']) {
                     var f = tags_callbacks[id]['onRemoveTag'];
+
+                    // Deserialize the tag properties
+                    // This logic needs to sync with C# code in TagList.SerializeTag:
+                    // $"{name}^{tagCssClass}^{iconCssClass}^{backgroundColor}";
                     var array = value.split("^");
-				    if (array.length > 1) {
-                        value = array[2];
-				    }
-					f.call(this, value);
+                    if (array.length > 1) {
+                        value = array[0];
+                    }
+
+                    f.call(this, value);
 				}
 			});
 

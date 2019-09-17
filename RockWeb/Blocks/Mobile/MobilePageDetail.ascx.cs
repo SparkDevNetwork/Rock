@@ -864,7 +864,6 @@ namespace RockWeb.Blocks.Mobile
 
                     AddAdminControls( block, phAdminButtons );
                     AddSettingsControls( block, phSettings );
-
                 }
             }
         }
@@ -918,7 +917,7 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
             }
 
             // Show on tablet
@@ -928,17 +927,24 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
             }
 
-            // Requires internet
+            // Requires Internet
             if ( additionalSettings.RequiresNetwork )
             {
-                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet.'></i> " );
+                if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
+                {
+                    markup.Append( "<i class='fa fa-wifi margin-r-sm color-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
+                }
+                else
+                {
+                    markup.Append( string.Format( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet. Content: {0}...'></i> ", additionalSettings.NoNetworkContent.Left(250)) );
+                }
             }
             else
             {
-                markup.Append( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
+                markup.Append( "<i class='fa fa-wifi margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
             }
 
             pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } ) ;

@@ -536,14 +536,14 @@ namespace Rock.DownhillCss
     font-style: bold;
     font-size: 22;
     margin-bottom: 0;
-    line-height: 0;
+    line-height: 1;
 }
 
 .heading2 {
     color: ?color-heading;
     font-style: bold;
     font-size: 18;
-    line-height: 0;
+    line-height: 1;
 }
 
 .link{
@@ -612,8 +612,9 @@ namespace Rock.DownhillCss
 }
 
 .btn.btn-default {
-    color: ?text-color;
-    border-color: ?text-color;
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
 }
 
 .btn.btn-link {

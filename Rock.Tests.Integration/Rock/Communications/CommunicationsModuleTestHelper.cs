@@ -29,10 +29,10 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Communications
 {
     /// <summary>
-    /// Create and manage test data for the Rock Communications module.
+    /// Provides commonly-used functions for testing the Rock Communications module.
     /// </summary>
     [TestClass]
-    public class CommunicationsModuleTestData
+    public class CommunicationsModuleTestHelper
     {
         public static class Constants
         {
@@ -42,6 +42,13 @@ namespace Rock.Tests.Integration.Communications
             public static string TestCommunicationBulkSmsGuid = "{79E18AFD-DB14-485A-80D9-CDAC44CA1098}";
 
             public static string TestSmsSenderGuid = "{DB8CFE73-4209-4109-8FC5-3C5013AFC290}";
+            public static string MobilePhoneTedDecker = "6235553322";
+            public static string TedDeckerPersonGuid = "{8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4}";
+
+            public static string NamelessPerson1MobileNumber = "4807770001";
+            public static string NamelessPerson2MobileNumber = "4807770002";
+
+            public static string UnknownPerson1MobileNumber = "4807770101";
         }
 
         #region Parameters
@@ -108,10 +115,102 @@ namespace Rock.Tests.Integration.Communications
 
             var smsSender = definedValueService.Get( Constants.TestSmsSenderGuid.AsGuid() );
 
-            definedValueService.Delete( smsSender );
+            if ( smsSender != null )
+            {
+                var communicationQuery = communicationService.Queryable()
+                    .Where( x => x.SMSFromDefinedValueId == smsSender.Id );
+
+                communicationService.DeleteRange( communicationQuery );
+
+                definedValueService.Delete( smsSender );
+            }
 
             dataContext.SaveChanges();
 
+            // Remove Nameless Person records.
+            this.DeleteNamelessPersonRecord( dataContext, Constants.NamelessPerson1MobileNumber );
+            this.DeleteNamelessPersonRecord( dataContext, Constants.NamelessPerson2MobileNumber );
+
+            dataContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Delete a Person record associated with the specified mobile phone number.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="mobilePhoneNumber"></param>
+        /// <returns></returns>
+        public bool DeleteNamelessPersonRecord( RockContext dataContext, string mobilePhoneNumber )
+        {
+            var personService = new PersonService( dataContext );
+
+            var namelessPerson = personService.GetPersonFromMobilePhoneNumber( mobilePhoneNumber, createNamelessPersonIfNotFound: false );
+
+            if ( namelessPerson == null )
+            {
+                return false;
+            }
+
+            return DeletePerson( dataContext, namelessPerson.Id );
+        }
+
+        /// <summary>
+        /// Delete a Person record, and all dependent records.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
+        public bool DeletePerson( RockContext dataContext, int personId )
+        {
+            var personService = new PersonService( dataContext );
+
+            var person = personService.Get( personId );
+
+            if ( person == null )
+            {
+                return false;
+            }
+
+            // Delete Person Views
+            var personViewedService = new PersonViewedService( dataContext );
+
+            var personViewedQuery = personViewedService.Queryable()
+                .Where( x => x.TargetPersonAlias.PersonId == person.Id || x.ViewerPersonAlias.PersonId == person.Id );
+
+            personViewedService.DeleteRange( personViewedQuery );
+
+            // Delete Communications
+            var communicationService = new CommunicationService( dataContext );
+
+            var communicationQuery = communicationService.Queryable()
+                .Where( x => x.SenderPersonAlias.PersonId == person.Id );
+
+            communicationService.DeleteRange( communicationQuery );
+
+            // Delete Communication Recipients
+            var recipientsService = new CommunicationRecipientService( dataContext );
+
+            var recipientsQuery = recipientsService.Queryable()
+                .Where( x => x.PersonAlias.PersonId == person.Id );
+
+            recipientsService.DeleteRange( recipientsQuery );
+
+            // Delete Person Aliases
+            var personAliasService = new PersonAliasService( dataContext );
+
+            personAliasService.DeleteRange( person.Aliases );
+
+            // Delete Person Search Keys
+            var personSearchKeyService = new PersonSearchKeyService( dataContext );
+
+            var searchKeys = person.GetPersonSearchKeys( dataContext );
+
+            personSearchKeyService.DeleteRange( searchKeys );
+
+            // Delete Person
+            personService.Delete( person );
+
+            return true;
         }
 
         /// <summary>
@@ -191,12 +290,14 @@ namespace Rock.Tests.Integration.Communications
 
             var personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
-            // Add an SMS Sender
+            // Add an Outgoing SMS Sender
             var definedValueService = new DefinedValueService( dataContext );
 
             var smsSenders = DefinedTypeCache.GetOrThrow( "SMS From Values", SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
 
-            var smsSender = new DefinedValue { DefinedTypeId = smsSenders.Id, Value = "SMS_SENDER_1", Guid = Constants.TestSmsSenderGuid.AsGuid(), Order = 1 };
+            var smsSender = new DefinedValue { DefinedTypeId = smsSenders.Id, Value = "+12345678900", Guid = Constants.TestSmsSenderGuid.AsGuid(), Order = 1 };
+
+            smsSender.SetAttributeValue( "EnableResponseRecipientForwarding", "false" );
 
             definedValueService.Add( smsSender );
 
@@ -222,6 +323,106 @@ namespace Rock.Tests.Integration.Communications
             this.CreateCommunicationRecipients( dataContext, bulkSms, recipientGuidList, availableStatusList );
             this.CreateCommunicationInteractions( dataContext, bulkSms, 0M );
 
+            this.AddNamelessPersonRecords();
+            this.AddNamelessSmsConversation();
+        }
+
+        /// <summary>
+        /// Add a set of Nameless Person records.
+        /// </summary>
+        [TestMethod]
+        [TestCategory( TestCategories.AddData )]
+        [TestProperty( "Feature", TestFeatures.DataSetup )]
+        public void AddNamelessPersonRecords()
+        {
+            var dataContext = new RockContext();
+
+            // Add some Nameless Person records for unregistered mobile numbers as incoming SMS responses.
+            var personService = new PersonService( dataContext );
+
+            var namelessPerson1 = personService.GetPersonFromMobilePhoneNumber( Constants.NamelessPerson1MobileNumber, createNamelessPersonIfNotFound: true );
+            var namelessPerson2 = personService.GetPersonFromMobilePhoneNumber( Constants.NamelessPerson2MobileNumber, createNamelessPersonIfNotFound: true );
+
+            // Create some additional numbers.
+            for ( int i = 1; i <= 9; i++ )
+            {
+                var phoneNumber = string.Format( "(123) 456-000{0:0}", i );
+
+                var namelessPerson = personService.GetPersonFromMobilePhoneNumber( phoneNumber, createNamelessPersonIfNotFound: true );
+            }
+
+            dataContext.SaveChanges();
+        }
+
+        [TestMethod]
+        [TestCategory( TestCategories.AddData )]
+        [TestProperty( "Feature", TestFeatures.DataSetup )]
+        public void AddNamelessSmsConversation()
+        {
+            var dataContext = new RockContext();
+
+            var responseCode = global::Rock.Communication.Medium.Sms.GenerateResponseCode( dataContext );
+
+            // Create a new Communication
+            var adminPerson = this.GetAdminPersonOrThrow( dataContext );
+
+            var personService = new PersonService( dataContext );
+
+            var namelessPerson1 = personService.GetPersonFromMobilePhoneNumber( Constants.NamelessPerson1MobileNumber, createNamelessPersonIfNotFound: true );
+
+            dataContext.SaveChanges();
+
+            var smsSender = DefinedValueCache.Get( Constants.TestSmsSenderGuid.AsGuid() );
+
+            var communicationService = new CommunicationService( dataContext );
+
+            // From Admin: Initial Message
+            global::Rock.Model.Communication communication;
+
+            var conversationStartDateTime = RockDateTime.Now;
+
+            var message = "If you'd like to attend our Family Movie Night Tea this coming Saturday, please reply to let us know how many people will be attending with you.";
+            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime;
+
+            // From Nameless: Reply #1
+            message = "We will be there! 2 adults, 2 kids. Do we need to bring chairs?";
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 2 );
+            // From Admin: Response #1
+            message = "No need to bring anything extra - just yourselves!";
+            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 3 );
+            // From Nameless: Reply #2
+            message = "Ok, thanks. What movie is showing?";
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 4 );
+            // From Admin: Response #2
+            message = "We'll be screening Star Wars: Episode 1.";
+            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 5 );
+            // From Nameless: Reply #3
+            message = "Is that the one with Jar Jar Binks?";
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 9 );
+            // From Admin: Response #2
+            message = "Yep, that's the one!";
+            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 10 );
+            // From Nameless: Reply #3
+            message = "Right, I just remembered we may have some other plans, sorry...";
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
+            communication.ForeignKey = _TestDataSourceOfChange;
+            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 20 );
+
+            dataContext.SaveChanges();
         }
 
         /// <summary>
@@ -564,8 +765,10 @@ namespace Rock.Tests.Integration.Communications
         /// </summary>
         /// <param name="personService"></param>
         /// <returns></returns>
-        private Person GetAdminPersonOrThrow( PersonService personService )
+        public Person GetAdminPersonOrThrow( RockContext dataContext )
         {
+            var personService = new PersonService( dataContext );
+
             var adminPerson = personService.Queryable().FirstOrDefault( x => x.FirstName == "Alisha" && x.LastName == "Marble" );
 
             if ( adminPerson == null )

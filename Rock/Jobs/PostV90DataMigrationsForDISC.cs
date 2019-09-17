@@ -48,9 +48,30 @@ namespace Rock.Jobs
 
             // get the configured timeout, or default to 60 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
-            UpdateDiscAdaptiveScore();
-            UpdateDiscNaturalScore();
+            if ( ! IsAlreadyConverted() )
+            {
+                Rock.Web.SystemSettings.SetValue( "core_DISCConversionCompleted", RockDateTime.Now.ToString( "o" ) );
+                UpdateDiscAdaptiveScore();
+                UpdateDiscNaturalScore();
+            }
+
             DeleteJob( context.GetJobId() );
+        }
+
+        /// <summary>
+        /// Check if the DISC conversion has already occurred.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsAlreadyConverted()
+        {
+            var conversionCompleted = Rock.Web.SystemSettings.GetValue( "core_DISCConversionCompleted" ).AsDateTime() ?? DateTime.MinValue;
+
+            // If it's min value, it's never happened.
+            if ( conversionCompleted == DateTime.MinValue )
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>

@@ -100,6 +100,7 @@
     <Compile Include="Communications\MailgunTests.cs" />
     <Compile Include="Rock\Lava\RockFiltersTests.cs" />
     <Compile Include="Rock\Lava\LegacyLavaUpdaterTest.cs" />
+    <Compile Include="Rock\Lava\ShortcodeTests.cs" />
     <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />

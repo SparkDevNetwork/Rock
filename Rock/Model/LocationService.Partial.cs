@@ -67,11 +67,13 @@ namespace Rock.Model
         /// </returns>
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
-            // Make sure it's not an empty address
-            if ( string.IsNullOrWhiteSpace( street1 ) )
-            {
-                return null;
-            }
+            //// Make sure it's not an empty address
+            //// This will not be checked anymore to enable a location to save with whatever info is available. Sometimes the only info given or legible on the card is the city and state.
+            //// If there are any downstream effects of this change do not fix them by uncommenting this code without speaking to the architect first.
+            //if ( string.IsNullOrWhiteSpace( street1 ) )
+            //{
+            //    return null;
+            //}
 
             // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );

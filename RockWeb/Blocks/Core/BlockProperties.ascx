@@ -39,7 +39,7 @@
                         <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
                         <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
                         <Rock:RockTextBox ID="tbCacheDuration" runat="server"  Label="Output Cache Duration (seconds)" Help="Number of seconds to cache the output of this block.  If a value is entered here, this block will only process data when the cache expires." />
-                        <Rock:AttributeValuesContainer ID="avcAdvancedAttributes" runat="server" />
+                        <Rock:AttributeValuesContainer ID="avcAdvancedAttributes" runat="server" ShowCategoryLabel="false" />
                         <asp:PlaceHolder ID="phCustomAdvancedSettings" runat="server" />
                     </asp:Panel>
 
