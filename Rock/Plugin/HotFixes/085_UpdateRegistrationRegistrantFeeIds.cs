@@ -44,11 +44,13 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         private void UpdateRegistrationTemplateFeeItemId()
         {
+            // This fixes systems that updated to 9.0 prior to the similar fix that was added to PostV90DataMigrations
+
             Sql( $@"
-                -- UPDATE for single Fee Types
+                -- UPDATE for single Fee Types 
                 UPDATE [RegistrationRegistrantFee]
                 SET [RegistrationRegistrantFee].[RegistrationTemplateFeeItemId] = (
-	                SELECT [RegistrationTemplateFeeItem].[Id] 
+	                SELECT TOP 1 [RegistrationTemplateFeeItem].[Id] 
 	                FROM [RegistrationTemplateFeeItem] 
 	                WHERE [RegistrationRegistrantFee].[RegistrationTemplateFeeId] = [RegistrationTemplateFeeItem].[RegistrationTemplateFeeId])
                 WHERE [RegistrationRegistrantFee].[RegistrationTemplateFeeItemId] IS NULL
@@ -58,7 +60,7 @@ namespace Rock.Plugin.HotFixes
                 -- UPDATE for multiple Fee Types
                 UPDATE [RegistrationRegistrantFee]
                 SET [RegistrationRegistrantFee].[RegistrationTemplateFeeItemId] = (
-	                SELECT [RegistrationTemplateFeeItem].[Id] 
+	                SELECT TOP 1[RegistrationTemplateFeeItem].[Id] 
 	                FROM [RegistrationTemplateFeeItem] 
 	                WHERE [RegistrationRegistrantFee].[RegistrationTemplateFeeId] = [RegistrationTemplateFeeItem].[RegistrationTemplateFeeId]
 		                AND [RegistrationRegistrantFee].[Option] = [RegistrationTemplateFeeItem].[Name])
