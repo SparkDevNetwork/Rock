@@ -49,10 +49,10 @@
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="LastName,NickName" ExcelExportBehavior="NeverInclude" />
+                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude" />
                                     <Rock:DateTimeField HeaderText="Date Started" DataField="StartedDateTime" SortExpression="StartedDateTime" DataFormatString="{0:d}"  />
                                     <Rock:DateTimeField HeaderText="Date Completed" DataField="CompletedDateTime" SortExpression="CompletedDateTime" DataFormatString="{0:d}" />
-                                    <Rock:RockLiteralField ID="lStepStatusHtml" HeaderText="Status" SortExpression="Status" ExcelExportBehavior="NeverInclude" />
+                                    <Rock:RockLiteralField ID="lStepStatusHtml" HeaderText="Status" SortExpression="StepStatus.Name" ExcelExportBehavior="NeverInclude" />
                                     <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
                                 </Columns>
                             </Rock:Grid>
