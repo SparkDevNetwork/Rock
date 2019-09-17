@@ -114,6 +114,9 @@
                     </div>
 
                     <Rock:RockControlWrapper ID="rcwMediumType" runat="server" Label="Select the communication medium that you would like to send your message through.">
+
+                        <span class="small help-block js-medium-recipientpreference-notification" style="margin-top: -5px;">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
+
                         <div class="controls">
                             <div class="js-mediumtype">
                                 <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
@@ -122,7 +125,6 @@
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
                                 </div>
-                                <span class="margin-t-md label label-info js-medium-recipientpreference-notification">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
                             </div>
                         </div>
                     </Rock:RockControlWrapper>
