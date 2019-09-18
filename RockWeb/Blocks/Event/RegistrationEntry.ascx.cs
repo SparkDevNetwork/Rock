@@ -5102,49 +5102,46 @@ namespace RockWeb.Blocks.Event
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach ( var registrant in RegistrationState.Registrants )
                 {
-                    if ( registrant.Cost > 0 )
-                    {
-                        var costSummary = new RegistrationCostSummaryInfo();
-                        costSummary.Type = RegistrationCostSummaryType.Cost;
-                        costSummary.Description = string.Format(
-                            "{0} {1}",
-                            registrant.GetFirstName( RegistrationTemplate ),
-                            registrant.GetLastName( RegistrationTemplate ) );
+                    var costSummary = new RegistrationCostSummaryInfo();
+                    costSummary.Type = RegistrationCostSummaryType.Cost;
+                    costSummary.Description = string.Format(
+                        "{0} {1}",
+                        registrant.GetFirstName( RegistrationTemplate ),
+                        registrant.GetLastName( RegistrationTemplate ) );
 
-                        if ( registrant.OnWaitList )
+                    if ( registrant.OnWaitList )
+                    {
+                        costSummary.Description += " (Waiting List)";
+                        costSummary.Cost = 0.0M;
+                        costSummary.DiscountedCost = 0.0M;
+                        costSummary.MinPayment = 0.0M;
+                        costSummary.DefaultPayment = 0.0M;
+                    }
+                    else
+                    {
+                        costSummary.Cost = registrant.Cost;
+                        if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
                         {
-                            costSummary.Description += " (Waiting List)";
-                            costSummary.Cost = 0.0M;
-                            costSummary.DiscountedCost = 0.0M;
-                            costSummary.MinPayment = 0.0M;
-                            costSummary.DefaultPayment = 0.0M;
-                        }
-                        else
-                        {
-                            costSummary.Cost = registrant.Cost;
-                            if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
+                            if ( RegistrationState.DiscountPercentage >= 1.0m )
                             {
-                                if ( RegistrationState.DiscountPercentage >= 1.0m )
-                                {
-                                    costSummary.DiscountedCost = 0.0m;
-                                }
-                                else
-                                {
-                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
-                                }
+                                costSummary.DiscountedCost = 0.0m;
                             }
                             else
                             {
-                                costSummary.DiscountedCost = costSummary.Cost;
+                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
                             }
-
-                            // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                            costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
-                            costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
+                        }
+                        else
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost;
                         }
 
-                        costs.Add( costSummary );
+                        // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
+                        costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
+                        costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
                     }
+
+                    costs.Add( costSummary );
 
                     foreach ( var fee in registrant.FeeValues )
                     {
@@ -5161,31 +5158,31 @@ namespace RockWeb.Blocks.Event
                                     feeInfo.Quantity,
                                     cost.FormatAsCurrency() );
 
-                                var costSummary = new RegistrationCostSummaryInfo();
-                                costSummary.Type = RegistrationCostSummaryType.Fee;
-                                costSummary.Description = desc;
-                                costSummary.Cost = feeInfo.Quantity * cost;
+                                var feeCostSummary = new RegistrationCostSummaryInfo();
+                                feeCostSummary.Type = RegistrationCostSummaryType.Fee;
+                                feeCostSummary.Description = desc;
+                                feeCostSummary.Cost = feeInfo.Quantity * cost;
 
                                 if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                                 {
                                     if ( RegistrationState.DiscountPercentage >= 1.0m )
                                     {
-                                        costSummary.DiscountedCost = 0.0m;
+                                        feeCostSummary.DiscountedCost = 0.0m;
                                     }
                                     else
                                     {
-                                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                        feeCostSummary.DiscountedCost = feeCostSummary.Cost - ( feeCostSummary.Cost * RegistrationState.DiscountPercentage );
                                     }
                                 }
                                 else
                                 {
-                                    costSummary.DiscountedCost = costSummary.Cost;
+                                    feeCostSummary.DiscountedCost = feeCostSummary.Cost;
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : costSummary.DiscountedCost;
+                                feeCostSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : feeCostSummary.DiscountedCost;
 
-                                costs.Add( costSummary );
+                                costs.Add( feeCostSummary );
                             }
                         }
                     }

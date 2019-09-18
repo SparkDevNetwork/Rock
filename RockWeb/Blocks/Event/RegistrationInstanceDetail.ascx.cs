@@ -524,19 +524,20 @@ namespace RockWeb.Blocks.Event
                 {
                     instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                     ShowReadonlyDetails( instance );
-                }
 
-                // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
-                    ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
-                        instance.RegistrationTemplate.Cost > 0 ||
-                        instance.RegistrationTemplate.Fees.Count > 0 ) )
-                {
-                    btnSendPaymentReminder.Visible = true;
-                }
-                else
-                {
-                    btnSendPaymentReminder.Visible = false;
+
+                    // show send payment reminder link
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                        ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
+                            instance.RegistrationTemplate.Cost > 0 ||
+                            instance.RegistrationTemplate.Fees.Count > 0 ) )
+                    {
+                        btnSendPaymentReminder.Visible = true;
+                    }
+                    else
+                    {
+                        btnSendPaymentReminder.Visible = false;
+                    }
                 }
             }
         }
