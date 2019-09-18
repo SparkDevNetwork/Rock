@@ -82,10 +82,9 @@ namespace Rock.Model
                         // Set EntityId and EntityTypeId if they are not already set and the included entity object is appropriate.
                         if ( ( workflow.EntityId == null ) && ( workflow.EntityTypeId == null ) && ( entity != null ) )
                         {
-                            var entityType = typeof( IEntity );
-                            if ( entityType.IsInstanceOfType( entity ) )
+                            var typedEntity = entity as IEntity;
+                            if ( typedEntity != null )
                             {
-                                var typedEntity = entity as IEntity;
                                 workflow.EntityId = typedEntity.Id;
                                 workflow.EntityTypeId = typedEntity.TypeId;
                             }
