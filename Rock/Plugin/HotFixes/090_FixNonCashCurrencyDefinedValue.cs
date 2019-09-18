@@ -39,7 +39,7 @@ namespace Rock.Plugin.HotFixes
         }
 
         /// <summary>
-        /// NA: Fix Typo in the Summary text (attribute) of the Motivators Theme (DefinedType) for Positional (DefinedValue)
+        /// ED: Fix NonCash defined value for currency type defined type
         /// </summary>
         private void FixNonCashDefinedValue()
         {
