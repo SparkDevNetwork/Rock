@@ -1119,14 +1119,18 @@ namespace RockWeb.Blocks.Crm
                     var phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                     if ( phoneNumber != null )
                     {
+                        string iconHtml = string.Empty;
+
                         if ( phoneNumber.IsUnlisted )
                         {
-                            AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + " <em>(Unlisted)</em>" );
+                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='fa fa-phone-slash'></i></span>";
                         }
-                        else
+                        if ( phoneNumber.IsMessagingEnabled )
                         {
-                            AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted );
+                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='fa fa-sms'></i></span>";
                         }
+
+                        AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + iconHtml );
                     }
                     else
                     {
