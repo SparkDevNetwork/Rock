@@ -496,12 +496,14 @@ namespace Rock.Rest.Controllers
         /// <param name="includeGivingGroup">Should transactions belonging to anyone in the person's giving group be included</param>
         /// <param name="transactionTypeGuid">The guid of the defined value of the transaction type to include. If omitted, all transaction types will be included</param>
         /// <param name="excludedStatus">Transactions of this status will be excluded. If omitted, all transaction statuses will be included</param>
+        /// <param name="excludedSourceTypeGuid">The unique identifier of a <see cref="FinancialTransaction.SourceTypeValue"/> to exclude from the results</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialTransactions/GivingHistory/{personAliasId}" )]
         public virtual List<Gift> GetGivingHistory( int personAliasId,
-            [FromUri]int? year = null, [FromUri]bool includeGivingGroup = true, [FromUri]Guid? transactionTypeGuid = null, [FromUri]string excludedStatus = null )
+            [FromUri]int? year = null, [FromUri]bool includeGivingGroup = true, [FromUri]Guid? transactionTypeGuid = null,
+            [FromUri]string excludedStatus = null, [FromUri]Guid? excludedSourceTypeGuid = null )
         {
             // Get all of the query filters ready
             var yearFilter = year ?? RockDateTime.Now.Year;
@@ -527,17 +529,25 @@ namespace Rock.Rest.Controllers
             // If we include the giving group, then query for everyone in it, otherwise just the id sent
             if ( includeGivingGroup )
             {
-                query = query.Where( t => t.AuthorizedPersonAlias.Person.GivingGroup.Members.Any( m => m.Person.Aliases.Any( a => a.Id == personAliasId ) ) );
+                query = query.Where( t =>
+                    t.AuthorizedPersonAliasId == personAliasId ||
+                    t.AuthorizedPersonAlias.Person.GivingGroup.Members.Any( m => m.Person.Aliases.Any( a => a.Id == personAliasId ) ) );
             }
             else
             {
                 query = query.Where( t => t.AuthorizedPersonAliasId == personAliasId );
             }
 
-            // If there is an excluded param, then exclude those statuses from the results
+            // If there is an excluded status param, then exclude those statuses from the results
             if ( excludedStatus != null )
             {
                 query = query.Where( t => t.Status != excludedStatus );
+            }
+
+            // If there is an excluded source type param, then exclude that source from the results
+            if ( excludedSourceTypeGuid.HasValue )
+            {
+                query = query.Where( t => t.SourceTypeValue == null || t.SourceTypeValue.Guid != excludedSourceTypeGuid.Value );
             }
 
             // If there is a transaction type then only include transactions of that type
