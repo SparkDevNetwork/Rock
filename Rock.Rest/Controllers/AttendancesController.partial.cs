@@ -268,5 +268,36 @@ namespace Rock.Rest.Controllers
 
         #endregion RSVP Related
 
+        #region Import related
+
+        /// <summary>
+        /// Import Attendance Records using BulkInsert
+        /// </summary>
+        /// <remarks>
+        /// For best performance, limit to 1000 records at a time.
+        /// Either the PersonId or PersonAliasId value can be specified, but at least one is required.
+        /// </remarks>
+        /// <param name="attendancesImport">The Attendances to bulk import.</param>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/Attendances/Import" )]
+        public void AttendanceImport( Rock.BulkImport.AttendancesImport attendancesImport )
+        {
+            if ( attendancesImport == null )
+            {
+                var response = new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent( "AttendancesImport data is required" )
+                };
+
+                throw new HttpResponseException( response );
+            }
+
+            AttendanceService.BulkAttendanceImport( attendancesImport );
+        }
+
+        #endregion Import related
+
     }
 }
