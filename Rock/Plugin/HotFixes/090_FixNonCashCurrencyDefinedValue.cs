@@ -50,23 +50,17 @@ namespace Rock.Plugin.HotFixes
                 -- First get the currency type defined type ID
                 DECLARE @currencyTypeDefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '1D1304DE-E83A-44AF-B11D-0C66DD600B81')
 
-                -- Check if the Non-Cash DefinedValue exists
+				-- Check if the Non-Cash DefinedValue exists
                 IF EXISTS (SELECT * FROM [DefinedValue] WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513')
                 BEGIN
-	                -- Make sure this is flagged as a system DefinedValue so it cannot be deleted using the UI
-	                UPDATE [DefinedValue] SET IsSystem = 1 WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513'
+                 -- Make sure this is flagged as a system DefinedValue so it cannot be deleted using the UI
+                 UPDATE [DefinedValue] SET IsSystem = 1, [Value] = 'Non-Cash Asset' WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513'
                 END
-                ELSE BEGIN
-	                -- First find non-core Non-Cash currency types
-	                UPDATE [DefinedValue]
-	                SET [Value] = [Value] + ' (Non-Core)'
-	                WHERE [DefinedTypeId] = @currencyTypeDefinedTypeId
-		                AND [Value] IN ('Non-Cash', 'Non Cash', 'NonCash')
-		                AND [Value] NOT LIKE '%(Non-Core)'
-
-	                -- Insert the core version of the Non-Cash currency type
-	                INSERT INTO [DefinedValue] ([IsSystem], [DefinedTypeId], [Order], [Value], [Description], [Guid], [IsActive])
-	                VALUES(1, @currencyTypeDefinedTypeId, 99, 'Non-Cash', 'Used to track non-cash transactions.', '7950FF66-80EE-E8AB-4A77-4A13EDEB7513', 1)
+                ELSE 
+				BEGIN
+                 -- Insert the core version of the Non-Cash Asset currency type
+                 INSERT INTO [DefinedValue] ([IsSystem], [DefinedTypeId], [Order], [Value], [Description], [Guid], [IsActive])
+                 VALUES(1, @currencyTypeDefinedTypeId, 99, 'Non-Cash Asset', 'Used to track non-cash transactions.', '7950FF66-80EE-E8AB-4A77-4A13EDEB7513', 1)
                 END" );
         }
     }
