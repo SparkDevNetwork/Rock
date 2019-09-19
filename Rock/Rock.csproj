@@ -406,6 +406,8 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
+    <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
@@ -551,16 +553,16 @@
     <Compile Include="Model\PersonScheduleExclusion.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
-    <Compile Include="BulkExport\AttributesExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
-    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
-    <Compile Include="BulkExport\ModelExport.cs" />
-    <Compile Include="BulkExport\ExportOptions.cs" />
-    <Compile Include="BulkExport\LocationExport.cs" />
-    <Compile Include="BulkExport\ExportResult.cs" />
-    <Compile Include="BulkExport\PeopleExport.cs" />
-    <Compile Include="BulkExport\PersonExport.cs" />
+    <Compile Include="Bulk\BulkExport\AttributesExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="Bulk\BulkExport\ModelExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\LocationExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportResult.cs" />
+    <Compile Include="Bulk\BulkExport\PeopleExport.cs" />
+    <Compile Include="Bulk\BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
