@@ -54,7 +54,7 @@ namespace Rock.Plugin.HotFixes
                 IF EXISTS (SELECT * FROM [DefinedValue] WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513')
                 BEGIN
                  -- Make sure this is flagged as a system DefinedValue so it cannot be deleted using the UI
-                 UPDATE [DefinedValue] SET IsSystem = 1, [Value] = 'Non-Cash Asset' WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513'
+                 UPDATE [DefinedValue] SET [IsSystem] = 1, [IsActive] = 1, [Value] = 'Non-Cash Asset' WHERE [Guid] = '7950FF66-80EE-E8AB-4A77-4A13EDEB7513'
                 END
                 ELSE 
 				BEGIN
