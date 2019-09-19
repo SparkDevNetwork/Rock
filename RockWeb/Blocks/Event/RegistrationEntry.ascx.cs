@@ -608,6 +608,10 @@ namespace RockWeb.Blocks.Event
                     // Get the a registration if it has not already been loaded
                     if ( RegistrationState != null || SetRegistrationState() )
                     {
+                        if ( RegistrationInstanceState != null )
+                        {
+                            RockPage.Title = RegistrationInstanceState.Name;
+                        }
                         if ( RegistrationTemplate != null )
                         {
                             if ( !RegistrationTemplate.WaitListEnabled && RegistrationState.SlotsAvailable.HasValue && RegistrationState.SlotsAvailable.Value <= 0 )
