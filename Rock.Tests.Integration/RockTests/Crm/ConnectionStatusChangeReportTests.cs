@@ -148,7 +148,7 @@ namespace Rock.Tests.Integration.Crm
 
                 Debug.Print( $"Processed History Entries... [PersonId={person.Id}, Date={dateOfChange}]" );
 
-                HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
+                HistoryService.SaveChanges( dataContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
             Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
@@ -240,7 +240,7 @@ namespace Rock.Tests.Integration.Crm
 
                 dataContext = new RockContext();
 
-                HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
+                HistoryService.SaveChanges( dataContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
             Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );

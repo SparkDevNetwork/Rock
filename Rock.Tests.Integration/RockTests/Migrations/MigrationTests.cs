@@ -40,7 +40,7 @@ namespace Rock.Tests.Integration.Migrations
             [TestProperty( "Feature", TestFeatures.DataMaintenance )]
             public void ApplySingleDataMigration()
             {
-                var configuration = new global::Rock.Migrations.Configuration();
+                var configuration = new Rock.Migrations.Configuration();
 
                 var migrator = new DbMigrator( configuration );
 
@@ -65,7 +65,7 @@ namespace Rock.Tests.Integration.Migrations
             [TestProperty( "Feature", TestFeatures.DataMaintenance )]
             public void RollbackSingleDataMigration()
             {
-                var configuration = new global::Rock.Migrations.Configuration();
+                var configuration = new Rock.Migrations.Configuration();
 
                 var migrator = new DbMigrator( configuration );
 

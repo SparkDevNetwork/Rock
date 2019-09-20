@@ -371,7 +371,7 @@ namespace Rock.Tests.Integration.Communications
 
             var dataContext = new RockContext();
 
-            var responseCode = global::Rock.Communication.Medium.Sms.GenerateResponseCode( dataContext );
+            var responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( dataContext );
 
             // Create a new Communication
             var adminPerson = this.GetAdminPersonOrThrow( dataContext );
@@ -388,7 +388,7 @@ namespace Rock.Tests.Integration.Communications
             var communicationResponseService = new CommunicationResponseService( dataContext );
 
             // From Admin: Initial Message
-            global::Rock.Model.Communication communication;
+            Rock.Model.Communication communication;
 
             var conversationStartDateTime = RockDateTime.Now;
 
@@ -523,13 +523,13 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="reviewerPersonAliasGuid"></param>
         /// <param name="isBulk"></param>
         /// <returns></returns>
-        private global::Rock.Model.Communication CreateEmailCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string subject, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, bool isBulk = false )
+        private Rock.Model.Communication CreateEmailCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string subject, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, bool isBulk = false )
         {
             var personGuidToAliasIdMap = GetPersonGuidToAliasIdMap( dataContext );
 
             var communicationService = new CommunicationService( dataContext );
 
-            var newEmail = new global::Rock.Model.Communication();
+            var newEmail = new Rock.Model.Communication();
 
             newEmail.Guid = guid.AsGuid();
             newEmail.CommunicationType = CommunicationType.Email;
@@ -569,13 +569,13 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="smsSenderId"></param>
         /// <param name="isBulk"></param>
         /// <returns></returns>
-        private global::Rock.Model.Communication CreateSmsCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string title, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, int smsSenderId, bool isBulk = false )
+        private Rock.Model.Communication CreateSmsCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string title, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, int smsSenderId, bool isBulk = false )
         {
             var personGuidToAliasIdMap = GetPersonGuidToAliasIdMap( dataContext );
 
             var communicationService = new CommunicationService( dataContext );
 
-            var newSms = new global::Rock.Model.Communication();
+            var newSms = new Rock.Model.Communication();
 
             newSms.Guid = guid.AsGuid();
             newSms.CommunicationType = CommunicationType.SMS;
@@ -610,7 +610,7 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="communication"></param>
         /// <param name="recipientPersonGuidList"></param>
         /// <param name="possibleRecipientStatusList"></param>
-        private void CreateCommunicationRecipients( RockContext dataContext, global::Rock.Model.Communication communication, List<Guid> recipientPersonGuidList, List<CommunicationRecipientStatus> possibleRecipientStatusList )
+        private void CreateCommunicationRecipients( RockContext dataContext, Rock.Model.Communication communication, List<Guid> recipientPersonGuidList, List<CommunicationRecipientStatus> possibleRecipientStatusList )
         {
             int communicationId = communication.Id;
 
@@ -663,9 +663,9 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="dataContext"></param>
         /// <param name="communication"></param>
         /// <param name="probabilityOfMultipleInteractions">Specifies the probability that any given recipient has more than one interaction recorded for this Communication</param>
-        private void CreateCommunicationInteractions( RockContext dataContext, global::Rock.Model.Communication communication, decimal probabilityOfMultipleInteractions )
+        private void CreateCommunicationInteractions( RockContext dataContext, Rock.Model.Communication communication, decimal probabilityOfMultipleInteractions )
         {
-            var interactionChannelCommunication = new InteractionChannelService( dataContext ).Get( global::Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+            var interactionChannelCommunication = new InteractionChannelService( dataContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
 
             var interactionService = new InteractionService( dataContext );
             var recipientService = new CommunicationRecipientService( dataContext );
@@ -675,7 +675,7 @@ namespace Rock.Tests.Integration.Communications
 
             var componentService = new InteractionComponentService( dataContext );
 
-            var interactionComponent = componentService.GetComponentByEntityId( global::Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid(),
+            var interactionComponent = componentService.GetComponentByEntityId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid(),
                                     communicationId,
                                     communication.Subject );
 

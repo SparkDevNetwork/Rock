@@ -50,7 +50,7 @@ namespace Rock.Tests.Integration.RestTests.ControllersTests
             int? personAliasId = null;
 
             var attendancesController = new AttendancesController();
-            Attendance attendance = new Attendance();
+            Rock.Model.Attendance attendance = new Rock.Model.Attendance();
             System.Web.Http.HttpResponseException exception = null;
 
             try

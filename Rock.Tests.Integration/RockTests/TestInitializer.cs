@@ -17,7 +17,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Integration.Rock
+namespace Rock.Tests.Integration.RockTests
 {
     [TestClass()]
     public sealed class DivideClassTest

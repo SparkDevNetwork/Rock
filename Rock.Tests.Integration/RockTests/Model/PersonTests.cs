@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Rock.Model
+namespace Rock.Tests.Integration.RockTests.Model
 {
     [TestClass]
     [Ignore()]

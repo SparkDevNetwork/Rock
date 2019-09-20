@@ -111,7 +111,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var parameterExpression = personService.ParameterExpression;
 
-            var predicate = settingsFilter.GetExpression( typeof( global::Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
+            var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
 
             var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
 

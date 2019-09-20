@@ -9,7 +9,7 @@ using Rock.Model;
 using Rock.Rest.Controllers;
 using Rock.Tests.Integration.Utility;
 
-namespace Rock.Tests.Integration.Rock.Attendance
+namespace Rock.Tests.Integration.Attendances
 {
     [TestClass]
     public class AttendanceBulkImportTest
@@ -163,6 +163,8 @@ namespace Rock.Tests.Integration.Rock.Attendance
                     .Where( x => !x.Person.IsSystem )
                     .GroupBy( x => x.PersonId )
                      .ToDictionary( k => k.Key, v => v.First().Id );
+
+                var person = new Rock.Model.Person();
 
                 _PersonIdToAliasIdMap = personList;
             }
