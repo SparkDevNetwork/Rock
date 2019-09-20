@@ -277,9 +277,9 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Loads the responses for recipient.
         /// </summary>
-        /// <param name="recipientId">The recipient identifier.</param>
+        /// <param name="recipientPersonAliasId">The recipient person alias identifier.</param>
         /// <returns></returns>
-        private string LoadResponsesForRecipient( int recipientId )
+        private string LoadResponsesForRecipient( int recipientPersonAliasId )
         {
             int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
 
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             var communicationResponseService = new CommunicationResponseService( new RockContext() );
-            List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversation( recipientId, smsPhoneDefinedValueId.Value );
+            List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversation( recipientPersonAliasId, smsPhoneDefinedValueId.Value );
 
             BindConversationRepeater( responses );
 
@@ -582,14 +582,7 @@ namespace RockWeb.Blocks.Communication
                 recipientPerson = new PersonAliasService( rockContext ).GetPerson( recipientPersonAliasId.Value );
             }
 
-            if ( recipientPerson == null )
-            {
-                //TODO???  
-            }
-            else
-            {
-                litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
-            }
+            litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
 
             int? smsPhoneDefinedValueId = hfSmsNumber.Value.AsIntegerOrNull();
 
@@ -655,7 +648,6 @@ namespace RockWeb.Blocks.Communication
 
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
             litMessagePart.Text = responseListItem.SMSMessage;
-
 
             if ( !responseListItem.IsRead )
             {
