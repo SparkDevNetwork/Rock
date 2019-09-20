@@ -373,10 +373,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <summary>
         /// The Checkr table row columns tags
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Id", "PersonId", "HasWorkflow", "RequestDate",
-            "ResponseDate", "RecordFound", "RecordFoundLabel", "HasResponseData",
-            "ResponseDocumentText", "ResponseId", "ReportStatus" )]
-        private class BackgroundCheckRow
+        private class BackgroundCheckRow : Rock.Utility.RockDynamic
         {
             public string Name { get; set; }
 
