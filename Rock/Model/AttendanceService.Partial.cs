@@ -1665,6 +1665,11 @@ namespace Rock.Model
         /// <param name="attendancesImport">The attendances import.</param>
         public static void BulkAttendanceImport( AttendancesImport attendancesImport )
         {
+            if ( attendancesImport == null )
+            {
+                throw new Exception( "AttendancesImport must be assigned a value." );
+            }
+
             var attendanceImportList = attendancesImport.Attendances;
             RockContext rockContext = new RockContext();
 
@@ -1673,9 +1678,7 @@ namespace Rock.Model
             var occurrenceMinDate = attendanceImportList.Min( a => a.OccurrenceDate );
             var occurrenceMaxDate = attendanceImportList.Max( a => a.OccurrenceDate );
 
-            // Get list of existing occurrence records that have already been created, using the combination of pipe delimited GroupId,LocationId,ScheduleId,OccurenceDate (for quick lookup).
-            // We'll use this to see what occurrences need to be added, then we'll rebuild this lookup to use for bulk inserting Attendances
-            var occurrenceIdLookup = new AttendanceOccurrenceService( rockContext ).Queryable()
+            var occurrenceIdLookupList = new AttendanceOccurrenceService( rockContext ).Queryable()
                 .Select( o => new
                 {
                     Id = o.Id,
@@ -1684,18 +1687,28 @@ namespace Rock.Model
                     ScheduleId = o.ScheduleId,
                     OccurrenceDate = o.OccurrenceDate
                 } ).Where( a => a.OccurrenceDate >= occurrenceMinDate && a.OccurrenceDate <= occurrenceMaxDate )
-                .ToDictionary( k => AttendanceImport.GetOccurrenceLookupKey( k.GroupId, k.LocationId, k.ScheduleId, k.OccurrenceDate ), v => v.Id );
+                .ToList();
+
+            // Get list of existing occurrence records that have already been created, using the combination of pipe delimited GroupId,LocationId,ScheduleId,OccurenceDate (for quick lookup).
+            // We'll use this to see what occurrences need to be added, then we'll rebuild this lookup to use for bulk inserting Attendances
+            var occurrenceIdLookup = occurrenceIdLookupList.ToDictionary( k => AttendanceImport.GetOccurrenceLookupKey( k.GroupId, k.LocationId, k.ScheduleId, k.OccurrenceDate ), v => v.Id );
 
             // Create a list of *imported* occurrence records, using the combination of pipe delimited GroupId,LocationId,ScheduleId,OccurenceDate (for quick lookup).
             // We'll compare this to what is already in the database to figure out what occurrences need to be bulk inserted
-            var importedAttendancesOccurrenceKeys = attendanceImportList
+            var importedAttendancesOccurrenceList = attendanceImportList
                 .GroupBy( a => new
                 {
                     a.GroupId,
                     a.LocationId,
                     a.ScheduleId,
                     a.OccurrenceDate
-                } ).ToDictionary( k => $"{k.Key.GroupId}|{k.Key.LocationId}|{k.Key.ScheduleId}|{k.Key.OccurrenceDate}", v => v.FirstOrDefault() );
+                } ).Select( a => new
+                {
+                    a.Key,
+                    AttendanceImportOccurrence = a.FirstOrDefault()
+                } ).ToList();
+
+            var importedAttendancesOccurrenceKeys = importedAttendancesOccurrenceList.ToDictionary( k => $"{k.Key.GroupId}|{k.Key.LocationId}|{k.Key.ScheduleId}|{k.Key.OccurrenceDate}", v => v.AttendanceImportOccurrence );
 
             // Create list of occurrences to be bulk inserted
             List<AttendanceOccurrence> occurrencesToBulkImport = importedAttendancesOccurrenceKeys.Where( a => !occurrenceIdLookup.ContainsKey( a.Key ) )
@@ -1747,7 +1760,10 @@ namespace Rock.Model
                      var personAliasId = primaryAliasIdFromPersonIdLookup.GetValueOrNull( attendanceImport.PersonId.Value );
                      if ( !personAliasId.HasValue )
                      {
-                         System.Diagnostics.Debug.WriteLine( $"primaryAliasIdFromPersonIdLookup.GetValueOrNull(personId) returned NULL. This would be due to the import specifying a PersonId that doesn't exist." );
+                         // primaryAliasIdFromPersonIdLookup.GetValueOrNull(personId) returned NULL.
+                         // This would be due to the import specifying a PersonId that doesn't exist.
+                         // So let's set personAliasId to -1 to let the ForeignKey exception happen
+                         personAliasId = -1;
                      }
 
                      attendance.PersonAliasId = personAliasId;
