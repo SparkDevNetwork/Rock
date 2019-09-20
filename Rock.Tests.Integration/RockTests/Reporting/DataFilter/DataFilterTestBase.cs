@@ -37,7 +37,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         protected IQueryable<T> GetFilteredEntityQuery<T>( RockContext dataContext, Expression whereExpression, ParameterExpression paramExpression )
             where T : IEntity
         {
-            var serviceInstance = global::Rock.Reflection.GetServiceForEntityType( typeof( T ), dataContext );
+            var serviceInstance = Rock.Reflection.GetServiceForEntityType( typeof( T ), dataContext );
 
             var getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
 

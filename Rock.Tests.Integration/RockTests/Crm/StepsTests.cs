@@ -193,7 +193,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             // Add Step Categories
             var categoryService = new CategoryService( dataContext );
 
-            var categoryId = EntityTypeCache.Get( typeof( global::Rock.Model.StepProgram ) ).Id;
+            var categoryId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
 
             var adultCategory = CreateCategory( "Adult", Constants.CategoryAdultsGuid, 1, categoryId );
             var childCategory = CreateCategory( "Youth", Constants.CategoryYouthGuid, 2, categoryId );
@@ -367,7 +367,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             Debug.Print( $"Adding Data View Category \"{ categoryDataViewStepsName }\"..." );
 
-            var entityTypeId = EntityTypeCache.Get( typeof( global::Rock.Model.DataView ) ).Id;
+            var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.DataView ) ).Id;
 
             var stepsCategory = CreateCategory( categoryDataViewStepsName, Constants.CategoryStepsGuid, entityTypeId );
 
@@ -390,7 +390,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             dataView.Name = dataViewStepsCompleted2001Name;
             dataView.Description = "Steps that have a completion in the year 2001.";
-            dataView.EntityTypeId = EntityTypeCache.GetId( typeof( global::Rock.Model.Step ) );
+            dataView.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Step ) );
             dataView.CategoryId = categoryId;
             dataView.Guid = Constants.DataViewStepsCompleted2001Guid;
             dataView.ForeignKey = _SampleDataForeignKey;
@@ -405,7 +405,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             var dateCompletedFilter = new DataViewFilter();
 
             dateCompletedFilter.ExpressionType = FilterExpressionType.Filter;
-            dateCompletedFilter.EntityTypeId = EntityTypeCache.GetId( typeof( global::Rock.Reporting.DataFilter.PropertyFilter ) );
+            dateCompletedFilter.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Reporting.DataFilter.PropertyFilter ) );
 
             var dateFilterSettings = new List<string> { "Property_CompletedDateTime", "4096", "\tDateRange|||1/01/2001 12:00:00 AM|31/12/2001 12:00:00 AM" };
 

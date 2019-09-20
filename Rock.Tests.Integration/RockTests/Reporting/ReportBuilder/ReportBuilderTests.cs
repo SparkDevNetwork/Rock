@@ -127,7 +127,7 @@ namespace Rock.Tests.Integration.Reporting
             person.LoadAttributes();
 
             var unauthorizedAttribute = person.Attributes
-                 .Select( x => x.Value ).FirstOrDefault( a => !a.IsAuthorized( global::Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
+                 .Select( x => x.Value ).FirstOrDefault( a => !a.IsAuthorized( Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
 
             Assert.IsNotNull( unauthorizedAttribute, "Test User must have at least one unauthorized Attribute." );
 
