@@ -129,8 +129,17 @@ namespace Rock.Jobs
                             groupMember.GroupMemberRole = groupMemberIssue.Key.GroupRole.Name;
 
                             List<MissingRequirement> missingRequirements = new List<MissingRequirement>();
+
+                            // Now find exactly which ISSUE corresponds to the group member based on their role
                             foreach ( var issue in groupMemberIssue.Value )
                             {
+                                // If the issue is tied to a role, does it match the person's role?
+                                // If it does not, skip it.
+                                if ( issue.Key.GroupRequirement.GroupRoleId != null && issue.Key.GroupRequirement.GroupRoleId != groupMemberIssue.Key.GroupRoleId )
+                                {
+                                    continue;
+                                }
+
                                 MissingRequirement missingRequirement = new MissingRequirement();
                                 missingRequirement.Id = issue.Key.GroupRequirement.GroupRequirementType.Id;
                                 missingRequirement.Name = issue.Key.GroupRequirement.GroupRequirementType.Name;
