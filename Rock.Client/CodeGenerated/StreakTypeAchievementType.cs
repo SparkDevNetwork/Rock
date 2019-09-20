@@ -27,54 +27,39 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for StepType that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for StreakTypeAchievementType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class StepTypeEntity
+    public partial class StreakTypeAchievementTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowManualEditing { get; set; } = true;
+        public int? AchievementEndWorkflowTypeId { get; set; }
 
         /// <summary />
-        public bool AllowMultiple { get; set; } = true;
+        public int AchievementEntityTypeId { get; set; }
 
         /// <summary />
-        public int? AudienceDataViewId { get; set; }
+        public string AchievementIconCssClass { get; set; }
 
         /// <summary />
-        public int? AutoCompleteDataViewId { get; set; }
+        public int? AchievementStartWorkflowTypeId { get; set; }
 
         /// <summary />
-        public string CardLavaTemplate { get; set; } = @"<div class=""card-top"">
-    <h3 class=""step-name"">{{ StepType.Name }}</h3>
-</div>
-<div class=""card-middle"">
-    {% if StepType.HighlightColor == '' or IsComplete == false %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
-    {% else %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
-    {% endif %}
-</div>
-<div class=""card-bottom"">
-    <p class=""step-status"">
-        {% if LatestStepStatus %}
-            <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
-        {% endif %}
-        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
-            <br />
-            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
-        {% endif %}
-    </p>
-    {% if StepCount > 1 %}
-        <span class=""badge"">{{ StepCount }}</span>
-    {% endif %}
-</div>
-";
+        public int? AchievementStepStatusId { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
+        public int? AchievementStepTypeId { get; set; }
+
+        /// <summary />
+        public bool AllowOverAchievement { get; set; }
+
+        /// <summary />
+        public string BadgeLavaTemplate { get; set; }
+
+        /// <summary />
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -83,22 +68,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool HasEndDate { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary />
-        public string HighlightColor { get; set; }
-
-        /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; } = true;
-
-        /// <summary />
-        public string MergeTemplateDescriptor { get; set; }
-
-        /// <summary />
-        public int? MergeTemplateId { get; set; }
+        public int MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -106,16 +79,10 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public string ResultsLavaTemplate { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public bool ShowCountOnBadge { get; set; } = true;
-
-        /// <summary />
-        public int StepProgramId { get; set; }
+        public int StreakTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -144,31 +111,28 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source StepType object
+        /// Copies the base properties from a source StreakTypeAchievementType object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( StepType source )
+        public void CopyPropertiesFrom( StreakTypeAchievementType source )
         {
             this.Id = source.Id;
-            this.AllowManualEditing = source.AllowManualEditing;
-            this.AllowMultiple = source.AllowMultiple;
-            this.AudienceDataViewId = source.AudienceDataViewId;
-            this.AutoCompleteDataViewId = source.AutoCompleteDataViewId;
-            this.CardLavaTemplate = source.CardLavaTemplate;
-            this.Description = source.Description;
+            this.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
+            this.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            this.AchievementIconCssClass = source.AchievementIconCssClass;
+            this.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
+            this.AchievementStepStatusId = source.AchievementStepStatusId;
+            this.AchievementStepTypeId = source.AchievementStepTypeId;
+            this.AllowOverAchievement = source.AllowOverAchievement;
+            this.BadgeLavaTemplate = source.BadgeLavaTemplate;
+            this.CategoryId = source.CategoryId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.HasEndDate = source.HasEndDate;
-            this.HighlightColor = source.HighlightColor;
-            this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
-            this.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
-            this.MergeTemplateId = source.MergeTemplateId;
+            this.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.Order = source.Order;
-            this.ShowCountOnBadge = source.ShowCountOnBadge;
-            this.StepProgramId = source.StepProgramId;
+            this.ResultsLavaTemplate = source.ResultsLavaTemplate;
+            this.StreakTypeId = source.StreakTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -180,36 +144,33 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for StepType that includes all the fields that are available for GETs. Use this for GETs (use StepTypeEntity for POST/PUTs)
+    /// Client model for StreakTypeAchievementType that includes all the fields that are available for GETs. Use this for GETs (use StreakTypeAchievementTypeEntity for POST/PUTs)
     /// </summary>
-    public partial class StepType : StepTypeEntity
+    public partial class StreakTypeAchievementType : StreakTypeAchievementTypeEntity
     {
         /// <summary />
-        public DataView AudienceDataView { get; set; }
+        public WorkflowType AchievementEndWorkflowType { get; set; }
 
         /// <summary />
-        public DataView AutoCompleteDataView { get; set; }
+        public EntityType AchievementEntityType { get; set; }
 
         /// <summary />
-        public MergeTemplate MergeTemplate { get; set; }
+        public WorkflowType AchievementStartWorkflowType { get; set; }
 
         /// <summary />
-        public StepProgram StepProgram { get; set; }
+        public StepStatus AchievementStepStatus { get; set; }
 
         /// <summary />
-        public ICollection<Step> Steps { get; set; }
+        public StepType AchievementStepType { get; set; }
 
         /// <summary />
-        public ICollection<StepTypePrerequisite> StepTypeDependencies { get; set; }
+        public Category Category { get; set; }
 
         /// <summary />
-        public ICollection<StepTypePrerequisite> StepTypePrerequisites { get; set; }
+        public ICollection<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
 
         /// <summary />
-        public ICollection<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
-
-        /// <summary />
-        public ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
+        public StreakType StreakType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

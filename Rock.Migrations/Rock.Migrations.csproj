@@ -217,6 +217,10 @@
     <Compile Include="Migrations\201909191849321_Rollup_0919.Designer.cs">
       <DependentUpon>201909191849321_Rollup_0919.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909201334368_Achievements.cs" />
+    <Compile Include="Migrations\201909201334368_Achievements.Designer.cs">
+      <DependentUpon>201909201334368_Achievements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -939,6 +943,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909191849321_Rollup_0919.resx">
       <DependentUpon>201909191849321_Rollup_0919.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909201334368_Achievements.resx">
+      <DependentUpon>201909201334368_Achievements.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
