@@ -80,6 +80,7 @@
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
     <Compile Include="RestTests\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Rock\Attendance\AttendanceBulkImportTest.cs" />
     <Compile Include="Rock\Communications\CommunicationsModuleTestHelper.cs" />
     <Compile Include="Rock\Communications\SmsTests.cs" />
     <Compile Include="Rock\Crm\StepsTests.cs" />
@@ -157,5 +158,8 @@
   <Import Project="..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST "$(SolutionDir)RockWeb\web.ConnectionStrings.config" copy "$(SolutionDir)RockWeb\web.ConnectionStrings.config" "$(ProjectDir)app.ConnectionStrings.config" /y</PreBuildEvent>
   </PropertyGroup>
 </Project>
