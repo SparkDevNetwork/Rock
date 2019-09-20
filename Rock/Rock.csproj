@@ -621,6 +621,7 @@
     <Compile Include="Plugin\HotFixes\084_FixSpiritualGiftsAssessmentBadge.cs" />
     <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\091_SecureGetImpersonationParameter.cs" />
     <Compile Include="Plugin\HotFixes\090_FixNonCashCurrencyDefinedValue.cs" />
     <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
     <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
