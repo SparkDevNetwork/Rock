@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Streak Service class
+    /// StreakAchievementAttempt Service class
     /// </summary>
-    public partial class StreakService : Service<Streak>
+    public partial class StreakAchievementAttemptService : Service<StreakAchievementAttempt>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="StreakService"/> class
+        /// Initializes a new instance of the <see cref="StreakAchievementAttemptService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public StreakService(RockContext context) : base(context)
+        public StreakAchievementAttemptService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Streak item, out string errorMessage )
+        public bool CanDelete( StreakAchievementAttempt item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<StreakAchievementAttempt>( Context ).Queryable().Any( a => a.StreakId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Streak.FriendlyTypeName, StreakAchievementAttempt.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,51 +58,45 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class StreakExtensionMethods
+    public static partial class StreakAchievementAttemptExtensionMethods
     {
         /// <summary>
-        /// Clones this Streak object to a new Streak object
+        /// Clones this StreakAchievementAttempt object to a new StreakAchievementAttempt object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Streak Clone( this Streak source, bool deepCopy )
+        public static StreakAchievementAttempt Clone( this StreakAchievementAttempt source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Streak;
+                return source.Clone() as StreakAchievementAttempt;
             }
             else
             {
-                var target = new Streak();
+                var target = new StreakAchievementAttempt();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Streak object to this Streak object
+        /// Copies the properties from another StreakAchievementAttempt object to this StreakAchievementAttempt object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Streak target, Streak source )
+        public static void CopyPropertiesFrom( this StreakAchievementAttempt target, StreakAchievementAttempt source )
         {
             target.Id = source.Id;
-            target.CurrentStreakCount = source.CurrentStreakCount;
-            target.CurrentStreakStartDate = source.CurrentStreakStartDate;
-            target.EngagementCount = source.EngagementCount;
-            target.EngagementMap = source.EngagementMap;
-            target.EnrollmentDate = source.EnrollmentDate;
-            target.ExclusionMap = source.ExclusionMap;
+            target.AchievementAttemptEndDateTime = source.AchievementAttemptEndDateTime;
+            target.AchievementAttemptStartDateTime = source.AchievementAttemptStartDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InactiveDateTime = source.InactiveDateTime;
-            target.LocationId = source.LocationId;
-            target.LongestStreakCount = source.LongestStreakCount;
-            target.LongestStreakEndDate = source.LongestStreakEndDate;
-            target.LongestStreakStartDate = source.LongestStreakStartDate;
-            target.PersonAliasId = source.PersonAliasId;
-            target.StreakTypeId = source.StreakTypeId;
+            target.IsClosed = source.IsClosed;
+            target.IsSuccessful = source.IsSuccessful;
+            target.Progress = source.Progress;
+            target.StreakId = source.StreakId;
+            target.StreakTypeAchievementTypeId = source.StreakTypeAchievementTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

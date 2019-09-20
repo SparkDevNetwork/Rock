@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Streak Service class
+    /// StreakTypeAchievementType Service class
     /// </summary>
-    public partial class StreakService : Service<Streak>
+    public partial class StreakTypeAchievementTypeService : Service<StreakTypeAchievementType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="StreakService"/> class
+        /// Initializes a new instance of the <see cref="StreakTypeAchievementTypeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public StreakService(RockContext context) : base(context)
+        public StreakTypeAchievementTypeService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Streak item, out string errorMessage )
+        public bool CanDelete( StreakTypeAchievementType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<StreakAchievementAttempt>( Context ).Queryable().Any( a => a.StreakId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Streak.FriendlyTypeName, StreakAchievementAttempt.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,50 +58,50 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class StreakExtensionMethods
+    public static partial class StreakTypeAchievementTypeExtensionMethods
     {
         /// <summary>
-        /// Clones this Streak object to a new Streak object
+        /// Clones this StreakTypeAchievementType object to a new StreakTypeAchievementType object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Streak Clone( this Streak source, bool deepCopy )
+        public static StreakTypeAchievementType Clone( this StreakTypeAchievementType source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Streak;
+                return source.Clone() as StreakTypeAchievementType;
             }
             else
             {
-                var target = new Streak();
+                var target = new StreakTypeAchievementType();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Streak object to this Streak object
+        /// Copies the properties from another StreakTypeAchievementType object to this StreakTypeAchievementType object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Streak target, Streak source )
+        public static void CopyPropertiesFrom( this StreakTypeAchievementType target, StreakTypeAchievementType source )
         {
             target.Id = source.Id;
-            target.CurrentStreakCount = source.CurrentStreakCount;
-            target.CurrentStreakStartDate = source.CurrentStreakStartDate;
-            target.EngagementCount = source.EngagementCount;
-            target.EngagementMap = source.EngagementMap;
-            target.EnrollmentDate = source.EnrollmentDate;
-            target.ExclusionMap = source.ExclusionMap;
+            target.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
+            target.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            target.AchievementIconCssClass = source.AchievementIconCssClass;
+            target.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
+            target.AchievementStepStatusId = source.AchievementStepStatusId;
+            target.AchievementStepTypeId = source.AchievementStepTypeId;
+            target.AllowOverAchievement = source.AllowOverAchievement;
+            target.BadgeLavaTemplate = source.BadgeLavaTemplate;
+            target.CategoryId = source.CategoryId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InactiveDateTime = source.InactiveDateTime;
-            target.LocationId = source.LocationId;
-            target.LongestStreakCount = source.LongestStreakCount;
-            target.LongestStreakEndDate = source.LongestStreakEndDate;
-            target.LongestStreakStartDate = source.LongestStreakStartDate;
-            target.PersonAliasId = source.PersonAliasId;
+            target.IsActive = source.IsActive;
+            target.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
+            target.ResultsLavaTemplate = source.ResultsLavaTemplate;
             target.StreakTypeId = source.StreakTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
