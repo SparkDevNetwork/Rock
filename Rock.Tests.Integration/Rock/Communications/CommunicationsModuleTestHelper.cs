@@ -40,6 +40,7 @@ namespace Rock.Tests.Integration.Communications
             public static string TestCommunicationBulkEmail1Guid = "{D3EA6513-372D-4192-8E8F-DCA2707AA572}";
             public static string TestCommunicationBulkEmailNoInteractionsGuid = "{42AECB98-76BE-4CD5-A9FA-14FE2CC27887}";
             public static string TestCommunicationBulkSmsGuid = "{79E18AFD-DB14-485A-80D9-CDAC44CA1098}";
+            public static string TestTwilioTransportEntityTypeGuid = "{CF9FD146-8623-4D9A-98E6-4BD710F071A4}";
 
             public static string TestSmsSenderGuid = "{DB8CFE73-4209-4109-8FC5-3C5013AFC290}";
             public static string MobilePhoneTedDecker = "6235553322";
@@ -106,9 +107,15 @@ namespace Rock.Tests.Integration.Communications
 
             communicationService.DeleteRange( communicationsQuery );
 
+            var communicationResponseService = new CommunicationResponseService( dataContext );
+            var communicationResponseQuery = communicationResponseService.Queryable();
+            communicationResponseQuery = communicationResponseQuery.Where( x => x.ForeignKey == _TestDataSourceOfChange );
+
+            communicationResponseService.DeleteRange( communicationResponseQuery );
+
             var recordsAffected = dataContext.SaveChanges();
 
-            Debug.Print( $"Deleted Communications. (Count={ recordsAffected })" );
+            Debug.Print( $"Deleted Communications and Responses. (Count={ recordsAffected })" );
 
             // Remove SMS Sender
             var definedValueService = new DefinedValueService( dataContext );
@@ -359,6 +366,9 @@ namespace Rock.Tests.Integration.Communications
         [TestProperty( "Feature", TestFeatures.DataSetup )]
         public void AddNamelessSmsConversation()
         {
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Value;
+            var smsTransportEntityTypeId = EntityTypeCache.GetId( Constants.TestTwilioTransportEntityTypeGuid.AsGuid() ).Value;
+
             var dataContext = new RockContext();
 
             var responseCode = global::Rock.Communication.Medium.Sms.GenerateResponseCode( dataContext );
@@ -375,6 +385,7 @@ namespace Rock.Tests.Integration.Communications
             var smsSender = DefinedValueCache.Get( Constants.TestSmsSenderGuid.AsGuid() );
 
             var communicationService = new CommunicationService( dataContext );
+            var communicationResponseService = new CommunicationResponseService( dataContext );
 
             // From Admin: Initial Message
             global::Rock.Model.Communication communication;
@@ -382,45 +393,119 @@ namespace Rock.Tests.Integration.Communications
             var conversationStartDateTime = RockDateTime.Now;
 
             var message = "If you'd like to attend our Family Movie Night Tea this coming Saturday, please reply to let us know how many people will be attending with you.";
-            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+
+            communication.Recipients.ToList().ForEach( r =>
+            {
+                r.Status = CommunicationRecipientStatus.Delivered;
+                r.CreatedDateTime = conversationStartDateTime;
+                r.ForeignKey = _TestDataSourceOfChange;
+            } );
+
             communication.ForeignKey = _TestDataSourceOfChange;
             communication.CreatedDateTime = conversationStartDateTime;
 
             // From Nameless: Reply #1
             message = "We will be there! 2 adults, 2 kids. Do we need to bring chairs?";
-            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
-            communication.ForeignKey = _TestDataSourceOfChange;
-            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 2 );
+            communicationResponseService.Add( new CommunicationResponse
+            {
+                ForeignKey = _TestDataSourceOfChange,
+                CreatedDateTime = conversationStartDateTime.AddMinutes( 2 ),
+                RelatedTransportEntityTypeId = smsTransportEntityTypeId,
+                RelatedMediumEntityTypeId = smsMediumEntityTypeId,
+                RelatedSmsFromDefinedValueId = smsSender.Id,
+                ToPersonAliasId = adminPerson.PrimaryAliasId,
+                Response = message,
+                IsRead = false,
+                FromPersonAliasId = namelessPerson1.PrimaryAliasId,
+                MessageKey = Constants.NamelessPerson1MobileNumber
+            } );
+
             // From Admin: Response #1
             message = "No need to bring anything extra - just yourselves!";
-            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.Recipients.ToList().ForEach( r =>
+            {
+                r.Status = CommunicationRecipientStatus.Delivered;
+                r.CreatedDateTime = conversationStartDateTime.AddMinutes( 3 );
+                r.ForeignKey = _TestDataSourceOfChange;
+            } );
+
             communication.ForeignKey = _TestDataSourceOfChange;
             communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 3 );
+
             // From Nameless: Reply #2
             message = "Ok, thanks. What movie is showing?";
-            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
-            communication.ForeignKey = _TestDataSourceOfChange;
-            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 4 );
+            communicationResponseService.Add( new CommunicationResponse
+            {
+                ForeignKey = _TestDataSourceOfChange,
+                CreatedDateTime = conversationStartDateTime.AddMinutes( 4 ),
+                RelatedTransportEntityTypeId = smsTransportEntityTypeId,
+                RelatedMediumEntityTypeId = smsMediumEntityTypeId,
+                RelatedSmsFromDefinedValueId = smsSender.Id,
+                ToPersonAliasId = adminPerson.PrimaryAliasId,
+                Response = message,
+                IsRead = false,
+                FromPersonAliasId = namelessPerson1.PrimaryAliasId,
+                MessageKey = Constants.NamelessPerson1MobileNumber
+            } );
+
             // From Admin: Response #2
             message = "We'll be screening Star Wars: Episode 1.";
-            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.Recipients.ToList().ForEach( r =>
+            {
+                r.Status = CommunicationRecipientStatus.Delivered;
+                r.CreatedDateTime = conversationStartDateTime.AddMinutes( 5 );
+                r.ForeignKey = _TestDataSourceOfChange;
+            } );
+
             communication.ForeignKey = _TestDataSourceOfChange;
             communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 5 );
+
             // From Nameless: Reply #3
             message = "Is that the one with Jar Jar Binks?";
-            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
-            communication.ForeignKey = _TestDataSourceOfChange;
-            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 9 );
+            communicationResponseService.Add( new CommunicationResponse
+            {
+                ForeignKey = _TestDataSourceOfChange,
+                CreatedDateTime = conversationStartDateTime.AddMinutes( 9 ),
+                RelatedTransportEntityTypeId = smsTransportEntityTypeId,
+                RelatedMediumEntityTypeId = smsMediumEntityTypeId,
+                RelatedSmsFromDefinedValueId = smsSender.Id,
+                ToPersonAliasId = adminPerson.PrimaryAliasId,
+                Response = message,
+                IsRead = false,
+                FromPersonAliasId = namelessPerson1.PrimaryAliasId,
+                MessageKey = Constants.NamelessPerson1MobileNumber
+            } );
+
             // From Admin: Response #2
             message = "Yep, that's the one!";
-            communication = communicationService.CreateSMSCommunication( namelessPerson1, adminPerson.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: " + adminPerson.FullName );
+            communication.Recipients.ToList().ForEach( r =>
+            {
+                r.Status = CommunicationRecipientStatus.Delivered;
+                r.CreatedDateTime = conversationStartDateTime.AddMinutes( 10 );
+                r.ForeignKey = _TestDataSourceOfChange;
+            } );
+
             communication.ForeignKey = _TestDataSourceOfChange;
             communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 10 );
             // From Nameless: Reply #3
             message = "Right, I just remembered we may have some other plans, sorry...";
-            communication = communicationService.CreateSMSCommunication( adminPerson, namelessPerson1.PrimaryAliasId, message, smsSender, responseCode, "From: unknown person" );
-            communication.ForeignKey = _TestDataSourceOfChange;
-            communication.CreatedDateTime = conversationStartDateTime.AddMinutes( 20 );
+            communicationResponseService.Add( new CommunicationResponse
+            {
+                ForeignKey = _TestDataSourceOfChange,
+                CreatedDateTime = conversationStartDateTime.AddMinutes( 12 ),
+                RelatedTransportEntityTypeId = smsTransportEntityTypeId,
+                RelatedMediumEntityTypeId = smsMediumEntityTypeId,
+                RelatedSmsFromDefinedValueId = smsSender.Id,
+                ToPersonAliasId = adminPerson.PrimaryAliasId,
+                Response = message,
+                IsRead = false,
+                FromPersonAliasId = namelessPerson1.PrimaryAliasId,
+                MessageKey = Constants.NamelessPerson1MobileNumber
+            } );
 
             dataContext.SaveChanges();
         }
