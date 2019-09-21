@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
 
         private static class AttributeKey
         {
-            public const string DetailPage = "Detail Page";
+            public const string DetailPage = "DetailPage";
             public const string ContentChannelTypesInclude = "ContentChannelTypesInclude";
             public const string ContentChannelTypesExclude = "ContentChannelTypesExclude";
             public const string ContentChannelsFilter = "ContentChannelsFilter";
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( SelectedChannelId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
             }
         }
 
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Cms
             var contentItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", contentItem.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", contentItem.Id );
             }
         }
 
