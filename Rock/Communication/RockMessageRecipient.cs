@@ -46,6 +46,7 @@ namespace Rock.Communication
             this.Name = person?.FullName;
             this.To = to;
             this.MergeFields = mergeFields ?? new Dictionary<string, object>();
+            this.MergeFields.AddOrIgnore( PersonMergeFieldKey, person );
         }
 
         /// <summary>
