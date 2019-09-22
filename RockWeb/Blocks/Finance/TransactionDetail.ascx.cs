@@ -1226,11 +1226,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             var nonCashCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH );
-            if ( nonCashCurrencyType == null )
-            {
-                return false;
-            }
-
             return ( CurrencyTypeId == nonCashCurrencyType.Id );
         }
 
@@ -1757,7 +1752,7 @@ namespace RockWeb.Blocks.Finance
         private void SetNonCashAssetTypeVisibility()
         {
             int? currencyType = dvpCurrencyType.SelectedValueAsInt();
-            dvpNonCashAssetType.Visible = IsNonCashTransaction( currencyType );
+            dvpCreditCardType.Visible = IsNonCashTransaction( currencyType );
         }
 
         /// <summary>
