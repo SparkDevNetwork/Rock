@@ -1408,7 +1408,7 @@ namespace RockWeb.Blocks.Event
                 CreateDynamicControls( true );
 
                 // If the registration was previously saved then save it again to update the discount
-                if ( RegistrationState.RegistrationId != null || RegistrationState.RegistrationId != 0 )
+                if ( RegistrationState.RegistrationId != null && RegistrationState.RegistrationId != 0 )
                 {
                     // This should be false, but it is possible to fill this in before clicking the disount button
                     bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
