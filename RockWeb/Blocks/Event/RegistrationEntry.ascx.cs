@@ -683,17 +683,41 @@ namespace RockWeb.Blocks.Event
             var breadCrumbs = new List<BreadCrumb>();
 
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
 
             if ( registrationInstanceId.HasValue )
             {
-                var registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
+                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
 
                 RockPage.Title = registrationInstanceName;
                 breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
-                return breadCrumbs;
+            }
+            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            {
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l => l.UrlSlug == registrationSlug )
+                    .Where( l => l.RegistrationInstance != null )
+                    .Where( l => l.RegistrationInstance.IsActive )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
+                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
+                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    RockPage.Title = linkage.RegistrationInstance.Name;
+                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
+                }
+            }
+            else
+            {
+                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
 
