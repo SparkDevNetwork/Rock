@@ -225,6 +225,10 @@
     <Compile Include="Migrations\201909201818157_SecureGetImpersonationParameter.Designer.cs">
       <DependentUpon>201909201818157_SecureGetImpersonationParameter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909251734505_SecurePresence.cs" />
+    <Compile Include="Migrations\201909251734505_SecurePresence.Designer.cs">
+      <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -953,6 +957,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909201818157_SecureGetImpersonationParameter.resx">
       <DependentUpon>201909201818157_SecureGetImpersonationParameter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909251734505_SecurePresence.resx">
+      <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
