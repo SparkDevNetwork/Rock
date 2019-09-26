@@ -165,14 +165,14 @@ namespace Rock.Rest.Controllers
 
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
-            IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId( personId )   // Get the groups that a person is a part of
-                .Where( gm =>
-                    groupTypeIdsList.Contains( gm.Group.GroupTypeId ) &&    // Filter those groups by a set of passed in group types. 
-                    gm.Group.IsActive == true && gm.Group.IsArchived == false   // Also make sure the groups are active and not archived.
+            IQueryable<int> groupMemberPersonAliasList = groupMemberService.GetByPersonId(personId)   // Get the groups that a person is a part of
+                .Where(gm =>
+                   groupTypeIdsList.Contains(gm.Group.GroupTypeId) &&    // Filter those groups by a set of passed in group types. 
+                   gm.Group.IsActive == true && gm.Group.IsArchived == false   // Also make sure the groups are active and not archived.
                  )
-                .SelectMany( gm => gm.Group.Members )   // Get the members of those groups
-                .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.IsArchived == false ) // Make sure that the group members are active and haven't been archived
-                .Select( m => m.Person.Aliases.FirstOrDefault().Id );   // Return the person alias ids
+                .SelectMany(gm => gm.Group.Members)   // Get the members of those groups
+                .Where(gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.IsArchived == false) // Make sure that the group members are active and haven't been archived
+                .SelectMany( m => m.Person.Aliases).Select( a => a.Id);  // Return the all the person alias ids of the group members
 
             // Get the prayers for the people.
             PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
