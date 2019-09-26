@@ -57,7 +57,13 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
     [TextField( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8 )]
-    [BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
+
+    [BooleanField( "Force Email Update",
+        Description = "Force the email to be updated on the person's record.",
+        DefaultBooleanValue = false,
+        Order = 9,
+        Key =AttributeKey.ForceEmailUpdate )]
+
     [BooleanField( "Show Field Descriptions",
         Description = "Show the field description as help text",
         DefaultBooleanValue = true,
@@ -67,6 +73,7 @@ namespace RockWeb.Blocks.Event
     {
         private static class AttributeKey
         {
+            public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
         }
 
