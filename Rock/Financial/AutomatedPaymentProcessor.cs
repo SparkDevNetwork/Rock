@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -579,7 +580,28 @@ namespace Rock.Financial
                 return null;
             }
 
-            return SaveTransaction( transactionGuid );
+            try
+            {
+                return SaveTransaction( transactionGuid );
+            }
+            catch ( Exception exception )
+            {
+                // The payment has already been charged by the gateway, so if the transaction cannot be saved to the DB, it's bad.
+                // The save transaction method is safe to retry since it uses the preset guid and will not enter duplicate
+                // transactions. Wait a second and try saving again
+                Thread.Sleep( 1000 );
+
+                try
+                {
+                    return SaveTransaction( transactionGuid );
+                }
+                catch
+                {
+                    errorMessage = $"Error recording charge: payment was charged by the gateway but an error occurred trying to save the transaction to the database: Guid {transactionGuid}, Total Amount {_payment?.Amount.FormatAsCurrency()}, Person {_authorizedPerson?.Id}, Exception {exception.Message}";
+                    ExceptionLogService.LogException( new Exception( errorMessage, exception ) );
+                    return null;
+                }
+            }
         }
 
         #endregion Public Methods
@@ -801,7 +823,7 @@ namespace Rock.Financial
                 _financialTransactionService.Add( financialTransaction );
             }
 
-            _rockContext.SaveChanges();
+            _rockContext.SaveChanges();        
 
             if ( _futureTransaction == null )
             {
