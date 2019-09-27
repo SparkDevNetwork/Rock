@@ -139,7 +139,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.IsNull( result.ComputedStreaks[3].EndDate );
 
             Assert.AreEqual( 0, result.EngagementsThisMonth );
-            Assert.AreEqual( 21, result.EngagementsThisYear );
+            Assert.AreEqual( RockDateTime.Now.Year == 2019 ? 21 : 0, result.EngagementsThisYear );
             Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentEngagementDate );
             Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentOccurrenceDate );
             Assert.IsTrue( result.EngagedAtMostRecentOccurrence );
