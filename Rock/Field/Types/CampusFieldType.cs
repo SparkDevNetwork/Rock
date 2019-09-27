@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Campus
     /// Stored as Campus's Guid
     /// </summary>
-    public class CampusFieldType : FieldType, IEntityFieldType
+    public class CampusFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType
     {
 
         #region Configuration
@@ -122,15 +122,6 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
-            bool isSingleCampus = CampusCache.All( includeInactive ).Count() == 1;
-
-            // Don't return a formatted value if this is a single campus.
-            if ( isSingleCampus )
-            {
-                return string.Empty;
-            }
-
             string formattedValue = value;
             
             // Change the formatted value from GUID to Campus.Name
@@ -460,6 +451,21 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the cached entities as a list.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var guids = value.SplitDelimitedValues().AsGuidList();
+            var result = new List<IEntityCache>();
+
+            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
+
+            return result;
         }
 
         #endregion

@@ -99,46 +99,6 @@
 
 .fileupload-group {
 
-  .fileupload-thumbnail {
-    position: relative;
-
-    .file-link {
-      display: block;
-      width: 100px;
-      height: 50px;
-      padding-top: 2px;
-      overflow: hidden;
-      font-size: 10px;
-      color: @input-color;
-      text-align: center;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      background-color: @input-group-addon-bg;
-      border-radius: (@border-radius-base - 1);
-
-      &::after {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        margin-top: -20px;
-        margin-left: 42px;
-        margin-left: -12px;
-        font-family: @fa-font-face;
-        font-size: 28px;
-        font-weight: @fa-theme-weight;
-        color: darken(@input-group-addon-bg, 15%);
-        content: @fa-var-files-o;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      &.file-exists::after {
-        margin-top: -10px;
-        color: darken(@input-group-addon-bg, 15%);
-        content: @fa-var-file-alt;
-      }
-    }
-  }
-
   .fileupload-remove {
     position: absolute;
     right: 0;
@@ -245,12 +205,77 @@
   }
 }
 
+.fileupload-thumbnail {
+  position: relative;
+
+  .file-link {
+    display: block;
+    width: 100px;
+    height: 50px;
+    padding-top: 2px;
+    overflow: hidden;
+    font-size: 10px;
+    color: @input-color;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-color: @input-group-addon-bg;
+    border-radius: (@border-radius-base - 1);
+
+    &::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -20px;
+      margin-left: -12px;
+      font-family: @fa-font-face;
+      font-size: 28px;
+      font-weight: @fa-theme-weight;
+      color: darken(@input-group-addon-bg, 15%);
+      content: @fa-var-files-o;
+    }
+
+    &.file-exists::after {
+      margin-top: -10px;
+      color: darken(@input-group-addon-bg, 15%);
+      content: @fa-var-file-alt;
+    }
+  }
+}
+
 .picker-asset {
   position: relative;
-  display: inline;
+  display: inline-block;
 
-  .imageupload-thumbnail-image {
+  .fileupload-thumbnail {
+    width: 100px;
+    height: 100px;
     background-color: lighten(@input-group-addon-bg, 2%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: contain;
+  }
+
+  .fileupload-thumbnail-icon {
+    background-size: 40%;
+  }
+
+  .file-link {
+    height: 100px;
+    background-color: transparent;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  .file-link-default {
+    &::after {
+      display: block;
+      margin-top: -21px;
+      margin-left: -15.75px;
+      content: @fa-var-folder-open;
+    }
   }
 
   .picker-select-none {

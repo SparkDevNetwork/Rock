@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -116,7 +117,7 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrEmpty( descriptionPrefix ) )
             {
-                descriptionPrefix = descriptionPrefix.Substring( 0, DescriptionGroupingPrefixLength );
+                descriptionPrefix = descriptionPrefix.Substring( 0, Math.Min( descriptionPrefix.Length, DescriptionGroupingPrefixLength ) );
 
                 query = query.Where( e => e.Description.Substring( 0, DescriptionGroupingPrefixLength ) == descriptionPrefix );
             }
@@ -421,7 +422,13 @@ namespace Rock.Model
                 }
 
                 StringBuilder serverVars = new StringBuilder();
-                var serverVarList = request.ServerVariables;
+
+                // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists,
+                // so make a copy of the request server variables to help avoid that error
+                var serverVarList = new NameValueCollection( request.ServerVariables );
+                var serverVarListString = serverVarList.ToString();
+
+                var serverVarKeys = request.ServerVariables.AllKeys;
 
                 if ( serverVarList.Count > 0 )
                 {
@@ -432,10 +439,12 @@ namespace Rock.Model
                         string val = string.Empty;
                         try
                         {
-                            // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists. Was not able to find a more elegant way to avoid an exception. 
                             val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
                         }
-                        catch { }
+                        catch
+                        {
+                            // ignore
+                        }
 
                         serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
                     }

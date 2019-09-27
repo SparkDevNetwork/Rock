@@ -15,66 +15,15 @@
 // </copyright>
 //
 using System;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.PersonProfile
 {
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class HighlightLabelBadge : BadgeComponent
+    [RockObsolete( "1.10" )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    public abstract class HighlightLabelBadge : Rock.Badge.HighlightLabelBadge
     {
-        /// <summary>
-        /// Gets the badge label
-        /// </summary>
-        /// <param name="entity">The person.</param>
-        /// <returns></returns>
-        public virtual HighlightLabel GetLabel( IEntity entity )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the badge label
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the IEntity param instead.", false )]
-        public virtual HighlightLabel GetLabel( Person person )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
-        {
-            if ( Entity != null )
-            {
-                var label = GetLabel( Entity );
-                
-                if ( label != null )
-                {
-                    label.RenderControl( writer );
-                }
-                else
-                {
-                    label = GetLabel( Person );
-
-                    if ( label != null )
-                    {
-                        label.RenderControl( writer );
-                    }
-                }
-            }
-        }
     }
-
 }

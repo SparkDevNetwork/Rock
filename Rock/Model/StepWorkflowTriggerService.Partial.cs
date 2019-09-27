@@ -29,7 +29,7 @@ namespace Rock.Model
         /// <summary>
         /// Get a friendly description of the settings for a Status Change trigger.
         /// </summary>
-        /// <param name="trigger"></param>
+        /// <param name="stepWorkflowTriggerId">The step workflow trigger identifier.</param>
         /// <returns></returns>
         public string GetTriggerSettingsDescription( int stepWorkflowTriggerId )
         {
@@ -58,7 +58,8 @@ namespace Rock.Model
         /// <summary>
         /// Get a friendly description of the settings for a Status Change trigger.
         /// </summary>
-        /// <param name="trigger"></param>
+        /// <param name="triggerType">Type of the trigger.</param>
+        /// <param name="settings">The settings.</param>
         /// <returns></returns>
         public string GetTriggerSettingsDescription( StepWorkflowTrigger.WorkflowTriggerCondition triggerType, StepWorkflowTrigger.StatusChangeTriggerSettings settings )
         {
@@ -82,7 +83,7 @@ namespace Rock.Model
             }
             else if ( triggerType == StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete )
             {
-                return "Completed";
+                return "Step Completed";
             }
             else
             {

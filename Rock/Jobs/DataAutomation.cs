@@ -569,15 +569,14 @@ Update Family Status: {updateFamilyStatus}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                        var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
-                                m.EntityTypeId == personEntityTypeId &&
-                                m.RelatedEntityId.HasValue &&
+                                m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.RelatedEntityId.Value )
+                            .Select( a => a.EntityId )
                             .ToList()
                             .Distinct();
 
@@ -606,14 +605,17 @@ Update Family Status: {updateFamilyStatus}
                             .ToList();
                     }
 
-                    // Query all of the giving tied to a campus 
+                    // Query all of the transactions that are considered as "giving activity" and are associated with a campus.
                     if ( settings.IsMostFamilyGivingEnabled )
                     {
+                        int transactionTypeContributionId = DefinedValueCache.GetOrThrow( "Transaction Type/Contribution", Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+
                         var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                         personCampusGiving = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
                                 a.Transaction != null &&
+                                a.Transaction.TransactionTypeValueId == transactionTypeContributionId &&
                                 a.Transaction.TransactionDateTime.HasValue &&
                                 a.Transaction.TransactionDateTime >= startPeriod &&
                                 a.Transaction.AuthorizedPersonAlias != null &&

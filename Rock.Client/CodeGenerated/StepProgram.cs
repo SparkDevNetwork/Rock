@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.ViewMode DefaultListView { get; set; }
@@ -65,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public string StepTerm { get; set; } = @"Step";
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.StepTerm = source.StepTerm;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

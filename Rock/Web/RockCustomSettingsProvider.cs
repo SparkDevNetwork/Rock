@@ -1,15 +1,32 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Data;
 
 namespace Rock.Web
 {
     /// <summary>
     /// Defines a UI provider for custom settings. Subclasses of this should also tag their implementation
-    /// with the <see cref="Rock.Blocks.TargetTypeAttribute"/> to specify the class that will which we
+    /// with the <see cref="Rock.Attribute.TargetTypeAttribute"/> to specify the class that will which we
     /// are defining a custom UI for.
     /// </summary>
     public abstract class RockCustomSettingsProvider
@@ -57,8 +74,13 @@ namespace Rock.Web
         /// </summary>
         /// <param name="attributeEntity">The attribute entity.</param>
         /// <param name="control">The control returned by the GetCustomSettingsControl() method.</param>
-        /// <remarks>Do not save the entity, it will be automatically saved later.</remarks>
-        public abstract void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control );
+        /// <param name="rockContext">The rock context to use when accessing the database.</param>
+        /// <remarks>
+        /// Do not save the entity, it will be automatically saved later. This call will be made inside
+        /// a SQL transaction for the passed rockContext. If you need to make changes to the database
+        /// do so on this context so they can be rolled back if something fails during the final save.
+        /// </remarks>
+        public abstract void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext );
 
         #endregion
 
@@ -76,14 +98,17 @@ namespace Rock.Web
                 InitializeCachedProviders();
             }
 
-            if ( !_cachedProviders.ContainsKey( type ) )
+            while ( type != null )
             {
-                yield break;
-            }
+                if ( _cachedProviders.TryGetValue( type, out var providers ) )
+                {
+                    foreach ( var t in providers )
+                    {
+                        yield return ( RockCustomSettingsProvider ) Activator.CreateInstance( t );
+                    }
+                }
 
-            foreach ( var t in _cachedProviders[type] )
-            {
-                yield return (RockCustomSettingsProvider)Activator.CreateInstance( t );
+                type = type.BaseType;
             }
         }
 

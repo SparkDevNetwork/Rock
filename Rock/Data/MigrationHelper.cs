@@ -839,6 +839,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Deletes the page route.
+        /// </summary>
+        /// <param name="pageRouteGuid">The page route unique identifier.</param>
+        public void DeletePageRoute( string pageRouteGuid )
+        {
+            string sql = $@"
+                DELETE FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}';
+            ";
+        }
+
+        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
@@ -892,6 +903,28 @@ namespace Rock.Data
 	                UPDATE [dbo].[Page] SET [LayoutId] = @layoutId WHERE [Guid] = '{pageGuid}'
                 END";
 
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates the page icon.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="iconCssClass">The layout unique identifier.</param>
+        public void UpdatePageIcon( string pageGuid, string iconCssClass )
+        {
+            var sql = $"UPDATE [dbo].[Page] SET [IconCssClass] = '{iconCssClass}' WHERE [Guid] = '{pageGuid}'";
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Updates if the page's title shows in the breadcrumbs.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="breadCrumbDisplayName">if set to <c>true</c> [bread crumb display name].</param>
+        public void UpdatePageBreadcrumb( string pageGuid, bool breadCrumbDisplayName )
+        {
+            var sql = $"UPDATE [dbo].[Page] SET [BreadCrumbDisplayName] = {(breadCrumbDisplayName ? 1 : 0)} WHERE [Guid] = '{pageGuid}'";
             Migration.Sql( sql );
         }
 
@@ -1790,6 +1823,7 @@ WHERE [Guid] = '{pageGuid}';";
         /// </summary>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="name">The name the group member attribute. The attribute key will become the name with the whitespace removed.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
@@ -2135,9 +2169,9 @@ WHERE [Guid] = '{pageGuid}';";
                     fieldTypeGuid,
                     key,
                     name,
-                    description.Replace( "'", "''" ),
+                    description?.Replace( "'", "''" ) ?? string.Empty,
                     order,
-                    defaultValue.Replace( "'", "''" ),
+                    defaultValue?.Replace( "'", "''" ) ?? string.Empty,
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -2682,6 +2716,41 @@ WHERE [Guid] = '{pageGuid}';";
                     value, // {2}
                     guid ) // {3}
             );
+        }
+
+        /// <summary>
+        /// Adds the attribute qualifier.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="definedTypeGuid">The defined type guid.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddDefinedTypeAttributeQualifier( string attributeGuid, string definedTypeGuid, string guid )
+        {
+            var key = "definedtype";
+
+            Migration.Sql( $@"
+                DECLARE @definedTypeId INT = (SELECT Id FROM DefinedType WHERE Guid = '{definedTypeGuid}');
+
+                IF @definedTypeId IS NOT NULL
+                BEGIN
+                    DECLARE @AttributeId int
+                    SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                    IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
+                    BEGIN
+                        INSERT INTO [AttributeQualifier] (
+                            [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                        VALUES(
+                            1,@AttributeId,'{key}',@definedTypeId,'{guid}')
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE [AttributeQualifier] SET
+                            [Key] = '{key}',
+                            [Value] = @definedTypeId
+                        WHERE [Guid] = '{guid}'
+                    END
+                END" );
         }
 
         /// <summary>

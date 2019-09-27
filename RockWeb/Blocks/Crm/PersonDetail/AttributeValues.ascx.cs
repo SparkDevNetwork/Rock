@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     public partial class AttributeValues : PersonBlock
     {
         #region Attribute Keys
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string Category = "Category";
             public const string AttributeOrder = "AttributeOrder";

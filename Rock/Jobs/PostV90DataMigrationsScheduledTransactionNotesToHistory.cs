@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
@@ -23,6 +25,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -60,130 +63,100 @@ namespace Rock.Jobs
         public void MigrateScheduledTransactionNotesToHistory()
         {
             var rockContext = new RockContext();
-            rockContext.Database.ExecuteSqlCommand( @"
--- Scheduled Transactions didn't write to history until v7.4, so convert those into History notes
+            rockContext.Database.CommandTimeout = _commandTimeout;
+            var noteService = new NoteService( rockContext );
+            var historyCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid() )?.Id;
+            var entityTypeIdScheduledTransaction = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.FINANCIAL_SCHEDULED_TRANSACTION.AsGuid() );
+            var noteTypeIdScheduledTransaction = NoteTypeCache.GetId( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
 
-DECLARE @historyCategoryId INT = (
-		SELECT TOP 1 Id
-		FROM Category
-		WHERE Guid = '477EE3BE-C68F-48BD-B218-FAFC99AF56B3'
-		)
-	,@entityTypeIdScheduledTransaction INT = (
-		SELECT TOP 1 Id
-		FROM EntityType
-		WHERE [Guid] = '76824E8A-CCC4-4085-84D9-8AF8C0807E20'
-		)
-	,@noteTypeIdScheduledTransaction INT = (
-		SELECT TOP 1 Id
-		FROM NoteType
-		WHERE [Guid] = '360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588'
-		)
+            if ( !historyCategoryId.HasValue || !entityTypeIdScheduledTransaction.HasValue || !noteTypeIdScheduledTransaction.HasValue )
+            {
+                return;
+            }
 
-BEGIN
-	-- convert 'Created Transaction' notes into History if they aren't aleady in History
-	INSERT INTO [History] (
-		IsSystem
-		,CategoryId
-		,EntityTypeId
-		,EntityId
-		,[Guid]
-		,CreatedDateTime
-		,ModifiedDateTime
-		,CreatedByPersonAliasId
-		,ModifiedByPersonAliasId
-		,[Verb]
-		,[ChangeType]
-		,[ValueName]
-		)
-	SELECT n.IsSystem
-		,@historyCategoryId [CategoryId]
-		,@entityTypeIdScheduledTransaction [EntityTypeId]
-		,n.EntityId
-		,newid() [Guid]
-		,n.CreatedDateTime
-		,n.ModifiedDateTime
-		,n.CreatedByPersonAliasId
-		,n.ModifiedByPersonAliasId
-		,'ADD' [Verb]
-		,'Record' [ChangeType]
-		,'Transaction' [ValueName]
-	FROM [Note] n
-	WHERE NoteTypeId = @noteTypeIdScheduledTransaction
-		AND [Caption] = 'Created Transaction'
-		AND EntityId NOT IN (
-			SELECT EntityId
-			FROM [History]
-			WHERE EntityTypeId = @entityTypeIdScheduledTransaction
-				AND [Verb] = 'ADD'
-			)
+            var historyService = new HistoryService( rockContext );
 
-	-- convert 'Updated Transaction','Cancelled Transaction','Reactivated Transaction' notes into History if they aren't aleady in History
-	INSERT INTO [History] (
-		IsSystem
-		,CategoryId
-		,EntityTypeId
-		,EntityId
-		,[Summary]
-		,[Guid]
-		,CreatedDateTime
-		,ModifiedDateTime
-		,CreatedByPersonAliasId
-		,ModifiedByPersonAliasId
-		,[Verb]
-		,[ChangeType]
-		,[ValueName]
-		,[NewValue]
-		)
-	SELECT n.IsSystem
-		,@historyCategoryId [CategoryId]
-		,@entityTypeIdScheduledTransaction [EntityTypeId]
-		,n.EntityId
-		,n.Caption [Summary]
-		,newid() [Guid]
-		,n.CreatedDateTime
-		,n.ModifiedDateTime
-		,n.CreatedByPersonAliasId
-		,n.ModifiedByPersonAliasId
-		,'MODIFY' [Verb]
-		,'Property' [ChangeType]
-		,CASE n.Caption
-			WHEN 'Cancelled Transaction'
-				THEN 'Is Active'
-			WHEN 'Reactivated Transaction'
-				THEN 'Is Active'
-			ELSE 'Transaction'
-			END [ValueName]
-		,CASE n.Caption
-			WHEN 'Cancelled Transaction'
-				THEN 'False'
-			WHEN 'Reactivated Transaction'
-				THEN 'True'
-			ELSE ''
-			END [NewValue]
-	FROM [Note] n
-	WHERE NoteTypeId = @noteTypeIdScheduledTransaction
-		AND [Caption] IN (
-			'Updated Transaction'
-			,'Cancelled Transaction'
-			,'Reactivated Transaction'
-			)
-		AND EntityId NOT IN (
-			SELECT EntityId
-			FROM [History]
-			WHERE EntityTypeId = @entityTypeIdScheduledTransaction
-				AND [Verb] = 'MODIFY'
-			)
-	ORDER BY [Caption]
+            var historyQuery = historyService.Queryable().Where( a => a.EntityTypeId == entityTypeIdScheduledTransaction.Value );
+            var captionsToConvert = new string[]
+            {
+                "Created Transaction"
+                ,"Updated Transaction"
+                ,"Cancelled Transaction"
+                ,"Reactivated Transaction"
+            };
 
-	DELETE FROM [Note] WHERE NoteTypeId = @noteTypeIdScheduledTransaction
-		AND [Caption] IN (
-			'Created Transaction'
-			,'Updated Transaction'
-			,'Cancelled Transaction'
-			,'Reactivated Transaction'
-			)
-END
-" );
+            var notesToConvertToHistory = noteService.Queryable()
+                .Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction.Value && captionsToConvert.Contains( a.Caption ) && a.EntityId.HasValue )
+                .Where( a => !historyQuery.Any( h => h.EntityId == a.EntityId ) );
+
+            var notesToConvertToSummaryList = noteService.Queryable()
+                .Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction.Value && a.Caption == "Created Transaction" && !string.IsNullOrEmpty( a.Text ) && a.EntityId.HasValue )
+                .AsNoTracking().ToList();
+
+            List<History> historyRecordsToInsert = notesToConvertToHistory.AsNoTracking()
+                .ToList()
+                .Select( n =>
+                {
+                    var historyRecord = new History
+                    {
+                        CategoryId = historyCategoryId.Value,
+                        EntityTypeId = entityTypeIdScheduledTransaction.Value,
+                        EntityId = n.EntityId.Value,
+                        Guid = Guid.NewGuid(),
+                        CreatedByPersonAliasId = n.CreatedByPersonAliasId,
+                        ModifiedByPersonAliasId = n.ModifiedByPersonAliasId,
+                        CreatedDateTime = n.CreatedDateTime,
+                        ModifiedDateTime = n.ModifiedDateTime
+                    };
+
+                    if ( n.Caption == "Cancelled Transaction" )
+                    {
+                        historyRecord.Verb = "MODIFY";
+                        historyRecord.ChangeType = "Property";
+                        historyRecord.ValueName = "Is Active";
+                        historyRecord.NewValue = "False";
+                    }
+                    else if ( n.Caption == "Reactivated Transaction" )
+                    {
+                        historyRecord.Verb = "MODIFY";
+                        historyRecord.ChangeType = "Property";
+                        historyRecord.ValueName = "Is Active";
+                        historyRecord.NewValue = "True";
+                    }
+                    else if ( n.Caption == "Updated Transaction" )
+                    {
+                        historyRecord.Verb = "MODIFY";
+                        historyRecord.ValueName = "Transaction";
+                    }
+                    else
+                    {
+                        historyRecord.Verb = "ADD";
+                        historyRecord.ChangeType = "Record";
+                        historyRecord.ValueName = "Transaction";
+                    }
+
+                    return historyRecord;
+
+
+                } ).ToList();
+
+            rockContext.BulkInsert( historyRecordsToInsert );
+            var qryNotesToDelete = noteService.Queryable().Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction && captionsToConvert.Contains( a.Caption ) );
+            rockContext.BulkDelete( qryNotesToDelete );
+
+            foreach ( var noteToConvertToSummary in notesToConvertToSummaryList )
+            {
+                using ( var updatedSummaryContext = new RockContext() )
+                {
+                    var scheduledTransactionService = new FinancialScheduledTransactionService( updatedSummaryContext );
+                    var scheduledTransaction = scheduledTransactionService.Get( noteToConvertToSummary.EntityId.Value );
+                    if ( scheduledTransaction != null && scheduledTransaction.Summary.IsNullOrWhiteSpace() )
+                    {
+                        scheduledTransaction.Summary = noteToConvertToSummary.Text;
+                        updatedSummaryContext.SaveChanges( disablePrePostProcessing: true );
+                    }
+                }
+            }
         }
 
         /// <summary>

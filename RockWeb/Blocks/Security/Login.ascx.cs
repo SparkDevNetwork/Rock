@@ -455,7 +455,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
                 redirectUrl =  Server.UrlDecode( redirectUrl );
-                Response.Redirect( redirectUrl );
+                Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )

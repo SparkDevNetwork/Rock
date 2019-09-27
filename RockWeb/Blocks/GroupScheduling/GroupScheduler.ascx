@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-groupscheduler">
             <%-- Panel Header --%>
-            <div class="panel-heading panel-follow">
+            <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-calendar-alt"></i>
                     Group Scheduler
@@ -29,7 +29,6 @@
                         Auto Schedule
                     </asp:LinkButton>
                 </div>
-                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <%-- Panel Body --%>

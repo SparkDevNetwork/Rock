@@ -303,9 +303,14 @@ namespace RockWeb.Blocks.Core
         {
             bool reloadPage = false;
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            if ( Page.IsValid )
+            if ( !Page.IsValid )
             {
-                var rockContext = new RockContext();
+                return;
+            }
+
+            var rockContext = new RockContext();
+            rockContext.WrapTransaction( () =>
+            {
                 var blockService = new Rock.Model.BlockService( rockContext );
                 var block = blockService.Get( blockId );
 
@@ -316,7 +321,6 @@ namespace RockWeb.Blocks.Core
                 block.PreHtml = cePreHtml.Text;
                 block.PostHtml = cePostHtml.Text;
                 block.OutputCacheDuration = 0; //Int32.Parse( tbCacheDuration.Text );
-                rockContext.SaveChanges();
 
                 avcAttributes.GetEditValues( block );
                 avcMobileAttributes.GetEditValues( block );
@@ -324,7 +328,7 @@ namespace RockWeb.Blocks.Core
 
                 foreach ( var kvp in CustomSettingsProviders )
                 {
-                    kvp.Key.WriteSettingsToEntity( block, kvp.Value );
+                    kvp.Key.WriteSettingsToEntity( block, kvp.Value, rockContext );
                 }
 
                 SaveCustomColumnsConfigToViewState();
@@ -374,6 +378,7 @@ namespace RockWeb.Blocks.Core
                     reloadPage = true;
                 }
 
+                rockContext.SaveChanges();
                 block.SaveAttributeValues( rockContext );
 
                 // If this is a page menu block then we need to also flush the LavaTemplateCache for the block ID
@@ -395,7 +400,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );
-            }
+            } );
         }
 
         #region Internal Methods
@@ -438,7 +443,7 @@ namespace RockWeb.Blocks.Core
 
             CustomSettingsProviders = new Dictionary<RockCustomSettingsProvider, Control>();
 
-            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() );
+            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
             foreach ( var provider in providers )
             {
                 var control = provider.GetCustomSettingsControl( block, phCustomSettings );

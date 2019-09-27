@@ -86,14 +86,22 @@
 
                     var searchQuery = "?" + searchParams.join("&");
 
+                    // set the timeout to 20 seconds, just in case it takes a long time to search
                     promise = $.ajax({
                         url: restUrl
                             + searchQuery
                             + "&includeDetails=" + includeDetails
                             + "&includeBusinesses=" + includeBusinesses
                             + "&includeDeceased=" + includeDeceased,
+                        timeout: 20000, 
                         dataType: 'json'
                     });
+                    
+                    // if it takes more than 1.5 seconds for the search to complete, show a wait indicator
+                    if ($('.js-searching-notification').length == 0) {
+                        $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
+                    }
+                    $('.js-searching-notification').delay(1500).fadeIn(800);
 
                     promise.done(function (data) {
                         $searchResults.html('');
@@ -110,6 +118,8 @@
                         if (errorCode == 401) {
                             $searchResults.html("<li class='text-danger'>Sorry, you're not authorized to search.</li>");
                         }
+
+                        $('.js-searching-notification').remove();
                     });
                 },
                 // set minLength to 0, but check that at least one field as 3 chars before fetching from REST

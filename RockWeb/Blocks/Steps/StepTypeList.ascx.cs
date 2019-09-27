@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string StepProgram = "Programs";
             public const string DetailPage = "DetailPage";
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attribute Categories
         /// </summary>
-        protected static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string LinkedPages = "Linked Pages";
         }
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string StepProgramId = "ProgramId";
             public const string StepTypeId = "StepTypeId";
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Filter Settings
         /// </summary>
-        protected static class FilterSettingName
+        private static class FilterSettingName
         {
             public const string Name = "Name";
             public const string AllowMultiple = "Allow Multiple";
@@ -528,9 +528,9 @@ namespace RockWeb.Blocks.Steps
 
             var stepTypeService = new StepTypeService( rockContext );
 
-            var stepProgram = stepTypeService.Get( stepTypeId );
+            var stepType = stepTypeService.Get( stepTypeId );
 
-            if ( stepProgram == null )
+            if ( stepType == null )
             {
                 mdGridWarning.Show( "This item could not be found.", ModalAlertType.Information );
                 return;
@@ -538,13 +538,15 @@ namespace RockWeb.Blocks.Steps
 
             string errorMessage;
 
-            if ( !stepTypeService.CanDelete( stepProgram, out errorMessage ) )
+            if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
             {
                 mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
 
-            stepTypeService.Delete( stepProgram );
+            stepTypeService.Delete( stepType );
+
+            rockContext.SaveChanges();
 
             BindGrid();
         }

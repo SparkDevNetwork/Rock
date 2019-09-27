@@ -56,10 +56,10 @@ namespace Rock.Client
         public int? CommunicationPageRouteId { get; set; }
 
         /// <summary />
-        public int? ConfigurationMobilePhoneFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
 
         /// <summary />
-        public int? ConfigurationMobileTabletFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
 
         /// <summary />
         public int? DefaultPageId { get; set; }
@@ -165,7 +165,7 @@ namespace Rock.Client
         public string Theme { get; set; }
 
         /// <summary />
-        public int? ThumbnailFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -207,8 +207,8 @@ namespace Rock.Client
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
-            this.ConfigurationMobilePhoneFileId = source.ConfigurationMobilePhoneFileId;
-            this.ConfigurationMobileTabletFileId = source.ConfigurationMobileTabletFileId;
+            this.ConfigurationMobilePhoneBinaryFileId = source.ConfigurationMobilePhoneBinaryFileId;
+            this.ConfigurationMobileTabletBinaryFileId = source.ConfigurationMobileTabletBinaryFileId;
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
@@ -244,7 +244,7 @@ namespace Rock.Client
             this.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
             this.SiteType = source.SiteType;
             this.Theme = source.Theme;
-            this.ThumbnailFileId = source.ThumbnailFileId;
+            this.ThumbnailBinaryFileId = source.ThumbnailBinaryFileId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

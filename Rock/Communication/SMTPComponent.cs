@@ -263,7 +263,7 @@ namespace Rock.Communication.Transport
 
                             if ( emailMessage.CreateCommunicationRecord )
                             {
-                                var transaction = new SaveCommunicationTransaction( messageRecipient, emailMessage.FromName, emailMessage.FromName, subject, body );
+                                var transaction = new SaveCommunicationTransaction( messageRecipient, emailMessage.FromName, emailMessage.FromEmail, subject, body );
                                 transaction.RecipientGuid = recipientGuid;
                                 RockQueue.TransactionQueue.Enqueue( transaction );
                             }

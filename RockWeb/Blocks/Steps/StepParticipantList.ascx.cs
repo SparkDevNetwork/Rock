@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -67,11 +67,26 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
+            /// <summary>
+            /// The detail page
+            /// </summary>
             public const string DetailPage = "DetailPage";
+
+            /// <summary>
+            /// The profile page
+            /// </summary>
             public const string ProfilePage = "PersonProfilePage";
+
+            /// <summary>
+            /// The show note column
+            /// </summary>
             public const string ShowNoteColumn = "ShowNoteColumn";
+
+            /// <summary>
+            /// The step type
+            /// </summary>
             public const string StepType = "StepType";
         }
 
@@ -82,9 +97,17 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step identifier
+            /// </summary>
+            public const string StepId = "StepId";
         }
 
         #endregion Page Parameter Keys
@@ -94,7 +117,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Filters
         /// </summary>
-        protected static class FilterKey
+        private static class FilterKey
         {
             public const string FirstName = "FirstName";
             public const string LastName = "LastName";
@@ -124,6 +147,18 @@ namespace RockWeb.Blocks.Steps
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableAttributes { get; set; }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -142,9 +177,25 @@ namespace RockWeb.Blocks.Steps
 
             InitializeGrid();
 
-            IntializeRowButtons();
+            AddGridRowButtons();
 
             InitializeSettingsNotification( upMain );
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            if ( ViewState["AvailableAttributeIds"] != null )
+            {
+                AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            }
+
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -164,6 +215,19 @@ namespace RockWeb.Blocks.Steps
                     BindParticipantsGrid();
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
+
+            return base.SaveViewState();
         }
 
         #endregion
@@ -209,11 +273,11 @@ namespace RockWeb.Blocks.Steps
             {
                 if ( step.IsCompleted )
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-success'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-success'>{0}</div>", step.StepStatusName );
                 }
                 else
                 {
-                    lStepStatusHtml.Text = string.Format( "<div class='badge badge-info'>{0}</div>", step.StepStatusName );
+                    lStepStatusHtml.Text = string.Format( "<div class='label label-info'>{0}</div>", step.StepStatusName );
                 }
             }
 
@@ -315,6 +379,34 @@ namespace RockWeb.Blocks.Steps
             rFilter.SaveUserPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.Note, "Note", tbNote.Text );
 
+            // Save filter settings for custom attributes.
+            if ( this.AvailableAttributes != null )
+            {
+                foreach ( var attribute in this.AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+
+                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
+                    }
+                    else
+                    {
+                        // If this Attribute column is no longer available in the grid, remove the associated user preference.
+                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
+                    }
+                }
+            }
+
             BindParticipantsGrid();
         }
 
@@ -333,6 +425,37 @@ namespace RockWeb.Blocks.Steps
             {
                 e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
             }
+            else if ( e.Key == FilterKey.FirstName || e.Key == FilterKey.LastName || e.Key == FilterKey.Note )
+            {
+                // No change
+            }
+            else
+            {
+                // Find a matching Attribute.
+                if ( this.AvailableAttributes != null )
+                {
+                    var attribute = AvailableAttributes.FirstOrDefault( a => a.Key == e.Key );
+
+                    if ( attribute != null )
+                    {
+                        try
+                        {
+                            var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+
+                            e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+
+                            return;
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
+                    }
+                }
+
+                // Invalid filter field, so ignore the filter value.
+                e.Value = string.Empty;
+            }
         }
 
         /// <summary>
@@ -343,6 +466,7 @@ namespace RockWeb.Blocks.Steps
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
+
             BindFilter();
         }
 
@@ -364,6 +488,7 @@ namespace RockWeb.Blocks.Steps
             if ( step != null )
             {
                 string errorMessage;
+
                 if ( !stepService.CanDelete( step, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
@@ -385,7 +510,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSteps_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "StepId", 0, "StepTypeId", _stepType.Id );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.StepId, 0, PageParameterKey.StepTypeId, _stepType.Id );
         }
 
         /// <summary>
@@ -395,7 +520,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSteps_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "StepId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.StepId, e.RowKeyId, PageParameterKey.StepTypeId, _stepType.Id );
         }
 
         /// <summary>
@@ -533,7 +658,7 @@ namespace RockWeb.Blocks.Steps
         {
             BindFilter();
 
-            IntializeRowButtons();
+            AddGridRowButtons();
 
             BindParticipantsGrid();
         }
@@ -553,6 +678,9 @@ namespace RockWeb.Blocks.Steps
                 cblStepStatus.DataBind();
             }
 
+            GetAvailableAttributes();
+            AddDynamicControls();
+
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
             tbNote.Text = rFilter.GetUserPreference( FilterKey.Note );
@@ -568,9 +696,137 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Gets the collection of Step Attributes available for display to the current user.
+        /// </summary>
+        private void GetAvailableAttributes()
+        {
+            // Parse the attribute filters 
+            this.AvailableAttributes = new List<AttributeCache>();
+
+            if ( _stepType != null )
+            {
+                var dataContext = this.GetDataContext();
+
+                int entityTypeId = new Step().TypeId;
+
+                string entityTypeQualifier = _stepType.Id.ToString();
+
+                foreach ( var attribute in new AttributeService( dataContext ).GetByEntityTypeQualifier( entityTypeId, "StepTypeId", entityTypeQualifier, true )
+                    .Where( a => a.IsGridColumn )
+                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                    .ThenBy( a => a.Order )
+                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
+                {
+                    if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        AvailableAttributes.Add( attribute );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the dynamically-created controls to the page.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            AddAttributeColumns();
+            AddAttributeFilterFields();
+            AddGridRowButtons();
+        }
+
+        /// <summary>
+        /// Adds the Attribute columns to the grid.
+        /// </summary>
+        private void AddAttributeColumns()
+        {
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeColumns();
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    bool columnExists = gSteps.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+
+                        gSteps.Columns.Add( boundField );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Add the available Attribute fields to the grid filter.
+        /// </summary>
+        private void AddAttributeFilterFields()
+        {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = ( IRockControl ) control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = rFilter.GetUserPreference( attribute.Key );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove the Attribute columns from the grid.
+        /// </summary>
+        private void RemoveAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gSteps.Columns.OfType<AttributeField>().ToList() )
+            {
+                gSteps.Columns.Remove( column );
+            }
+        }
+
+        /// <summary>
         /// Initialize the row buttons.
         /// </summary>
-        private void IntializeRowButtons()
+        private void AddGridRowButtons()
         {
             RemoveRowButtons();
             AddRowButtons();
@@ -653,7 +909,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.Visible = true;
             gSteps.Visible = true;
 
-            lHeading.Text = string.Format( "{0} Step Participants", _stepType.Name );
+            lHeading.Text = string.Format( "{0} Steps", _stepType.Name );
 
             _fullNameField = gSteps.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gSteps.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lNameWithHtml" ).FirstOrDefault();
@@ -747,10 +1003,17 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => m.Note.Contains( note ) );
             }
 
-            _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, stepService, Rock.Reporting.FilterMode.SimpleFilter );
+                }
+            }
 
-            gSteps.EntityTypeId = new Step().TypeId;
-
+            // Apply Grid Sort
             var sortProperty = gSteps.SortProperty;
 
             if ( sortProperty != null )
@@ -763,6 +1026,10 @@ namespace RockWeb.Blocks.Steps
             }
 
             var stepIdQuery = qry.Select( m => m.Id );
+
+            _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
+            gSteps.EntityTypeId = new Step().TypeId;
 
             _stepStatusField = gSteps.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == lStepStatusHtml.ID );
 
@@ -792,6 +1059,13 @@ namespace RockWeb.Blocks.Steps
                 Note = x.Note,
                 Person = x.PersonAlias.Person
             } );
+
+            // Add the Step data models to the grid object list to allow custom attribute values to be read.
+            if ( this.AvailableAttributes != null
+                 && this.AvailableAttributes.Any() )
+            {
+                gSteps.ObjectList = qry.ToDictionary( k => k.Id.ToString(), v => ( object ) v );
+            }
 
             gSteps.SetLinqDataSource( qrySteps );
 

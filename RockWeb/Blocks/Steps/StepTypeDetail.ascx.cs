@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -73,6 +74,13 @@ namespace RockWeb.Blocks.Steps
         Category = "",
         Order = 7 )]
 
+    [LinkedPage(
+        name: "Bulk Entry Page",
+        description: "The page to use for bulk entry of steps data",
+        required: false,
+        order: 8,
+        key: AttributeKey.BulkEntryPage )]
+
     #endregion Block Attributes
 
     public partial class StepTypeDetail : RockBlock, IDetailBlock
@@ -82,12 +90,32 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
+            /// <summary>
+            /// The show chart
+            /// </summary>
             public const string ShowChart = "ShowChart";
+
+            /// <summary>
+            /// The chart style
+            /// </summary>
             public const string ChartStyle = "ChartStyle";
+
+            /// <summary>
+            /// The sliding date range
+            /// </summary>
             public const string SlidingDateRange = "SlidingDateRange";
+
+            /// <summary>
+            /// The data view categories
+            /// </summary>
             public const string DataViewCategories = "DataViewCategories";
+
+            /// <summary>
+            /// The bulk entry page
+            /// </summary>
+            public const string BulkEntryPage = "BulkEntryPage";
         }
 
         #endregion Attribute Keys
@@ -97,9 +125,16 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Keys to use for Page Parameters
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
+            /// <summary>
+            /// The step type identifier
+            /// </summary>
             public const string StepTypeId = "StepTypeId";
+
+            /// <summary>
+            /// The step program identifier
+            /// </summary>
             public const string StepProgramId = "ProgramId";
         }
 
@@ -174,6 +209,7 @@ namespace RockWeb.Blocks.Steps
             if ( !Page.IsPostBack )
             {
                 ShowDetail( _stepTypeId );
+                btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
             }
             else
             {
@@ -267,6 +303,24 @@ namespace RockWeb.Blocks.Steps
         #region Events
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the Click event of the btnBulkEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnBulkEntry_Click( object sender, EventArgs e )
+        {
+            var stepType = GetStepType();
+            var queryParams = new Dictionary<string, string>();
+
+            if ( stepType != null )
+            {
+                queryParams[PageParameterKey.StepTypeId] = stepType.Id.ToString();
+            }
+
+            NavigateToLinkedPage( AttributeKey.BulkEntryPage, queryParams );
+        }
 
         /// <summary>
         /// Refresh the Steps Activity Chart.
@@ -407,7 +461,7 @@ namespace RockWeb.Blocks.Steps
             stepType.HasEndDate = cbHasDuration.Checked;
             stepType.AllowMultiple = cbAllowMultiple.Checked;
 
-            // Update Pre-requisites
+            // Update Prerequisites
             var uiPrerequisiteStepTypeIds = cblPrerequsities.SelectedValuesAsInt;
 
             var stepTypes = stepTypeService.Queryable().ToList();
@@ -438,6 +492,25 @@ namespace RockWeb.Blocks.Steps
                 newPrerequisite.PrerequisiteStepTypeId = prerequisiteStepTypeId;
 
                 stepType.StepTypePrerequisites.Add( newPrerequisite );
+            }
+
+            // Validate Prerequisites.
+            // This is necessary because other Step Types may have been modified after this record edit was started.
+            if ( _stepTypeId > 0 )
+            {
+                var eligibleStepTypeIdList = stepTypeService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).Select(x => x.Id).ToList();
+
+                foreach ( var prerequisite in stepType.StepTypePrerequisites )
+                {
+                    if ( !eligibleStepTypeIdList.Contains( prerequisite.PrerequisiteStepTypeId ) )
+                    {
+                        var prerequisiteStepType = stepTypeService.Get( prerequisite.PrerequisiteStepTypeId );
+
+                        cvStepType.IsValid = false;
+                        cvStepType.ErrorMessage = string.Format( "This Step Type cannot have prerequisite \"{0}\" because it is already a prerequisite of that Step Type.", prerequisiteStepType.Name );
+                        return 0;
+                    }
+                }
             }
 
             // Update Advanced Settings
@@ -507,6 +580,8 @@ namespace RockWeb.Blocks.Steps
                     pnlDetails.Visible = false;
                 }
             }
+
+            btnBulkEntry.Visible = !GetAttributeValue( AttributeKey.BulkEntryPage ).IsNullOrWhiteSpace();
         }
 
         #endregion
@@ -520,47 +595,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgStepWorkflow_SaveClick( object sender, EventArgs e )
         {
-            StepWorkflowTriggerViewModel workflowTrigger = null;
-
-            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
-            if ( !guid.IsEmpty() )
-            {
-                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
-            }
-
-            if ( workflowTrigger == null )
-            {
-                workflowTrigger = new StepWorkflowTriggerViewModel();
-
-                workflowTrigger.Guid = Guid.NewGuid();
-            }
-
-            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
-            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
-
-            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
-            {
-                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
-                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
-            };
-
-            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
-
-            var dataContext = GetDataContext();
-
-            var workflowTypeService = new WorkflowTypeService( dataContext );
-
-            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
-
-            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
-
-            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
-
-            WorkflowsState.Add( workflowTrigger );
-
-            BindStepWorkflowsGrid();
-
-            HideDialog();
+            SaveWorkflowProperties();
         }
 
         /// <summary>
@@ -608,23 +643,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
         protected void gWorkflows_ShowEdit( Guid triggerGuid )
         {
-            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
-
-            if ( workflowTrigger != null )
-            {
-                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
-                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
-            }
-            else
-            {
-                // Set default values
-                wpWorkflowType.SetValue( null );
-                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
-            }
-
-            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
-            ShowDialog( "StepWorkflows", true );
-            UpdateTriggerQualifiers();
+            ShowWorkflowTriggerPropertiesDialog( triggerGuid );
         }
 
         /// <summary>
@@ -645,6 +664,82 @@ namespace RockWeb.Blocks.Steps
         protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
         {
             UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Show the edit dialog for the specified Workflow Trigger.
+        /// </summary>
+        /// <param name="triggerGuid">The workflow trigger unique identifier.</param>
+        private void ShowWorkflowTriggerPropertiesDialog( Guid triggerGuid )
+        {
+            var workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( triggerGuid ) );
+
+            if ( workflowTrigger != null )
+            {
+                wpWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
+                ddlTriggerType.SelectedValue = workflowTrigger.TriggerType.ToString();
+            }
+            else
+            {
+                // Set default values
+                wpWorkflowType.SetValue( null );
+                ddlTriggerType.SelectedValue = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString();
+            }
+
+            hfAddStepWorkflowGuid.Value = triggerGuid.ToString();
+
+            ShowDialog( "StepWorkflows", true );
+
+            UpdateTriggerQualifiers();
+        }
+
+        /// <summary>
+        /// Save changes to the Workflow Trigger currently displayed in the Workflow properties dialog.
+        /// </summary>
+        private void SaveWorkflowProperties()
+        {
+            StepWorkflowTriggerViewModel workflowTrigger = null;
+
+            var guid = hfAddStepWorkflowGuid.Value.AsGuid();
+
+            if ( !guid.IsEmpty() )
+            {
+                workflowTrigger = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( workflowTrigger == null )
+            {
+                workflowTrigger = new StepWorkflowTriggerViewModel();
+
+                workflowTrigger.Guid = Guid.NewGuid();
+
+                WorkflowsState.Add( workflowTrigger );
+            }
+
+            workflowTrigger.WorkflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
+            workflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
+
+            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
+            {
+                FromStatusId = ddlPrimaryQualifier.SelectedValue.AsIntegerOrNull(),
+                ToStatusId = ddlSecondaryQualifier.SelectedValue.AsIntegerOrNull()
+            };
+
+            workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
+
+            var dataContext = GetDataContext();
+
+            var workflowTypeService = new WorkflowTypeService( dataContext );
+
+            var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
+
+            var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
+
+            workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
+
+            BindStepWorkflowsGrid();
+
+            HideDialog();
         }
 
         /// <summary>
@@ -1168,7 +1263,7 @@ namespace RockWeb.Blocks.Steps
         {
             var dataContext = GetDataContext();
 
-            // Load available Prerequisite Steps, being any other Step Types in this Step Program that are active.
+            // Load available Prerequisite Steps.
             var stepType = GetStepType();
 
             int programId = 0;
@@ -1185,10 +1280,16 @@ namespace RockWeb.Blocks.Steps
 
             var stepsService = new StepTypeService( dataContext );
 
-            var prerequisiteStepTypes = stepsService.Queryable()
-                .Include( x => x.StepProgram )
-                .Where( x => x.StepProgramId == programId && x.Id != _stepTypeId && x.IsActive )
-                .ToList();
+            List<StepType> prerequisiteStepTypes;
+
+            if ( _stepTypeId == 0 )
+            {
+                prerequisiteStepTypes = stepsService.Queryable().Where( x => x.StepProgramId == programId && x.IsActive ).ToList();
+            }
+            else
+            {
+                prerequisiteStepTypes = stepsService.GetEligiblePrerequisiteStepTypes( _stepTypeId ).ToList();
+            }
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
             cblPrerequsities.DataBind();
@@ -1549,38 +1650,37 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Get chart data and set visibility of related elements.
-            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues ?? "-1||" );
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
 
-            var chartFactory = GetChartJsFactory( chartDateRange.Start, chartDateRange.End );
+            var chartFactory = this.GetChartJsFactory( reportPeriod );
 
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
 
-            if ( chartFactory.HasData )
-            {
-                // Add client script to construct the chart.
-                var chartDataJson = chartFactory.GetJson();
-
-                string script = string.Format( @"
-var barCtx = $('#{0}')[0].getContext('2d');
-var barChart = new Chart(barCtx, {1});",
-                                                chartCanvas.ClientID,
-                                                chartDataJson );
-
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityBarChartScript", script, true );
-            }
-            else
+            if ( !chartFactory.HasData )
             {
                 // If no data, show a notification.
                 nbActivityChartMessage.Text = "There are no Steps matching the current filter.";
+                return;
             }
+
+            // Add client script to construct the chart.
+            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
+
+            string script = string.Format( @"
+            var barCtx = $('#{0}')[0].getContext('2d');
+            var barChart = new Chart(barCtx, {1});",
+                                            chartCanvas.ClientID,
+                                            chartDataJson );
+
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepTypeActivityChartScript", script, true );
         }
 
         /// <summary>
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( DateTime? startDate = null, DateTime? endDate = null )
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( TimePeriod reportPeriod )
         {
             var dataContext = GetDataContext();
 
@@ -1588,10 +1688,15 @@ var barChart = new Chart(barCtx, {1});",
 
             // Get the Steps associated with the current Step Type.
             var stepsStartedQuery = stepService.Queryable()
-                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null && x.CompletedDateTime == null );
+                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
 
             var stepsCompletedQuery = stepService.Queryable()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
+
+            var dateRange = reportPeriod.GetDateRange();
+
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
 
             if ( startDate != null )
             {
@@ -1609,9 +1714,40 @@ var barChart = new Chart(barCtx, {1});",
                 stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime < compareDate );
             }
 
+            // Initialize a new Chart Factory.
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+
+            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
+            }
+            else
+            {
+                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
+            }
+
+            factory.StartDateTime = startDate;
+            factory.EndDateTime = endDate;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+
+            // Determine the appropriate date grouping for the chart data points.
+            Func<Step, DateTime> groupKeySelector;
+
+            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                // Group Steps by Start Date.
+                groupKeySelector = ( x => x.StartDateTime.Value.Date );
+            }
+            else
+            {
+                // Group Steps by Start Date rounded to beginning of the month.
+                groupKeySelector = ( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) );
+            }
+
+            // Add data series for Steps started.
             var startedSeriesDataPoints = stepsStartedQuery.ToList()
-                .GroupBy( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .GroupBy( groupKeySelector )
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Started",
                     DateTime = x.Key,
@@ -1619,9 +1755,21 @@ var barChart = new Chart(barCtx, {1});",
                     SortKey = "1"
                 } );
 
+            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                // Group Steps by Completed Date.
+                groupKeySelector = ( x => x.CompletedDateTime.Value.Date );
+            }
+            else
+            {
+                // Group Steps by Completed Date rounded to beginning of the month.
+                groupKeySelector = ( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) );
+            }
+
+            // Add data series for Steps completed.
             var completedSeriesDataPoints = stepsCompletedQuery.ToList()
-                .GroupBy( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) )
-                .Select( x => new
+                .GroupBy( groupKeySelector )
+                .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Completed",
                     DateTime = x.Key,
@@ -1633,27 +1781,39 @@ var barChart = new Chart(barCtx, {1});",
 
             var dataSetNames = allDataPoints.Select( x => x.DatasetName ).Distinct().ToList();
 
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+            // Add Dataset for Steps Started.
+            var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
 
-            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            factory.ChartHeight = 280;
+            var startedDataset = this.CreateDataSet( allDataPoints, "Started", colorStarted.ToHex() );
 
-            foreach ( var datasetName in dataSetNames )
-            {
-                var dataset = new ChartJsTimeSeriesDataset();
+            factory.Datasets.Add( startedDataset );
 
-                dataset.Name = datasetName;
+            // Add Dataset for Steps Completed.
+            var colorCompleted = new RockColor( ChartJsConstants.Colors.Green );
 
-                dataset.DataPoints = allDataPoints
-                                        .Where( x => x.DatasetName == datasetName )
-                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                        .Cast<IChartJsTimeSeriesDataPoint>()
-                                        .ToList();
+            var completedDataset = this.CreateDataSet( allDataPoints, "Completed", colorCompleted.ToHex() );
 
-                factory.Datasets.Add( dataset );
-            }
+            factory.Datasets.Add( completedDataset );
 
             return factory;
+        }
+
+        private ChartJsTimeSeriesDataset CreateDataSet( IOrderedEnumerable<ChartDatasetInfo> allDataPoints, string datasetName, string colorString )
+        {
+            var dataset = new ChartJsTimeSeriesDataset();
+
+            dataset.Name = datasetName;
+
+
+            dataset.DataPoints = allDataPoints
+                                    .Where( x => x.DatasetName == datasetName )
+                                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                    .Cast<IChartJsTimeSeriesDataPoint>()
+                                    .ToList();
+
+            dataset.BorderColor = colorString;
+
+            return dataset;
         }
 
         #endregion
@@ -1694,6 +1854,17 @@ var barChart = new Chart(barCtx, {1});",
                     WorkflowTypeName = trigger.WorkflowType.Name;
                 }
             }
+        }
+
+        /// <summary>
+        /// Stores information about a dataset to be displayed on a chart.
+        /// </summary>
+        private class ChartDatasetInfo
+        {
+            public string DatasetName { get; set; }
+            public DateTime DateTime { get; set; }
+            public int Value { get; set; }
+            public string SortKey { get; set; }
         }
 
         #endregion

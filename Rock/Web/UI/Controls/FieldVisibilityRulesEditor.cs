@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Keys for the viewstate
         /// </summary>
-        protected static class ViewStateKey
+        private static class ViewStateKey
         {
             /// <summary>
             /// The comparable fields JSON key

@@ -212,7 +212,13 @@ namespace RockWeb.Blocks.Core
                     tag.EntityTypeQualifierValue = qualifierVal;
                 }
 
-                rockContext.SaveChanges();
+                avcAttributes.GetEditValues( tag );
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    tag.SaveAttributeValues();
+                } );
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams["tagId"] = tag.Id.ToString();
@@ -423,6 +429,8 @@ namespace RockWeb.Blocks.Core
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
+            tag.LoadAttributes();
+            avcAttributes.AddEditControls( tag, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>

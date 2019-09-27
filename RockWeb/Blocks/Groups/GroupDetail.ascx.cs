@@ -58,16 +58,24 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 14 )]
     [LinkedPage( "Group History Page", "The page to display group history.", false, "", "", 15 )]
 
-
     [LinkedPage( "Group Scheduler Page",
         Key = "GroupSchedulerPage",
         Description ="The page to schedule this group.",
         IsRequired = false,
         DefaultValue = "1815D8C6-7C4A-4C05-A810-CF23BA937477,D0F198E2-6111-4EC1-8D1D-55AC10E28D04",
-        Order = 16)]
+        Order = 16 )]
 
-    [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 17 )]
-    public partial class GroupDetail : RockBlock, IDetailBlock
+    [LinkedPage("Group RSVP List Page",
+        Key = "GroupRSVPPage",
+        Description = "The page to manage RSVPs for this group.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_RSVP_LIST,
+        Order = 17 )]
+
+    [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 18 )]
+
+    [ContextAware( typeof(Group) )]
+    public partial class GroupDetail : ContextEntityBlock, IDetailBlock
     {
         #region Constants
 
@@ -273,6 +281,18 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupDetail );
+
+            // Add all of the badges for Group to the badge list control
+            var badgeCaches = BadgeCache.All( typeof( Group ) );
+
+            if ( badgeCaches.Any() )
+            {
+                blBadgeList.BadgeTypes.AddRange( badgeCaches );
+            }
+            else
+            {
+                divBadgeContainer.Visible = false;
+            }
         }
 
         /// <summary>
@@ -1834,7 +1854,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
-            btnDelete.Visible = !group.IsSystem;
+            btnDelete.Visible = btnDelete.Visible && !group.IsSystem;
             btnArchive.Visible = false;
 
             var rockContext = new RockContext();
@@ -1931,6 +1951,17 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlMap.Visible = false;
+            }
+
+            string groupRSVPUrl = LinkedPageUrl( "GroupRSVPPage", pageParams );
+            if ( groupRSVPUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupRSVP.Visible = ( groupType != null ) && ( groupType.EnableRSVP == true );
+                hlGroupRSVP.NavigateUrl = groupRSVPUrl;
+            }
+            else
+            {
+                hlGroupRSVP.Visible = false;
             }
 
             string groupSchedulerUrl = LinkedPageUrl( "GroupSchedulerPage", pageParams );
@@ -3341,7 +3372,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                attribute.Order = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                // get the non-editable stuff from the GroupTypeAttributesState and put it back into the object...
+                var attributeState = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
                 GroupMemberAttributesState.RemoveEntity( attribute.Guid );
             }
             else

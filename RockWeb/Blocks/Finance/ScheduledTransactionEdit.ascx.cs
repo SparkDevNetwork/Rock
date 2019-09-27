@@ -251,6 +251,7 @@ achieve our mission.  We are so grateful for your commitment.
                     SetSavedAccounts();
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
+                    tbSummary.Text = scheduledTransaction.Summary;
 
                     hfCurrentPage.Value = "1";
                     RockPage page = Page as RockPage;
@@ -1094,6 +1095,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                         detail.Amount = account.Amount;
                     }
+
+                    scheduledTransaction.Summary = tbSummary.Text;
 
                     rockContext.SaveChanges();
 

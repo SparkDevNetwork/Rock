@@ -68,41 +68,18 @@
                         <asp:repeater id="rStepTypeCards" runat="server" OnItemDataBound="rStepTypeCards_ItemDataBound">
                             <itemtemplate>
                                 <div class="col-steps">
-                                    <div class="step-card <%# Eval( "CardCssClass" ) %>">
+                                    <div class="step-card styled-scroll <%# Eval( "CardCssClass" ) %>">
                                         <div class="card-info">
                                             <%# Eval( "RenderedLava" ) %>
                                         </div>
                                         <div class="step-card-hover">
-                                            <asp:Panel ID="pnlStepRecords" runat="server">
-                                                <asp:LinkButton runat="server" id="lbCardAddStep" OnCommand="AddStep" CommandArgument='<%# Eval("StepType.Id") %>' CssClass="card-add-step-button">
-                                                    <span>
-                                                    <i class="fa fa-plus-circle fa-2x"></i>
-                                                    <br />
-                                                    Add a <%# Eval("StepTerm") %>
-                                                    </span>
-                                                </asp:LinkButton>
-                                                <div class="step-records-table-container">
-                                                    <table class="step-records-table">
-                                                        <asp:repeater id="rSteps" runat="server">
-                                                            <itemtemplate>
-                                                                <tr>
-                                                                    <td class="steps-status"><%# Eval("StatusHtml") %></td>
-                                                                    <td>
-                                                                        <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
-                                                                            <i class="fa fa-pencil"></i>
-                                                                        </asp:LinkButton>
-                                                                    </td>
-                                                                    <td>
-                                                                        <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
-                                                                            <i class="fa fa-times"></i>
-                                                                        </asp:LinkButton>
-                                                                    </td>
-                                                                </tr>
-                                                            </itemtemplate>
-                                                        </asp:repeater>
-                                                    </table>
-                                                </div>
-                                            </asp:Panel>
+                                            <asp:LinkButton runat="server" id="lbCardAddStep" OnCommand="AddStep" CommandArgument='<%# Eval("StepType.Id") %>' CssClass="card-add-step-button">
+                                                <span>
+                                                <i class="fa fa-plus-circle fa-2x"></i>
+                                                <br />
+                                                Add a <%# Eval("StepTerm") %>
+                                                </span>
+                                            </asp:LinkButton>
                                             <asp:Panel ID="pnlPrereqs" runat="server">
                                                 <p class="prereq-list-info">This <%# Eval("StepTerm") %> requires the following prerequisites:</p>
                                                 <ul class="list-unstyled">
@@ -113,6 +90,27 @@
                                                     </asp:repeater>
                                                 </ul>
                                             </asp:Panel>
+                                            <div class="step-records-table-container">
+                                                <table class="step-records-table">
+                                                    <asp:repeater id="rSteps" runat="server" OnItemDataBound="rSteps_ItemDataBound">
+                                                        <itemtemplate>
+                                                            <tr>
+                                                                <td class="steps-status"><%# Eval("StatusHtml") %></td>
+                                                                <td runat="server" id="tdEdit">
+                                                                    <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
+                                                                        <i class="fa fa-pencil"></i>
+                                                                    </asp:LinkButton>
+                                                                </td>
+                                                                <td runat="server" id="tdDelete">
+                                                                    <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
+                                                                        <i class="fa fa-times"></i>
+                                                                    </asp:LinkButton>
+                                                                </td>
+                                                            </tr>
+                                                        </itemtemplate>
+                                                    </asp:repeater>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div><!-- col -->
@@ -145,8 +143,16 @@ $( ".step-card" ).each(function( index ) {
             scale = (freeSpace / (infoHeight + 8));
             pixelOffset = Math.floor((cardHeight/2) - ((freeSpace - (infoHeight)) / 2));
 
+            if (scale < .5 ) {
+                $(this).addClass('has-overflow');
+            }
+
             $(this).mouseenter(function() {
-                $(this).find('.card-add-step-button span').css('transform', 'translateY(-' + pixelOffset + 'px) scale('+scale+')');
+                if (scale < .5)  {
+                    $(this).find('.card-add-step-button span').css('position', 'relative').css('transform', 'scale(.75)');
+                } else {
+                    $(this).find('.card-add-step-button span').css('transform', 'translateY(-' + pixelOffset + 'px) scale('+scale+')');
+                }
             }).mouseleave(function() {
                 $(this).find('.card-add-step-button span').css('transform', '');
             });

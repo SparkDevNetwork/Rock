@@ -17,34 +17,13 @@
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" />
 
-                <div id="pnlEditDetails" runat="server">
-
-                    <asp:ValidationSummary ID="valGatewayDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
-                        </div>
-                        <div class="col-sm-6 col-md-3">
-                            <Rock:DatePicker ID="rdpStartDate" runat="server" PropertyName="StartDate" />
-                        </div>
-                        <div class="col-sm-6 col-md-3">
-                            <Rock:DatePicker ID="rdpEndDate" runat="server" PropertyName="EndDate" />
-                        </div>
-                        <div class="col-sm-12 col-md-6">
-                            <Rock:StepStatusPicker ID="rsspStatus" runat="server" Label="Status" />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
-                        </div>
-                    </div>
-
-                    <%-- Manual Workflow Triggers --%>
+                <div id="pnlViewDetails" runat="server">
                     <div class="row">
                         <div class="col-md-6">
+                            <asp:Literal ID="lStepDescription" runat="server"></asp:Literal>
+                        </div>
+                        <div class="col-md-6">
+                            <%-- Manual Workflow Triggers --%>
                             <Rock:ModalAlert ID="mdWorkflowResult" runat="server" />
                             <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
                             <div class="margin-b-md">
@@ -57,6 +36,44 @@
 
                                 </asp:Repeater>
                             </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:AttributeValuesContainer ID="avcAttributesView" runat="server" NumberOfColumns="2" />
+                        </div>
+                    </div>
+
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                    </div>
+                </div>
+
+                <div id="pnlEditDetails" runat="server">
+
+                    <asp:ValidationSummary ID="valGatewayDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <Rock:DatePicker ID="rdpStartDate" runat="server" PropertyName="StartDate" Required="true" />
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <Rock:DatePicker ID="rdpEndDate" runat="server" PropertyName="EndDate" />
+                        </div>
+                        <div class="col-sm-12 col-md-6">
+                            <Rock:StepStatusPicker ID="rsspStatus" runat="server" Label="Status" Required="true" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
                         </div>
                     </div>
 

@@ -15,92 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.PersonProfile
 {
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
-    public abstract class IconBadge : BadgeComponent
+    [RockObsolete( "1.10" )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    public abstract class IconBadge : Rock.Badge.IconBadge
     {
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
-        public virtual string GetToolTipText( Person person ) {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This method will be removed, use the Entity param instead.", false )]
-        public virtual string GetIconPath( Person person )
-        {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        public virtual string GetToolTipText( IEntity entity )
-        {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        public virtual string GetIconPath( IEntity entity )
-        {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, HtmlTextWriter writer )
-        {
-            if ( Entity != null )
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "badge" );
-
-                var tooltipText = GetToolTipText( Entity );
-
-                if (tooltipText.IsNullOrWhiteSpace())
-                {
-                    tooltipText = GetToolTipText( Person );
-                }
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Title, tooltipText );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                var iconPath = GetIconPath( Entity );
-
-                if ( iconPath.IsNullOrWhiteSpace() )
-                {
-                    iconPath = GetIconPath( Person );
-                }
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Src, iconPath );
-                writer.RenderBeginTag( HtmlTextWriterTag.Img );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
-        }
     }
-
 }

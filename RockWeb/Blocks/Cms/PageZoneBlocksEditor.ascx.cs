@@ -586,19 +586,31 @@ namespace RockWeb.Blocks.Cms
                     // ignore
                 }
 
+                // Get a list of BlockTypes that does not include Mobile block types.
+                List<BlockTypeCache> allExceptMobileBlockTypes = new List<BlockTypeCache>();
+                foreach( var cachedBlockType in BlockTypeCache.All() )
+                {
+                    try
+                    {
+                        var blockCompiledType = cachedBlockType.GetCompiledType();
 
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
-                var blockTypes = blockTypeService.Queryable().AsNoTracking()
-                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
-                    .ToList();
+                        if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                        {
+                            allExceptMobileBlockTypes.Add( cachedBlockType );
+                        }
+                    }
+                    catch ( Exception )
+                    {
+                        // Intentionally ignored
+                    }
+                }
+
+                var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
 
                 ddlBlockType.Items.Clear();
 
                 // Add the categorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category != string.Empty )
-                    .OrderBy( b => b.Category )
-                    .ThenBy( b => b.Name ) )
+                foreach ( var blockType in blockTypes.Where( b => b.Category != string.Empty ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
                 {
                     var li = new ListItem( blockType.Name, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", blockType.Category );
@@ -607,9 +619,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Add the uncategorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category == null || b.Category == string.Empty )
-                    .OrderBy( b => b.Name ) )
+                foreach ( var blockType in blockTypes.Where( b => b.Category == null || b.Category == string.Empty ).OrderBy( b => b.Name ) )
                 {
                     var li = new ListItem( blockType.Name, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", "Other (not categorized)" );
@@ -618,9 +628,8 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            var htmlContentBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
-
-            ddlBlockType.SetValue( htmlContentBlockType.Id );
+            // Set the initial selection to the HTMLContent block.
+            ddlBlockType.SetValue( BlockTypeCache.Get( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() ).Id );
 
             rblAddBlockLocation.Items.Clear();
 

@@ -26,6 +26,14 @@ namespace Rock.Communication
     public abstract class RockMessageRecipient
     {
         /// <summary>
+        /// The Key to use when adding "Person" as a merge field
+        /// </summary>
+        /// <value>
+        /// The person merge key.
+        /// </value>
+        public string PersonMergeFieldKey => "Person";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockMessageRecipient" /> class.
         /// </summary>
         /// <param name="person">The person.</param>

@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Keys for the block attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// Key for the SMS Link Page
@@ -1384,6 +1384,14 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionOpportunity != null && connectionRequest != null )
             {
+
+                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
+                {
+                    this.BreadCrumbs.Clear();
+                    upDetail.Visible = false;
+                    nbSecurityWarning.Visible = true;
+                }
+
                 hfConnectionOpportunityId.Value = connectionRequest.ConnectionOpportunityId.ToString();
                 hfConnectionRequestId.Value = connectionRequest.Id.ToString();
                 lConnectionOpportunityIconHtml.Text = string.Format( "<i class='{0}' ></i>", connectionOpportunity.IconCssClass );
@@ -1728,10 +1736,19 @@ namespace RockWeb.Blocks.Connection
 
             // Status
             rblStatus.Items.Clear();
-            foreach ( var status in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name ) )
+
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name );
+
+            foreach ( var status in allStatuses )
             {
-                rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                // Add Status to selection list only if marked as active or currently selected.
+                if ( status.IsActive
+                     || status.Id == connectionRequest.ConnectionStatusId )
+                {
+                    rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                }
             }
+
             rblStatus.SelectedValue = connectionRequest.ConnectionStatusId.ToString();
 
             // Campus

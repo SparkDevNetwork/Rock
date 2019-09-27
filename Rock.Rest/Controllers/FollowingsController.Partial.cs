@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="personId">The person identifier.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{EntityTypeId}/{EntityId}/{PersonId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId}" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId )
         {
             SetProxyCreation( true );
@@ -60,7 +60,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{EntityTypeId}/{EntityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
         [System.Web.Http.HttpDelete]
         public virtual void Delete( int entityTypeId, int entityId )
         {
@@ -79,7 +79,7 @@ namespace Rock.Rest.Controllers
                     f.EntityId == entityId &&
                     f.PersonAlias.PersonId == person.Id ) )
             {
-                CheckCanEdit( following );
+                // Don't check security here because a person is allowed to un-follow/delete something they previously followed
                 Service.Delete( following );
             }
 
@@ -92,7 +92,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{EntityTypeId}/{EntityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( int entityTypeId, int entityId )
         {

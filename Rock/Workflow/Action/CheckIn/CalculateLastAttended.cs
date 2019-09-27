@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -54,7 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 var attendanceService = new AttendanceService( rockContext );
 
-                // Find all the schedules that are used for checkin
+                // Find all the schedules that are used for check-in
                 var checkinSchedules = new ScheduleService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( s => s.CheckInStartOffsetMinutes.HasValue )
@@ -64,10 +65,15 @@ namespace Rock.Workflow.Action.CheckIn
 
                 foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
-                    foreach ( var person in family.People )
+                    foreach ( var person in family.People.Union( family.OriginalPeople )  )
                     {
                         // Find all of the attendance records for this person for any of the check-in types that are currently available for this kiosk and person
                         var groupTypeIds = person.GroupTypes.Select( t => t.GroupType.Id ).ToList();
+                        if ( checkInState.CheckInType.AllowCheckout )
+                        {
+                            groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
+                        }
+
                         var personAttendance = attendanceService
                             .Queryable().AsNoTracking()
                             .Where( a =>
@@ -79,11 +85,11 @@ namespace Rock.Workflow.Action.CheckIn
                                 a.StartDateTime >= sixMonthsAgo &&
                                 a.DidAttend.HasValue &&
                                 a.DidAttend.Value == true )
-                            .Select( a => new
+                            .Select( a => new PersonAttendanceInfo
                             {
-                                a.Id,
-                                a.StartDateTime,
-                                a.EndDateTime,
+                                AttendanceId = a.Id,
+                                StartDateTime = a.StartDateTime,
+                                EndDateTime = a.EndDateTime,
                                 PersonId = a.PersonAlias.PersonId,
                                 GroupTypeId = a.Occurrence.Group.GroupTypeId,
                                 GroupId = a.Occurrence.GroupId,
@@ -93,17 +99,35 @@ namespace Rock.Workflow.Action.CheckIn
                             } )
                             .ToList();
 
-                        // If there are any previous attendance records start evaluating them for last checkin and if options should be preselected.
+                        // If there are any previous attendance records start evaluating them for last check-in and if options should be preselected.
                         if ( personAttendance.Any() )
                         {
+                            // Determine who from the family can check-out and add them to the
+                            // family's CheckOutPeople collection.
+                            if ( checkInState.CheckInType.AllowCheckout )
+                            {
+                                var todaysAttendance = personAttendance.Where( a => a.StartDateTime > DateTime.Today ).ToList();
+                                foreach ( var kioskGroupType in checkInState.Kiosk.ActiveForCheckOutGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                                {
+                                    // if the group is active for check-out...
+                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive || g.IsCheckOutActive ) )
+                                    {
+                                        foreach ( var kioskLocation in kioskGroup.KioskLocations )
+                                        {
+                                            AddPeopleToFamilyCheckOutPeopleCollection( checkinSchedules, family, person, kioskLocation, todaysAttendance.Where( a => a.LocationId == kioskLocation.Location.Id ).ToList() );
+                                        }
+                                    }
+                                }
+                            }
+
                             person.FirstTime = false;
 
-                            // Get the datetime that person last checked in
+                            // Get the date time that person last checked in
                             person.LastCheckIn = personAttendance.Max( a => a.StartDateTime );
 
                             // If the date they last checked in is greater than the PreSelect cutoff date, then get all the group/location/schedules 
                             // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
-                            // only consider the the most recent group/location per schedule
+                            // only consider the most recent group/location per schedule
                             var previousCheckins = new List<CheckinInfo>();
                             if ( person.LastCheckIn.HasValue &&
                                  preSelectCutoff.CompareTo( RockDateTime.Today ) < 0 &&
@@ -125,8 +149,9 @@ namespace Rock.Workflow.Action.CheckIn
                                     }
                                 }
                             }
-                            var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
 
+                            var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
+                            
                             foreach ( var groupType in person.GroupTypes )
                             {
                                 // Find the previous attendance for this group type and save the most recent attendance date
@@ -173,7 +198,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                 var availableSchedules = location.Schedules
                                                     .Where( s => !selectedSchedules.Contains( s.Schedule.Id ) )
                                                     .OrderBy( s => s.StartTime );
-                                                foreach( var schedule in availableSchedules )
+                                                foreach ( var schedule in availableSchedules )
                                                 {
                                                     // If person checked into this group/location/schedule on last visit, preselect it for now
                                                     if ( previousLocationCheckins.Any( c => c.ScheduleId == schedule.Schedule.Id ) )
@@ -185,48 +210,10 @@ namespace Rock.Workflow.Action.CheckIn
                                                 if ( !location.Schedules.Any( s => s.PreSelected ) && availableSchedules.Any() )
                                                 {
                                                     var schedule = availableSchedules.First();
-                                                    schedule.PreSelected = true;;
+                                                    schedule.PreSelected = true;
                                                     selectedSchedules.Add( schedule.Schedule.Id );
                                                 }
                                             }
-                                        }
-
-                                        // Find the active schedules for this location (campus)
-                                        var locationDateTime = RockDateTime.Now;
-                                        if ( location.CampusId.HasValue )
-                                        {
-                                            locationDateTime = CampusCache.Get( location.CampusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
-                                        }
-                                        var activeScheduleIds = new List<int>();
-                                        foreach( var schedule in checkinSchedules )
-                                        {
-                                            if ( schedule.WasScheduleOrCheckInActive( locationDateTime ) )
-                                            {
-                                                activeScheduleIds.Add( schedule.Id );
-                                            }
-                                        }
-
-                                        // Check to see if the person is still checked into this grouptype/group/location combination
-                                        var activeAttendanceIds = locationAttendance
-                                            .Where( a =>
-                                                a.StartDateTime > DateTime.Today &&
-                                                a.ScheduleId.HasValue &&
-                                                activeScheduleIds.Contains( a.ScheduleId.Value ) &&
-                                                !a.EndDateTime.HasValue ) 
-                                            .Select( a => a.Id )
-                                            .ToList();
-
-                                        // If so, allow person to check-out.
-                                        if ( activeAttendanceIds.Any() )
-                                        {
-                                            var checkOutPerson = family.CheckOutPeople.FirstOrDefault( p => p.Person.Id == person.Person.Id );
-                                            if ( checkOutPerson == null )
-                                            {
-                                                checkOutPerson = new Rock.CheckIn.CheckOutPerson();
-                                                checkOutPerson.Person = person.Person;
-                                                family.CheckOutPeople.Add( checkOutPerson );
-                                            }
-                                            checkOutPerson.AttendanceIds.AddRange( activeAttendanceIds );
                                         }
                                     }
 
@@ -271,14 +258,146 @@ namespace Rock.Workflow.Action.CheckIn
                 }
 
                 return true;
-
             }
 
             return false;
         }
 
         /// <summary>
-        /// Helper Class for storing the combination of schedule/grouptype/group/location that person last checked into
+        /// Adds people who are eligible to check-out into the family's CheckOutPeople collection.
+        /// </summary>
+        /// <param name="checkinSchedules">The check-in schedules.</param>
+        /// <param name="family">The family.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="locationAttendance">The location attendance.</param>
+        private static void AddPeopleToFamilyCheckOutPeopleCollection( List<Schedule> checkinSchedules, CheckInFamily family, CheckInPerson person, KioskLocation location, List<PersonAttendanceInfo> locationAttendance )
+        {
+            if ( locationAttendance == null || locationAttendance.Count() == 0 )
+            {
+                return;
+            }
+
+            // Find the active (for checkout) schedules for this location (campus)
+            var locationDateTime = RockDateTime.Now;
+            if ( location.CampusId.HasValue )
+            {
+                locationDateTime = CampusCache.Get( location.CampusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
+            }
+
+            var activeForCheckOutScheduleIds = new List<int>();
+            foreach ( var schedule in checkinSchedules )
+            {
+                if ( schedule.WasScheduleOrCheckInActiveForCheckOut( locationDateTime ) )
+                {
+                    activeForCheckOutScheduleIds.Add( schedule.Id );
+                }
+            }
+
+            // Check to see if the person is still checked into this group-type/group/location combination
+            var activeForCheckOutAttendanceIds = locationAttendance
+                .Where( a =>
+                    a.StartDateTime > DateTime.Today &&
+                    a.ScheduleId.HasValue &&
+                    activeForCheckOutScheduleIds.Contains( a.ScheduleId.Value ) &&
+                    !a.EndDateTime.HasValue )
+                .Select( a => a.AttendanceId )
+                .ToList();
+
+            // If so, allow person to check-out.
+            if ( activeForCheckOutAttendanceIds.Any() )
+            {
+                var checkOutPerson = family.CheckOutPeople.FirstOrDefault( p => p.Person.Id == person.Person.Id );
+                if ( checkOutPerson == null )
+                {
+                    checkOutPerson = new CheckOutPerson();
+                    checkOutPerson.Person = person.Person;
+                    family.CheckOutPeople.Add( checkOutPerson );
+                }
+                checkOutPerson.AttendanceIds.AddRange( activeForCheckOutAttendanceIds );
+            }
+        }
+
+        /// <summary>
+        /// Helper Class for storing
+        /// </summary>
+        public class PersonAttendanceInfo
+        {
+            /// <summary>
+            /// Gets or sets the Attendance identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int AttendanceId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date time.
+            /// </summary>
+            /// <value>
+            /// The start date time.
+            /// </value>
+            public DateTime StartDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date time.
+            /// </summary>
+            /// <value>
+            /// The end date time.
+            /// </value>
+            public DateTime? EndDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group type identifier.
+            /// </summary>
+            /// <value>
+            /// The group type identifier.
+            /// </value>
+            public int GroupTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group identifier.
+            /// </summary>
+            /// <value>
+            /// The group identifier.
+            /// </value>
+            public int? GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the location identifier.
+            /// </summary>
+            /// <value>
+            /// The location identifier.
+            /// </value>
+            public int? LocationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the schedule identifier.
+            /// </summary>
+            /// <value>
+            /// The schedule identifier.
+            /// </value>
+            public int? ScheduleId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the schedule.
+            /// </summary>
+            /// <value>
+            /// The schedule.
+            /// </value>
+            public Schedule Schedule { get; set; }
+        }
+
+        /// <summary>
+        /// Helper Class for storing the combination of schedule/group-type/group/location that person last checked into
         /// </summary>
         public class CheckinInfo
         {

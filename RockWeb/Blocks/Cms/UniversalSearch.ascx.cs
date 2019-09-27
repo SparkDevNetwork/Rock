@@ -13,27 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Nest;
-
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
 using Rock.Web.UI;
 using Rock.Web.Cache;
-using Newtonsoft.Json.Linq;
-using Rock.UniversalSearch.IndexModels;
 using System.Reflection;
 using Rock.Web.UI.Controls;
 using Rock.Web;
@@ -47,40 +41,138 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "A block to search for all indexable entity types in Rock." )]
 
-    [BooleanField( "Show Filters", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
-    [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
-    [IntegerField("Results Per Page", "The number of results to show per page.", true, 20, category: "CustomSetting" )]
-    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "0", category: "CustomSetting" )]
-    [TextField("Base Field Filters", "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.", false, category: "CustomSetting" )]
-    [BooleanField("Show Refined Search", "Determines whether the refinded search should be shown.", true, category: "CustomSetting" )]
-    [BooleanField("Show Scores", "Enables the display of scores for help with debugging.", category: "CustomSetting" )]
-    [CodeEditorField("Lava Result Template", "Custom Lava results template to use instead of the standard results.", CodeEditorMode.Lava, category:"CustomSetting", defaultValue: @"<ul>{% for result in Results %}
-    <li><i class='fa {{ result.IconCssClass }}'></i> {{ result.DocumentName }} <small>(Score {{ result.Score }} )</small> </li>
-{% endfor %}</ul>" )]
-    [BooleanField("Use Custom Results", "Determines if the custom results should be displayed.", category: "CustomSetting" )]
-    [LavaCommandsField("Custom Results Commands", "The custom Lava fields to allow.", category: "CustomSetting" )]
-    [CodeEditorField( "Search Input Pre-HTML", "Custom Lava to place before the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PreHtml" )]
-    [CodeEditorField( "Search Input Post-HTML", "Custom Lava to place after the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PostHtml" )]
+    [BooleanField( "Show Filters",
+        Description = "Toggles the display of the model filter which allows the user to select which models to search on.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.ShowFilters )]
+
+    [TextField( "Enabled Models",
+        Description = "The models that should be enabled for searching.",
+        IsRequired = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.EnabledModels )]
+
+    [IntegerField( "Results Per Page",
+        Description = "The number of results to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Category = "CustomSetting",
+        Key = AttributeKey.ResultsPerPage )]
+
+    [EnumField( "Search Type",
+        Description = "The type of search to perform.",
+        EnumSourceType = typeof( SearchType ),
+        IsRequired = true,
+        DefaultValue = "0",
+        Category = "CustomSetting",
+        Key = AttributeKey.SearchType )]
+
+    [TextField( "Base Field Filters",
+        Description = "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.BaseFieldFilters )]
+
+    [BooleanField( "Show Refined Search",
+        Description = "Determines whether the refinded search should be shown.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.ShowRefinedSearch )]
+
+    [BooleanField( "Show Scores",
+        Description = "Enables the display of scores for help with debugging.",
+        Category = "CustomSetting",
+        Key = AttributeKey.ShowScores )]
+
+    [CodeEditorField( "Lava Result Template",
+        Description = "Custom Lava results template to use instead of the standard results.",
+        EditorMode = CodeEditorMode.Lava,
+        Category = "CustomSetting",
+        DefaultValue = DefaultLavaResultTemplate,
+        Key = AttributeKey.LavaResultTemplate )]
+
+    [BooleanField( "Use Custom Results",
+        Description = "Determines if the custom results should be displayed.",
+        Category = "CustomSetting",
+        Key = AttributeKey.UseCustomResults )]
+
+    [LavaCommandsField( "Custom Results Commands",
+        Description = "The custom Lava fields to allow.",
+        Category = "CustomSetting",
+        Key = AttributeKey.CustomResultsCommands )]
+
+    [CodeEditorField( "Search Input Pre-HTML",
+        Description = "Custom Lava to place before the search input (for styling).",
+        EditorMode = CodeEditorMode.Lava,
+        Category = "CustomSetting",
+        Key = AttributeKey.PreHtml )]
+
+    [CodeEditorField( "Search Input Post-HTML",
+        Description = "Custom Lava to place after the search input (for styling).",
+        EditorMode = CodeEditorMode.Lava,
+        Category = "CustomSetting",
+        Key = AttributeKey.PostHtml )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
+        #region AttributeKeys
+        private static class AttributeKey
+        {
+            public const string ShowFilters = "ShowFilters";
+            public const string EnabledModels = "EnabledModels";
+            public const string ResultsPerPage = "ResultsPerPage";
+            public const string SearchType = "SearchType";
+            public const string BaseFieldFilters = "BaseFieldFilters";
+            public const string ShowRefinedSearch = "ShowRefinedSearch";
+            public const string ShowScores = "ShowScores";
+            public const string LavaResultTemplate = "LavaResultTemplate";
+            public const string UseCustomResults = "UseCustomResults";
+            public const string CustomResultsCommands = "CustomResultsCommands";
+            public const string PreHtml = "PreHtml";
+            public const string PostHtml = "PostHtml";
+        }
+
+        #endregion AttributeKeys
+
+        #region PageParameterKeys
+
+        private static class PageParameterKey
+        {
+            public const string DocumentType = "DocumentType";
+            public const string DocumentId = "DocumentId";
+            public const string ShowRefineSearch = "ShowRefineSearch";
+            public const string SmartSearch = "SmartSearch";
+            public const string Q = "Q";
+            public const string SearchType = "SearchType";
+            public const string Models = "Models";
+            public const string ItemsPerPage = "ItemsPerPage";
+            public const string CurrentPage = "CurrentPage";
+            public const string RefinedSearch = "RefinedSearch";
+        }
+
+        #endregion PageParameterKeys
+
         #region Fields
 
-        private const int _defaultItemsPerPage = 20;
+        private const int DefaultItemsPerPage = 20;
 
         private int _currentPageNum = 0;
-        private int _itemsPerPage = _defaultItemsPerPage;
+        private int _itemsPerPage = DefaultItemsPerPage;
+        private const string DefaultLavaResultTemplate = @"<ul>{% for result in Results %}
+    <li><i class='fa {{ result.IconCssClass }}'></i> {{ result.DocumentName }} <small>(Score {{ result.Score }} )</small> </li>
+{% endfor %}</ul>";
 
         #endregion
 
         #region Properties
 
-        // used for public / protected properties
+        //// used for public / protected properties
 
         #endregion
 
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
+        // overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -110,31 +202,31 @@ namespace RockWeb.Blocks.Cms
             if ( !Page.IsPostBack )
             {
                 // check if this is a redirect from the smart search of a document
-                if(PageParameter( "DocumentType" ).IsNotNullOrWhiteSpace() && PageParameter( "DocumentId" ).IsNotNullOrWhiteSpace() )
+                if ( PageParameter( PageParameterKey.DocumentType ).IsNotNullOrWhiteSpace() && PageParameter( PageParameterKey.DocumentId ).IsNotNullOrWhiteSpace() )
                 {
-                    RedirectToDocument( PageParameter( "DocumentType" ), PageParameter( "DocumentId" ) );
+                    RedirectToDocument( PageParameter( PageParameterKey.DocumentType ), PageParameter( PageParameterKey.DocumentId ) );
                 }
 
                 ConfigureSettings();
 
                 // if this is from the smart search apply some additional configuration
-                var showRefineSearch = PageParameter( "ShowRefineSearch" ).AsBoolean();
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "SmartSearch" ) ) )
+                var showRefineSearch = PageParameter( PageParameterKey.ShowRefineSearch ).AsBoolean();
+                if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SmartSearch ) ) )
                 {
                     lbRefineSearch.Visible = showRefineSearch;
                 }
 
-                if ( !string.IsNullOrWhiteSpace(PageParameter( "Q" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Q ) ) )
                 {
-                    tbSearch.Text = PageParameter( "Q" );
+                    tbSearch.Text = PageParameter( PageParameterKey.Q );
                     Search();
                 }
 
                 // add pre/post html
-                var preHtml = GetAttributeValue( "PreHtml" );
-                var postHtml = GetAttributeValue( "PostHtml" );
+                var preHtml = GetAttributeValue( AttributeKey.PreHtml );
+                var postHtml = GetAttributeValue( AttributeKey.PostHtml );
 
-                if (preHtml.IsNotNullOrWhiteSpace() || postHtml.IsNotNullOrWhiteSpace() )
+                if ( preHtml.IsNotNullOrWhiteSpace() || postHtml.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     lPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
@@ -164,29 +256,18 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            SetAttributeValue( "ShowFilters", cbShowFilter.Checked.ToString() );
-
-            SetAttributeValue( "EnabledModels", string.Join(",", cblEnabledModels.SelectedValues ) );
-
-            SetAttributeValue( "SearchType", ddlSearchType.SelectedValue );
-
-            SetAttributeValue( "ResultsPerPage", tbResultsPerPage.Text );
-
-            SetAttributeValue( "BaseFieldFilters", tbBaseFieldFilters.Text );
-
-            SetAttributeValue( "ShowRefinedSearch", cbShowRefinedSearch.Checked.ToString() );
-
-            SetAttributeValue( "ShowScores", cbShowScores.Checked.ToString() );
-
-            SetAttributeValue( "UseCustomResults", cbUseCustomResults.Checked.ToString() );
-
-            SetAttributeValue( "LavaResultTemplate", ceCustomResultsTemplate.Text );
-
-            SetAttributeValue( "PreHtml", cePreHtml.Text );
-
-            SetAttributeValue( "PostHtml", cePostHtml.Text );
-
-            SetAttributeValue( "CustomResultsCommands", string.Join( ",", cblLavaCommands.SelectedValues ) );
+            SetAttributeValue( AttributeKey.ShowFilters, cbShowFilter.Checked.ToString() );
+            SetAttributeValue( AttributeKey.EnabledModels, string.Join( ",", cblEnabledModels.SelectedValues ) );
+            SetAttributeValue( AttributeKey.SearchType, ddlSearchType.SelectedValue );
+            SetAttributeValue( AttributeKey.ResultsPerPage, tbResultsPerPage.Text );
+            SetAttributeValue( AttributeKey.BaseFieldFilters, tbBaseFieldFilters.Text );
+            SetAttributeValue( AttributeKey.ShowRefinedSearch, cbShowRefinedSearch.Checked.ToString() );
+            SetAttributeValue( AttributeKey.ShowScores, cbShowScores.Checked.ToString() );
+            SetAttributeValue( AttributeKey.UseCustomResults, cbUseCustomResults.Checked.ToString() );
+            SetAttributeValue( AttributeKey.LavaResultTemplate, ceCustomResultsTemplate.Text );
+            SetAttributeValue( AttributeKey.PreHtml, cePreHtml.Text );
+            SetAttributeValue( AttributeKey.PostHtml, cePostHtml.Text );
+            SetAttributeValue( AttributeKey.CustomResultsCommands, string.Join( ",", cblLavaCommands.SelectedValues ) );
 
             SaveAttributeValues();
 
@@ -207,7 +288,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            Response.Redirect( BuildUrl(0, false ) );
+            string url = BuildUrl( 0, false );
+            Response.Redirect( url, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -242,7 +325,8 @@ namespace RockWeb.Blocks.Cms
 
             var client = IndexContainer.GetActiveComponent();
 
-            if ( indexDocumentType != null ) {
+            if ( indexDocumentType != null )
+            {
                 var document = client.GetDocumentById( indexDocumentType, documentId );
 
                 var documentUrl = document.GetDocumentUrl();
@@ -256,23 +340,22 @@ namespace RockWeb.Blocks.Cms
                     lResults.Text = "<div class='alert alert-warning'>No url is available for the provided index document.</div>";
                 }
             }
-            else 
+            else
             {
                 lResults.Text = "<div class='alert alert-warning'>Invalid document type.</div>";
             }
-
         }
 
         /// <summary>
         /// Performs the search
         /// </summary>
-        private void Search( )
+        private void Search()
         {
-            var term = PageParameter( "Q" );
+            var term = PageParameter( PageParameterKey.Q );
 
             lResults.Text = string.Empty;
 
-            var searchType = GetAttributeValue( "SearchType" ).ConvertToEnum<SearchType>();
+            var searchType = GetAttributeValue( AttributeKey.SearchType ).ConvertToEnum<SearchType>();
 
             // get listing of selected entities to search on
             List<int> selectedEntities = GetSearchEntities();
@@ -282,7 +365,7 @@ namespace RockWeb.Blocks.Cms
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
             fieldCriteria.FieldValues = fieldValues;
-            
+
             var client = IndexContainer.GetActiveComponent();
 
             if ( client == null )
@@ -295,19 +378,19 @@ namespace RockWeb.Blocks.Cms
 
                 var results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
 
-                if ( GetAttributeValue( "UseCustomResults" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Results", results );
 
-                    lResults.Text = GetAttributeValue( "LavaResultTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "CustomResultsCommands" ) );
+                    lResults.Text = GetAttributeValue( AttributeKey.LavaResultTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.CustomResultsCommands ) );
                 }
                 else
                 {
                     StringBuilder formattedResults = new StringBuilder();
                     formattedResults.Append( "<ul class='list-unstyled'>" );
 
-                    var showScores = GetAttributeValue( "ShowScores" ).AsBoolean();
+                    var showScores = GetAttributeValue( AttributeKey.ShowScores ).AsBoolean();
 
                     // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeatedly in the loop (it's a bit expensive)
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, CurrentPerson );
@@ -347,7 +430,7 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        pagination.Append( String.Format( "<li><a href='{0}'><span><span aria-hidden='true'>&laquo;</span></span></a></li>", BuildUrl( -1 ) ) );
+                        pagination.Append( string.Format( "<li><a href='{0}'><span><span aria-hidden='true'>&laquo;</span></span></a></li>", BuildUrl( -1 ) ) );
                     }
 
                     var paginationOffset = 5;
@@ -390,12 +473,11 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        pagination.Append( String.Format( "<li><a href='{0}'><span><span aria-hidden='true'>&raquo;</span></span></a></li>", BuildUrl( 1 ) ) );
+                        pagination.Append( string.Format( "<li><a href='{0}'><span><span aria-hidden='true'>&raquo;</span></span></a></li>", BuildUrl( 1 ) ) );
                     }
 
                     lPagination.Text = pagination.ToString();
                 }
-
             }
         }
 
@@ -407,7 +489,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<int> selectedEntities = new List<int>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
+            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
             {
                 // get entities from smart search config
                 var searchEntitiesSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
@@ -420,11 +502,11 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 selectedEntities = cblModelFilter.SelectedValuesAsInt;
-                
+
                 // if no entities from the UI get from the block config
-                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
+                if ( selectedEntities.Count == 0 && GetAttributeValue( AttributeKey.EnabledModels ).IsNotNullOrWhiteSpace() )
                 {
-                    selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+                    selectedEntities = GetAttributeValue( AttributeKey.EnabledModels ).Split( ',' ).Select( int.Parse ).ToList();
                 }
             }
 
@@ -435,15 +517,15 @@ namespace RockWeb.Blocks.Cms
         /// Gets the field filters.
         /// </summary>
         /// <returns></returns>
-        private List<FieldValue> GetFieldFilters(List<int> selectedEntities)
+        private List<FieldValue> GetFieldFilters( List<int> selectedEntities )
         {
             List<FieldValue> fieldValues = new List<FieldValue>();
 
-            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhiteSpace() )
+            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
             {
                 // get the field criteria
                 var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
-                
+
                 if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
                 {
                     foreach ( var queryString in fieldCriteriaSetting.ToKeyValuePairList() )
@@ -461,16 +543,15 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 // add any base field filters from block settings
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "BaseFieldFilters" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.BaseFieldFilters ) ) )
                 {
-                    foreach ( var filterField in GetAttributeValue( "BaseFieldFilters" ).ToKeyValuePairList() )
+                    foreach ( var filterField in GetAttributeValue( AttributeKey.BaseFieldFilters ).ToKeyValuePairList() )
                     {
                         // check that multiple values were not passed as a comma separated string
                         var values = filterField.Value.ToString().Split( ',' );
 
                         foreach ( var value in values )
                         {
-
                             fieldValues.Add( new FieldValue { Field = filterField.Key, Value = value } );
                         }
                     }
@@ -481,14 +562,14 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( control is HtmlGenericContainer )
                     {
-                        var htmlContainer = (HtmlGenericContainer)control;
+                        var htmlContainer = ( HtmlGenericContainer ) control;
                         var childControls = htmlContainer.Controls;
 
                         foreach ( var childControl in childControls )
                         {
                             if ( childControl is RockCheckBoxList )
                             {
-                                var filterControl = (RockCheckBoxList)childControl;
+                                var filterControl = ( RockCheckBoxList ) childControl;
                                 var entityId = filterControl.Attributes["entity-id"].AsInteger();
                                 var fieldName = filterControl.Attributes["entity-filter-field"];
 
@@ -519,23 +600,23 @@ namespace RockWeb.Blocks.Cms
         /// Builds the URL.
         /// </summary>
         /// <returns></returns>
-        private string BuildUrl(int pageOffset = 0, Boolean respectSmartSearch = true) // respect smart search flag allows a search that started as a smart search to be converted to a normal search via refining the search
+        private string BuildUrl( int pageOffset = 0, bool respectSmartSearch = true ) // respect smart search flag allows a search that started as a smart search to be converted to a normal search via refining the search
         {
             var pageReference = new PageReference();
             pageReference.PageId = CurrentPageReference.PageId;
             pageReference.RouteId = CurrentPageReference.RouteId;
 
-            if (!string.IsNullOrWhiteSpace(tbSearch.Text) )
+            if ( !string.IsNullOrWhiteSpace( tbSearch.Text ) )
             {
-                pageReference.Parameters.AddOrReplace("Q", tbSearch.Text);
+                pageReference.Parameters.AddOrReplace( "Q", tbSearch.Text );
             }
 
-            if ( PageParameter("SmartSearch").IsNotNullOrWhiteSpace() && respectSmartSearch )
+            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() && respectSmartSearch )
             {
                 pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
 
-            if (cblModelFilter.SelectedValues.Count > 0 )
+            if ( cblModelFilter.SelectedValues.Count > 0 )
             {
                 pageReference.Parameters.AddOrReplace( "Models", string.Join( ",", cblModelFilter.SelectedValues ) );
             }
@@ -544,25 +625,25 @@ namespace RockWeb.Blocks.Cms
             var selectedEntities = cblModelFilter.SelectedValuesAsInt;
 
             // if no entities from the UI get from the block config
-            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
+            if ( selectedEntities.Count == 0 && GetAttributeValue( AttributeKey.EnabledModels ).IsNotNullOrWhiteSpace() )
             {
-                selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+                selectedEntities = GetAttributeValue( AttributeKey.EnabledModels ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
             if ( selectedEntities.Count > 0 )
             {
                 foreach ( var control in phFilters.Controls )
                 {
-                    if (control is HtmlGenericContainer )
+                    if ( control is HtmlGenericContainer )
                     {
-                        var htmlContainer = (HtmlGenericContainer)control;
+                        var htmlContainer = ( HtmlGenericContainer ) control;
                         var childControls = htmlContainer.Controls;
 
-                        foreach(var childControl in childControls )
+                        foreach ( var childControl in childControls )
                         {
                             if ( childControl is RockCheckBoxList )
                             {
-                                var filterControl = (RockCheckBoxList)childControl;
+                                var filterControl = ( RockCheckBoxList ) childControl;
                                 var entityId = filterControl.Attributes["entity-id"].AsInteger();
                                 var fieldName = filterControl.Attributes["entity-filter-field"];
 
@@ -576,14 +657,14 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            if (_currentPageNum != 0 || pageOffset != 0 )
+            if ( _currentPageNum != 0 || pageOffset != 0 )
             {
-                pageReference.Parameters.AddOrReplace( "CurrentPage", ( ( _currentPageNum + 1)  + pageOffset ).ToString() );
+                pageReference.Parameters.AddOrReplace( "CurrentPage", ( ( _currentPageNum + 1 ) + pageOffset ).ToString() );
             }
 
-            if( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SearchType ) ) )
             {
-                pageReference.Parameters.AddOrReplace( "SearchType", PageParameter( "SearchType" ) );
+                pageReference.Parameters.AddOrReplace( "SearchType", PageParameter( PageParameterKey.SearchType ) );
             }
 
             if ( pnlRefineSearch.Visible )
@@ -599,7 +680,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        private ModelFieldFilterConfig GetIndexFilterConfig(Type entityType )
+        private ModelFieldFilterConfig GetIndexFilterConfig( Type entityType )
         {
             if ( entityType != null )
             {
@@ -608,7 +689,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( classInstance != null && bulkItemsMethod != null )
                 {
-                    return (ModelFieldFilterConfig)bulkItemsMethod.Invoke( classInstance, null );
+                    return ( ModelFieldFilterConfig ) bulkItemsMethod.Invoke( classInstance, null );
                 }
             }
 
@@ -629,7 +710,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( classInstance != null && bulkItemsMethod != null )
                 {
-                    return (bool)bulkItemsMethod.Invoke( classInstance, null );
+                    return ( bool ) bulkItemsMethod.Invoke( classInstance, null );
                 }
             }
 
@@ -642,13 +723,13 @@ namespace RockWeb.Blocks.Cms
         private void ConfigureSettings()
         {
             // toggle refine search view toggle button
-            lbRefineSearch.Visible = GetAttributeValue( "ShowRefinedSearch" ).AsBoolean();
+            lbRefineSearch.Visible = GetAttributeValue( AttributeKey.ShowRefinedSearch ).AsBoolean();
 
             // model selector
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
+            if ( GetAttributeValue( AttributeKey.EnabledModels ).IsNotNullOrWhiteSpace() )
             {
-                enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+                enabledModelIds = GetAttributeValue( AttributeKey.EnabledModels ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
             var entities = EntityTypeCache.All();
@@ -665,10 +746,10 @@ namespace RockWeb.Blocks.Cms
             cblModelFilter.DataSource = indexableEntities;
             cblModelFilter.DataBind();
 
-            cblModelFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
+            cblModelFilter.Visible = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
 
             // if only one model is selected then hide the type checkbox
-            if (cblModelFilter.Items.Count == 1 )
+            if ( cblModelFilter.Items.Count == 1 )
             {
                 cblModelFilter.Visible = false;
             }
@@ -676,18 +757,18 @@ namespace RockWeb.Blocks.Cms
             hrSeparator.Visible = cblModelFilter.Visible;
 
             ddlSearchType.BindToEnum<SearchType>();
-            ddlSearchType.SelectedValue = GetAttributeValue( "SearchType" );
+            ddlSearchType.SelectedValue = GetAttributeValue( AttributeKey.SearchType );
 
             // override the block setting if passed in the query string
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SearchType ) ) )
             {
-                ddlSearchType.SelectedValue = PageParameter( "SearchType" );
+                ddlSearchType.SelectedValue = PageParameter( PageParameterKey.SearchType );
             }
 
             // set setting values from query string
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "Models" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Models ) ) )
             {
-                var queryStringModels = PageParameter( "Models" ).Split( ',' ).Select( s => s.Trim() ).ToList();
+                var queryStringModels = PageParameter( PageParameterKey.Models ).Split( ',' ).Select( s => s.Trim() ).ToList();
 
                 foreach ( ListItem item in cblModelFilter.Items )
                 {
@@ -702,19 +783,19 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "ItemsPerPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ItemsPerPage ) ) )
             {
-                _itemsPerPage = PageParameter( "ItemsPerPage" ).AsInteger();
+                _itemsPerPage = PageParameter( PageParameterKey.ItemsPerPage ).AsInteger();
             }
 
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "CurrentPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.CurrentPage ) ) )
             {
-                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger() -1;
+                _currentPageNum = PageParameter( PageParameterKey.CurrentPage ).AsInteger() - 1;
             }
 
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "RefinedSearch" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.RefinedSearch ) ) )
             {
-                pnlRefineSearch.Visible = PageParameter( "RefinedSearch" ).AsBoolean();
+                pnlRefineSearch.Visible = PageParameter( PageParameterKey.RefinedSearch ).AsBoolean();
 
                 if ( pnlRefineSearch.Visible )
                 {
@@ -722,7 +803,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            _itemsPerPage = GetAttributeValue( "ResultsPerPage" ).AsInteger();
+            _itemsPerPage = GetAttributeValue( AttributeKey.ResultsPerPage ).AsInteger();
         }
 
         /// <summary>
@@ -731,9 +812,9 @@ namespace RockWeb.Blocks.Cms
         private void LoadCustomFilters()
         {
             var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
+            if ( GetAttributeValue( AttributeKey.EnabledModels ).IsNotNullOrWhiteSpace() )
             {
-                enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+                enabledModelIds = GetAttributeValue( AttributeKey.EnabledModels ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
             var entities = EntityTypeCache.All();
@@ -796,7 +877,6 @@ namespace RockWeb.Blocks.Cms
             mdEdit.Show();
 
             cblLavaCommands.Items.Clear();
-
             cblLavaCommands.Items.Add( "All" );
 
             // load the lava commands control
@@ -807,9 +887,9 @@ namespace RockWeb.Blocks.Cms
 
             List<string> selectedCommands = new List<string>();
 
-            if ( GetAttributeValue( "CustomResultsCommands" ) != null)
+            if ( GetAttributeValue( AttributeKey.CustomResultsCommands ) != null )
             {
-                selectedCommands = GetAttributeValue( "CustomResultsCommands" ).Split( ',' ).ToList();
+                selectedCommands = GetAttributeValue( AttributeKey.CustomResultsCommands ).Split( ',' ).ToList();
             }
 
             foreach ( var command in selectedCommands )
@@ -821,37 +901,31 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            cbShowFilter.Checked = GetAttributeValue( "ShowFilters" ).AsBoolean();
-                 
-            var enabledModelIds = new List<int>();
+            cbShowFilter.Checked = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
 
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhiteSpace() )
+            var enabledModelIds = new List<int>();
+            if ( GetAttributeValue( AttributeKey.EnabledModels ).IsNotNullOrWhiteSpace() )
             {
-                enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+                enabledModelIds = GetAttributeValue( AttributeKey.EnabledModels ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
             var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
+
             cblEnabledModels.DataValueField = "Id";
             cblEnabledModels.DataTextField = "FriendlyName";
             cblEnabledModels.DataSource = entities.Where( i => i.IsIndexingSupported == true && i.IsIndexingEnabled == true ).ToList();
             cblEnabledModels.DataBind();
-
             cblEnabledModels.SetValues( enabledModelIds );
 
-            cbShowRefinedSearch.Checked = GetAttributeValue( "ShowRefinedSearch" ).AsBoolean();
-
-            cbShowScores.Checked = GetAttributeValue( "ShowScores" ).AsBoolean();
-
-            cbUseCustomResults.Checked = GetAttributeValue( "UseCustomResults" ).AsBoolean();
-            ceCustomResultsTemplate.Text = GetAttributeValue( "LavaResultTemplate" );
-
-            cePreHtml.Text = GetAttributeValue( "PreHtml" );
-            cePostHtml.Text = GetAttributeValue( "PostHtml" );
-
-            tbBaseFieldFilters.Text = GetAttributeValue( "BaseFieldFilters" );
-
-            tbResultsPerPage.Text = GetAttributeValue( "ResultsPerPage" );
+            cbShowRefinedSearch.Checked = GetAttributeValue( AttributeKey.ShowRefinedSearch ).AsBoolean();
+            cbShowScores.Checked = GetAttributeValue( AttributeKey.ShowScores ).AsBoolean();
+            cbUseCustomResults.Checked = GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean();
+            ceCustomResultsTemplate.Text = GetAttributeValue( AttributeKey.LavaResultTemplate );
+            cePreHtml.Text = GetAttributeValue( AttributeKey.PreHtml );
+            cePostHtml.Text = GetAttributeValue( AttributeKey.PostHtml );
+            tbBaseFieldFilters.Text = GetAttributeValue( AttributeKey.BaseFieldFilters );
+            tbResultsPerPage.Text = GetAttributeValue( AttributeKey.ResultsPerPage );
 
             upnlContent.Update();
         }
@@ -859,4 +933,3 @@ namespace RockWeb.Blocks.Cms
         #endregion
     }
 }
- 
