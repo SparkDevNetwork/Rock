@@ -31,10 +31,10 @@ using Rock.Web.Cache;
 using RockWeb;
 
 
-namespace RockWeb.Plugins.com_bemadev.Checkin
+namespace RockWeb.Plugins.com_lcbcchurch.CheckIn
 {
     [DisplayName( "Roster Button" )]
-    [Category( "com_bemadev > Check-in" )]
+    [Category( "com_lcbcchurch > Check-in" )]
     [Description( "Displays a button to print rosters for location" )]
     [LinkedPage( "Roster Page" )]
     public partial class RosterButton : CheckInBlockMultiPerson

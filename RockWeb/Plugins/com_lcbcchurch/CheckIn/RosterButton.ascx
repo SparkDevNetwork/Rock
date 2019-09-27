@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RosterButton.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.Checkin.RosterButton" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RosterButton.ascx.cs" Inherits="RockWeb.Plugins.com_lcbcchurch.CheckIn.RosterButton" %>
 
 <asp:UpdatePanel runat="server" ID="upContent">
     <ContentTemplate>
