@@ -1,0 +1,43 @@
+
+.tag-list-label {
+  margin-top: 16px;
+  margin-bottom: 4px;
+  color: @text-muted;
+}
+
+.tag-list {
+  font-size: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 0 10px 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: #979797;
+  border-radius: 8px;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, .05), inset 0 -1px 0 rgba(0, 0, 0, .0916553);
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+  &:hover {
+    color: #fff;
+    text-decoration: none;
+    background-color: #979797;
+  }
+
+  &:active {
+    color: @text-color;
+    background-color: #fff;
+  }
+
+  &.active {
+    background-color: @brand-primary;
+  }
+}

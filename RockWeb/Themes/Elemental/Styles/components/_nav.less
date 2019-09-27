@@ -1,0 +1,84 @@
+
+
+.tabbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  box-sizing: content-box;
+  display: flex;
+  -ms-flex-pack: justify !important;
+  align-items: center;
+  justify-content: space-between !important;
+  width: auto;
+  height: 50px;
+  text-align: center;
+  user-select: none;
+  background-color: @gray-darker;
+  contain: strict;
+
+  @media (min-width: @grid-float-breakpoint) {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    -ms-flex-pack: start !important;
+    justify-content: flex-start !important;
+    width: 80px;
+    height: 100%;
+    padding: 10px 0 0;
+  }
+}
+
+.tabbar-item {
+  display: flex;
+  flex: ~"1 1 0%";
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  color: @gray-lighter;
+
+  &:hover {
+    color: @brand-primary;
+    text-decoration: none;
+  }
+
+  @media (min-width: @grid-float-breakpoint) {
+    flex: ~"0 1 75px";
+    height: auto;
+  }
+}
+
+.tabbar-label {
+  order: 0;
+  min-height: 11px;
+  margin: 0;
+  font-size: 10px;
+
+  @media (min-width: @grid-float-breakpoint) {
+    font-size: 14px;
+  }
+}
+
+.tabbar-icon {
+  order: -1;
+  height: 30px;
+  font-size: 26px;
+
+  .logo-image {
+    width: 50px;
+  }
+}
+
+.tabbar-icon,
+.tabbar-label {
+  display: block;
+  align-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

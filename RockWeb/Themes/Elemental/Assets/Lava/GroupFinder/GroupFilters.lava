@@ -1,0 +1,122 @@
+{%- comment -%}
+{% include '~~/Assets/Lava/GroupFinder/GroupFilters.lava' %}
+{%- endcomment -%}
+
+{%- capture postback -%}
+{{ 'x' | Postback:'Search' }}
+{%- endcapture -%}
+{%- assign postback = postback | Remove:'javascript:' | Remove:' return false;' -%}
+
+<script>
+Sys.Application.add_load(function () {
+  //UpdateUrl();
+  HighlightTags();
+
+  $("input[id$='_tbKeywords']").keydown(function(e){
+      if (e.keyCode == 13)
+      {
+          e.preventDefault();
+          UpdateUrl(true);
+      }
+  });
+});
+
+function HighlightTags() {
+  var search = $('.js-search').val().split(','),
+  campus = $('.js-CampusId').val().split(','),
+  filterOne = $('.js-FilterOneValue').val().split(','),
+  filterTwo = $('.js-FilterTwoValue').val().split(',');
+
+  for(var i=0; i< filterOne.length; i++){
+     $('.js-dv-'+ filterOne[i]).addClass('active');
+  }
+
+  for(var i=0; i< filterTwo.length; i++){
+     $('.js-dv-'+ filterTwo[i]).addClass('active');
+  }
+
+  for(var i=0; i< campus.length; i++){
+     $('.js-campus-'+ campus[i]).addClass('active');
+  }
+}
+
+function UpdateUrl(reloadPage) {
+  var search = $('.js-search').val(),
+  campus = $('.js-CampusId').val(),
+  filterOne = $('.js-FilterOneValue').val(),
+  filterTwo = $('.js-FilterTwoValue').val(),
+  page = $('.js-Page').val(),
+  searchQuery = '?';
+
+  if (search !== '') {
+    searchQuery = searchQuery + 'Q=' + search + '&'
+  }
+
+  if (campus !== '') {
+    searchQuery = searchQuery + 'CampusId=' + campus + '&'
+  }
+
+  if (filterOne !== '') {
+    searchQuery = searchQuery + 'FilterOneValue=' + filterOne + '&'
+  }
+
+  if (filterTwo !== '') {
+    searchQuery = searchQuery + 'FilterTwoValue=' + filterTwo + '&'
+  }
+
+  if (page !== '') {
+    searchQuery = searchQuery + 'Page=' + page + '&'
+  }
+
+  searchQuery = searchQuery.slice(0,-1);
+
+  window.history.replaceState("object or string", "Title", searchQuery);
+  if(reloadPage) {
+    {{ postback }}
+  }
+}
+
+function ToggleParameter(param, id) {
+  var elem = $('.js-' + param);
+  var val = elem.val();
+  if (val !== '') {
+    val = val.split(',');
+    if (val.includes(id)) {
+      val = val.filter(function(item) {
+          return item !== id
+      });
+    } else {
+      val.push(id);
+    }
+    elem.val(val);
+  } else {
+    $('.js-' + param).val(id);
+  }
+  UpdateUrl(true);
+}
+</script>
+
+<p class="text-muted">Select your interests, campus and location to search for groups near you.</p>
+
+{%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
+<div class="tag-list">
+  {%- for item in FilterOne.DefinedValues -%}
+  <a href="?FilterOneValue={{ item.Id }}" onclick="ToggleParameter('FilterOneValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {%- endfor -%}
+</div>
+
+{%- assign FilterTwo = FilterTwoDefinedTypeId | FromCache:'DefinedType' -%}
+<div class="tag-list-label">{{ FilterTwo.Name }}</div>
+<div class="tag-list">
+  {%- for item in FilterTwo.DefinedValues -%}
+  <a href="?FilterTwoValue={{ item.Id }}" onclick="ToggleParameter('FilterTwoValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {%- endfor -%}
+</div>
+
+<div class="tag-list-label">Campus</div>
+<div class="tag-list">
+{%- for campus in Campuses -%}
+  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
+{%- endfor -%}
+</div>
+
