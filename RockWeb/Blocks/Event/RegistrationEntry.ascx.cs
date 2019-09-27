@@ -55,7 +55,8 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
+    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category ="", Order = 7,
+        Key = AttributeKey.ConfirmAccountTemplate )]
 
     [TextField( "Family Term",
         Description = "The term to use for specifying which household or family a person is a member of.",
@@ -79,6 +80,7 @@ namespace RockWeb.Blocks.Event
     {
         private static class AttributeKey
         {
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
             public const string FamilyTerm = "FamilyTerm";
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
