@@ -384,14 +384,51 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
-            var calEvent = GetCalendarEvent();
-            if ( calEvent != null )
-            {
-                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : ( DateTime? ) null;
-                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : ( DateTime? ) null;
-            }
+            EnsureEffectiveStartEndDates();
 
             base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
+        /// Ensures that the EffectiveStartDate and EffectiveEndDate are set correctly based on the CalendarContent.
+        /// Returns true if any changes were made.
+        /// </summary>
+        /// <returns></returns>
+        internal bool EnsureEffectiveStartEndDates()
+        {
+            var calEvent = GetCalendarEvent();
+            if ( calEvent == null )
+            {
+                return false;
+            }
+
+            DateTime? originalEffectiveStartDate = EffectiveStartDate;
+            var originalEffectiveEndDate = EffectiveEndDate;
+
+            EffectiveStartDate = calEvent.DTStart?.Value.Date;
+
+            // If there are any recurrence rules with no end date, the Effective End Date is infinity
+            if ( calEvent.RecurrenceRules.Count > 0 )
+            {
+                if ( calEvent.RecurrenceRules.Any( rule => rule.Until == DateTime.MinValue && rule.Count <= 0 ) )
+                {
+                    EffectiveEndDate = DateTime.MaxValue;
+                }
+            }
+
+            // If this isn't a perpetually recurring event, set the EffectiveEndDate to the actual end date/time of the last occurrence of this event
+            if ( EffectiveEndDate != DateTime.MaxValue )
+            {
+                var occurrences = GetOccurrences( DateTime.MinValue, DateTime.MaxValue );
+                if ( occurrences.Any() )
+                {
+                    EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
+                                           ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
+                                           : EffectiveStartDate;
+                }
+            }
+
+            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date || EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
         }
 
         /// <summary>
@@ -413,7 +450,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalendarEvent()  
+        public virtual DDay.iCal.Event GetCalendarEvent()
         {
             return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
         }
@@ -836,11 +873,13 @@ namespace Rock.Model
             var calEvent = this.GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
+                // Is the current time earlier than the event's start time?
                 if ( time.TimeOfDay.TotalSeconds < calEvent.DTStart.TimeOfDay.TotalSeconds )
                 {
                     return false;
                 }
 
+                // Is the current time later than the event's end time?
                 if ( time.TimeOfDay.TotalSeconds > calEvent.DTEnd.TimeOfDay.TotalSeconds )
                 {
                     return false;
@@ -868,6 +907,7 @@ namespace Rock.Model
             var calEvent = this.GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
+                // Is the current time earlier the event's allowed check-in window?
                 var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
                 if ( time.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds )
                 {
@@ -890,6 +930,7 @@ namespace Rock.Model
                     return false;
                 }
 
+                // Is the current time later then the event's allowed check-in window?
                 if ( checkInEndDateCompare == 0 && time.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds )
                 {
                     // Same day, but end time has passed
@@ -901,6 +942,90 @@ namespace Rock.Model
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether a schedule is active for check-out for the specified time.
+        /// </summary>
+        /// <example>
+        /// CheckOut Window: 5/1/2013 11:00:00 PM - 5/2/2013 2:00:00 AM
+        /// 
+        ///  * Current time: 8/8/2019 11:01:00 PM - returns true
+        ///  * Current time: 8/8/2019 10:59:00 PM - returns false
+        ///  * Current time: 8/8/2019 1:00:00 AM - returns true
+        ///  * Current time: 8/8/2019 2:01:00 AM - returns false
+        ///
+        /// Note: Add any other test cases you want to test to the "Rock.Tests.Rock.Model.ScheduleCheckInTests" project.
+        /// </example>
+        /// <param name="time">The time.</param>
+        /// <returns>
+        ///   <c>true</c> if the schedule is active for check out at the specified time; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsScheduleActiveForCheckOut( DateTime time )
+        {
+            var calEvent = this.GetCalendarEvent();
+            if ( calEvent == null || calEvent.DTStart == null )
+            {
+                return false;
+            }
+
+            // For check-out, we use the start time + duration to determine the end of the window...
+            // ...in iCal, this is the DTEnd value
+            var checkOutEnd = calEvent.DTEnd;
+            var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+
+            // Check if the end time spilled over to a different day...
+            int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
+
+            // invalid condition, end before the start
+            if ( checkOutEndDateCompare < 0 )
+            {
+                return false;
+            }
+            // the start and end are on the same day, so we can do simple time checking
+            else if ( checkOutEndDateCompare == 0 )
+            {
+                // Is the current time earlier the event's allowed check-in window?
+                if ( time.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds )
+                {
+                    // Same day, but it's too early
+                    return false;
+                }
+
+                // Is the current time later than the event's allowed check-in window?
+                if ( time.TimeOfDay.TotalSeconds > checkOutEnd.TimeOfDay.TotalSeconds )
+                {
+                    // Same day, but end time has passed
+                    return false;
+                }
+            }
+            // Does the end time spill over to a different day...
+            // if so, we have to look for crossover conditions
+            else if ( checkOutEndDateCompare > 0 )
+            {
+                // The current time is before the start time and later than the end time:
+                // ex: 11PM-2AM window, and it's 10PM -- not in the window
+                // ex: 11PM-2AM window, and it's 3AM -- not in the window
+                if ( time.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds && time.TimeOfDay.TotalSeconds > checkOutEnd.TimeOfDay.TotalSeconds )
+                {
+                    return false;
+                }
+            }
+
+            var occurrences = GetOccurrences( time.Date );
+            return occurrences.Count > 0;
+        }
+
+        /// <summary>
+        /// Determines if the schedule or check in is active for check out.
+        /// Check-out can happen while check-in is active or until the event
+        /// ends (start time + duration).
+        /// </summary>
+        /// <param name="time">The time.</param>
+        /// <returns></returns>
+        public bool WasScheduleOrCheckInActiveForCheckOut( DateTime time )
+        {
+            return IsScheduleActiveForCheckOut( time ) || WasScheduleActive( time ) || WasCheckInActive( time );
         }
 
         /// <summary>
@@ -1160,7 +1285,7 @@ namespace Rock.Model
             {
                 if ( TotalCount > 0 )
                 {
-                    return ( double ) ( DidAttendCount ) / ( double ) TotalCount;
+                    return DidAttendCount / ( double ) TotalCount;
                 }
                 else
                 {

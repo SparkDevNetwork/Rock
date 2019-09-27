@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ImageBinaryFileType = "ImageBinaryFileType";
             public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Communication
 
         #region PageParameterKeys
 
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
@@ -547,7 +547,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var description = string.IsNullOrWhiteSpace( item.Description )
                     ? PhoneNumber.FormattedNumber( "", item.Value.Replace( "+", string.Empty ) )
-                    : item.Description.LeftWithEllipsis( 25 );
+                    : item.Description;
 
                 ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
             }
@@ -701,11 +701,16 @@ namespace RockWeb.Blocks.Communication
             nbRecipientsAlert.Visible = false;
             if ( tglRecipientSelection.Checked )
             {
-                if ( !GetRecipientFromListSelection().Any() )
+                var recipients = GetRecipientFromListSelection();
+                if ( !recipients.Any() )
                 {
                     nbRecipientsAlert.Text = "The selected list doesn't have any people. <span>At least one recipient is required.</span>";
                     nbRecipientsAlert.Visible = true;
                     return;
+                }
+                else
+                {
+                    hfRSVPPersonIDs.Value = recipients.Select( m => m.PersonId ).ToList().AsDelimited( "," );
                 }
             }
             else
@@ -715,6 +720,10 @@ namespace RockWeb.Blocks.Communication
                     nbRecipientsAlert.Text = "At least one recipient is required.";
                     nbRecipientsAlert.Visible = true;
                     return;
+                }
+                else
+                {
+                    hfRSVPPersonIDs.Value = this.IndividualRecipientPersonIds.AsDelimited( "," );
                 }
             }
 
@@ -1367,7 +1376,6 @@ namespace RockWeb.Blocks.Communication
         {
             pnlEmailEditor.Visible = false;
             ShowEmailSummary();
-
         }
 
         /// <summary>
@@ -1507,7 +1515,6 @@ namespace RockWeb.Blocks.Communication
                             {
                                 if ( smsPhoneNumber.Number != tbTestSMSNumber.Text )
                                 {
-
                                     smsPhoneNumber.Number = tbTestSMSNumber.Text;
                                     smsPhoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( smsPhoneNumber.CountryCode, smsPhoneNumber.Number );
                                 }
@@ -2260,14 +2267,43 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 return;
             }
 
-            var rockContext = new RockContext();
-            Rock.Model.Communication communication = UpdateCommunication( rockContext );
-            communication.Status = CommunicationStatus.Draft;
-            rockContext.SaveChanges();
-
-            hfCommunicationId.Value = communication.Id.ToString();
+            Rock.Model.Communication communication = SaveAsDraft();
 
             ShowResult( "The communication has been saved", communication );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailEditorSaveDraft control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailEditorSaveDraft_Click( object sender, EventArgs e )
+        {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            Rock.Model.Communication communication = SaveAsDraft();
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            upnlContent.Update();
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the btnSMSEditorSaveDraft control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSMSEditorSaveDraft_Click( object sender, EventArgs e )
+        {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            Rock.Model.Communication communication = SaveAsDraft();
+            upnlContent.Update();
         }
 
         /// <summary>
@@ -2315,6 +2351,21 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Saves the communication as Draft
+        /// </summary>
+        /// <returns></returns>
+        private Rock.Model.Communication SaveAsDraft()
+        {
+            var rockContext = new RockContext();
+            Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            communication.Status = CommunicationStatus.Draft;
+            rockContext.SaveChanges();
+
+            hfCommunicationId.Value = communication.Id.ToString();
+            return communication;
         }
 
         /// <summary>
@@ -2562,5 +2613,10 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         #endregion
+
+
+
+
+
     }
 }

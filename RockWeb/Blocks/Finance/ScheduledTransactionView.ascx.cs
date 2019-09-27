@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string UpdatePageUnhosted = "UpdatePage";
             public const string UpdatePageHosted = "UpdatePageHosted";
@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Finance
 
         #region ViewStateKeys
 
-        protected static class ViewStateKey
+        private static class ViewStateKey
         {
             public const string TransactionDetailsState = "TransactionDetailsState";
         }
@@ -707,6 +707,9 @@ namespace RockWeb.Blocks.Finance
             detailsLeft
                 .Add( "Transaction Code", financialScheduledTransaction.TransactionCode )
                 .Add( "Schedule Id", financialScheduledTransaction.GatewayScheduleId );
+
+            lSummary.Visible = financialScheduledTransaction.Summary.IsNotNullOrWhiteSpace();
+            lSummary.Text = financialScheduledTransaction.Summary.ConvertCrLfToHtmlBr();
 
             lDetailsLeft.Text = detailsLeft.Html;
             lDetailsRight.Text = detailsRight.Html;

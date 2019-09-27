@@ -1050,6 +1050,7 @@ cbDidNotMeet.ClientID );
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
                                     attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
+                                    attendance.DidAttend = attendee.Attended;
 
                                     // Check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;
@@ -1062,11 +1063,10 @@ cbDidNotMeet.ClientID );
                                     occurrence.Attendees.Add( attendance );
                                 }
                             }
-
-                            if ( attendance != null )
+                            else
                             {
+                                // Otherwise, only record that they attended -- don't change their attendance startDateTime 
                                 attendance.DidAttend = attendee.Attended;
-                                attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Date.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
                             }
                         }
                     }
@@ -1104,8 +1104,8 @@ cbDidNotMeet.ClientID );
 
                 _occurrence.Id = occurrence.Id;
 
-                // Sync attendance changes to the appropriate sequences
-                SequenceService.HandleAttendanceRecordsAsync( occurrence.Id );
+                // Sync attendance changes to the appropriate streaks
+                StreakTypeService.HandleAttendanceRecordsAsync( occurrence.Id );
             }
 
             return true;

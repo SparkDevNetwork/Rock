@@ -744,7 +744,7 @@ namespace Rock.Model
         /// <returns></returns>
         internal static List<History> GetChanges( Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId, string sourceOfChange = null )
         {
-            changes.ForEach( a => a.SourceOfChange = sourceOfChange );
+            SetHistoryEntriesSourceOfChange( changes, sourceOfChange, sourceOfChange != null );
 
             var entityType = EntityTypeCache.Get( modelType );
             var category = CategoryCache.Get( categoryGuid );
@@ -873,7 +873,9 @@ namespace Rock.Model
         {
             if ( changes.Any() )
             {
-                changes.ForEach( a => a.SourceOfChange = sourceOfChange ?? rockContext.SourceOfChange );
+                // Set the change source for any entries that do not have one, or for all entries if a source has been supplied as a parameter.
+                SetHistoryEntriesSourceOfChange( changes, sourceOfChange ?? rockContext.SourceOfChange, sourceOfChange != null );
+
                 AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {
@@ -904,6 +906,20 @@ namespace Rock.Model
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Set the SourceOfChange property for the entries in a HistoryChangeList.
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <param name="newSourceOfChange"></param>
+        /// <param name="overrideExisting"></param>
+        private static void SetHistoryEntriesSourceOfChange( History.HistoryChangeList changes, string newSourceOfChange, bool overrideExisting)
+        {
+            // Set the SourceOfChange property for any entries that do not have an existing value, or for all entries if the override flag is set.
+            changes.Where( x => x.SourceOfChange == null || overrideExisting )
+                   .ToList()
+                   .ForEach( a => a.SourceOfChange = newSourceOfChange );
         }
     }
 }

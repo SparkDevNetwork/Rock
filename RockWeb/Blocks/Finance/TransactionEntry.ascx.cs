@@ -2601,6 +2601,12 @@ TransactionAccountDetails: [
             bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
             Person person = GetPerson( !givingAsBusiness );
 
+            // Add contact person if giving as a business and current person is unknow
+            if ( person == null && givingAsBusiness )
+            {
+                person = GetBusinessContact();
+            }
+
             if ( person == null )
             {
                 errorMessage = "There was a problem creating the person information";
@@ -2789,6 +2795,8 @@ TransactionAccountDetails: [
                 changeSummary.Append( paymentInfo.Comment1 );
                 changeSummary.AppendLine();
             }
+
+            scheduledTransaction.Summary = changeSummary.ToString();
 
             var transactionService = new FinancialScheduledTransactionService( rockContext );
             transactionService.Add( scheduledTransaction );

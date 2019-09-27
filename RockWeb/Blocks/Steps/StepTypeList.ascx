@@ -28,7 +28,7 @@
                                     <asp:ListItem Text="No" Value="No"></asp:ListItem>
                                 </Rock:RockDropDownList>
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gStepType" runat="server" AllowSorting="false">
+                            <Rock:Grid ID="gStepType" runat="server" AllowSorting="false" ShowConfirmDeleteDialog="true">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockTemplateField ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">

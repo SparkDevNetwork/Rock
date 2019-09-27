@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -41,21 +42,37 @@ namespace Rock.Financial
     public class AutomatedPaymentProcessor
     {
         #region Keys
+
         /// <summary>
         /// Use this key to set metadata that will be used as the description of the transaction in some gateways
         /// </summary>
-        [Obsolete("Use the 'metadatakeys' static class constants instead.")]
-        [RockObsolete("1.10")]
+        [Obsolete( "Use the 'MetadataKey' static class constants instead." )]
+        [RockObsolete( "1.10" )]
         public const string DescriptionMetadataKey = "description";
 
         /// <summary>
         /// Commonly used keys within the transaction metadata
         /// </summary>
-        public static class MetadataKeys
+        public static class MetadataKey
         {
+            /// <summary>
+            /// The description
+            /// </summary>
             public const string Description = "description";
+
+            /// <summary>
+            /// The idempotency key
+            /// </summary>
             public const string IdempotencyKey = "idempotency_key";
+
+            /// <summary>
+            /// The giving system
+            /// </summary>
             public const string GivingSystem = "giving_system";
+
+            /// <summary>
+            /// The transaction unique identifier
+            /// </summary>
             public const string TransactionGuid = "transaction_guid";
         }
 
@@ -526,25 +543,25 @@ namespace Rock.Financial
             // Generate metadata which supporting gateways can utilize to provide context information about the transaction
             var metadata = new Dictionary<string, string>
             {
-                [MetadataKeys.GivingSystem] = "RockRMS",
-                [MetadataKeys.TransactionGuid] = transactionGuid.ToString()
+                [MetadataKey.GivingSystem] = "RockRMS",
+                [MetadataKey.TransactionGuid] = transactionGuid.ToString()
             };
 
             var description = GetDescription();
             if ( !description.IsNullOrWhiteSpace() )
             {
-                metadata[MetadataKeys.Description] = description;
+                metadata[MetadataKey.Description] = description;
             }
 
             // The Idempotency Key may be provided in the args, if not generate one
             if ( _automatedPaymentArgs.IdempotencyKey.IsNullOrWhiteSpace() )
             {
                 var idempotencyKey = GenerateIdempotencyKey();
-                metadata[MetadataKeys.IdempotencyKey] = idempotencyKey;
+                metadata[MetadataKey.IdempotencyKey] = idempotencyKey;
             }
             else
             {
-                metadata[MetadataKeys.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
+                metadata[MetadataKey.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
             }
 
             // 
@@ -563,7 +580,28 @@ namespace Rock.Financial
                 return null;
             }
 
-            return SaveTransaction( transactionGuid );
+            try
+            {
+                return SaveTransaction( transactionGuid );
+            }
+            catch ( Exception exception )
+            {
+                // The payment has already been charged by the gateway, so if the transaction cannot be saved to the DB, it's bad.
+                // The save transaction method is safe to retry since it uses the preset guid and will not enter duplicate
+                // transactions. Wait a second and try saving again
+                Thread.Sleep( 1000 );
+
+                try
+                {
+                    return SaveTransaction( transactionGuid );
+                }
+                catch
+                {
+                    errorMessage = $"Error recording charge: payment was charged by the gateway but an error occurred trying to save the transaction to the database: Guid {transactionGuid}, Total Amount {_payment?.Amount.FormatAsCurrency()}, Person {_authorizedPerson?.Id}, Exception {exception.Message}";
+                    ExceptionLogService.LogException( new Exception( errorMessage, exception ) );
+                    return null;
+                }
+            }
         }
 
         #endregion Public Methods
@@ -609,36 +647,42 @@ namespace Rock.Financial
                 // Pick the correct saved account based on args or default for the user
                 var financialGatewayId = _financialGateway.Id;
 
-                var savedAccountQry = _financialPersonSavedAccountService
+                var savedAccounts = _financialPersonSavedAccountService
                     .GetByPersonId( _authorizedPerson.Id )
                     .AsNoTracking()
                     .Where( sa => sa.FinancialGatewayId == financialGatewayId )
-                    .Include( sa => sa.FinancialPaymentDetail );
+                    .Include( sa => sa.FinancialPaymentDetail )
+                    .OrderByDescending( sa => sa.CreatedDateTime ?? DateTime.MinValue )
+                    .ToList();
 
                 if ( _automatedPaymentArgs.FinancialPersonSavedAccountId.HasValue )
                 {
                     // If there is an indicated saved account to use, don't assume any other saved account even with a schedule
                     var savedAccountId = _automatedPaymentArgs.FinancialPersonSavedAccountId.Value;
-                    _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.Id == savedAccountId );
+                    _financialPersonSavedAccount = savedAccounts.FirstOrDefault( sa => sa.Id == savedAccountId );
                 }
                 else
                 {
                     // If there is a schedule and no indicated saved account to use, try to use payment info associated with the schedule
                     if ( _financialScheduledTransaction != null )
                     {
-                        _financialPersonSavedAccount = savedAccountQry
-                        .Where( sa =>
-                            ( !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ||
-                            ( sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ||
-                            ( !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode )
-                        )
-                        .FirstOrDefault();
+                        _financialPersonSavedAccount =
+                            // sa.ReferenceNumber == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.ReferenceNumber ) && sa.ReferenceNumber == _financialScheduledTransaction.TransactionCode ) ??
+                            // sa.GatewayPersonIdentifier == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ??
+                            // sa.FinancialPaymentDetailId == fst.FinancialPaymentDetailId
+                            savedAccounts.FirstOrDefault( sa => sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ??
+                            // sa.TransactionCode == fst.TransactionCode
+                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode );
                     }
 
                     if ( _financialPersonSavedAccount == null )
                     {
                         // Use the default or first if no default
-                        _financialPersonSavedAccount = savedAccountQry.FirstOrDefault( sa => sa.IsDefault ) ?? savedAccountQry.FirstOrDefault();
+                        _financialPersonSavedAccount =
+                            savedAccounts.FirstOrDefault( sa => sa.IsDefault ) ??
+                            savedAccounts.FirstOrDefault();
                     }
                 }
             }
@@ -776,10 +820,10 @@ namespace Rock.Financial
                 // Use the financialTransactionService to add the transaction instead of batch.Transactions
                 // to avoid lazy-loading the transactions already associated with the batch
                 financialTransaction.BatchId = batch.Id;
-                _financialTransactionService.Add( financialTransaction );                             
+                _financialTransactionService.Add( financialTransaction );
             }
 
-            _rockContext.SaveChanges();
+            _rockContext.SaveChanges();        
 
             if ( _futureTransaction == null )
             {
@@ -858,7 +902,7 @@ namespace Rock.Financial
 
             using ( var sha256Hash = SHA256.Create() )
             {
-                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHH" )}_{_automatedPaymentArgs.ToJson()}";
+                var inputString = $"{RockDateTime.Now.ToString( "yyyyMMddHHmm" )}_{_automatedPaymentArgs.ToJson()}";
                 var bytes = sha256Hash.ComputeHash( Encoding.UTF8.GetBytes( inputString ) );
                 var builder = new StringBuilder();
 

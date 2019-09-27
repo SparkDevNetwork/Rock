@@ -103,6 +103,7 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.StepTerm = source.StepTerm;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

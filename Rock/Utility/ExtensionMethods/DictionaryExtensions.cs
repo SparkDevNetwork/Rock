@@ -24,6 +24,8 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+        /*** NOTE: When using these extensions against a <see cref="System.Collections.Concurrent.ConcurrentDictionary"/>, it will end up using the ThreadSafe versions of these methods. See https://stackoverflow.com/a/10112281/1755417  ***/
+
         #region Dictionary<TKey, TValue> extension methods
 
         /// <summary>

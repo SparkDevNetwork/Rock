@@ -51,12 +51,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( !badge.EntityTypeId.HasValue )
-            {
-                // This is a global badge type for any entity
-                return true;
-            }
-
             // Determine the type of the entity
             var typeOfEntity = entity.GetType();
 
@@ -68,7 +62,7 @@ namespace Rock.Model
             var entityTypeCache = EntityTypeCache.Get( typeOfEntity );
 
             // Check that the type matches
-            if ( entityTypeCache == null || entityTypeCache.Id != badge.EntityTypeId )
+            if ( entityTypeCache == null || ( badge.EntityTypeId.HasValue && entityTypeCache.Id != badge.EntityTypeId ) )
             {
                 return false;
             }

@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CampusStatusValueId { get; set; }
+
+        /// <summary />
+        public int? CampusTypeValueId { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -114,6 +120,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Campus source )
         {
             this.Id = source.Id;
+            this.CampusStatusValueId = source.CampusStatusValueId;
+            this.CampusTypeValueId = source.CampusTypeValueId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -144,6 +152,12 @@ namespace Rock.Client
     /// </summary>
     public partial class Campus : CampusEntity
     {
+        /// <summary />
+        public DefinedValue CampusStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CampusTypeValue { get; set; }
+
         /// <summary />
         public PersonAlias LeaderPersonAlias { get; set; }
 

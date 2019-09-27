@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Security
 
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
-        protected static class AttributeKeys
+        private static class AttributeKeys
         {
             public const string Duplicates = "Duplicates";
             public const string FoundDuplicateCaption = "FoundDuplicateCaption";

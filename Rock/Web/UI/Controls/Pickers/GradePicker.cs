@@ -183,6 +183,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected grade offset.
+        /// </summary>
+        /// <value>
+        /// The selected grade offset.
+        /// </value>
+        public int? SelectedGradeOffset
+        {
+            get
+            {
+                EnsureChildControls();
+                return this.SelectedGradeValue?.Value.AsIntegerOrNull();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                if ( this.UseGradeOffsetAsValue )
+                {
+                    this.SelectedValue = value?.ToString();
+                }
+                else
+                {
+                    var selectedDefinedValueGuid = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.GetDefinedValueFromValue( value?.ToString() )?.Guid;
+                    this.SelectedValue = selectedDefinedValueGuid?.ToString();
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Gets or sets the selected grade value unique identifier.
         /// </summary>
         /// <value>

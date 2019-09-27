@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -89,7 +90,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.SelectedDefinedValuesId.FirstOrDefault();
+                if ( this.SelectedDefinedValuesId?.Any() == true )
+                {
+                    return this.SelectedDefinedValuesId.FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             set
@@ -106,7 +114,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected defined value Ids
+        /// Gets or sets the selected defined values identifier.
         /// </summary>
         /// <value>
         /// The selected defined values identifier.
@@ -130,7 +138,10 @@ namespace Rock.Web.UI.Controls
                     item.Selected = false;
                 }
 
-                foreach ( int selectedValue in value )
+                // treat a value of null as nothing selected
+                var setValue = value ?? new int[0];
+
+                foreach ( int selectedValue in setValue )
                 {
                     var item = this.Items.FindByValue( selectedValue.ToString() );
                     if ( item != null )
@@ -143,7 +154,8 @@ namespace Rock.Web.UI.Controls
                         var selectedDefinedValue = DefinedValueCache.Get( selectedValue );
                         if ( selectedDefinedValue != null )
                         {
-                            this.Items.Add( new ListItem( this.DisplayDescriptions ? selectedDefinedValue.Description : selectedDefinedValue.Value, selectedDefinedValue.Id.ToString() ) { Selected = true } );
+                            var text = this.DisplayDescriptions && selectedDefinedValue.Description.IsNotNullOrWhiteSpace() ? selectedDefinedValue.Description : selectedDefinedValue.Value;
+                            this.Items.Add( new ListItem { Text = text, Value = selectedDefinedValue.Id.ToString(), Selected = true } );
                         }
                     }
                 }
@@ -195,7 +207,9 @@ namespace Rock.Web.UI.Controls
                 {
                     foreach ( var definedValue in definedValuesList )
                     {
-                        var li = new ListItem( picker.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() );
+                        var text = picker.DisplayDescriptions && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value;
+
+                        var li = new ListItem( text, definedValue.Id.ToString() );
                         li.Selected = selectedItems.Contains( definedValue.Id );
                         picker.Items.Add( li );
                     }
@@ -242,11 +256,11 @@ namespace Rock.Web.UI.Controls
         bool IncludeInactive { get; set; }
 
         /// <summary>
-        /// Gets or sets the selected defined values identifier.
+        /// Gets or sets the selected list of Defined Value Ids
         /// </summary>
         /// <value>
         /// The selected defined values identifier.
         /// </value>
-        int[] SelectedDefinedValuesId { get; set;  }
+        int[] SelectedDefinedValuesId { get; set; }
     }
 }

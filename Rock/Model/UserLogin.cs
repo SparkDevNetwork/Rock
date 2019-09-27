@@ -396,20 +396,28 @@ namespace Rock.Model
                         // Reload the data using a new context.
                         RockContext newRockContext = new RockContext();
                         var userLogin = new UserLoginService( newRockContext ).Get( this.Id );
-                        if ( userLogin != null )
+                        if ( userLogin != null && userLogin.PersonId != null )
                         {
-                            var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
-                            var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+                            try
+                            {
+                                var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
+                                var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
-                            if ( ! isUserNameSensitive )
-                            {
-                                HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
-                                HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, UserName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                if ( ! isUserNameSensitive )
+                                {
+                                    HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
+                                    HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, UserName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                }
+                                else
+                                {
+                                    HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
+                                    HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                }
                             }
-                            else
+                            catch ( Exception ex )
                             {
-                                HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
-                                HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                // Just log the problem and move on...
+                                ExceptionLogService.LogException( ex );
                             }
                         }
 
@@ -429,9 +437,18 @@ namespace Rock.Model
         {
             var rockContext = ( RockContext ) dbContext;
 
-            if ( HistoryChanges != null && HistoryChanges.Any() )
+            // It is possible that we have a UserLogin without a PersonId, in these cases we don't want to save a person history record.
+            if ( HistoryChanges != null && HistoryChanges.Any() && this.PersonId.HasValue )
             {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), this.PersonId.Value, HistoryChanges, this.UserName, typeof( UserLogin ), this.Id, true, this.ModifiedByPersonAliasId, null );
+                try
+                {
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), this.PersonId.Value, HistoryChanges, this.UserName, typeof( UserLogin ), this.Id, true, this.ModifiedByPersonAliasId, null );
+                }
+                catch ( Exception ex )
+                {
+                    // Just log the problem and move on...
+                    ExceptionLogService.LogException( ex );
+                }
             }
 
             base.PostSaveChanges( dbContext );

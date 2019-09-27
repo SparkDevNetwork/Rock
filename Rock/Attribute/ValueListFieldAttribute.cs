@@ -31,28 +31,6 @@ namespace Rock.Attribute
         private const string CUSTOM_VALUES = "customvalues";
         private const string ALLOW_HTML = "allowhtml";
 
-        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibility issues. 
-         * See AllowHtml below as an example, and the GroupList block for how to initialize it
-         */
-
-        /// <summary>
-        /// Sets a value indicating whether [allow HTML].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [allow HTML]; otherwise, <c>false</c>.
-        /// </value>
-        public bool AllowHtml
-        {
-            get
-            {
-                return FieldConfigurationValues.GetValueOrNull( ALLOW_HTML ).AsBoolean();
-            }
-            set
-            {
-                FieldConfigurationValues.AddOrReplace( ALLOW_HTML, new Field.ConfigurationValue( value.ToString() ) );
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.
         /// </summary>
@@ -113,6 +91,43 @@ namespace Rock.Attribute
            : this( name, description, required, defaultValue, valuePrompt, definedTypeGuid, customValues, category, order, key, 
             typeof( Rock.Field.Types.ValueListFieldType ).FullName )
         {
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether [allow HTML].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow HTML]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowHtml
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_HTML ).AsBoolean();
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_HTML, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value prompt.
+        /// </summary>
+        /// <value>
+        /// The value prompt.
+        /// </value>
+        public string ValuePrompt
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( VALUE_PROMPT_KEY );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( VALUE_PROMPT_KEY, new Field.ConfigurationValue( value ) );
+            }
         }
     }
 }

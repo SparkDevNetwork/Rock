@@ -102,6 +102,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbShowInGrid;
 
         /// <summary>
+        /// Show on bulk control
+        /// </summary>
+        protected RockCheckBox _cbShowOnBulk;
+
+        /// <summary>
         /// Allow search control
         /// </summary>
         protected RockCheckBox _cbAllowSearch;
@@ -125,6 +130,11 @@ namespace Rock.Web.UI.Controls
         /// The IsActive checkbox
         /// </summary>
         protected RockCheckBox _cbIsActive;
+
+        /// <summary>
+        /// The IsPublic checkbox
+        /// </summary>
+        protected RockCheckBox _cbIsPublic;
 
         /// <summary>
         /// The Enable History checkbox
@@ -696,6 +706,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether Show on Bulk option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show on Bulk option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsShowOnBulkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the excluded field types.
         /// </summary>
         /// <value>
@@ -756,6 +786,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbShowInGrid.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show on bulk].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on bulk]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnBulk
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Checked = value;
             }
         }
 
@@ -956,6 +1006,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbIsActive.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPublic
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsPublic.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsPublic.Checked = value;
             }
         }
 
@@ -1302,6 +1372,13 @@ namespace Rock.Web.UI.Controls
             _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
             Controls.Add( _cbIsActive );
 
+            _cbIsPublic = new RockCheckBox();
+            _cbIsPublic.ID = "_cbIsPublic";
+            _cbIsPublic.Label = "Public";
+            _cbIsPublic.Text = "Yes";
+            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts (like RSVP invitations).";
+            Controls.Add(_cbIsPublic);
+
             _tbDescription = new RockTextBox();
             _tbDescription.Label = "Description";
             _tbDescription.ID = "tbDescription";
@@ -1352,6 +1429,13 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.Text = "Yes";
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
+
+            _cbShowOnBulk = new RockCheckBox();
+            _cbShowOnBulk.ID = "cbShowOnBulk";
+            _cbShowOnBulk.Label = "Show on Bulk";
+            _cbShowOnBulk.Text = "Yes";
+            _cbShowOnBulk.Help = "If selected, this attribute will be shown with bulk update attributes.";
+            Controls.Add( _cbShowOnBulk );
 
             _lFieldType = new RockLiteral();
             _lFieldType.Label = "Field Type";
@@ -1530,6 +1614,7 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
+            _cbShowOnBulk.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
             _cbIsIndexingEnabled.ValidationGroup = validationGroup;
             _cbIsAnalytic.ValidationGroup = validationGroup;
@@ -1614,7 +1699,8 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag(); // empty column
+            _cbIsPublic.RenderControl( writer );
+            writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
 
@@ -1652,6 +1738,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbShowInGrid.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbShowOnBulk.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -1778,11 +1869,13 @@ namespace Rock.Web.UI.Controls
                 this.Description = attribute.Description;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+                this.ShowOnBulk = attribute.ShowOnBulk;
                 this.AllowSearch = attribute.AllowSearch;
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
                 this.IsAnalytic = attribute.IsAnalytic;
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
                 this.IsActive = attribute.IsActive;
+                this.IsPublic = attribute.IsPublic;
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
@@ -1837,6 +1930,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( attribute != null )
             {
+                attribute.IsSystem = this.IsSystem;
                 attribute.Id = this.AttributeId ?? 0;
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
@@ -1847,11 +1941,13 @@ namespace Rock.Web.UI.Controls
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
+                attribute.ShowOnBulk = this.ShowOnBulk;
                 attribute.AllowSearch = this.AllowSearch;
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
                 attribute.IsAnalytic = this.IsAnalytic;
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
                 attribute.IsActive = this.IsActive;
+                attribute.IsPublic = this.IsPublic;
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;

@@ -38,5 +38,26 @@ namespace Rock.Attribute
             : base( name, description, required, ( defaultValue == double.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.DecimalFieldType ).FullName )
         {
         }
+       
+        /// <summary>
+        /// Gets or sets the default numeric value of the attribute. This is the value that will be used if a specific value has not yet been created.
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public double DefaultDecimalValue
+        {
+            // NOTE: using double instead decimal because decimal can't be used as a Named parameter
+            // https://github.com/dotnet/csharplang/blob/master/spec/attributes.md#attribute-parameter-types
+            get
+            {
+                return base.DefaultValue.AsDoubleOrNull() ?? double.MinValue;
+            }
+
+            set
+            {
+                base.DefaultValue = value == double.MinValue ? string.Empty : value.ToString();
+            }
+        }
     }
 }

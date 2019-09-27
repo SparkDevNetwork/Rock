@@ -1220,6 +1220,144 @@ a comment --> sit amet</p>";
 
         #endregion
 
+        #region OrderBy
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the default ordering (ascending).
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_Int()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    {""Title"": ""D"", ""Order"": 4},
+    {""Title"": ""A"", ""Order"": 1},
+    {""Title"": ""C"", ""Order"": 3},
+    {""Title"": ""B"", ""Order"": 2}
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a single int property
+        /// using the explicit ordering descending.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntDescending()
+        {
+            var expected = new List<string>() { "D", "C", "B", "A" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 4 },
+    { ""Title"": ""A"", ""Order"": 1 },
+    { ""Title"": ""C"", ""Order"": 3 },
+    { ""Title"": ""B"", ""Order"": 2 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""SecondOrder"": 1 },
+    { ""Title"": ""A"", ""Order"": 1, ""SecondOrder"": 2 },
+    { ""Title"": ""C"", ""Order"": 2, ""SecondOrder"": 2 },
+    { ""Title"": ""B"", ""Order"": 1, ""SecondOrder"": 1 }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order,SecondOrder desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort objects (from JSON) by a two int properties
+        /// using the ascending on the first and descending on the second.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromJson_IntNestedInt()
+        {
+            var expected = new List<string>() { "A", "B", "C", "D" };
+
+            var json = @"[
+    { ""Title"": ""D"", ""Order"": 2, ""Nested"": { ""Order"": 1 } },
+    { ""Title"": ""A"", ""Order"": 1, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""C"", ""Order"": 2, ""Nested"": { ""Order"": 2 } },
+    { ""Title"": ""B"", ""Order"": 1, ""Nested"": { ""Order"": 1 } }
+]";
+
+            var converter = new ExpandoObjectConverter();
+            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
+            var output = ( List<object> ) RockFilters.OrderBy( input, "Order, Nested.Order desc" );
+            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
+
+            Assert.Equal( expected, sortedTitles );
+        }
+
+        /// <summary>
+        /// For use in Lava -- sort collection of group members by person name.
+        /// </summary>
+        [Fact]
+        public void OrderBy_FromObject_GroupMemberPersonName()
+        {
+            var expected = new List<int>() { 1, 2, 3, 4 };
+
+            var members = new List<GroupMember>
+            {
+                new GroupMember
+                {
+                    Id = 2,
+                    Person = new Person { FirstName = "Zippey", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 4,
+                    Person = new Person { FirstName = "Nancy", LastName = "Smith" }
+                },
+                new GroupMember
+                {
+                    Id = 1,
+                    Person = new Person { FirstName = "Adele", LastName = "Jones" }
+                },
+                new GroupMember
+                {
+                    Id = 3,
+                    Person = new Person { FirstName = "Fred", LastName = "Smith" }
+                },
+            };
+
+            var output = ( List<object> ) RockFilters.OrderBy( members, "Person.LastName, Person.FirstName" );
+            var sortedIds = output.Cast<dynamic>().Select( x => x.Id ).Cast<int>();
+
+            Assert.Equal( expected, sortedIds );
+        }
+
+        #endregion
+
         #region Date Filters
 
         /// <summary>
@@ -1335,42 +1473,120 @@ a comment --> sit amet</p>";
 
         /// <summary>
         /// Tests the next day of the week using the simplest format.
+        /// Uses May 1, 2018 which was a Tuesday.
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdate()
         {
+            // Since we're not including the current day, we advance to next week's Tuesday, 5/8
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday" );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/8/2018 3:00 PM" ) );
+
+            // Since Wednesday has not happened, we advance to it -- which is Wed, 5/2
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/2/2018 3:00 PM" ) );
+
+            // Since Monday has passed, we advance to next week's Monday, 5/7
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/7/2018 3:00 PM" ) );
+
+            // From the Lava documentation
+            output = RockFilters.NextDayOfTheWeek( "2/9/2011 3:00 PM", "Friday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "2/11/2011 3:00 PM" ) );
         }
 
         /// <summary>
         /// Tests the next day of the week including the current day.
+        /// Uses May 1, 2018 which was a Tuesday.
+        /// 
+        ///        May 2018        
+        /// Su Mo Tu We Th Fr Sa  
+        ///        1  2  3  4  5  
+        ///  6  7  8  9 10 11 12  
+        /// 13 14 15 16 17 18 19  
+        /// 20 21 22 23 24 25 26  
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateIncludeCurrentDay()
         {
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/2/2018 3:00 PM" ) );
+
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/7/2018 3:00 PM" ) );
         }
 
         /// <summary>
         /// Tests the next day of the week in two weeks.
+        /// Uses May 1, 2018 which was a Tuesday.
+        /// 
+        ///        May 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///        1  2  3  4  5
+        ///  6  7  8  9 10 11 12
+        /// 13 14 15 16 17 18 19
+        /// 20 21 22 23 24 25 26
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateTwoWeeks()
         {
+            // Since we're not including the current day, we advance to next two week's out to Tuesday, 5/15
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, 2 );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
+
+            // Since Wednesday has not happened, we advance two Wednesdays -- which is Wed, 5/9
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/9/2018 3:00 PM" ) );
+
+            // Since Monday has passed, we advance to two week's out Monday, 5/14
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/14/2018 3:00 PM" ) );
         }
 
         /// <summary>
-        /// Tests the next day of the week in minus one week.
+        /// Tests the next day of the week with minus one week.
+        /// 
+        ///      April 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///  1  2  3  4  5  6  7
+        ///  8  9 10 11 12 13 14
+        /// 15 16 17 18 19 20 21
+        /// 22 23 24 25 26 27 28
+        /// 29 30
+        ///
+        ///        May 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///        1  2  3  4  5
+        ///  6  7  8  9 10 11 12
+        /// 13 14 15 16 17 18 19
+        /// 20 21 22 23 24 25 26
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateBackOneWeek()
         {
+            // In this case, since it's Tuesday (and we're not including current day), then
+            // the current day counts as the *previous* week's Tuesday.
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+
+            // If we include the current day (so it counts as *this* week), then one week ago would be
+            // last Tuesday, April 24.
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true, -1 );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "4/24/2018 3:00 PM" ) );
+
+            // Get previous week's Wednesday, 4/25
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/25/2018 3:00 PM" ) );
+
+            // Since Monday has just passed, we get this past Monday, 4/30
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/30/2018 3:00 PM" ) );
         }
 
         /// <summary>

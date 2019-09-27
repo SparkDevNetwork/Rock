@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
-using System.Web;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
@@ -108,6 +107,29 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// NOTE: Only use this in case where we don't know if this is a property name, attribute key, or EntityField.UniqueName (for example, it is specified in a Query parameter or entity command).
+        /// Returns all the possible EntityFields that have the specified PropertyName or AttributeKey
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="fieldNameOrAttributeKey">The field name or attribute key.</param>
+        /// <returns></returns>
+        public static List<EntityField> FindFromFieldName( Type entityType, string fieldNameOrAttributeKey )
+        {
+            var entityFields = EntityHelper.GetEntityFields( entityType, true, true )
+                .Where( a =>
+                    a.UniqueName == fieldNameOrAttributeKey
+                    ||
+                    ( a.FieldKind == FieldKind.Property && a.Name == fieldNameOrAttributeKey )
+                    ||
+                    ( a.FieldKind == FieldKind.Attribute
+                      && a.AttributeGuid.HasValue
+                      && AttributeCache.Get( a.AttributeGuid.Value )?.Key == fieldNameOrAttributeKey )
+                    );
+
+            return entityFields.ToList();
+        }
+
+        /// <summary>
         /// Gets the entity fields.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -132,6 +154,12 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Getting EntityFields can take 10ms+ or so, so only get them once per thread (per request or per job execution)
+        /// </summary>
+        [ThreadStatic]
+        private static Dictionary<string, List<EntityField>> _entityFieldsLookup = null;
+
+        /// <summary>
         /// Gets the entity fields for a specific Entity
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -144,13 +172,11 @@ namespace Rock.Reporting
             List<EntityField> entityFields = null;
             _workflowTypeNameLookup = null;
 
-            if ( HttpContext.Current != null )
+            _entityFieldsLookup = _entityFieldsLookup ?? new Dictionary<string, List<EntityField>>();
+            entityFields = _entityFieldsLookup.GetValueOrNull( EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields ) );
+            if ( entityFields != null )
             {
-                entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
-                if ( entityFields != null )
-                {
-                    return entityFields;
-                }
+                return entityFields;
             }
 
             if ( entityFields == null )
@@ -363,10 +389,7 @@ namespace Rock.Reporting
                 sortedFields.Add( entityField );
             }
 
-            if ( HttpContext.Current != null )
-            {
-                HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
-            }
+            _entityFieldsLookup.AddOrReplace( EntityHelper.GetCacheKey( entityType, entity, includeOnlyReportingFields, limitToFilterableFields ), sortedFields );
 
             return sortedFields;
         }

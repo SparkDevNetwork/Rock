@@ -23,6 +23,7 @@
                                         <Rock:ReorderField/>
                                         <Rock:RockBoundField DataField="Value" HeaderText="Value"/>
                                         <Rock:RockBoundField DataField="Description" HeaderText="Description"/>
+                                        <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -48,6 +49,7 @@
                         <div class="span12">
                             <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value"/>
                             <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value" ValidateRequestMode="Disabled"/>
+                            <asp:CheckBox ID="cbValueActive" runat="server" Text="Active" />
                         </div>
                     </div>
                     <div class="attributes">

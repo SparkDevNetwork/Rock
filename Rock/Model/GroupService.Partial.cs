@@ -756,7 +756,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new family.
+        /// Saves the new family to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="familyMembers">The family members.</param>
@@ -771,7 +771,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new group.
+        /// Saves the new group to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
@@ -1245,9 +1245,24 @@ namespace Rock.Model
         /// <returns></returns>
         public bool ExistsAsArchived( Group group, int personId, int groupRoleId, out GroupMember archivedGroupMember )
         {
+            archivedGroupMember = GetArchivedGroupMember( group, personId, groupRoleId );
+            return archivedGroupMember != null;
+        }
+
+        /// <summary>
+        /// If there is an Archived Member of the group for the specified personId and groupRoleId, returns the archived group member record, otherwise returns null
+        /// (if there are multiple, this will return the most recently archived record)
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public GroupMember GetArchivedGroupMember( Group group, int personId, int groupRoleId )
+        {
+            GroupMember archivedGroupMember;
             var groupMemberService = new GroupMemberService( this.Context as RockContext );
             archivedGroupMember = groupMemberService.GetArchived().Where( a => a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).OrderByDescending( a => a.ArchivedDateTime ).FirstOrDefault();
-            return archivedGroupMember != null;
+            return archivedGroupMember;
         }
 
         /// <summary>

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Communication

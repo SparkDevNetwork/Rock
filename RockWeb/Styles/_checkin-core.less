@@ -31,6 +31,10 @@
 @fa-theme-weight-name: 'solid';
 .fa-font-face(@fa-theme-weight-name);
 
+@btn-change-color: @btn-primary-color;
+@btn-change-bg: lighten(@btn-primary-bg, 13%);
+@btn-change-border: @btn-primary-border;
+
 select.form-control {
   // Fix for iOS not trimming border-radius
   border-radius: 4px;
@@ -61,7 +65,60 @@ h1 {
   font-size: 24px;
   font-weight: @font-weight-semibold;
   white-space: normal;
+
+  .row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    margin-right: 0;
+    margin-left: 0;
+  }
 }
+
+.btn-checkin-change {
+  .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
+}
+
+.btn-checkin-change {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-left: 0;
+}
+
+.row-checkin-item {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+
+  .btn-checkin-select {
+    margin-bottom: 0;
+  }
+}
+
+.checkin-change {
+  .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.checkin-person-has-change {
+  .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
 
 // unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
 .table-responsive {
@@ -308,8 +365,9 @@ body {
   background-size: cover;
 
   &.photo-round-md {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
+    margin-left: 10px;
     border-radius: 50%;
   }
 }
@@ -419,7 +477,16 @@ input.namesearch {
 // family select - select person
 
 .family-personselect {
-  padding-top: 20px;
+  font-size: 26px;
+}
+
+.family-auto-select {
+  font-size: 16px;
+  text-align: left;
+}
+
+.auto-select-caption {
+  opacity: .75;
 }
 
 // Family Registration

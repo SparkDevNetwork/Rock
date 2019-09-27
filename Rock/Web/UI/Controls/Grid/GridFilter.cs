@@ -30,6 +30,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public enum GridFilterLayoutSpecifier
     {
+        /// <summary>
+        /// The default
+        /// </summary>
         Default = 0,
         /// <summary>
         /// Layout the filter field controls as defined in the control markup.
@@ -181,6 +184,7 @@ namespace Rock.Web.UI.Controls
             $hf.val('false');
         }
         $(this).siblings('div').slideToggle();
+        return false;
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), scriptKey, script, true );

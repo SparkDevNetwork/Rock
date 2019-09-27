@@ -33,6 +33,12 @@ namespace Rock.Tests.Integration.Utility
         /// <returns></returns>
         public static T GetRandomElement<T>( this T[] items )
         {
+            if ( items == null
+                 || items.Length == 0 )
+            {
+                return default( T );
+            }
+
             return items[_rng.Next( 0, items.Length )];
         }
 
@@ -44,6 +50,12 @@ namespace Rock.Tests.Integration.Utility
         /// <returns></returns>
         public static T GetRandomElement<T>( this List<T> items )
         {
+            if ( items == null
+                 || items.Count == 0 )
+            {
+                return default( T );
+            }
+
             return items[_rng.Next( 0, items.Count )];
         }
 
@@ -89,6 +101,11 @@ namespace Rock.Tests.Integration.Utility
                 indexes.Add( i );
             }
 
+            if ( maximumItems > totalItemCount )
+            {
+                maximumItems = totalItemCount;
+            }
+
             // Select a random sequence of index numbers and the items they represent to a new collection.
             var itemsRemaining = totalItemCount;
 
@@ -112,6 +129,5 @@ namespace Rock.Tests.Integration.Utility
         }
 
         #endregion
-
     }
 }

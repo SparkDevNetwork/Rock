@@ -88,6 +88,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
+        /// <summary>
+        /// The same site cookie setting
+        /// </summary>
+        public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
+
         #region Assessment Test Related
 
         /// <summary>
@@ -466,5 +471,24 @@ namespace Rock.SystemGuid
         public const string CONTENT_FILETYPE_WHITELIST = "B895B6D7-BA21-45C0-8913-EF47FAAD69B1";
 
         #endregion File Type Lists
+
+        #region JWT Config Attributes
+
+        /// <summary>
+        /// The defined value attribute for JWT issuer
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_ISSUER = "4B89D006-0523-4C77-A46B-7ECD042FDE99";
+
+        /// <summary>
+        /// The defined value attribute for JWT audience
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_AUDIENCE = "6F9D9BFB-433F-4D77-8758-FBDB2011FB27";
+
+        /// <summary>
+        /// The defined value attribute for JWT person search key
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
+
+        #endregion JWT Config Attributes
     }
 }

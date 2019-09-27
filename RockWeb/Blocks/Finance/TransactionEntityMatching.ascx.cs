@@ -730,7 +730,10 @@ namespace RockWeb.Blocks.Finance
                         int? financialTransactionDetailId = ddlGroupMember.ID.Replace( "ddlGroupMember_", string.Empty ).AsInteger();
                         var dllGroup = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroup_" + financialTransactionDetailId.Value.ToString() );
                         int? groupMemberId = ddlGroupMember.SelectedValue.AsIntegerOrNull();
-                        AssignEntityToTransactionDetail( groupMemberId, financialTransactionDetailId );
+                        if ( groupMemberId != null )
+                        {
+                            AssignEntityToTransactionDetail( groupMemberId, financialTransactionDetailId );
+                        }
                     }
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
@@ -739,7 +742,10 @@ namespace RockWeb.Blocks.Finance
                     {
                         int? financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
                         int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
-                        AssignEntityToTransactionDetail( groupId, financialTransactionDetailId );
+                        if ( groupId != null )
+                        {
+                            AssignEntityToTransactionDetail( groupId, financialTransactionDetailId );
+                        }
                     }
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
@@ -748,7 +754,10 @@ namespace RockWeb.Blocks.Finance
                     {
                         int? financialTransactionDetailId = ddlDefinedValue.ID.Replace( "ddlDefinedValue_", string.Empty ).AsInteger();
                         int? definedValueId = ddlDefinedValue.SelectedValue.AsIntegerOrNull();
-                        AssignEntityToTransactionDetail( definedValueId, financialTransactionDetailId );
+                        if ( definedValueId != null )
+                        {
+                            AssignEntityToTransactionDetail( definedValueId, financialTransactionDetailId );
+                        }
                     }
                 }
                 else if ( _transactionEntityType.SingleValueFieldType != null )
@@ -762,7 +771,10 @@ namespace RockWeb.Blocks.Finance
                             if ( financialTransactionDetailId.HasValue )
                             {
                                 int? entityId = entityFieldType.GetEditValueAsEntityId( entityPicker, new Dictionary<string, ConfigurationValue>() );
-                                AssignEntityToTransactionDetail( entityId, financialTransactionDetailId );
+                                if ( entityId != null )
+                                {
+                                    AssignEntityToTransactionDetail( entityId, financialTransactionDetailId );
+                                }
                             }
                         }
                     }

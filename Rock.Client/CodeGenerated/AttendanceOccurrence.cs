@@ -35,7 +35,16 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary />
         public int? AnonymousAttendanceCount { get; set; }
+
+        /// <summary />
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary />
+        public string DeclineReasonValueIds { get; set; }
 
         /// <summary />
         public bool? DidNotOccur { get; set; }
@@ -65,6 +74,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool ShowDeclineReasons { get; set; }
 
         /// <summary />
         public int? StepTypeId { get; set; }
@@ -102,7 +114,10 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AttendanceOccurrence source )
         {
             this.Id = source.Id;
+            this.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             this.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            this.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
+            this.DeclineReasonValueIds = source.DeclineReasonValueIds;
             this.DidNotOccur = source.DidNotOccur;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -112,6 +127,7 @@ namespace Rock.Client
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
+            this.ShowDeclineReasons = source.ShowDeclineReasons;
             this.StepTypeId = source.StepTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

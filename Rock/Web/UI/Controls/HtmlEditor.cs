@@ -238,7 +238,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ToolbarConfig
         {
@@ -439,19 +439,19 @@ namespace Rock.Web.UI.Controls
         /// Format should be one of the following formats
         ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
         ///     "FieldName|LabelName"
-        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes. Label will be a case delimited version of
         ///                                       FieldName (i.e. "Field Name")
-        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes.    
-        ///                                  
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes.
+        ///
         /// Supports the following "special" field names
         ///     "GlobalAttribute"               - Provides navigable list of global attributes
         ///     "Campuses"                      - Will return an array of all campuses
         ///     "Date"                          - Will return lava syntax for displaying current date
         ///     "Time"                          - Will return lava syntax for displaying current time
         ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
-        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter
         ///                                       (query string and/or route parameter value)
         /// </remarks>
         /// <value>
@@ -655,7 +655,7 @@ namespace Rock.Web.UI.Controls
             bool rockFileBrowserEnabled = false;
             bool rockAssetManagerEnabled = false;
             var currentPerson = this.RockBlock().CurrentPerson;
-                
+
             // only show the File/Image plugin if they have Auth to the file browser page
             var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
             if ( fileBrowserPage != null && currentPerson != null )
@@ -695,12 +695,12 @@ namespace Rock.Web.UI.Controls
             if ( !string.IsNullOrEmpty( this.CallbackOnKeyupScript ) || !string.IsNullOrEmpty( this.CallbackOnChangeScript ) )
             {
                 callbacksOption =
-$@" 
-onKeyup: function(e) {{  
-    {this.CallbackOnKeyupScript}  
+$@"
+onKeyup: function(e) {{
+    {this.CallbackOnKeyupScript}
 }},
-onChange: function(contents, $editable) {{  
-    {this.CallbackOnChangeScript}  
+onChange: function(contents, $editable) {{
+    {this.CallbackOnChangeScript}
 }}
 ";
              }
@@ -708,7 +708,7 @@ onChange: function(contents, $editable) {{
 
             string summernoteInitScript = $@"
 function pageLoad() {{
-  // remove any leftover popovers that summernote might have created and orphaned  
+  // remove any leftover popovers that summernote might have created and orphaned
   $('.note-popover.popover').hide();
 }}
 
@@ -744,12 +744,12 @@ $(document).ready( function() {{
         }},
 
         callbacks: {{
-           {callbacksOption} 
+           {callbacksOption}
         }},
 
         buttons: {{
             rockfilebrowser: RockFileBrowser,
-            rockimagebrowser: RockImageBrowser, 
+            rockimagebrowser: RockImageBrowser,
             rockimagelink: RockImageLink,
             rockassetmanager: RockAssetManager,
             rockmergefield: RockMergeField,
@@ -758,9 +758,9 @@ $(document).ready( function() {{
             rockpastefromword: RockPasteFromWord
         }},
 
-        rockFileBrowserOptions: {{ 
+        rockFileBrowserOptions: {{
             enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
-            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
+            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}',
             imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
             fileTypeBlackList: '{fileTypeBlackList}',
@@ -771,9 +771,9 @@ $(document).ready( function() {{
             enabled: { rockAssetManagerEnabled.ToTrueFalse().ToLower() }
         }},
 
-        rockMergeFieldOptions: {{ 
+        rockMergeFieldOptions: {{
             enabled: {rockMergeFieldEnabled.ToTrueFalse().ToLower()},
-            mergeFields: '{this.MergeFields.AsDelimited( "," )}' 
+            mergeFields: '{this.MergeFields.AsDelimited( "," )}'
         }},
         rockTheme: '{( ( RockPage ) this.Page ).Site.Theme}',
 
@@ -781,6 +781,8 @@ $(document).ready( function() {{
             controlId: '{_ceEditor.ClientID}',
             inCodeEditorModeHiddenFieldId: '{_hfInCodeEditorMode.ClientID}'
         }},
+
+        disableDragAndDrop: true,
     }});
 
     if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{

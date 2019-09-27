@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Steps
 {
-    [DisplayName( "Steps" )]
+    [DisplayName( "Personal Step List" )]
     [Category( "Steps" )]
     [Description( "Displays step records for a person in a step program." )]
     [ContextAware( typeof( Person ) )]
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Steps
         order: 3,
         required: true,
         key: AttributeKey.StepsPerRow,
-        defaultValue: 6 )]
+        defaultValue: AttributeDefault.StepsPerRow )]
 
     [IntegerField(
         name: "Steps Per Row Mobile",
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Steps
         order: 4,
         required: true,
         key: AttributeKey.StepsPerRowMobile,
-        defaultValue: 2 )]
+        defaultValue: AttributeDefault.StepsPerRowMobile )]
 
     #endregion Attributes
 
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Attribute keys
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// The step program attribute key
@@ -99,9 +99,25 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Attribute Default Values
+        /// </summary>
+        private static class AttributeDefault
+        {
+            /// <summary>
+            /// The steps per row attribute default value
+            /// </summary>
+            public const int StepsPerRow = 5;
+
+            /// <summary>
+            /// The steps per row on mobile attribute default value
+            /// </summary>
+            public const int StepsPerRowMobile = 1;
+        }
+
+        /// <summary>
         /// Filter keys
         /// </summary>
-        protected static class FilterKey
+        private static class FilterKey
         {
             /// <summary>
             /// The step type name filter key
@@ -117,7 +133,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Query string or other page parameter keys
         /// </summary>
-        protected static class PageParameterKey
+        private static class PageParameterKey
         {
             /// <summary>
             /// The step program id page parameter
@@ -128,7 +144,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// User preference keys
         /// </summary>
-        protected static class PreferenceKey
+        private static class PreferenceKey
         {
             /// <summary>
             /// The is card view user preference key
@@ -266,7 +282,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !stepGridRow.StepStatusColor.IsNullOrWhiteSpace() )
             {
-                classAttribute = string.Format( @" class=""label"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
+                classAttribute = string.Format( @" class=""label label-default"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
             }
 
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",
@@ -412,33 +428,34 @@ namespace RockWeb.Blocks.Steps
 
             var cardData = e.Item.DataItem as CardViewModel;
             var stepTypeId = cardData.StepType.Id;
-            var hasMetPrerequisites = HasMetPrerequisites( stepTypeId );
 
-            var pnlStepRecords = e.Item.FindControl( "pnlStepRecords" ) as Panel;
             var pnlPrereqs = e.Item.FindControl( "pnlPrereqs" ) as Panel;
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlStepRecords.Visible = hasMetPrerequisites;
-            pnlPrereqs.Visible = !hasMetPrerequisites;
+            pnlPrereqs.Visible = !cardData.HasMetPrerequisites;
 
-            if ( hasMetPrerequisites )
+            // Existing step records panel
+            var steps = GetPersonStepsOfType( stepTypeId );
+            var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
+            var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
+
+            var data = steps.Select( s => new CardStepViewModel
             {
-                var steps = GetPersonStepsOfType( stepTypeId );
+                StepId = s.Id,
+                CanEdit = canEdit,
+                CanDelete = canDelete,
+                StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
+                    s.StepStatus != null ? s.StepStatus.Name : string.Empty,
+                    s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
+            } );
 
-                var data = steps.Select( s => new CardStepViewModel
-                {
-                    StepId = s.Id,
-                    StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
-                        s.StepStatus != null ? s.StepStatus.Name : string.Empty,
-                        s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
-                } );
+            var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
+            rSteps.DataSource = data;
+            rSteps.DataBind();
 
-                var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
-                rSteps.DataSource = data;
-                rSteps.DataBind();
-            }
-            else
+            // Prereqs panel
+            if ( !cardData.HasMetPrerequisites )
             {
                 var prereqs = GetPrerequisiteStepTypes( stepTypeId );
 
@@ -446,6 +463,26 @@ namespace RockWeb.Blocks.Steps
                 rPrereqs.DataSource = prereqs;
                 rPrereqs.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSteps control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rSteps_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
+            {
+                return;
+            }
+
+            var cardStepViewModel = e.Item.DataItem as CardStepViewModel;
+            var tdEdit = e.Item.FindControl( "tdEdit" ) as HtmlTableCell;
+            var tdDelete = e.Item.FindControl( "tdDelete" ) as HtmlTableCell;
+
+            tdEdit.Visible = cardStepViewModel.CanEdit;
+            tdDelete.Visible = cardStepViewModel.CanDelete;
         }
 
         #endregion Events
@@ -745,6 +782,11 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
+            if ( !stepType.AllowManualEditing && !UserCanEdit )
+            {
+                return false;
+            }
+
             if ( !stepType.IsActive || !HasMetPrerequisites( stepType.Id ) )
             {
                 return false;
@@ -783,9 +825,7 @@ namespace RockWeb.Blocks.Steps
 
             service.Delete( step );
             rockContext.SaveChanges();
-
-            RenderGridView();
-            RenderCardView();
+            ClearBlockData();
         }
 
         /// <summary>
@@ -803,6 +843,19 @@ namespace RockWeb.Blocks.Steps
         }
         private RockContext _rockContext;
 
+        /// <summary>
+        /// Clears the block data.
+        /// </summary>
+        private void ClearBlockData()
+        {
+            _rockContext = null;
+            _personStepsMap = null;
+            _person = null;
+            _stepProgram = null;
+            _stepTerm = null;
+            _stepTypes = null;
+        }
+
         #endregion Model Helpers
 
         #region Control Helpers
@@ -812,12 +865,12 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void RenderStepsPerRow()
         {
-            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? 4;
-            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? 1;
+            var stepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
+            var stepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow;
 
             lStepsPerRowCss.Text =
 @"<style>
-    :root {
+    #" + upContent.ClientID + @" {
         --stepsPerRow: " + stepsPerRow + @";
         --stepsPerRowMobile: " + stepsPerRowMobile + @";
         }
@@ -899,6 +952,7 @@ namespace RockWeb.Blocks.Steps
                 var latestStepStatus = latestStep == null ? null : latestStep.StepStatus;
                 var isComplete = personStepsOfType.Any( s => s.IsComplete );
                 var canAddStep = CanAddStep( stepType );
+                var hasMetPrerequisites = HasMetPrerequisites( stepType.Id );
 
                 var rendered = stepType.CardLavaTemplate.ResolveMergeFields( new Dictionary<string, object> {
                     { "StepType", stepType },
@@ -917,7 +971,7 @@ namespace RockWeb.Blocks.Steps
                 {
                     cardCssClasses.Add( "is-complete" );
                 }
-                
+
                 if ( personStepsOfType.Any() )
                 {
                     cardCssClasses.Add( "has-steps" );
@@ -932,13 +986,19 @@ namespace RockWeb.Blocks.Steps
                     cardCssClasses.Add( "has-add" );
                 }
 
+                if ( !hasMetPrerequisites )
+                {
+                    cardCssClasses.Add( "has-prerequisite" );
+                }
+
                 cardsData.Add( new CardViewModel
                 {
                     StepType = stepType,
                     RenderedLava = rendered,
                     StepTerm = stepTerm,
                     CardCssClass = cardCssClasses.JoinStrings( " " ),
-                    CanAddStep = canAddStep
+                    CanAddStep = canAddStep,
+                    HasMetPrerequisites = hasMetPrerequisites
                 } );
             }
 
@@ -1014,6 +1074,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusColor = s.StepStatus == null ? string.Empty : s.StepStatus.StatusColor,
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
+                StepTypeOrder = s.StepType.Order,
                 Summary = string.Empty // TODO
             } );
 
@@ -1024,7 +1085,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                viewModels = viewModels.OrderBy( vm => vm.StepTypeName );
+                viewModels = viewModels.OrderBy( vm => vm.StepTypeOrder ).ThenBy( vm => vm.StepTypeName );
             }
 
             // Bind the grid for the steps
@@ -1101,7 +1162,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Navigate to the step page. StepTypeId is required. StepId can be ommitted for add, or set for edit.
+        /// Navigate to the step page. StepTypeId is required. StepId can be omitted for add, or set for edit.
         /// </summary>
         /// <param name="stepTypeId"></param>
         /// <param name="stepId"></param>
@@ -1121,54 +1182,208 @@ namespace RockWeb.Blocks.Steps
 
         #endregion Control Helpers
 
-        #region Helper Classes
+        #region View Models
 
         /// <summary>
         /// View model for data for a grid row
         /// </summary>
-        public class StepGridRowViewModel
+        private class StepGridRowViewModel
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step type.
+            /// </summary>
+            /// <value>
+            /// The name of the step type.
+            /// </value>
             public string StepTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the completed date time.
+            /// </summary>
+            /// <value>
+            /// The completed date time.
+            /// </value>
             public DateTime? CompletedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the color of the step status.
+            /// </summary>
+            /// <value>
+            /// The color of the step status.
+            /// </value>
             public string StepStatusColor { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the step status.
+            /// </summary>
+            /// <value>
+            /// The name of the step status.
+            /// </value>
             public string StepStatusName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step type icon CSS class.
+            /// </summary>
+            /// <value>
+            /// The step type icon CSS class.
+            /// </value>
             public string StepTypeIconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the summary.
+            /// </summary>
+            /// <value>
+            /// The summary.
+            /// </value>
             public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets the step type order.
+            /// </summary>
+            /// <value>
+            /// The step type order.
+            /// </value>
+            public int StepTypeOrder { get; internal set; }
         }
 
         /// <summary>
         /// View model for the add step buttons above the grid
         /// </summary>
-        public class AddStepButtonViewModel
+        private class AddStepButtonViewModel
         {
+            /// <summary>
+            /// Gets or sets the step type identifier.
+            /// </summary>
+            /// <value>
+            /// The step type identifier.
+            /// </value>
             public int StepTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is enabled.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+            /// </value>
             public bool IsEnabled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the button contents.
+            /// </summary>
+            /// <value>
+            /// The button contents.
+            /// </value>
             public string ButtonContents { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
         }
 
         /// <summary>
         /// View model for the data show on a card
         /// </summary>
-        public class CardViewModel
+        private class CardViewModel
         {
+            /// <summary>
+            /// Gets or sets the type of the step.
+            /// </summary>
+            /// <value>
+            /// The type of the step.
+            /// </value>
             public StepType StepType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rendered lava.
+            /// </summary>
+            /// <value>
+            /// The rendered lava.
+            /// </value>
             public string RenderedLava { get; set; }
+
+            /// <summary>
+            /// Gets or sets the step term.
+            /// </summary>
+            /// <value>
+            /// The step term.
+            /// </value>
             public string StepTerm { get; set; }
+
+            /// <summary>
+            /// Gets or sets the card CSS class.
+            /// </summary>
+            /// <value>
+            /// The card CSS class.
+            /// </value>
             public string CardCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can add step.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
+            /// </value>
             public bool CanAddStep { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance has met prerequisites.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance has met prerequisites; otherwise, <c>false</c>.
+            /// </value>
+            public bool HasMetPrerequisites { get; set; }
         }
 
         /// <summary>
         /// View model for a single step shown on the hover state of the card
         /// </summary>
-        public class CardStepViewModel
+        private class CardStepViewModel
         {
+            /// <summary>
+            /// Gets or sets the step identifier.
+            /// </summary>
+            /// <value>
+            /// The step identifier.
+            /// </value>
             public int StepId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status HTML.
+            /// </summary>
+            /// <value>
+            /// The status HTML.
+            /// </value>
             public string StatusHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can edit.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanEdit { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can delete.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can delete; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanDelete { get; set; }
         }
 
-        #endregion Helper Classes
+        #endregion View Models
     }
 }

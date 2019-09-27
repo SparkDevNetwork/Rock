@@ -30,7 +30,7 @@ namespace Rock.Workflow.Action
     /// Runs Lava and sets an attribute's value to the result.
     /// </summary>
     [ActionCategory( "Utility" )]
-    [Description( "Runs Lava and sets an attribute's value to the result." )]
+    [Description( "Runs the provided Lava template and sets an attribute's value to the result." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Lava Run" )]
 

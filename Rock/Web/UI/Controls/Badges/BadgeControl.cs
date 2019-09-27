@@ -103,7 +103,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var personBadgeCache = new PersonBadgeCache( BadgeCache );
+#pragma warning restore CS0618 // Type or member is obsolete
             var badgeComponent = BadgeCache?.BadgeComponent;
             if ( badgeComponent != null )
             {
@@ -115,7 +117,9 @@ namespace Rock.Web.UI.Controls
                         badgeComponent.ParentContextEntityBlock = contextEntityBlock;
                         badgeComponent.Entity = contextEntityBlock.Entity;
                         badgeComponent.Render( BadgeCache, writer );
+#pragma warning disable CS0618 // Type or member is obsolete
                         badgeComponent.Render( personBadgeCache, writer );
+#pragma warning restore CS0618 // Type or member is obsolete
 
                         const string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );

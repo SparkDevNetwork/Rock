@@ -46,6 +46,20 @@ namespace Rock.Web.UI
         /// </summary>
         public RockBlock Block { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockBlockNotificationManager"/> class.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <param name="notificationControl">The notification control.</param>
+        /// <param name="detailContainerControl">The detail container control.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// block
+        /// or
+        /// detailContainerControl
+        /// or
+        /// notificationControl
+        /// </exception>
+        /// <exception cref="System.Exception">NotificationControl cannot be a child of DetailContainerControl.</exception>
         public RockBlockNotificationManager( RockBlock block, NotificationBox notificationControl, Control detailContainerControl )
         {
             Block = block;
@@ -85,9 +99,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Show a notification message for the block.
         /// </summary>
-        /// <param name="notificationControl"></param>
-        /// <param name="message"></param>
-        /// <param name="notificationType"></param>
+        /// <param name="message">The message.</param>
+        /// <param name="notificationType">Type of the notification.</param>
+        /// <param name="hideBlockContent">if set to <c>true</c> [hide block content].</param>
         public void ShowNotification( string message, NotificationBoxType notificationType = NotificationBoxType.Info, bool hideBlockContent = false )
         {
             NotificationControl.Text = message;
@@ -106,11 +120,20 @@ namespace Rock.Web.UI
             DetailContainerControl.Visible = true;
         }
 
+        /// <summary>
+        /// Shows the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
         public void ShowError( string message )
         {
             this.ShowNotification( message, NotificationBoxType.Danger );
         }
 
+        /// <summary>
+        /// Shows the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="writeToLog">if set to <c>true</c> [write to log].</param>
         public void ShowException( Exception ex, bool writeToLog = true )
         {
             this.ShowNotification( ex.Message, NotificationBoxType.Danger );
@@ -121,6 +144,10 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Shows the success.
+        /// </summary>
+        /// <param name="message">The message.</param>
         public void ShowSuccess( string message )
         {
             this.ShowNotification( message, NotificationBoxType.Success );

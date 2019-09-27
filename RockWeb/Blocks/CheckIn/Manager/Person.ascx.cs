@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     {
         #region Attribute Keys
 
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string ManagerPage = "ManagerPage";
             public const string ShowRelatedPeople = "ShowRelatedPeople";
@@ -340,22 +340,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var smsMessage = new RockSMSMessage();
-            // NumberFormatted and NumberFormattedWithCountryCode does NOT work (this pattern is repeated in Twilio.cs)
-            smsMessage.AddRecipient( new RockSMSMessageRecipient( person, "+" + phoneNumber.CountryCode + phoneNumber.Number, null ) );
-            smsMessage.FromNumber = smsFromNumber;
-            smsMessage.Message = tbSmsMessage.Value;
-            var errorMessages = new List<string>();
-            smsMessage.Send( out errorMessages );
+            // This will queue up the message
+            Rock.Communication.Medium.Sms.CreateCommunicationMobile(
+                CurrentUser.Person,
+                person.PrimaryAliasId,
+                message,
+                smsFromNumber,
+                null,
+                rockContext );
 
-            if ( errorMessages.Any() )
-            {
-                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again or contact an administrator if the error continues." );
-                LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error(s) occurred: {0}", string.Join( "; ", errorMessages ) ) ) );
-                return;
-            }
-
-            DisplayResult( NotificationBoxType.Success, "Message sent." );
+            DisplayResult( NotificationBoxType.Success, "Message queued." );
             ResetSms();
         }
 
@@ -497,7 +491,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 var personService = new PersonService( rockContext );
 
-                var person = personService.Queryable( "PhoneNumbers.NumberTypeValue,RecordTypeValue", true, true )
+                var person = personService.Queryable( true, true ).Include(a => a.PhoneNumbers).Include(a => a.RecordStatusValue)
                     .FirstOrDefault( a => a.Guid == personGuid );
 
                 if ( person == null )

@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
     [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
+    [SecurityAction( "EditSMS", "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
     [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     [BooleanField( "Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0 )]
@@ -72,6 +73,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         false, "", "", 2 )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditSMS = "EditSMS";
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Can the current user edit the SMS Enabled property?
+        /// </summary>
+        public bool CanEditSmsStatus { get; set; }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -96,6 +118,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+
+            this.CanEditSmsStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditSMS );
 
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
@@ -259,6 +283,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lReasonReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
             tbInactiveReasonNote.Visible = showInactiveReason && canEditRecordStatus;
             lReasonNoteReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the dvpReason control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void dvpReason_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            bool isDeceased = ( dvpReason.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id );
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            dpDeceasedDate.Visible = isDeceased && canEditRecordStatus;
+            lDeceasedDateReadOnly.Visible = isDeceased && !canEditRecordStatus;
         }
 
         /// <summary>
@@ -462,6 +499,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         bool recordStatusChangedToOrFromInactive = false;
                         var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        var reasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 
                         int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
                         // Is the person's record status changing?
@@ -482,8 +520,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
                         }
                         person.RecordStatusReasonValueId = newRecordStatusReasonId;
-
                         person.InactiveReasonNote = tbInactiveReasonNote.Text.Trim();
+
+                        DateTime? deceasedDate = null;
+                        if ( newRecordStatusReasonId.HasValue && newRecordStatusReasonId.Value == reasonDeceasedId )
+                        {
+                            deceasedDate = dpDeceasedDate.SelectedDate;
+                        }
+                        person.DeceasedDate = deceasedDate;
 
                         // Save any Removed/Added Previous Names
                         var personPreviousNameService = new PersonPreviousNameService( rockContext );
@@ -695,11 +739,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;
             dvpReason.SetValue( Person.RecordStatusReasonValueId );
             lReasonReadOnly.Text = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValue.Value : string.Empty;
+            dpDeceasedDate.SelectedDate = Person.DeceasedDate;
+            lDeceasedDateReadOnly.Text = Person.DeceasedDate.ToElapsedString();
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
             lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
 
             ddlRecordStatus_SelectedIndexChanged( null, null );
+            dvpReason_SelectedIndexChanged( null, null );
 
             var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 

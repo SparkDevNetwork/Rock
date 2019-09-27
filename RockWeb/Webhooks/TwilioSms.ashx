@@ -29,6 +29,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+/// <summary>
+/// This the Twilio Webwook that processes incoming SMS messages thru the SMS Pipeline. See https://community.rockrms.com/Rock/BookContent/8#smstwilio
+/// </summary>
 public class TwilioSmsAsync : IHttpAsyncHandler
 {
     public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
@@ -151,19 +154,21 @@ class TwilioSmsResponseAsync : IAsyncResult
             messageSid = request.Form["MessageSid"];
 
             // get communication from the message side
-            RockContext rockContext = new RockContext();
-            CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
+            using ( RockContext rockContext = new RockContext() )
+            {
+                CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
 
-            var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
-            if ( communicationRecipient != null )
-            {
-                communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
-                rockContext.SaveChanges();
-            }
-            else
-            {
-                WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
+                if ( communicationRecipient != null )
+                {
+                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                    communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                }
             }
         }
     }
@@ -193,32 +198,35 @@ class TwilioSmsResponseAsync : IAsyncResult
 
         if ( !string.IsNullOrWhiteSpace( message.ToNumber ) && !string.IsNullOrWhiteSpace( message.FromNumber ) )
         {
-            message.FromPerson = new PersonService( new RockContext() ).GetPersonFromMobilePhoneNumber( message.FromNumber.Replace( "+", "" ) );
-
-            var outcomes = SmsActionService.ProcessIncomingMessage( message );
-            var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
-            var twilioMessage = new Twilio.TwiML.Message();
-
-            if ( smsResponse != null )
+            using ( var rockContext = new RockContext() )
             {
-                if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
-                {
-                    twilioMessage.Body( smsResponse.Message );
-                }
+                message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
-                if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                var outcomes = SmsActionService.ProcessIncomingMessage( message );
+                var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
+                var twilioMessage = new Twilio.TwiML.Message();
+
+                if ( smsResponse != null )
                 {
-                    foreach ( var binaryFile in smsResponse.Attachments )
+                    if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
                     {
-                        twilioMessage.Media( binaryFile.Url );
+                        twilioMessage.Body( smsResponse.Message );
+                    }
+
+                    if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                    {
+                        foreach ( var binaryFile in smsResponse.Attachments )
+                        {
+                            twilioMessage.Media( binaryFile.Url );
+                        }
                     }
                 }
+
+                var messagingResponse = new Twilio.TwiML.MessagingResponse();
+                messagingResponse.Message( twilioMessage );
+
+                response.Write( messagingResponse.ToString() );
             }
-
-            var messagingResponse = new Twilio.TwiML.MessagingResponse();
-            messagingResponse.Message( twilioMessage );
-
-            response.Write( messagingResponse.ToString() );
         }
     }
 

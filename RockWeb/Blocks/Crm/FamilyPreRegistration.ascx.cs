@@ -1533,6 +1533,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 return false;
             }
 
+            foreach( var childRow in prChildren.ChildRows )
+            {
+                if( childRow.IsValid == false )
+                {
+                    // Don't need to add to the error messages here.
+                    return false;
+                }
+            }
+
             return true;
         }
 
