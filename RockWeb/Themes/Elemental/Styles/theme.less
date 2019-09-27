@@ -42,7 +42,6 @@ html {
 @import "_css-overrides.less";
 
 
-
 .site-frame {
   display: -ms-flexbox !important;
   display: flex !important;
@@ -81,6 +80,7 @@ html {
 
   .main-content {
     height: 100%;
+    overflow-x: hidden;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
 
@@ -96,7 +96,7 @@ html {
     background-color: #d8d8d8;
 
 
-    @media (min-width: @grid-float-breakpoint) {
+    @media (min-width: 900px) {
       display: flex;
       //width: 41%;
       flex: 0 0 41%;
@@ -182,7 +182,7 @@ html {
 
     @media (min-width: @grid-float-breakpoint) {
       float: left;
-      margin: 0 0 14px;
+      margin: 0 auto 14px 0;
     }
   }
 
@@ -191,6 +191,8 @@ html {
     .clearfix();
 
     @media (min-width: @grid-float-breakpoint) {
+      display: -ms-flexbox;
+      display: flex;
       padding: 30px 38px 0;
     }
 
@@ -206,7 +208,7 @@ html {
 
       @media (min-width: @grid-float-breakpoint) {
         float: right;
-        margin: 0;
+        margin: 0 0 0 14px;
       }
     }
   }

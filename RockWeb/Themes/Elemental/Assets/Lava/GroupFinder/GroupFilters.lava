@@ -98,6 +98,14 @@ function ToggleParameter(param, id) {
 
 <p class="text-muted">Select your interests, campus and location to search for groups near you.</p>
 
+<div class="tag-list-label">Campus</div>
+<div class="tag-list">
+{%- for campus in Campuses -%}
+  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
+{%- endfor -%}
+</div>
+
+<div class="tag-list-label">Featured Tags</div>
 {%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
 <div class="tag-list">
   {%- for item in FilterOne.DefinedValues -%}
@@ -111,12 +119,5 @@ function ToggleParameter(param, id) {
   {%- for item in FilterTwo.DefinedValues -%}
   <a href="?FilterTwoValue={{ item.Id }}" onclick="ToggleParameter('FilterTwoValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
   {%- endfor -%}
-</div>
-
-<div class="tag-list-label">Campus</div>
-<div class="tag-list">
-{%- for campus in Campuses -%}
-  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
-{%- endfor -%}
 </div>
 

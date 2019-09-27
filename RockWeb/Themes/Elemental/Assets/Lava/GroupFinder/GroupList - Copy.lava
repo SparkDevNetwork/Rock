@@ -108,18 +108,10 @@
                         <div class="group-details">
                             {%- assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' -%}
                             {%- assign startDate = group | Attribute:'StartDate' -%}
-                            {%- assign dates = group | Attribute:'DateRange' -%}
-                            {%- assign city = group | GroupLocation | 'City' -%}
                             <span class="detail detail-time">Time: {{ group.Schedule.FriendlyScheduleText }}</span>
                             {%- if now > startDate and startDate != '' -%}
                                 <span class="detail detail-start">Starts: {{ startDate | Date:'M/d/yy' }}</span>
                             {%- endif -%}
-                            {%- if dates != '' -%}
-                                   <span class="detail detail-start">Dates: {{ dates }}</span>
-                            {%- endif -%}
-                            {% for GroupLocation in group.GroupLocations %} 
-                                <span class="detail detail-start">Location: {{ GroupLocation.Location.City }}</span>
-                            {% endfor %}
                             {%- if leaderCount > 0 -%}
                             <span class="detail detail-leader">Leader: {{ leaderName }}</span>
                             {%- endif -%}

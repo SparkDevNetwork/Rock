@@ -74,7 +74,7 @@
 
 <aside class="aside">
 
-    <div class="" style="background-image: url(/themes/Elemental/Assets/Images/groups.jpg); background-position: 50% 50%; background-repeat: no-repeat; background-size: cover;">
+    <div class="" style="background-image: url(/themes/Elemental/Assets/Images/groups.jpg); background-position: 50% 50%; background-repeat: no-repeat; background-size: cover; width: 100%;">
         <img alt="" src="/themes/Elemental/Assets/Images/groups.jpg">
     </div>
 

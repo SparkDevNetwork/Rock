@@ -4504,12 +4504,13 @@
 
 <asp:Content ID="ctFeature" ContentPlaceHolderID="feature" runat="server">
 
-<aside class="aside">
+  <aside class="aside">
 
-    <div class="rn-1oszu61 rn-1nayj91 rn-rull8r rn-ndvcnb rn-mm0ijv rn-gxnn5r rn-14skgim rn-fnigne rn-1efd50x rn-13yce4e rn-deolkf rn-6koalj rn-7vfszb rn-eqz5dr rn-1pxmb3b rn-1pi2tsx rn-p1pxzi rn-11wrixw rn-61z16t rn-1mnahxq rn-ifefl9 rn-bcqeeo rn-6dt33c rn-1mdbw0j rn-gy4na3 rn-9aemit rn-wk8lta rn-bnwqim rn-13qz1uu rn-1lgpqti" style="background-image: url(&quot;https://s3.amazonaws.com/ns.images/newspring/give/42835.marketing.cen.webad.scheduleyourgiving_1x2.jpg&quot;); background-position: 50% 50%; background-repeat: no-repeat; background-size: cover;">
-        <img alt="" src="https://s3.amazonaws.com/ns.images/newspring/give/42835.marketing.cen.webad.scheduleyourgiving_1x2.jpg" class="rn-1p0dtai rn-1pi2tsx rn-1d2f490 rn-1272l3b rn-u8s1d rn-zchlnj rn-ipm5af rn-13qz1uu rn-1wyyakw">
+    <div class="" style="background-image: url(/themes/Elemental/Assets/Images/groups.jpg); background-position: 50% 50%; background-repeat: no-repeat; background-size: cover; width: 100%;">
+        <img alt="" src="/themes/Elemental/Assets/Images/groups.jpg">
     </div>
 
 </aside>
+
 
 </asp:Content>
