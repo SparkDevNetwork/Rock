@@ -2181,12 +2181,12 @@ mission. We are so grateful for your commitment.</p>
                     dtpStartDate.Visible = true;
                 }
 
-                lStartDateLabel.Text = string.Format( "Process {0} On", giftTerm );
+                dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
             }
             else
             {
                 dtpStartDate.Visible = true;
-                lStartDateLabel.Text = "Start Giving On";
+                dtpStartDate.Label = "Start Giving On";
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
