@@ -96,10 +96,10 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockCheckBoxList ID="rcblAvailableDeclineReasons" runat="server" Label="Available Decline Reasons" DataTextField="Value" DataValueField="Id" />
+                                <Rock:RockCheckBox ID="rcbShowDeclineReasons" runat="server" Label="Show Decline Reasons" />
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockCheckBox ID="rcbShowDeclineReasons" runat="server" Label="Show Decline Reasons" />
+                                <Rock:RockCheckBoxList ID="rcblAvailableDeclineReasons" runat="server" Label="Available Decline Reasons" DataTextField="Value" DataValueField="Id" />
                             </div>
                         </div>
                     </asp:Panel>
