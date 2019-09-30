@@ -803,9 +803,6 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         private SubscriptionResponse UpdateSubscription( string gatewayUrl, string apiKey, string subscriptionId, SubscriptionRequestParameters subscriptionParameters )
         {
-            // ToDo: This currently does not work due to an issue on the PiGateway side. Waiting to see if it can be fixed.
-
-
             var restClient = new RestClient( gatewayUrl );
             RestRequest restRequest = new RestRequest( $"api/recurring/subscription/{subscriptionId}", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
@@ -1128,7 +1125,7 @@ namespace Rock.TransNational.Pi
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment. {errorMessage}", ex );
+                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment.", ex );
                 }
 
                 scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
@@ -1169,6 +1166,8 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         public override bool UpdateScheduledPayment( FinancialScheduledTransaction scheduledTransaction, PaymentInfo paymentInfo, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
             if ( referencedPaymentInfo == null )
             {
@@ -1200,12 +1199,36 @@ namespace Rock.TransNational.Pi
                 return false;
             }
 
-            var updateCustomerAddressResponse = this.UpdateCustomerAddress( gatewayUrl, apiKey, scheduledTransaction.TransactionCode, referencedPaymentInfo );
-
-            if ( !updateCustomerAddressResponse.IsSuccessStatus() )
+            if ( referencedPaymentInfo.IncludesAddressData() )
             {
-                errorMessage = updateCustomerAddressResponse.Message;
-                return false;
+                var updateCustomerAddressResponse = this.UpdateCustomerAddress( gatewayUrl, apiKey, scheduledTransaction.TransactionCode, referencedPaymentInfo );
+                if ( !updateCustomerAddressResponse.IsSuccessStatus() )
+                {
+                    errorMessage = updateCustomerAddressResponse.Message;
+                    return false;
+                }
+            }
+
+            var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+
+            CustomerResponse customerInfo;
+            try
+            {
+                customerInfo = this.GetCustomer( gatewayUrl, this.GetPrivateApiKey( financialGateway ), customerId );
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( $"Exception getting Customer Information for Scheduled Payment", ex );
+            }
+
+            scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
+            try
+            {
+                GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
             }
 
             errorMessage = null;
