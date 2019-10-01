@@ -287,6 +287,40 @@ namespace Rock.Data
         #region Block Type Methods
 
         /// <summary>
+        /// Updates or inserts a block type of category Mobile. For mobile
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateMobileBlockType( string name, string description, string entityName, string guid )
+        {
+            Migration.Sql( $@"
+                DECLARE @entityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityName}')
+
+                IF (@entityTypeId IS NULL)
+                BEGIN 
+	                RETURN
+                END
+
+                IF EXISTS (SELECT [Id] FROM [BlockType] WHERE [EntityTypeId] = @entityTypeId)
+                BEGIN
+	                UPDATE [BlockType]
+	                SET [IsSystem] = 1,
+		                [Category] = 'Mobile',
+		                [Name] = '{name}',
+		                [Description] = '{description.Replace( "'", "''" )}',
+		                [Guid] = '{guid.ToUpper()}'
+	                WHERE [EntityTypeId] = @entityTypeId
+                END
+                ELSE
+                BEGIN
+	                INSERT INTO [BlockType]([IsSystem],[Category],[Name],[Description],[Guid], EntityTypeId)
+	                VALUES(1,'Mobile','{name}','{description.Replace( "'", "''" )}','{guid.ToUpper()}', @entityTypeId)
+                END" );
+        }
+
+        /// <summary>
         /// Updates the BlockType by Path (if it exists).
         /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
