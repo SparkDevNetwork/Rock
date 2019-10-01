@@ -487,7 +487,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                qry = qry.OrderBy( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ThenByDescending( s => s.ModifiedDateTime );
+                qry = qry.OrderByDescending( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ThenByDescending( s => s.ModifiedDateTime );
             }
 
             gMetricValues.SetLinqDataSource( qry );

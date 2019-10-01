@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.CheckIn
         category: "",
         order: 5,
         key: AttributeKeys.CheckinDetailPage )]
-    
+
     [DefinedValueField(
         definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
         name: "Chart Style",
@@ -1122,7 +1122,7 @@ function(item) {
             string campusIds = GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
             var dataView = dvpDataView.SelectedValueAsInt();
             var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
-            
+
             var chartData = new AttendanceService( _rockContext ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
             return chartData;
@@ -2258,7 +2258,7 @@ function(item) {
 
                     string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
                     int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
-                    
+
                     cblGroupTypeGroups.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
                     cblGroupTypeGroups.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
                     cblGroupTypeGroups.Label = groupType.Name;
@@ -2324,9 +2324,12 @@ function(item) {
                         checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
                     }
 
+                    bool showInactive = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+
                     if ( group.Groups != null )
                     {
                         foreach ( var childGroup in group.Groups
+                            .Where( a => a.IsActive || showInactive )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )
                             .ToList() )

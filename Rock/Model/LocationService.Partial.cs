@@ -51,6 +51,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
         /// Note: if <paramref name="street1"/> is blank, null will be returned.
+        /// Note: The location search IS NOT constrained by the provided group. Providing the group will cause this method to search that groups locations first, giving a faster result.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -58,7 +59,7 @@ namespace Rock.Model
         /// <param name="state">A <see cref="string" /> representing the State to search by.</param>
         /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
         /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
-        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first</param>
+        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first. This is NOT a search constraint.</param>
         /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <param name="createNewLocation">if set to <c>true</c> a new location will be created if it does not exists.</param>
         /// <returns>

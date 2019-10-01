@@ -115,7 +115,6 @@
 
   .photo {
     position: relative;
-    display: table;
     max-width: 200px;
     padding: 5px;
     margin: 0 auto;
@@ -304,25 +303,10 @@
     }
 
     .badge-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      height: @badge-icon-height;
-      margin-top: -12px;
-      width: @badge-grid-width;
+      font-size: 0;
 
       .badge {
-        display: flex;
-        flex-basis: 33.3%;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        margin-bottom: .5%;
-
-        &:nth-last-child(n+6),
-        &:nth-last-child(n+6) ~ & {
-          flex-basis: 20%;
-        }
+        padding: 0 2px 2px;
 
         .fa-stack {
           width: 24px;

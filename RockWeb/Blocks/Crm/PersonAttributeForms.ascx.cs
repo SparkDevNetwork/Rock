@@ -1665,7 +1665,27 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
         public int Order { get; set; }
 
-        public string PreHtml{ get; set; }
+        /*  For Backwards compatibility, we still need to deserialize from PreText, but not serialize it*/
+        [JsonProperty( "PreText" )]
+        private string _preText
+        {   
+            set
+            {
+                PreHtml = value;
+            }
+        }
+
+        /*  For Backwards compatibility, we still need to deserialize from PostText, but not serialize it*/
+        [JsonProperty( "PostText"  )]
+        private string _postText
+        {
+            set
+            {
+                PostHtml = value;
+            }
+        }
+
+        public string PreHtml { get; set; }
 
         public string PostHtml { get; set; }
 

@@ -20,18 +20,18 @@
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
     <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
-    <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
-        
+    <asp:Panel ID="pnlStart" runat="server" Visible="false" CssClass="registrationentry-intro">
         <asp:Literal ID="lInstructions" runat="server" />
-        <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
-        <div class="actions">
-            <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
-        </div>
+        <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
+            <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
+            <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
+        </asp:Panel>
 
+            <div class="actions">
+                <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+            </div>
     </asp:Panel>
-
     <%-- Prompt for any Registration Attributes that should be prompted for before entering registrations--%>
     <asp:Panel ID="pnlRegistrationAttributesStart" runat="server" Visible="false" CssClass="registrationentry-registration-attributes">
 
@@ -220,7 +220,7 @@
                 <div id="divDiscountCode" runat="server" class="form-group pull-right">
                     <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
                     <div class="input-group">
-                        <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
+                        <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></Rock:RockTextBox>
                         <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
                 </div>

@@ -302,7 +302,7 @@ namespace Rock.Data
             Migration.Sql( $@"
                 -- delete just in case Rock added it automatically before it was migrated
                 DELETE FROM [BlockType] 
-	            WHERE [Path] = '{1}' AND [Guid] != '{guid}';
+	            WHERE [Path] = '{path}' AND [Guid] != '{guid}';
 
                 -- look up existing block by guid and insert/update as needed
                 DECLARE @Id int
@@ -1644,9 +1644,9 @@ namespace Rock.Data
                     fieldTypeGuid,
                     key,
                     name,
-                    description.Replace( "'", "''" ),
+                    description?.Replace( "'", "''" ) ?? string.Empty,
                     order,
-                    defaultValue.Replace( "'", "''" ),
+                    defaultValue?.Replace( "'", "''" ) ?? string.Empty,
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
