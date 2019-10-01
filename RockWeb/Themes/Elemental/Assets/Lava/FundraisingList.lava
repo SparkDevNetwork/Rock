@@ -1,0 +1,36 @@
+<div class='panel panel-default'>
+    <div class='panel-heading'>Upcoming Fundraising Opportunities</div>
+    <div class='panel-body'>
+
+        {% for item in GroupList %}
+            <div class='row margin-b-lg'>
+                <div class='col-md-4'>
+                    {% assign photoUrl = item | Attribute:'OpportunityPhoto','Url' %}
+                    {% if photoUrl != '' %}
+                        <img src='{{ photoUrl }}' class='img-responsive img-thumbnail' />
+                    {% endif %}
+                </div>
+                <div class='col-md-8'>
+                    <h3 class='margin-t-none'>{{ item | Attribute:'OpportunityTitle' }}</h3>
+
+                    {% assign dateRangeParts = item | Attribute:'OpportunityDateRange','RawValue' | Split:',' %}
+                    {% assign dateRangePartsSize = dateRangeParts | Size %}
+                    {% if dateRangePartsSize == 2 %}
+                      {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }} to {{ dateRangeParts[1] | Date:'MMMM dd, yyyy' }}<br/>
+                    {% elsif dateRangePartsSize == 1 %}
+                      {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }}
+                    {% endif %}
+
+                    {{ item | Attribute:'OpportunityLocation' }}
+
+                    <div class='margin-v-md'>
+                        {{ item | Attribute:'OpportunitySummary' }}
+                    </div>
+                    <a href='{{ DetailsPage }}?GroupId={{ item.Id }}' class='btn btn-default btn-xs'>View Details <i class='fa fa-chevron-right'></i></a>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+</div>
