@@ -23,6 +23,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -721,6 +722,11 @@ namespace Rock.Model
                 case EntityState.Modified:
                     {
                         var originalIsActive = entry.OriginalValues["IsActive"].ToStringSafe().AsBoolean();
+                        DateTime? originalInactiveDateTime = entry.OriginalValues["InactiveDateTime"].ToStringSafe().AsDateTime();
+
+                        var originalIsArchived = entry.OriginalValues["IsArchived"].ToStringSafe().AsBoolean();
+                        DateTime? originalArchivedDateTime = entry.OriginalValues["ArchivedDateTime"].ToStringSafe().AsDateTime();
+
                         History.EvaluateChange( HistoryChangeList, "Name", entry.OriginalValues["Name"].ToStringSafe(), Name );
                         History.EvaluateChange( HistoryChangeList, "Description", entry.OriginalValues["Description"].ToStringSafe(), Description );
                         History.EvaluateChange( HistoryChangeList, "Group Type", entry.OriginalValues["GroupTypeId"].ToStringSafe().AsIntegerOrNull(), GroupType, GroupTypeId );
@@ -744,6 +750,29 @@ namespace Rock.Model
                             {
                                 this.InactiveDateTime = null;
                             }
+
+                            DateTime? newInactiveDateTime = this.InactiveDateTime;
+
+                            UpdateGroupMembersActiveStatusFromGroupStatus( rockContext, originalIsActive, originalInactiveDateTime, this.IsActive, newInactiveDateTime );
+                        }
+
+
+                        // IsArchived was modified, set the ArchivedDateTime if it changed to IsArchived, or set it to NULL if IsArchived was changed to false
+                        if ( originalIsArchived != this.IsArchived )
+                        {
+                            if ( this.IsArchived )
+                            {
+                                // if the caller didn't already set ArchivedDateTime, set it to now
+                                this.ArchivedDateTime = this.ArchivedDateTime ?? RockDateTime.Now;
+                            }
+                            else
+                            {
+                                this.ArchivedDateTime = null;
+                            }
+
+                            DateTime? newArchivedDateTime = this.ArchivedDateTime;
+
+                            UpdateGroupMembersArchivedValueFromGroupArchivedValue( rockContext, originalIsArchived, originalArchivedDateTime, this.IsArchived, newArchivedDateTime );
                         }
 
                         break;
@@ -788,6 +817,82 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Updates the group members active status from the group's active status.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="originalIsActive">if set to <c>true</c> [old active status].</param>
+        /// <param name="originalInactiveDateTime">The old inactive date time.</param>
+        /// <param name="newActiveStatus">if set to <c>true</c> [new active status].</param>
+        /// <param name="newInactiveDateTime">The new inactive date time.</param>
+        private void UpdateGroupMembersActiveStatusFromGroupStatus( RockContext rockContext, bool originalIsActive, DateTime? originalInactiveDateTime, bool newActiveStatus, DateTime? newInactiveDateTime )
+        {
+            if ( originalIsActive == newActiveStatus || this.Id == 0 )
+            {
+                // only change GroupMember status if the Group's status was changed 
+                return;
+            }
+
+            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+
+            if ( newActiveStatus == false )
+            {
+                // group was changed to from Active to Inactive, so change all Active/Pending GroupMembers to Inactive and stamp their inactivate DateTime to be the same as the group's inactive DateTime.
+                foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive ).ToList() )
+                {
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                    groupMember.InactiveDateTime = newInactiveDateTime;
+                }
+            }
+            else if ( originalInactiveDateTime.HasValue )
+            {
+                // group was changed to from InActive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
+                foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
+                {
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.InactiveDateTime = newInactiveDateTime;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the group members IsArchived value from the group's IsArchived value.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="originalIsArchived">if set to <c>true</c> [original is archived].</param>
+        /// <param name="originalArchivedDateTime">The original archived date time.</param>
+        /// <param name="newIsArchived">if set to <c>true</c> [new is archived].</param>
+        /// <param name="newArchivedDateTime">The new archived date time.</param>
+        private void UpdateGroupMembersArchivedValueFromGroupArchivedValue( RockContext rockContext, bool originalIsArchived, DateTime? originalArchivedDateTime, bool newIsArchived, DateTime? newArchivedDateTime )
+        {
+            if ( originalIsArchived == newIsArchived || this.Id == 0 )
+            {
+                // only change GroupMember archived value if the Group's archived value was changed 
+                return;
+            }
+
+            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+
+            if ( newIsArchived )
+            {
+                // group IsArchived was changed from false to true, so change all archived GroupMember's IsArchived to true and stamp their IsArchivedDateTime to be the same as the group's IsArchivedDateTime.
+                foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == false ).ToList() )
+                {
+                    groupMember.IsArchived = true;
+                    groupMember.ArchivedDateTime = newArchivedDateTime;
+                }
+            }
+            else if ( originalArchivedDateTime.HasValue )
+            {
+                // group IsArchived was changed from true to false, so change all archived GroupMember's IsArchived if their ArchivedDateTime is within 24 hours of the Group's ArchivedDateTime
+                foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 ).ToList() )
+                {
+                    groupMember.IsArchived = false;
+                    groupMember.ArchivedDateTime = newArchivedDateTime;
+                }
+            }
+        }
+
+        /// <summary>
         /// Posts the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
@@ -818,7 +923,7 @@ namespace Rock.Model
                     using ( var rockContext = new RockContext() )
                     {
                         // validate that a campus is not required
-                        var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( g => g.Id == this.GroupTypeId ).FirstOrDefault();
+                        var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( gt => gt.Id == this.GroupTypeId ).FirstOrDefault();
 
                         if ( groupType != null )
                         {

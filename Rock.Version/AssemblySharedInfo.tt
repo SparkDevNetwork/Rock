@@ -4,9 +4,9 @@
 <#
      int major = 1;
      int minor = 9;
-     int build = 0;
+     int build = 1;
      int revision = 0;
-  
+
      try
      {
          using(var f = File.OpenText(Host.ResolvePath("AssemblySharedInfo.cs")))
