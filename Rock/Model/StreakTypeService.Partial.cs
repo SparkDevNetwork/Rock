@@ -1519,11 +1519,12 @@ namespace Rock.Model
         /// <summary>
         /// Count the number of bits that are set in the map within the specified inclusive date range
         /// </summary>
-        /// <param name="map"></param>
-        /// <param name="mapStartDate"></param>
-        /// <param name="occurrenceFrequency"></param>
-        /// <param name="rangeMin"></param>
-        /// <param name="rangeMax"></param>
+        /// <param name="map">The map.</param>
+        /// <param name="mapStartDate">The map start date.</param>
+        /// <param name="occurrenceFrequency">The occurrence frequency.</param>
+        /// <param name="rangeMin">The range minimum.</param>
+        /// <param name="rangeMax">The range maximum.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         private int CountSetBits( byte[] map, DateTime mapStartDate, StreakOccurrenceFrequency occurrenceFrequency, DateTime rangeMin, DateTime rangeMax, out string errorMessage )
         {
@@ -1547,11 +1548,10 @@ namespace Rock.Model
         /// <summary>
         /// Get the date of the most recent bit that is set in the map
         /// </summary>
-        /// <param name="engagementMap">The engagement map.</param>
-        /// <param name="occurrenceMap">The occurrence map.</param>
+        /// <param name="map">The map.</param>
         /// <param name="mapStartDate">The start date.</param>
         /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
-        /// <param name="unitCount">The unit count.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         private static DateTime? GetDateOfMostRecentSetBit( byte[] map, DateTime mapStartDate, StreakOccurrenceFrequency streakOccurrenceFrequency, out string errorMessage )
         {
