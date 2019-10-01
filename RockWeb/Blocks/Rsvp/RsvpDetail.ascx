@@ -6,13 +6,15 @@
     }
 
     Sys.Application.add_load(function () {
-        $('.js-follow-status').tooltip();
-
-        $('.js-show-additional-fields').off('click').on('click', function ()
-        {
+        $('.js-show-additional-fields').off('click').on('click', function () {
             $('.js-additional-fields').slideToggle();
             return false;
         });
+
+        $('input.js-show-decline-reasons').on('click', function () {
+            $('.js-decline-reasons').slideToggle();
+        });
+
     });
 
 </script>
@@ -96,9 +98,9 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockCheckBox ID="rcbShowDeclineReasons" runat="server" Label="Show Decline Reasons" />
+                                <Rock:RockCheckBox ID="rcbShowDeclineReasons" runat="server" Label="Show Decline Reasons" CssClass="js-show-decline-reasons" />
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-6 js-decline-reasons" style="display:none;">
                                 <Rock:RockCheckBoxList ID="rcblAvailableDeclineReasons" runat="server" Label="Available Decline Reasons" DataTextField="Value" DataValueField="Id" />
                             </div>
                         </div>
