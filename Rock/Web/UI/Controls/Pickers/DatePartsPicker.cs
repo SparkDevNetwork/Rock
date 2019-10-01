@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class DatePartsPicker : CompositeControl, IRockControl
+    public class DatePartsPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -405,12 +405,18 @@ namespace Rock.Web.UI.Controls
         protected void dateList_SelectedIndexChanged( object sender, EventArgs e )
         {
             SelectedDatePartsChanged?.Invoke( this, e );
+            ValueChanged?.Invoke( this, e );
         }
 
         /// <summary>
         /// Occurs when [selected date parts changed].
         /// </summary>
         public event EventHandler SelectedDatePartsChanged;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
 
         /// <summary>
         /// Populates the drop downs.
@@ -468,7 +474,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            bool needsAutoPostBack = SelectedDatePartsChanged != null;
+            bool needsAutoPostBack = SelectedDatePartsChanged != null || ValueChanged != null;
             monthDropDownList.AutoPostBack = needsAutoPostBack;
             dayDropDownList.AutoPostBack = needsAutoPostBack;
             yearDropDownList.AutoPostBack = needsAutoPostBack;

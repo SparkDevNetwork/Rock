@@ -21,9 +21,12 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.SqlServer;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
@@ -324,15 +327,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier. This is a computed column and can be used
-        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside
-        /// a linq query
+        /// Gets or sets the giving leader identifier.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// The giving leader identifier.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public int GivingLeaderId { get; set; }
 
         /// <summary>
@@ -432,24 +433,6 @@ namespace Rock.Model
         public int? ViewedCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
-        /// </value>
-        [DataMember]
-        public int? MetaPersonicxLifestageClusterId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
-        /// </value>
-        [DataMember]
-        public int? MetaPersonicxLifestageGroupId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the top signal color. This property is used to indicate the icon color
         /// on a person if they have a related signal.
         /// </summary>
@@ -482,6 +465,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the age classification of the Person.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
@@ -492,7 +476,8 @@ namespace Rock.Model
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for the primary family
+        /// Gets or sets the group id for the primary family.
+        /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
         /// The primary family id.
@@ -527,6 +512,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? DeceasedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's default financial account gift designation.
+        /// </summary>
+        /// <value>
+        /// The financial account id.
+        /// </value>
+        [DataMember]
+        public int? ContributionFinancialAccountId { get; set; }
 
         #endregion
 
@@ -1004,15 +998,6 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the metaPersonicxLifestage cluster.
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [DataMember]
-        public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
-
-        /// <summary>
         /// Gets or sets the signals applied to this person.
         /// </summary>
         /// <value>
@@ -1020,15 +1005,6 @@ namespace Rock.Model
         /// </value>
         [LavaIgnore]
         public virtual ICollection<PersonSignal> Signals { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metaPersonicxLifestage group.
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [DataMember]
-        public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the primary family.
@@ -1040,30 +1016,59 @@ namespace Rock.Model
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
+        /// Gets or sets the person's default financial account gift designation.
+        /// </summary>
+        /// <value>
+        /// The financial account.
+        /// </value>
+        [LavaIgnore]
+        public virtual FinancialAccount ContributionFinancialAccount { get; set; }
+
+        /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
         public DateTime? BirthDate
         {
             get {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                if ( BirthDay == null || BirthMonth == null )
-                {
-                    return null;
-                }
-                else
-                {
-                    return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
-                }
+                _birthDate = CalculateBirthDate();
+                return _birthDate;
             }
 
             private set {
-                // don't do anything here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+                _birthDate = value;
+            }
+        }
+
+        private DateTime? _birthDate ;
+
+        /// <summary>
+        /// Calculates the birthdate from the BirthYear, BirthMonth, and BirthDay.
+        /// Will return null if BirthMonth or BirthDay is null.
+        /// If BirthYear is null then DateTime.MinValue.Year (Year = 1) is used.
+        /// </summary>
+        /// <returns></returns>
+        private DateTime? CalculateBirthDate()
+        {
+             if ( BirthDay == null || BirthMonth == null )
+                {
+                    return null;
+                }
+            else
+            {
+                if ( BirthMonth <= 12 )
+                {
+                    if ( BirthDay <= DateTime.DaysInMonth( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value ) )
+                    {
+                        return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
+                    }
+                }
+
+                return null;
             }
         }
 
@@ -1764,6 +1769,67 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Uploads the person's photo from the specified url and sets it as the person's Photo using the default BinaryFileType.
+        /// </summary>
+        /// <param name="photoUri">The photo URI.</param>
+        public void SetPhotoFromUrl( Uri photoUri )
+        {
+            this.SetPhotoFromUrl( photoUri, Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        }
+
+        /// <summary>
+        /// Uploads the person's photo from the specified url and sets it as the person's Photo using the specified BinaryFileType.
+        /// </summary>
+        /// <param name="photoUri">The photo URI.</param>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
+        public void SetPhotoFromUrl( Uri photoUri, Guid binaryFileTypeGuid )
+        {
+            try
+            {
+                HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
+                HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
+                var imageStream = imageResponse.GetResponseStream();
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileType = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid );
+                    using ( MemoryStream photoData = new MemoryStream() )
+                    {
+                        imageStream.CopyTo( photoData );
+                        var fileName = this.FullName.RemoveSpaces().MakeValidFileName();
+                        if ( fileName.IsNullOrWhiteSpace() )
+                        {
+                            fileName = "PersonPhoto";
+                        }
+
+                        var binaryFile = new BinaryFile()
+                        {
+                            FileName = fileName,
+                            MimeType = imageResponse.ContentType,
+                            BinaryFileTypeId = binaryFileType.Id,
+                            IsTemporary = true
+                        };
+
+                        binaryFile.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );
+
+                        byte[] photoDataBytes = photoData.ToArray();
+                        binaryFile.FileSize = photoDataBytes.Length;
+                        binaryFile.ContentStream = new MemoryStream( photoDataBytes );
+
+                        var binaryFileService = new BinaryFileService( rockContext );
+                        binaryFileService.Add( binaryFile );
+                        rockContext.SaveChanges();
+
+                        this.PhotoId = binaryFile.Id;
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( $"Unable to set photo from {photoUri},", ex );
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object.</returns>
@@ -1783,7 +1849,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = ( RockContext ) dbContext;
 
@@ -1801,10 +1867,10 @@ namespace Rock.Model
 
                 if ( isInactive )
                 {
-                    // If person was just inactivated, update the group member status for all their group memberships to be inactive
                     var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
                     if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
-                    {
+                    {   
+                        // If person was just inactivated, update the group member status for all their group memberships to be inactive
                         foreach ( var groupMember in new GroupMemberService( rockContext )
                             .Queryable()
                             .Where( m =>
@@ -1813,6 +1879,18 @@ namespace Rock.Model
                                 !m.Group.GroupType.IgnorePersonInactivated ) )
                         {
                             groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                        }
+
+                        // Also update the person's connection requests
+                        int[] aliasIds = Aliases.Select( a => a.Id ).ToArray();
+                        foreach ( var connectionRequest in new ConnectionRequestService( rockContext )
+                            .Queryable()
+                            .Where( c =>
+                                 aliasIds.Contains( c.PersonAliasId ) &&
+                                 c.ConnectionState != ConnectionState.Inactive &&
+                                 c.ConnectionState != ConnectionState.Connected ) )
+                        {
+                            connectionRequest.ConnectionState = ConnectionState.Inactive;
                         }
                     }
                 }
@@ -1863,6 +1941,9 @@ namespace Rock.Model
                 }
             }
 
+            // Calculates the BirthDate and sets it
+            this.BirthDate = this.CalculateBirthDate();
+
             CalculateSignals();
 
             if ( this.IsValid )
@@ -1875,7 +1956,7 @@ namespace Rock.Model
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Person" ).SetNewValue( this.FullName );
 
@@ -1925,7 +2006,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         History.EvaluateChange( HistoryChanges, "Record Type", entry.OriginalValues["RecordTypeValueId"].ToStringSafe().AsIntegerOrNull(), RecordTypeValue, RecordTypeValueId );
                         History.EvaluateChange( HistoryChanges, "Record Status", entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull(), RecordStatusValue, RecordStatusValueId );
@@ -2003,7 +2084,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
 
@@ -2031,6 +2112,7 @@ namespace Rock.Model
             // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
+            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -2118,7 +2200,7 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
-            int numberTypeValueId = DefinedValueCache.Get( phoneType ).Id;
+            int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
             return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
@@ -2255,162 +2337,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, int? maxWidth, int? maxHeight )
-        {
-            return GetPhotoUrl( photoId, null, gender, null, maxWidth, maxHeight, null );
-        }
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, int? maxWidth, int? maxHeight )
-        {
-            return GetPhotoUrl( photoId, age, gender, null, maxWidth, maxHeight, null );
-        }
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, int? age, int? maxWidth, int? maxHeight )
-        {
-            return GetPhotoUrl( photoId, age, gender, null, maxWidth, maxHeight, null );
-        }
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, Guid? recordTypeValueGuid, int? maxWidth, int? maxHeight )
-        {
-            return GetPhotoUrl( photoId, null, gender, recordTypeValueGuid, maxWidth, maxHeight, null );
-        }
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth, int? maxHeight )
-        {
-            return GetPhotoUrl( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, null );
-        }
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl or GetPersonNoPictureUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, int? personId = null )
-        {
-            string virtualPath = string.Empty;
-            if ( photoId.HasValue )
-            {
-                string widthHeightParams = string.Empty;
-                if ( maxWidth.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
-                }
-
-                if ( maxHeight.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
-                }
-
-                virtualPath = string.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
-            }
-            else
-            {
-                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-                {
-                    virtualPath = "~/Assets/Images/business-no-photo.svg?";
-                }
-                else if ( age.HasValue && age.Value < 18 )
-                {
-                    // it's a child
-                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
-                }
-                else
-                {
-                    // check family role
-                    Guid? familyRoleGuid = null;
-                    if ( personId.HasValue )
-                    {
-                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-                        familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
-                                            .Where( m =>
-                                                m.Group.GroupTypeId == familyGroupTypeId
-                                                && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
-                                            .Select( m => m.GroupRole.Guid )
-                                            .FirstOrDefault();
-                    }
-
-                    var familyRoleChildGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                    if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
-                    {
-                        // it's a child
-                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
-                    }
-                    else
-                    {
-                        // it's an adult
-                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
-                    }
-                }
-            }
-
-            if ( System.Web.HttpContext.Current == null )
-            {
-                return virtualPath;
-            }
-            else
-            {
-                return VirtualPathUtility.ToAbsolute( virtualPath );
-            }
-        }
-
-        /// <summary>
         /// Gets the person photo URL.
         /// </summary>
         /// <param name="person">The person to get the photo for.</param>
@@ -2419,7 +2345,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : (Guid?)null, person.AgeClassification, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2447,7 +2373,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
         }
 
         /// <summary>
@@ -2461,7 +2387,26 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <returns></returns>
-        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
+        [RockObsolete( "1.8" )]
+        [Obsolete("Use other GetPersonPhotoUrl")]
+        public static string GetPersonPhotoUrl(int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
+        {
+            return GetPersonPhotoUrl( personId, photoId, age, gender, recordTypeValueGuid, null, maxWidth, maxHeight );
+        }
+
+        /// <summary>
+        /// Gets the person photo URL.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
+        /// <param name="ageClassification">The age classification.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, AgeClassification? ageClassification, int? maxWidth = null, int? maxHeight = null )
         {
             string virtualPath = string.Empty;
             if ( photoId.HasValue )
@@ -2493,12 +2438,14 @@ namespace Rock.Model
                 else
                 {
                     // check age classification
-                    AgeClassification? ageClassification = null;
-                    if ( personId.HasValue )
+                    if ( ageClassification == null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        if ( personId.HasValue )
                         {
-                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            using ( var rockContext = new RockContext() )
+                            {
+                                ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            }
                         }
                     }
 
@@ -2571,191 +2518,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "" )
-        {
-            Person person = personAlias != null ? personAlias.Person : null;
-            return GetPhotoImageTag( person, maxWidth, maxHeight, className );
-        }
-
-        /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string className = "" )
-        {
-            int? photoId = null;
-            Gender gender = Gender.Male;
-            string altText = string.Empty;
-            int? age = null;
-            Guid? recordTypeValueGuid = null;
-            int? personId = null;
-
-            if ( person != null )
-            {
-                photoId = person.PhotoId;
-                gender = person.Gender;
-                altText = person.FullName;
-                age = person.Age;
-                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null;
-                personId = person.Id;
-            }
-
-            return Person.GetPhotoImageTag( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, altText, className, personId );
-        }
-
-        /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="altText">The alt text to use on the image.</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
-        {
-            return Person.GetPhotoImageTag( photoId, null, gender, null, maxWidth, maxHeight, altText, className, null );
-        }
-
-        /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="altText">The alt text to use on the image.</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
-        {
-            return Person.GetPhotoImageTag( photoId, age, gender, null, maxWidth, maxHeight, altText, className, null );
-        }
-
-        /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="altText">The alt text to use on the image.</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
-        {
-            return Person.GetPhotoImageTag( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, altText, className, null );
-        }
-
-        /// <summary>
-        /// Gets the photo image tag.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="altText">The alt text to use on the image.</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "", int? personId = null )
-        {
-            var photoUrl = new StringBuilder();
-
-            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
-
-            string styleString = string.Empty;
-
-            string altString = string.IsNullOrWhiteSpace( altText ) ? string.Empty :
-                string.Format( " alt='{0}'", altText );
-
-            string classString = string.IsNullOrWhiteSpace( className ) ? string.Empty :
-                string.Format( " class='{0}'", className );
-
-            if ( photoId.HasValue )
-            {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
-                if ( maxWidth.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
-                }
-
-                if ( maxHeight.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
-                }
-            }
-            else
-            {
-                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-                {
-                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
-                }
-                else if ( age.HasValue && age.Value < 18 )
-                {
-                    // it's a child
-                    photoUrl.Append( GetPhotoPath( gender, false ) );
-                }
-                else
-                {
-                    // check family role
-                    Guid? familyRoleGuid = null;
-                    if ( personId.HasValue )
-                    {
-                        var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-                        familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
-                                            .Where( m =>
-                                                m.Group.GroupTypeId == familyGroupTypeId
-                                                && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
-                                            .Select( m => m.GroupRole.Guid )
-                                            .FirstOrDefault();
-                    }
-
-                    var familyRoleChildGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                    if ( familyRoleGuid.HasValue && familyRoleGuid == familyRoleChildGuid )
-                    {
-                        // it's a child
-                        photoUrl.Append( GetPhotoPath( gender, false ) );
-                    }
-                    else
-                    {
-                        // it's an adult
-                        photoUrl.Append( GetPhotoPath( gender, true ) );
-                    }
-                }
-
-            }
-
-            return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
-        }
-
-
-
-        /// <summary>
         /// Gets the person image tag.
         /// </summary>
         /// <param name="person">The person to get the image for.</param>
@@ -2774,7 +2536,6 @@ namespace Rock.Model
             {
                 return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
             }
-
         }
 
         /// <summary>
@@ -2852,7 +2613,7 @@ namespace Rock.Model
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
+                            ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }
                     }
 
@@ -2871,7 +2632,7 @@ namespace Rock.Model
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
         }
-
+        
         /// <summary>
         /// Gets the HTML markup to use for displaying the top-most signal icon for this person.
         /// </summary>
@@ -3263,9 +3024,8 @@ namespace Rock.Model
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
         }
     }
 

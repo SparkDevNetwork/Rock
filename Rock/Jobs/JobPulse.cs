@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Quartz;
 using Quartz.Impl.Matchers;
+
 using Rock.Model;
 using Rock.Web.Cache;
 

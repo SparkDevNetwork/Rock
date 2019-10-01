@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -66,7 +67,7 @@ namespace Rock.BulkExport
                     attributesQry = attributesQry.Where( a => attributeKeyList.Contains( a.Key ) );
                 }
 
-                attributeList = attributesQry.ToCacheAttributeList();
+                attributeList = attributesQry.ToAttributeCacheList();
             }
 
             return attributeList;

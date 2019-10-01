@@ -53,6 +53,8 @@
             this.lblDatabase = new System.Windows.Forms.Label();
             this.tbDatabaseFolder = new System.Windows.Forms.TextBox();
             this.cbDatabaseProcs = new System.Windows.Forms.CheckBox();
+            this.tbResults = new System.Windows.Forms.TextBox();
+            this.cbGenerateObsoleteExport = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -68,7 +70,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGenerate.Location = new System.Drawing.Point(12, 510);
+            this.btnGenerate.Location = new System.Drawing.Point(14, 448);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -84,14 +86,14 @@
             this.cblModels.FormattingEnabled = true;
             this.cblModels.Location = new System.Drawing.Point(15, 70);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(587, 324);
+            this.cblModels.Size = new System.Drawing.Size(570, 260);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
             // 
             this.cbSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSelectAll.AutoSize = true;
-            this.cbSelectAll.Location = new System.Drawing.Point(533, 19);
+            this.cbSelectAll.Location = new System.Drawing.Point(516, 19);
             this.cbSelectAll.Name = "cbSelectAll";
             this.cbSelectAll.Size = new System.Drawing.Size(69, 17);
             this.cbSelectAll.TabIndex = 4;
@@ -112,7 +114,7 @@
             this.cbRest.AutoSize = true;
             this.cbRest.Checked = true;
             this.cbRest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRest.Location = new System.Drawing.Point(13, 429);
+            this.cbRest.Location = new System.Drawing.Point(15, 367);
             this.cbRest.Name = "cbRest";
             this.cbRest.Size = new System.Drawing.Size(48, 17);
             this.cbRest.TabIndex = 6;
@@ -125,7 +127,7 @@
             this.cbService.AutoSize = true;
             this.cbService.Checked = true;
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbService.Location = new System.Drawing.Point(13, 402);
+            this.cbService.Location = new System.Drawing.Point(15, 340);
             this.cbService.Name = "cbService";
             this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
@@ -150,7 +152,7 @@
             this.cbClient.AutoSize = true;
             this.cbClient.Checked = true;
             this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbClient.Location = new System.Drawing.Point(13, 456);
+            this.cbClient.Location = new System.Drawing.Point(15, 394);
             this.cbClient.Name = "cbClient";
             this.cbClient.Size = new System.Drawing.Size(53, 17);
             this.cbClient.TabIndex = 8;
@@ -178,7 +180,7 @@
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(390, 514);
+            this.progressBar1.Location = new System.Drawing.Point(375, 452);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(212, 23);
             this.progressBar1.TabIndex = 11;
@@ -188,9 +190,9 @@
             // 
             this.tbServiceFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbServiceFolder.Location = new System.Drawing.Point(120, 400);
+            this.tbServiceFolder.Location = new System.Drawing.Point(122, 338);
             this.tbServiceFolder.Name = "tbServiceFolder";
-            this.tbServiceFolder.Size = new System.Drawing.Size(482, 21);
+            this.tbServiceFolder.Size = new System.Drawing.Size(465, 21);
             this.tbServiceFolder.TabIndex = 12;
             this.tbServiceFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbServiceFolder_MouseDoubleClick);
             // 
@@ -198,9 +200,9 @@
             // 
             this.tbRestFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbRestFolder.Location = new System.Drawing.Point(120, 427);
+            this.tbRestFolder.Location = new System.Drawing.Point(122, 365);
             this.tbRestFolder.Name = "tbRestFolder";
-            this.tbRestFolder.Size = new System.Drawing.Size(482, 21);
+            this.tbRestFolder.Size = new System.Drawing.Size(465, 21);
             this.tbRestFolder.TabIndex = 13;
             this.tbRestFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbRestFolder_MouseDoubleClick);
             // 
@@ -208,9 +210,9 @@
             // 
             this.tbClientFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbClientFolder.Location = new System.Drawing.Point(120, 454);
+            this.tbClientFolder.Location = new System.Drawing.Point(122, 392);
             this.tbClientFolder.Name = "tbClientFolder";
-            this.tbClientFolder.Size = new System.Drawing.Size(482, 21);
+            this.tbClientFolder.Size = new System.Drawing.Size(465, 21);
             this.tbClientFolder.TabIndex = 14;
             this.tbClientFolder.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbClientFolder_MouseDoubleClick);
             // 
@@ -223,7 +225,7 @@
             // lblAssemblyDateTime
             // 
             this.lblAssemblyDateTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblAssemblyDateTime.Location = new System.Drawing.Point(419, 38);
+            this.lblAssemblyDateTime.Location = new System.Drawing.Point(402, 38);
             this.lblAssemblyDateTime.Name = "lblAssemblyDateTime";
             this.lblAssemblyDateTime.Size = new System.Drawing.Size(183, 13);
             this.lblAssemblyDateTime.TabIndex = 15;
@@ -252,9 +254,9 @@
             // 
             this.tbDatabaseFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbDatabaseFolder.Location = new System.Drawing.Point(120, 481);
+            this.tbDatabaseFolder.Location = new System.Drawing.Point(122, 419);
             this.tbDatabaseFolder.Name = "tbDatabaseFolder";
-            this.tbDatabaseFolder.Size = new System.Drawing.Size(482, 21);
+            this.tbDatabaseFolder.Size = new System.Drawing.Size(465, 21);
             this.tbDatabaseFolder.TabIndex = 19;
             // 
             // cbDatabaseProcs
@@ -263,18 +265,43 @@
             this.cbDatabaseProcs.AutoSize = true;
             this.cbDatabaseProcs.Checked = true;
             this.cbDatabaseProcs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDatabaseProcs.Location = new System.Drawing.Point(13, 483);
+            this.cbDatabaseProcs.Location = new System.Drawing.Point(15, 421);
             this.cbDatabaseProcs.Name = "cbDatabaseProcs";
             this.cbDatabaseProcs.Size = new System.Drawing.Size(101, 17);
             this.cbDatabaseProcs.TabIndex = 18;
             this.cbDatabaseProcs.Text = "Database Procs";
             this.cbDatabaseProcs.UseVisualStyleBackColor = true;
             // 
+            // tbResults
+            // 
+            this.tbResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbResults.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbResults.Location = new System.Drawing.Point(11, 504);
+            this.tbResults.Multiline = true;
+            this.tbResults.Name = "tbResults";
+            this.tbResults.ReadOnly = true;
+            this.tbResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbResults.Size = new System.Drawing.Size(574, 199);
+            this.tbResults.TabIndex = 20;
+            // 
+            // cbGenerateObsoleteExport
+            // 
+            this.cbGenerateObsoleteExport.AutoSize = true;
+            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(11, 481);
+            this.cbGenerateObsoleteExport.Name = "cbGenerateObsoleteExport";
+            this.cbGenerateObsoleteExport.Size = new System.Drawing.Size(105, 17);
+            this.cbGenerateObsoleteExport.TabIndex = 21;
+            this.cbGenerateObsoleteExport.Text = "Report Obsolete";
+            this.cbGenerateObsoleteExport.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(614, 545);
+            this.ClientSize = new System.Drawing.Size(597, 729);
+            this.Controls.Add(this.cbGenerateObsoleteExport);
+            this.Controls.Add(this.tbResults);
             this.Controls.Add(this.tbDatabaseFolder);
             this.Controls.Add(this.cbDatabaseProcs);
             this.Controls.Add(this.lblDatabase);
@@ -328,6 +355,8 @@
         private System.Windows.Forms.Label lblDatabase;
         private System.Windows.Forms.TextBox tbDatabaseFolder;
         private System.Windows.Forms.CheckBox cbDatabaseProcs;
+        private System.Windows.Forms.TextBox tbResults;
+        private System.Windows.Forms.CheckBox cbGenerateObsoleteExport;
     }
 }
 

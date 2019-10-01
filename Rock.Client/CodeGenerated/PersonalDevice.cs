@@ -50,6 +50,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
         public string MACAddress { get; set; }
 
         /// <summary>
@@ -107,6 +110,7 @@ namespace Rock.Client
             this.DeviceVersion = source.DeviceVersion;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsActive = source.IsActive;
             this.MACAddress = source.MACAddress;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NotificationsEnabled = source.NotificationsEnabled;

@@ -39,7 +39,8 @@ namespace Rockweb.Blocks.Crm
     /// </summary>
     [DisplayName( "DISC Result" )]
     [Category( "CRM" )]
-    [Description( "View the results of a DISC assessment." )]
+    [Description( "View the results of a DISC assessment. (Obsolete)" )]
+    [RockObsolete("1.9")]
     public partial class DiscResult : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -122,7 +123,7 @@ namespace Rockweb.Blocks.Crm
         {
             // Plot the Natural graph
             DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 35 );
+                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 100 );
             ShowExplaination( savedScores.PersonalityType );
 
             hlAssessmentDate.Text = String.Format( "Assessment Date: {0}", savedScores.LastSaveDate.ToShortDateString() );

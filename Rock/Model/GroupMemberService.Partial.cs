@@ -16,13 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Web;
 
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
-using System.Web;
 
 namespace Rock.Model
 {

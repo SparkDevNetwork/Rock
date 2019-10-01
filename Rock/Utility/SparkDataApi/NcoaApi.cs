@@ -23,9 +23,12 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web.Http;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using RestSharp;
+
 using Rock.Jobs;
 
 namespace Rock.Utility.SparkDataApi
@@ -148,9 +151,7 @@ namespace Rock.Utility.SparkDataApi
                         {
                             File.AppendAllText( filePath, $"{data.ToString().TrimEnd( '&' )}{Environment.NewLine}Status Code: {response.StatusCode}{Environment.NewLine}Response: {response.Content.ToStringSafe()}{Environment.NewLine}" );
                         }
-                        catch
-                        {
-                        }
+                        catch { }
 
                         if ( response.StatusCode != HttpStatusCode.OK )
                         {

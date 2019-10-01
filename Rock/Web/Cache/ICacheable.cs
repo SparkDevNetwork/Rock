@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -26,7 +28,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext );
+        void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext );
 
         /// <summary>
         /// Gets the cache object associated with this Entity

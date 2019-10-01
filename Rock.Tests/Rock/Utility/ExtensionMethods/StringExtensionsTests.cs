@@ -24,7 +24,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidInteger()
         {
             var output = @"3".AsDoubleOrNull();
-            Assert.Equal( output, 3.0d );
+            Assert.Equal( 3.0d, output );
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidDouble()
         {
             var output = @"3.141592".AsDoubleOrNull();
-            Assert.Equal( output, (double)3.141592d );
+            Assert.Equal( (double)3.141592d, output );
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidString()
         {
             var output = @"$3.14".AsDoubleOrNull();
-            Assert.Equal( output, (double)3.14d );
+            Assert.Equal( (double)3.14d, output );
         }
 
         /// <summary>
@@ -135,6 +135,64 @@ namespace Rock.Tests.Utility.ExtensionMethods
             //bool isValidUrl = Uri.IsWellFormedUriString( url, UriKind.Absolute );
             bool isValidUrl = url.IsValidUrl();
             Assert.True( isValidUrl );
+        }
+
+        #endregion
+
+        #region SafeSubstring
+
+        [Fact]
+        public void SafeSubstring_NullString()
+        {
+            string test = null;
+            var output = test.SafeSubstring( 1, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_NegativeIndex()
+        {
+            var output = "Test".SafeSubstring( -1, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_IndexTooLarge()
+        {
+            var output = "Test".SafeSubstring( 10, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_NegativeLength()
+        {
+            var output = "Test".SafeSubstring( 1, -3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        [Fact]
+        public void SafeSubstring_LengthTooLarge()
+        {
+            var output = "Test".SafeSubstring( 1, 30 );
+            Assert.Equal( "est", output );
+        }
+
+        [Fact]
+        public void SafeSubstring_EmptyString()
+        {
+            var output = "".SafeSubstring( 0, 3 );
+            Assert.Equal( string.Empty, output );
+        }
+
+        #endregion
+
+        #region AsNumeric
+
+        [Fact]
+        public void AsNumeric_NumbersOnly()
+        {
+            var output = "0abcd123-45-6&78$9".AsNumeric();
+            Assert.Equal( "0123456789", output );
         }
 
         #endregion

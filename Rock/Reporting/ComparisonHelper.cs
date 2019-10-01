@@ -196,7 +196,7 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets a dropdownlist of the supported comparison types
+        /// Gets a DropDownList of the supported comparison types
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
@@ -208,7 +208,7 @@ namespace Rock.Reporting
             {
                 ddl.Items.Add( new ListItem( string.Empty, "0" ) );
             }
-            foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
+            foreach ( ComparisonType comparisonType in typeof( ComparisonType ).GetOrderedValues<ComparisonType>() )
             {
                 if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )
                 {
@@ -220,7 +220,16 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Returns the result of doing a numeric comparison of the specified comparison type using the value and compareValue(s)
+        /// Gets the comparison types typically used simple comparisons of: equal, not equal, blank or not blank.
+        /// </summary>
+        internal const ComparisonType EqualOrBlankFilterComparisonTypes =
+                        ComparisonType.EqualTo |
+                        ComparisonType.IsBlank |
+                        ComparisonType.IsNotBlank |
+                        ComparisonType.NotEqualTo;
+
+        /// <summary>
+        /// Compares the numeric values.
         /// </summary>
         /// <param name="comparisonType">Type of the comparison.</param>
         /// <param name="value">The value.</param>

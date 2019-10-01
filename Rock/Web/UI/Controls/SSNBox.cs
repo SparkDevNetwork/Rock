@@ -14,12 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -309,16 +305,13 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 hfSSN.Value = value;
 
-                string ssn = string.Empty;
                 if ( !string.IsNullOrEmpty( value ) )
                 {
-                    Regex digitsOnly = new Regex( @"[^\d]" );
-                    ssn = digitsOnly.Replace( value, string.Empty );
+                    string ssn = value.AsNumeric();
+                    ssnArea.Attributes["value"] = ssn.SafeSubstring( 0, 3 );
+                    ssnGroup.Attributes["value"] = ssn.SafeSubstring( 3, 2 );
+                    ssnSerial.Text = ssn.SafeSubstring( 5, 4 );
                 }
-
-                ssnArea.Attributes["value"] = ssn.Left( 3 );
-                ssnGroup.Attributes["value"] = ssn.Length > 3 ? ssn.Substring( 3, 2 ) : string.Empty;
-                ssnSerial.Text = ssn.Length > 5 ? ssn.Substring( 5, 4 ) : string.Empty;
             }
         }
 
@@ -341,8 +334,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
+        /// Initializes a new instance of the <see cref="SSNBox"/> class.
         /// </summary>
         public SSNBox()
             : base()

@@ -15,28 +15,38 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Site List")]
-    [Category("CMS")]
-    [Description("Lists sites defined in the system.")]
-    [LinkedPage("Detail Page")]
+    [DisplayName( "Site List" )]
+    [Category( "CMS" )]
+    [Description( "Lists sites defined in the system." )]
+    [LinkedPage( "Detail Page" )]
+
+    [EnumsField( "Site Type", "Includes Items with the following Type.", typeof( SiteType ), false, "", order: 1, key: AttributeKey.SiteType )]
     public partial class SiteList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+        protected static class AttributeKey
+        {
+            public const string SiteType = "SiteType";
+        }
+        #endregion
+        private const string INCLUE_INACTIVE = "Include Inactive";
+
         #region Control Methods
 
         /// <summary>
@@ -123,9 +133,24 @@ namespace RockWeb.Blocks.Cms
             SortProperty sortProperty = gSites.SortProperty;
             var qry = siteService.Queryable();
 
+            var siteType = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SiteType>() ).ToList();
+            //Default show inactive to false if no filter (user preference) applied. 
+            bool showInactiveSites = rFilterSite.GetUserPreference( INCLUE_INACTIVE ).AsBoolean();
+
+            if ( siteType.Count() > 0 )
+            {
+                // filter by block setting Site type
+                qry = qry.Where( s => siteType.Contains( s.SiteType ) );
+            }
+            // filter by selected filter
+            if ( !showInactiveSites )
+            {
+                qry = qry.Where( s => s.IsActive == true );
+            }
+
             if ( sortProperty != null )
             {
-                gSites.DataSource = qry.Sort(sortProperty).ToList();
+                gSites.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
@@ -147,5 +172,16 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilterSite control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilterSite_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilterSite.SaveUserPreference( INCLUE_INACTIVE, cbShowInactive.Checked.ToString() );
+            BindGrid();
+        }
     }
 }

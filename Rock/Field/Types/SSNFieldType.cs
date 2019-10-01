@@ -16,11 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using System.Web.UI;
-using Rock.Model;
-using Rock.Reporting;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -46,19 +43,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( value.IsNotNullOrWhiteSpace() )
+            string ssn = UnencryptAndClean( value );
+            if ( ssn.Length == 9 )
             {
-                string ssn = Rock.Security.Encryption.DecryptString( value );
-                if ( !string.IsNullOrEmpty( ssn ) )
-                {
-                    Regex digitsOnly = new Regex( @"[^\d]" );
-                    ssn = digitsOnly.Replace( ssn, string.Empty );
-                }
-
-                if ( ssn.Length == 9 )
-                {
-                    formattedValue = string.Format( "xxx-xx-{0}", ssn.Substring( 5, 4 ) );
-                }
+                formattedValue = string.Format( "xxx-xx-{0}", ssn.Substring( 5, 4 ) );
             }
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
@@ -187,9 +175,7 @@ namespace Rock.Field.Types
                 string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
                 if ( !string.IsNullOrEmpty( ssn ) )
                 {
-                    Regex digitsOnly = new Regex( @"[^\d]" );
-                    ssn = digitsOnly.Replace( ssn, string.Empty );
-                    return ssn;
+                    return ssn.AsNumeric(); ;
                 }
             }
 

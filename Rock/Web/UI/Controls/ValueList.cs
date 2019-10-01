@@ -19,9 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -403,7 +405,9 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
 
-            string[] values = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            var values = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsEnumerable();
+            values = values.Select( s => HttpUtility.UrlDecode( s ) );
+
             foreach ( string value in values )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );

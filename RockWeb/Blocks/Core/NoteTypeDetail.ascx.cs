@@ -99,6 +99,16 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the cbAllowsAttachments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbAllowsAttachments_CheckedChanged( object sender, EventArgs e )
+        {
+            bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -154,6 +164,10 @@ namespace RockWeb.Blocks.Core
 
             noteType.AllowsReplies = cbAllowsReplies.Checked;
             noteType.MaxReplyDepth = nbMaxReplyDepth.Text.AsIntegerOrNull();
+
+            noteType.AllowsAttachments = cbAllowsAttachments.Checked;
+            noteType.BinaryFileTypeId = noteType.AllowsAttachments ? bftpAttachmentType.SelectedValueAsId() : null;
+
             noteType.ApprovalUrlTemplate = ceApprovalUrlTemplate.Text;
 
             if ( noteType.IsValid )
@@ -244,6 +258,10 @@ namespace RockWeb.Blocks.Core
             cbSendApprovalNotifications.Checked = noteType.SendApprovalNotifications;
             cbAllowsWatching.Checked = noteType.AllowsWatching;
             cbAutoWatchAuthors.Checked = noteType.AutoWatchAuthors;
+
+            cbAllowsAttachments.Checked = noteType.AllowsAttachments;
+            bftpAttachmentType.SetValue( noteType.BinaryFileTypeId );
+            bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
 
             cbAllowsReplies.Checked = noteType.AllowsReplies;
             nbMaxReplyDepth.Text = noteType.MaxReplyDepth.ToString();

@@ -14,20 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
 
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock.Data;
-using System.Collections.Generic;
-using System.Data;
-using System;
-using System.Diagnostics;
-using Rock.Web.Cache;
 using Humanizer;
+
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {

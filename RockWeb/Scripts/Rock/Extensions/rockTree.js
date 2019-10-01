@@ -1,18 +1,18 @@
 ﻿(function ($) {
     'use strict';
-    
+
     // Private RockTree "class" that will represent instances of the node tree in memory
     // and provide all functionality needed by instances of a treeview control.
     var RockTree = function (element, options) {
             this.$el = $(element);
             this.options = options;
             this.selectedNodes = [];
-        
+
             // Create an object-based event aggregator (not DOM-based)
             // for internal eventing
             this.events = $({});
         },
-        
+
         // Generic recursive utility function to find a node in the tree by its id
 		_findNodeById = function (id, array) {
 		    var currentNode,
@@ -27,7 +27,7 @@
 
 		    for (var i = 0; i < array.length; i++) {
 		        currentNode = array[i];
-		        
+
 		        if (currentNode.id.toString() === idCompare) {
 		            return currentNode;
 		        } else if (currentNode.hasChildren) {
@@ -41,7 +41,7 @@
 
 		    return null;
 		},
-        
+
         // Default utility function to attempt to map a Rock.Web.UI.Controls.Pickers.TreeViewItem
         // to a more standard JS object.
 		_mapArrayDefault = function (arr) {
@@ -53,7 +53,8 @@
 		            parentId: item.ParentId,
 		            hasChildren: item.HasChildren,
 		            isActive: item.IsActive,
-                    countInfo: item.CountInfo
+                    countInfo: item.CountInfo,
+                    isCategory: item.IsCategory
 		        };
 
 		        if (item.Children && typeof item.Children.length === 'number') {
@@ -63,7 +64,7 @@
 		        return node;
 		    });
 		},
-        
+
         // Utility function that attempts to derive a node tree structure given an HTML element
         _mapFromHtml = function ($el, attrs) {
             var nodes = [],
@@ -71,23 +72,23 @@
 
             $ul.children('li').each(function () {
                 var $li = $(this),
-                    node = {
+                  node = {
                         id: $li.attr('data-id'),
                         name: $li.children('span').first().html(),
                         hasChildren: $li.children('ul').length > 0,
                         isOpen: $li.attr('data-expanded') === 'true'
                     };
-                
+
                 if (attrs && typeof attrs.length === 'number') {
                     for (var i = 0; i < attrs.length; i++) {
                         node[attrs[i]] = $li.attr('data-' + attrs[i]);
-                    }   
+                    }
                 }
 
                 if (node.hasChildren) {
                     node.children = _mapFromHtml($li, attrs);
                 }
-                
+
                 nodes.push(node);
             });
 
@@ -103,7 +104,7 @@
 				self = this;
 
             this.showLoading(this.$el);
-            
+
             // If Selected Ids is set, pre-select those nodes
             promise.done(function () {
                 if (self.options.selectedIds && typeof self.options.selectedIds.length === 'number') {
@@ -125,18 +126,18 @@
         fetch: function (id) {
             var self = this,
                 startingNode = _findNodeById(id, this.nodes),
-                
+
                 // Using a jQuery Deferred to control when this operation will get returned to the caller.
                 // Since the fetch operation may span multiple AJAX requests, we need a good way to control
                 // how the caller will be notified of completion.
                 dfd = $.Deferred(),
-                
+
                 // Create a queue of Ids to expand the corresponding nodes
                 toExpand = [],
-                
+
                 // Create a "queue" or hash of AJAX calls that are currently in progress
                 inProgress = {},
-                
+
                 // Handler function to determine whether or not the fetch operation is complete.
                 onProgressNotification = function () {
                     var numberInQueue = Object.keys(inProgress).length;
@@ -149,7 +150,7 @@
                         dfd.resolve();
                     }
                 },
-                
+
                 // Wrapper function around jQuery.ajax. Appends a handler to databind the
                 // resulting JSON from the server and returns the promise
                 getNodes = function (parentId, parentNode) {
@@ -168,7 +169,7 @@
                     }
 
                     self.clearError();
-                    
+
                     return $.ajax({
                             url: restUrl,
                             dataType: 'json',
@@ -186,7 +187,7 @@
                         });
                 };
 
-            if (this.options.restUrl) {
+          if (this.options.restUrl) {
                 if (this.options.expandedIds && typeof this.options.expandedIds.length === 'number') {
                     toExpand = this.options.expandedIds;
 
@@ -221,7 +222,7 @@
 
                         // If we find the node, make sure it's expanded, and fetch its children
                         currentNode.isOpen = true;
-                        
+
                         // Queue up current node
                         inProgress[currentId] = currentId;
                         getNodes(currentId, currentNode).done(function () {
@@ -235,7 +236,7 @@
 
                 // When databound, check to see if fetching is complete
                 this.events.on('nodes:dataBound', onProgressNotification);
-                
+
                 // Get initial node's data
                 getNodes(id, startingNode);
 
@@ -249,7 +250,7 @@
                 }
             } else {
                 // Otherwise attempt to databind on HTML of the current element
-                this.nodes = _mapFromHtml(this.$el, this.options.mapping.include);;
+                this.nodes = _mapFromHtml(this.$el, this.options.mapping.include);
                 dfd.resolve();
             }
 
@@ -345,7 +346,7 @@
             // Call configured `mapData` function. If it wasn't overridden by the user,
             // `_mapArrayDefault` will be called.
             nodeArray = this.options.mapping.mapData(data);
-            
+
             for (i = 0; i < nodeArray.length; i++) {
                 nodeArray[i].isOpen = false;
             }
@@ -364,7 +365,7 @@
             this.$el.trigger('rockTree:dataBound');
             return nodeArray;
         },
-        
+
         // Recursively render out each node in the DOM via the `$el` property
         render: function () {
             var self = this,
@@ -372,7 +373,8 @@
 				renderNode = function ($list, node) {
 				    var hasChildren = false;
 				    if (node.hasChildren) {
-				        hasChildren = true;
+                        hasChildren = true;
+
 				        // we know it has children, but they might not be loaded yet (children === undefined)
 				        // but if they are loaded there may actually be NO active children, so in that case,
 				        // we'll consider them as NOT having children
@@ -386,8 +388,8 @@
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-				        folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
-				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
+                    folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
+                    leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rocktree-item')
 						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
@@ -412,7 +414,12 @@
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
 				    var $rockTreeNameNode = $li.find('.rocktree-name');
-				    
+
+                    if (!self.options.categorySelection && node.isCategory) {
+                        // Remove the hover event for the item since it is a category and we don't want to show it as being selectable.
+                        $rockTreeNameNode.addClass('disabled');
+                    }
+
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
 				            $rockTreeNameNode.addClass('selected');
@@ -420,7 +427,7 @@
 				        }
 				    }
 
-				    if (hasChildren) {
+            if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
@@ -445,7 +452,7 @@
                         if (!node.isOpen) {
                             $childUl.hide();
                         }
-				        
+
 				        $li.append($childUl);
 
 				        var l = node.children.length;
@@ -471,7 +478,7 @@
         clearError: function () {
             this.$el.siblings('.js-rocktree-alert').remove();
         },
-        
+
         // Render Bootstrap alert displaying the error message.
         renderError: function (msg) {
             this.clearError();
@@ -482,23 +489,23 @@
                 .append(msg);
             $warning.insertBefore(this.$el);
         },
-        
+
         // Show loading spinner
         showLoading: function ($element) {
             $element.append(this.options.loadingHtml);
         },
-        
+
         // Remove loading spinner
         discardLoading: function ($element) {
             $element.find('.rocktree-loading').remove();
         },
-        
+
         // Clears all selected nodes
         clear: function () {
             this.selectedNodes = [];
             this.render();
         },
-        
+
         // Sets selected nodes given an array of ids
         setSelected: function (array) {
             this.selectedNodes = [];
@@ -517,7 +524,7 @@
                 }
             }
         },
-        
+
         // Wire up DOM events for rockTree instance
         initTreeEvents: function () {
             var self = this;
@@ -545,7 +552,7 @@
                 } else {
                     node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
-                    
+
                     // If the node has children, but they haven't been loaded yet,
                     // attempt to load them first, then re-render
                     if (node.hasChildren && !node.children) {
@@ -574,6 +581,11 @@
                     onSelected = self.options.onSelected,
                     i;
 
+                // Selecting a category when one is not allowed should do nothing.
+                if (!self.options.categorySelection && node.isCategory ) {
+                    return;
+                }
+
                 // If multi-select is disabled, clear all previous selections
                 if (!self.options.multiselect) {
                     $rockTree.find('.selected').removeClass('selected');
@@ -592,7 +604,7 @@
                 self.selectedNodes = selectedNodes;
                 self.$el.trigger('rockTree:selected', id);
                 self.$el.trigger('rockTree:itemClicked', id);
-                
+
                 // If there is an array of other events to trigger on select,
                 // loop through them and trigger each, passing along the
                 // currently selected node's id
@@ -601,7 +613,7 @@
                 }
 
                 for (i = 0; i < onSelected.length; i++) {
-                    $(document).trigger(onSelected[i], id);
+                  $(document).trigger(onSelected[i], id);
                 }
             });
 
@@ -676,7 +688,7 @@
 
     // jQuery plugin definition
     $.fn.rockTree = function (options) {
-        // Make a deep copy of all configuration settings passed in 
+        // Make a deep copy of all configuration settings passed in
         // and merge it with a deep copy of the defaults defined below
         var settings = $.extend(true, {}, $.fn.rockTree.defaults, options);
 
@@ -686,7 +698,7 @@
         return this.each(function () {
             var $el = $(this);
             var rockTree = $el.data('rockTree');
-            
+
             if (!rockTree) {
                 // create a new rocktree
                 rockTree = new RockTree(this, settings);
@@ -712,6 +724,7 @@
         restParams: null,
         local: null,
         multiselect: false,
+        categorySelection: true,
         showSelectChildren: false,
         loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {

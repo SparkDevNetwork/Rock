@@ -42,7 +42,7 @@ namespace Rock.Model
         /// The group location identifier.
         /// </value>
         [DataMember]
-        public int GroupLocationId { get; set; }
+        public int? GroupLocationId { get; set; }
 
         /// <summary>
         /// Gets or sets the group id for this group's location at this point in history
@@ -229,7 +229,7 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationHistoricalConfiguration()
         {
-            this.HasRequired( p => p.GroupLocation ).WithMany().HasForeignKey( p => p.GroupLocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupLocation ).WithMany().HasForeignKey( p => p.GroupLocationId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
         }

@@ -8,7 +8,7 @@
 
         <div class="panel panel-block">
 
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-check-square-o"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />
@@ -49,17 +49,20 @@
                             <Rock:RockCheckBox ID="cbDidNotMeet" runat="server" Text="We Did Not Meet" />
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-md-6">
 
                             <div class="js-roster">
-                                <h4 class="js-members-label">
-                                    <asp:Literal ID="lMembers" runat="server" /></h4>
+                                <div class="panel-labels clearfix">
+                                    <h4 class="js-members-label">
+                                        <asp:Literal ID="lMembers" runat="server" />
+                                    </h4>
+                                    <Rock:Toggle ID="tglSort" runat="server" OnText="Last Name" OnCssClass="btn-primary" OffCssClass="btn-outline-primary" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OffText="First Name" AutoPostBack="true" OnCheckedChanged="tglSort_CheckedChanged" Checked="true" Label="Sort by" />
+                                </div>
                                 <asp:ListView ID="lvMembers" runat="server">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("PersonId") %>' />
-                                        <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# string.Concat(Eval("MergedTemplate"), " ", Eval("FullName"))%>' />
+                                        <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' OnDataBinding="cbMember_DataBinding"/>
                                     </ItemTemplate>
                                 </asp:ListView>
                                 <div class="pull-left margin-b-md margin-r-md">

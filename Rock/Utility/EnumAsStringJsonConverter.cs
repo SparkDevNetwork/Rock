@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.Utility

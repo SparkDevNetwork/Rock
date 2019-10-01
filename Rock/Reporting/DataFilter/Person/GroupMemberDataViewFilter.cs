@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -279,7 +280,7 @@ function ()
             dvpDataView.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type

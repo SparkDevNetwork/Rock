@@ -90,7 +90,7 @@
                                     <Rock:HighlightLabel ID="hlAccountStatus" runat="server" LabelType="Success" Text="" />
                             </div>
                         <div class="pull-right">
-                        <asp:LinkButton ID="btnUpdateSettings" runat="server" CssClass="btn btn-default btn-sm" style="padding:3px 10px;" OnClick="btnUpdateSettings_Click" >Update Settings</asp:LinkButton>
+                        <asp:LinkButton ID="btnUpdateSettings" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdateSettings_Click" >Update Settings</asp:LinkButton>
                             </div>
                             </header>
                     </asp:Panel>

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary> 
-        /// Creates the child controls and handles adding the required field validator control.
+        /// Creates the standard RockControl child controls (RequiredFieldValidator, HelpBlock, WarningBlock) and handles adding the required field validator control.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="controls">The controls.</param>
@@ -181,8 +181,20 @@ namespace Rock.Web.UI.Controls
                     rockControl.RequiredFieldValidator.Enabled = true;
                     if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                     {
-                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is required.";
+                        // if the control is a Label, use that. Otherwise, if the control has PlaceHolder, use that.
+                        string requiredName = string.Empty;
+                        if ( rockControl.Label.IsNotNullOrWhiteSpace() )
+                        {
+                            requiredName = rockControl.Label;
+                        }
+                        else if ( rockControl is RockTextBox )
+                        {
+                            requiredName = ( rockControl as RockTextBox ).Placeholder;
+                        }
+
+                        rockControl.RequiredFieldValidator.ErrorMessage = requiredName + " is required.";
                     }
+
                     rockControl.RequiredFieldValidator.RenderControl( writer );
                 }
                 else

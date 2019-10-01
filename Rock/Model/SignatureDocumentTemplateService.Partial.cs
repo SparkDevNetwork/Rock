@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
@@ -136,14 +137,13 @@ namespace Rock.Model
                                 .FirstOrDefault();
                         }
 
-                        string documentKey = string.Empty;
-                        if ( document == null  )
+                        string documentKey = document?.DocumentKey;
+                        if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
                         {
                             documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
                         else
                         {
-                            documentKey = document.DocumentKey;
                             provider.ResendDocument( document, out sendErrors );
                         }
 

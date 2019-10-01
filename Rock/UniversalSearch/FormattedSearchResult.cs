@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 namespace Rock.UniversalSearch
 {
     /// <summary>

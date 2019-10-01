@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+
 using UAParser;
 
 namespace Rock.Lava
@@ -159,7 +161,8 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="rockPage">The rock page.</param>
         /// <returns></returns>
-        [Obsolete("Just use the PageCache of the CurrentPage instead")]
+        [RockObsolete( "1.7" )]
+        [Obsolete("Just use the PageCache of the CurrentPage instead", true )]
         public static Dictionary<string, object> GetPagePropertiesMergeObject( RockPage rockPage )
         {
             Dictionary<string, object> pageProperties = new Dictionary<string, object>();

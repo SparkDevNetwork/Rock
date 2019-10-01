@@ -2,7 +2,7 @@ IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonHistorical]', 'V') IS NOT NULL
     DROP VIEW AnalyticsDimPersonHistorical
 GO
 
-CREATE VIEW [dbo].AnalyticsDimPersonHistorical
+CREATE VIEW [dbo].[AnalyticsDimPersonHistorical]
 AS
 SELECT asph.*
 	,ms.Value [MaritalStatus]

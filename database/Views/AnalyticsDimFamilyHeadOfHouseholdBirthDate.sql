@@ -1,4 +1,4 @@
-ALTER VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
+ALTER VIEW [dbo].[AnalyticsDimFamilyHeadOfHouseholdBirthDate]
 AS
 SELECT d.DateKey AS [BirthDateKey]
     ,*

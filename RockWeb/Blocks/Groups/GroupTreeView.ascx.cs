@@ -150,20 +150,20 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
 
-            var CampusFilter = this.GetUserPreference( "CampusFilter" );
+            var campusFilter = this.GetUserPreference( "CampusFilter" );
             if ( pnlConfigPanel.Visible )
             {
-                ddlCampuses.SetValue( CampusFilter );
+                ddlCampuses.SetValue( campusFilter );
             }
             else
             {
                 ddlCampuses.SetValue( "" );
             }
 
-            var IncludeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
+            var includeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             if ( pnlConfigPanel.Visible )
             {
-                tglIncludeNoCampus.Checked = IncludeNoCampus;
+                tglIncludeNoCampus.Checked = includeNoCampus;
             }
 
         }

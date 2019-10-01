@@ -21,16 +21,17 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people based on the zipcode of their family." )]
     [Export( typeof( DataFilterComponent ) )]
@@ -81,7 +82,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -94,7 +95,7 @@ function() {
     var result = 'Postal Code';
     var compareTypeText = $('.js-filter-compare :selected', $content).text();
     if ( $('.js-filter-control', $content).is(':visible') ) {
-        var compareValueSingle = $('.js-filter-control', $content).val()    
+        var compareValueSingle = $('.js-filter-control', $content).val()
         result += ' ' + compareTypeText + ' ' + (compareValueSingle || '');
     }
     else {
@@ -153,7 +154,7 @@ function() {
         /// </summary>
         private RockTextBox tbPostalCode = null;
         private RockDropDownList ddlStringFilterComparison = null;
-        private RockDropDownList ddlLocationType = null;
+        private DefinedValuePicker dvpLocationType = null;
 
         /// <summary>
         /// Creates the child controls.
@@ -175,16 +176,16 @@ function() {
             filterControl.Controls.Add( tbPostalCode );
             controls.Add( tbPostalCode );
 
-            ddlLocationType = new RockDropDownList();
-            ddlLocationType.ID = filterControl.ID + "_ddlLocationType";
-            ddlLocationType.Label = "Location Type";
-            ddlLocationType.DataValueField = "Id";
-            ddlLocationType.DataTextField = "Value";
+            dvpLocationType = new DefinedValuePicker();
+            dvpLocationType.ID = filterControl.ID + "_ddlLocationType";
+            dvpLocationType.Label = "Location Type";
+            dvpLocationType.DataValueField = "Id";
+            dvpLocationType.DataTextField = "Value";
             DefinedTypeCache locationDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
-            ddlLocationType.BindToDefinedType( locationDefinedType );
-            ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
-            filterControl.Controls.Add( ddlLocationType );
-            controls.Add( ddlLocationType );
+            dvpLocationType.DefinedTypeId = locationDefinedType.Id;
+            dvpLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
+            filterControl.Controls.Add( dvpLocationType );
+            controls.Add( dvpLocationType );
 
             return controls.ToArray();
         }
@@ -202,7 +203,7 @@ function() {
             {
                 RockDropDownList ddlCompare = controls[0] as RockDropDownList;
                 RockTextBox tbPostalCode = controls[1] as RockTextBox;
-                writer.AddAttribute( "class", "row field-criteria" );
+                writer.AddAttribute( "class", "row form-row field-criteria" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( "class", "col-md-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

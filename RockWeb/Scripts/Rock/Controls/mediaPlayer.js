@@ -9,7 +9,7 @@
 
                 Sys.Application.add_load(function () {
                     var cssFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelementplayer.min.css';
-                    var jsFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelement-and-player.js';
+                    var jsFile = Rock.settings.get('baseUrl') + 'Scripts/mediaelementjs/mediaelementplayer.min.js';
 
                     // ensure that css for mediaelementplayers is added to page
                     if (!$('#mediaElementCss').length) {
@@ -22,7 +22,7 @@
                         $.ajaxSetup({ cache: true });
                         $('head').prepend("<script id='mediaElementJs' src='" + jsFile + "' />");
                     }
-                    
+
                     // ensure that mediaelementplayer is applied to all the the rock audio/video that was generated from a Rock Video/Audio FieldType (js-media-audio,js-media-video)
                     $('audio.js-media-audio,video.js-media-video').mediaelementplayer({ enableAutosize: true });
                 });

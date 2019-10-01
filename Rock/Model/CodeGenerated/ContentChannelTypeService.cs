@@ -109,6 +109,7 @@ namespace Rock.Model
             target.IncludeTime = source.IncludeTime;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
+            target.ShowInChannelList = source.ShowInChannelList;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

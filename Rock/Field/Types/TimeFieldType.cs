@@ -167,6 +167,29 @@ namespace Rock.Field.Types
             return null;
         }
 
+        /// <summary>
+        /// Determines whether this FieldType supports doing PostBack for the editControl
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <returns>
+        ///   <c>true</c> if [has change handler] [the specified control]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool HasChangeHandler( Control editControl )
+        {
+            // the TimePicker can cause a postback loop if OnChange and AutoPostback is enabled, so disable the HasChangeHandler
+            return false;
+        }
+
+        /// <summary>
+        /// Specifies an action to perform when the EditControl's Value is changed. See also <seealso cref="HasChangeHandler(Control)" />
+        /// </summary>
+        /// <param name="editControl">The edit control.</param>
+        /// <param name="action">The action.</param>
+        public override void AddChangeHandler( Control editControl, Action action )
+        {
+            // the TimePicker can cause a postback loop if OnChange and AutoPostback is enabled, so disable the HasChangeHandler
+        }
+
         #endregion
 
     }

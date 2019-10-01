@@ -20,12 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Elasticsearch.Net;
+
 using Nest;
-using Newtonsoft.Json;
+
 using Newtonsoft.Json.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

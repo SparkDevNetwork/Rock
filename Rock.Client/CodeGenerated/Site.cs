@@ -35,10 +35,13 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
         public string AllowedFrameDomains { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public int? ChangePasswordPageId { get; set; }
@@ -53,6 +56,12 @@ namespace Rock.Client
         public int? CommunicationPageRouteId { get; set; }
 
         /// <summary />
+        public int? ConfigurationMobilePhoneFileId { get; set; }
+
+        /// <summary />
+        public int? ConfigurationMobileTabletFileId { get; set; }
+
+        /// <summary />
         public int? DefaultPageId { get; set; }
 
         /// <summary />
@@ -62,18 +71,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public bool EnabledForShortening { get; set; }
+        public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
-        public bool EnablePageViews
-        {
-            get { return _EnablePageViews; }
-            set { _EnablePageViews = value; }
-        }
-        private bool _EnablePageViews = true;
+        public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -94,13 +98,24 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.8"
+        [Obsolete( "Moved to Theme", false )]
+        public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
+
+        /// <summary />
         public string IndexStartingLocation { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public DateTime? LatestVersionDateTime { get; set; }
 
         /// <summary />
         public int? LoginPageId { get; set; }
@@ -144,7 +159,13 @@ namespace Rock.Client
         public int? SiteLogoBinaryFileId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.SiteType SiteType { get; set; }
+
+        /// <summary />
         public string Theme { get; set; }
+
+        /// <summary />
+        public int? ThumbnailFileId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -179,12 +200,15 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
             this.ChangePasswordPageId = source.ChangePasswordPageId;
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            this.ConfigurationMobilePhoneFileId = source.ConfigurationMobilePhoneFileId;
+            this.ConfigurationMobileTabletFileId = source.ConfigurationMobileTabletFileId;
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
@@ -197,9 +221,14 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            #pragma warning disable 612, 618
+            this.IconCssWeight = source.IconCssWeight;
+            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
+            this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
+            this.LatestVersionDateTime = source.LatestVersionDateTime;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
             this.MobilePageId = source.MobilePageId;
@@ -213,7 +242,9 @@ namespace Rock.Client
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
             this.RequiresEncryption = source.RequiresEncryption;
             this.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
+            this.SiteType = source.SiteType;
             this.Theme = source.Theme;
+            this.ThumbnailFileId = source.ThumbnailFileId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -227,5 +229,18 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        public Person GetPersonNoTracking( int personAliasId )
+        {
+            return Queryable()
+                .Where( a => a.Id.Equals( personAliasId ) )
+                .Select( a => a.Person )
+                .AsNoTracking()
+                .FirstOrDefault();
+        }
     }
 }

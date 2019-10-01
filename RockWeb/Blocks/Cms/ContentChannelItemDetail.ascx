@@ -14,7 +14,7 @@
             },
             UniqueSlug: {
                 restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentSlug" ) %>',
-                restParams: '/{slug}'
+                restParams: "/" + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}"
             },
             RemoveSlug: {
                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
@@ -117,9 +117,17 @@
                                 </div>
                             </div>
 
+                            <Rock:RockControlWrapper ID="rcwItemGlobalKey" runat="server" Label="Item Global Key" Help="The item identifier is a system unique key to the content channel item">
+                                <div class="form-group rollover-container">
+                                    <asp:Label ID="lblItemGlobalKey" runat="server"></asp:Label>
+                                    <div class="rollover-item actions pull-right">
+                                        <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="fa fa-redo"></i></asp:LinkButton>
+                                    </div>
+                                </div>
+                            </Rock:RockControlWrapper>
+
                         </div>
                     </div>
-
 
                     <Rock:RockControlWrapper ID="rcwTags" runat="server" Label="Tags">
                         <Rock:TagList ID="taglTags" runat="server" CssClass="clearfix" />
@@ -131,14 +139,11 @@
                         </div>
                     </div>
 
-
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
                         </div>
                     </div>
-
-
 
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />

@@ -76,7 +76,7 @@
                         <dd><div id="availabilityMessage" class="alert"/></dd>
                     </dl>
                     <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
                     <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
                 </fieldset>
@@ -86,7 +86,7 @@
             <div class="col-md-6">
 
                 <fieldset>
-                    <legend>Your Information</legend> 
+                    <legend>Your Information</legend>
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
@@ -109,9 +109,9 @@
                                                 <div class="row margin-l-sm">
                                                     <div class="col-sm-7">
                                                         <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' 
+                                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>'
                                                             Number='<%# Eval("NumberFormatted")  %>'  />
-                                                    </div>    
+                                                    </div>
                                                     <div class="col-sm-5 margin-t-sm">
                                                         <div class="row">
                                                             <div class="col-xs-6">
@@ -130,7 +130,7 @@
                                 </asp:Repeater>
                         </fieldset>
                    </asp:Panel>
-                    
+
                     <asp:Panel ID="pnlAddress" runat="server">
                         <fieldset>
                             <legend>Address</legend>
@@ -140,7 +140,7 @@
 
                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
             </div>
-        
+
         </div>
 
         <div class="actions">
@@ -173,8 +173,8 @@
 
         <div class="inputs-list not-me">
             <label>
-                <input type="radio" value="0" name="DuplicatePerson" />        
-                <span>None of these are me</span>    
+                <input type="radio" value="0" name="DuplicatePerson" />
+                <span>None of these are me</span>
             </label>
         </div>
 

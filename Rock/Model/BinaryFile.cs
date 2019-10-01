@@ -18,15 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization;
+
+using ImageResizer;
 
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
-using System.Drawing;
-using ImageResizer;
 
 namespace Rock.Model
 {
@@ -337,9 +340,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Deleted )
+            if ( entry.State == EntityState.Deleted )
             {
                 if ( StorageProvider != null )
                 {
@@ -430,7 +433,7 @@ namespace Rock.Model
                     catch ( Exception ) { } // if the file is an invalid photo keep moving
                 }
 
-                if ( entry.State == System.Data.Entity.EntityState.Added )
+                if ( entry.State == EntityState.Added )
                 {
                     // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
@@ -466,7 +469,7 @@ namespace Rock.Model
                 }
 
 
-                else if ( entry.State == System.Data.Entity.EntityState.Modified )
+                else if ( entry.State == EntityState.Modified )
                 {
                     // when a file is saved (unless it is getting Deleted/Added), 
                     // it should use the StorageEntityType that is associated with the BinaryFileType

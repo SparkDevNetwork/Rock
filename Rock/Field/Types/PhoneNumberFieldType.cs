@@ -14,9 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-using System.Web.UI;
-using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types

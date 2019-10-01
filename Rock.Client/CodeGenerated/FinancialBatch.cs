@@ -50,6 +50,9 @@ namespace Rock.Client
         public decimal ControlAmount { get; set; }
 
         /// <summary />
+        public int? ControlItemCount { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.BatchStartDateTime = source.BatchStartDateTime;
             this.CampusId = source.CampusId;
             this.ControlAmount = source.ControlAmount;
+            this.ControlItemCount = source.ControlItemCount;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsAutomated = source.IsAutomated;

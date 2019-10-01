@@ -14,10 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
 using System.Collections.Generic;
-using Rock.Model;
 
 namespace Rock.Communication
 {

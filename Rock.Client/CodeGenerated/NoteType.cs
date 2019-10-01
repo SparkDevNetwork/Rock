@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AllowsAttachments { get; set; }
+
+        /// <summary />
         public bool AllowsReplies { get; set; }
 
         /// <summary />
@@ -50,7 +53,15 @@ namespace Rock.Client
         public string BackgroundColor { get; set; }
 
         /// <summary />
+        public int? BinaryFileTypeId { get; set; }
+
+        /// <summary />
         public string BorderColor { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.8"
+        [Obsolete( "No Longer Supported", false )]
+        public string CssClass { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -132,12 +143,17 @@ namespace Rock.Client
         public void CopyPropertiesFrom( NoteType source )
         {
             this.Id = source.Id;
+            this.AllowsAttachments = source.AllowsAttachments;
             this.AllowsReplies = source.AllowsReplies;
             this.AllowsWatching = source.AllowsWatching;
             this.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
             this.AutoWatchAuthors = source.AutoWatchAuthors;
             this.BackgroundColor = source.BackgroundColor;
+            this.BinaryFileTypeId = source.BinaryFileTypeId;
             this.BorderColor = source.BorderColor;
+            #pragma warning disable 612, 618
+            this.CssClass = source.CssClass;
+            #pragma warning restore 612, 618
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
@@ -168,6 +184,9 @@ namespace Rock.Client
     /// </summary>
     public partial class NoteType : NoteTypeEntity
     {
+        /// <summary />
+        public BinaryFileType BinaryFileType { get; set; }
+
         /// <summary />
         public EntityType EntityType { get; set; }
 
