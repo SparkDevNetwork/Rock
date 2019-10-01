@@ -17,11 +17,13 @@ $NewBackupRoot = "$AppRoot.backup.new";
 
 
 # Stop the website
-# app_offline.htm is a giant messy lie and none of the many things I've tried
-# to do with it prevent random deploy errors, so we're just going to take the whole
-# site down while we deploy files.
 Stop-IISSite "Default Web Site" -Confirm:$false;
 
+# Kill IIS so it stops locking msvcr120.dll and failing the deploy
+$process = Get-Process -Name w3wp -ErrorAction SilentlyContinue;
+if( -not $null -eq $process ) {
+    $process.Kill();
+}
 
 # See if the new backup already exists (Indicates the previous deploy script failed to complete)
 
