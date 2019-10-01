@@ -603,6 +603,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
                     .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
 
+
                 // Activated Date Range Filter
                 if ( drpActivated.LowerValue.HasValue )
                 {
@@ -657,16 +658,19 @@ namespace RockWeb.Blocks.WorkFlow
                     qry = qry.Where( w => w.Status.StartsWith( status ) );
                 }
 
+                // Set up a quick workflow with the proper workflow type id so we can restrict the attributes
+                var workflow = new Workflow() { WorkflowTypeId = _workflowType.Id };
+                var attributeValueService = new AttributeValueService( rockContext );
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
-                    var attributeValueService = new AttributeValueService( rockContext );
                     var parameterExpression = attributeValueService.ParameterExpression;
 
                     foreach ( var attribute in AvailableAttributes )
                     {
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, workflowService, Rock.Reporting.FilterMode.SimpleFilter );
+                        qry = ApplyAttributeQueryFilter( workflow, attribute.FieldType.Field, qry, filterControl, attribute, workflowService, Rock.Reporting.FilterMode.SimpleFilter );
+
                     }
                 }
 
@@ -733,6 +737,45 @@ namespace RockWeb.Blocks.WorkFlow
 
         }
 
+
+        /// <summary>
+        /// Gets the Attribute Query Expression to be used with an Entity Query for a given workflow and field
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="workflow">A workflow entity to use for filtering the parameter list.</param>
+        /// <param name="field">The field to load the query for.</param>
+        /// <param name="qry">The qry.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="serviceInstance"></param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public virtual IQueryable<T> ApplyAttributeQueryFilter<T>( Workflow workflow, Rock.Field.IFieldType field, IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new()
+        {
+            if ( filterControl == null )
+            {
+                return qry;
+            }
+
+            var filterValues = field.GetFilterValues( filterControl, attribute.QualifierValues, filterMode );
+
+            List<Rock.Reporting.EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( workflow );
+
+            var entityField = entityFields.Where( a => a.FieldKind == Rock.Reporting.FieldKind.Attribute && a.AttributeGuid == attribute.Guid ).FirstOrDefault();
+
+            if ( entityField == null )
+            {
+                entityField = Rock.Reporting.EntityHelper.GetEntityFieldForAttribute( attribute, false );
+            }
+
+            var parameterExpression = serviceInstance.ParameterExpression;
+            var attributeExpression = Rock.Utility.ExpressionHelper.GetAttributeExpression( serviceInstance, parameterExpression, entityField, filterValues );
+            qry = qry.Where( parameterExpression, attributeExpression );
+
+            return qry;
+        }
+
+
         private string MakeKeyUniqueToType( string key )
         {
             if ( _workflowType != null )
@@ -741,7 +784,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
             return key;
         }
-
         #endregion
     }
 }
