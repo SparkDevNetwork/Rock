@@ -40,6 +40,10 @@ namespace Rock.Reporting.DataFilter.Group
     {
         #region Overrides
 
+        /// <summary>
+        /// Override this method to customise the DataViewItemPicker displayed for this filter by setting the Label text, Help text and other properties as necessary.
+        /// </summary>
+        /// <param name="picker"></param>
         protected override void OnConfigureDataViewItemPicker( DataViewItemPicker picker )
         {
             picker.Label = "Is Connected to a Location in this Data View";
@@ -119,11 +123,18 @@ namespace Rock.Reporting.DataFilter.Group
         /// </summary>
         public class FilterSettings : SettingsStringBase
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
             public FilterSettings()
             {
                 //
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterSettings"/> class.
+            /// </summary>
+            /// <param name="settingsString">The settings string.</param>
             public FilterSettings( string settingsString )
             {
                 FromSelectionString( settingsString );
