@@ -85,6 +85,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.lcbcchurch.Groups", "com.lcbcchurch.Groups\com.lcbcchurch.Groups.csproj", "{4EAA880F-7670-4E2A-B540-1738A82EBA22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.lcbcchurch.Volunteer", "com.lcbcchurch.Volunteer\com.lcbcchurch.Volunteer.csproj", "{ACA8B978-C3B2-42CA-B31B-BBF33AF2E382}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
