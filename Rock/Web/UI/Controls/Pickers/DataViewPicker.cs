@@ -20,16 +20,18 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.8" )]
     [Obsolete("Use DataViewItemPicker instead")]
     public class DataViewPicker : RockDropDownList
     {

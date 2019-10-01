@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web.Cache;
-using Rock.Attribute;
 
 namespace Rock.Jobs
 {

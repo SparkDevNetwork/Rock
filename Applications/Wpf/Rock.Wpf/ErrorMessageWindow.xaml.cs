@@ -43,7 +43,7 @@ namespace Rock.Wpf
             }
 
             InitializeComponent();
-            lblErrorMessage.Content = message;
+            lblErrorMessage.Message = message;
         }
 
         /// <summary>

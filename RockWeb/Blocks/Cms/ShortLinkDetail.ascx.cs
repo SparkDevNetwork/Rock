@@ -35,7 +35,7 @@ using System.Data.Entity;
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName("Short Link Detail")]
     [Category("CMS")]
@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Crm
         {
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = @"
-    new Clipboard('.js-copy-clipboard');
+    new ClipboardJS('.js-copy-clipboard');
     $('.js-copy-clipboard').tooltip();
 ";
             ScriptManager.RegisterStartupScript( btnCopy, btnCopy.GetType(), "copy-short-link", script, true );

@@ -22,7 +22,6 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -535,7 +534,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+                RockPage.AddScriptLink( Page, "~/Scripts/ace/ace.js" );
             }
         }
 

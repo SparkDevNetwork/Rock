@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Chart;
 using Rock.Data;
 
@@ -149,23 +150,6 @@ namespace Rock.Model
                 {
                     return 0;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the series identifier (obsolete)
-        /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
-        /// </summary>
-        /// <value>
-        /// The series identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
-        public string SeriesId
-        {
-            get
-            {
-                return this.MetricValuePartitionEntityIds;
             }
         }
 

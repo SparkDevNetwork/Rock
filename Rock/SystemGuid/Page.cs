@@ -283,6 +283,11 @@ namespace Rock.SystemGuid
         public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
 
         /// <summary>
+        /// Gets the htmleditor RockAssetManager Plugin Frame page guid
+        /// </summary>
+        public const string HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389";
+
+        /// <summary>
         /// Gets the HtmlEditor RockMergeField Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>
@@ -593,6 +598,12 @@ namespace Rock.SystemGuid
         public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
 
         /// <summary>
+        /// Gets the Registration Instance page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
         /// Gets the Exception Detail page guid
         /// ParentPage: Exception List
         /// </summary>
@@ -693,6 +704,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Rock Settings
         /// </summary>
         public const string GENERAL_SETTINGS = "0B213645-FA4E-44A5-8E4C-B2D8EF054985";
+
+        /// <summary>
+        /// Gets the Give page guid (give now parent)
+        /// ParentPage: Give
+        /// </summary>
+        public const string GIVE = "8BB303AF-743C-49DC-A7FF-CC1236B4B1D9";
 
         /// <summary>
         /// Gets the Give Now page guid
@@ -1394,10 +1411,18 @@ namespace Rock.SystemGuid
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
 
         /// <summary>
-        /// Gets the SMS From Values page guid
+        /// Gets the SMS Phone Numbers page guid
         /// ParentPage: Communications
         /// </summary>
+        [Obsolete("Use SMS_PHONE_NUMBERS instead")]
+        [RockObsolete("1.9")]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
+
+        /// <summary>
+        /// The SMS phone numbers
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>
         /// Gets the SQL Command page guid
@@ -1488,6 +1513,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Manage
         /// </summary>
         public const string TAGS_MANAGE = "2654EBE9-F585-4E64-93F3-102357F89660";
+
+        /// <summary>
+        /// Gets the Text To Give Setup page guid
+        /// </summary>
+        public const string TEXT_TO_GIVE_SETUP = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1";
 
         /// <summary>
         /// Gets the Time Select page guid

@@ -16,15 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using Newtonsoft.Json;
+
 using Newtonsoft.Json.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -179,6 +179,14 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the message as it was sent to the recipient (i.e. after lava merge).
+        /// </summary>
+        /// <value>
+        /// The sent message.
+        /// </value>
+        [DataMember]
+        public string SentMessage { get; set; }
         #endregion
 
         #region Virtual Properties

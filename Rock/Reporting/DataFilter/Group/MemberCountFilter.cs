@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter groups based on the number of members with status or leader criteria" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -93,7 +94,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -114,7 +115,7 @@ function () {
     result += ' ' + $('.js-filter-compare', $content).find(':selected').text();
     var countText = $('.js-member-count', $content).filter(':visible').length ? $('.js-member-count', $content).filter(':visible').val() : '';
     result += ' ' + countText;
-    return result; 
+    return result;
 }
 
 ";
@@ -229,7 +230,7 @@ function () {
             ddlLeader.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -151,18 +152,23 @@ namespace Rock.Workflow.Action
                 if ( !id.HasValue && !guid.HasValue )
                 {
                     // Find by Name
-                    InteractionChannel interactionChannel = new InteractionChannelService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( c => c.Name == identifier );
-                    if ( interactionChannel != null )
+                    int? interactionChannelId = new InteractionChannelService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.Name == identifier )
+                        .Select( c => c.Id )
+                        .Cast<int?>()
+                        .FirstOrDefault();
+
+                    if ( interactionChannelId != null )
                     {
-                        return InteractionChannelCache.Get( interactionChannel );
+                        return InteractionChannelCache.Get( interactionChannelId.Value );
                     }
 
                     // If still no match, and we have a name, create a new channel
                     using ( var newRockContext = new RockContext() )
                     {
-                        interactionChannel = new InteractionChannel();
+                        InteractionChannel interactionChannel = new InteractionChannel();
                         interactionChannel.Name = identifier;
                         new InteractionChannelService( newRockContext ).Add( interactionChannel );
                         newRockContext.SaveChanges();
@@ -189,10 +195,17 @@ namespace Rock.Workflow.Action
                 if ( entityId.HasValue )
                 {
                     // Find by the Entity Id
-                    var component = channel.InteractionComponents.FirstOrDefault( c => c.EntityId.HasValue && c.EntityId.Value == entityId.Value );
-                    if ( component != null )
+                    int? interactionComponentId = new InteractionComponentService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.EntityId.HasValue && c.EntityId.Value == entityId.Value )
+                        .Select( c => c.Id )
+                        .Cast<int?>()
+                        .FirstOrDefault();
+
+                    if ( interactionComponentId != null )
                     {
-                        return component;
+                        return InteractionComponentCache.Get( interactionComponentId.Value );
                     }
                 }
 
@@ -223,10 +236,17 @@ namespace Rock.Workflow.Action
                     if ( !id.HasValue && !guid.HasValue )
                     {
                         // Find by Name
-                        var component = channel.InteractionComponents.FirstOrDefault( c => c.Name.Equals( identifier, StringComparison.OrdinalIgnoreCase ) );
-                        if ( component != null )
+                        int? interactionComponentId = new InteractionComponentService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( c => c.Name.Equals( identifier, StringComparison.OrdinalIgnoreCase ) )
+                            .Select( c => c.Id )
+                            .Cast<int?>()
+                            .FirstOrDefault();
+
+                        if ( interactionComponentId != null )
                         {
-                            return component;
+                            return InteractionComponentCache.Get( interactionComponentId.Value );
                         }
 
                         // If still no match, and we have a name, create a new channel

@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -119,7 +120,7 @@ namespace Rock.Field.Types
             if ( condensed )
             {
                 // TrimEnd is added because ConvertMarkdownToHtml add two newlines. Described in: https://github.com/Knagis/CommonMark.NET/issues/107
-                result = result.Trim();
+                result = result?.Trim() ?? string.Empty;
                 // Remove paragraph tags for values in grids and filter indicators to remove unnecessary whitespace above and below the value.
                 if ( result.StartsWith("<p>") && result.EndsWith("</p>"))
                 {

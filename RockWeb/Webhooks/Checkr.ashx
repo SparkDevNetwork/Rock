@@ -65,17 +65,10 @@ namespace RockWeb.Webhooks
                     postedData = reader.ReadToEnd();
                 }
 
-                if ( !Rock.Checkr.Checkr.SaveWebhookResults( postedData ) )
-                {
-                    response.StatusCode = (int)HttpStatusCode.OK; //If it is not ok, the website will re-direct to the error screen
-                    return;
-                }
+                Rock.Checkr.Checkr.SaveWebhookResults( postedData );
 
-                try
-                {
-                    response.StatusCode = (int)HttpStatusCode.OK;
-                }
-                catch { }
+                // Per Gerhard this has to be set to 200 regardless of the result or the page will not function.
+                response.StatusCode = (int)HttpStatusCode.OK;
             }
             catch ( SystemException ex )
             {

@@ -14,12 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -34,13 +28,13 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixPledgeAnalyticsGiftDateFilteringUp();
-            FixChartShortcode();
-            UpdateIsSystemForCategories();
-            FixTypeInTemplate();
-            FixPageRouteForContentPage();
-            AddExportAPIsMaxItemsPerPageGlobalAttribute();
-            SetRestActionAuthSecurityForExportAPIs();
+            //FixPledgeAnalyticsGiftDateFilteringUp();
+            //FixChartShortcode();
+            //UpdateIsSystemForCategories();
+            //FixTypeInTemplate();
+            //FixPageRouteForContentPage();
+            //AddExportAPIsMaxItemsPerPageGlobalAttribute();
+            //SetRestActionAuthSecurityForExportAPIs();
         }
 
         /// <summary>
@@ -105,7 +99,7 @@ INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny
         /// </summary>
         public override void Down()
         {
-            FixPledgeAnalyticsGiftDateFilteringDown();
+            //FixPledgeAnalyticsGiftDateFilteringDown();
         }
 
         /// <summary>

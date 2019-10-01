@@ -14,19 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock;
-using Rock.Data;
-using Rock.Field;
-using Rock.Model;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI
@@ -129,7 +123,7 @@ namespace Rock.Web.UI
                 blockTypeCss = parts[parts.Length - 1].Trim();
             }
             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-            string blockInstanceCss = "block-instance " +
+            string blockInstanceCss = "block-instance js-block-instance " +
                 blockTypeCss +
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? "" : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : "" );

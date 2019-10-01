@@ -16,10 +16,11 @@
 //
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+
 using UAParser;
 
 namespace Rock.Transactions

@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Web.UI;
 
-using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.PersonProfile
 {

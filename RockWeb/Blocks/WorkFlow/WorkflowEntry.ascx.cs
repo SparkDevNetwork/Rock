@@ -799,20 +799,25 @@ namespace RockWeb.Blocks.WorkFlow
                 List<string> errorMessages;
                 if ( _workflowService.Process( _workflow, out errorMessages ) )
                 {
-                    int? previousActionId = null;
+                    Guid? previousActionGuid = null;
                     
                     if ( _action != null )
                     {
-                        previousActionId = _action.Id;
+                        // Compare GUIDs since the IDs are DB generated and will be 0 if the workflow is not persisted.
+                        previousActionGuid = _action.Guid;
                     }
 
                     ActionTypeId = null;
                     _action = null;
                     _actionType = null;
                     _activity = null;
+                    bool hydrateObjectsResult = HydrateObjects();
 
-                    if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
+                    if ( hydrateObjectsResult && _action != null && _action.Guid != previousActionGuid )
                     {
+                        // The block reloads the page with the workflow IDs as a parameter. At this point the workflow must be persisted regardless of user settings in order for the workflow to work.
+                        _workflowService.PersistImmediately( _action );
+
                         // If we are already being directed (presumably from the Redirect Action), don't redirect again.
                         if (!Response.IsRequestBeingRedirected)
                         {
@@ -831,7 +836,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         if ( lSummary.Text.IsNullOrWhiteSpace() )
                         {
-                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Guid != previousActionGuid ) );
                         }
                         else
                         {

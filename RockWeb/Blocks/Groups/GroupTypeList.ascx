@@ -11,7 +11,7 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                        <Rock:RockDropDownList ID="ddlPurpose" runat="server" Label="Purpose"></Rock:RockDropDownList>
+                        <Rock:DefinedValuePicker ID="dvpPurpose" runat="server" Label="Purpose" />
                         <Rock:RockDropDownList ID="ddlIsSystem" runat="server" Label="System Group Type">
                             <asp:ListItem Value="" Text=" " />
                             <asp:ListItem Value="Yes" Text="Yes" />

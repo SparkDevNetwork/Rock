@@ -275,6 +275,7 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
+                contentItem.ItemGlobalKey = contentItem.Id != 0 ? lblItemGlobalKey.Text : CreateItemGlobalKey();
 
                 // If this is a new item and the channel is manually sorted then we need to set the order to the next number
                 if ( contentItem.Id == 0 && new ContentChannelService( rockContext ).IsManuallySorted( contentItem.ContentChannelId ) )
@@ -437,6 +438,17 @@ namespace RockWeb.Blocks.Cms
             {
                 lChannelUrl.Text = GetSlugPrefix( slug.ContentChannelItem.ContentChannel );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRefreshItemGlobalKey control.
+        /// Update the hidden field, value is not saved to the DB until the save button is clicked.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRefreshItemGlobalKey_Click( object sender, EventArgs e )
+        {
+            lblItemGlobalKey.Text = CreateItemGlobalKey();
         }
 
         #region Child/Parent List Events
@@ -666,6 +678,14 @@ namespace RockWeb.Blocks.Cms
 
         #region Internal Methods
 
+        private string CreateItemGlobalKey()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                return contentChannelItemSlugService.GetUniqueContentSlug( tbTitle.Text, null );
+            }
+        }
         /// <summary>
         /// Gets the slug prefix.
         /// </summary>
@@ -916,6 +936,8 @@ namespace RockWeb.Blocks.Cms
                     dpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
                     dpExpire.SelectedDate = contentItem.ExpireDateTime.HasValue ? contentItem.ExpireDateTime.Value.Date : (DateTime?)null;
                 }
+
+                lblItemGlobalKey.Text = contentItem.ItemGlobalKey;
 
                 nbPriority.Text = contentItem.Priority.ToString();
                 nbPriority.Visible = !contentItem.ContentChannelType.DisablePriority;
@@ -1265,5 +1287,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+
     }
 }

@@ -47,10 +47,16 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableHistory { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public int HistoryCount { get; set; } = 100;
 
         /// <summary />
         public bool? IsActive { get; set; }
@@ -127,8 +133,10 @@ namespace Rock.Client
             this.Class = source.Class;
             this.CronExpression = source.CronExpression;
             this.Description = source.Description;
+            this.EnableHistory = source.EnableHistory;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HistoryCount = source.HistoryCount;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;
@@ -156,6 +164,9 @@ namespace Rock.Client
     /// </summary>
     public partial class ServiceJob : ServiceJobEntity
     {
+        /// <summary />
+        public ICollection<ServiceJobHistory> ServiceJobHistory { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

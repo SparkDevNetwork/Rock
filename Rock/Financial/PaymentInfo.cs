@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Financial
 {
@@ -41,6 +42,15 @@ namespace Rock.Financial
         public decimal Amount { get; set; }
 
         /// <summary>
+        /// Gets or sets the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> indicating
+        /// the type of the transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> for this transaction.
+        /// </value>
+        public int? TransactionTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the first name.
         /// </summary>
         public string FirstName { get; set; }
@@ -49,6 +59,14 @@ namespace Rock.Financial
         /// Gets or sets the last name.
         /// </summary>
         public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the business (if giving as a business)
+        /// </summary>
+        /// <value>
+        /// The name of the business.
+        /// </value>
+        public string BusinessName { get; set; }
 
         /// <summary>
         /// Gets the full name.
@@ -75,7 +93,8 @@ namespace Rock.Financial
         public string Phone { get; set; }
 
         /// <summary>
-        /// The billing street
+        /// The billing street.
+        /// NOTE: If this is a <see cref="CreditCardPaymentInfo" /> and the Gateway is configured to prompt for a separate Billing Address (like NMI), <see cref="CreditCardPaymentInfo.BillingStreet1" />, etc, might be different then <see cref="PaymentInfo.Street1"/>, etc
         /// </summary>
         public string Street1 { get; set; }
 
@@ -138,7 +157,7 @@ namespace Rock.Financial
         public virtual string Comment1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the first comment line.
+        /// Gets or sets the second comment line.
         /// </summary>
         public virtual string Comment2 { get; set; }
 
@@ -152,37 +171,33 @@ namespace Rock.Financial
         {
             get
             {
-                string result = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
-
-                var countryValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
-                    .DefinedValues
-                    .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
-                    .FirstOrDefault();
-                if ( countryValue != null )
+                var tempLocation = new Rock.Model.Location
                 {
-                    string format = countryValue.GetAttributeValue( "AddressFormat" );
-                    if ( !string.IsNullOrWhiteSpace( format ) )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Street1", Street1 );
-                        mergeFields.Add( "Street2", Street2 );
-                        mergeFields.Add( "City", City );
-                        mergeFields.Add( "State", State );
-                        mergeFields.Add( "PostalCode", PostalCode );
-                        mergeFields.Add( "Country", countryValue.Description );
+                    Street1 = this.Street1,
+                    Street2 = this.Street2,
+                    City = this.City,
+                    State = this.State,
+                    PostalCode = this.PostalCode,
+                    Country = this.Country,
+                };
 
-                        result = format.ResolveMergeFields( mergeFields );
-                    }
-                }
-
-                if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
-                {
-                    return string.Empty;
-                }
-
-                return result;
+                return tempLocation.GetFullStreetAddress();
+                
             }
+        }
+
+        /// <summary>
+        /// Updates the address fields from an address control.
+        /// </summary>
+        /// <param name="addressControl">The address control.</param>
+        public void UpdateAddressFieldsFromAddressControl( AddressControl addressControl )
+        {
+            Street1 = addressControl.Street1;
+            Street2 = addressControl.Street2;
+            City = addressControl.City;
+            State = addressControl.State;
+            PostalCode = addressControl.PostalCode;
+            Country = addressControl.Country;
         }
 
         /// <summary>

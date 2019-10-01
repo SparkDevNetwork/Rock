@@ -13,6 +13,12 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
+
+
+.input-xs {
+  .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+}
+
 // Prevent Toggle Arrows from Displaying on number inputs
 input[type="number"] {
   -moz-appearance: textfield;
@@ -43,9 +49,6 @@ a.aspNetDisabled {
 
 .form-group.rock-literal,
 .rock-control-wrapper {
-  /*label {
-        margin-bottom: 0;
-    }*/ // commented out to match default bootstrap behavior (Lanio group member filter) JME 1/18/2016
 
   p.form-control-static {
     padding-top: 0;
@@ -183,7 +186,7 @@ a.aspNetDisabled {
 
 // highlight required fields
 .form-group.required {
-  .control-label::after {
+  > .control-label::after {
     margin-left: 4px;
     font-family: @fa-font-face;
     font-size: 6px;
@@ -334,6 +337,11 @@ dl:not(.dl-horizontal) {
 // -------------------------
 .btn-controlaligned {
   margin-top: 24px;
+}
+
+/* SK Add margin in ListItems */
+.list-items-rows .controls-row {
+  margin-bottom: 6px;
 }
 
 // 7. Static Controls

@@ -116,12 +116,12 @@
                 </div>
 
             </div>
-                                        
+
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Background Check Type" ValidationGroup="Package" 
+        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Background Check Type" ValidationGroup="Package"
             OnSaveClick="dlgPackage_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
 
@@ -170,7 +170,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlMVRJurisdiction" runat="server" Label="MVR Jurisdiction Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
+                        <Rock:DefinedValuePicker ID="dvpMVRJurisdiction" runat="server" Label="MVR Jurisdiction Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdiction code." />

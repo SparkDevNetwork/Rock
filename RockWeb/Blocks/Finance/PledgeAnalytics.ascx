@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server">
 
             <div class="panel panel-block panel-analytics">
-                <div class="panel-heading">
+                <div class="panel-heading panel-follow">
                     <h1 class="panel-title">
                         <i class="fa fa-list"></i>
                         Pledge Analytics
@@ -14,7 +14,7 @@
 
                     <div class="panel-labels">
                     </div>
-
+                    <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
                 </div>
 
                 <div class="panel-body">
@@ -79,6 +79,12 @@
 
 
         </asp:Panel>
+
+        <script>
+            Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+            });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -42,7 +42,8 @@
                         <div class="col-md-6">
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
-                                    <Rock:CurrencyBox ID="tbSingleAccountAmount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
+                                    <Rock:CurrencyBox ID="tbSingleAccountAmount" label="Amount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
+                                    <Rock:CurrencyBox ID="tbSingleAccountFeeAmount" label="Fee" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -54,18 +55,17 @@
                                 </div>
                             </asp:Panel>
                             <asp:Panel ID="pnlAccounts" runat="server">
-                                <div class="grid">
-                                    <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light"
-                                        ShowConfirmDeleteDialog="false">
-                                        <Columns>
-                                            <Rock:RockTemplateField HeaderText="Accounts">
-                                                <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                            </Rock:RockTemplateField>
-                                            <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
+                                <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light"
+                                    ShowConfirmDeleteDialog="false">
+                                    <Columns>
+                                        <Rock:RockTemplateField HeaderText="Accounts">
+                                            <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
+                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                        <Rock:CurrencyField HeaderText="Fee" DataField="FeeAmount" SortExpression="FeeAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField HeaderText="Amount" DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
                             </asp:Panel>
                         </div>
                     </div>
@@ -154,13 +154,14 @@
                         </div>
                         <div class="col-md-6">
                             <label>Accounts</label>
-                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
+                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="true">
                                 <Columns>
-                                    <Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Account">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField HeaderText="Fee" DataField="FeeAmount" SortExpression="FeeAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField HeaderText="Amount" DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
@@ -233,6 +234,7 @@
                     <div class="col-md-6">
                         <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" ValidationGroup="Account" />
                         <Rock:CurrencyBox ID="tbAccountAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Account" />
+                        <Rock:CurrencyBox ID="tbAccountFeeAmount" runat="server" Label="Fee" Required="false" ValidationGroup="Account" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />

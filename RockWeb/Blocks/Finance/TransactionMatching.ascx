@@ -15,21 +15,27 @@
         <asp:HiddenField ID="hfDoFadeIn" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading">
-                <h1 class="panel-title">
-                    <asp:Literal ID="lPanelTitle" runat="server" /></h1>
+            <div class="panel-heading panel-follow">
+                <!-- <h1 class="panel-title">
+                    <asp:Literal ID="lPanelTitle" runat="server" />
+                </h1> -->
 
                 <asp:Literal ID="lProgressBar" runat="server"></asp:Literal>
 
-                <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Visible="false"  />
 
-                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
-                    <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
-                </Rock:RockControlWrapper>
+                    <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server" Visible="false">
+                        <a id="hlAddNewBusiness" class="btn btn-default btn-xs" runat="server" href="#">Add Business</a>
+                    </Rock:RockControlWrapper>
 
-                <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Visible="false">
-                    <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
-                </Rock:RockControlWrapper>
+                    <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Visible="false">
+                        <a id="hlAddNewFamily" class="btn btn-default btn-xs" runat="server" href="#">Add Family</a>
+                    </Rock:RockControlWrapper>
+
+                    <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
+                </div>
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <div class="panel-body">
@@ -37,7 +43,7 @@
                 <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 transaction-matching-image">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
                             <div class="photo transaction-image">
@@ -51,7 +57,8 @@
                                 </asp:Repeater>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 transaction-matching-details styled-scroll">
+                            <div class="header">
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" EnhanceForLongLists="true" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
@@ -59,7 +66,7 @@
                                         style="position: relative; top: -58px; left: 10px"></span>
 
                                     <div>
-                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
+                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
                                         <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                             <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                             <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
@@ -99,7 +106,6 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
@@ -107,6 +113,8 @@
                             </div>
 
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
+                            </div>
+                            <div class="body">
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <div class="form-horizontal label-xl js-accounts">
                                     <asp:Repeater ID="rptAccounts" runat="server">
@@ -124,7 +132,9 @@
                                     </div>
                                 </asp:Panel>
                             </Rock:RockControlWrapper>
+                            </div>
 
+                            <div class="footer">
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
                             <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
 
@@ -134,6 +144,7 @@
                             <Rock:HiddenFieldWithClass ID="hfCurrencySymbol" runat="server" CssClass="js-currencysymbol" />
 
                             <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
+                            </div>
                         </div>
                     </div>
 
@@ -162,6 +173,8 @@
                         </div>
                         <div class="col-sm-6">
                             <Rock:CampusPicker ID="cpAccounts" runat="server" Label="Campus" Help="Only display selected accounts that are associated with this campus (or not associated with a campus)." />
+                            <Rock:RockCheckBox ID="cbIncludeChildAccounts" runat="server" Label="Include Child Accounts" Help="Checking this option will include all child and descendant accounts under all the selected accounts." />
+                            <Rock:RockCheckBox ID="cbFilterAccountsByBatchsCampus" runat="server" Label="Filter Accounts By Batch Campus" Help="If checked, only accounts that have the same campus as the batch will be shown." />
                         </div>
                     </div>
                 </Content>
@@ -205,6 +218,8 @@
             }
 
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize();
+
                 if ($('#<%=hfDoFadeIn.ClientID%>').val() == "1") {
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }

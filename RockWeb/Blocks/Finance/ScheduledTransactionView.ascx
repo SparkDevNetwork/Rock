@@ -23,7 +23,7 @@
                             </div>
                             <div class="col-xs-6">
                                 <asp:Literal ID="lDetailsRight" runat="server" />
-                                <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"><i class="fa fa-refresh"></i> Refresh Now</asp:LinkButton>
+                                <asp:LinkButton ID="btnRefresh" runat="server" OnClick="btnRefresh_Click"><i class="fa fa-refresh"></i> Refresh Now</asp:LinkButton>
                             </div>
                         </div>
                     </div>
@@ -33,15 +33,13 @@
                             <label>Accounts</label>
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
                                 <Columns>
-                                    <Rock:RockTemplateField>
-                                        <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lAccountsViewAccountName" OnDataBound="lAccountName_DataBound" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                     <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
                             <div class="actions pull-right">
-                                <asp:LinkButton ID="lbChangeAccounts" runat="server" Text="Change Account Allocation" CssClass="btn btn-link btn-xs" CausesValidation="false" OnClick="lbChangeAccounts_Click" />
+                                <asp:LinkButton ID="btnChangeAccounts" runat="server" Text="Change Account Allocation" CssClass="btn btn-link btn-xs" CausesValidation="false" OnClick="btnChangeAccounts_Click" />
                             </div>
                         </asp:Panel>
 
@@ -50,9 +48,7 @@
                                 <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false"
                                     ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockTemplateField>
-                                            <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                        </Rock:RockTemplateField>
+                                        <Rock:RockLiteralField ID="lAccountsEditAccountName" OnDataBound="lAccountName_DataBound" />
                                         <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                         <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                                         <Rock:EditField OnClick="gAccountsEdit_EditClick" />
@@ -61,30 +57,18 @@
                                 </Rock:Grid>
                             </div>
                             <div class="actions pull-right">
-                                <asp:LinkButton ID="lbSaveAccounts" runat="server" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="lbSaveAccounts_Click" />
-                                <asp:LinkButton ID="lbCancelAccounts" runat="server" Text="Cancel" CssClass="btn btn-link btn-xs" OnClick="lbCancelAccounts_Click" />
+                                <asp:LinkButton ID="btnSaveAccounts" runat="server" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="btnSaveAccounts_Click" />
+                                <asp:LinkButton ID="btnCancelAccounts" runat="server" Text="Cancel" CssClass="btn btn-link btn-xs" OnClick="btnCancelAccounts_Click" />
                             </div>
                         </asp:Panel>
-
-                        <dl>
-                            <asp:Repeater ID="rptrNotes" runat="server">
-                                <ItemTemplate>
-                                    <dt><%# Eval("Caption") %></dt>
-                                    <dd><%# Eval("Text") %>
-                                        <small>- <%# Eval("Person") %> on <%# Eval("Date") %> at <%# Eval("Time") %></small>
-                                    </dd>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </dl>
-
                     </div>
                 </div>
 
                 <div class="actions margin-t-md">
-                    <asp:LinkButton ID="lbUpdate" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbUpdate_Click" />
-                    <asp:LinkButton ID="lbCancelSchedule" runat="server" Text="Cancel Schedule" CssClass="btn btn-danger js-cancel-txn" CausesValidation="false" OnClick="lbCancelSchedule_Click" Visible="false" />
-                    <asp:LinkButton ID="lbReactivateSchedule" runat="server" Text="Reactivate Schedule" CssClass="btn btn-success js-reactivate-txn" CausesValidation="false" OnClick="lbReactivateSchedule_Click" Visible="false" />
-                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" />
+                    <asp:LinkButton ID="btnUpdate" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnUpdate_Click" />
+                    <asp:LinkButton ID="btnCancelSchedule" runat="server" Text="Cancel Schedule" CssClass="btn btn-danger js-cancel-txn" CausesValidation="false" OnClick="btnCancelSchedule_Click" Visible="false" />
+                    <asp:LinkButton ID="btnReactivateSchedule" runat="server" Text="Reactivate Schedule" CssClass="btn btn-success js-reactivate-txn" CausesValidation="false" OnClick="btnReactivateSchedule_Click" Visible="false" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
                 </div>
 
                 <Rock:NotificationBox ID="nbError" CssClass="margin-t-lg" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />

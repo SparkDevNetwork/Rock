@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -126,6 +127,25 @@ namespace Rock.Web.UI.Controls
                 {
                     WarningBlock.Text = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this the Address control has a State drop-down list.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it uses a drop-down list; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasStateList
+        {
+            get
+            {
+                return ViewState["HasStateList"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["HasStateList"] = value;
             }
         }
 
@@ -341,7 +361,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( _tbState.Visible )
+                if ( !HasStateList )
                 {
                     return _tbState.Text;
                 }
@@ -392,7 +412,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlCountry.SelectedValue;
+                if ( _ddlCountry.SelectedValue.IsNotNullOrWhiteSpace() )
+                {
+                    return _ddlCountry.SelectedValue;
+                }
+                else
+                {
+                    return GetDefaultCountry();
+                }
             }
 
             set
@@ -779,7 +806,7 @@ namespace Rock.Web.UI.Controls
 
             BindStates( _ddlCountry.SelectedValue );
 
-            if ( _tbState.Visible )
+            if ( !HasStateList )
             {
                 State = selectedStateFromEdit;
             }
@@ -794,7 +821,7 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the values. Use SetValues(null) to set defaults.
         /// </summary>
         /// <param name="location">The location.</param>
         public void SetValues( Rock.Model.Location location )
@@ -912,7 +939,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                _ddlCountry.SetValue( string.Empty );
+                _ddlCountry.SetValue( defaultCountryCode );
             }
         }
 
@@ -955,6 +982,7 @@ namespace Rock.Web.UI.Controls
 
             if ( stateList.Any() )
             {
+                HasStateList = true;
                 _ddlState.Visible = true;
                 _tbState.Visible = false;
 
@@ -976,6 +1004,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
+                HasStateList = false;
                 _ddlState.Visible = false;
                 _tbState.Visible = true;
             }

@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
       mc:Ignorable="d"
       d:DesignHeight="680"
       d:DesignWidth="700"
@@ -20,11 +21,11 @@
                 <Label Style="{StaticResource labelStyle}">Rock URL</Label>
                 <TextBox Name="txtRockUrl"
                          Style="{StaticResource textboxStyleUrl}" />
-                
-                <Label Name="lblAlert"
-                       Style="{StaticResource labelStyleAlert}"
-                       Content="ERROR: ">
-                </Label>
+
+
+                <rockWpfControls:AlertLabel Name="lblAlert"
+                       AlertType="Danger"
+                       Content="ERROR: "/>
                 <StackPanel Orientation="Horizontal"
                             Margin="0, 8">
                     <Button Style="{StaticResource buttonStylePrimary}"

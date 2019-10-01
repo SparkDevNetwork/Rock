@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Finance
             // Setup for being able to copy text to clipboard
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
-    new Clipboard('#{0}');
+    new ClipboardJS('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
             ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
@@ -405,14 +405,14 @@ namespace RockWeb.Blocks.Finance
             string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
             int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
 
-            cblTransactionType.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblTransactionType.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+            dvpTransactionType.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            dvpTransactionType.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
 
-            cblCurrencyTypes.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblCurrencyTypes.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+            dvpCurrencyTypes.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            dvpCurrencyTypes.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
 
-            cblTransactionSource.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            cblTransactionSource.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
+            dvpTransactionSource.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
+            dvpTransactionSource.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
 
             var accountIds = new List<int>();
             if ( setValues )
@@ -491,11 +491,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
-            
-
-            cblTransactionType.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ) );
-            cblCurrencyTypes.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ) );
-            cblTransactionSource.BindToDefinedType( DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ) );
+            dvpTransactionType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ).Id;
+            dvpCurrencyTypes.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
+            dvpTransactionSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -644,9 +642,9 @@ function(item) {
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "AmountRange", nreAmount.DelimitedValues, false );
-            this.SetUserPreference( keyPrefix + "TransactionTypeIds", cblTransactionType.SelectedValues.AsDelimited( "," ), false );
-            this.SetUserPreference( keyPrefix + "CurrencyTypeIds", cblCurrencyTypes.SelectedValues.AsDelimited( "," ), false );
-            this.SetUserPreference( keyPrefix + "SourceIds", cblTransactionSource.SelectedValues.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "TransactionTypeIds", dvpTransactionType.SelectedValues.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "CurrencyTypeIds", dvpCurrencyTypes.SelectedValues.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "SourceIds", dvpTransactionSource.SelectedValues.AsDelimited( "," ), false );
 
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
@@ -723,13 +721,13 @@ function(item) {
             nreAmount.DelimitedValues = GetSetting( keyPrefix, "AmountRange" );
 
             var currencyTypeIdList = GetSetting( keyPrefix, "CurrencyTypeIds" ).Split( ',' ).ToList();
-            cblCurrencyTypes.SetValues( currencyTypeIdList );
+            dvpCurrencyTypes.SetValues( currencyTypeIdList );
 
             var transactionTypeIdList = GetSetting( keyPrefix, "TransactionTypeIds" ).Split( ',' ).ToList();
-            cblTransactionType.SetValues( transactionTypeIdList );
+            dvpTransactionType.SetValues( transactionTypeIdList );
 
             var sourceIdList = GetSetting( keyPrefix, "SourceIds" ).Split( ',' ).ToList();
-            cblTransactionSource.SetValues( sourceIdList );
+            dvpTransactionSource.SetValues( sourceIdList );
 
             var accountIdList = GetSetting( keyPrefix, "AccountIds" ).Split( ',' ).ToList();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
@@ -817,13 +815,13 @@ function(item) {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
             var currencyTypeIds = new List<int>();
-            cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
+            dvpCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
 
             var sourceIds = new List<int>();
-            cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
+            dvpTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
             var transactionTypeIds = new List<int>();
-            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+            dvpTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
 
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
@@ -1130,13 +1128,13 @@ function(item) {
             var maxAmount = nreAmount.UpperValue;
 
             var currencyTypeIds = new List<int>();
-            cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
+            dvpCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
 
             var transactionTypeIds = new List<int>();
-            cblTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
+            dvpTransactionType.SelectedValues.ForEach( i => transactionTypeIds.Add( i.AsInteger() ) );
 
             var sourceIds = new List<int>();
-            cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
+            dvpTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
 
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )

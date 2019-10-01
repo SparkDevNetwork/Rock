@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -62,15 +63,6 @@ namespace Rock.CheckIn
         ///   <c>true</c> if [enable override]; otherwise, <c>false</c>.
         /// </value>
         public bool EnableOverride => GetSetting( "core_checkin_EnableOverride" ).AsBoolean( true );
-
-        /// <summary>
-        /// Gets the length of the security code.
-        /// </summary>
-        /// <value>
-        /// The length of the security code.
-        /// </value>
-        [Obsolete( "Use SecurityCodeAlphaNumericLength instead." )]
-        public int SecurityCodeLength => GetSetting( "core_checkin_SecurityCodeLength" ).AsIntegerOrNull() ?? 3;
 
         /// <summary>
         /// Gets the length of the security code alpha numeric.
@@ -222,6 +214,7 @@ namespace Rock.CheckIn
         /// <value>
         /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.7" )]
         [Obsolete( "Use PreventInactivePeople instead.", true )]
         public bool PreventInactivePeopele => GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false );
 

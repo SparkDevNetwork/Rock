@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -101,7 +102,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Deleted )
+            if ( entry.State == EntityState.Deleted )
             {
                 var routes = RouteTable.Routes;
                 if ( routes != null )

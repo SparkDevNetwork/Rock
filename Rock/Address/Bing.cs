@@ -22,12 +22,9 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.ServiceModel.Web;
 using System.Web;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Web.UI;
 
 namespace Rock.Address
 {

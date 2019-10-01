@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Communication
                     _person = contextEntity as Person;
                 }
             }
-            
+
             if ( !Page.IsPostBack )
             {
                 SetFilter();
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Communication
                 CommunicationItem communication = e.Row.DataItem as CommunicationItem;
                 if (
                     !CurrentPersonAliasId.HasValue ||
-                    communication == null || 
+                    communication == null ||
                     !communication.CreatedByPersonAliasId.HasValue ||
                     communication.CreatedByPersonAliasId.Value != CurrentPersonAliasId.Value )
                 {
@@ -327,7 +327,8 @@ namespace RockWeb.Blocks.Communication
             {
                 Id = c.Id,
                 CommunicationType = c.CommunicationType,
-                Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                // Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
+                Subject = string.IsNullOrEmpty( c.Name ) ? ( string.IsNullOrEmpty( c.Subject ) ? c.PushTitle : c.Subject ) : c.Name,
                 CreatedDateTime = c.CreatedDateTime,
                 Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                 Status = c.Status,

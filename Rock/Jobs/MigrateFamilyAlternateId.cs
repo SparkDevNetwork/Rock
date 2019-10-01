@@ -15,13 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.Data.Entity;
 
 namespace Rock.Jobs
 {

@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class BirthdayPicker : DatePartsPicker
+    public class BirthdayPicker : DatePartsPicker, IRockChangeHandlerControl
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.

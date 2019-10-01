@@ -15,17 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Web;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Jobs
 {
@@ -68,7 +65,9 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( rockContext );
 
             var qry = workflowService.Queryable().AsNoTracking()
-                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid ) );
+                        .Where( w => workflowTypeGuids.Contains( w.WorkflowType.Guid )
+                                     && w.ActivatedDateTime.HasValue
+                                     && !w.CompletedDateTime.HasValue );
 
             if ( expirationAge.HasValue )
             {

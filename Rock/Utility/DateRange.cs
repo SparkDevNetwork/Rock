@@ -198,5 +198,15 @@ namespace Rock
 
             return new DateRange( null, null );
         }
+
+        /// <summary>
+        /// Returns true if the specified date occurs with this DateRange
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public bool Contains( DateTime dateTime )
+        {
+            return ( dateTime >= this.Start && dateTime <= this.End );
+        }
     }
 }

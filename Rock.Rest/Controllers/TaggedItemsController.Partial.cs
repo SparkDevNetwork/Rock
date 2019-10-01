@@ -55,7 +55,7 @@ namespace Rock.Rest.Controllers
             var tagService = new TagService( ( Rock.Data.RockContext ) Service.Context );
 
             var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
-            if ( tag == null || !tag.IsAuthorized( "Tag", person ) )
+            if ( tag == null || !tag.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
             {
                 int? categoryId = null;
                 if ( categoryGuid.HasValue )
@@ -130,7 +130,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !taggedItem.IsAuthorized( "Tag", GetPerson( ( Rock.Data.RockContext ) Service.Context ) ))
+            if ( !taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson( ( Rock.Data.RockContext ) Service.Context ) ))
             {
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }

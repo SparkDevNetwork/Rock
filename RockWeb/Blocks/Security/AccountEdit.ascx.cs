@@ -52,8 +52,8 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
 
-            ddlTitle.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
-            ddlSuffix.BindToDefinedType( DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
+            dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
             string smsScript = @"
     $('.js-sms-number').click(function () {
         if ($(this).is(':checked')) {
@@ -130,11 +130,11 @@ namespace RockWeb.Blocks.Security
                         person.PhotoId = imgPhoto.BinaryFileId;
                     }
 
-                    person.TitleValueId = ddlTitle.SelectedValueAsInt(); ;
+                    person.TitleValueId = dvpTitle.SelectedValueAsInt(); ;
                     person.FirstName = tbFirstName.Text;
                     person.NickName = tbNickName.Text;
                     person.LastName = tbLastName.Text;
-                    person.SuffixValueId = ddlSuffix.SelectedValueAsInt(); ;
+                    person.SuffixValueId = dvpSuffix.SelectedValueAsInt(); ;
 
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
@@ -377,11 +377,11 @@ namespace RockWeb.Blocks.Security
             {
                 imgPhoto.BinaryFileId = person.PhotoId;
                 imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
-                ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
+                dvpTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                 tbFirstName.Text = person.FirstName;
                 tbNickName.Text = person.NickName;
                 tbLastName.Text = person.LastName;
-                ddlSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
+                dvpSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
                 tbEmail.Text = person.Email;             

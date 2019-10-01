@@ -41,6 +41,9 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrationFieldSource FieldSource { get; set; }
 
         /// <summary />
+        public string FieldVisibilityRulesJSON { get; set; } = @"{""RuleList"":[],""FilterExpressionType"":1}";
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -119,6 +122,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AttributeId = source.AttributeId;
             this.FieldSource = source.FieldSource;
+            this.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsGridField = source.IsGridField;

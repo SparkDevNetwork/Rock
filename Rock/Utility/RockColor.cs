@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-
 namespace Rock.Utility
 {
     /// <summary>
@@ -294,7 +293,7 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockColor"/> class.
+        /// Initializes a new instance of the <see cref="RockColor" /> class.
         /// </summary>
         /// <param name="color">The color in hexidecimal or rgba format.</param>
         public RockColor( string color )
@@ -406,7 +405,7 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockColor"/> class.
+        /// Initializes a new instance of the <see cref="RockColor" /> class.
         /// </summary>
         /// <param name="red">The Red value.</param>
         /// <param name="green">The Green value.</param>

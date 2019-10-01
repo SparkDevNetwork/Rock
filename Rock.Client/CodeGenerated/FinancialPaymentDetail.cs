@@ -47,7 +47,13 @@ namespace Rock.Client
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
+        public int? ExpirationMonth { get; set; }
+
+        /// <summary />
         public string ExpirationMonthEncrypted { get; set; }
+
+        /// <summary />
+        public int? ExpirationYear { get; set; }
 
         /// <summary />
         public string ExpirationYearEncrypted { get; set; }
@@ -62,6 +68,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string NameOnCard { get; set; } = @"";
 
         /// <summary />
         public string NameOnCardEncrypted { get; set; }
@@ -103,11 +112,14 @@ namespace Rock.Client
             this.BillingLocationId = source.BillingLocationId;
             this.CreditCardTypeValueId = source.CreditCardTypeValueId;
             this.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            this.ExpirationMonth = source.ExpirationMonth;
             this.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            this.ExpirationYear = source.ExpirationYear;
             this.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NameOnCard = source.NameOnCard;
             this.NameOnCardEncrypted = source.NameOnCardEncrypted;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -132,15 +144,6 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
-        public int? ExpirationMonth { get; set; }
-
-        /// <summary />
-        public int? ExpirationYear { get; set; }
-
-        /// <summary />
-        public string NameOnCard { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
