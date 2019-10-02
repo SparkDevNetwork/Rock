@@ -209,6 +209,30 @@
     <Compile Include="Migrations\201909171730424_Rollup_0917.Designer.cs">
       <DependentUpon>201909171730424_Rollup_0917.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909172137580_PreseveWorkflowEntityId.cs" />
+    <Compile Include="Migrations\201909172137580_PreseveWorkflowEntityId.Designer.cs">
+      <DependentUpon>201909172137580_PreseveWorkflowEntityId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909191849321_Rollup_0919.cs" />
+    <Compile Include="Migrations\201909191849321_Rollup_0919.Designer.cs">
+      <DependentUpon>201909191849321_Rollup_0919.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909201334368_Achievements.cs" />
+    <Compile Include="Migrations\201909201334368_Achievements.Designer.cs">
+      <DependentUpon>201909201334368_Achievements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909201818157_SecureGetImpersonationParameter.cs" />
+    <Compile Include="Migrations\201909201818157_SecureGetImpersonationParameter.Designer.cs">
+      <DependentUpon>201909201818157_SecureGetImpersonationParameter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909251734505_SecurePresence.cs" />
+    <Compile Include="Migrations\201909251734505_SecurePresence.Designer.cs">
+      <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910011457207_Rollup_1001.cs" />
+    <Compile Include="Migrations\201910011457207_Rollup_1001.Designer.cs">
+      <DependentUpon>201910011457207_Rollup_1001.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -925,6 +949,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909171730424_Rollup_0917.resx">
       <DependentUpon>201909171730424_Rollup_0917.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909172137580_PreseveWorkflowEntityId.resx">
+      <DependentUpon>201909172137580_PreseveWorkflowEntityId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909191849321_Rollup_0919.resx">
+      <DependentUpon>201909191849321_Rollup_0919.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909201334368_Achievements.resx">
+      <DependentUpon>201909201334368_Achievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909201818157_SecureGetImpersonationParameter.resx">
+      <DependentUpon>201909201818157_SecureGetImpersonationParameter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909251734505_SecurePresence.resx">
+      <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910011457207_Rollup_1001.resx">
+      <DependentUpon>201910011457207_Rollup_1001.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
