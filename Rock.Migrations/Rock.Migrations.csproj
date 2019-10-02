@@ -233,6 +233,10 @@
     <Compile Include="Migrations\201910011457207_Rollup_1001.Designer.cs">
       <DependentUpon>201910011457207_Rollup_1001.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910012306191_SundayDate.cs" />
+    <Compile Include="Migrations\201910012306191_SundayDate.Designer.cs">
+      <DependentUpon>201910012306191_SundayDate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -967,6 +971,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201910011457207_Rollup_1001.resx">
       <DependentUpon>201910011457207_Rollup_1001.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910012306191_SundayDate.resx">
+      <DependentUpon>201910012306191_SundayDate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

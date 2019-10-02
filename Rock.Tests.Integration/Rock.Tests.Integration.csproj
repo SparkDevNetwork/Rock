@@ -85,6 +85,7 @@
     <Compile Include="RockTests\Communications\CommunicationsModuleTestHelper.cs" />
     <Compile Include="RockTests\Communications\SmsTests.cs" />
     <Compile Include="RockTests\Core\CoreModuleTestHelper.cs" />
+    <Compile Include="RockTests\Core\SundayDateTest.cs" />
     <Compile Include="RockTests\Crm\StepsTests.cs" />
     <Compile Include="RockTests\DatabaseTests.cs" />
     <Compile Include="RockTests\Migrations\MigrationTests.cs" />
