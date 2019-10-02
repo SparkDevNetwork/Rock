@@ -170,7 +170,8 @@ begin
         ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
     select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
 
-	select count(*) from Attendance
+	select count(*) [AttendanceCount] from Attendance
+    select count(*) [AttendanceOccurrenceCount] from AttendanceOccurrence
 end;
 
 
