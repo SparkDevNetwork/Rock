@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", StepStatus.FriendlyTypeName, Step.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementStepStatusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepStatus.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

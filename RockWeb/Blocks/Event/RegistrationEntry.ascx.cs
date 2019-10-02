@@ -55,12 +55,37 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
-    [TextField( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8 )]
-    [BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
-    [BooleanField( "Show Field Descriptions", "Show the field description as help text", defaultValue: true, order: 10, key: "ShowFieldDescriptions" )]
+    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category ="", Order = 7,
+        Key = AttributeKey.ConfirmAccountTemplate )]
+
+    [TextField( "Family Term",
+        Description = "The term to use for specifying which household or family a person is a member of.",
+        IsRequired = true,
+        DefaultValue = "immediate family",
+        Order = 8,
+        Key = AttributeKey.FamilyTerm )]
+
+    [BooleanField( "Force Email Update",
+        Description = "Force the email to be updated on the person's record.",
+        DefaultBooleanValue = false,
+        Order = 9,
+        Key =AttributeKey.ForceEmailUpdate )]
+
+    [BooleanField( "Show Field Descriptions",
+        Description = "Show the field description as help text",
+        DefaultBooleanValue = true,
+        Order = 10,
+        Key = AttributeKey.ShowFieldDescriptions )]
     public partial class RegistrationEntry : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+            public const string FamilyTerm = "FamilyTerm";
+            public const string ForceEmailUpdate = "ForceEmailUpdate";
+            public const string ShowFieldDescriptions = "ShowFieldDescriptions";
+        }
+
         #region Fields
 
         private bool _saveNavigationHistory = false;
@@ -684,17 +709,41 @@ namespace RockWeb.Blocks.Event
             var breadCrumbs = new List<BreadCrumb>();
 
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
 
             if ( registrationInstanceId.HasValue )
             {
-                var registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
+                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
 
                 RockPage.Title = registrationInstanceName;
                 breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
-                return breadCrumbs;
+            }
+            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            {
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l => l.UrlSlug == registrationSlug )
+                    .Where( l => l.RegistrationInstance != null )
+                    .Where( l => l.RegistrationInstance.IsActive )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
+                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
+                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    RockPage.Title = linkage.RegistrationInstance.Name;
+                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
+                }
+            }
+            else
+            {
+                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
 
@@ -1408,7 +1457,7 @@ namespace RockWeb.Blocks.Event
                 CreateDynamicControls( true );
 
                 // If the registration was previously saved then save it again to update the discount
-                if ( RegistrationState.RegistrationId != null || RegistrationState.RegistrationId != 0 )
+                if ( RegistrationState.RegistrationId != null && RegistrationState.RegistrationId != 0 )
                 {
                     // This should be false, but it is possible to fill this in before clicking the disount button
                     bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
@@ -5102,49 +5151,46 @@ namespace RockWeb.Blocks.Event
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach ( var registrant in RegistrationState.Registrants )
                 {
-                    if ( registrant.Cost > 0 )
-                    {
-                        var costSummary = new RegistrationCostSummaryInfo();
-                        costSummary.Type = RegistrationCostSummaryType.Cost;
-                        costSummary.Description = string.Format(
-                            "{0} {1}",
-                            registrant.GetFirstName( RegistrationTemplate ),
-                            registrant.GetLastName( RegistrationTemplate ) );
+                    var costSummary = new RegistrationCostSummaryInfo();
+                    costSummary.Type = RegistrationCostSummaryType.Cost;
+                    costSummary.Description = string.Format(
+                        "{0} {1}",
+                        registrant.GetFirstName( RegistrationTemplate ),
+                        registrant.GetLastName( RegistrationTemplate ) );
 
-                        if ( registrant.OnWaitList )
+                    if ( registrant.OnWaitList )
+                    {
+                        costSummary.Description += " (Waiting List)";
+                        costSummary.Cost = 0.0M;
+                        costSummary.DiscountedCost = 0.0M;
+                        costSummary.MinPayment = 0.0M;
+                        costSummary.DefaultPayment = 0.0M;
+                    }
+                    else
+                    {
+                        costSummary.Cost = registrant.Cost;
+                        if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
                         {
-                            costSummary.Description += " (Waiting List)";
-                            costSummary.Cost = 0.0M;
-                            costSummary.DiscountedCost = 0.0M;
-                            costSummary.MinPayment = 0.0M;
-                            costSummary.DefaultPayment = 0.0M;
-                        }
-                        else
-                        {
-                            costSummary.Cost = registrant.Cost;
-                            if ( RegistrationState.DiscountPercentage > 0.0m && registrant.DiscountApplies )
+                            if ( RegistrationState.DiscountPercentage >= 1.0m )
                             {
-                                if ( RegistrationState.DiscountPercentage >= 1.0m )
-                                {
-                                    costSummary.DiscountedCost = 0.0m;
-                                }
-                                else
-                                {
-                                    costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
-                                }
+                                costSummary.DiscountedCost = 0.0m;
                             }
                             else
                             {
-                                costSummary.DiscountedCost = costSummary.Cost;
+                                costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
                             }
-
-                            // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                            costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
-                            costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
+                        }
+                        else
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost;
                         }
 
-                        costs.Add( costSummary );
+                        // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
+                        costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
+                        costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
                     }
+
+                    costs.Add( costSummary );
 
                     foreach ( var fee in registrant.FeeValues )
                     {
@@ -5161,31 +5207,31 @@ namespace RockWeb.Blocks.Event
                                     feeInfo.Quantity,
                                     cost.FormatAsCurrency() );
 
-                                var costSummary = new RegistrationCostSummaryInfo();
-                                costSummary.Type = RegistrationCostSummaryType.Fee;
-                                costSummary.Description = desc;
-                                costSummary.Cost = feeInfo.Quantity * cost;
+                                var feeCostSummary = new RegistrationCostSummaryInfo();
+                                feeCostSummary.Type = RegistrationCostSummaryType.Fee;
+                                feeCostSummary.Description = desc;
+                                feeCostSummary.Cost = feeInfo.Quantity * cost;
 
                                 if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                                 {
                                     if ( RegistrationState.DiscountPercentage >= 1.0m )
                                     {
-                                        costSummary.DiscountedCost = 0.0m;
+                                        feeCostSummary.DiscountedCost = 0.0m;
                                     }
                                     else
                                     {
-                                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                        feeCostSummary.DiscountedCost = feeCostSummary.Cost - ( feeCostSummary.Cost * RegistrationState.DiscountPercentage );
                                     }
                                 }
                                 else
                                 {
-                                    costSummary.DiscountedCost = costSummary.Cost;
+                                    feeCostSummary.DiscountedCost = feeCostSummary.Cost;
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : costSummary.DiscountedCost;
+                                feeCostSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : feeCostSummary.DiscountedCost;
 
-                                costs.Add( costSummary );
+                                costs.Add( feeCostSummary );
                             }
                         }
                     }

@@ -498,6 +498,14 @@ namespace RockWeb.Blocks.Steps
                 avcNonBulkAttributes.AddEditControls( null );
             }
 
+            UpdateNonBulkDynamicControlsForPersonChange();
+        }
+
+        /// <summary>
+        /// Updates the non bulk dynamic controls for person change.
+        /// </summary>
+        private void UpdateNonBulkDynamicControlsForPersonChange()
+        {
             // Determine if this person is able to add a step of this type because of prerequisites and allow multiple
             var personIsValid = PreValidatePerson();
 
@@ -519,8 +527,10 @@ namespace RockWeb.Blocks.Steps
             else
             {
                 btnSave.Enabled = personIsValid;
-                avcNonBulkAttributes.Visible = personIsValid;
                 btnNext.ValidationGroup = "BulkEntry";
+
+                // Show the non-bulk controls if the person is valid or is not yet selected to avoid confusion
+                avcNonBulkAttributes.Visible = personIsValid || GetPerson() == null;
             }
         }
 
@@ -659,7 +669,7 @@ namespace RockWeb.Blocks.Steps
         protected void ppPersonPicker_SelectPerson( object sender, System.EventArgs e )
         {
             ClearErrors();
-            BuildNonBulkDynamicControls();
+            UpdateNonBulkDynamicControlsForPersonChange();
         }
 
         #endregion Control Events

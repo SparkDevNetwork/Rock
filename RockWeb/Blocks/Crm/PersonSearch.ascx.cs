@@ -695,20 +695,9 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                if ( BirthYear.HasValue )
-                {
-                    DateTime? bd = BirthDate;
-                    if ( bd.HasValue )
-                    {
-                        DateTime today = RockDateTime.Today;
-                        int age = today.Year - bd.Value.Year;
-                        if ( bd.Value > today.AddYears( -age ) )
-                            age--;
-                        return age;
-                    }
-                }
-                return null;
+                return Person.GetAge( BirthDate );
             }
+
             private set { }
         }
 

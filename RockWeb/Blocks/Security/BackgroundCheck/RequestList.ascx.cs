@@ -359,9 +359,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         #endregion
 
         /// <summary>
-        /// 
+        /// The Background Check table row columns tags
         /// </summary>
-        public class BackgroundCheckRow
+        public class BackgroundCheckRow : Rock.Utility.RockDynamic
         {
             public string Name { get; set; }
 

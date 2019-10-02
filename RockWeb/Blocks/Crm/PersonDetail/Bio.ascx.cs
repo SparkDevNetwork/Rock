@@ -737,7 +737,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( smsEnabled )
                 {
-                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", phoneMarkup, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1} <span class='label label-success' title='SMS Enabled' data-toggle='tooptip' data-placement='top'><i class='fa fa-sms'></i></span></small>", phoneMarkup, phoneType.Value );
                 }
                 else
                 {

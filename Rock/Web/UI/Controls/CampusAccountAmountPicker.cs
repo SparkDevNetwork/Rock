@@ -780,7 +780,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlSingleAccountCampus = new RockDropDownList();
             _ddlSingleAccountCampus.ID = "_ddlSingleAccountCampus";
-            _ddlSingleAccountCampus.CssClass = "input-lg";
+            _ddlSingleAccountCampus.CssClass = "single-account-campus";
             _ddlSingleAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
             pnlSingleCampusDiv.Controls.Add( _ddlSingleAccountCampus );
 
@@ -789,7 +789,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlAccountSingle = new RockDropDownList();
             _ddlAccountSingle.ID = "_ddlAccountSingle";
-            _ddlAccountSingle.CssClass = "input-lg";
+            _ddlAccountSingle.CssClass = "account-single";
             _ddlAccountSingle.SelectedIndexChanged += _ddlAccountSingle_SelectedIndexChanged;
             pnlAccountSingleDiv.Controls.Add( _ddlAccountSingle );
 
@@ -808,7 +808,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlMultiAccountCampus = new RockDropDownList();
             _ddlMultiAccountCampus.ID = "_ddlMultiAccountCampus";
-            _ddlMultiAccountCampus.CssClass = "input-lg";
+            _ddlMultiAccountCampus.CssClass = "multi-account-campus";
             _ddlMultiAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
             _pnlAccountAmountEntryMulti.Controls.Add( _ddlMultiAccountCampus );
 
@@ -857,7 +857,7 @@ namespace Rock.Web.UI.Controls
                     new CurrencyBox
                     {
                         ID = RepeaterControlIds.ID_nbAccountAmountMulti,
-                        CssClass = "amount-input input-group-lg",
+                        CssClass = "amount-input account-amount-multi",
                         NumberType = ValidationDataType.Currency,
                         MinimumValue = "0"
                     } );

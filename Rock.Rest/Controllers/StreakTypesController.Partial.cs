@@ -210,13 +210,14 @@ namespace Rock.Rest.Controllers
         /// <param name="endDate">Defaults to now</param>
         /// <param name="createObjectArray">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
+        /// <param name="maxStreaksToReturn">Specify the maximum number of streak objects "ComputedStreaks" to include in the response</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypes/StreakData/{streakTypeIdList}" )]
         public virtual List<StreakData> GetStreakData( string streakTypeIdList,
             [FromUri]int? personId = null, [FromUri]DateTime? startDate = null, [FromUri]DateTime? endDate = null,
-            [FromUri]bool createObjectArray = false, [FromUri]bool includeBitMaps = false )
+            [FromUri]bool createObjectArray = false, [FromUri]bool includeBitMaps = false, [FromUri]int? maxStreaksToReturn = null )
         {
             if ( streakTypeIdList.IsNullOrWhiteSpace() )
             {
@@ -261,7 +262,8 @@ namespace Rock.Rest.Controllers
                 }
 
                 // Get the data from the service                
-                var streakData = streakTypeService.GetStreakData( streakTypeCache, personId.Value, out var errorMessage, startDate, endDate, createObjectArray, includeBitMaps );
+                var streakData = streakTypeService.GetStreakData( streakTypeCache, personId.Value, out var errorMessage,
+                    startDate, endDate, createObjectArray, includeBitMaps, maxStreaksToReturn );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
