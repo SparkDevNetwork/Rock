@@ -794,6 +794,7 @@
     padding: 10px 15px;
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
+    border-top: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     .clearfix();
 
@@ -802,12 +803,12 @@
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      letter-spacing: -.5px;
+      line-height: 25px;
     }
 
     .action-wrapper {
       float: right;
-      height: 39px;
+      height: 45px;
       margin: -10px -15px -10px 0;
 
       .action {
@@ -826,6 +827,14 @@
           transform: translateY(-50%);
         }
       }
+    }
+  }
+
+  // Fix Extra Padding On the First Family
+  .group-members:first-child &:first-child {
+    header {
+      margin: -15px -15px 0 -15px;
+      border-top-width: 0;
     }
   }
 
@@ -907,13 +916,6 @@
       float: left;
       margin-right: 12px;
     }
-  }
-}
-
-.persondetails-group:first-child {
-  header {
-    margin: -15px -15px 0 -15px;
-    border-top-width: 0;
   }
 }
 
