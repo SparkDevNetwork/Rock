@@ -361,9 +361,9 @@ namespace Rock.Model
             var htmlContentService = new HtmlContentService( rockContext );
             var blockService = new BlockService( rockContext );
 
-            Dictionary<Guid, int> blockIntDictionary = blockService.Queryable()
+            Dictionary<Guid, int?> blockIntDictionary = blockService.Queryable()
                 .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
-                .ToDictionary( p => p.Guid, p => p.Id );
+                .ToDictionary( p => p.Guid, p => ( int? ) p.Id );
 
             var htmlContents = htmlContentService.Queryable().Where( a =>
                 blockIntDictionary.Values.Contains( a.BlockId ) )

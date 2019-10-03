@@ -38,14 +38,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Block"/> that the HTML content should appear on. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Block"/> that the HTML content should appear on.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Block" /> that the HTML content should be a part of.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int BlockId { get; set; }
+        [DataMember]
+        public int? BlockId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
@@ -67,7 +66,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Version { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the name of the HTML Content.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the HTML Content.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the HTML content that will display on the block when conditions (if any) are met.
         /// </summary>
@@ -177,7 +185,7 @@ namespace Rock.Model
         /// </summary>
         public HtmlContentConfiguration()
         {
-            this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete(false);
         }
     }

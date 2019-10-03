@@ -755,7 +755,8 @@ $(document).ready( function() {{
             rockmergefield: RockMergeField,
             rockcodeeditor: RockCodeEditor,
             rockpastetext: RockPasteText,
-            rockpastefromword: RockPasteFromWord
+            rockpastefromword: RockPasteFromWord,
+            rocksnippets: RockSnippets
         }},
 
         rockFileBrowserOptions: {{

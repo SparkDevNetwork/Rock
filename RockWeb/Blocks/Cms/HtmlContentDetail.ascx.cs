@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
 
             // flush cache content 
-            HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
+            HtmlContentService.FlushCachedContent( htmlContent.BlockId.Value, htmlContent.EntityValue );
 
             ShowView();
         }

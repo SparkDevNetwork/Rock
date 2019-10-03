@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     rockContext.SaveChanges();
-                    HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
+                    HtmlContentService.FlushCachedContent( htmlContent.BlockId.Value, htmlContent.EntityValue );
                 }
 
                 BindGrid();
