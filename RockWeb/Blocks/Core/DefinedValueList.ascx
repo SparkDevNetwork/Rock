@@ -16,9 +16,9 @@
 
                         <asp:Panel ID="pnlValues" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
-                        
+
                             <div class="grid grid-panel">
-                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
+                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
                                     <Columns>
                                         <Rock:ReorderField/>
                                         <Rock:RockBoundField DataField="Value" HeaderText="Value"/>
@@ -34,7 +34,7 @@
 
             </div>
 
-            
+
 
             <Rock:ModalDialog ID="modalValue" runat="server" Title="Defined Value" ValidationGroup="Value" >
                 <Content>
@@ -44,7 +44,7 @@
                 <legend>
                     <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
                 </legend>
-                <fieldset>                
+                <fieldset>
                     <div class="row-fluid">
                         <div class="span12">
                             <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value"/>
@@ -61,6 +61,6 @@
             </Rock:ModalDialog>
 
         </asp:Panel>
-        
+
     </ContentTemplate>
 </asp:UpdatePanel>
