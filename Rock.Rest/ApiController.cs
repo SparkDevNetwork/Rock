@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -73,7 +74,7 @@ namespace Rock.Rest
         [EnableQuery]
         public virtual IQueryable<T> Get()
         {
-            var result = Service.Queryable();
+            var result = Service.Queryable().AsNoTracking();
             return result;
         }
 

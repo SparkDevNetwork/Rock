@@ -211,7 +211,27 @@ namespace Rock.Lava.Blocks
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var queryResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, queryExpression, null, null } ) as IQueryable<IEntity>;
+                        // get a listing of ids and build it into the query expression
+                        if ( parms.Any( p => p.Key == "ids" ) )
+                        {
+                            List<int> value = parms["ids"].ToString().Split( ',' ).Select( int.Parse ).ToList();
+                            MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
+                            ConstantExpression constantExpression = Expression.Constant( value, typeof( List<int> ) );
+                            Expression containsExpression = Expression.Call( constantExpression, typeof( List<int> ).GetMethod( "Contains", new Type[] { typeof( int ) } ), propertyExpression );
+                            if ( queryExpression != null )
+                            {
+                                queryExpression = Expression.AndAlso( queryExpression, containsExpression );
+                            }
+                            else
+                            {
+                                queryExpression = containsExpression;
+                            }
+
+                            hasFilter = true;
+                        }
+
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, queryExpression, null, null } );
+                        var queryResult = getResult as IQueryable<IEntity>;
 
                         // process entity specific filters
                         switch ( _entityName )
@@ -229,17 +249,9 @@ namespace Rock.Lava.Blocks
                         }
 
                         // if there was a dynamic expression add it now
-                        if ( parms.Any( p => p.Key == "expression" ) )
+                        if ( parms.Any( p => p.Key == "expression" ) ) 
                         {
                             queryResult = queryResult.Where( parms["expression"] );
-                            hasFilter = true;
-                        }
-
-                        // get a listing of ids
-                        if ( parms.Any( p => p.Key == "ids" ) )
-                        {
-                            var value = parms["ids"].ToString().Split( ',' ).Select( int.Parse ).ToList();
-                            queryResult = queryResult.Where( x => value.Contains( x.Id ) );
                             hasFilter = true;
                         }
 
@@ -249,7 +261,6 @@ namespace Rock.Lava.Blocks
                         if ( parms.Any( p => p.Key == "sort" ) )
                         {
                             string orderByMethod = "OrderBy";
-
 
                             foreach ( var column in parms["sort"].Split( ',' ).Select( x => x.Trim() ).Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList() )
                             {
@@ -315,6 +326,12 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
+                        // check to ensure we had some form of filter (otherwise we'll return all results in the table)
+                        if ( !hasFilter )
+                        {
+                            throw new Exception( "Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist." );
+                        }
+
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
@@ -356,12 +373,6 @@ namespace Rock.Lava.Blocks
                             else
                             {
                                 queryResult = queryResult.Take( 1000 );
-                            }
-
-                            // check to ensure we had some form of filter (otherwise we'll return all results in the table)
-                            if ( !hasFilter )
-                            {
-                                throw new Exception( "Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist." );
                             }
 
                             var resultList = queryResult.ToList();
