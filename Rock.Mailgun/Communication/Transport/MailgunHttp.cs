@@ -353,7 +353,7 @@ namespace Rock.Communication.Transport
                         // CC
                         if ( communication.CCEmails.IsNotNullOrWhiteSpace() )
                         {
-                            string ccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
+                            string[] ccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson ).Replace( ";", ",").Split(',');
                             foreach ( var ccRecipient in ccRecipients )
                             {
                                 restRequest.AddParameter( "cc", ccRecipient );
@@ -363,7 +363,7 @@ namespace Rock.Communication.Transport
                         // BCC
                         if ( communication.BCCEmails.IsNotNullOrWhiteSpace() )
                         {
-                            string bccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
+                            string[] bccRecipients = communication.BCCEmails.ResolveMergeFields( mergeObjects, currentPerson ).Replace( ";", ",").Split(',');
                             foreach ( var bccRecipient in bccRecipients )
                             {
                                 restRequest.AddParameter( "bcc", bccRecipient );
