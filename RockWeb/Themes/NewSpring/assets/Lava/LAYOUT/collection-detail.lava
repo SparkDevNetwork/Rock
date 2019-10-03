@@ -43,13 +43,21 @@
     {% capture textalignment %}{% endcapture %}
     {% capture type %}{% endcapture %}
     {% capture label %}{{ type }}{% endcapture %}
-    {% assign dates = Item | Attribute:'Dates','RawValue' %}
-    {% assign dateparts = dates | Split:',' %}
-    {% assign datePart1 = dateparts[0] | Date:'yyyyMMdd' %}
-    {% assign datePart2 = dateparts[1] | Date:'yyyyMMdd' %}
-    {% if dates != empty %}
-        {% capture subtitle %}{[ formatDate date:'{{ dateparts[0] }}' ]}{% if datePart1 != datePart2 %} - {[ formatDate date:'{{ dateparts[1] }}' ]}{% endif %}{% endcapture %}
+    
+    {% assign isDateVisible = Item.ContentChannel | Attribute:'IsDateVisible','RawValue' %}
+    {% if isDateVisible == 'True' %}
+        {% assign dates = Item | Attribute:'Dates','RawValue' %}
+        {% assign dateParts = dates | Split:',' %}
+        {% assign datePartsSize = dateParts | Size %}
+        {% assign datePart1 = dateParts[0] | Date:'yyyyMMdd' %}
+        {% if datePartsSize > 1 %}
+            {% assign datePart2 = dateParts[1] | Date:'yyyyMMdd' %}
+        {% endif %}
+        {% if dates != empty %}
+            {% capture subtitle %}{[ formatDate date:'{{ dateParts[0] }}' ]}{% if datePartsSize > 1 and datePart1 != datePart2 %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}{% endcapture %}
+        {% endif %}
     {% endif %}
+
     {% capture imageurl %}{{ Item | Attribute:'ImageSquare','Url' }}{% endcapture %}
     {% capture imageoverlayurl %}{% endcapture %}
     {% capture imagealignment %}Left{% endcapture %}
