@@ -172,7 +172,6 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
-    <Compile Include="CodeGenerated\IncomingSMSRoute.cs" />
     <Compile Include="CodeGenerated\Interaction.cs" />
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
