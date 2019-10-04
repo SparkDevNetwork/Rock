@@ -1767,6 +1767,15 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgDiscount_SaveClick( object sender, EventArgs e )
         {
+            if ( IsDiscountCodeAlreadyUsed() )
+            {
+                nbDuplicateDiscountCode.Text = @"The discount code <b>""" + tbDiscountCode.Text + @"</b>"" is already in use.";
+                nbDuplicateDiscountCode.Visible = true;
+                return;
+            }
+
+            nbDuplicateDiscountCode.Visible = false;
+
             RegistrationTemplateDiscount discount = null;
             var discountGuid = hfDiscountGuid.Value.AsGuidOrNull();
             if ( discountGuid.HasValue )
@@ -1806,6 +1815,26 @@ The logged-in person's information will be used to complete the registrar inform
             hfDiscountGuid.Value = string.Empty;
 
             BuildControls();
+        }
+
+        private bool IsDiscountCodeAlreadyUsed()
+        {
+            var discountGuid = hfDiscountGuid.Value.AsGuidOrNull();
+            var discountCode = tbDiscountCode.Text;
+
+            // If we have a guid then we are editing an existing code, so only count as a dup if the GUID doesn't match.
+            if ( discountGuid != null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) && d.Guid != discountGuid ).Any() )
+            {
+                return true;
+            }
+
+            // If case we do not have a guid then then look for any matches.
+            if ( discountGuid == null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) ).Any() )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -3211,6 +3240,8 @@ The logged-in person's information will be used to complete the registrar inform
             drpDiscountDateRange.UpperValue = discount.EndDate;
             cbcAutoApplyDiscount.Checked = discount.AutoApplyDiscount;
 
+            nbDuplicateDiscountCode.Text = string.Empty;
+            nbDuplicateDiscountCode.Visible = false;
             ShowDialog( dlgDiscount );
         }
 
