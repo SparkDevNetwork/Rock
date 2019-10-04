@@ -245,6 +245,9 @@ namespace Rock.Model
         public DocumentConfiguration()
         {
             this.HasRequired( f => f.DocumentType ).WithMany().HasForeignKey( f => f.DocumentTypeId ).WillCascadeOnDelete( false );
+
+            // This is a 1:1 relationship and is not very common in Rock. We cannot add BinaryFileId to the model because of the EF limitation
+            // discussed here: https://stackoverflow.com/a/41847251
             this.HasRequired( f => f.BinaryFile ).WithOptional( a => a.Document ).Map( x => x.MapKey( "BinaryFileId" ) ).WillCascadeOnDelete();
         }
     }
