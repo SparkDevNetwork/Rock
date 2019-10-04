@@ -31,6 +31,7 @@ namespace Rock.Migrations
         {
             FixDiscProfilePersonAttribute();
             UpdateStatementGeneratorDownloadLinkUp();
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -85,6 +86,17 @@ namespace Rock.Migrations
                 UPDATE [AttributeValue]
                 SET [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.8.0/statementgenerator.exe'
                 WHERE AttributeId = @downloadUrlAttributeId and EntityId = @statementGeneratorDefinedValueId" );
+        }
+
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+                UPDATE [dbo].[__MigrationHistory]
+                SET [Model] = 0x
+                WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Rock.Client
         public bool IsActive { get; set; }
 
         /// <summary />
-        public int MaxAccomplishmentsAllowed { get; set; } = 1;
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true

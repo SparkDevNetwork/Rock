@@ -104,6 +104,7 @@ namespace Rock.Model
             target.ScheduleId = source.ScheduleId;
             target.ShowDeclineReasons = source.ShowDeclineReasons;
             target.StepTypeId = source.StepTypeId;
+            target.SundayDate = source.SundayDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
