@@ -13,8 +13,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
 
+    /// <summary>
+    /// Runs the Group Leader Absence Notification Job
+    /// </summary>
+    /// <seealso cref="Quartz.IJob" />
     #region DataMap Field Attributes
-
     [GroupTypeField( "Group Type",
         Key = AttributeKey.GroupType,
         Description = "The group type to look for absent group members.",
@@ -50,7 +53,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Keys for DataMap Field Attributes.
         /// </summary>
-        public static class AttributeKey
+        private static class AttributeKey
         {
             public const string GroupType = "GroupType";
             public const string NotificationEmail = "NotificationEmail";
