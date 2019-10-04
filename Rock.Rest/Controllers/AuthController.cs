@@ -60,13 +60,16 @@ namespace Rock.Rest.Controllers
                 return false;
             }
 
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-
-            if ( userLogin == null || userLogin.EntityType == null )
+            UserLogin userLogin;
+            using ( var rockContext = new RockContext() )
             {
-                return false;
+                var userLoginService = new UserLoginService( rockContext );
+                userLogin = userLoginService.GetByUserName( loginParameters.Username );
+
+                if ( userLogin == null || userLogin.EntityType == null )
+                {
+                    return false;
+                }
             }
 
             var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
