@@ -100,7 +100,7 @@ namespace Rock.Model
         /// </value>
         [Range( 1, int.MaxValue )]
         [DataMember]
-        public int MaxAccomplishmentsAllowed { get; set; } = 1;
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets whether over achievement is allowed. This cannot be true if <see cref="MaxAccomplishmentsAllowed"/> is greater than 1.
