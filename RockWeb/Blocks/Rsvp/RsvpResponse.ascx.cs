@@ -506,7 +506,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -619,7 +619,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -721,7 +721,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -813,7 +813,7 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate < DateTime.Now )
+                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                     {
                         // This event has expired.
                         isExpired = true;
@@ -871,7 +871,7 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate < DateTime.Now )
+                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                     {
                         continue;
                     }
@@ -1115,7 +1115,7 @@ $(document).ready(function () {
         }
     }
 
-    #region Helper Class
+    #region Helper Classes
 
     /// <summary>
     /// This class is used to obtain a list of attributes which are marked IsPublic.
@@ -1225,5 +1225,12 @@ $(document).ready(function () {
         public GroupMemberPublicAttriuteCollection() { }
     }
 
+    public static class DateEndOfDayStaticFunction
+    {
+        public static DateTime EndOfDay( this DateTime input )
+        {
+            return input.Date.AddDays( 1 ).AddMilliseconds( -1 );
+        }
+    }
     #endregion
 }
