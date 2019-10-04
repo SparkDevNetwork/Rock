@@ -9,7 +9,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<!-- The InstallShieldProject item selects the project to build -->
-		<InstallShieldProject Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).isl"/>
+		<InstallShieldProject Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).ise"/>
 		<!-- The InstallShieldReleaseFlags sets Release Flags -->
 		<!--<InstallShieldReleaseFlags Include=""/>-->
 		<!-- The InstallShieldMergeModulePath specifies what directories are
@@ -18,6 +18,10 @@
 	</ItemGroup>
 	<ItemGroup>
 		<!-- The ProjectReference items refer to any Visual Studio solutions you want to automatically probe for Project Output Groups.  -->
+		<ProjectReference Include="..\..\Applications\Wpf\StatementGenerator\StatementGenerator.csproj">
+			<Name>StatementGenerator</Name>
+			<Project>{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}</Project>
+		</ProjectReference>
 	</ItemGroup>
 	<ItemGroup>
 		<!-- The TaggedOutputs items allow you to explicitly add extra files to output groups. Each item must include both Name and OutputGroup, as well as TargetPath metadata values. -->
@@ -27,11 +31,5 @@
 			<TargetPath>My Test Exe.exe</TargetPath>
 		</TaggedOutputs> -->
 	</ItemGroup>
-	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2015Limited\InstallShield.targets"/>
-	<ItemGroup>
-		<ProjectReference Include="..\..\Applications\Wpf\StatementGenerator\StatementGenerator.csproj">
-			<Name>StatementGenerator</Name>
-			<Project>{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}</Project>
-		</ProjectReference>
-	</ItemGroup>
+	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2018\InstallShield.targets"/>
 </Project>
