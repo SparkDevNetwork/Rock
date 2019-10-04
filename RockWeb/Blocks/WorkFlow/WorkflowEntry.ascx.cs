@@ -41,10 +41,52 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Used to enter information for a workflow form entry action." )]
 
-    [WorkflowTypeField( "Workflow Type", "Type of workflow to start." )]
-    [BooleanField( "Show Summary View", "If workflow has been completed, should the summary view be displayed?", false, "", 1)]
+    #region Block Attributes
+
+    [WorkflowTypeField(
+        "Workflow Type",
+        Description = "Type of workflow to start.",
+        Key = AttributeKey.WorkflowType,
+        Order = 0)]
+    [BooleanField(
+        "Show Summary View",
+        Description = "If workflow has been completed, should the summary view be displayed?",
+        Key = AttributeKey.ShowSummaryView,
+        Order = 1 )]
+    [CodeEditorField(
+        "Block Title Template",
+        Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
+        Key = AttributeKey.BlockTitleTemplate,
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = true,
+        Order = 2)]
+    [TextField(
+        "Block Title Icon CSS Class",
+        Description = "The CSS class for the icon displayed in the block title. If not specified, the icon for the Workflow Type will be shown.",
+        Key = AttributeKey.BlockTitleIconCssClass,
+        Order = 3 )]
+
+    #endregion
+
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string WorkflowType = "WorkflowType";
+            public const string ShowSummaryView = "ShowSummaryView";
+            public const string BlockTitleTemplate = "BlockTitleTemplate";
+            public const string BlockTitleIconCssClass = "BlockTitleIconCssClass";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         private RockContext _rockContext = null;
@@ -140,27 +182,8 @@ namespace RockWeb.Blocks.WorkFlow
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            if ( _workflowType != null && !ConfiguredType )
-            {
-                RockPage.PageTitle = _workflowType.Name;
-
-                // we can only override if the page does not have a icon
-                if ( string.IsNullOrWhiteSpace( RockPage.PageIcon ) && !string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
-                {
-                    RockPage.PageIcon = _workflowType.IconCssClass;
-                }
-            }
-            if ( _workflowType != null )
-            {
-                lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
-
-                if ( ! string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
-                {
-                    lIconHtml.Text = string.Format( "<i class='{0}' ></i>", _workflowType.IconCssClass );
-                }
-            }
+            SetBlockTitle();
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -222,7 +245,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            SetBlockTitle();
         }
 
         /// <summary>
@@ -436,7 +459,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                if ( GetAttributeValue("ShowSummaryView").AsBoolean() && !string.IsNullOrWhiteSpace( _workflowType.SummaryViewText ) )
+                if ( GetAttributeValue( AttributeKey.ShowSummaryView ).AsBoolean() && !string.IsNullOrWhiteSpace( _workflowType.SummaryViewText ) )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "Action", _action );
@@ -484,7 +507,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( !WorkflowTypeId.HasValue )
             {
                 // Get workflow type set by attribute value
-                Guid workflowTypeguid = GetAttributeValue( "WorkflowType" ).AsGuid();
+                Guid workflowTypeguid = GetAttributeValue( AttributeKey.WorkflowType ).AsGuid();
                 if ( !workflowTypeguid.IsEmpty() )
                 {
                     _workflowType = WorkflowTypeCache.Get( workflowTypeguid );
@@ -869,6 +892,74 @@ namespace RockWeb.Blocks.WorkFlow
                 pnlForm.Visible = false;
             }
 
+        }
+
+        /// <summary>
+        /// Set the properties of the block title bar.
+        /// </summary>
+        private void SetBlockTitle()
+        {
+            // Set the Block Title.
+            var blockTitle = GetAttributeValue( AttributeKey.BlockTitleTemplate );
+
+            if ( !string.IsNullOrWhiteSpace( blockTitle ) )
+            {
+                // Resolve the block title using the specified Lava template.
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+
+                mergeFields.Add( "WorkflowType", _workflowType );
+
+                // Add the WorkflowType as the default Item.
+                mergeFields.Add( "Item", _workflowType );
+
+                blockTitle = blockTitle.ResolveMergeFields( mergeFields );
+            }
+
+            // If the Block Title is blank, set the default.
+            if ( string.IsNullOrWhiteSpace( blockTitle ) )
+            {
+                if ( _workflowType != null && !ConfiguredType )
+                {
+                    blockTitle = string.Format( "{0} Entry", _workflowType.WorkTerm );
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( blockTitle ) )
+            {
+                lTitle.Text = blockTitle;
+            }
+            else
+            {
+                lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
+            }
+
+            // Set the Page Title to the Workflow Type name, unless the Workflow Type is restricted by a block configuration setting.
+            if ( _workflowType != null && !ConfiguredType )
+            {
+                RockPage.PageTitle = _workflowType.Name;
+            }
+
+            // Set the Block Icon.
+            var blockTitleIconCssClass = GetAttributeValue( AttributeKey.BlockTitleIconCssClass );
+
+            if ( string.IsNullOrWhiteSpace( blockTitleIconCssClass ) )
+            {
+                if ( _workflowType != null )
+                {
+                    blockTitleIconCssClass = _workflowType.IconCssClass;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( blockTitleIconCssClass ) )
+            {
+                lIconHtml.Text = string.Format( "<i class='{0}' ></i>", blockTitleIconCssClass );
+
+                // If the Page Icon is not configured, set it to the same icon as the block.
+                if ( string.IsNullOrWhiteSpace( RockPage.PageIcon ) )
+                {
+                    RockPage.PageIcon = blockTitleIconCssClass;
+                }
+            }
         }
 
         #endregion
