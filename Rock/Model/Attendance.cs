@@ -171,7 +171,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? DidAttend { get; set; }
+        public bool? DidAttend { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the processed.

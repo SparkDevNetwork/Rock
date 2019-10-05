@@ -1667,7 +1667,12 @@ namespace Rock.Model
         {
             if ( attendancesImport == null )
             {
-                throw new Exception( "AttendancesImport must be assigned a value." );
+                throw new ArgumentNullException( "AttendancesImport must be assigned a value." );
+            }
+
+            if ( attendancesImport.Attendances.Any( a => !a.PersonAliasId.HasValue && !a.PersonId.HasValue ) )
+            {
+                throw new Exception( "All Attendance records must have either a PersonId or PersonAliasId assigned." );
             }
 
             var attendanceImportList = attendancesImport.Attendances;
@@ -1780,7 +1785,6 @@ namespace Rock.Model
                  return attendance;
              } ).ToList();
 
-            // NOTE: This can insert 100,000 records in less than 10 seconds, but the documentation will recommend a limit of 1000 records at a time
             rockContext.BulkInsert( attendancesToBulkInsert );
         }
 
