@@ -2198,19 +2198,22 @@ namespace RockWeb.Blocks.Communication
                     this.LineChartTimeFormat = "LLLL";
                 }
 
-                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
+                // Get a summary of interactions.
+                // If a Click interaction exists without an Open, the Open is implied in the count.
+                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId } )
                     .Select( a => new
                     {
                         InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
                         a.Key.CommunicationRecipientId,
-                        a.Key.Operation
+                        Clicked = a.Any( x => x.Operation == "Click"),
+                        Opened = a.Any( x => x.Operation == "Opened" )
                     } )
                     .GroupBy( a => a.InteractionSummaryDateTime )
                     .Select( x => new SummaryInfo
                     {
                         SummaryDateTime = x.Key,
-                        ClickCounts = x.Count( xx => xx.Operation == "Click" ),
-                        OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                        ClickCounts = x.Count( xx => xx.Clicked ),
+                        OpenCounts = x.Count( xx => xx.Opened || ( !xx.Opened && xx.Clicked ) )
                     } ).OrderBy( a => a.SummaryDateTime ).ToList();
             }
 
@@ -2271,14 +2274,28 @@ namespace RockWeb.Blocks.Communication
             }
 
             /* Actions Pie Chart and Stats */
-            int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
-            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
+            var openInteractions = interactionsList.Where( a => a.Operation == "Opened" ).ToList();
+            var clickInteractions = interactionsList.Where( a => a.Operation == "Click" ).ToList();
 
-            // Unique Opens is the number of times a Recipient opened at least once
-            int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int totalOpens = openInteractions.Count();
+            int totalClicks = clickInteractions.Count();
 
+            var recipientsWithOpens = openInteractions.GroupBy( a => a.CommunicationRecipientId ).Select(x => x.Key).ToList();
+            var recipientsWithClicks = clickInteractions.GroupBy( a => a.CommunicationRecipientId ).Select( x => x.Key ).ToList();
+
+            int recipientsWithClicksNoOpensCount = recipientsWithClicks.Except( recipientsWithOpens ).Count();
+            
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
-            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int uniqueClicks = recipientsWithClicks.Count();
+
+            // Unique Opens is the number of times a Recipient opened the message at least once.
+            int uniqueOpens = recipientsWithOpens.Count();
+
+            // When calculating Opens, include Recipients that have a Click interaction recorded without a corresponding Open interaction
+            // to capture the scenario where an email is viewed without loading the image links that are required to trigger the Open event.
+            // For Total Opens, only impute a single Open per recipient regardless of the number of Clicks.
+            uniqueOpens += recipientsWithClicksNoOpensCount;
+            totalOpens += recipientsWithClicksNoOpensCount;
 
             decimal percentOpened = 0;
 
