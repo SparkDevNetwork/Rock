@@ -173,20 +173,32 @@ namespace Rock.Tests.Integration.Attendances
         }
 
         [TestMethod]
-        public void Import_WithBothPersonIdAndPersonAliasId()
+        public void Import_WithBothNullPersonIdAndNullPersonAliasId()
         {
             var attendancesImport = GetAttendancesImport();
+            attendancesImport.Attendances.ForEach( a =>
+            {
+                a.PersonId = null;
+                a.PersonAliasId = null;
+            } );
+
             Assert.IsNotNull( attendancesImport );
+            Exception exception = null;
 
             try
             {
                 AttendanceService.BulkAttendanceImport( attendancesImport );
-                Assert.IsTrue( true );
+
+                // if this doesn't fail, the test fails
+                Assert.IsTrue( false );
             }
             catch ( Exception ex )
             {
-                Assert.Fail( ex.Message );
+                exception = ex;
             }
+
+            // Test passes if we get a SqlException
+            Assert.IsTrue( exception.Message == "All Attendance records must have either a PersonId or PersonAliasId assigned.", exception.Message );
         }
 
         [TestMethod]

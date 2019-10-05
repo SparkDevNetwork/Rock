@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace Subtext.TestLibrary
+
+// From https://github.com/haacked/Subtext/tree/master/src/UnitTests.Subtext
+namespace Rock.Tests.Integration.Utility
 {
 	/// <summary>
 	/// Helper class to simplify common reflection tasks.

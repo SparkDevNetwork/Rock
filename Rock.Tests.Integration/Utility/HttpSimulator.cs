@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -8,7 +8,8 @@ using System.Web.Configuration;
 using System.Web.Hosting;
 using System.Web.SessionState;
 
-namespace Subtext.TestLibrary
+// From https://github.com/haacked/Subtext/tree/master/src/UnitTests.Subtext
+namespace Rock.Tests.Integration.Utility
 {
     public enum HttpVerb
     {
