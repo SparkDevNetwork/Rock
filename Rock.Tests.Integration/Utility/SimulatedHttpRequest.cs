@@ -1,4 +1,4 @@
-#region Disclaimer/Info
+﻿#region Disclaimer/Info
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Subtext WebLog
 // 
@@ -19,7 +19,8 @@ using System.IO;
 using System.Text;
 using System.Web.Hosting;
 
-namespace Subtext.TestLibrary
+// From https://github.com/haacked/Subtext/tree/master/src/UnitTests.Subtext
+namespace Rock.Tests.Integration.Utility
 {
 	/// <summary>
 	/// Used to simulate an HttpRequest.

@@ -9,7 +9,7 @@ using Rock.Model;
 using Rock.Rest.Controllers;
 using System.Net;
 
-namespace Rock.Tests.Integration.RestTests.ControllersTests
+namespace Rock.Tests.Integration.Rest.ControllersTests
 {
     [TestClass]
     [Ignore()]
