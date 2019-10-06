@@ -202,6 +202,14 @@ namespace Rock.Tests.Integration.Communications
 
             recipientsService.DeleteRange( recipientsQuery );
 
+            // Delete Interactions
+            var interactionService = new InteractionService( dataContext );
+
+            var interactionQuery = interactionService.Queryable()
+                .Where( x => x.PersonAlias.PersonId == person.Id );
+
+            interactionService.DeleteRange( interactionQuery );
+
             // Delete Person Aliases
             var personAliasService = new PersonAliasService( dataContext );
 
@@ -229,10 +237,12 @@ namespace Rock.Tests.Integration.Communications
             List<CommunicationRecipientStatus> availableStatusList;
             Dictionary<Guid, int> personMap;
 
-            var dataContext = new RockContext();
+            var dataContextFactory = new DataContextFactory();
+
+            var dataContext = dataContextFactory.GetDataContext();
 
             // Add email for 1 recipient.
-            var singleCommunication = this.CreateEmailCommunication( dataContext,
+            var singleCommunication = this.CreateEmailCommunication( dataContextFactory,
                 Constants.TestCommunicationSingleEmail1Guid,
                 new DateTime( 2019, 1, 30 ),
                 "Welcome to Our Church!",
@@ -245,10 +255,10 @@ namespace Rock.Tests.Integration.Communications
             availableStatusList = GetAvailableCommunicationStatusList( 0, 0, 0 );
 
             this.CreateCommunicationRecipients( dataContext, singleCommunication, recipientGuidList, availableStatusList );
-            this.CreateCommunicationInteractions( dataContext, singleCommunication, 1 );
+            this.CreateCommunicationInteractions( dataContextFactory, singleCommunication, 1 );
 
             // Add bulk email to 50 recipients, all failed with no interactions.
-            var bulkCommunicationFailed = this.CreateEmailCommunication( dataContext,
+            var bulkCommunicationFailed = this.CreateEmailCommunication( dataContextFactory,
                 Constants.TestCommunicationBulkEmailNoInteractionsGuid,
                 new DateTime( 2019, 1, 30 ),
                 "Bulk Email - Test - All Failed",
@@ -265,8 +275,8 @@ namespace Rock.Tests.Integration.Communications
 
             this.CreateCommunicationRecipients( dataContext, bulkCommunicationFailed, recipientGuidList, availableStatusList );
 
-            // Add bulk email to 225 recipients, with associated interactions.
-            var bulkCommunication = this.CreateEmailCommunication( dataContext,
+            // Add bulk email to 525 recipients, with associated interactions.
+            var bulkCommunication = this.CreateEmailCommunication( dataContextFactory,
                 Constants.TestCommunicationBulkEmail1Guid,
                 new DateTime( 2019, 1, 30 ),
                 "Bulk Email Test 1",
@@ -278,11 +288,11 @@ namespace Rock.Tests.Integration.Communications
 
             personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
-            recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 225 );
+            recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 525 );
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 5 );
 
             this.CreateCommunicationRecipients( dataContext, bulkCommunication, recipientGuidList, availableStatusList );
-            this.CreateCommunicationInteractions( dataContext, bulkCommunication, 0.5M );
+            this.CreateCommunicationInteractions( dataContextFactory, bulkCommunication, 0.5M );
         }
 
         /// <summary>
@@ -293,7 +303,9 @@ namespace Rock.Tests.Integration.Communications
             List<Guid> recipientGuidList;
             List<CommunicationRecipientStatus> availableStatusList;
 
-            var dataContext = new RockContext();
+            var dataContextFactory = new DataContextFactory();
+
+            var dataContext = dataContextFactory.GetDataContext();
 
             var personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
@@ -308,7 +320,7 @@ namespace Rock.Tests.Integration.Communications
 
             definedValueService.Add( smsSender );
 
-            dataContext.SaveChanges();
+            dataContextFactory.Reset();
 
             var smsSenderId = smsSender.Id;
 
@@ -328,7 +340,10 @@ namespace Rock.Tests.Integration.Communications
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 0 );
 
             this.CreateCommunicationRecipients( dataContext, bulkSms, recipientGuidList, availableStatusList );
-            this.CreateCommunicationInteractions( dataContext, bulkSms, 0M );
+
+            
+
+            this.CreateCommunicationInteractions( dataContextFactory, bulkSms, 0M );
 
             this.AddNamelessPersonRecords();
             this.AddNamelessSmsConversation();
@@ -513,7 +528,7 @@ namespace Rock.Tests.Integration.Communications
         /// <summary>
         /// Create and persist a new Email Communication instance.
         /// </summary>
-        /// <param name="dataContext"></param>
+        /// <param name="dataContextFactory"></param>
         /// <param name="guid"></param>
         /// <param name="communicationDateTime"></param>
         /// <param name="subject"></param>
@@ -523,8 +538,10 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="reviewerPersonAliasGuid"></param>
         /// <param name="isBulk"></param>
         /// <returns></returns>
-        private Rock.Model.Communication CreateEmailCommunication( RockContext dataContext, string guid, DateTime? communicationDateTime, string subject, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, bool isBulk = false )
+        private Rock.Model.Communication CreateEmailCommunication( IDataContextFactory dataContextFactory, string guid, DateTime? communicationDateTime, string subject, string message, DateTime? openedDateTime, Guid senderPersonAliasGuid, Guid reviewerPersonAliasGuid, bool isBulk = false )
         {
+            var dataContext = dataContextFactory.GetDataContext();
+
             var personGuidToAliasIdMap = GetPersonGuidToAliasIdMap( dataContext );
 
             var communicationService = new CommunicationService( dataContext );
@@ -660,14 +677,15 @@ namespace Rock.Tests.Integration.Communications
         /// <summary>
         /// Create and persist one or more Interactions for the specified Communication.
         /// </summary>
-        /// <param name="dataContext"></param>
+        /// <param name="dataContextFactory"></param>
         /// <param name="communication"></param>
         /// <param name="probabilityOfMultipleInteractions">Specifies the probability that any given recipient has more than one interaction recorded for this Communication</param>
-        private void CreateCommunicationInteractions( RockContext dataContext, Rock.Model.Communication communication, decimal probabilityOfMultipleInteractions )
+        private void CreateCommunicationInteractions( IDataContextFactory dataContextFactory, Rock.Model.Communication communication, decimal probabilityOfMultipleInteractions )
         {
+            var dataContext = dataContextFactory.GetDataContext();
+
             var interactionChannelCommunication = new InteractionChannelService( dataContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
 
-            var interactionService = new InteractionService( dataContext );
             var recipientService = new CommunicationRecipientService( dataContext );
 
             // Get or create a new interaction component for this communication.
@@ -681,14 +699,26 @@ namespace Rock.Tests.Integration.Communications
 
             dataContext.SaveChanges();
 
-            // Create an interaction for each communication recipient that has opened the communication.
+            // Create an interaction for each communication recipient where the communication has been opened or delivered.
+            // An interaction may occur for a communication that is not marked as delivered but not opened if the user opts to open the message without loading associated images.
             var recipients = recipientService.Queryable()
                 .AsNoTracking()
                 .Where( x => x.CommunicationId == communicationId
-                             && x.Status == CommunicationRecipientStatus.Opened );
+                             && x.Status == CommunicationRecipientStatus.Opened || x.Status == CommunicationRecipientStatus.Delivered )
+                .ToList();
+
+            InteractionService interactionService = null;
 
             foreach ( var recipient in recipients )
             {
+                dataContext = dataContextFactory.GetDataContext();
+
+                if ( interactionService == null
+                     || dataContextFactory.CurrentAccessCount == 1 )
+                {
+                    interactionService = new InteractionService( dataContext );
+                }
+
                 var clientIp = string.Format( "192.168.2.{0}", _Rng.Next( 0, 256 ) );
                 var clientOs = _ValidClientOsList.GetRandomElement();
                 var clientBrowser = _ValidClientBrowserList.GetRandomElement();
@@ -696,64 +726,68 @@ namespace Rock.Tests.Integration.Communications
                 var clientType = _ValidClientTypeList.GetRandomElement();
 
                 DateTime interactionDateTime;
-                //= GetRandomTimeWithinDayWindow( communication.SendDateTime.Value, 7 );
 
-                // Add an "Opened" interaction.
-                var openedDateTime = recipient.OpenedDateTime ?? communication.SendDateTime.GetValueOrDefault();
+                var firstInteractionDateTime = recipient.OpenedDateTime ?? communication.SendDateTime.GetValueOrDefault();
 
-                var newInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, openedDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );
-
-                newInteraction.ForeignKey = _TestDataSourceOfChange;
-
-                // Add additional interactions.
+                // Determine the number of interactions
                 var hasMultipleInteractions = _Rng.Next( 1, 101 ) < probabilityOfMultipleInteractions * 100;
 
-                int additionalOpens = 0;
+                int totalOpens = 0;
                 int totalClicks = 0;
 
-                if ( hasMultipleInteractions )
+                if ( recipient.Status == CommunicationRecipientStatus.Opened )
                 {
-                    // Add more Opens...
-                    additionalOpens = _Rng.Next( 1, 5 );
-
-                    for ( int i = 0; i < additionalOpens; i++ )
-                    {
-                        interactionDateTime = GetRandomTimeWithinDayWindow( openedDateTime, 7 );
-
-                        var openInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, openedDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );
-
-                        openInteraction.ForeignKey = _TestDataSourceOfChange;
-                    }
-
-                    // Add some Clicks...
-                    totalClicks = _Rng.Next( 1, 5 );
-
-                    string clickUrl = null;
-                    bool changeUrl = true;
-
-                    for ( int i = 0; i < totalClicks; i++ )
-                    {
-                        interactionDateTime = GetRandomTimeWithinDayWindow( openedDateTime, 7 );
-
-                        if ( changeUrl )
-                        {
-                            clickUrl = string.Format( "https://communication/link/{0}", i );
-                        }
-
-                        var clickInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Click", clickUrl, recipient.PersonAliasId, openedDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );
-
-                        clickInteraction.ForeignKey = _TestDataSourceOfChange;
-
-                        // Allow a 50% chance that the URL will remain the same for the next click also.
-                        changeUrl = _Rng.Next( 1, 101 ) < 50;
-                    }
-
+                    totalOpens = hasMultipleInteractions ? _Rng.Next( 1, 5 ) : 1;
                 }
 
-                Debug.Print( $"Added Communication Interaction. (CommunicationId={ communicationId }, Recipient={recipient.PersonAliasId}, Opens={additionalOpens + 1 }, Clicks={ totalClicks })" );
+                if ( hasMultipleInteractions || totalOpens == 0 )
+                { 
+                    totalClicks = hasMultipleInteractions ? _Rng.Next( 1, 5 ) : 1;
+                }
+
+                // Add Opens...
+                for ( int i = 0; i < totalOpens; i++ )
+                {
+                    if ( i == 0 )
+                    {
+                        // Set the first interaction to occur on the opened date.
+                        interactionDateTime = firstInteractionDateTime;
+                    }
+                    else
+                    {
+                        interactionDateTime = GetRandomTimeWithinDayWindow( firstInteractionDateTime, 7 );
+                    }
+
+                    var openInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, firstInteractionDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );
+
+                    openInteraction.ForeignKey = _TestDataSourceOfChange;
+                }
+
+                // Add Clicks...
+                string clickUrl = null;
+                bool changeUrl = true;
+
+                for ( int i = 0; i < totalClicks; i++ )
+                {
+                    interactionDateTime = GetRandomTimeWithinDayWindow( firstInteractionDateTime, 7 );
+
+                    if ( changeUrl )
+                    {
+                        clickUrl = string.Format( "https://communication/link/{0}", i );
+                    }
+
+                    var clickInteraction = interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Click", clickUrl, recipient.PersonAliasId, firstInteractionDateTime, clientBrowser, clientOs, clientType, clientAgent, clientIp, null );
+
+                    clickInteraction.ForeignKey = _TestDataSourceOfChange;
+
+                    // Allow a 50% chance that the URL will remain the same for the next click also.
+                    changeUrl = _Rng.Next( 1, 101 ) < 50;
+                }
+
+                Debug.Print( $"Added Communication Interaction. (CommunicationId={ communicationId }, Recipient={recipient.PersonAliasId}, Opens={ totalOpens }, Clicks={ totalClicks })" );
             }
 
-            dataContext.SaveChanges();
+            dataContextFactory.Reset();
         }
 
         #endregion
@@ -862,6 +896,105 @@ namespace Rock.Tests.Integration.Communications
             }
 
             return adminPerson;
+        }
+
+        #endregion
+
+        #region DataContext Factory
+
+        /// <summary>
+        /// A factory that is responsible for the creation and lifecycle of a data context.
+        /// </summary>
+        public interface IDataContextFactory
+        {
+            /// <summary>
+            /// Retrieves a data context.
+            /// </summary>
+            /// <returns></returns>
+            RockContext GetDataContext();
+
+            /// <summary>
+            /// Returns the number of times the current data context has been retrieved.
+            /// </summary>
+            int CurrentAccessCount { get; }
+
+            /// <summary>
+            /// Reset the current data context for the factory.
+            /// This will either commmit or discard the changes in the current data context according to the factory configuration.
+            /// </summary>
+            void Reset();
+        }
+
+        /// <summary>
+        /// A factory that is responsible for the creation and lifecycle of a data context.
+        /// </summary>
+        public class DataContextFactory : IDataContextFactory
+        {
+            private RockContext _DataContext;
+            private int _AccessCount = 0;
+
+            /// <summary>
+            /// The number of times the current data context has been accessed.
+            /// </summary>
+            public int CurrentAccessCount
+            {
+                get
+                {
+                    return _AccessCount;
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the maximum number of times the data context can be retrieved before it is automatically recycled.
+            /// If set to 0, the data context will never be recycled.
+            /// </summary>
+            public int RecycleAccessCount { get; set; } = 10;
+
+            /// <summary>
+            /// A flag indicating if changes to the context should be automatically saved before it is recycled.
+            /// </summary>
+            public bool CommitOnRecycle { get; set; } = true;
+
+            /// <summary>
+            /// Retrieves a data context.
+            /// Each call to this method will increment the access count.
+            /// </summary>
+            /// <returns></returns>
+            public RockContext GetDataContext()
+            {
+                _AccessCount++;
+
+                if ( RecycleAccessCount > 0
+                     && _AccessCount > RecycleAccessCount )
+                {
+                    Reset();
+                }
+
+                if ( _DataContext == null )
+                {
+                    _DataContext = new RockContext();
+
+                    _AccessCount = 1;
+                }
+
+                return _DataContext;
+            }
+
+            /// <summary>
+            /// Reset the current data context for the factory.
+            /// This will either commmit or discard the changes in the current data context according to the factory configuration.
+            /// </summary>
+            public void Reset()
+            {
+                if ( _DataContext != null
+                     && this.CommitOnRecycle )
+                {
+                    _DataContext.SaveChanges();
+                }
+
+                _DataContext = null;
+                _AccessCount = 0;
+            }
         }
 
         #endregion
