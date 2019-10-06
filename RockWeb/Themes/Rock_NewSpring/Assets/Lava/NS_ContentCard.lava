@@ -1,0 +1,39 @@
+<div class="panel">
+    <div class="panel-body hard-bottom">
+
+        {% assign contentLength = content | StripHtml | Size %}
+        
+        <h4>{{ title }}</h4>
+
+        <p class="strong uppercase color-theme-3"><small><span>{{ date | Date:'MMM d, yyyy hh:mm tt' }}</span>{% if departmentName %} &middot; {% if departmentUrl %}<a href="{{ departmentUrl }}">{% endif %}{{ departmentName }}{% if departmentUrl %}</a>{% endif %}{% endif %}</small></p>
+        
+        {% if contentLength > 140 and linkUrl == empty %}
+
+            <div class="content">
+                <p>{{ content | StripHtml | Truncate: 140 }}</p>
+            </div>
+
+            <div class="content hidden">
+                {{ image }}
+                {{ content }}
+            </div>
+
+            <a href="{{ linkUrl }}" class="btn btn-sm btn-default push-half-bottom" data-action="expand">
+                {{ linkText }} <i class="btn-icon fa {{ linkIconClass }}"></i>
+            </a>
+
+        {% else %}
+            
+            {{ image }}
+            {{ content }}
+
+            {% if linkUrl != empty %}
+                <a href="{{ linkUrl }}" class="btn btn-sm btn-default push-half-bottom" target="{{ linkTarget }}">
+                    {{ linkText }} <i class="btn-icon fa {{ linkIconClass }}"></i>
+                </a>
+            {% endif %}
+        
+        {% endif %}
+
+    </div>
+</div>

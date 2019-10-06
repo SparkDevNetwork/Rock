@@ -1,0 +1,170 @@
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page' %}
+{% assign currentTime = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+{% if expireDateTime and expireDateTime != empty and expireDateTime <= currentTime %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is expired.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+{% assign parentCount = Item.ParentItems | Size %}
+{% contentchannel id:'{{ Item.ContentChannelId }}' iterator:'channels' %}
+    {% for channel in channels %}
+        {% assign parentccid = channel | Attribute:'PrimaryParentChannel','Object' | Property:'Id' %}
+    {% endfor %}
+{% endcontentchannel %}
+
+{% if parentCount > 0 %}
+    {% capture parentIds %}{% for parent in Item.ParentItems %}{{ parent.ContentChannelItemId }}{% if forloop.last != True %},{% endif %}{% endfor %}{% endcapture %}
+    {% contentchannelitem ids:'{{ parentIds }}' where:'ContentChannelId == "{{ parentccid }}"' iterator:'parents' %}
+        {% for parent in parents %}
+            {% capture parentType %}{% assign parentTypeParts = parent.ContentChannel.Name | Split:' - ' %}{{ parentTypeParts[1] | Singularize }}{% endcapture %}
+            {% assign parentTitle = parent.Title | Replace:"'","’" %}
+            {% assign parentDates = parent | Attribute:'Dates','RawValue' %}
+            {% assign parentSummary = parent | Attribute:'Summary' | Replace:"'","’" %}
+            {% assign parentImage = parent | Attribute:'ImageLandscape','Url' %}
+            {% assign parentImageSquare = parent | Attribute:'ImageSquare','Url' %}
+            {% assign backgroundColor = parent | Attribute:'BackgroundColor' %}
+            {% assign parentVideo = parent | Attribute:'Video','RawValue' %}
+            {% capture parentUrl %}{{ parent.ContentChannel.ChannelUrl }}/{{ parent.PrimarySlug }}{% endcapture %}
+        {% endfor %}
+    {% endcontentchannelitem %}
+{% endif %}
+
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign channelNameParts = Item.ContentChannel.Name | Split:' - ' %}
+{% assign channelName = channelNameParts[1] %}
+{% capture browserTitle %}{{ Item.Title }} | {% if parentTitle and parentTitle != empty %}{{ parentTitle }} | {% endif %}{{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+{{ channelName | Singularize | SetPageTitle:'PageTitle' }}
+
+
+
+{% if backgroundColor %}
+<style>
+    .brand-bg {
+        background-color: {{ backgroundColor | Darken:'10%' }};
+    }
+</style>
+{% endif %}
+
+<div class="row">
+	<div class="col-md-4 col-sm-12 col-xs-12">
+        {% capture guid %}{{ Item.Guid }}{% endcapture %}
+        {% capture cciid %}{{ Item.Id }}{% endcapture %}
+        {% capture id %}{{ Item.Id }}{% endcapture %}
+        {% capture title %}{{ Item.Title | Replace:"'","’" }}{% endcapture %}
+        {% capture titlesize %}h3{% endcapture %}
+        {% capture content %}{{ Item | Attribute:'Summary' | Replace:"'","’" }}{% endcapture %}
+        {% capture textalignment %}{% endcapture %}
+        {% capture label %}{% endcapture %}
+        {% capture subtitle %}{[ formatDate date:'{{ Item | Attribute:'ActualDate' }}' ]} &middot; {[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+        {% capture imageurl %}{{ parentImage }}{% endcapture %}
+        {% capture imageoverlayurl %}{% endcapture %}
+        {% capture imagealignment %}{% endcapture %}
+        {% capture imageopacity %}{% endcapture %}
+        {% capture grayscale %}{% endcapture %}
+        {% capture backgroundvideourl %}{% endcapture %}
+        {% capture lava %}
+            <div class="row row-condensed push-bottom xs-push-half-bottom">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share="">Share This <i class="fas fa-fw fa-share flush"></i></a>
+                </div><div class="col-md-6 col-sm-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom hidden">
+                    <a href="#" class="btn btn-block btn-default text-gray-dark text-decoration-none" data-like=""><i class="far fa-fw fa-heart flush"></i> 5</a>
+                </div>
+            </div>
+        {% endcapture %}
+        {% capture video %}{{ Item | Attribute:'Video','RawValue' }}{% endcapture %}
+        {% capture ratio %}{% endcapture %}
+        {% capture trimcopy %}Yes{% endcapture %}
+        {% capture linkcolor %}{% endcapture %}
+        {% capture backgroundcolor %}{% endcapture %}
+        {% capture linkurl %}{% endcapture %}
+        {% capture linktext %}{% endcapture %}
+
+       {[ card id:'{{ id }}' cciid:'{{ cciid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+        
+        {% capture itemToken %}cci{{ Item.ContentChannelId }}{{ Item.Id }}{% endcapture %}
+        {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+
+        {% capture shareimageurl -%}
+            {% if video and video != empty %}
+                {[ getImageFromVideoId id:'{{ video }}' ]}
+            {% else %}
+                {{ imageurl }}
+            {% endif %}
+        {%- endcapture %}
+
+        {% assign shareauthor = 'newspring' %}
+        {% assign sharetitle = Item.Title %}
+        {% assign summary = Item | Attribute:'Summary' %}
+        {%- capture sharesummary -%}
+            {% if summary and summary != empty %}
+                {{ summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
+            {% else %}
+                {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
+            {% endif %}
+        {%- endcapture -%}
+        {% assign sharehashtag = '' %}
+        
+        {[ modalShare ]}
+
+	</div><div class="col-md-8 col-sm-12 col-xs-12">
+        {[ wistiaEmbed id:'{{ Item | Attribute:'Video','RawValue' }}' color:'{{ backgroundColor }}' ]}
+	</div>
+</div>
+
+<!-- SIDE BY SIDE -->
+{% capture id %}{% endcapture %}
+{% capture title %}{{ parentTitle | Replace:"'","’" }}{% endcapture %}
+{% capture content %}{{ parentSummary | Replace:"'","’" }}{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{{ parentType }}{% endcapture %}
+
+{% assign dateparts = parentDates | Split:',' %}
+{% assign datePart1 = dateparts[0] | Date:'yyyyMMdd' %}
+{% assign datePart2 = dateparts[1] | Date:'yyyyMMdd' %}
+{% if parentDates != empty %}
+    {% capture subtitle %}{[ formatDate date:'{{ dateparts[0] }}' ]}{% if datePart1 != datePart2 %} - {[ formatDate date:'{{ dateparts[1] }}' ]}{% endif %}{% endcapture %}
+{% endif %}
+{% capture imageurl %}{{ parentImageSquare }}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}Left{% endcapture %}
+{% capture imageopacity %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{{ parentVideo }}{% endcapture %}
+{% capture ratio %}square{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}{% endcapture %}
+{% capture linkurl %}{{ parentUrl }}{% endcapture %}
+{% capture linktext %}Watch Series{% endcapture %}
+
+{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+
+
+
+<!-- Set Meta Tags -->
+{% assign metaTitle = Item | Attribute:'MetaTitle' %}
+{% assign metaDescription = Item | Attribute:'MetaDescription' %}
+{% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
+{% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
+{% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
+{% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+
+{%- comment -%}If meta title is present, use it, otherwise use this item's title{%- endcomment -%}
+{% capture title %}{% if metaTitle and metaTitle != empty %}{{ metaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}
+
+{%- comment -%}If meta description is present, use it, otherwise if this item has a summary, use it, otherwise, use this item's content{%- endcomment -%}
+{% capture description %}{% if metaDescription and metaDescription != empty %}{{ metaDescription }}{% elseif summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}{% endcapture %}
+
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ title | Replace:"'","’" | Replace:"New Spring","NewSpring" }}' description:'{{ description | Replace:"'","’" }}' image:'{{ Item | Attribute:"ImageLandscape","Url" }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
