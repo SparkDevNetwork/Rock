@@ -14,4 +14,4 @@
     </div>
 </div>
 
-<Rock:CodeEditor ID="ceNoNetworkContent" runat="server" Label="No Network Content" EditorMode="Xml" />
+<Rock:CodeEditor ID="ceNoNetworkContent" runat="server" Label="No Network Content" EditorMode="Xml" Help="Message to display when an Internet connection is required, but is not present. If this message is plain text it will be wrapped in a warning notification box. Otherwise provide XAML for customizations." />

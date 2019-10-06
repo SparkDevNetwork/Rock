@@ -100,7 +100,7 @@ namespace Rockweb.Blocks.Crm
             /// </summary>
             public const string LavaTemplate = "LavaTemplate";
         }
-        #endregion Atrribute Keys
+        #endregion Attribute Keys
 
         #region constants
 

@@ -258,6 +258,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS, cbRegistrationDisplayAlternateIdFieldForAdults.Checked.ToTrueFalse() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN, cbRegistrationDisplayAlternateIdFieldForChildren.Checked.ToTrueFalse() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON, cbRegistrationDisplaySmsEnabled.Checked.ToTrueFalse() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED, cbRegistrationSmsEnabledByDefault.Checked.ToTrueFalse() );
 
                 groupType.SetAttributeValue(
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS,
@@ -506,6 +508,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cbRegistrationDisplayAlternateIdFieldForAdults.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
                 cbRegistrationDisplayAlternateIdFieldForChildren.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
 
+                cbRegistrationDisplaySmsEnabled.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON ).AsBoolean();
+                cbRegistrationSmsEnabledByDefault.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED ).AsBoolean();
+
                 lbRegistrationRequiredAttributesForAdults.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS ).SplitDelimitedValues() );
                 lbRegistrationOptionalAttributesForAdults.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS ).SplitDelimitedValues() );
 
@@ -582,6 +587,8 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS );

@@ -2671,7 +2671,7 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                if ( !HtmlMetaExists( page, htmlMeta ) )
+                if ( !ReplaceExistingHtmlMeta( page, htmlMeta ) )
                 {
                     // Find last meta element
                     int index = 0;
@@ -2699,12 +2699,13 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Returns a flag indicating if a meta tag exists on the page.
+        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
+        /// Returns <c>true</c> if the meta tag already exists and was replaced.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool HtmlMetaExists( Page page, HtmlMeta newMeta )
+        private static bool ReplaceExistingHtmlMeta( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -2717,19 +2718,47 @@ Sys.Application.add_load(function () {
                         HtmlMeta existingMeta = (HtmlMeta)control;
 
                         bool sameAttributes = true;
+                        bool hasContentAttribute_NewMeta = false;
+                        bool hasContentAttribute_ExistingMeta = ( existingMeta.Attributes["Content"] != null );
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
-                            if ( existingMeta.Attributes[attributeKey] == null ||
-                                existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
+                            if ( attributeKey.ToLower() == "content" )
                             {
-                                sameAttributes = false;
-                                break;
+                                hasContentAttribute_NewMeta = true;
+                            }
+                            else
+                            { 
+                                if ( existingMeta.Attributes[attributeKey] == null ||
+                                    existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
+                                {
+                                    sameAttributes = false;
+                                    break;
+                                }
                             }
                         }
 
                         if ( sameAttributes )
                         {
+                            if ( hasContentAttribute_NewMeta )
+                            {
+                                if ( hasContentAttribute_ExistingMeta )
+                                {
+                                    existingMeta.Attributes["Content"] = newMeta.Attributes["Content"];
+                                }
+                                else
+                                {
+                                    existingMeta.Attributes.Add( "Content", newMeta.Attributes["Content"] );
+                                }
+                            }
+                            else
+                            {
+                                if ( hasContentAttribute_ExistingMeta )
+                                {
+                                    existingMeta.Attributes.Remove( "Content" );
+                                }
+                            }
+
                             existsAlready = true;
                             break;
                         }

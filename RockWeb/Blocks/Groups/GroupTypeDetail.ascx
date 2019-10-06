@@ -66,7 +66,7 @@
                                 <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
                                     <div class="grid">
-                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
+                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type" HideDeleteButtonForIsSystem="false">
                                             <Columns>
                                                 <Rock:RockBoundField DataField="Name" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
@@ -138,6 +138,10 @@
                                         <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag"
                                             Help="Determines if groups of this type should be allowed to manage tags." />
 
+                                    </div>
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" Text="Yes"
+                                            Help="This option will allow group RSVP." />
                                     </div>
                         </div>
                             </div>

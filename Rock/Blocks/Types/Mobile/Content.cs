@@ -69,6 +69,14 @@ namespace Rock.Blocks.Types.Mobile
         Key = AttributeKeys.LavaRenderLocation,
         Order = 2 )]
 
+    [CodeEditorField( "Callback Logic",
+        Description = "If you provided any callback commands in your Content then you can specify the Lava logic for handling those commands here. <span class='tip tip-laval'></span>",
+        IsRequired = false,
+        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        Key = AttributeKeys.CallbackLogic,
+        Category = "advanced",
+        Order = 0 )]
+
     #endregion
 
     public class Content : RockMobileBlockType
@@ -102,6 +110,11 @@ namespace Rock.Blocks.Types.Mobile
             /// The lava render location key
             /// </summary>
             public const string LavaRenderLocation = "LavaRenderLocation";
+
+            /// <summary>
+            /// The callback logic key
+            /// </summary>
+            public const string CallbackLogic = "CallbackLogic";
         }
 
         #region IRockMobileBlockType Implementation
@@ -162,12 +175,36 @@ namespace Rock.Blocks.Types.Mobile
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
 
+            // TODO: Change this to Content after next Rock.Mobile update.
             config.Add( "Xaml", content );
             config.Add( "ProcessLava", GetAttributeValue( AttributeKeys.LavaRenderLocation ) != "On Server" );
             config.Add( "CacheDuration", GetAttributeValue( AttributeKeys.CacheDuration ).AsInteger() );
             config.Add( "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() );
 
             return config;
+        }
+
+        /// <summary>
+        /// Gets the dynamic XAML content that should be rendered based upon the request.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public object GetCallbackContent( string command, Dictionary<string, object> parameters )
+        {
+            var content = GetAttributeValue( AttributeKeys.CallbackLogic );
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Command", command );
+            mergeFields.Add( "Parameters", parameters );
+
+            var xaml = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
+
+            return new
+            {
+                Content = xaml
+            };
         }
 
         #endregion

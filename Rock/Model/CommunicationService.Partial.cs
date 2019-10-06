@@ -223,7 +223,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Creates an SMS communication with a CommunicationRecipient and adds it to the context.
-        /// NOTE: This method is normally just used when logging a communication (not creating a new one)
         /// </summary>
         /// <param name="fromPerson">the Sender for the communication (For the communication.SenderPersonAlias). If null the name for the communication will be From: unknown person.</param>
         /// <param name="toPersonAliasId">To person alias identifier. If null the CommunicationRecipient is not created</param>

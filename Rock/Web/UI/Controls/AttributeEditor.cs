@@ -132,6 +132,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbIsActive;
 
         /// <summary>
+        /// The IsPublic checkbox
+        /// </summary>
+        protected RockCheckBox _cbIsPublic;
+
+        /// <summary>
         /// The Enable History checkbox
         /// </summary>
         protected RockCheckBox _cbEnableHistory;
@@ -1005,6 +1010,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPublic
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsPublic.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsPublic.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
@@ -1347,6 +1372,13 @@ namespace Rock.Web.UI.Controls
             _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
             Controls.Add( _cbIsActive );
 
+            _cbIsPublic = new RockCheckBox();
+            _cbIsPublic.ID = "_cbIsPublic";
+            _cbIsPublic.Label = "Public";
+            _cbIsPublic.Text = "Yes";
+            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts (like RSVP invitations).";
+            Controls.Add(_cbIsPublic);
+
             _tbDescription = new RockTextBox();
             _tbDescription.Label = "Description";
             _tbDescription.ID = "tbDescription";
@@ -1667,7 +1699,8 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag(); // empty column
+            _cbIsPublic.RenderControl( writer );
+            writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
 
@@ -1842,6 +1875,7 @@ namespace Rock.Web.UI.Controls
                 this.IsAnalytic = attribute.IsAnalytic;
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
                 this.IsActive = attribute.IsActive;
+                this.IsPublic = attribute.IsPublic;
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
@@ -1913,6 +1947,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsAnalytic = this.IsAnalytic;
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
                 attribute.IsActive = this.IsActive;
+                attribute.IsPublic = this.IsPublic;
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;

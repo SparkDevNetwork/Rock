@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Finance
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
-        Description = "The accounts to display. By default all active accounts with a Public Name will be displayed. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
         Category = AttributeCategory.None,
         Order = 5 )]
 
@@ -1535,7 +1535,6 @@ mission. We are so grateful for your commitment.</p>
             if ( enableACH == false && enableCreditCard == false )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Enable ACH and/or Enable Credit Card needs to be enabled." );
-                ;
                 pnlTransactionEntry.Visible = false;
                 return;
             }
@@ -2181,12 +2180,12 @@ mission. We are so grateful for your commitment.</p>
                     dtpStartDate.Visible = true;
                 }
 
-                lStartDateLabel.Text = string.Format( "Process {0} On", giftTerm );
+                dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
             }
             else
             {
                 dtpStartDate.Visible = true;
-                lStartDateLabel.Text = "Start Giving On";
+                dtpStartDate.Label = "Start Giving On";
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );

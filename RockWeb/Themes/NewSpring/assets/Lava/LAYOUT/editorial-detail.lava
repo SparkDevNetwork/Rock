@@ -33,7 +33,7 @@
 
             {% capture childrenPermalinks %}[
                     {% for child in parent.ChildItems %}{
-                        "order": "{{ child.ChildContentChannelItem.Order }}",
+                        "order": "{{ child.ChildContentChannelItem.Order | DividedBy:10 }}",
                         "url": "{[ getPermalink cciid:'{{ child.ChildContentChannelItem.Id }}' ]}"
 
                         {% if child.ChildContentChannelItem.Title == Item.Title %}
@@ -42,6 +42,8 @@
                     }{% if forloop.last != true %},{% endif %}{% endfor %}
             ]{% endcapture %}
             {% assign childrenPermalinks = childrenPermalinks | Trim | FromJSON %}
+
+            {% assign childrenPermalinks = childrenPermalinks | OrderBy:'order' %}
 
             {% assign parentTitle = parent.Title %}
             {% capture parentPermalink %}{[ getPermalink cciid:'{{ parent.Id }}' ]}{% endcapture %}
@@ -173,6 +175,8 @@
             {% if itemIndex and itemIndex != empty %}
                 {% assign prevLinkIndex = itemIndex | Minus:2 %}
                 {% assign nextLinkIndex = itemIndex %}
+
+
                 <div class="row flush">
                     <div class="col-xs-4 col-sm-4 col-md-4 hard">
                         {% if itemIndex and itemIndex != 1 %}<a href="{{ childrenPermalinks | Index:prevLinkIndex | Property:'url' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}

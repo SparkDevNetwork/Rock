@@ -28,6 +28,7 @@ using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.DownhillCss;
 using Rock.Mobile;
 using Rock.Mobile.Common.Enums;
 using Rock.Model;
@@ -35,7 +36,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
+using Rock.Web.UI.Controls;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Mobile.Common.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
@@ -310,11 +311,7 @@ namespace RockWeb.Blocks.Mobile
             }
             
 
-            //
-            // Set the UI fields for the images.
-            //
-            imgAppIcon.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.SiteLogoBinaryFileId );
-            imgAppIcon.Visible = site.SiteLogoBinaryFileId.HasValue;
+            // Set the UI fields for the preview thumbnail.
             imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
             pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 
@@ -779,6 +776,13 @@ namespace RockWeb.Blocks.Mobile
 
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
 
+            // Ensure that the Downhill CSS platform is mobile
+            if ( additionalSettings.DownhillSettings == null )
+            {
+                additionalSettings.DownhillSettings = new DownhillSettings();
+            }
+            additionalSettings.DownhillSettings.Platform = DownhillPlatform.Mobile;
+
             //
             // Save the additional settings.
             //
@@ -1202,6 +1206,48 @@ namespace RockWeb.Blocks.Mobile
             }
 
             BindPages( hfSiteId.Value.AsInteger() );
+        }
+
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gPages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gPages_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            if ( hfSiteId.Value.IsNullOrWhiteSpace() || hfSiteId.Value.AsInteger() == 0 )
+            {
+                return;
+            }
+
+            int? defaultPageId = SiteCache.Get( hfSiteId.Value.AsInteger() ).DefaultPageId;
+            if ( defaultPageId == null )
+            {
+                return;
+            }
+            
+            var deleteField = gPages.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteField == null || !deleteField.Visible )
+            {
+                return;
+            }
+
+            int? pageId = gPages.DataKeys[e.Row.RowIndex].Values[0].ToString().AsIntegerOrNull();
+            if ( pageId == defaultPageId )
+            {
+                var deleteFieldColumnIndex = gPages.GetColumnIndex( deleteField );
+                var deleteButton = e.Row.Cells[deleteFieldColumnIndex].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                if ( deleteButton != null )
+                {
+                    deleteButton.Visible = false;
+                }
+            }
         }
 
         #endregion

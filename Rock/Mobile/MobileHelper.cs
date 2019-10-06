@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web;
 
 using Rock.Attribute;
@@ -27,6 +28,7 @@ using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Authorization = Rock.Security.Authorization;
 
 namespace Rock.Mobile
 {
@@ -227,6 +229,11 @@ namespace Rock.Mobile
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
+            if ( additionalSettings.IsNull() )
+            {
+                throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
+            }
+
             //
             // Get all the system phone formats.
             //
@@ -325,6 +332,13 @@ namespace Rock.Mobile
                         .Select( a => a.Value )
                         .Where( a => a.Categories.Any( c => c.Name == "custommobile" ) );
 
+                    // Auto add XAML warning notication box to No Network Content if it's plain text
+                    var noNetworkContent = additionalBlockSettings.NoNetworkContent?.Trim();
+                    if ( noNetworkContent.IsNotNullOrWhiteSpace() && !noNetworkContent.StartsWith( "<" ) )
+                    {
+                        noNetworkContent = $@"<Rock:NotificationBox NotificationType=""Warning"" Text=""{WebUtility.HtmlEncode( noNetworkContent )}"" />";
+                    }
+
                     var mobileBlock = new MobileBlock
                     {
                         PageGuid = block.Page.Guid,
@@ -341,7 +355,7 @@ namespace Rock.Mobile
                         ShowOnTablet = additionalBlockSettings.ShowOnTablet,
                         ShowOnPhone = additionalBlockSettings.ShowOnPhone,
                         RequiresNetwork = additionalBlockSettings.RequiresNetwork,
-                        NoNetworkContent = additionalBlockSettings.NoNetworkContent,
+                        NoNetworkContent = noNetworkContent,
                         AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( block ) )
                     };
 

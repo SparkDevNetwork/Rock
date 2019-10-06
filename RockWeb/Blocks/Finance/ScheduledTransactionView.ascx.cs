@@ -708,6 +708,9 @@ namespace RockWeb.Blocks.Finance
                 .Add( "Transaction Code", financialScheduledTransaction.TransactionCode )
                 .Add( "Schedule Id", financialScheduledTransaction.GatewayScheduleId );
 
+            lSummary.Visible = financialScheduledTransaction.Summary.IsNotNullOrWhiteSpace();
+            lSummary.Text = financialScheduledTransaction.Summary.ConvertCrLfToHtmlBr();
+
             lDetailsLeft.Text = detailsLeft.Html;
             lDetailsRight.Text = detailsRight.Html;
 

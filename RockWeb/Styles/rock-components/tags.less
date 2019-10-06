@@ -74,6 +74,9 @@
     text-decoration: none;
     background: @tag-bg;
     border-radius: @tag-border-radius;
+    -webkit-transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
+    -moz-transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
+    transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
 
     @media (min-width: @screen-sm-min) {
       float: left;
@@ -93,19 +96,19 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       cursor: default;
-      transition: all 2s;
     }
 
     a {
-      display: block;
-      float: left;
-      max-width: 0;
+      position: absolute;
+      right: 0;
+      padding: 0 3px;
       font-weight: @font-weight-bold;
       color: @tag-text-color;
       text-decoration: none;
       opacity: 0;
-      transition-delay: 1s;
-      transition-duration: .5s;
+      -webkit-transition: opacity .25s ease-out 1s;
+      -moz-transition: opacity .25s ease-out 1s;
+      transition: opacity .25s ease-out 1s;
     }
 
     small {
@@ -113,17 +116,24 @@
     }
 
     &:hover {
+
       span {
         max-width: 1000px;
       }
 
       a {
-        max-width: 100px;
-        padding: 0 2px;
+        visibility: visible;
         opacity: 1;
         transition-delay: 0s;
       }
     }
+  }
+
+  // Transition padding on tags inside a control.
+  .tag-wrap .tag:hover {
+    padding-right: 17px;
+    margin-right: 3px;
+    transition-delay: 0s;
   }
 }
 

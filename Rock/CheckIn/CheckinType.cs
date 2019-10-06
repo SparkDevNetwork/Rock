@@ -323,6 +323,22 @@ namespace Rock.CheckIn
             public bool DisplayAlternateIdFieldforChildren => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
 
             /// <summary>
+            /// Gets a value indicating whether [display SMS button].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [display SMS button]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DisplaySmsButton => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON ).AsBoolean();
+
+            /// <summary>
+            /// Gets a value indicating whether [default SMS enabled].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [default SMS enabled]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DefaultSmsEnabled => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED ).AsBoolean();
+
+            /// <summary>
             /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search in that case)
             /// </summary>
             /// <value>

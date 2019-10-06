@@ -40,7 +40,8 @@
                 <%-- Transaction Entry Panel --%>
                 <div class="col-sm-8">
                     <div class="transaction-entry-v2">
-                    <%-- Collect Transaction Info (step 1) --%>
+
+                     <%-- Collect Transaction Info (step 1) --%>
                     <asp:Panel ID="pnlPromptForAmounts" runat="server">
 
                         <asp:Literal ID="lIntroMessage" runat="server" />
@@ -49,25 +50,14 @@
 
                         <asp:Panel ID="pnlScheduledTransaction" runat="server">
                             <div class="form-group">
-                                <Rock:RockDropDownList ID="ddlFrequency" runat="server" CssClass="input-lg" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
+                                <Rock:RockDropDownList ID="ddlFrequency" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
                             </div>
 
-                            <div class="form-horizontal">
-                                <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
-                                    <label class="control-label col-xs-5"  style="text-align:left;" for="<%= ddlPersonSavedAccount.ClientID %>">Giving Method</label>
-                                    <div class="control-wrapper col-xs-7">
-                                        <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" CssClass="pull-right" />
-                                    </div>
-                                </asp:Panel>
+                            <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
+                                <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" />
+                            </asp:Panel>
 
-                                <div class="form-group">
-                                    <label class="control-label col-xs-5" style="text-align:left;" for="<%= dtpStartDate.ClientID %>"><asp:Literal ID="lStartDateLabel" runat="server" /></label>
-                                    <div class="control-wrapper col-xs-7">
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" CssClass="pull-right" />
-                                    </div>
-                                </div>
-
-                            </div>
+                            <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date"/>
 
                         </asp:Panel>
 
@@ -79,7 +69,7 @@
                         <a id="aHistoryBackButton" runat="server" class="btn btn-link">Previous</a>
                     </asp:Panel>
 
-
+                     <%-- Show Amount Summary (step 2)--%>
                     <asp:Panel ID="pnlAmountSummary" runat="server" Visible="false" CssClass="amount-summary">
                         <div class="account-campus">
                             <span class="account-name"><asp:Literal runat="server" ID="lAmountSummaryAccounts" /></span>
@@ -91,11 +81,9 @@
                         </div>
                     </asp:Panel>
 
-
                     <%-- Collect Payment Info (step 2). Skip this if they using a saved giving method. --%>
                     <asp:Panel ID="pnlPaymentInfo" runat="server" Visible="false">
-
-                        <div class="margin-b-md">
+                        <div class="hosted-payment-control">
                             <Rock:DynamicPlaceholder ID="phHostedPaymentControl" runat="server" />
                         </div>
 
@@ -105,7 +93,7 @@
                             <asp:LinkButton ID="btnGetPaymentInfoBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnGetPaymentInfoBack_Click" />
 
                             <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback --%>
-                            <a id="btnGetPaymentInfoNext" runat="server" class="btn btn-primary js-submit-hostedpaymentinfo">Next</a>
+                            <a id="btnGetPaymentInfoNext" runat="server" class="btn btn-primary js-submit-hostedpaymentinfo pull-right">Next</a>
                         </div>
                     </asp:Panel>
 
@@ -121,13 +109,14 @@
                                 </div>
                             </asp:Panel>
                             <asp:Panel ID="pnlNotLoggedInNameEntry" runat="server">
-                                <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" />
-                                <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" />
+                                <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" />
+                                <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" />
                             </asp:Panel>
-
+                            
                             <Rock:AddressControl ID="acAddressIndividual" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" />
-                            <Rock:PhoneNumberBox ID="pnbPhoneIndividual" runat="server" Placeholder="Phone" />
-                            <Rock:EmailBox ID="tbEmailIndividual" runat="server" Placeholder="Email" />
+
+                            <Rock:PhoneNumberBox ID="pnbPhoneIndividual" runat="server" Placeholder="Phone" CssClass="margin-b-sm"/>
+                            <Rock:EmailBox ID="tbEmailIndividual" runat="server" Placeholder="Email" CssClass="margin-b-sm"/>
                             <Rock:RockCheckBox ID="cbGiveAnonymouslyIndividual" runat="server" Text="Give Anonymously" />
                         </asp:Panel>
 
@@ -139,32 +128,26 @@
                             </div>
 
                             <Rock:AddressControl ID="acAddressBusiness" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" />
-                            <Rock:PhoneNumberBox ID="pnbPhoneBusiness" runat="server" Placeholder="Business Phone" />
-                            <Rock:EmailBox ID="tbEmailBusiness" runat="server" Placeholder="Business Email" />
+                            <Rock:PhoneNumberBox ID="pnbPhoneBusiness" runat="server" Placeholder="Business Phone" CssClass="margin-b-sm" />
+                            <Rock:EmailBox ID="tbEmailBusiness" runat="server" Placeholder="Business Email" CssClass="margin-b-sm"/>
                             <Rock:RockCheckBox ID="cbGiveAnonymouslyBusiness" runat="server" Text="Give Anonymously" />
 
                             <%-- If anonymous and giving as a new business, prompt for Contact information --%>
                             <asp:Panel ID="pnlBusinessContactAnonymous" runat="server" Visible="false">
                                 <hr />
                                 <h4>Business Contact</h4>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <Rock:RockTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" />
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" />
-                                    </div>
-                                </div>
-                                <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Placeholder="Phone"></Rock:PhoneNumberBox>
-                                <Rock:RockTextBox ID="tbBusinessContactEmail" runat="server" Placeholder="Email"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="tbBusinessContactFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" />
+                                <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm"/>
+                                <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Placeholder="Phone" CssClass="margin-b-sm"/>
+                                <Rock:EmailBox ID="tbBusinessContactEmail" runat="server" Placeholder="Email" CssClass="margin-b-sm"/>
                             </asp:Panel>
                         </asp:Panel>
 
                         <Rock:NotificationBox ID="nbProcessTransactionError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-                        <div class="navigate-actions actions">
+                        <div class="navigation actions margin-t-md">
                             <asp:LinkButton ID="btnPersonalInformationBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnPersonalInformationBack_Click" />
-                            <Rock:BootstrapButton ID="btnPersonalInformationNext" runat="server" CssClass="btn btn-primary" Text="Finish" OnClick="btnPersonalInformationNext_Click" />
+                            <Rock:BootstrapButton ID="btnPersonalInformationNext" runat="server" CssClass="btn btn-primary pull-right" Text="Finish" OnClick="btnPersonalInformationNext_Click" />
                         </div>
                     </asp:Panel>
 

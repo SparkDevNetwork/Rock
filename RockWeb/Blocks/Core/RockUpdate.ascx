@@ -135,7 +135,7 @@
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
                     <div class="well well-message well-message-danger">
-                        <h1>Whoa... That Wasn't Suppose To Happen</h1>
+                        <h1>Whoa... That Wasn't Supposed To Happen</h1>
                         <i class="fa fa-exclamation-circle"></i>
                         <p>An error occurred during the update process.</p>
                     </div>
